@@ -368,7 +368,9 @@ struct test_fieldslicer
       indices.size(),
       indices.size(),
       axom::execution_space<ExecSpace>::allocatorID());
-    axom::copy(sliceIndices.data(), indices.data(), sizeof(axom::IndexType) * indices.size());
+    axom::copy(sliceIndices.data(),
+               indices.data(),
+               sizeof(axom::IndexType) * indices.size());
 
     bputils::SliceData slice;
     slice.m_indicesView = sliceIndices.view();

@@ -800,24 +800,22 @@ void strided_structured_clip_test(const std::string &name,
   bputils::copy<ExecSpace>(deviceOptions, options);
 
   // Create views
-  axom::mir::views::dispatch_explicit_coordset(
-    deviceMesh["coordsets/coords"],
-    [&](auto coordsetView) {
-      auto topoView = axom::mir::views::make_strided_structured<2>::view(
-        deviceMesh["topologies/mesh"]);
+  auto coordsetView = axom::mir::views::make_explicit_coordset<double, 2>::view(
+    deviceMesh["coordsets/coords"]);
+  auto topoView = axom::mir::views::make_strided_structured<2>::view(
+    deviceMesh["topologies/mesh"]);
 
-      using CoordsetView = decltype(coordsetView);
-      using TopoView = decltype(topoView);
+  using CoordsetView = decltype(coordsetView);
+  using TopoView = decltype(topoView);
 
-      // Clip the data
-      axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
-        topoView,
-        coordsetView);
-      clipper.execute(deviceMesh, deviceOptions, deviceClipMesh);
+  // Clip the data
+  axom::mir::clipping::ClipField<ExecSpace, TopoView, CoordsetView> clipper(
+    topoView,
+    coordsetView);
+  clipper.execute(deviceMesh, deviceOptions, deviceClipMesh);
 
-      // device->host
-      bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
-    });
+  // device->host
+  bputils::copy<seq_exec>(hostClipMesh, deviceClipMesh);
 
   // Handle baseline comparison.
   {

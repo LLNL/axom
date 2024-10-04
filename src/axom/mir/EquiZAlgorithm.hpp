@@ -796,41 +796,41 @@ protected:
         n_InputCoordset.move(n_newCoordset);
         n_InputFields.move(n_newFields);
 
-        // The data are now an unstructured view, probably a mixed shape view.
-        // Dispatch to an appropriate topo view.
-        // clang-format off
-        views::dispatch_explicit_coordset(n_InputCoordset, [&](auto coordsetView) {
-          using ICoordsetView = decltype(coordsetView);
-          using ConnectivityType = typename TopologyView::ConnectivityType;
-          // Dispatch to an appropriate topo view, taking into account the connectivity
-          // type and the possible shapes that would be supported for the input topology.
-          views::typed_dispatch_unstructured_topology<
-            ConnectivityType,
-            views::view_traits<TopologyView>::selected_shapes()>(
-            n_InputTopo,
-            [&](const auto &AXOM_UNUSED_PARAM(shape), auto topologyView) {
-              using ITopologyView = decltype(topologyView);
+        // Create an appropriate coordset view.
+        using CSDataType = typename CoordsetView::value_type;
+        auto coordsetView = axom::mir::views::
+          make_explicit_coordset<CSDataType, CoordsetView::dimension()>::view(
+            n_InputCoordset);
 
-              // Do the next iteration.
-              iteration<ITopologyView, ICoordsetView>(i,
-                                                      topologyView,
-                                                      coordsetView,
+        using ICoordsetView = decltype(coordsetView);
+        using ConnectivityType = typename TopologyView::ConnectivityType;
+        // Dispatch to an appropriate topo view, taking into account the connectivity
+        // type and the possible shapes that would be supported for the input topology.
+        views::typed_dispatch_unstructured_topology<
+          ConnectivityType,
+          views::view_traits<TopologyView>::selected_shapes()>(
+          n_InputTopo,
+          [&](const auto &AXOM_UNUSED_PARAM(shape), auto topologyView) {
+            using ITopologyView = decltype(topologyView);
 
-                                                      allMats,
-                                                      mixedMats[i],
+            // Do the next iteration.
+            iteration<ITopologyView, ICoordsetView>(i,
+                                                    topologyView,
+                                                    coordsetView,
 
-                                                      n_InputTopo,
-                                                      n_InputCoordset,
-                                                      n_InputFields,
+                                                    allMats,
+                                                    mixedMats[i],
 
-                                                      n_options,
+                                                    n_InputTopo,
+                                                    n_InputCoordset,
+                                                    n_InputFields,
 
-                                                      n_newTopo,
-                                                      n_newCoordset,
-                                                      n_newFields);
-            });
-        });
-        // clang-format on
+                                                    n_options,
+
+                                                    n_newTopo,
+                                                    n_newCoordset,
+                                                    n_newFields);
+          });
       }
     }
 

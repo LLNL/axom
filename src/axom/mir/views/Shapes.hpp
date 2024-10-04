@@ -591,7 +591,9 @@ struct Shape : public ShapeTraits
    */
   AXOM_HOST_DEVICE ConnectivityType getId(size_t index) const
   {
+#if defined(AXOM_DEBUG)
     assert(index < static_cast<size_t>(m_ids.size()));
+#endif
     return m_ids[index];
   }
 
