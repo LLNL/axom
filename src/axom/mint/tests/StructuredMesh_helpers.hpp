@@ -901,8 +901,9 @@ inline void check_constructor(const StructuredMesh* m,
     EXPECT_TRUE(m->hasExplicitCoordinates());
   }
 
-  CellType cell_type =
-    (mesh_dimension == 3) ? HEX : (mesh_dimension == 2) ? QUAD : SEGMENT;
+  CellType cell_type = (mesh_dimension == 3) ? HEX
+    : (mesh_dimension == 2)                  ? QUAD
+                                             : SEGMENT;
   EXPECT_EQ(m->getCellType(), cell_type);
   EXPECT_EQ(m->getNumberOfCellNodes(), getCellInfo(cell_type).num_nodes);
   EXPECT_EQ(m->getNumberOfCellFaces(), getCellInfo(cell_type).num_faces);

@@ -47,7 +47,7 @@ VariantKey::operator int() const
   return m_int;
 }
 
-VariantKey::operator const std::string &() const
+VariantKey::operator const std::string&() const
 {
   if(m_type != VariantKeyType::String)
   {
