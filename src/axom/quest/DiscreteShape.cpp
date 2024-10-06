@@ -91,9 +91,14 @@ DiscreteShape::DiscreteShape(const axom::klee::Shape& shape,
   setPrefixPath(prefixPath);
   setParentGroup(parentGroup);
 
-  if (parentGroup == nullptr && m_shape.getGeometry().getFormat() == "blueprint-tets")
+  if(parentGroup == nullptr &&
+     m_shape.getGeometry().getFormat() == "blueprint-tets")
   {
-    SLIC_ERROR("DiscreteShape: Support for Blueprint-mesh shape format currently requires a non-null parentGroup in the constructor.  This restriction can be lifted with additional coding, so please file an issue with the Axom team if you need this feature.");
+    SLIC_ERROR(
+      "DiscreteShape: Support for Blueprint-mesh shape format currently "
+      "requires a non-null parentGroup in the constructor.  This restriction "
+      "can be lifted with additional coding, so please file an issue with the "
+      "Axom team if you need this feature.");
   }
 }
 
