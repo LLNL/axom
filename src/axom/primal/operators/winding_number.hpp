@@ -1102,7 +1102,7 @@ std::pair<double, double> winding_number_casting_split(
           {
             // Account for the jump condition analytically
             wn_split.second +=
-              std::copysign(0.5, tp[i] * surf_orientation * cast_orientation);
+              std::copysign(0.5, surf_orientation);
           }
           else if(queryOnSurface && intersectionOnBoundary)
           {
