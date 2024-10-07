@@ -17,16 +17,7 @@
   #error Shaping functionality requires Axom to be configured with the Klee component
 #endif
 
-// #define AXOM_SHAPING_ON_MFEM_MESH (defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION))
-// #define AXOM_SHAPING_ON_BLUEPRINT_MESH defined(AXOM_USE_CONDUIT)
-#if defined(AXOM_USE_MFEM)
-  #define AXOM_SHAPING_ON_MFEM_MESH 1
-#endif
-#if defined(AXOM_USE_CONDUIT)
-  #define AXOM_SHAPING_ON_BLUEPRINT_MESH 1
-#endif
-
-#if !defined(AXOM_SHAPING_ON_MFEM_MESH) && !defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if !defined(AXOM_USE_MFEM) && !defined(AXOM_USE_CONDUIT)
   #error Shaping functionality requires Axom to be configured with Conduit or MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
 #endif
 
@@ -35,10 +26,10 @@
 #include "axom/mint.hpp"
 #include "axom/quest/DiscreteShape.hpp"
 
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
 #include "mfem.hpp"
 #endif
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
 #include "conduit_node.hpp"
 #endif
 
@@ -98,7 +89,7 @@ public:
 
   bool isVerbose() const { return m_verboseOutput; }
 
-#ifdef AXOM_SHAPING_ON_MFEM_MESH
+#ifdef AXOM_USE_MFEM
   sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
 #endif
 
@@ -191,12 +182,12 @@ protected:
 
   const klee::ShapeSet& m_shapeSet;
 
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
   // For mesh represented as MFEMSidreDataCollection
   sidre::MFEMSidreDataCollection* m_dc{nullptr};
 #endif
 
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
   // For mesh represented in Conduit or sidre
   conduit::Node* m_bpNode{nullptr};
   const std::string m_bpTopo;

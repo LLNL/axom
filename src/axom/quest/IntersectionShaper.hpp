@@ -76,6 +76,7 @@ template <typename ExecSpace>
 class TempArrayView
 {
 public:
+#if defined(AXOM_USE_MFEM)
   /*!
    * \brief Host constructor that accepts the grid function.
    *
@@ -87,6 +88,7 @@ public:
   {
     initialize(gf->GetData(), gf->Size(), _needResult);
   }
+#endif
 
   AXOM_HOST TempArrayView(axom::Array<double>& gf, bool _needResult = true)
   {
@@ -307,7 +309,7 @@ public:
   static constexpr double DEFAULT_REVOLVED_VOLUME {0.};
 
 public:
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
   /*!
     @brief Construct Shaper to operate on an MFEM mesh.
   */
@@ -319,7 +321,7 @@ public:
   }
 #endif
 
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
   /*!
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a Conduit Node.
@@ -1993,12 +1995,12 @@ private:
   bool hasData(const std::string& fieldName)
   {
     bool has = false;
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
     if (m_dc != nullptr) {
       has = m_dc->HasField(fieldName);
     }
 #endif
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
     if (m_bpGrp != nullptr) {
       std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
       has = m_bpGrp->hasGroup(fieldPath);
@@ -2011,7 +2013,7 @@ private:
   {
     axom::ArrayView<double> rval;
 
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
     if (m_dc) {
       mfem::GridFunction* gridFunc = nullptr;
       if (m_dc->HasField(fieldName))
@@ -2026,7 +2028,7 @@ private:
                                      gridFunc->Size());
     }
 #endif
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
     if (m_bpGrp != nullptr) {
       std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
       auto dtype = conduit::DataType::float64(m_cellCount);
@@ -2054,7 +2056,7 @@ private:
   std::vector<std::string> getMaterialNames()
   {
     std::vector<std::string> materialNames;
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
     if (m_dc)
     {
       for(auto it : this->getDC()->GetFieldMap())
@@ -2066,7 +2068,7 @@ private:
         }
       }
     }
-#elif defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#elif defined(AXOM_USE_CONDUIT)
     if (m_bpGrp)
     {
       auto fieldsGrp = m_bpGrp->getGroup("fields");
@@ -2100,13 +2102,13 @@ public:
       m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
       hostAllocator);
 
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
     if (m_dc != nullptr)
     {
       populateVertCoordsFromMFEMMesh(vertCoords);
     }
 #endif
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
     if (m_bpGrp != nullptr)
     {
       populateVertCoordsFromBlueprintMesh(vertCoords);
@@ -2163,7 +2165,7 @@ public:
   }
 private:
 
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
   void populateVertCoordsFromBlueprintMesh(axom::Array<double>& vertCoords_host)
   {
     // Initialize vertices from blueprint mesh and
@@ -2220,7 +2222,7 @@ private:
   }
 #endif
 
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
   void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords_host)
   {
     mfem::Mesh* mesh = getDC()->GetMesh();

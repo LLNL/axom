@@ -25,7 +25,7 @@ constexpr double Shaper::MINIMUM_PERCENT_ERROR;
 constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
 constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 
-#if defined(AXOM_SHAPING_ON_MFEM_MESH)
+#if defined(AXOM_USE_MFEM)
 Shaper::Shaper(const klee::ShapeSet& shapeSet,
                sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
@@ -38,7 +38,7 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
 }
 #endif
 
-#if defined(AXOM_SHAPING_ON_BLUEPRINT_MESH)
+#if defined(AXOM_USE_CONDUIT)
 Shaper::Shaper(const klee::ShapeSet& shapeSet,
                conduit::Node* bpNode,
                const std::string& topo)
