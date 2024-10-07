@@ -174,12 +174,10 @@ Dispatch
 ----------
 
 There are several helper functions that wrap a Conduit node in a specific view type
-and **dispatch** the view to a lambda for further processing. These dispatch functions take
-care of wrapping a Conduit node containing Blueprint data in various view types before
-passing the views to a user-supplied lambda function. The lambda function will typically
-be instantiated multiple times to handle cases when there are multiple data types and
-object types (e.g. coordsets). Generic lambdas can be used to process multiple view
-and it is possible to nest multiple dispatch functions.
+and **dispatch** the view to a user-supplied lambda for further processing. The lambda
+function will typically be instantiated multiple times to handle various data types and
+object types (e.g. coordsets). Generic lambdas can be used to process multiple views
+and it is possible to nest dispatch functions to handle added complexity.
 
 ^^^^^^^^^^^
 Array Data
