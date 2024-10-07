@@ -51,8 +51,9 @@ public:
     @brief Constructor.
 
     @param shape The Klee specifications for the shape.
-    @param parentGroup Group under which to put the discrete mesh.
-      If null, don't use sidre.
+    @param parentGroup Group under which to put the discrete mesh
+      and support blueprint-tets shapes.
+      If null, don't use sidre and don't support blueprint-tets.
     @param prefixPath Path prefix for shape files specified
       with a relative path.
 
