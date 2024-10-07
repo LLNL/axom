@@ -2000,7 +2000,7 @@ public:
       Segment<T, 3> s(m_controlPoints(u, 0), m_controlPoints(u, 0));
       for(int v = 1; v < ord_v; ++v)
       {
-        if( squared_distance( m_controlPoints(u, v), s ) > tol )
+        if(squared_distance(m_controlPoints(u, v), s) > tol)
         {
           return false;
         }
@@ -2012,7 +2012,7 @@ public:
       Segment<T, 3> s(m_controlPoints(0, v), m_controlPoints(ord_u, v));
       for(int u = 1; u < ord_u; ++u)
       {
-        if( squared_distance( m_controlPoints(u, v), s ) > tol )
+        if(squared_distance(m_controlPoints(u, v), s) > tol)
         {
           return false;
         }
