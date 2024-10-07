@@ -152,9 +152,503 @@ TEST(primal_3d_paper_figure_data, plotting_demo)
   exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
 }
 
-TEST(primal_3d_paper_figure_data, rotating_patch)
+TEST(primal_3d_paper_figure_data, patch_subdivision_test)
+{
+  return;
+
+  double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
+
+  // clang-format off
+  axom::Array<Point3D> node_data = {
+    Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
+    Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
+    Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
+
+  axom::Array<double> weight_data = {
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
+  // clang-format on
+
+  BPatch sphere_face;
+  sphere_face.setOrder(4, 4);
+  sphere_face.makeRational();
+
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      const int idx = 5 * i + j;
+      sphere_face.setWeight(i, j, weight_data[idx]);
+
+      // Set up each face by rotating one of the patch faces
+      sphere_face(i, j)[0] = -node_data[idx][0];
+      sphere_face(i, j)[1] = -node_data[idx][1];
+      sphere_face(i, j)[2] = -node_data[idx][2];
+
+      sphere_face(i, j).array() /= weight_data[idx];
+    }
+  }
+
+  // Define a recursive lambda function to check each subpatch for isPlanar
+  std::function<bool(const BPatch&, int n)> check_planar =
+    [&](const BPatch& patch, int n) {
+      if(patch.isPlanar(1e-4))
+      {
+        std::cout << "Subpatch " << n << " is planar" << std::endl;
+        return true;
+      }
+      else
+      {
+        BPatch p1, p2, p3, p4;
+        patch.split(0.5, 0.5, p1, p2, p3, p4);
+        return check_planar(p1, n + 1) && check_planar(p2, n + 1) &&
+          check_planar(p3, n + 1) && check_planar(p4, n + 1);
+      }
+    };
+
+  check_planar(sphere_face, 0);
+}
+
+TEST(primal_3d_paper_figure_data, super_cusp_example)
+{
+  return;
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  std::string data_dir =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\very_degenerate_"
+    "case";
+
+  BPatch tent;
+  tent.setOrder(4, 4);
+
+  double D = 16.0 / 7.0;
+
+  // clang-format off
+  tent(0, 0)[0] = 1.0;  tent(0, 1)[0] = 2.0;    tent(0, 2)[0] = 3.0;  tent(0, 3)[0] = 4.0;    tent(0, 4)[0] = 5.0; 
+  tent(1, 0)[0] = 1.0;  tent(1, 1)[0] = 2.0+D;  tent(1, 2)[0] = 3.0;  tent(1, 3)[0] = 4.0-D;  tent(1, 4)[0] = 5.0; 
+  tent(2, 0)[0] = 1.0;  tent(2, 1)[0] = 2.0+D;  tent(2, 2)[0] = 3.0;  tent(2, 3)[0] = 4.0-D;  tent(2, 4)[0] = 5.0; 
+  tent(3, 0)[0] = 1.0;  tent(3, 1)[0] = 2.0+D;  tent(3, 2)[0] = 3.0;  tent(3, 3)[0] = 4.0-D;  tent(3, 4)[0] = 5.0; 
+  tent(4, 0)[0] = 1.0;  tent(4, 1)[0] = 2.0;    tent(4, 2)[0] = 3.0;  tent(4, 3)[0] = 4.0;    tent(4, 4)[0] = 5.0; 
+
+  tent(0, 0)[1] = 1.0;  tent(0, 1)[1] = 1.0;    tent(0, 2)[1] = 1.0;    tent(0, 3)[1] = 1.0;    tent(0, 4)[1] = 1.0; 
+  tent(1, 0)[1] = 2.0;  tent(1, 1)[1] = 2.0+D;  tent(1, 2)[1] = 2.0+D;  tent(1, 3)[1] = 2.0+D;  tent(1, 4)[1] = 2.0; 
+  tent(2, 0)[1] = 3.0;  tent(2, 1)[1] = 3.0;    tent(2, 2)[1] = 3.0;    tent(2, 3)[1] = 3.0;    tent(2, 4)[1] = 3.0; 
+  tent(3, 0)[1] = 4.0;  tent(3, 1)[1] = 4.0-D;  tent(3, 2)[1] = 4.0-D;  tent(3, 3)[1] = 4.0-D;  tent(3, 4)[1] = 4.0; 
+  tent(4, 0)[1] = 5.0;  tent(4, 1)[1] = 5.0;    tent(4, 2)[1] = 5.0;    tent(4, 3)[1] = 5.0;    tent(4, 4)[1] = 5.0; 
+
+  tent(0, 0)[2] = 1.0;  tent(0, 1)[2] = 1.0;  tent(0, 2)[2] =  1.0;  tent(0, 3)[2] = 1.0;  tent(0, 4)[2] = 1.0; 
+  tent(1, 0)[2] = 1.0;  tent(1, 1)[2] = 1.0;  tent(1, 2)[2] =  1.0;  tent(1, 3)[2] = 1.0;  tent(1, 4)[2] = 1.0; 
+  tent(2, 0)[2] = 1.0;  tent(2, 1)[2] = 1.0;  tent(2, 2)[2] = -2.0;  tent(2, 3)[2] = 1.0;  tent(2, 4)[2] = 1.0; 
+  tent(3, 0)[2] = 1.0;  tent(3, 1)[2] = 1.0;  tent(3, 2)[2] =  1.0;  tent(3, 3)[2] = 1.0;  tent(3, 4)[2] = 1.0; 
+  tent(4, 0)[2] = 1.0;  tent(4, 1)[2] = 1.0;  tent(4, 2)[2] =  1.0;  tent(4, 3)[2] = 1.0;  tent(4, 4)[2] = 1.0;
+
+  tent.reverseOrientation_u();
+  // clang-format on
+
+  primal::Polygon<double, 3> closures[6];
+  closures[0].addVertex(Point3D {1.0, 1.0, 1.0});
+  closures[0].addVertex(Point3D {1.0, 5.0, 1.0});
+  closures[0].addVertex(Point3D {1.0, 5.0, -1.0});
+  closures[0].addVertex(Point3D {1.0, 1.0, -1.0});
+
+  closures[1].addVertex(Point3D {5.0, 1.0, 1.0});
+  closures[1].addVertex(Point3D {1.0, 1.0, 1.0});
+  closures[1].addVertex(Point3D {1.0, 1.0, -1.0});
+  closures[1].addVertex(Point3D {5.0, 1.0, -1.0});
+
+  closures[2].addVertex(Point3D {5.0, 5.0, 1.0});
+  closures[2].addVertex(Point3D {5.0, 1.0, 1.0});
+  closures[2].addVertex(Point3D {5.0, 1.0, -1.0});
+  closures[2].addVertex(Point3D {5.0, 5.0, -1.0});
+
+  closures[3].addVertex(Point3D {1.0, 5.0, 1.0});
+  closures[3].addVertex(Point3D {5.0, 5.0, 1.0});
+  closures[3].addVertex(Point3D {5.0, 5.0, -1.0});
+  closures[3].addVertex(Point3D {1.0, 5.0, -1.0});
+
+  closures[4].addVertex(Point3D {1.0, 1.0, -1.0});
+  closures[4].addVertex(Point3D {1.0, 5.0, -1.0});
+  closures[4].addVertex(Point3D {5.0, 5.0, -1.0});
+  closures[4].addVertex(Point3D {5.0, 1.0, -1.0});
+
+  closures[5].addVertex(Point3D {5.0, 1.0, 1.0});
+  closures[5].addVertex(Point3D {5.0, 5.0, 1.0});
+  closures[5].addVertex(Point3D {1.0, 5.0, 1.0});
+  closures[5].addVertex(Point3D {1.0, 1.0, 1.0});
+
+  Point3D the_query = tent.evaluate(0.5, 0.5);
+
+  double closure_wn = 0.0;
+  for(int i = 0; i < 5; ++i)
+  {
+    closure_wn += winding_number(the_query, closures[i]);
+  }
+
+  std::cout << "Closure winding number: " << closure_wn << std::endl;
+
+  exportSurfaceToSTL(data_dir + "/super_neato_tent.stl", tent);
+
+  std::pair<double, double> wn;
+  double wn_ref, wn_direct;
+
+  // wn =
+  // winding_number_casting_split(the_query, tent, edge_tol, quad_tol, EPS);
+  // wn_ref = winding_number(the_query, tent, edge_tol, quad_tol, EPS);
+  // wn_direct =
+  // winding_number_direct(the_query, tent, edge_tol, quad_tol, EPS);
+
+  // std::cout << wn.first << " + " << wn.second << " -> " << wn.first + wn.second
+  // << " (" << wn.first + wn.second + closure_wn << ")" << std::endl;
+  // std::cout << wn_ref << " (" << wn_ref + closure_wn << ")" << std::endl;
+  // std::cout << wn_direct << " (" << wn_direct + closure_wn << ")" << std::endl
+  // << std::endl
+  // << std::endl;
+
+  BPatch tents[4];
+  tent.split(0.5, 0.5, tents[0], tents[1], tents[2], tents[3]);
+
+  std::pair<double, double> wns[4];
+  double wn_refs[4], wn_directs[4];
+
+  // std::cout << tents[0] << std::endl;
+
+  for(int i = 0; i < 4; ++i)
+  {
+    wns[i] =
+      winding_number_casting_split(the_query, tents[i], edge_tol, quad_tol, EPS);
+    wn_refs[i] = winding_number(the_query, tents[i], edge_tol, quad_tol, EPS);
+    wn_directs[i] =
+      winding_number_direct(the_query, tents[i], edge_tol, quad_tol, EPS);
+
+    std::cout << wns[i].first << " + " << wns[i].second << " -> "
+              << wns[i].first + wns[i].second << " ("
+              << wns[i].first + wns[i].second << ")" << std::endl;
+    std::cout << wn_refs[i] << " (" << wn_refs[i] << ")" << std::endl;
+    std::cout << wn_directs[i] << " (" << wn_directs[i] << ")" << std::endl
+              << std::endl
+              << std::endl;
+  }
+
+  std::cout << "Total winding number: "
+            << wns[0].first + wns[0].second + wns[1].first + wns[1].second +
+      wns[2].first + wns[2].second + wns[3].first + wns[3].second + closure_wn
+            << std::endl;
+}
+
+TEST(primal_3d_paper_figure_data, cusp_example)
+{
+  return;
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  std::string data_dir =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\very_degenerate_"
+    "case";
+
+  BPatch tent;
+  tent.setOrder(3, 3);
+
+  // clang-format off
+  tent(0, 0)[0] = -1.0;  tent(0, 1)[0] = 1.0;  tent(0, 2)[0] = -1.0;  tent(0, 3)[0] = 1.0; 
+  tent(1, 0)[0] = -1.0;  tent(1, 1)[0] = 1.0;  tent(1, 2)[0] = -1.0;  tent(1, 3)[0] = 1.0; 
+  tent(2, 0)[0] = -1.0;  tent(2, 1)[0] = 1.0;  tent(2, 2)[0] = -1.0;  tent(2, 3)[0] = 1.0; 
+  tent(3, 0)[0] = -1.0;  tent(3, 1)[0] = 1.0;  tent(3, 2)[0] = -1.0;  tent(3, 3)[0] = 1.0; 
+
+  tent(0, 0)[1] = -1.0;  tent(0, 1)[1] = 1.0;  tent(0, 2)[1] = -1.0;  tent(0, 3)[1] = 1.0; 
+  tent(1, 0)[1] =  0.0;  tent(1, 1)[1] = 0.0;  tent(1, 2)[1] =  0.0;  tent(1, 3)[1] = 0.0; 
+  tent(2, 0)[1] =  0.0;  tent(2, 1)[1] = 0.0;  tent(2, 2)[1] =  0.0;  tent(2, 3)[1] = 0.0; 
+  tent(3, 0)[1] =  1.0;  tent(3, 1)[1] = 1.0;  tent(3, 2)[1] =  1.0;  tent(3, 3)[1] = 1.0; 
+
+  tent(0, 0)[2] =  0.0;  tent(0, 1)[2] = 1.0;  tent(0, 2)[2] =  1.0;  tent(0, 3)[2] = 0.0; 
+  tent(1, 0)[2] =  0.0;  tent(1, 1)[2] = 1.0;  tent(1, 2)[2] =  1.0;  tent(1, 3)[2] = 0.0; 
+  tent(2, 0)[2] =  0.0;  tent(2, 1)[2] = 1.0;  tent(2, 2)[2] =  1.0;  tent(2, 3)[2] = 0.0; 
+  tent(3, 0)[2] =  0.0;  tent(3, 1)[2] = 1.0;  tent(3, 2)[2] =  1.0;  tent(3, 3)[2] = 0.0;
+  // clang-format on
+
+  exportSurfaceToSTL(data_dir + "/neato_tent.stl", tent);
+
+  Point3D the_query = tent.evaluate(0.5, 0.5);
+
+  auto wn =
+    winding_number_casting_split(the_query, tent, edge_tol, quad_tol, EPS);
+  auto wn_ref = winding_number(the_query, tent, edge_tol, quad_tol, EPS);
+  auto wn_direct =
+    winding_number_direct(the_query, tent, edge_tol, quad_tol, EPS);
+
+  std::cout << wn.first << " + " << wn.second << " -> " << wn.first + wn.second
+            << std::endl;
+  std::cout << wn_ref << std::endl;
+  std::cout << wn_direct << std::endl;
+}
+
+TEST(primal_3d_paper_figure_data, very_degenerate_example)
+{
+  return;
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  std::string data_dir =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\very_degenerate_"
+    "case";
+
+  double D = 8.0 / 9.0;
+
+  BPatch flower;
+  flower.setOrder(3, 3);
+
+  flower(0, 0) = Point3D {-1.0, -1.0, 1.0};
+  flower(1, 0) = Point3D {1.0, -1.0, 0.0};
+  flower(2, 0) = Point3D {1.0, 1.0, 0.0};
+  flower(3, 0) = Point3D {-1.0, 1.0, 1.0};
+
+  flower(0, 1) = Point3D {-D, D, 0.0};
+  flower(1, 1) = Point3D {0.0, 0.0, 0.0};
+  flower(2, 1) = Point3D {0.0, 0.0, 0.0};
+  flower(3, 1) = Point3D {-D, -D, 0.0};
+
+  flower(0, 2) = Point3D {D, D, 0.0};
+  flower(1, 2) = Point3D {0.0, 0.0, 0.0};
+  flower(2, 2) = Point3D {0.0, 0.0, 0.0};
+  flower(3, 2) = Point3D {D, -D, 0.0};
+
+  flower(0, 3) = Point3D {1.0, -1.0, 1.0};
+  flower(1, 3) = Point3D {-1.0, -1.0, 0.0};
+  flower(2, 3) = Point3D {-1.0, 1.0, 0.0};
+  flower(3, 3) = Point3D {1.0, 1.0, 1.0};
+
+  exportSurfaceToSTL(data_dir + "/wacko_flower.stl", flower);
+
+  std::cout << flower.evaluate(0.25, 0.85) << std::endl;
+  std::cout << flower.du(0.5, 0.5) << std::endl;
+  std::cout << flower.dv(0.5, 0.5) << std::endl;
+  std::cout << flower.normal(0.5, 0.5) << std::endl;
+
+  Point3D the_query = {0.0, 0.0, 0.0625};
+
+  auto wn =
+    winding_number_casting_split(the_query, flower, edge_tol, quad_tol, EPS);
+  auto wn_ref = winding_number(the_query, flower, edge_tol, quad_tol, EPS);
+  auto wn_direct =
+    winding_number_direct(the_query, flower, edge_tol, quad_tol, EPS);
+
+  std::cout << wn.first << " + " << wn.second << " -> " << wn.first + wn.second
+            << std::endl;
+  std::cout << wn_ref << std::endl;
+  std::cout << wn_direct << std::endl;
+}
+
+TEST(primal_3d_paper_figure_data, edge_case_explorer)
+{
+  return;
+
+  std::string data_dir =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\full_patch_test";
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // Make a patch that is a unit square
+  BPatch square;
+  square.setOrder(3, 3);
+
+  square(0, 0) = Point3D {0.0, 0.0, 0.0};
+  square(1, 0) = Point3D {1.0, -1.0, 0.0};
+  square(2, 0) = Point3D {1.0, -1.0, 1.0};
+  square(3, 0) = Point3D {0.0, 0.0, 2.0};
+
+  square(0, 1) = Point3D {0.0, 0.0, 0.0};
+  square(1, 1) = Point3D {1.0, 0.0, 0.0};
+  square(2, 1) = Point3D {1.0, 0.0, 1.0};
+  square(3, 1) = Point3D {0.0, 0.0, 2.0};
+
+  square(0, 2) = Point3D {0.0, 0.5, 0.0};
+  square(1, 2) = Point3D {1.0, 0.5, 0.0};
+  square(2, 2) = Point3D {1.0, 0.5, 1.0};
+  square(3, 2) = Point3D {0.0, 0.5, 2.0};
+
+  square(0, 3) = Point3D {0.0, 1.0, 0.0};
+  square(1, 3) = Point3D {1.0, 1.0, 0.0};
+  square(2, 3) = Point3D {1.0, 1.0, 1.0};
+  square(3, 3) = Point3D {0.0, 1.0, 2.0};
+
+  exportSurfaceToSTL(data_dir + "/edge_case.stl", square);
+
+  Point3D the_query = {0.0, 0.0, 0.0};
+
+  auto wn =
+    winding_number_casting_split(the_query, square, edge_tol, quad_tol, EPS);
+  auto wn_ref = winding_number(the_query, square, edge_tol, quad_tol, EPS);
+  auto wn_direct =
+    winding_number_direct(the_query, square, edge_tol, quad_tol, EPS);
+
+  std::cout << wn.first << " + " << wn.second << " -> " << wn.first + wn.second
+            << std::endl;
+  std::cout << wn_ref << std::endl;
+  std::cout << wn_direct << std::endl;
+}
+
+TEST(primal_3d_paper_figure_data, full_patch_test)
 {
   //   return;
+
+  std::string data_dir =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\full_patch_test";
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
+
+  // clang-format off
+  axom::Array<Point3D> node_data = {
+    Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
+    Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
+    Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
+
+  axom::Array<double> weight_data = {
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
+  // clang-format on
+
+  BPatch sphere_faces[6];
+  for(int n = 0; n < 6; ++n)
+  {
+    sphere_faces[n].setOrder(4, 4);
+    sphere_faces[n].makeRational();
+  }
+
+  sphere_faces[0].setOrder(4, 4);
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      const int idx = 5 * i + j;
+      for(int n = 0; n < 6; ++n)
+      {
+        sphere_faces[n].setWeight(i, j, weight_data[idx]);
+      }
+
+      // Set up each face by rotating one of the patch faces
+      sphere_faces[0](i, j)[0] = node_data[idx][1];
+      sphere_faces[0](i, j)[1] = node_data[idx][0];
+      sphere_faces[0](i, j)[2] = node_data[idx][2];
+      sphere_faces[0](i, j).array() /= weight_data[idx];
+
+      sphere_faces[1](i, j)[0] = -node_data[idx][0];
+      sphere_faces[1](i, j)[1] = -node_data[idx][1];
+      sphere_faces[1](i, j)[2] = -node_data[idx][2];
+      sphere_faces[1](i, j).array() /= weight_data[idx];
+
+      sphere_faces[2](i, j)[0] = node_data[idx][2];
+      sphere_faces[2](i, j)[1] = node_data[idx][1];
+      sphere_faces[2](i, j)[2] = node_data[idx][0];
+      sphere_faces[2](i, j).array() /= weight_data[idx];
+
+      sphere_faces[3](i, j)[0] = -node_data[idx][1];
+      sphere_faces[3](i, j)[1] = -node_data[idx][2];
+      sphere_faces[3](i, j)[2] = -node_data[idx][0];
+      sphere_faces[3](i, j).array() /= weight_data[idx];
+
+      sphere_faces[4](i, j)[0] = node_data[idx][0];
+      sphere_faces[4](i, j)[1] = node_data[idx][2];
+      sphere_faces[4](i, j)[2] = node_data[idx][1];
+      sphere_faces[4](i, j).array() /= weight_data[idx];
+
+      sphere_faces[5](i, j)[0] = -node_data[idx][2];
+      sphere_faces[5](i, j)[1] = -node_data[idx][0];
+      sphere_faces[5](i, j)[2] = -node_data[idx][1];
+      sphere_faces[5](i, j).array() /= weight_data[idx];
+    }
+  }
+
+  exportSurfaceToSTL(data_dir + "/sphere_face0.stl", sphere_faces[0]);
+  exportSurfaceToSTL(data_dir + "/sphere_face1.stl", sphere_faces[1]);
+  exportSurfaceToSTL(data_dir + "/sphere_face2.stl", sphere_faces[2]);
+  exportSurfaceToSTL(data_dir + "/sphere_face3.stl", sphere_faces[3]);
+  exportSurfaceToSTL(data_dir + "/sphere_face4.stl", sphere_faces[4]);
+  exportSurfaceToSTL(data_dir + "/sphere_face5.stl", sphere_faces[5]);
+
+  // Evaluate the winding number for random points in the box [-2.028, 2.028]^3
+  for(int N = 0; N < 100; ++N)
+  {
+    double x0 = axom::utilities::random_real(-1.014, 1.014);
+    double y0 = axom::utilities::random_real(-1.014, 1.014);
+    double z0 = axom::utilities::random_real(-1.014, 1.014);
+
+    double x = x0 / std::sqrt(x0 * x0 + y0 * y0 + z0 * z0);
+    double y = y0 / std::sqrt(x0 * x0 + y0 * y0 + z0 * z0);
+    double z = z0 / std::sqrt(x0 * x0 + y0 * y0 + z0 * z0);
+
+    Point3D on_query = {x, y, z};
+
+    Point3D in_query = {x, y, z};
+    in_query.array() *= (1 - 2 * edge_tol);
+
+    Point3D out_query = {x, y, z};
+    out_query.array() *= (1 + 2 * edge_tol);
+
+    double wn_on = 0.0;
+    double wn_in = 0.0;
+    double wn_out = 0.0;
+
+    int indices[] = {0, 1, 2, 3, 4, 5};
+    for(int n : indices)
+    {
+      wn_on +=
+        winding_number_casting(on_query, sphere_faces[n], edge_tol, quad_tol, EPS);
+
+      wn_in +=
+        winding_number_casting(in_query, sphere_faces[n], edge_tol, quad_tol, EPS);
+
+      wn_out +=
+        winding_number_casting(out_query, sphere_faces[n], edge_tol, quad_tol, EPS);
+    }
+
+    std::cout << std::setprecision(15);
+    // std::cout << wn_on << " " << wn_in << " " << wn_out << std::endl;
+
+    // Check the coincident point
+    if( !axom::utilities::isNearlyEqual( wn_on, 0.5, 6 * quad_tol ) )
+    {
+      std::cout << '\t' << "Coincident point: " << on_query << " -> " << wn_on << std::endl;
+    }
+
+    // Check the near point
+    if( !axom::utilities::isNearlyEqual( wn_in, 1.0, 6 * quad_tol ) )
+    {
+      std::cout << '\t' << "Inside point: " << on_query << " -> " << wn_in << std::endl;
+    }
+
+    // Check the far point
+    if( !axom::utilities::isNearlyEqual( wn_out, 0.0, 6 * quad_tol ) )
+    {
+      std::cout << '\t' << "Out point: " << on_query << " -> " << wn_out << std::endl;
+    }
+  }
+}
+
+TEST(primal_3d_paper_figure_data, rotating_patch)
+{
+  return;
 
   std::string data_dir =
     "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\rotating_patch";
@@ -196,20 +690,30 @@ TEST(primal_3d_paper_figure_data, rotating_patch)
       sphere_face(i, j)[0] = -node_data[idx][0];
       sphere_face(i, j)[1] = -node_data[idx][1];
       sphere_face(i, j)[2] = -node_data[idx][2];
-      
+
       sphere_face(i, j).array() /= weight_data[idx];
     }
   }
 
-  auto wn_split = winding_number_casting_split(Point3D {-0.829423, 0.009247, 0.0991689},
-                                               sphere_face,
-                                               edge_tol,
-                                               quad_tol,
-                                               EPS);
+  auto the_query = sphere_face.evaluate(0.0, 0.0);
 
+  auto wn_true = winding_number(the_query, sphere_face, edge_tol, quad_tol, EPS);
+  auto wn_split =
+    winding_number_casting_split(the_query, sphere_face, edge_tol, quad_tol, EPS);
+
+  std::cout << wn_true << std::endl;
   std::cout << wn_split.first << " " << wn_split.second << std::endl;
 
-  return;
+  if(axom::utilities::isNearlyEqual(wn_true, wn_split.first + wn_split.second, 1e-5))
+  {
+    std::cout << "Winding numbers match" << std::endl;
+  }
+  else
+  {
+    std::cout << "Winding numbers do not match" << std::endl;
+  }
+
+  //   return;
 
   BBox bbox;
   for(int i = 0; i < 5; ++i)
@@ -221,23 +725,22 @@ TEST(primal_3d_paper_figure_data, rotating_patch)
   }
 
   // Make the bounding box a cube with the same centroid
-  int max_dim = bbox.getLongestDimension();
-  double max_len = bbox.getMax()[max_dim] - bbox.getMin()[max_dim];
+  // int max_dim = bbox.getLongestDimension();
+  // double max_len = bbox.getMax()[max_dim] - bbox.getMin()[max_dim];
 
-  primal::Point<double, 3> centroid = bbox.getCentroid();
+  // primal::Point<double, 3> centroid = bbox.getCentroid();
 
-  primal::Point<double, 3> new_min {centroid[0] - max_len / 2.0,
-                                    centroid[1] - max_len / 2.0,
-                                    centroid[2] - max_len / 2.0};
-  primal::Point<double, 3> new_max {centroid[0] + max_len / 2.0,
-                                    centroid[1] + max_len / 2.0,
-                                    centroid[2] + max_len / 2.0};
+  // primal::Point<double, 3> new_min {centroid[0] - max_len / 2.0,
+  //                                   centroid[1] - max_len / 2.0,
+  //                                   centroid[2] - max_len / 2.0};
+  // primal::Point<double, 3> new_max {centroid[0] + max_len / 2.0,
+  //                                   centroid[1] + max_len / 2.0,
+  //                                   centroid[2] + max_len / 2.0};
 
-  bbox.addPoint(new_min);
-  bbox.addPoint(new_max);
-  bbox.scale(1.1);
+  // bbox.addPoint(new_min);
+  // bbox.addPoint(new_max);
+  // bbox.scale(1.1);
 
-  std::cout << bbox << std::endl;
   axom::Array<BPatch> patches;
   patches.push_back(sphere_face);
 
@@ -261,9 +764,34 @@ TEST(primal_3d_paper_figure_data, rotating_patch)
     return wn_split;
   };
 
+  auto wn_comparison = [&patches, &edge_tol, &quad_tol, &EPS](
+                         const Point3D& query) {
+    std::pair<double, double> wn_split = {0.0, 0.0};
+    for(const auto& patch : patches)
+    {
+      auto val =
+        winding_number_casting_split(query, patch, edge_tol, quad_tol, EPS);
+      wn_split.first += val.first;
+      wn_split.second += val.second;
+    }
+
+    double wn = 0.0;
+    for(const auto& patch : patches)
+      wn += winding_number(query, patch, edge_tol, quad_tol, EPS);
+
+    if(!axom::utilities::isNearlyEqual(wn, wn_split.first + wn_split.second, 1e-5))
+    {
+      std::cout << "Winding numbers do not match!" << std::endl;
+      std::cout << '\t' << query << ": " << wn << " vs "
+                << wn_split.first + wn_split.second << std::endl;
+    }
+
+    return wn_split;
+  };
+
   // clang-format off
   // exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_ground_truth, bbox, 100, 100, 100);
-  exportSplitScalarFieldToVTK(data_dir + "/sphere_field_casting_x.vtk", wn_casting, bbox, 100, 100, 100);
+  exportSplitScalarFieldToVTK(data_dir + "/sphere_field_casting_complete.vtk", wn_comparison, bbox, 100, 100, 100);
   // clang-format on
 
   exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);

@@ -1065,6 +1065,7 @@ void exportSurfaceToSTL(const std::string& filename,
 
   // Write STL header
   file << "solid parametric_surface\n";
+  file << std::setprecision(20);
 
   // Generate surface data
   for(const auto& patch : patches)
@@ -1112,6 +1113,16 @@ void exportSurfaceToSTL(const std::string& filename,
 
   file << "endsolid parametric_surface\n";
   file.close();
+}
+
+void exportSurfaceToSTL(const std::string& filename,
+                        const primal::BezierPatch<double, 3>& patches,
+                        int uSteps = 17,
+                        int vSteps = 17)
+{
+  axom::Array<primal::BezierPatch<double, 3>> patchArray;
+  patchArray.push_back(patches);
+  exportSurfaceToSTL(filename, patchArray, uSteps, vSteps);
 }
 
 }  // namespace primal
