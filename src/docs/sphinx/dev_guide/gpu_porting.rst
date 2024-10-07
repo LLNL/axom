@@ -164,7 +164,7 @@ GPU device, or on both a GPU device and a CPU host. For example::
 Portability
 %%%%%%%%%%%%%%%%
 
-Adherence to the GPU porting guidelines generally result in code that will compile and run on
+Adherence to the GPU porting guidelines generally results in code that will compile and run on
 multiple backends. However, backends such as CUDA require additional guidelines.
 
 Do not use generic lambda functions (auto parameters) with ``axom::for_all``

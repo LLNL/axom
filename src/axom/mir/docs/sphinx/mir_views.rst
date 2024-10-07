@@ -243,7 +243,7 @@ appropriate view and pass it to a lambda function.
    const conduit::Node &n_coordset = n_mesh["coordsets/coords"];
    axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
      // Get the C++ type of the coordset.
-     using CoordsetView = decltype(CoordsetView);
+     using CoordsetView = decltype(coordsetView);
      // Implement algorithm using coordsetView.
    });
 
