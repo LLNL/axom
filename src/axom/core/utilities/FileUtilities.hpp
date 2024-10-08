@@ -88,6 +88,11 @@ void getDirName(std::string& dir, const std::string& path);
  * \param filename The name of the file.
  * \return 0 on success, -1 on failure. errno can obtain more information
  *         about the failure.
+ *
+ * \note On Windows, this function calls _unlink() and will fail if there are
+ *       any open file handles to the specified file.
+ *       On Linux, this function calls unlink() and will succeed even if
+ *       there are open file handles to the specified file.
  */
 int removeFile(const std::string& filename);
 
