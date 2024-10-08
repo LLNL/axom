@@ -16,6 +16,8 @@ variables:
 jobs:
 - job: Build_and_Test
 
+  timeoutInMinutes: 120
+
   strategy:
     matrix:
       linux_gcc13:
