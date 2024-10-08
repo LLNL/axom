@@ -109,7 +109,7 @@ CMake-based build system example
 
 .. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt
    :language: cmake
-   :lines: 27-50
+   :lines: 33-87
 
 See:  ``examples/axom/using-with-cmake``
 
@@ -119,7 +119,7 @@ BLT-based build system example
 
 .. literalinclude:: ../../../examples/using-with-blt/CMakeLists.txt
    :language: cmake
-   :lines: 31-61
+   :lines: 31-62
 
 See:  ``examples/axom/using-with-blt``
 
