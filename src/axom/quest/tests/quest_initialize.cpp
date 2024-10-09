@@ -86,10 +86,23 @@ TEST(quest_initialize, direct_reallocations)
 
 #if defined AXOM_USE_SIDRE
 // Test allocation/reallocation using sidre::View.
-TEST(quest_initialize, sidre_reallocations)
+TEST(quest_initialize, buffer_reallocations)
 {
-  axom::sidre::DataStore objectDS;
-  axom::sidre::Group* group = objectDS.getRoot();
+  axom::sidre::DataStore dataStore;
+
+  axom::sidre::Buffer* b1 = dataStore.createBuffer(axom::sidre::DataTypeId::INT32_ID, 10);
+  b1->allocate();
+  EXPECT_NE(b1->getVoidPtr(), nullptr);
+
+  b1->reallocate(20);
+  EXPECT_NE(b1->getVoidPtr(), nullptr);
+}
+
+// Test allocation/reallocation using sidre::View.
+TEST(quest_initialize, view_reallocations)
+{
+  axom::sidre::DataStore dataStore;
+  axom::sidre::Group* group = dataStore.getRoot();
 
   axom::sidre::View* v3 = group->createView("v3", conduit::DataType::int32(10));
   v3->allocate();
@@ -102,8 +115,8 @@ TEST(quest_initialize, sidre_reallocations)
 // Test immediately reserving space in UnstructuredMesh.
 TEST(quest_initialize, immediate_ug_reserve)
 {
-  axom::sidre::DataStore objectDS;
-  axom::sidre::Group* meshGroup = objectDS.getRoot()->createGroup("myGroup");
+  axom::sidre::DataStore dataStore;
+  axom::sidre::Group* meshGroup = dataStore.getRoot()->createGroup("myGroup");
   axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
     2,
     axom::mint::CellType::SEGMENT,
