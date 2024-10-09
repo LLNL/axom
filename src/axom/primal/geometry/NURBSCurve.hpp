@@ -435,6 +435,83 @@ public:
     }
   }
 
+  void insertKnot(T t, int multiplicity = 1)
+  {
+    // np -> old number of control points
+    // p -> degree
+    // UP -> old knot vector
+    // Pw
+    SLIC_ASSERT_MSG(t >= 0.0 && t <= 1.0, "Knot value must be in [0, 1]");
+    SLIC_ASSERT_MSG(multiplicity > 0, "Multiplicity must be positive");
+
+    const int n = getNumControlPoints() - 1;
+    const int p = getNumKnots() - n - 2;
+
+    // Find the span of the knot
+    const auto span = findSpan(t);
+
+    // Find the current multiplicity of the knot
+    int s = 0;
+    for(auto i = span + 1; i < p + n + 2; ++i)
+    {
+      if( m_knots[i] == t )
+      {
+        s++;
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    // Get new vectors of knots and control points
+    KnotsVec newKnots( m_knots );
+    for(int r = 0; r < multiplicity; ++r)
+    {
+      newKnots.insert(newKnots.begin() + span + 1, t);
+    }
+
+    // Save unaltered control points
+    CoordsVec newControlPoints( m_controlPoints.size() + multiplicity );
+    for(int i = 0; i <= span - p; ++i)
+    {
+      newControlPoints[i] = m_controlPoints[i];
+    }
+
+    for(auto i = span - s; i <= n; ++i)
+    {
+      newControlPoints[i + multiplicity] = m_controlPoints[i];
+    }
+
+    CoordsVec tempControlPoints( p + 1 );
+    for(int i = 0; i <= p - s; ++i )
+    {
+      tempControlPoints[i] = m_controlPoints[span - p + i];
+    }
+
+    // Insert the knot multiplicity times
+    axom::IndexType L;
+    for(int j = 1; j <= multiplicity; ++j)
+    {
+      L = span - p + j;
+      for(int i = 0; i <= p - j - s; ++i)
+      {
+        T alpha = (t - m_knots[L + i]) / (m_knots[i + span + 1] - m_knots[L + i]);
+        tempControlPoints[i].array() = (1.0 - alpha) * tempControlPoints[i].array() + alpha * tempControlPoints[i + 1].array();
+      }
+      newControlPoints[L] = tempControlPoints[0];
+      newControlPoints[span + multiplicity - j - s] = tempControlPoints[p - j - s];
+    }
+
+    for(auto i = L + 1; i < span - s; ++i)
+    {
+      newControlPoints[i] = tempControlPoints[i - L];
+    }
+
+    m_knots = newKnots;
+    m_controlPoints = newControlPoints;
+  }
+
   /// \brief Returns the degree of the NURBS Curve
   int getDegree() const
   {
