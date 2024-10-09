@@ -267,7 +267,7 @@ endif()
 # Shaping in-memory example ------------------------------------------------------
 if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                    AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
-                   AND AXOM_ENABLE_KLEE)
+                   AND AXOM_ENABLE_KLEE AND RAJA_FOUND)
     axom_add_executable(
         NAME        quest_shape_in_memory_ex
         SOURCES     quest_shape_in_memory.cpp
