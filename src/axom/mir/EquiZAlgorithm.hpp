@@ -759,22 +759,22 @@ protected:
       if(i == first)
       {
         // The first time through, we can use the supplied views.
-        iteration<TopologyView, CoordsetView>(i,
-                                              m_topologyView,
-                                              m_coordsetView,
+        iteration(i,
+                  m_topologyView,
+                  m_coordsetView,
 
-                                              allMats,
-                                              mixedMats[i],
+                  allMats,
+                  mixedMats[i],
 
-                                              n_topo,
-                                              n_coordset,
-                                              n_InputFields,
+                  n_topo,
+                  n_coordset,
+                  n_InputFields,
 
-                                              n_options,
+                  n_options,
 
-                                              n_newTopo,
-                                              n_newCoordset,
-                                              n_newFields);
+                  n_newTopo,
+                  n_newCoordset,
+                  n_newFields);
 
         // In later iterations, we do not want to pass selectedZones through
         // since they are only valid on the current input topology. Also, if they
@@ -802,7 +802,6 @@ protected:
           make_explicit_coordset<CSDataType, CoordsetView::dimension()>::view(
             n_InputCoordset);
 
-        using ICoordsetView = decltype(coordsetView);
         using ConnectivityType = typename TopologyView::ConnectivityType;
         // Dispatch to an appropriate topo view, taking into account the connectivity
         // type and the possible shapes that would be supported for the input topology.
@@ -811,25 +810,23 @@ protected:
           views::view_traits<TopologyView>::selected_shapes()>(
           n_InputTopo,
           [&](const auto &AXOM_UNUSED_PARAM(shape), auto topologyView) {
-            using ITopologyView = decltype(topologyView);
+            // Do the next iteration (uses new topologyView type).
+            iteration(i,
+                      topologyView,
+                      coordsetView,
 
-            // Do the next iteration.
-            iteration<ITopologyView, ICoordsetView>(i,
-                                                    topologyView,
-                                                    coordsetView,
+                      allMats,
+                      mixedMats[i],
 
-                                                    allMats,
-                                                    mixedMats[i],
+                      n_InputTopo,
+                      n_InputCoordset,
+                      n_InputFields,
 
-                                                    n_InputTopo,
-                                                    n_InputCoordset,
-                                                    n_InputFields,
+                      n_options,
 
-                                                    n_options,
-
-                                                    n_newTopo,
-                                                    n_newCoordset,
-                                                    n_newFields);
+                      n_newTopo,
+                      n_newCoordset,
+                      n_newFields);
           });
       }
     }
