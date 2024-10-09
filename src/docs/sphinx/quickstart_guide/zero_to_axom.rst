@@ -109,7 +109,8 @@ CMake-based build system example
 
 .. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt
    :language: cmake
-   :lines: 27-50
+   :start-after: _zerotoaxom_docs_start
+   :end-before: _zerotoaxom_docs_end
 
 See:  ``examples/axom/using-with-cmake``
 
@@ -119,7 +120,8 @@ BLT-based build system example
 
 .. literalinclude:: ../../../examples/using-with-blt/CMakeLists.txt
    :language: cmake
-   :lines: 31-61
+   :start-after: _zerotoaxom_docs_start
+   :end-before: _zerotoaxom_docs_end
 
 See:  ``examples/axom/using-with-blt``
 
@@ -129,6 +131,7 @@ Makefile-based build system example
 
 .. literalinclude:: ../../../examples/using-with-make/Makefile.in
    :language: make
-   :lines: 28-39
+   :start-after: _zerotoaxom_docs_start
+   :end-before: _zerotoaxom_docs_end
 
 See: ``examples/axom/using-with-make``

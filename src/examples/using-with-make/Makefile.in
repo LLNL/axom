@@ -25,6 +25,7 @@
 #  and linking flags. 
 #------------------------------------------------------------------------------
 
+# _zerotoaxom_docs_start
 AXOM_DIR ?= ../../..
 
 CXX=@CMAKE_CXX_COMPILER@
@@ -37,3 +38,4 @@ main:
 
 clean:
 	rm -f example
+# _zerotoaxom_docs_end
