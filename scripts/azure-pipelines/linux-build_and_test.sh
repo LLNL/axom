@@ -30,9 +30,7 @@ export BUILD_TYPE=${BUILD_TYPE:-Debug}
 if [[ "$DO_BUILD" == "yes" ]] ; then
     echo "~~~~~~ FIND NUMPROCS ~~~~~~~~"
     NUMPROCS=`python3 -c "import os; print(f'{os.cpu_count()}')"`
-    NUM_BUILD_PROCS=`python3 -c "import os; print(f'{os.cpu_count() * 8 // 10}')"`
-    echo "NUMPROCS: ${NUMPROCS}"
-    echo "NUM_BUILD_PROCS: ${NUM_BUILD_PROCS}"
+    NUM_BUILD_PROCS=`python3 -c "import os; print(f'{max(2, os.cpu_count() * 8 // 10)}')"`
     echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
     or_die python3 ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -bt ${BUILD_TYPE} -DENABLE_GTEST_DEATH_TESTS=ON ${CMAKE_EXTRA_FLAGS}
     or_die cd build-$HOST_CONFIG-${BUILD_TYPE,,}
@@ -44,7 +42,7 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
     fi
     if [[ "${DO_TEST}" == "yes" ]] ; then
         echo "~~~~~~ RUNNING TESTS ~~~~~~~~"
-        make CTEST_OUTPUT_ON_FAILURE=1 test ARGS='-T Test -VV -j8'
+        make CTEST_OUTPUT_ON_FAILURE=1 test ARGS='-T Test -VV -j$NUM_BUILD_PROCS'
     fi
     if [[ "${DO_MEMCHECK}" == "yes" ]] ; then
         echo "~~~~~~ RUNNING MEMCHECK ~~~~~~~~"
