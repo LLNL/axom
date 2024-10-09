@@ -75,27 +75,45 @@ TEST(quest_initialize, signed_distance_pointer_initialize)
   delete input_mesh;
 }
 
-TEST(quest_initialize, direct_reallocations)
+// Test allocation/reallocation using axom::allocate and axom::reallocate bytes
+TEST(quest_initialize, byte_reallocations)
 {
-  int* b3 = axom::allocate<int>(0);
+  std::int8_t* b1 = axom::allocate<std::int8_t>(40);
+  EXPECT_NE(b1, nullptr);
+
+  b1 = axom::reallocate<std::int8_t>(b1, 80);
+  EXPECT_NE(b1, nullptr);
+
+  axom::deallocate(b1);
+}
+
+// Test allocation/reallocation using axom::allocate and axom::reallocate ints
+TEST(quest_initialize, int_reallocations)
+{
+  int* b3 = axom::allocate<int>(10);
   EXPECT_NE(b3, nullptr);
 
-  int* b4 = axom::reallocate<int>(b3, 20);
-  EXPECT_NE(b4, nullptr);
+  b3 = axom::reallocate<int>(b3, 20);
+  EXPECT_NE(b3, nullptr);
+
+  axom::deallocate(b3);
 }
 
 #if defined AXOM_USE_SIDRE
-// Test allocation/reallocation using sidre::View.
+// Test allocation/reallocation using sidre::Buffer.
 TEST(quest_initialize, buffer_reallocations)
 {
   axom::sidre::DataStore dataStore;
 
-  axom::sidre::Buffer* b1 = dataStore.createBuffer(axom::sidre::DataTypeId::INT32_ID, 10);
+  axom::sidre::Buffer* b1 =
+    dataStore.createBuffer(axom::sidre::DataTypeId::INT32_ID, 10);
   b1->allocate();
   EXPECT_NE(b1->getVoidPtr(), nullptr);
 
   b1->reallocate(20);
   EXPECT_NE(b1->getVoidPtr(), nullptr);
+
+  axom::deallocate(b1);
 }
 
 // Test allocation/reallocation using sidre::View.
@@ -110,6 +128,8 @@ TEST(quest_initialize, view_reallocations)
 
   v3->reallocate(20);
   EXPECT_NE(v3->getVoidPtr(), nullptr);
+
+  v3->deallocate();
 }
 
 // Test immediately reserving space in UnstructuredMesh.
