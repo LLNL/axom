@@ -44,9 +44,11 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
   , m_operator(std::move(operator_))
 {
 #ifdef AXOM_DEBUG
+#if 0
   SLIC_ASSERT_MSG(isBlueprintTetMesh(m_meshGroup),
                   "Mesh provided to Geometry is not a valid blueprint "
                   "unstructured tetrahedral mesh.");
+#endif
 #endif
 }
 
@@ -165,6 +167,7 @@ const std::string& Geometry::getBlueprintTopology() const
   return m_topology;
 }
 
+#if 0
 bool Geometry::isBlueprintTetMesh(const axom::sidre::Group* meshGroup) const
 {
   conduit::Node bpMesh;
@@ -172,6 +175,8 @@ bool Geometry::isBlueprintTetMesh(const axom::sidre::Group* meshGroup) const
 
   conduit::Node info;
   bool isValid = conduit::blueprint::mesh::verify(bpMesh, info);
+  // The above call to verify causes the crash, even though this
+  // function is never entered.
   if(!isValid)
   {
     return false;
@@ -204,6 +209,7 @@ bool Geometry::isBlueprintTetMesh(const axom::sidre::Group* meshGroup) const
 
   return true;
 }
+#endif
 
 }  // namespace klee
 }  // namespace axom
