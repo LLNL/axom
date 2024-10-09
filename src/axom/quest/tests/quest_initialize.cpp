@@ -84,10 +84,12 @@ TEST(quest_initialize, direct_reallocations)
   EXPECT_NE(b4, nullptr);
 }
 
+#if defined AXOM_USE_SIDRE
+// Test allocation/reallocation using sidre::View.
 TEST(quest_initialize, sidre_reallocations)
 {
   axom::sidre::DataStore objectDS;
-  axom::sidre::Group* group = objectDS.getRoot()->createGroup("myGroup");
+  axom::sidre::Group* group = objectDS.getRoot();
 
   axom::sidre::View* v3 = group->createView("v3", conduit::DataType::int32(10));
   v3->allocate();
@@ -97,7 +99,6 @@ TEST(quest_initialize, sidre_reallocations)
   EXPECT_NE(v3->getVoidPtr(), nullptr);
 }
 
-#if defined AXOM_USE_SIDRE
 // Test immediately reserving space in UnstructuredMesh.
 TEST(quest_initialize, immediate_ug_reserve)
 {
