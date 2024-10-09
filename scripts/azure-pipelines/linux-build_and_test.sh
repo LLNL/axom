@@ -28,14 +28,19 @@ export BUILD_TYPE=${BUILD_TYPE:-Debug}
 
 
 if [[ "$DO_BUILD" == "yes" ]] ; then
+    echo "~~~~~~ FIND NUMPROCS ~~~~~~~~"
+    NUMPROCS=`python3 -c "import os; print(f'{os.cpu_count()}')"`
+    NUM_BUILD_PROCS=`python3 -c "import os; print(f'{os.cpu_count() * 8 // 10}')"`
+    echo "NUMPROCS: ${NUMPROCS}"
+    echo "NUM_BUILD_PROCS: ${NUM_BUILD_PROCS}"
     echo "~~~~~~ RUNNING CMAKE ~~~~~~~~"
     or_die python3 ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -bt ${BUILD_TYPE} -DENABLE_GTEST_DEATH_TESTS=ON ${CMAKE_EXTRA_FLAGS}
     or_die cd build-$HOST_CONFIG-${BUILD_TYPE,,}
     echo "~~~~~~ BUILDING ~~~~~~~~"
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then
-        or_die make -j 8
+        or_die make -j $NUM_BUILD_PROCS
     else
-        or_die make -j 8 VERBOSE=1
+        or_die make -j $NUM_BUILD_PROCS VERBOSE=1
     fi
     if [[ "${DO_TEST}" == "yes" ]] ; then
         echo "~~~~~~ RUNNING TESTS ~~~~~~~~"
