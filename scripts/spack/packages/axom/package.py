@@ -327,26 +327,16 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             rocm_root = os.path.dirname(spec["hip"].prefix)
 
-            # Fix blt_hip getting HIP_CLANG_INCLUDE_PATH-NOTFOUND bad include directory
-            # TODO: verify that this is still needed and is indeed specific to LC
-            if (
-                self.spec.satisfies("%cce") or
-                self.spec.satisfies("%clang") or
-                self.spec.satisfies("%rocmcc")
-            ) and "toss_4" in self._get_sys_type(spec):
-                # Set the patch version to 0 if not already
-                clang_version = str(self.compiler.version)[:-1] + "0"
-                hip_clang_include_path = (
-                    rocm_root + "/llvm/lib/clang/" + clang_version + "/include"
-                )
-                if os.path.isdir(hip_clang_include_path):
-                    entries.append(
-                        cmake_cache_path("HIP_CLANG_INCLUDE_PATH", hip_clang_include_path)
-                    )
+            hip_link_flags = ""
+
+            # Recommended MPI flags
+            hip_link_flags += "-lxpmem "
+            hip_link_flags += "-L/opt/cray/pe/mpich/{0}/gtl/lib ".format(spec["mpi"].version)
+            hip_link_flags += "-Wl,-rpath,/opt/cray/pe/mpich/{0}/gtl/lib ".format(spec["mpi"].version)
+            hip_link_flags += "-lmpi_gtl_hsa "
 
             # Fixes for mpi for rocm until wrapper paths are fixed
             # These flags are already part of the wrapped compilers on TOSS4 systems
-            hip_link_flags = ""
             if "+fortran" in spec and self.is_fortran_compiler("amdflang"):
                 hip_link_flags += "-Wl,--disable-new-dtags "
 
@@ -355,7 +345,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 else:
                     hip_link_flags += "-L{0}/llvm/lib -Wl,-rpath,{0}/llvm/lib ".format(rocm_root)
                 hip_link_flags += " -L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
-                hip_link_flags += "-lpgmath -lflang -lflangrti -lompstub -lamdhip64 "
+                hip_link_flags += "-lpgmath -lflang -lflangrti -lompstub "
 
             # Remove extra link library for crayftn
             if "+fortran" in spec and self.is_fortran_compiler("crayftn"):
@@ -365,7 +355,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             # Additional libraries for TOSS4
             hip_link_flags += " -L{0}/lib64 -Wl,-rpath,{0}/lib64 ".format(rocm_root)
-            hip_link_flags += "-lamd_comgr -lhsa-runtime64 "
+            hip_link_flags += "-lamdhip64 -lhsakmt -lhsa-runtime64 -lamd_comgr "
 
             entries.append(cmake_cache_string("CMAKE_EXE_LINKER_FLAGS", hip_link_flags))
 
