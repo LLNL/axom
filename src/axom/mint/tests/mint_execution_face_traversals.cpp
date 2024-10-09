@@ -28,7 +28,6 @@ namespace mint
 //------------------------------------------------------------------------------
 namespace
 {
-
 template <typename ExecPolicy, int MeshType, int Topology = SINGLE_SHAPE>
 void check_for_all_faces(int dimension)
 {

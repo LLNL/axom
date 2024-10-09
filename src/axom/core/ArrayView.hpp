@@ -73,7 +73,7 @@ public:
     typename... Args,
     typename Enable = typename std::enable_if<
       sizeof...(Args) == DIM && detail::all_types_are_integral<Args...>::value>::type>
-  ArrayView(T* data, Args... args);
+  AXOM_HOST_DEVICE ArrayView(T* data, Args... args);
 
   /*!
    * \brief Generic constructor for an ArrayView of arbitrary dimension with external data
@@ -232,7 +232,7 @@ using MCArrayView = ArrayView<T, 2>;
 //------------------------------------------------------------------------------
 template <typename T, int DIM, MemorySpace SPACE>
 template <typename... Args, typename Enable>
-ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
+AXOM_HOST_DEVICE ArrayView<T, DIM, SPACE>::ArrayView(T* data, Args... args)
   : ArrayView(data,
               StackArray<IndexType, DIM> {{static_cast<IndexType>(args)...}})
 {

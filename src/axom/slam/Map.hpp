@@ -15,7 +15,6 @@
 
 #include <vector>
 #include <sstream>
-#include <iostream>
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
@@ -863,21 +862,14 @@ bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
     }
   }
 
-  if(verboseOutput)
+  if(verboseOutput && !bValid)
   {
     std::stringstream sstr;
 
     sstr << "\n*** Detailed results of isValid on the map.\n";
-    if(bValid)
-    {
-      sstr << "Map was valid." << std::endl;
-    }
-    else
-    {
-      sstr << "Map was NOT valid.\n" << sstr.str() << std::endl;
-    }
+    sstr << "Map was NOT valid.\n" << sstr.str() << std::endl;
 
-    std::cout << sstr.str() << std::endl;
+    SLIC_DEBUG(sstr.str());
   }
 
   return bValid;
@@ -887,10 +879,11 @@ template <typename T, typename S, typename IndPol, typename StrPol, typename Ifa
 void Map<T, S, IndPol, StrPol, IfacePol>::print() const
 {
   bool valid = isValid(true);
-  std::stringstream sstr;
 
   if(valid)
   {
+    std::stringstream sstr;
+
     if(!m_set.get())
     {
       sstr << "** map is empty.";
@@ -911,9 +904,13 @@ void Map<T, S, IndPol, StrPol, IfacePol>::print() const
         }
       }
     }
-  }
 
-  std::cout << sstr.str() << std::endl;
+    SLIC_INFO(sstr.str());
+  }
+  else
+  {
+    SLIC_INFO("Map was not valid.");
+  }
 }
 
 }  // end namespace slam
