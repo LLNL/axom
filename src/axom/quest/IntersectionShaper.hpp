@@ -2009,12 +2009,15 @@ private:
     return has;
   }
 
+  /*!
+    @brief Get a scalar double-type field data from the mesh, creating it if it doesn't exist.
+  */
   axom::ArrayView<double> getScalarCellData(const std::string& fieldName)
   {
     axom::ArrayView<double> rval;
 
 #if defined(AXOM_USE_MFEM)
-    if (m_dc) {
+    if (m_dc != nullptr) {
       mfem::GridFunction* gridFunc = nullptr;
       if (m_dc->HasField(fieldName))
       {
