@@ -235,7 +235,7 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
   }
   else
   {
-    constexpr bool workAround = true;
+    constexpr bool workAround = false;
     if(workAround)
     {
       /*

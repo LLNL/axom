@@ -75,6 +75,28 @@ TEST(quest_initialize, signed_distance_pointer_initialize)
   delete input_mesh;
 }
 
+TEST(quest_initialize, direct_reallocations)
+{
+  int* b3 = axom::allocate<int>(0);
+  EXPECT_NE(b3, nullptr);
+
+  int* b4 = axom::reallocate<int>(b3, 20);
+  EXPECT_NE(b4, nullptr);
+}
+
+TEST(quest_initialize, sidre_reallocations)
+{
+  axom::sidre::DataStore objectDS;
+  axom::sidre::Group* group = objectDS.getRoot()->createGroup("myGroup");
+
+  axom::sidre::View* v3 = group->createView("v3", conduit::DataType::int32(10));
+  v3->allocate();
+  EXPECT_NE(v3->getVoidPtr(), nullptr);
+
+  v3->reallocate(20);
+  EXPECT_NE(v3->getVoidPtr(), nullptr);
+}
+
 #if defined AXOM_USE_SIDRE
 // Test immediately reserving space in UnstructuredMesh.
 TEST(quest_initialize, immediate_ug_reserve)
