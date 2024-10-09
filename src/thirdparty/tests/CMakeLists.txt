@@ -243,6 +243,22 @@ if (C2C_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
+# Smoke test for OpenCASCADE third party library
+#------------------------------------------------------------------------------
+
+if (OPENCASCADE_FOUND)
+    axom_add_executable(
+        NAME       opencascade_smoke_test
+        SOURCES    opencascade_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON opencascade gtest
+        FOLDER     axom/thirdparty/tests )
+
+    axom_add_test(NAME    opencascade_smoke
+                  COMMAND opencascade_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
 # Add compiler flag tests.
 #
 # Test whether custom compiler flags actually work as expected on all compilers.
