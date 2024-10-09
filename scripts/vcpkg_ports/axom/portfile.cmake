@@ -167,6 +167,12 @@ set(_umpire_dep [=[
 set(UMPIRE_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 ]=])
 
+
+set(_opencascade_dep [=[
+
+set(OPENCASCADE_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
 set(_openmp_dep [=[
 
 # Setup OpenMP; fix MSVC linker error about unknown flag
@@ -198,7 +204,7 @@ else()
   file(APPEND ${_hc_file}.in "${_conduit_dep_off}")
 endif()
 
-foreach(_dep lua mfem openmp raja umpire)
+foreach(_dep lua mfem openmp raja umpire opencascade)
   if(${_dep} IN_LIST FEATURES)
     file(APPEND ${_hc_file}.in "${_${_dep}_dep}")
   else()
