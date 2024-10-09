@@ -16,7 +16,7 @@ variables:
 jobs:
 - job: Build_and_Test
 
-  timeoutInMinutes: 120
+  timeoutInMinutes: 90
 
   strategy:
     matrix:
