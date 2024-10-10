@@ -403,6 +403,17 @@ TEST(primal_nurbscurve, knot_insertion)
       EXPECT_NEAR(p[i], p_knots[i], 1e-13);
     }
   }
+
+  // Inserting knots shouldn't increase its multiplicty
+  //  greater than the degree
+  const int num_knots = curve_knots.getNumKnots();
+  curve_knots.insertKnot(0.5, 3);
+  curve_knots.insertKnot(0.0, 1);
+  curve_knots.insertKnot(1.0, 1);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots);
+
+  curve_knots.insertKnot(0.4, 2);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots+1);
 }
 
 int main(int argc, char* argv[])
