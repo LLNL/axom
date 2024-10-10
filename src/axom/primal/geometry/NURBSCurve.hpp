@@ -437,12 +437,8 @@ public:
 
   void insertKnot(T t, int multiplicity = 1)
   {
-    // np -> old number of control points
-    // p -> degree
-    // UP -> old knot vector
-    // Pw
-    SLIC_ASSERT_MSG(t >= 0.0 && t <= 1.0, "Knot value must be in [0, 1]");
-    SLIC_ASSERT_MSG(multiplicity > 0, "Multiplicity must be positive");
+    SLIC_ASSERT(t >= 0.0 && t <= 1.0);
+    SLIC_ASSERT(multiplicity > 0);
 
     const int n = getNumControlPoints() - 1;
     const int p = getNumKnots() - n - 2;
@@ -452,7 +448,7 @@ public:
 
     // Find the current multiplicity of the knot
     int s = 0;
-    for(auto i = span + 1; i < p + n + 2; ++i)
+    for(auto i = (t == 1.0) ? p + n + 1 : span; i >= 0; --i)
     {
       if( m_knots[i] == t )
       {
@@ -462,6 +458,13 @@ public:
       {
         break;
       }
+    }
+
+    // Fix the maximum multiplicity of the knot
+    multiplicity = std::min(multiplicity, p - s);
+    if( multiplicity <= 0 )
+    {
+      return;
     }
 
     // Get new vectors of knots and control points
