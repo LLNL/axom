@@ -92,7 +92,7 @@ struct InOutHelper
    */
   int initialize(const std::string& file, MPI_Comm comm)
   {
-    mint::Mesh* mesh = nullptr;
+    mint::Mesh* tmpMeshPtr = nullptr;
     m_params.m_dimension = getDimension();
 
     // load the mesh
@@ -106,7 +106,7 @@ struct InOutHelper
                                            numerics::Matrix<double>::identity(4),
                                            m_params.m_segmentsPerKnotSpan,
                                            m_params.m_vertexWeldThreshold,
-                                           mesh,
+                                           tmpMeshPtr,
                                            revolvedVolume,
                                            comm);
 #else
@@ -116,11 +116,13 @@ struct InOutHelper
 #endif
       break;
     case 3:
-      rc = internal::read_stl_mesh(file, mesh, comm);
+      rc = internal::read_stl_mesh(file, tmpMeshPtr, comm);
       break;
     default:  // no-op
       break;
     }
+
+    std::shared_ptr<mint::Mesh> mesh(tmpMeshPtr);
 
     if(rc != QUEST_INOUT_SUCCESS)
     {
@@ -138,7 +140,7 @@ struct InOutHelper
    *
    * \sa inout_init
    */
-  int initialize(mint::Mesh*& mesh, MPI_Comm comm)
+  int initialize(std::shared_ptr<mint::Mesh>& mesh, MPI_Comm comm)
   {
     // initialize logger, if necessary
     internal::logger_init(m_state.m_logger_is_initialized,
@@ -221,7 +223,7 @@ struct InOutHelper
     // deal with mesh
     if(m_state.m_should_delete_mesh)
     {
-      delete m_surfaceMesh;
+      m_surfaceMesh.reset();
     }
     m_surfaceMesh = nullptr;
 
@@ -294,7 +296,7 @@ struct InOutHelper
   }
 
 private:
-  mint::Mesh* m_surfaceMesh {nullptr};
+  std::shared_ptr<mint::Mesh> m_surfaceMesh {nullptr};
   InOutOctree<DIM>* m_inoutTree {nullptr};
   GeometricBoundingBox m_meshBoundingBox;
   SpacePt m_meshCenterOfMass;
@@ -360,7 +362,7 @@ int inout_init(const std::string& file, MPI_Comm comm)
   return rc;
 }
 
-int inout_init(mint::Mesh*& mesh, MPI_Comm comm)
+int inout_init(std::shared_ptr<mint::Mesh>& mesh, MPI_Comm comm)
 {
   const int dim = inout_get_dimension();
   int rc = QUEST_INOUT_FAILED;

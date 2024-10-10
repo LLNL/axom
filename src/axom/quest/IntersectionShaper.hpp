@@ -299,6 +299,7 @@ public:
   using Point3D = primal::Point<double, 3>;
   using TetrahedronType = primal::Tetrahedron<double, 3>;
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+  using TetMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   using RuntimePolicy = axom::runtime_policy::Policy;
 
@@ -354,7 +355,7 @@ public:
    */
   double getApproximateRevolvedVolume() const
   {
-    return volume(m_surfaceMesh, m_level);
+    return volume(m_surfaceMesh.get(), m_level);
   }
 
   virtual void loadShape(const klee::Shape& shape) override
@@ -366,9 +367,8 @@ public:
     if(shape.getGeometry().getFormat() == "c2c")
     {
       SegmentMesh* newm =
-        filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
-      delete m_surfaceMesh;
-      m_surfaceMesh = newm;
+        filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh.get()));
+      m_surfaceMesh.reset(newm);
     }
   }
 
@@ -378,9 +378,9 @@ public:
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
-  // Prepares the ProE mesh cells for the spatial index
+  // Prepares the tet mesh mesh cells for the spatial index
   template <typename ExecSpace>
-  void prepareProECells()
+  void prepareTetCells()
   {
     const int host_allocator =
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
@@ -454,7 +454,7 @@ public:
         num_degenerate.get()));
 
       // Dump tet mesh as a vtk mesh
-      axom::mint::write_vtk(m_surfaceMesh, "proe_tet.vtk");
+      axom::mint::write_vtk(m_surfaceMesh.get(), "proe_tet.vtk");
 
     }  // end of verbose output for Pro/E
   }
@@ -600,18 +600,16 @@ public:
     AXOM_UNUSED_VAR(shapeDimension);
     AXOM_UNUSED_VAR(shapeName);
 
-    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
-
     std::string shapeFormat = shape.getGeometry().getFormat();
 
+    // C2C mesh is not discretized into tets, but all others are.
     if(shapeFormat == "c2c")
     {
       prepareC2CCells<ExecSpace>();
     }
-
-    else if(shapeFormat == "proe")
+    else if(surfaceMeshIsTet())
     {
-      prepareProECells<ExecSpace>();
+      prepareTetCells<ExecSpace>();
     }
     else
     {
@@ -1439,9 +1437,7 @@ public:
     AXOM_ANNOTATE_SCOPE("finalizeShapeQuery");
 
     // Implementation here -- destroy BVH tree and other shape-based data structures
-    delete m_surfaceMesh;
-
-    m_surfaceMesh = nullptr;
+    m_surfaceMesh.reset();
   }
 
   //@}
@@ -1504,8 +1500,8 @@ public:
     AXOM_ANNOTATE_SCOPE("runShapeQuery");
     const std::string shapeFormat = shape.getGeometry().getFormat();
 
-    // Testing separate workflow for Pro/E
-    if(shapeFormat == "proe")
+    // C2C mesh is not discretized into tets, but all others are.
+    if(surfaceMeshIsTet())
     {
       switch(m_execPolicy)
       {
@@ -1833,7 +1829,7 @@ private:
   {
     // If we are not refining dynamically, return.
     if(m_percentError <= MINIMUM_PERCENT_ERROR ||
-       m_refinementType != RefinementDynamic)
+       m_refinementType != DiscreteShape::RefinementDynamic)
     {
       return;
     }
@@ -1921,7 +1917,7 @@ private:
       for(int level = m_level; level < MAX_LEVELS; level++)
       {
         // Compute the revolved volume of the surface mesh at level.
-        currentVol = volume(m_surfaceMesh, level);
+        currentVol = volume(m_surfaceMesh.get(), level);
         pct = 100. * (1. - currentVol / revolvedVolume);
 
         SLIC_INFO(
@@ -1994,8 +1990,7 @@ private:
           curvePercentError = ce;
 
           // Free the previous surface mesh.
-          delete m_surfaceMesh;
-          m_surfaceMesh = nullptr;
+          m_surfaceMesh.reset();
 
           // Reload the shape using new curvePercentError. This will cause
           // a new m_surfaceMesh to be created.
@@ -2008,9 +2003,8 @@ private:
 
           // Filter the mesh, store in m_surfaceMesh.
           SegmentMesh* newm =
-            filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
-          delete m_surfaceMesh;
-          m_surfaceMesh = newm;
+            filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh.get()));
+          m_surfaceMesh.reset(newm);
         }
         else
         {
@@ -2041,6 +2035,14 @@ private:
     volFrac->MakeOwner(coll);
 
     return volFrac;
+  }
+
+  bool surfaceMeshIsTet() const
+  {
+    bool isTet = m_surfaceMesh != nullptr &&
+      m_surfaceMesh->getDimension() == 3 && !m_surfaceMesh->hasMixedCellTypes() &&
+      m_surfaceMesh->getCellType() == mint::TET;
+    return isTet;
   }
 
 private:

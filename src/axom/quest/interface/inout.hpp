@@ -14,6 +14,7 @@
 
 // C/C++ includes
 #include <string>
+#include <memory>
 
 /*!
  * \file inout.hpp
@@ -78,7 +79,7 @@ int inout_init(const std::string& file, MPI_Comm comm = MPI_COMM_SELF);
  * by welding vertices) and updates the \a mesh pointer. It is the user's
  * responsibility to update any other pointers to this same mesh.
  */
-int inout_init(mint::Mesh*& mesh, MPI_Comm comm = MPI_COMM_SELF);
+int inout_init(std::shared_ptr<mint::Mesh>& mesh, MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
  * \brief Finalizes the inout query

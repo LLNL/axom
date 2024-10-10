@@ -175,7 +175,8 @@ public:
    * \note The InOutOctree modifies its mesh in an effort to repair common
    * problems. Please make sure to discard all old copies of the meshPtr.
    */
-  InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
+  InOutOctree(const GeometricBoundingBox& bb,
+              std::shared_ptr<SurfaceMesh>& meshPtr)
     : SpatialOctreeType(
         GeometricBoundingBox(bb).scale(DEFAULT_BOUNDING_BOX_SCALE_FACTOR))
     , m_meshWrapper(meshPtr)
