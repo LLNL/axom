@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
+#include "axom/config.hpp"
 #include "axom/mint.hpp"
 #include "quest_test_utilities.hpp"
 #if defined AXOM_USE_SIDRE
@@ -75,6 +76,15 @@ TEST(quest_initialize, signed_distance_pointer_initialize)
   delete input_mesh;
 }
 
+/*
+  The *_reallocations tests and the immediate_ug_reserve are
+  reproducers for the case of multiple Umpire instances that happens
+  when Umpire is built with static lib and Axom with shared libs.
+  The failures only appear when there are several shared libs that
+  include the static Umpire, e.g. axom::core, axom::sidre, axom::mint
+  and axom::quest.  This issue is specific to the linker commands in
+  quest.
+*/
 // Test allocation/reallocation using axom::allocate and axom::reallocate bytes
 TEST(quest_initialize, byte_reallocations)
 {
