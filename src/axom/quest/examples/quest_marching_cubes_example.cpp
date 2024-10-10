@@ -916,12 +916,18 @@ struct ContourTestBase
     AXOM_ANNOTATE_BEGIN("convert to mint mesh");
     std::string sidreGroupName = "contour_mesh";
     sidre::DataStore objectDS;
-    auto* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
 
+#ifdef AXOM_MINT_USE_SIDRE
+    auto* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
       meshGroup);
+#else
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
+      DIM,
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+#endif
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);

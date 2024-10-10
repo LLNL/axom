@@ -99,7 +99,7 @@ TEST(quest_initialize, int_reallocations)
   axom::deallocate(b3);
 }
 
-#if defined AXOM_USE_SIDRE
+#if defined(AXOM_USE_SIDRE)
 // Test allocation/reallocation using sidre::Buffer.
 TEST(quest_initialize, buffer_reallocations)
 {
@@ -132,6 +132,7 @@ TEST(quest_initialize, view_reallocations)
   v3->deallocate();
 }
 
+#ifdef AXOM_MINT_USE_SIDRE
 // Test immediately reserving space in UnstructuredMesh.
 TEST(quest_initialize, immediate_ug_reserve)
 {
@@ -143,6 +144,7 @@ TEST(quest_initialize, immediate_ug_reserve)
     meshGroup);
   contourMesh.reserveCells(10);  // This may unexpectedly crash.
 }
+#endif
 #endif
 
 int main(int argc, char** argv)
