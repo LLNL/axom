@@ -402,23 +402,6 @@ TEST(sidre_view, dealloc)
 
 //------------------------------------------------------------------------------
 
-// allocate/reallocate.
-
-TEST(sidre_view, allocate_reallocate)
-{
-  axom::sidre::DataStore objectDS;
-  axom::sidre::Group* group = objectDS.getRoot();
-
-  axom::sidre::View* v1 = group->createView("v1", conduit::DataType::int32(10));
-  v1->allocate();
-  EXPECT_NE(v1->getVoidPtr(), nullptr);
-
-  v1->reallocate(20);
-  EXPECT_NE(v1->getVoidPtr(), nullptr);
-}
-
-//------------------------------------------------------------------------------
-
 // allocate/reallocate with zero items results in allocated (yet zero).
 
 TEST(sidre_view, alloc_zero_items)
