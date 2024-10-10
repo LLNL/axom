@@ -393,6 +393,23 @@ inline int getAllocatorID<MemorySpace::Constant>()
 
 }  // namespace detail
 
+/*!
+ * \brief Determines whether an allocator id is on device.
+ *
+ * \param allocator_id An allocator id.
+ *
+ * \return True if the allocator id is for a device; false otherwise.
+ */
+inline bool isDeviceAllocator(int allocator_id)
+{
+#if defined(AXOM_USE_UMPIRE)
+  return axom::detail::getAllocatorSpace(allocator_id) ==
+    axom::MemorySpace::Device;
+#else
+  return false;
+#endif
+}
+
 }  // namespace axom
 
 #endif /* AXOM_MEMORYMANAGEMENT_HPP_ */

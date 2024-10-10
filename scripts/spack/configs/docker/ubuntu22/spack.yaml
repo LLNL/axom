@@ -165,7 +165,7 @@ spack:
     scr:
       require: "@3.0.1~shared~tests~examples"
     umpire:
-      require: "@2024.07.0~shared~examples~werror"
+      require: "@2024.07.0+shared~examples~werror"
 
     # Globally lock in version of devtools
     cmake:
