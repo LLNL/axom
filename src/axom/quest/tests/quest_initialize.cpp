@@ -113,7 +113,7 @@ TEST(quest_initialize, buffer_reallocations)
   b1->reallocate(20);
   EXPECT_NE(b1->getVoidPtr(), nullptr);
 
-  axom::deallocate(b1);
+  b1->deallocate();
 }
 
 // Test allocation/reallocation using sidre::View.
