@@ -142,7 +142,7 @@ TEST(quest_initialize, view_reallocations)
   v3->deallocate();
 }
 
-#ifdef AXOM_MINT_USE_SIDRE
+  #ifdef AXOM_MINT_USE_SIDRE
 // Test immediately reserving space in UnstructuredMesh.
 TEST(quest_initialize, immediate_ug_reserve)
 {
@@ -154,7 +154,7 @@ TEST(quest_initialize, immediate_ug_reserve)
     meshGroup);
   contourMesh.reserveCells(10);  // This may unexpectedly crash.
 }
-#endif
+  #endif
 #endif
 
 int main(int argc, char** argv)
