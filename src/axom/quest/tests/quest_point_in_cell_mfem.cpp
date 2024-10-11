@@ -149,7 +149,7 @@ public:
     double refFac = static_cast<double>(refinementFactor);
     double refLev = static_cast<double>(refinementLevel);
 
-    return static_cast<int>(std::pow(refFac, refLev));
+    return refinementLevel > 0 ? static_cast<int>(std::pow(refFac, refLev)) : 1;
   }
 
   /*! Dump mesh to disk in mfem and/or vtk format */
@@ -444,6 +444,14 @@ public:
         spatialIndex.reconstructPoint(eltId,
                                       isoPts[idx].data(),
                                       spacePts[idx].data());
+
+        // Check that the reconstructed point is in the bbox of its source element
+        EXPECT_TRUE(this->m_boundingBoxes[eltId].contains(spacePts[idx]));
+        EXPECT_TRUE(this->m_meshBoundingBox.contains(spacePts[idx]));
+
+        // Check that the source element is a candidate for this point in the spatial index
+        const auto arr = spatialIndex.getCandidatesForPt(spacePts[idx]);
+        EXPECT_TRUE(std::find(arr.begin(), arr.end(), eltId) != std::end(arr));
       }
 
       // locate the reconstructed points (using EXEC space)
@@ -491,9 +499,16 @@ public:
 
         // Check that we found a cell
         EXPECT_NE(MeshTraits::NO_CELL, foundCellId)
-          << "element: " << eltId << " -- isopar: " << isoparCenter
-          << " -- foundIsopar: " << foundIsoPar << " -- spacePt: " << spacePt
-          << " -- isBdry: " << (isBdry ? "yes" : "no");
+          << "element: " << eltId 
+          << "\n -- isopar: " << isoparCenter
+          << "\n -- foundIsopar: " << foundIsoPar 
+          << "\n -- spacePt: " << spacePt
+          << "\n -- isBdry: " << (isBdry ? "yes" : "no")
+          << "\n -- bbox of element: " << this->m_boundingBoxes[eltId]
+          << axom::fmt::format(" ({} point)",
+                               this->m_boundingBoxes[eltId].contains(spacePt)
+                                 ? "contains"
+                                 : "does not contain");
 
         if(!isBdry)
         {
@@ -556,6 +571,9 @@ protected:
   mfem::Mesh* m_mesh;
   double m_EPS {::EPS};
   int m_allocatorID;
+
+  BBox m_meshBoundingBox;
+  axom::Array<BBox> m_boundingBoxes;
 };
 
 /*!
@@ -766,6 +784,11 @@ public:
 
     // Dump mesh to disk
     this->outputMesh(this->m_meshDescriptorStr);
+
+    // compute bounding boxes
+    this->m_boundingBoxes.resize(mesh->GetNE());
+    axom::quest::detail::PointInCellMeshWrapper<mesh_tag> meshWrapper(mesh);
+    meshWrapper.computeBoundingBoxes<DIM>(1.+ 1e-8, this->m_boundingBoxes.data(), this->m_meshBoundingBox);
   }
 
 private:
@@ -982,6 +1005,12 @@ public:
 
     // Dump mesh to disk
     this->outputMesh(this->m_meshDescriptorStr);
+
+
+    // compute bounding boxes
+    this->m_boundingBoxes.resize(mesh->GetNE());
+    axom::quest::detail::PointInCellMeshWrapper<mesh_tag> meshWrapper(mesh);
+    meshWrapper.computeBoundingBoxes<DIM>(1 + 1e-8, this->m_boundingBoxes.data(), this->m_meshBoundingBox);
   }
 
 private:
@@ -1652,17 +1681,17 @@ TYPED_TEST(PointInCell3DTest, pic_curved_refined_hex)
 
 TYPED_TEST(PointInCell3DTest, pic_curved_refined_hex_jittered)
 {
-  const double vertVal = 0.5;
-  const double jitterFactor = .1;
-  const int numRefine = ::NREFINE;
-  const int DIM = TestFixture::DIM;
+  constexpr double vertVal = 0.5;
+  constexpr double jitterFactor = .1;
+  constexpr int numRefine = ::NREFINE;
+  constexpr int DIM = TestFixture::DIM;
 
   this->setupTestMesh(QUADRATIC_MESH, numRefine, vertVal, jitterFactor);
 
-  std::string meshTypeStr = this->getMeshDescriptor();
+  const std::string meshTypeStr = this->getMeshDescriptor();
   SCOPED_TRACE(axom::fmt::format("point_in_cell_{}", meshTypeStr));
 
-  std::string filename =
+  const std::string filename =
     axom::fmt::format("quadratic_hex_mesh_refined_jittered");
   {
     mfem::Mesh& mesh = *this->getMesh();
