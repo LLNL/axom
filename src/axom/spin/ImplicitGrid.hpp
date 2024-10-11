@@ -223,8 +223,9 @@ public:
     // Set the expansion factor for each element to a small fraction of the
     // grid's bounding boxes diameter
     // TODO: Add a constructor that allows users to set the expansion factor
-    const double EPS = 1e-8;
+    constexpr double EPS = 1e-8;
     m_expansionFactor = m_bb.range().norm() * EPS;
+    SLIC_ASSERT(m_expansionFactor > 0.);
 
     m_initialized = true;
   }
@@ -1028,7 +1029,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
 
   GridCell gridCell = m_lattice.gridCell(pt);
 
-  const int bitsPerWord = BitsetType::BitsPerWord;
+  constexpr int bitsPerWord = BitsetType::BitsPerWord;
 
   // Note: Need to clamp the upper range of the gridCell
   //       to handle points on the upper boundaries of the bbox
@@ -1044,7 +1045,7 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
 
   // HACK: we use the underlying word data in the bitsets
   // is it possible to lazy-evaluate whole-bitset operations?
-  int nbits = m_binData[0][0].size();
+  const int nbits = m_binData[0][0].size();
   IndexType minWord, maxWord;
   getWordBounds(cellIdx, minWord, maxWord);
   for(int iword = minWord; iword <= maxWord; iword++)
@@ -1059,12 +1060,12 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
       continue;
     }
     // currWord now contains the resulting candidacy information for our given point
-    int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
+    const int numBits =
+      axom::utilities::min(bitsPerWord, nbits - (iword * bitsPerWord));
     int currBit = axom::utilities::countr_zero(currWord);
     while(currBit < numBits)
     {
-      bool found = getVisitResult(candidatePredicate,
-                                  iword * BitsetType::BitsPerWord + currBit);
+      bool found = getVisitResult(candidatePredicate, iword * bitsPerWord + currBit);
       currBit++;
       currBit += axom::utilities::countr_zero(currWord >> currBit);
       if(found)
@@ -1102,11 +1103,11 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
   const GridCell lowerRange = lowerCell;
   const GridCell upperRange = upperCell;
 
-  const int bitsPerWord = BitsetType::BitsPerWord;
+  constexpr int bitsPerWord = BitsetType::BitsPerWord;
 
   // HACK: we use the underlying word data in the bitsets
   // is it possible to lazy-evaluate whole-bitset operations?
-  int nbits = m_binData[0][0].size();
+  const int nbits = m_binData[0][0].size();
   IndexType minWord, maxWord;
   getWordBounds(lowerRange, upperRange, minWord, maxWord);
   for(int iword = minWord; iword <= maxWord; iword++)
@@ -1127,14 +1128,13 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
     {
       continue;
     }
-    // currWord now contains the resulting candidacy information
-    // for our given point
-    int numBits = axom::utilities::min(bitsPerWord, nbits - (iword * 64));
+    // currWord now contains the resulting candidacy information for our given point
+    const int numBits =
+      axom::utilities::min(bitsPerWord, nbits - (iword * bitsPerWord));
     int currBit = axom::utilities::countr_zero(currWord);
     while(currBit < numBits)
     {
-      bool found = getVisitResult(candidatePredicate,
-                                  iword * BitsetType::BitsPerWord + currBit);
+      bool found = getVisitResult(candidatePredicate, iword * bitsPerWord + currBit);
       currBit++;
       currBit += axom::utilities::countr_zero(currWord >> currBit);
       if(found)
