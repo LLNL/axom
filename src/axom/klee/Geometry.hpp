@@ -82,12 +82,10 @@ public:
    *
    * \param startProperties the transformable properties before any
    * operators are applied
-   * \param meshGroup a simplex geometry in blueprint format.
+   * \param meshGroup the geometry in blueprint format.
    *   The elements should be segments, triangles or tetrahedra.
    * \param topology The blueprint topology to use.
    * \param operator_ a possibly null operator to apply to the geometry.
-   *
-   * \internal TODO: Is this the simplex requirement overly restrictive?
    */
   Geometry(const TransformableGeometryProperties &startProperties,
            const axom::sidre::Group *meshGroup,
@@ -127,8 +125,6 @@ public:
    * \param levelOfRefinement Number of refinement levels to use for
    *        discretizing the sphere.
    * \param operator_ a possibly null operator to apply to the geometry.
-   *
-   * \internal TODO: Is this the simplex requirement overly restrictive?
    */
   Geometry(const TransformableGeometryProperties &startProperties,
            const axom::primal::Sphere<double, 3> &sphere,
@@ -145,15 +141,13 @@ public:
    * \param vorBase Coordinates of the base of the VOR.
    * \param vorDirection VOR axis, in the direction of increasing z.
    * \param levelOfRefinement Number of refinement levels to use for
-   *        discretizing the sphere.
+   *        discretizing the VOR.
    * \param operator_ a possibly null operator to apply to the geometry.
    *
    * The \c discreteFunction should be an Nx2 array, interpreted as
    * (z,r) pairs, where z is the axial distance and r is the radius.
    * The \c vorBase coordinates corresponds to z=0.
    * \c vorAxis should point in the direction of increasing z.
-   *
-   * \internal TODO: Is this the simplex requirement overly restrictive?
    */
   Geometry(const TransformableGeometryProperties &startProperties,
            const axom::Array<double, 2> &discreteFunction,
@@ -196,7 +190,8 @@ public:
    * \return the format of the shape
    *
    * TODO: Depending on the specified geometry, some members are not
-   * used.  It may clarify make each supported geometry a subclass.
+   * used.  It may clarify if we make each supported geometry a
+   * subclass.
    */
   const std::string &getFormat() const { return m_format; }
 

@@ -115,7 +115,7 @@ public:
     If the sidre parent group was used in the constructor, the
     mesh data is stored under that group.
 
-    If the discrete mesh isn't generated yet (for analytical shapes)
+    If the discrete mesh isn't generated yet (for analytical shapes),
     generate it.
   */
   std::shared_ptr<mint::Mesh> createMeshRepresentation();
