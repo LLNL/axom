@@ -44,11 +44,11 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
   , m_operator(std::move(operator_))
 {
 #ifdef AXOM_DEBUG
-#if 0
+  #if 0
   SLIC_ASSERT_MSG(isBlueprintTetMesh(m_meshGroup),
                   "Mesh provided to Geometry is not a valid blueprint "
                   "unstructured tetrahedral mesh.");
-#endif
+  #endif
 #endif
 }
 

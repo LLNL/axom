@@ -1302,7 +1302,9 @@ int main(int argc, char** argv)
   // Compute and print volumes of each material's volume fraction
   //---------------------------------------------------------------------------
   using axom::utilities::string::startsWith;
-  for(auto& kv : shaper->getDC()->GetFieldMap())
+  auto dc = shaper->getDC();
+  auto& fieldMap = dc->GetFieldMap();
+  for(auto& kv : fieldMap)
   {
     if(startsWith(kv.first, "vol_frac_"))
     {
@@ -1326,8 +1328,9 @@ int main(int argc, char** argv)
 
   int failCounts = 0;
 
-  auto* volFracGroups =
-    shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+  auto matsetsGrp = shapingDC.GetBPGroup()->getGroup("matsets");
+  auto materialGrp = matsetsGrp->getGroup("material");
+  auto volFracGroups = materialGrp->getGroup("volume_fractions");
 
   //---------------------------------------------------------------------------
   // Correctness test: volume fractions should be in [0,1].

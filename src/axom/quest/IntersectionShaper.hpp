@@ -41,7 +41,7 @@
 #endif
 
 // clang-format off
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+#if defined (AXOM_USE_RAJA)
   using seq_exec = axom::SEQ_EXEC;
 
   #if defined(AXOM_USE_OPENMP)
@@ -50,14 +50,14 @@
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined (AXOM_USE_UMPIRE)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
     using cuda_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined (AXOM_USE_UMPIRE)
     constexpr int HIP_BLOCK_SIZE = 64;
     using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
   #else
@@ -376,7 +376,7 @@ public:
   //@{
   //!  @name Functions related to the stages for a given shape
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
 
   // Prepares the tet mesh mesh cells for the spatial index
   template <typename ExecSpace>
@@ -619,7 +619,7 @@ public:
   }
 #endif
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   template <typename ExecSpace, typename ShapeType>
   void runShapeQueryImpl(const klee::Shape& shape,
                          axom::Array<ShapeType>& shapes,
@@ -997,7 +997,7 @@ public:
   }  // end of runShapeQuery() function
 #endif
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   // These methods are private in support of replacement rules.
 private:
   /*!
@@ -1408,7 +1408,7 @@ public:
 
     switch(m_execPolicy)
     {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
     case RuntimePolicy::seq:
       applyReplacementRulesImpl<seq_exec>(shape);
       break;
@@ -1417,12 +1417,12 @@ public:
       applyReplacementRulesImpl<omp_exec>(shape);
       break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::cuda:
       applyReplacementRulesImpl<cuda_exec>(shape);
       break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::hip:
       applyReplacementRulesImpl<hip_exec>(shape);
       break;
@@ -1464,7 +1464,7 @@ public:
     // Now that the mesh is refined, dispatch to device implementations.
     switch(m_execPolicy)
     {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
     case RuntimePolicy::seq:
       prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
       break;
@@ -1473,12 +1473,12 @@ public:
       prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::cuda:
       prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::hip:
       prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
       break;
@@ -1505,7 +1505,7 @@ public:
     {
       switch(m_execPolicy)
       {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
       case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
@@ -1514,12 +1514,12 @@ public:
         runShapeQueryImpl<omp_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
@@ -1531,7 +1531,7 @@ public:
     {
       switch(m_execPolicy)
       {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
       case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
@@ -1540,12 +1540,12 @@ public:
         runShapeQueryImpl<omp_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
@@ -2054,7 +2054,7 @@ private:
 
   axom::Array<double> m_hex_volumes;
   axom::Array<double> m_overlap_volumes;
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   double m_vertexWeldThreshold {1.e-10};
   int m_octcount {0};
   int m_tetcount {0};
