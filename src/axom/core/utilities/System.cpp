@@ -25,12 +25,12 @@ namespace utilities
 #ifdef WIN32
 std::string TCharToString(TCHAR* buf)
 {
-#ifndef UNICODE
-    return std::string(buf);
-#else
-    const auto wStr = std::wstring(buf);
-    return std::string(wStr.begin(), wStr.end());
-#endif
+  #ifndef UNICODE
+  return std::string(buf);
+  #else
+  const auto wStr = std::wstring(buf);
+  return std::string(wStr.begin(), wStr.end());
+  #endif
 }
 #endif
 

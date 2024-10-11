@@ -499,10 +499,8 @@ public:
 
         // Check that we found a cell
         EXPECT_NE(MeshTraits::NO_CELL, foundCellId)
-          << "element: " << eltId 
-          << "\n -- isopar: " << isoparCenter
-          << "\n -- foundIsopar: " << foundIsoPar 
-          << "\n -- spacePt: " << spacePt
+          << "element: " << eltId << "\n -- isopar: " << isoparCenter
+          << "\n -- foundIsopar: " << foundIsoPar << "\n -- spacePt: " << spacePt
           << "\n -- isBdry: " << (isBdry ? "yes" : "no")
           << "\n -- bbox of element: " << this->m_boundingBoxes[eltId]
           << axom::fmt::format(" ({} point)",
@@ -788,7 +786,9 @@ public:
     // compute bounding boxes
     this->m_boundingBoxes.resize(mesh->GetNE());
     axom::quest::detail::PointInCellMeshWrapper<mesh_tag> meshWrapper(mesh);
-    meshWrapper.computeBoundingBoxes<DIM>(1.+ 1e-8, this->m_boundingBoxes.data(), this->m_meshBoundingBox);
+    meshWrapper.computeBoundingBoxes<DIM>(1. + 1e-8,
+                                          this->m_boundingBoxes.data(),
+                                          this->m_meshBoundingBox);
   }
 
 private:
@@ -1006,11 +1006,12 @@ public:
     // Dump mesh to disk
     this->outputMesh(this->m_meshDescriptorStr);
 
-
     // compute bounding boxes
     this->m_boundingBoxes.resize(mesh->GetNE());
     axom::quest::detail::PointInCellMeshWrapper<mesh_tag> meshWrapper(mesh);
-    meshWrapper.computeBoundingBoxes<DIM>(1 + 1e-8, this->m_boundingBoxes.data(), this->m_meshBoundingBox);
+    meshWrapper.computeBoundingBoxes<DIM>(1 + 1e-8,
+                                          this->m_boundingBoxes.data(),
+                                          this->m_meshBoundingBox);
   }
 
 private:
