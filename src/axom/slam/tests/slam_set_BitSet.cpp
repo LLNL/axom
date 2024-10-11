@@ -41,17 +41,17 @@ std::vector<int> testSizes()
 {
   std::vector<int> vals;
 
-  vals.push_back(0);     // empty bitset
-  vals.push_back(23);    // less than one word
-  vals.push_back(31);    // one bit less than a 4-byte word
-  vals.push_back(32);    // exactly one 4-byte word
-  vals.push_back(33);    // one bit more than a 4-byte word
-  vals.push_back(63);    // one bit less than an 8-byte word
-  vals.push_back(64);    // exactly one 8-byte word
-  vals.push_back(65);    // one bit more than an 8-byte word
-  vals.push_back(127);   // one bit less than two words
-  vals.push_back(128);   // two words
-  vals.push_back(129);   // more than two words
+  vals.push_back(0);    // empty bitset
+  vals.push_back(23);   // less than one word
+  vals.push_back(31);   // one bit less than a 4-byte word
+  vals.push_back(32);   // exactly one 4-byte word
+  vals.push_back(33);   // one bit more than a 4-byte word
+  vals.push_back(63);   // one bit less than an 8-byte word
+  vals.push_back(64);   // exactly one 8-byte word
+  vals.push_back(65);   // one bit more than an 8-byte word
+  vals.push_back(127);  // one bit less than two words
+  vals.push_back(128);  // two words
+  vals.push_back(129);  // more than two words
   vals.push_back(153);
   vals.push_back(1547);  // large bitset
   //vals.push_back(1234567);  // large bitset
@@ -269,7 +269,7 @@ TEST_P(SlamBitSet, atomicOps)
   slam::BitSet bitset2(NBITS);
   for(Index i = 0; i < NBITS; ++i)
   {
-    if(bitset1.test(i)) 
+    if(bitset1.test(i))
     {
       bitset2.atomicSet(i);
     }
@@ -286,7 +286,7 @@ TEST_P(SlamBitSet, atomicOps)
   EXPECT_EQ(bitset1, bitset2);
 
   // Apply several atomic operations w/ checks
-  for(int i=0; i< NBITS; ++i)
+  for(int i = 0; i < NBITS; ++i)
   {
     EXPECT_EQ(bitset1.test(i), bitset2.test(i));
 
