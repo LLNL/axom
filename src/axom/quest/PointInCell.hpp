@@ -331,6 +331,49 @@ public:
     m_meshWrapper.setSolverProjectionType(type);
   }
 
+  /*!
+   * \brief Gets the candidate IDs for the provided query point \a pt
+   *
+   * \param [in] pt The 2D query point.
+   * \returns A std::vector of the candidates associated with \a pt
+   * \note If the query point is 2D and the spatial index is 3D, we use 0 for the z-coordinate
+   */
+  std::vector<IndexType> getCandidatesForPt(axom::primal::Point<double,2> const& pt)
+  {
+    switch(m_meshWrapper.meshDimension())
+    {
+    case 2:
+      return m_pointFinder2D->getCandidates(pt);
+    case 3:
+      return m_pointFinder3D->getCandidates(axom::primal::Point<double, 3>(pt.data(), 2));
+    default:
+      SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
+      return std::vector<IndexType> {};
+    }    
+  }
+
+  /*!
+   * \brief Gets the candidate IDs for the provided query point \a pt
+   *
+   * \param [in] pt The 3D query point.
+   * \returns A std::vector of the candidates associated with \a pt
+   * \note If the query point is 3D and the spatial index is 2D, we omit the z-coordinate,
+   * which effectively projects the point to the XY plane.
+   */
+  std::vector<IndexType> getCandidatesForPt(axom::primal::Point<double, 3> const& pt)
+  {
+    switch(m_meshWrapper.meshDimension())
+    {
+    case 2:
+      return m_pointFinder2D->getCandidates(axom::primal::Point<double, 2>(pt.data(), 2));
+    case 3:
+      return m_pointFinder3D->getCandidates(pt);
+    default:
+      SLIC_ERROR("Point in Cell query only defined for 2D or 3D meshes.");
+      return std::vector<IndexType> {};
+    }
+  }
+
 private:
   MeshWrapperType m_meshWrapper;
 
