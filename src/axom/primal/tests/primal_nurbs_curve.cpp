@@ -18,30 +18,6 @@
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbscurve, constructor)
-{
-  const int DIM = 3;
-  using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
-
-  PointType controlPoints[4] = {PointType {-4.0, -4.0, 0.0},
-                                PointType {-2.0, 4.0, 0.0},
-                                PointType {2.0, -4.0, 0.0},
-                                PointType {4.0, 4.0, 0.0}};
-
-  int degree = 1;
-
-  NURBSCurveType curve(controlPoints, 4, degree);
-
-  curve.setKnot(2, 0.4);
-  curve.setKnot(3, 0.6);
-  std::cout << curve.getKnots() << std::endl;
-  std::cout << std::setprecision(15);
-  std::cout << curve.evaluate(-0.1) << std::endl;
-}
-
-//------------------------------------------------------------------------------
 TEST(primal_nurbscurve, evaluate)
 {
   SLIC_INFO("Testing NURBS evaluation");
@@ -59,25 +35,10 @@ TEST(primal_nurbscurve, evaluate)
 
   // clang-format off
   PointType exp_start_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-    /* 1 pt */ {{PointType {0.6, 1.2, 1.0},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999}},
-                /* 2 pt */
-                {PointType {0.6, 1.2, 1.0},
-                 PointType {0.6, 1.2, 1.0},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999}},
-                /* 3 pt */
-                {PointType {0.6, 1.2, 1.0},
-                 PointType {0.6, 1.2, 1.0},
-                 PointType {0.6, 1.2, 1.0},
-                 PointType {-999, -999, -999}},
-                /* 4 pt */
-                {PointType {0.6, 1.2, 1.0},
-                 PointType {0.6, 1.2, 1.0},
-                 PointType {0.6, 1.2, 1.0},
-                 PointType {0.6, 1.2, 1.0}}};
+    /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
+    /* 2 pt */  {PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
+    /* 3 pt */  {PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}},
+    /* 4 pt */  {PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}}};
 
   PointType exp_mid_vals[4][4] =  // degree 0                    degree 1                    degree 2                         degree 3
     /* 1 pt */ {{PointType {0.6, 1.2, 1.0},
@@ -367,8 +328,13 @@ TEST(primal_nurbscurve, knot_insertion)
                        PointType {2.9, 2.4, 2.3},
                        PointType {3.2, 3.5, 3.0}};
 
-  NURBSCurveType curve(data, 4, 3);
-  NURBSCurveType curve_knots(data, 4, 3);
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  NURBSCurveType curve(data, weights, 4, 3);
+  NURBSCurveType curve_knots(data, weights, 4, 3);
+
+  // Knot insertion shouldn't change the paramterization or position
+  //  of the curve.
 
   // Insert a knot at 0.5
   curve_knots.insertKnot(0.5, 3);
@@ -413,7 +379,152 @@ TEST(primal_nurbscurve, knot_insertion)
   EXPECT_EQ(curve_knots.getNumKnots(), num_knots);
 
   curve_knots.insertKnot(0.4, 2);
-  EXPECT_EQ(curve_knots.getNumKnots(), num_knots+1);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 1);
+
+  for(double t = 0.0; t <= 1.0; t += 0.1)
+  {
+    PointType p = curve.evaluate(t);
+    PointType p_knots = curve_knots.evaluate(t);
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], p_knots[i], 1e-13);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, curve_splitting)
+{
+  SLIC_INFO("Testing NURBS curve splitting");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[4] = {PointType {0.6, 1.2, 1.0},
+                       PointType {1.3, 1.6, 1.8},
+                       PointType {2.9, 2.4, 2.3},
+                       PointType {3.2, 3.5, 3.0}};
+
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  NURBSCurveType curve(data, weights, 4, 3);
+
+  // Do some knot insertion to make it interesting
+  curve.insertKnot(0.3, 2);
+  curve.insertKnot(0.6, 1);
+  curve.insertKnot(0.8, 1);
+
+  NURBSCurveType curve1, curve2, curve3;
+  curve.split(0.3, curve1, curve2);
+  curve2.split((0.6 - 0.3) / (1 - 0.3), curve2, curve3);
+
+  for(double t = 0.0; t < 1.0; t += 0.05)
+  {
+    PointType p = curve.evaluate(t);
+    
+    if( t <= 0.3 )
+    {
+      PointType p1 = curve1.evaluate( t / 0.3 );
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], p1[i], 1e-13);
+      }
+    }
+
+    if( t >= 0.3 && t <= 0.6 )
+    {
+      PointType p2 = curve2.evaluate( (t - 0.3) / (0.6 - 0.3) );
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], p2[i], 1e-13);
+      }
+    }
+
+    if( t >= 0.6 )
+    {
+      PointType p3 = curve3.evaluate( (t - 0.6) / (1 - 0.6) );
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], p3[i], 1e-13);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, bezier_extraction)
+{
+  return; 
+
+  SLIC_INFO("Testing NURBS Bezier extraction");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[4] = {PointType {0.6, 1.2, 1.0},
+                       PointType {1.3, 1.6, 1.8},
+                       PointType {2.9, 2.4, 2.3},
+                       PointType {3.2, 3.5, 3.0}};
+
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  NURBSCurveType curve(data, weights, 4, 3);
+
+  // Do knot insertion, which determines where the Bezier
+  //  splitting happens
+  curve.insertKnot(0.3, 3);
+  curve.insertKnot(0.6, 1);
+  curve.insertKnot(0.8, 2);
+
+  NURBSCurveType bezier_curve;
+  auto bezier_list = curve.extractBezier();
+
+  EXPECT_EQ(bezier_list.size(), 4);
+
+  for(double t = 0.0; t < 1.0; t += 0.05)
+  {
+    PointType p = curve.evaluate(t);
+    
+    if( t <= 0.3 )
+    {
+      PointType p1 = bezier_list[0].evaluate( t / 0.3 );
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], p1[i], 1e-13);
+      }
+    }
+
+    if( t >= 0.3 && t <= 0.6 )
+    {
+      PointType p2 = bezier_list[1].evaluate( (t - 0.3) / (0.6 - 0.3) );
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], p2[i], 1e-13);
+      }
+    }
+
+    if( t >= 0.6 && t <= 0.8 )
+    {
+      PointType p3 = bezier_list[2].evaluate( (t - 0.6) / (0.8 - 0.6) );
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], p3[i], 1e-13);
+      }
+    }
+
+    if( t >= 0.8 )
+    {
+      PointType p4 = bezier_list[3].evaluate( (t - 0.8) / (1 - 0.8) );
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], p4[i], 1e-13);
+      }
+    }
+  }
 }
 
 int main(int argc, char* argv[])

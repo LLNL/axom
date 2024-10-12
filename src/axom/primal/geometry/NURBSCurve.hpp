@@ -440,6 +440,8 @@ public:
     SLIC_ASSERT(t >= 0.0 && t <= 1.0);
     SLIC_ASSERT(multiplicity > 0);
 
+    const bool isRational = this- this->isRational();
+
     const int n = getNumControlPoints() - 1;
     const int p = getNumKnots() - n - 2;
 
@@ -450,7 +452,7 @@ public:
     int s = 0;
     for(auto i = (t == 1.0) ? p + n + 1 : span; i >= 0; --i)
     {
-      if( m_knots[i] == t )
+      if(m_knots[i] == t)
       {
         s++;
       }
@@ -462,34 +464,53 @@ public:
 
     // Fix the maximum multiplicity of the knot
     multiplicity = std::min(multiplicity, p - s);
-    if( multiplicity <= 0 )
+    if(multiplicity <= 0)
     {
       return;
     }
 
     // Get new vectors of knots and control points
-    KnotsVec newKnots( m_knots );
+    KnotsVec newKnots(m_knots);
     for(int r = 0; r < multiplicity; ++r)
     {
       newKnots.insert(newKnots.begin() + span + 1, t);
     }
 
     // Save unaltered control points
-    CoordsVec newControlPoints( m_controlPoints.size() + multiplicity );
+    CoordsVec newControlPoints(m_controlPoints.size() + multiplicity);
+    WeightsVec newWeights(isRational ? m_weights.size() + multiplicity : 0);
     for(int i = 0; i <= span - p; ++i)
     {
       newControlPoints[i] = m_controlPoints[i];
+      if(isRational)
+      {
+        newWeights[i] = m_weights[i];
+      }
     }
 
     for(auto i = span - s; i <= n; ++i)
     {
       newControlPoints[i + multiplicity] = m_controlPoints[i];
+      if(isRational)
+      {
+        newWeights[i + multiplicity] = m_weights[i];
+      }
     }
 
-    CoordsVec tempControlPoints( p + 1 );
-    for(int i = 0; i <= p - s; ++i )
+    CoordsVec tempControlPoints(p + 1);
+    WeightsVec tempWeights(isRational ? p + 1 : 0);
+    for(int i = 0; i <= p - s; ++i)
     {
-      tempControlPoints[i] = m_controlPoints[span - p + i];
+      for(int N = 0; N < NDIMS; ++N)
+      {
+        tempControlPoints[i][N] = m_controlPoints[span - p + i][N] *
+          (isRational ? m_weights[span - p + i] : 1.0);
+      }
+
+      if( isRational )
+      {
+        tempWeights[i] = m_weights[span - p + i];
+      }
     }
 
     // Insert the knot multiplicity times
@@ -500,19 +521,161 @@ public:
       for(int i = 0; i <= p - j - s; ++i)
       {
         T alpha = (t - m_knots[L + i]) / (m_knots[i + span + 1] - m_knots[L + i]);
-        tempControlPoints[i].array() = (1.0 - alpha) * tempControlPoints[i].array() + alpha * tempControlPoints[i + 1].array();
+
+        tempControlPoints[i].array() =
+          (1.0 - alpha) * tempControlPoints[i].array() +
+          alpha * tempControlPoints[i + 1].array();
+
+        if(isRational)
+        {
+          tempWeights[i] = (1.0 - alpha) * tempWeights[i] + alpha * tempWeights[i + 1];
+        }
       }
-      newControlPoints[L] = tempControlPoints[0];
-      newControlPoints[span + multiplicity - j - s] = tempControlPoints[p - j - s];
+
+      for(int N = 0; N < NDIMS; ++N)
+      {
+        newControlPoints[L][N] = tempControlPoints[0][N] / (isRational ? tempWeights[0] : 1.0);
+        newControlPoints[span + multiplicity - j - s][N] =
+          tempControlPoints[p - j - s][N] / (isRational ? tempWeights[p - j - s] : 1.0);
+      }
+
+      if(isRational)
+      {
+        newWeights[L] = tempWeights[0];
+        newWeights[span + multiplicity - j - s] = tempWeights[p - j - s];
+      }
     }
 
     for(auto i = L + 1; i < span - s; ++i)
     {
-      newControlPoints[i] = tempControlPoints[i - L];
+      for(int N = 0; N < NDIMS; ++N)
+      {
+        newControlPoints[i][N] = tempControlPoints[i - L][N] / (isRational ? tempWeights[i - L] : 1.0);
+      }
+
+      if(isRational)
+      {
+        newWeights[i] = tempWeights[i - L];
+      }
     }
 
     m_knots = newKnots;
     m_controlPoints = newControlPoints;
+    m_weights = newWeights;
+  }
+
+  /*!
+   * \brief Splits a NURBS curve into two curves at a given parameter value
+   *
+   * \param [in] t parameter value between 0 and 1 at which to evaluate
+   * \param [out] n1 First output NURBS curve
+   * \param [out] n2 Second output NURBS curve
+   *
+   * \pre Parameter \a t must be between 0 and 1
+   */
+  void split(T t, NURBSCurve<T, NDIMS>& n1, NURBSCurve<T, NDIMS>& n2) const
+  {
+    SLIC_ASSERT(t >= 0.0 && t <= 1.0);
+
+    const bool isRational = this- this->isRational();
+    const int p = getDegree();
+
+    n1 = *this;
+
+    // Will make the multiplicity of the knot equal to p,
+    //  even if it is already >= 1
+    n1.insertKnot(t, p);
+
+    int k = n1.getNumKnots();
+    auto s = n1.findSpan(t);
+
+    // Copy the (rescaled) knots first
+    n2.m_knots.resize(k - s + p);
+    n2.m_knots[0] = 0;
+    for(int i = 1; i < k - s + p; ++i)
+    {
+      n2.m_knots[i] = (n1.m_knots[s - p + i] - t) / (1 - t);
+    }
+
+    // Copy the control points
+    n2.m_controlPoints.resize(k - s - 1);
+    n2.m_weights.resize(isRational ? k - s - 1 : 0);
+    for(int i = 0; i < n2.m_controlPoints.size(); ++i)
+    {
+      n2.m_controlPoints[k - s - 2 - i] =
+        n1.m_controlPoints[n1.m_controlPoints.size() - 1 - i];
+      
+      if(isRational)
+      {
+        n2.m_weights[k - s - 2 - i] =
+          n1.m_weights[n1.m_weights.size() - 1 - i];
+      }
+    }
+
+    // Resize the knots and control points of the first curve
+    n1.m_knots.resize(s + 2);
+    n1.m_knots[s + 1] = 1;
+    for(int i = 0; i < s + 1; ++i)
+    {
+      n1.m_knots[i] = n1.m_knots[i] / t;
+    }
+
+    n1.m_controlPoints.resize(s - p + 1);
+    n1.m_weights.resize(isRational ? s - p + 1 : 0);
+  }
+
+  /*!
+   * \brief Splits a NURBS curve (at each internal knot) into several Bezier curves
+   *   
+   * \return An array of Bezier curves
+   */
+  axom::Array<BezierCurve<T, NDIMS>> extractBezier() const
+  {
+    const bool isRational = this->isRational();
+    int p = getDegree();
+    int numBeziers = 1;
+
+    // Split the curve at each knot value
+    NURBSCurve<T, NDIMS> n1(*this);
+    for(int i = p + 1; i < getNumKnots() - p - 1; ++i)
+    {
+      int old_knot_count = n1.getNumKnots();
+      n1.insertKnot(m_knots[i], p);
+      int new_knot_count = n1.getNumKnots();
+
+      if(new_knot_count != old_knot_count)
+      {
+        numBeziers++;
+      }
+    }
+
+    // For each Bezier, copy the control nodes into Bezier curves
+    axom::Array<BezierCurve<T, NDIMS>> beziers;
+    BezierCurve<T, NDIMS> bezier(p);
+    if( isRational )
+    {
+      bezier.makeRational();
+    }
+
+    int the_node = 0;
+    for(int i = 0; i < n1.getNumControlPoints(); ++i)
+    {
+      bezier[the_node] = n1[i];
+      if( isRational )
+      {
+        bezier.setWeight(the_node, n1.getWeight(i));
+      }
+      
+      the_node++;
+      if(the_node == (p + 1))
+      {
+        --i;  // Endpoint nodes are shared between Bezier curves
+        the_node = 0;
+        beziers.push_back(bezier);
+      }
+    }
+
+    return beziers;
   }
 
   /// \brief Returns the degree of the NURBS Curve
@@ -697,6 +860,22 @@ public:
 private:
   bool isValidNURBS() const
   {
+    int p = getDegree();
+    for(int i = 0; i < p + 1; ++i)
+    {
+      if(m_knots[i] != 0.0)
+      {
+        // First p+1 knots must be 0
+        return false;
+      }
+
+      if(m_knots[m_knots.size() - p - 1 + i] != 1.0)
+      {
+        // Last p+1 knots must be 1
+        return false;
+      }
+    }
+
     for(int i = 1; i < m_knots.size(); ++i)
     {
       if(m_knots[i] <= m_knots[i - 1])
@@ -704,24 +883,25 @@ private:
         // Knots must be non-decreasing
         return false;
       }
+    }
 
-      if(isRational())
+    if(isRational())
+    {
+      if(m_weights.size() != m_controlPoints.size())
       {
-        if(m_weights.size() != m_controlPoints.size())
+        // Weights must match the number of control points
+        return false;
+      }
+
+      for(int i = 0; i < m_weights.size(); ++i)
+      {
+        if(m_weights[i] <= 0)
         {
-          // Weights must match the number of control points
+          // Weights must be positive
           return false;
         }
-
-        for(int i = 0; i < m_weights.size(); ++i)
-        {
-          if(m_weights[i] <= 0)
-          {
-            // Weights must be positive
-            return false;
-          }
-        }
       }
+
       return true;
     }
 
@@ -747,7 +927,8 @@ private:
       return n;
     }
 
-    // perform binary search on the knots
+    // perform binary search on the knots,
+    //  m_knots[mid] <= t < m_knots[mid+1]
     auto low = getDegree();
     auto high = n + 1;
     auto mid = (low + high) / 2;
