@@ -1,0 +1,39 @@
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+
+set( mir_example_dependencies
+     core
+     slic
+     mir
+   )
+
+# Break the different MIR cases into multiple files to speed up compilation.
+set(mir_tutorial_simple_sources
+    mir_tutorial_simple.cpp
+    runMIR_seq.cpp
+    runMIR_seq_tri.cpp
+    runMIR_seq_quad.cpp
+    runMIR_seq_hex.cpp
+    runMIR_omp.cpp
+    runMIR_omp_tri.cpp
+    runMIR_omp_quad.cpp
+    runMIR_omp_hex.cpp
+    runMIR_cuda.cpp
+    runMIR_cuda_tri.cpp
+    runMIR_cuda_quad.cpp
+    runMIR_cuda_hex.cpp
+    runMIR_hip.cpp
+    runMIR_hip_tri.cpp
+    runMIR_hip_quad.cpp
+    runMIR_hip_hex.cpp
+    )
+
+axom_add_executable(
+    NAME       mir_tutorial_simple
+    SOURCES    ${mir_tutorial_simple_sources}
+    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON ${mir_example_dependencies}
+    FOLDER     axom/mir/examples
+    )

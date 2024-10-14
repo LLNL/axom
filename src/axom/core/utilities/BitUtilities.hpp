@@ -51,6 +51,38 @@ template <typename T>
 struct BitTraits;
 
 template <>
+struct BitTraits<std::int64_t>
+{
+  constexpr static int NUM_BYTES = 8;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 6;
+};
+
+template <>
+struct BitTraits<std::int32_t>
+{
+  constexpr static int NUM_BYTES = 4;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 5;
+};
+
+template <>
+struct BitTraits<std::int16_t>
+{
+  constexpr static int NUM_BYTES = 2;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 4;
+};
+
+template <>
+struct BitTraits<std::int8_t>
+{
+  constexpr static int NUM_BYTES = 1;
+  constexpr static int BITS_PER_WORD = NUM_BYTES << 3;
+  constexpr static int LG_BITS_PER_WORD = 3;
+};
+
+template <>
 struct BitTraits<std::uint64_t>
 {
   constexpr static int NUM_BYTES = 8;
@@ -196,6 +228,89 @@ AXOM_HOST_DEVICE inline std::int32_t countl_zero(std::int32_t word) noexcept
   /* clang-format off */
 }
 // gpu_macros_example_end
+
+/*!
+ * \brief Determine whether the \a bit is set in \a flags.
+ * \accelerated
+ *
+ * \tparam FlagType The integer type that contains the flags.
+ * \tparam BitType  The index type that stores the bit index.
+ *
+ * \param[in] flags The flags whose bit we're testing.
+ * \param[in] bit   The bit we're testing.
+ *
+ * \return True if the bit is set; false otherwise.
+ */
+template <typename FlagType, typename BitType>
+AXOM_HOST_DEVICE
+constexpr bool bitIsSet(FlagType flags, BitType bit)
+{
+  assert(static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3);
+  return (flags & (1 << bit)) > 0;
+}
+
+/*!
+ * \brief Set the bit in flags.
+ * \accelerated
+ *
+ * \tparam FlagType The integer type that contains the flags.
+ * \tparam BitType  The index type that stores the bit index.
+ *
+ * \param[inout] flags The flags whose bit we're setting.
+ * \param[in] bit   The bit we're setting.
+ * \param[in] value The value we're setting into the bit.
+ */
+template <typename FlagType, typename BitType>
+AXOM_HOST_DEVICE
+constexpr void setBit(FlagType &flags, BitType bit, bool value = true)
+{
+  assert(static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3);
+  const auto mask = 1 << bit;
+  flags = value ? (flags | mask) : (flags & ~mask);
+}
+
+/*!
+ * \brief Set the bit in flags.
+ * \accelerated
+ *
+ * \tparam FlagType The integer type that contains the flags.
+ * \tparam BitType  The index type that stores the bit index.
+ *
+ * \param[inout] flags The flags whose bit we're setting.
+ * \param[in] bit   The bit we're setting.
+ */
+template <typename FlagType, typename BitType>
+AXOM_HOST_DEVICE
+constexpr void setBitOn(FlagType &flags, BitType bit)
+{
+  assert(static_cast<int>(bit) < BitTraits<FlagType>::BITS_PER_WORD << 3);
+  flags |= (1 << bit);
+}
+
+/*!
+ * \brief Count the number if bits that are on in the value.
+ * \accelerated
+ *
+ * \tparam IntType The integer type being tested.
+ *
+ * \param[in] value The value whose bits are counted.
+ *
+ * \return
+ */
+template <typename IntType>
+AXOM_HOST_DEVICE
+int countBits(IntType value)
+{
+  constexpr size_t n = sizeof(IntType) << 3;
+  int count = 0;
+  IntType mask = 1;
+  for(size_t i = 0; i < n; i++)
+  {
+    count += ((value & mask) > 0) ? 1 : 0;
+    mask <<= 1;
+  }
+  return count;
+}
 
 }  // namespace utilities
 }  // namespace axom
