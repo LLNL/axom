@@ -53,16 +53,7 @@ namespace quest = axom::quest;
 namespace slic = axom::slic;
 namespace sidre = axom::sidre;
 
-using VolFracSampling = quest::shaping::VolFracSampling;
-
 //------------------------------------------------------------------------------
-
-/// Struct to help choose our shaping method: sampling or intersection for now
-enum class ShapingMethod : int
-{
-  Sampling,
-  Intersection
-};
 
 using RuntimePolicy = axom::runtime_policy::Policy;
 
@@ -102,7 +93,6 @@ public:
                                                "hex",
                                                "plane"};
 
-  ShapingMethod shapingMethod {ShapingMethod::Sampling};
   RuntimePolicy policy {RuntimePolicy::seq};
   int quadratureOrder {5};
   int outputOrder {2};
@@ -112,8 +102,6 @@ public:
   std::string annotationMode {"none"};
 
   std::string backgroundMaterial;
-
-  VolFracSampling vfSampling {VolFracSampling::SAMPLE_AT_QPTS};
 
 private:
   bool m_verboseOutput {false};
@@ -225,16 +213,6 @@ public:
       ->check(axom::CLI::PositiveNumber)
       ->capture_default_str();
 
-    std::map<std::string, ShapingMethod> methodMap {
-      {"sampling", ShapingMethod::Sampling},
-      {"intersection", ShapingMethod::Intersection}};
-    app.add_option("--method", shapingMethod)
-      ->description(
-        "Determines the shaping method -- either sampling or intersection")
-      ->capture_default_str()
-      ->transform(
-        axom::CLI::CheckedTransformer(methodMap, axom::CLI::ignore_case));
-
     app.add_option("-s,--testShape", testShape)
       ->description("The shape to run")
       ->check(axom::CLI::IsMember(availableShapes));
@@ -302,38 +280,6 @@ public:
 
     app.add_option("--background-material", backgroundMaterial)
       ->description("Sets the name of the background material");
-
-    // parameters that only apply to the sampling method
-    {
-      auto* sampling_options =
-        app.add_option_group("sampling",
-                             "Options related to sampling-based queries");
-
-      sampling_options->add_option("-o,--order", outputOrder)
-        ->description("Order of the output grid function")
-        ->capture_default_str()
-        ->check(axom::CLI::NonNegativeNumber);
-
-      sampling_options->add_option("-q,--quadrature-order", quadratureOrder)
-        ->description(
-          "Quadrature order for sampling the inout field. \n"
-          "Determines number of samples per element in determining "
-          "volume fraction field")
-        ->capture_default_str()
-        ->check(axom::CLI::PositiveNumber);
-
-      std::map<std::string, VolFracSampling> vfsamplingMap {
-        {"qpts", VolFracSampling::SAMPLE_AT_QPTS},
-        {"dofs", VolFracSampling::SAMPLE_AT_DOFS}};
-      sampling_options->add_option("-s,--sampling-type", vfSampling)
-        ->description(
-          "Sampling strategy. \n"
-          "Sampling either at quadrature points or collocated with "
-          "degrees of freedom")
-        ->capture_default_str()
-        ->transform(
-          axom::CLI::CheckedTransformer(vfsamplingMap, axom::CLI::ignore_case));
-    }
 
     // parameters that only apply to the intersection method
     {
@@ -1129,15 +1075,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   AXOM_ANNOTATE_BEGIN("setup shaping problem");
   quest::Shaper* shaper = nullptr;
-  switch(params.shapingMethod)
-  {
-  case ShapingMethod::Sampling:
-    shaper = new quest::SamplingShaper(shapeSet, &shapingDC);
-    break;
-  case ShapingMethod::Intersection:
-    shaper = new quest::IntersectionShaper(shapeSet, &shapingDC);
-    break;
-  }
+  shaper = new quest::IntersectionShaper(shapeSet, &shapingDC);
   SLIC_ASSERT_MSG(shaper != nullptr, "Invalid shaping method selected!");
 
   // Set generic parameters for the base Shaper instance
@@ -1152,25 +1090,6 @@ int main(int argc, char** argv)
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.
   shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
-
-  // Set specific parameters for a SamplingShaper, if appropriate
-  if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
-  {
-    samplingShaper->setSamplingType(params.vfSampling);
-    samplingShaper->setQuadratureOrder(params.quadratureOrder);
-    samplingShaper->setVolumeFractionOrder(params.outputOrder);
-
-    // register a point projector
-    if(shapingDC.GetMesh()->Dimension() == 3 && shapeDim == klee::Dimensions::Two)
-    {
-      samplingShaper->setPointProjector([](primal::Point<double, 3> pt) {
-        const double& x = pt[0];
-        const double& y = pt[1];
-        const double& z = pt[2];
-        return primal::Point<double, 2> {z, sqrt(x * x + y * y)};
-      });
-    }
-  }
 
   // Set specific parameters here for IntersectionShaper
   if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
@@ -1188,42 +1107,6 @@ int main(int argc, char** argv)
     }
   }
 
-  //---------------------------------------------------------------------------
-  // Project initial volume fractions, if applicable
-  //---------------------------------------------------------------------------
-  if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
-  {
-    AXOM_ANNOTATE_SCOPE("import initial volume fractions");
-    std::map<std::string, mfem::GridFunction*> initial_grid_functions;
-
-    // Generate a background material (w/ volume fractions set to 1) if user provided a name
-    if(!params.backgroundMaterial.empty())
-    {
-      auto material = params.backgroundMaterial;
-      auto name = axom::fmt::format("vol_frac_{}", material);
-
-      const int order = params.outputOrder;
-      const int dim = shapingMesh->Dimension();
-      const auto basis = mfem::BasisType::Positive;
-
-      auto* coll = new mfem::L2_FECollection(order, dim, basis);
-      auto* fes = new mfem::FiniteElementSpace(shapingDC.GetMesh(), coll);
-      const int sz = fes->GetVSize();
-
-      auto* view = shapingDC.AllocNamedBuffer(name, sz);
-      auto* volFrac = new mfem::GridFunction(fes, view->getArray());
-      volFrac->MakeOwner(coll);
-
-      (*volFrac) = 1.;
-
-      shapingDC.RegisterField(name, volFrac);
-
-      initial_grid_functions[material] = shapingDC.GetField(name);
-    }
-
-    // Project provided volume fraction grid functions as quadrature point data
-    samplingShaper->importInitialVolumeFractions(initial_grid_functions);
-  }
   AXOM_ANNOTATE_END("setup shaping problem");
   AXOM_ANNOTATE_END("init");
 
@@ -1406,14 +1289,6 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   // Save meshes and fields
   //---------------------------------------------------------------------------
-  if(params.isVerbose())
-  {
-    if(auto* samplingShaper = dynamic_cast<quest::SamplingShaper*>(shaper))
-    {
-      SLIC_INFO(axom::fmt::format("{:-^80}", ""));
-      samplingShaper->printRegisteredFieldNames(" -- after shaping");
-    }
-  }
 
 #ifdef MFEM_USE_MPI
   if(!params.outputFile.empty())
