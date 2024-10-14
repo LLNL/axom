@@ -725,6 +725,18 @@ TEST(mint_mesh, get_mixed_topology_unstructured_from_sidre)
   delete m;
 }
 
+//------------------------------------------------------------------------------
+TEST(mint_mesh, immediate_ug_reserve)
+{
+  axom::sidre::DataStore objectDS;
+  axom::sidre::Group* meshGroup = objectDS.getRoot()->createGroup("myGroup");
+  axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
+    2,
+    axom::mint::CellType::SEGMENT,
+    meshGroup);
+  contourMesh.reserveCells(10);  // This may crash.
+}
+
 #endif /* AXOM_MINT_USE_SIDRE */
 
 } /* namespace mint */
