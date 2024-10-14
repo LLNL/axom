@@ -7,6 +7,7 @@
 #define SIDRE_INDEXED_COLLECTION_HPP_
 
 // Standard C++ headers
+#include <iostream>
 #include <map>
 #include <stack>
 #include <string>
@@ -14,16 +15,11 @@
 
 // Other axom headers
 #include "axom/config.hpp"
-#include "axom/core/Types.hpp"
+#include "axom/core/ItemCollection.hpp"
 #include "axom/core/Macros.hpp"
-
-// Sidre project headers
-#include "SidreTypes.hpp"
-#include "ItemCollection.hpp"
+#include "axom/core/Types.hpp"
 
 namespace axom
-{
-namespace sidre
 {
 /*!
  *************************************************************************
@@ -99,18 +95,18 @@ public:
   /*!
    * \brief  Insert \a item at index \a idx if that index is not already occupied
    *
-   * \return Index at which \a item was inserted, if successful; sidre::InvalidIndex otherwise
+   * \return Index at which \a item was inserted, if successful; axom::InvalidIndex otherwise
    */
   IndexType insertItem(T* item, IndexType idx)
   {
     if(hasItem(idx))
     {
-      return sidre::InvalidIndex;
+      return axom::InvalidIndex;
     }
 
     if(idx < 0)
     {
-      return sidre::InvalidIndex;
+      return axom::InvalidIndex;
     }
 
     // grow capacity to support insertion at index
@@ -172,7 +168,7 @@ public:
    */
   IndexType getValidEmptyIndex()
   {
-    IndexType newIndex = sidre::InvalidIndex;
+    IndexType newIndex = axom::InvalidIndex;
     bool found_empty_index = false;
 
     // try to find an empty index from the stack
@@ -195,9 +191,15 @@ public:
       newIndex = m_items.size();
     }
 
-    SLIC_ASSERT_MSG(
-      isInClosedRange(newIndex) && !hasItem(newIndex),
-      "Index " << newIndex << " in IndexedCollection is not a valid empty index");
+#ifdef AXOM_DEBUG
+    if(!isInClosedRange(newIndex) || hasItem(newIndex))
+    {
+      std::cerr << "Index " << newIndex
+                << " in IndexedCollection is not a valid empty index"
+                << std::endl;
+    }
+    assert(isInClosedRange(newIndex) && !hasItem(newIndex));
+#endif
 
     return newIndex;
   }
@@ -283,7 +285,6 @@ T* IndexedCollection<T>::removeItem(IndexType idx)
   return nullptr;
 }
 
-}  // end namespace sidre
 }  // end namespace axom
 
 #endif  // SIDRE_INDEXED_COLLECTION_HPP_
