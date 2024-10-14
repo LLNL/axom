@@ -9,12 +9,14 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
-  CLANG14_IMAGENAME: 'axom/tpls:clang-14_09-23-24_17h-07m'
-  GCC13_IMAGENAME: 'axom/tpls:gcc-13_09-23-24_17h-07m'
+  CLANG14_IMAGENAME: 'axom/tpls:clang-14_10-10-24_01h-31m'
+  GCC13_IMAGENAME: 'axom/tpls:gcc-13_10-10-24_01h-31m'
   system.debug: false
 
 jobs:
 - job: Build_and_Test
+
+  timeoutInMinutes: 90
 
   strategy:
     matrix:
