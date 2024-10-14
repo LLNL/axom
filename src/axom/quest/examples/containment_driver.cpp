@@ -64,7 +64,7 @@ public:
 
   ~ContainmentDriver()
   {
-    delete m_surfaceMesh;
+    m_surfaceMesh.reset();
     delete m_octree;
   }
 
@@ -77,8 +77,8 @@ public:
     reader.read();
 
     // Create surface mesh
-    m_surfaceMesh = new UMesh(2, mint::SEGMENT);
-    reader.getLinearMeshUniform(static_cast<UMesh*>(m_surfaceMesh),
+    m_surfaceMesh.reset(new UMesh(2, mint::SEGMENT));
+    reader.getLinearMeshUniform(static_cast<UMesh*>(m_surfaceMesh.get()),
                                 segmentsPerKnotSpan);
   }
 #else
@@ -100,11 +100,11 @@ public:
     reader.read();
 
     // Create surface mesh
-    m_surfaceMesh = new UMesh(3, mint::TRIANGLE);
-    reader.getMesh(static_cast<UMesh*>(m_surfaceMesh));
+    m_surfaceMesh.reset(new UMesh(3, mint::TRIANGLE));
+    reader.getMesh(static_cast<UMesh*>(m_surfaceMesh.get()));
   }
 
-  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh.get(); }
 
   int dimension() const { return DIM; }
 
@@ -482,7 +482,7 @@ public:
   }
 
 private:
-  mint::Mesh* m_surfaceMesh {nullptr};
+  std::shared_ptr<mint::Mesh> m_surfaceMesh {nullptr};
   InOutOctreeType* m_octree {nullptr};
   GeometricBoundingBox m_meshBB;
   GeometricBoundingBox m_queryBB;

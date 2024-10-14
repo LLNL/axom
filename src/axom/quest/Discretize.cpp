@@ -208,7 +208,7 @@ double octPolyVolume(const OctType& o)
 }  // namespace
 
 //------------------------------------------------------------------------------
-int mesh_from_discretized_polyline(axom::ArrayView<OctType>& octs,
+int mesh_from_discretized_polyline(const axom::ArrayView<OctType>& octs,
                                    int octcount,
                                    int segcount,
                                    mint::Mesh*& mesh)
