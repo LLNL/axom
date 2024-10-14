@@ -584,6 +584,8 @@ public:
   static constexpr int DIM = 2;
   static constexpr int ELT_MULT_FAC = 4;
 
+  using typename PointInCellTest<2, ExecSpace>::mesh_tag;
+
 protected:
   virtual void SetUp()
   {
@@ -786,9 +788,9 @@ public:
     // compute bounding boxes
     this->m_boundingBoxes.resize(mesh->GetNE());
     axom::quest::detail::PointInCellMeshWrapper<mesh_tag> meshWrapper(mesh);
-    meshWrapper.computeBoundingBoxes<DIM>(1. + 1e-8,
-                                          this->m_boundingBoxes.data(),
-                                          this->m_meshBoundingBox);
+    meshWrapper.template computeBoundingBoxes<DIM>(1. + 1e-8,
+                                                   this->m_boundingBoxes.data(),
+                                                   this->m_meshBoundingBox);
   }
 
 private:
@@ -807,6 +809,8 @@ class PointInCell3DTest : public PointInCellTest<3, ExecSpace>
 public:
   static constexpr int DIM = 3;
   static constexpr int ELT_MULT_FAC = 8;
+
+  using typename PointInCellTest<3, ExecSpace>::mesh_tag;
 
 protected:
   virtual void SetUp()
@@ -1009,9 +1013,9 @@ public:
     // compute bounding boxes
     this->m_boundingBoxes.resize(mesh->GetNE());
     axom::quest::detail::PointInCellMeshWrapper<mesh_tag> meshWrapper(mesh);
-    meshWrapper.computeBoundingBoxes<DIM>(1 + 1e-8,
-                                          this->m_boundingBoxes.data(),
-                                          this->m_meshBoundingBox);
+    meshWrapper.template computeBoundingBoxes<DIM>(1 + 1e-8,
+                                                   this->m_boundingBoxes.data(),
+                                                   this->m_meshBoundingBox);
   }
 
 private:
