@@ -52,9 +52,9 @@ public:
   StructuredIndexing(const LogicalIndex &dims) : m_dimensions(dims) { }
 
   /*!
-   * \brief Return the number of points in the coordset.
+   * \brief Return the number of points in the index space.
    *
-   * \return The number of points in the coordset.
+   * \return The number of points in the index space.
    */
   AXOM_HOST_DEVICE
   IndexType size() const
