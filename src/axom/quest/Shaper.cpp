@@ -26,14 +26,13 @@ constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
 constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 
 #if defined(AXOM_USE_MFEM)
-Shaper::Shaper(const klee::ShapeSet& shapeSet,
-               sidre::MFEMSidreDataCollection* dc)
+Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
 {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = m_dc->GetComm();
-#endif
+  #endif
   m_cellCount = m_dc->GetMesh()->GetNE();
 }
 #endif
@@ -50,8 +49,11 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
   m_bpGrp = m_ds.getRoot()->createGroup("bpGrp");
   m_bpGrp->importConduitTreeExternal(*bpNode);
   std::string coordsName =
-    m_bpGrp->getView(axom::fmt::format("topologies/{}/coordset", m_bpTopo))->getNode().as_string();
-  auto* coordsView = m_bpGrp->getView(axom::fmt::format("coordsets/{}", coordsName));
+    m_bpGrp->getView(axom::fmt::format("topologies/{}/coordset", m_bpTopo))
+      ->getNode()
+      .as_string();
+  auto* coordsView =
+    m_bpGrp->getView(axom::fmt::format("coordsets/{}", coordsName));
   m_cellCount = coordsView->getNumElements();
 }
 #endif
@@ -134,9 +136,9 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     "{:-^80}",
     axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
-  SLIC_ASSERT_MSG(
-    this->isValidFormat(shape.getGeometry().getFormat()),
-    axom::fmt::format("Shape has unsupported format: '{}", shape.getGeometry().getFormat()));
+  SLIC_ASSERT_MSG(this->isValidFormat(shape.getGeometry().getFormat()),
+                  axom::fmt::format("Shape has unsupported format: '{}",
+                                    shape.getGeometry().getFormat()));
 
   // Code for discretizing shapes has been factored into DiscreteShape class.
   DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_shapeSet.getPath());
@@ -165,9 +167,9 @@ int Shaper::getRank() const
 double Shaper::allReduceSum(double val) const
 {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    double global;
-    MPI_Allreduce(&val, &global, 1, MPI_DOUBLE, MPI_SUM, m_comm);
-    return global;
+  double global;
+  MPI_Allreduce(&val, &global, 1, MPI_DOUBLE, MPI_SUM, m_comm);
+  return global;
 #endif
   return val;
 }

@@ -27,10 +27,10 @@
 #include "axom/quest/DiscreteShape.hpp"
 
 #if defined(AXOM_USE_MFEM)
-#include "mfem.hpp"
+  #include "mfem.hpp"
 #endif
 #if defined(AXOM_USE_CONDUIT)
-#include "conduit_node.hpp"
+  #include "conduit_node.hpp"
 #endif
 
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
@@ -59,7 +59,7 @@ public:
   */
   Shaper(const klee::ShapeSet& shapeSet,
          conduit::Node* bpMesh,
-         const std::string& topo="");
+         const std::string& topo = "");
 #endif
 
   virtual ~Shaper() = default;
@@ -184,15 +184,15 @@ protected:
 
 #if defined(AXOM_USE_MFEM)
   // For mesh represented as MFEMSidreDataCollection
-  sidre::MFEMSidreDataCollection* m_dc{nullptr};
+  sidre::MFEMSidreDataCollection* m_dc {nullptr};
 #endif
 
 #if defined(AXOM_USE_CONDUIT)
   // For mesh represented in Conduit or sidre
-  conduit::Node* m_bpNode{nullptr};
+  conduit::Node* m_bpNode {nullptr};
   const std::string m_bpTopo;
   sidre::DataStore m_ds;
-  axom::sidre::Group* m_bpGrp{nullptr};
+  axom::sidre::Group* m_bpGrp {nullptr};
 #endif
 
   axom::IndexType m_cellCount;

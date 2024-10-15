@@ -211,8 +211,8 @@ private:
  */
 template <>
 AXOM_HOST inline void TempArrayView<cuda_exec>::initialize(double* hostPtr,
-                                                              int nElem,
-                                                              bool _needResult)
+                                                           int nElem,
+                                                           bool _needResult)
 {
   initializeDevice(hostPtr, nElem, _needResult);
 }
@@ -238,8 +238,8 @@ AXOM_HOST_DEVICE inline void TempArrayView<cuda_exec>::finalize()
  */
 template <>
 AXOM_HOST inline void TempArrayView<hip_exec>::initialize(double* hostPtr,
-                                                             int nElem,
-                                                             bool _needResult)
+                                                          int nElem,
+                                                          bool _needResult)
 {
   initializeDevice(hostPtr, nElem, _needResult);
 }
@@ -328,11 +328,10 @@ public:
   */
   IntersectionShaper(const klee::ShapeSet& shapeSet,
                      conduit::Node* bpMesh,
-                     const std::string& topo="")
+                     const std::string& topo = "")
     : Shaper(shapeSet, bpMesh, topo)
     , m_free_mat_name("free")
-  {
-  }
+  { }
 #endif
 
   //@{
@@ -682,13 +681,15 @@ public:
 
     // Create and register a scalar field for this shape's volume fractions
     // The Degrees of Freedom will be in correspondence with the elements
-    std::string volFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
+    std::string volFracName =
+      axom::fmt::format("shape_vol_frac_{}", shape.getName());
     auto volFrac = getScalarCellData(volFracName);
 
     populateHexesFromMesh<ExecSpace>();
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
 
-    m_hex_bbs = axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
+    m_hex_bbs =
+      axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
     axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
 
     // Get bounding boxes for hexahedral elements
@@ -743,7 +744,11 @@ public:
     axom::Array<IndexType> offsets(m_cellCount, m_cellCount, device_allocator);
     axom::Array<IndexType> counts(m_cellCount, m_cellCount, device_allocator);
     axom::Array<IndexType> candidates;
-    bvh.findBoundingBoxes(offsets, counts, candidates, m_cellCount, hex_bbs_device_view);
+    bvh.findBoundingBoxes(offsets,
+                          counts,
+                          candidates,
+                          m_cellCount,
+                          hex_bbs_device_view);
 
     // Get the total number of candidates
     using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -771,9 +776,10 @@ public:
     auto shape_candidates_device_view = shape_candidates_device.view();
 
     // Tetrahedrons from hexes (24 for each hex)
-    axom::Array<TetrahedronType> tets_from_hexes_device(m_cellCount * NUM_TETS_PER_HEX,
-                                                        m_cellCount * NUM_TETS_PER_HEX,
-                                                        device_allocator);
+    axom::Array<TetrahedronType> tets_from_hexes_device(
+      m_cellCount * NUM_TETS_PER_HEX,
+      m_cellCount * NUM_TETS_PER_HEX,
+      device_allocator);
     axom::ArrayView<TetrahedronType> tets_from_hexes_device_view =
       tets_from_hexes_device.view();
 
@@ -842,10 +848,12 @@ public:
 
     // Overlap volume is the volume of clip(oct,tet) for c2c
     // or clip(tet,tet) for Pro/E meshes
-    m_overlap_volumes = axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
+    m_overlap_volumes =
+      axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
 
     // Hex volume is the volume of the hexahedron element
-    m_hex_volumes = axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
+    m_hex_volumes =
+      axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
 
     axom::ArrayView<double> overlap_volumes_device_view =
       m_overlap_volumes.view();
@@ -988,7 +996,7 @@ private:
     bool newData = !hasData(materialVolFracName);
 
     auto matVolFrac = getScalarCellData(materialVolFracName);
-    if (newData)
+    if(newData)
     {
       // Zero out the volume fractions (on host).
       // memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
@@ -1013,9 +1021,9 @@ private:
    */
   void populateMaterials()
   {
-#if 1
+  #if 1
     std::vector<std::string> materialNames = getMaterialNames();
-#else
+  #else
     std::vector<std::string> materialNames;
     for(auto it : this->getDC()->GetFieldMap())
     {
@@ -1025,7 +1033,7 @@ private:
         materialNames.emplace_back(materialName);
       }
     }
-#endif
+  #endif
     // Add any of these existing fields to this class' bookkeeping.
     for(const auto& materialName : materialNames)
     {
@@ -1060,7 +1068,7 @@ public:
 
     axom::ArrayView<double> cfgf = getScalarCellData(fieldName);
 
-    if (newData)
+    if(newData)
     {
       AXOM_ANNOTATE_SCOPE("compute_free");
 
@@ -1182,10 +1190,10 @@ public:
     }
     else
     {
-      // Include all materials except those in "does_not_replace".
-      // We'll also sort them by material number since the field map
-      // sorts them by name rather than order added.
-#if 1
+        // Include all materials except those in "does_not_replace".
+        // We'll also sort them by material number since the field map
+        // sorts them by name rather than order added.
+  #if 1
       std::vector<std::string> materialNames = getMaterialNames();
       for(auto name : materialNames)
       {
@@ -1217,7 +1225,7 @@ public:
           }
         }
       }
-#else
+  #else
       for(auto it : this->getDC()->GetFieldMap())
       {
         // Check whether the field name looks like a VF field (and is not the
@@ -1249,7 +1257,7 @@ public:
           }
         }
       }
-#endif
+  #endif
     }
     // Sort eligible update materials by material number.
     std::sort(gf_order_by_matnumber.begin(),
@@ -1996,12 +2004,14 @@ private:
   {
     bool has = false;
 #if defined(AXOM_USE_MFEM)
-    if (m_dc != nullptr) {
+    if(m_dc != nullptr)
+    {
       has = m_dc->HasField(fieldName);
     }
 #endif
 #if defined(AXOM_USE_CONDUIT)
-    if (m_bpGrp != nullptr) {
+    if(m_bpGrp != nullptr)
+    {
       std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
       has = m_bpGrp->hasGroup(fieldPath);
     }
@@ -2017,26 +2027,28 @@ private:
     axom::ArrayView<double> rval;
 
 #if defined(AXOM_USE_MFEM)
-    if (m_dc != nullptr) {
+    if(m_dc != nullptr)
+    {
       mfem::GridFunction* gridFunc = nullptr;
-      if (m_dc->HasField(fieldName))
+      if(m_dc->HasField(fieldName))
       {
         gridFunc = m_dc->GetField(fieldName);
       }
-      else {
+      else
+      {
         gridFunc = newVolFracGridFunction();
         m_dc->RegisterField(fieldName, gridFunc);
       }
-      rval = axom::ArrayView<double>(gridFunc->GetData(),
-                                     gridFunc->Size());
+      rval = axom::ArrayView<double>(gridFunc->GetData(), gridFunc->Size());
     }
 #endif
 #if defined(AXOM_USE_CONDUIT)
-    if (m_bpGrp != nullptr) {
+    if(m_bpGrp != nullptr)
+    {
       std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
       auto dtype = conduit::DataType::float64(m_cellCount);
       axom::sidre::View* valuesView = nullptr;
-      if (m_bpGrp->hasGroup(fieldPath))
+      if(m_bpGrp->hasGroup(fieldPath))
       {
         auto* fieldsGrp = m_bpGrp->getGroup(fieldPath);
         valuesView = fieldsGrp->getView("values");
@@ -2049,8 +2061,9 @@ private:
         valuesView = fieldsGrp->createView("values");
         valuesView->allocate(dtype);
       }
-      rval = axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
-                                     m_cellCount);
+      rval =
+        axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
+                                m_cellCount);
     }
 #endif
     return rval;
@@ -2060,7 +2073,7 @@ private:
   {
     std::vector<std::string> materialNames;
 #if defined(AXOM_USE_MFEM)
-    if (m_dc)
+    if(m_dc)
     {
       for(auto it : this->getDC()->GetFieldMap())
       {
@@ -2072,10 +2085,10 @@ private:
       }
     }
 #elif defined(AXOM_USE_CONDUIT)
-    if (m_bpGrp)
+    if(m_bpGrp)
     {
       auto fieldsGrp = m_bpGrp->getGroup("fields");
-      for (auto& group : fieldsGrp->groups())
+      for(auto& group : fieldsGrp->groups())
       {
         std::string materialName = fieldNameToMaterialName(group.getName());
         if(!materialName.empty())
@@ -2097,8 +2110,7 @@ public:
     constexpr int NUM_COMPS_PER_VERT = 3;
     const int hostAllocator =
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-    const int deviceAllocator =
-      axom::execution_space<ExecSpace>::allocatorID();
+    const int deviceAllocator = axom::execution_space<ExecSpace>::allocatorID();
 
     axom::Array<double> vertCoords(
       m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
@@ -2106,26 +2118,27 @@ public:
       hostAllocator);
 
 #if defined(AXOM_USE_MFEM)
-    if (m_dc != nullptr)
+    if(m_dc != nullptr)
     {
       populateVertCoordsFromMFEMMesh(vertCoords);
     }
 #endif
 #if defined(AXOM_USE_CONDUIT)
-    if (m_bpGrp != nullptr)
+    if(m_bpGrp != nullptr)
     {
       populateVertCoordsFromBlueprintMesh(vertCoords);
     }
 #endif
 
-    if (deviceAllocator != hostAllocator)
+    if(deviceAllocator != hostAllocator)
     {
       vertCoords = axom::Array<double>(vertCoords, deviceAllocator);
     }
 
     auto vertCoords_device_view = vertCoords.view();
 
-    m_hexes = axom::Array<HexahedronType>(m_cellCount, m_cellCount, deviceAllocator);
+    m_hexes =
+      axom::Array<HexahedronType>(m_cellCount, m_cellCount, deviceAllocator);
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
     constexpr double ZERO_THRESHOLD = 1.e-10;
     axom::for_all<ExecSpace>(
@@ -2166,8 +2179,8 @@ public:
         }
       });  // end of loop to initialize hexahedral elements and bounding boxes
   }
-private:
 
+private:
 #if defined(AXOM_USE_CONDUIT)
   void populateVertCoordsFromBlueprintMesh(axom::Array<double>& vertCoords_host)
   {
@@ -2178,30 +2191,42 @@ private:
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
 
-    const auto* topoGrp = m_bpGrp->getGroup(axom::fmt::format("topologies/{}", m_bpTopo));
+    const auto* topoGrp =
+      m_bpGrp->getGroup(axom::fmt::format("topologies/{}", m_bpTopo));
     std::string coordsetName = topoGrp->getView("coordset")->getString();
 
     // Assume unstructured and hexahedral
-    SLIC_ASSERT(std::string(topoGrp->getView("type")->getString()) == "unstructured");
-    SLIC_ASSERT(std::string(topoGrp->getView("elements/shape")->getString()) == "hex");
+    SLIC_ASSERT(std::string(topoGrp->getView("type")->getString()) ==
+                "unstructured");
+    SLIC_ASSERT(std::string(topoGrp->getView("elements/shape")->getString()) ==
+                "hex");
 
     const auto connGrp = topoGrp->getView("elements/connectivity");
     axom::ArrayView<const double, 2> conn(connGrp->getNode().as_double_ptr(),
-                                          m_cellCount, NUM_VERTS_PER_HEX);
+                                          m_cellCount,
+                                          NUM_VERTS_PER_HEX);
 
-    const auto* coordGrp = m_bpGrp->getGroup(axom::fmt::format("coordsets/{}", coordsetName));
+    const auto* coordGrp =
+      m_bpGrp->getGroup(axom::fmt::format("coordsets/{}", coordsetName));
     const conduit::Node& coordValues = coordGrp->getView("values")->getNode();
 
     // Assume explicit coordinates.
-    SLIC_ASSERT(std::string(coordGrp->getView("type")->getString()) == "explicit");
+    SLIC_ASSERT(std::string(coordGrp->getView("type")->getString()) ==
+                "explicit");
 
     axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
     bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
     int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
     axom::StackArray<axom::ArrayView<const double>, 3> coordArrays {
-      axom::ArrayView<const double>(coordValues["x"].as_double_ptr(), {vertexCount}, stride),
-      axom::ArrayView<const double>(coordValues["y"].as_double_ptr(), {vertexCount}, stride),
-      axom::ArrayView<const double>(coordValues["z"].as_double_ptr(), {vertexCount}, stride) };
+      axom::ArrayView<const double>(coordValues["x"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride),
+      axom::ArrayView<const double>(coordValues["y"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride),
+      axom::ArrayView<const double>(coordValues["z"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride)};
 
     for(int i = 0; i < m_cellCount; i++)
     {
@@ -2216,12 +2241,10 @@ private:
         for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
         {
           vertCoords_host[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
-                          (j * NUM_COMPS_PER_VERT) + k] =
-            coordArrays[k][vertId];
+                          (j * NUM_COMPS_PER_VERT) + k] = coordArrays[k][vertId];
         }
       }
     }
-
   }
 #endif
 
@@ -2263,7 +2286,6 @@ private:
         }
       }
     }
-
   }
 
   /// Create and return a new volume fraction grid function for the current mesh
