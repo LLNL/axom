@@ -37,13 +37,39 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* d
 }
 #endif
 
+Shaper::Shaper(const klee::ShapeSet& shapeSet,
+               sidre::Group* bpGrp,
+               const std::string& topo)
+  : m_shapeSet(shapeSet)
+  , m_bpGrp(bpGrp)
+  , m_bpTopo(topo.empty() ? bpGrp->getGroup("topologies")->getGroupName(0) : topo)
+  , m_bpNode(nullptr)
+  , m_comm(MPI_COMM_WORLD)
+{
+  SLIC_ASSERT(m_bpTopo != sidre::InvalidName);
+
+  auto* topologies = m_bpGrp->getGroup("topologies");
+  auto* topoGrp = topologies->getGroup(m_bpTopo);
+  auto* coordsetName = topoGrp->getView("coordset");
+  std::string coordsName = coordsetName->getString();
+#if 0
+  std::string coordsName =
+    m_bpGrp->getView(axom::fmt::format("topologies/{}/coordset", m_bpTopo))
+      ->getString();
+#endif
+  auto* coordsView =
+    m_bpGrp->getView(axom::fmt::format("coordsets/{}/values/x", coordsName));
+  m_cellCount = coordsView->getNumElements();
+}
+
 #if defined(AXOM_USE_CONDUIT)
 Shaper::Shaper(const klee::ShapeSet& shapeSet,
                conduit::Node* bpNode,
                const std::string& topo)
   : m_shapeSet(shapeSet)
-  , m_bpNode(bpNode)
+  , m_bpGrp(nullptr)
   , m_bpTopo(topo)
+  , m_bpNode(bpNode)
   , m_comm(MPI_COMM_WORLD)
 {
   m_bpGrp = m_ds.getRoot()->createGroup("bpGrp");

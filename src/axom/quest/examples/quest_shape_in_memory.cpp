@@ -383,13 +383,17 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
   slic::flushStreams();
 }
 
+const std::string topoName = "mesh";
+const std::string coordsetName = "coords";
+
 axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
   using BBox3D = primal::BoundingBox<double, 3>;
   using Pt3D = primal::Point<double, 3>;
   auto res = primal::NumericArray<int, 3>(params.boxResolution.data());
   auto bbox = BBox3D(Pt3D(params.boxMins.data()), Pt3D(params.boxMaxs.data()));
-  axom::quest::util::make_unstructured_blueprint_box_mesh(meshGrp, bbox, res);
+  axom::quest::util::make_unstructured_blueprint_box_mesh(meshGrp, bbox, res,
+                                                          topoName, coordsetName);
 
   return meshGrp;
 }
@@ -1091,6 +1095,7 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   AXOM_ANNOTATE_BEGIN("setup shaping problem");
   quest::Shaper* shaper = nullptr;
+  // shaper = new quest::IntersectionShaper(shapeSet, compMeshGrp);
   shaper = new quest::IntersectionShaper(shapeSet, &shapingDC);
   SLIC_ASSERT_MSG(shaper != nullptr, "Invalid shaping method selected!");
 

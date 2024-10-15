@@ -327,9 +327,9 @@ public:
     stored in a Conduit Node.
   */
   IntersectionShaper(const klee::ShapeSet& shapeSet,
-                     conduit::Node* bpMesh,
+                     sidre::Group* bpGrp,
                      const std::string& topo = "")
-    : Shaper(shapeSet, bpMesh, topo)
+    : Shaper(shapeSet, bpGrp, topo)
     , m_free_mat_name("free")
   { }
 #endif

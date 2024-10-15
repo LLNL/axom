@@ -52,13 +52,21 @@ public:
   Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc);
 #endif
 
+  /*!
+    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    stored in a sidre Group.
+  */
+  Shaper(const klee::ShapeSet& shapeSet,
+         sidre::Group* bpMesh,
+         const std::string& topo = "");
+
 #if defined(AXOM_USE_CONDUIT)
   /*!
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a Conduit Node.
   */
   Shaper(const klee::ShapeSet& shapeSet,
-         conduit::Node* bpMesh,
+         conduit::Node* bpNode,
          const std::string& topo = "");
 #endif
 
@@ -189,10 +197,10 @@ protected:
 
 #if defined(AXOM_USE_CONDUIT)
   // For mesh represented in Conduit or sidre
-  conduit::Node* m_bpNode {nullptr};
-  const std::string m_bpTopo;
   sidre::DataStore m_ds;
   axom::sidre::Group* m_bpGrp {nullptr};
+  const std::string m_bpTopo;
+  conduit::Node* m_bpNode {nullptr};
 #endif
 
   axom::IndexType m_cellCount;

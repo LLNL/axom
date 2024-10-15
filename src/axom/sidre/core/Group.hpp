@@ -1789,11 +1789,13 @@ private:
 
   /*!
    * \brief Detach Child Group with given name from this Group.
+   * \return the detached Group.
    */
   Group* detachGroup(const std::string& name);
 
   /*!
    * \brief Detach Child Group with given index from this Group.
+   * \return the detached Group.
    */
   Group* detachGroup(IndexType idx);
 
