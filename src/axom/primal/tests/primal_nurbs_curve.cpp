@@ -18,6 +18,142 @@
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
+TEST(primal_nurbscurve, constructor)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  {
+    SLIC_INFO("Testing default NURBSCurve constructor");
+    NURBSCurveType nCurve;
+
+    int expDegree = -1;
+    EXPECT_EQ(expDegree, nCurve.getDegree());
+    EXPECT_EQ(expDegree + 1, nCurve.getOrder());
+    EXPECT_EQ(expDegree + 1, nCurve.getControlPoints().size());
+    EXPECT_EQ(expDegree + 1, nCurve.getKnots().size());
+    EXPECT_FALSE(nCurve.isRational());
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, set_order)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  SLIC_INFO("Test adding control points to empty Bezier curve");
+
+  NURBSCurveType nCurve;
+  EXPECT_EQ(-1, nCurve.getDegree());
+
+  const int degree = 1;
+  PointType controlPoints[2] = {PointType {0.6, 1.2, 1.0},
+                                PointType {0.0, 1.6, 1.8}};
+
+  nCurve.setDegree(degree);
+  EXPECT_EQ(nCurve.getDegree(), degree);
+
+  nCurve[0] = controlPoints[0];
+  nCurve[1] = controlPoints[1];
+
+  for(int p = 0; p <= nCurve.getDegree(); ++p)
+  {
+    auto& pt = nCurve[p];
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_DOUBLE_EQ(controlPoints[p][i], pt[i]);
+    }
+  }
+
+  nCurve.clear();
+  EXPECT_EQ(-1, nCurve.getDegree());
+  EXPECT_FALSE(nCurve.isRational());
+
+  nCurve.setDegree(degree);
+  nCurve.makeRational();
+  EXPECT_TRUE(nCurve.isRational());
+
+  nCurve.setWeight(0, 2.0);
+  EXPECT_EQ( nCurve.getWeight(0), 2.0 );
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, point_array_constructor)
+{
+  SLIC_INFO("Testing point array constructor");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  const int npts = 2;
+  const int degree = 1;
+  PointType controlPoints[npts] = {PointType {0.6, 1.2, 1.0},
+                                   PointType {0.0, 1.6, 1.8}};
+
+  double weights[npts] = {1.0, 2.0};
+
+  NURBSCurveType nCurve(controlPoints, npts, degree);
+  NURBSCurveType wCurve(controlPoints, weights, npts, degree);
+
+  EXPECT_EQ(1, nCurve.getDegree());
+  for(int p = 0; p <= nCurve.getDegree(); ++p)
+  {
+    auto& pt1 = nCurve[p];
+    auto& pt2 = wCurve[p];
+    double w = wCurve.getWeight(p);
+
+    EXPECT_DOUBLE_EQ(weights[p], w);
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_DOUBLE_EQ(controlPoints[p][i], pt1[i]);
+      EXPECT_DOUBLE_EQ(controlPoints[p][i], pt2[i]);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, axom_array_constructor)
+{
+  SLIC_INFO("Testing point array constructor");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  const int npts = 2;
+  const int degree = 1;
+  axom::Array<PointType> controlPoints {PointType {0.6, 1.2, 1.0},
+                                        PointType {0.0, 1.6, 1.8}};
+
+  axom::Array<double> weights {1.0, 2.0};
+
+  NURBSCurveType nCurve(controlPoints, degree);
+  NURBSCurveType wCurve(controlPoints, weights, degree);
+
+  EXPECT_EQ(1, nCurve.getDegree());
+  for(int p = 0; p <= nCurve.getDegree(); ++p)
+  {
+    auto& pt1 = nCurve[p];
+    auto& pt2 = wCurve[p];
+    double w = wCurve.getWeight(p);
+
+    EXPECT_DOUBLE_EQ(weights[p], w);
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_DOUBLE_EQ(controlPoints[p][i], pt1[i]);
+      EXPECT_DOUBLE_EQ(controlPoints[p][i], pt2[i]);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_nurbscurve, evaluate)
 {
   SLIC_INFO("Testing NURBS evaluation");
@@ -295,45 +431,48 @@ TEST(primal_nurbscurve, curve_splitting)
 
   double weights[4] = {1.0, 2.0, 3.0, 4.0};
 
-  NURBSCurveType curve(data, weights, 4, 3);
-
-  // Do some knot insertion to make it interesting
-  curve.insertKnot(0.3, 2);
-  curve.insertKnot(0.6, 1);
-  curve.insertKnot(0.8, 1);
-
-  NURBSCurveType curve1, curve2, curve3;
-  curve.split(0.3, curve1, curve2);
-  curve2.split((0.6 - 0.3) / (1 - 0.3), curve2, curve3);
-
-  for(double t = 0.0; t < 1.0; t += 0.05)
+  for(int deg = 1; deg <= 3; ++deg)
   {
-    PointType p = curve.evaluate(t);
+    NURBSCurveType curve(data, weights, 4, deg);
 
-    if(t <= 0.3)
+    // Do some knot insertion to make it interesting
+    curve.insertKnot(0.3, 2);
+    curve.insertKnot(0.6, 1);
+    curve.insertKnot(0.8, 1);
+
+    NURBSCurveType curve1, curve2, curve3;
+    curve.split(0.3, curve1, curve2);
+    curve2.split((0.6 - 0.3) / (1 - 0.3), curve2, curve3);
+
+    for(double t = 0.0; t < 1.0; t += 0.05)
     {
-      PointType p1 = curve1.evaluate(t / 0.3);
-      for(int i = 0; i < DIM; ++i)
+      PointType p = curve.evaluate(t);
+
+      if(t <= 0.3)
       {
-        EXPECT_NEAR(p[i], p1[i], 1e-13);
+        PointType p1 = curve1.evaluate(t / 0.3);
+        for(int i = 0; i < DIM; ++i)
+        {
+          EXPECT_NEAR(p[i], p1[i], 1e-13);
+        }
       }
-    }
 
-    if(t >= 0.3 && t <= 0.6)
-    {
-      PointType p2 = curve2.evaluate((t - 0.3) / (0.6 - 0.3));
-      for(int i = 0; i < DIM; ++i)
+      if(t >= 0.3 && t <= 0.6)
       {
-        EXPECT_NEAR(p[i], p2[i], 1e-13);
+        PointType p2 = curve2.evaluate((t - 0.3) / (0.6 - 0.3));
+        for(int i = 0; i < DIM; ++i)
+        {
+          EXPECT_NEAR(p[i], p2[i], 1e-13);
+        }
       }
-    }
 
-    if(t >= 0.6)
-    {
-      PointType p3 = curve3.evaluate((t - 0.6) / (1 - 0.6));
-      for(int i = 0; i < DIM; ++i)
+      if(t >= 0.6)
       {
-        EXPECT_NEAR(p[i], p3[i], 1e-13);
+        PointType p3 = curve3.evaluate((t - 0.6) / (1 - 0.6));
+        for(int i = 0; i < DIM; ++i)
+        {
+          EXPECT_NEAR(p[i], p3[i], 1e-13);
+        }
       }
     }
   }
@@ -342,8 +481,6 @@ TEST(primal_nurbscurve, curve_splitting)
 //------------------------------------------------------------------------------
 TEST(primal_nurbscurve, bezier_extraction)
 {
-  return;
-
   SLIC_INFO("Testing NURBS Bezier extraction");
 
   const int DIM = 3;
@@ -362,9 +499,9 @@ TEST(primal_nurbscurve, bezier_extraction)
 
   // Do knot insertion, which determines where the Bezier
   //  splitting happens
-  curve.insertKnot(0.3, 3);
-  curve.insertKnot(0.6, 1);
-  curve.insertKnot(0.8, 2);
+  curve.insertKnot(0.33, 3);
+  curve.insertKnot(0.66, 1);
+  curve.insertKnot(0.77, 2);
 
   NURBSCurveType bezier_curve;
   auto bezier_list = curve.extractBezier();
@@ -375,36 +512,36 @@ TEST(primal_nurbscurve, bezier_extraction)
   {
     PointType p = curve.evaluate(t);
 
-    if(t <= 0.3)
+    if(t <= 0.33)
     {
-      PointType p1 = bezier_list[0].evaluate(t / 0.3);
+      PointType p1 = bezier_list[0].evaluate(t / 0.33);
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p1[i], 1e-13);
       }
     }
 
-    if(t >= 0.3 && t <= 0.6)
+    if(t >= 0.33 && t <= 0.66)
     {
-      PointType p2 = bezier_list[1].evaluate((t - 0.3) / (0.6 - 0.3));
+      PointType p2 = bezier_list[1].evaluate((t - 0.33) / (0.66 - 0.33));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p2[i], 1e-13);
       }
     }
 
-    if(t >= 0.6 && t <= 0.8)
+    if(t >= 0.66 && t <= 0.77)
     {
-      PointType p3 = bezier_list[2].evaluate((t - 0.6) / (0.8 - 0.6));
+      PointType p3 = bezier_list[2].evaluate((t - 0.66) / (0.77 - 0.66));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p3[i], 1e-13);
       }
     }
 
-    if(t >= 0.8)
+    if(t >= 0.77)
     {
-      PointType p4 = bezier_list[3].evaluate((t - 0.8) / (1 - 0.8));
+      PointType p4 = bezier_list[3].evaluate((t - 0.77) / (1 - 0.77));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p4[i], 1e-13);

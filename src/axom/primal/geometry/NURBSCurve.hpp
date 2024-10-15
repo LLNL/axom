@@ -373,7 +373,6 @@ public:
       Point<T, NDIMS + 1> Pw(0.0);
       for(int j = 0; j <= p; j++)
       {
-
         auto offset = span - p + j;
         const double weight = isRational ? m_weights[offset] : 1.0;
 
@@ -423,7 +422,7 @@ public:
       {
         v[j] = v[j] - Awders[k][NDIMS] * eval[j];
       }
-     
+
       for(int i = 1; i < k; i++)
       {
         auto bin = axom::utilities::binomialCoefficient(k, i);
@@ -706,6 +705,40 @@ public:
     return beziers;
   }
 
+  /*!
+   * \brief Reset the knot vector and increase the number of control points
+   *
+   * \param [in] degree The target degree
+   * 
+   * \warning This method does NOT change the existing control points,
+   *  i.e. is not performing degree elevation or reduction.
+   */
+  void setDegree(int degree)
+  {
+    SLIC_ASSERT(degree >= 0);
+    int npts = getNumControlPoints();
+    if( npts < degree + 1 )
+    {
+      npts = degree + 1;
+      m_controlPoints.resize(degree + 1);
+    }
+
+    m_knots.resize(npts + degree + 1);
+
+    // Knots for the clamped curve
+    for(int i = 0; i < degree + 1; ++i)
+    {
+      m_knots[i] = 0.0;
+      m_knots[npts + degree - i] = 1.0;
+    }
+
+    // Interior knots (if any)
+    for(int i = 0; i < npts - degree - 1; ++i)
+    {
+      m_knots[degree + 1 + i] = (i + 1.0) / (npts - degree);
+    }
+  }
+
   /// \brief Returns the degree of the NURBS Curve
   int getDegree() const
   {
@@ -739,6 +772,14 @@ public:
 
   /// Use array size as flag for rationality
   bool isRational() const { return !m_weights.empty(); }
+
+  /// Clears the list of control points, make nonrational
+  void clear()
+  {
+    m_controlPoints.clear();
+    m_knots.clear();
+    makeNonrational();
+  }
 
   /// \brief Retrieve the control point at index \a idx
   PointType& operator[](int idx) { return m_controlPoints[idx]; }
