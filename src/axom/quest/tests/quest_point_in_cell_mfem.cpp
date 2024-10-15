@@ -316,7 +316,8 @@ public:
     PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS, m_allocatorID);
     // _quest_pic_init_end
     SLIC_INFO(axom::fmt::format(
-      "Constructing index over {} quad mesh with {} elems took {} s",
+      axom::utilities::locale(),
+      "Constructing index over {} quad mesh with {:L} elems took {:.3Lf} s",
       meshTypeStr,
       m_mesh->GetNE(),
       constructTimer.elapsed()));
@@ -382,8 +383,9 @@ public:
 
     // Output some diagnostics
     SLIC_INFO(
-      axom::fmt::format("Querying {} pts on {} quad mesh took {} s "
-                        " -- rate: {} q/s (includes {} inverse xforms)",
+      axom::fmt::format(axom::utilities::locale(),
+                        "Querying {:L} pts on {} quad mesh took {:.3Lf} s "
+                        " -- rate: {:.3Lf} q/s (includes {:L} inverse xforms)",
                         pts.size(),
                         meshTypeStr,
                         queryTimer.elapsed(),
@@ -391,7 +393,8 @@ public:
                         numInverseXforms));
 
     SLIC_INFO(axom::fmt::format(
-      "On {} mesh, verified plausibility in {} of {} cases ({:.1f}%)",
+      axom::utilities::locale(),
+      "On {} mesh, verified plausibility in {:L} of {:L} cases ({:.1f}%)",
       meshTypeStr,
       numCheckedPoints,
       pts.size(),
@@ -411,7 +414,8 @@ public:
     axom::utilities::Timer constructTimer(true);
     PointInCellType spatialIndex(m_mesh, GridCell(25).data(), m_EPS, m_allocatorID);
     SLIC_INFO(axom::fmt::format(
-      "Constructing index over {} quad mesh with {} elems took {} s",
+      axom::utilities::locale(),
+      "Constructing index over {} quad mesh with {:L} elems took {:.3Lf} s",
       meshTypeStr,
       m_mesh->GetNE(),
       constructTimer.elapsed()));
@@ -450,8 +454,12 @@ public:
         EXPECT_TRUE(this->m_meshBoundingBox.contains(spacePts[idx]));
 
         // Check that the source element is a candidate for this point in the spatial index
-        const auto arr = spatialIndex.getCandidatesForPt(spacePts[idx]);
-        EXPECT_TRUE(std::find(arr.begin(), arr.end(), eltId) != std::end(arr));
+        // Only currently checks on host since the API uses std::vector
+        if(!axom::execution_space<ExecSpace>::onDevice())
+        {
+          const auto arr = spatialIndex.getCandidatesForPt(spacePts[idx]);
+          EXPECT_TRUE(std::find(arr.begin(), arr.end(), eltId) != std::end(arr));
+        }
       }
 
       // locate the reconstructed points (using EXEC space)
@@ -548,7 +556,8 @@ public:
     }
 
     SLIC_INFO(axom::fmt::format(
-      "Verifying {} pts on {} quad mesh took {} s -- rate: {} q/s",
+      axom::utilities::locale(),
+      "Verifying {:L} pts on {} quad mesh took {:.3Lf} s -- rate: {:.3Lf} q/s",
       SZ * m_mesh->GetNE(),
       meshTypeStr,
       queryTimer2.elapsed(),
@@ -1396,8 +1405,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
   }
 
   SLIC_INFO(
-    axom::fmt::format("Querying {} random pts on two C-shaped quadratic "
-                      "quad meshes took {} s -- rate: {} q/s",
+    axom::fmt::format(axom::utilities::locale(),
+                      "Querying {:L} random pts on two C-shaped quadratic "
+                      "quad meshes took {:.3Lf} s -- rate: {:.3Lf} q/s",
                       num_pts * 2,
                       queryTimer.elapsed(),
                       num_pts * 2 / queryTimer.elapsed())
@@ -1445,8 +1455,9 @@ TYPED_TEST(PointInCell2DTest, pic_curved_quad_c_shaped)
   }
 
   SLIC_INFO(
-    axom::fmt::format("Verifying {} pts on curved quad jittered mesh"
-                      " took {} s -- rate: {} q/s",
+    axom::fmt::format(axom::utilities::locale(),
+                      "Verifying {:L} pts on curved quad jittered mesh"
+                      " took {:.3Lf} s -- rate: {:.3Lf} q/s",
                       pts.size() * mesh2.GetNE() * 2,
                       queryTimer2.elapsed(),
                       pts.size() * mesh2.GetNE() * 2 / queryTimer2.elapsed()));
@@ -1719,7 +1730,8 @@ void printSummary()
   const std::string buildtype {"RELEASE"};
 #endif
   SLIC_INFO(
-    axom::fmt::format("{} build; running {} test points with {} refinements; "
+    axom::fmt::format(axom::utilities::locale(),
+                      "{} build; running {:L} test points with {} refinements; "
                       "grid resolution factor {}",
                       buildtype,
                       NUM_TEST_PTS,
