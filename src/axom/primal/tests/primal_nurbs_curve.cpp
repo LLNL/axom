@@ -487,6 +487,72 @@ TEST(primal_nurbscurve, curve_splitting)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_nurbscurve, curve_splitting_endpoints)
+{
+  SLIC_INFO("Testing NURBS curve splitting at endpoints");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  // Use a different formula for splitting at an endpoint,
+  //  since regular knot insertion doesn't work
+
+  PointType data[4] = {PointType {0.6, 1.2, 1.0},
+                       PointType {1.3, 1.6, 1.8},
+                       PointType {2.9, 2.4, 2.3},
+                       PointType {3.2, 3.5, 3.0}};
+
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  for(int deg = 1; deg <= 3; ++deg)
+  {
+    NURBSCurveType curve(data, weights, 4, deg);
+
+    // Do some knot insertion to make it interesting
+    curve.insertKnot(0.3, 2);
+    curve.insertKnot(0.6, 1);
+    curve.insertKnot(0.8, 1);
+
+    const int npts = curve.getNumControlPoints();
+
+    NURBSCurveType curve1, curve2;
+    curve.split(0.0, curve1, curve2);
+
+    for(double t = 0.0; t <= 1.0; t += 0.05)
+    {
+      PointType p = curve.evaluate(t);
+
+      PointType p1 = curve1.evaluate(t);
+      PointType p2 = curve2.evaluate(t);
+
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p1[i], curve[0][i], 1e-13);
+        EXPECT_NEAR(p2[i], p[i], 1e-13);
+      }
+    }
+
+    curve.split(1.0, curve1, curve2);
+
+    for(double t = 0.0; t <= 1.0; t += 0.05)
+    {
+      PointType p = curve.evaluate(t);
+
+      PointType p1 = curve1.evaluate(t);
+      PointType p2 = curve2.evaluate(t);
+
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p1[i], p[i], 1e-13);
+        EXPECT_NEAR(p2[i], curve[npts - 1][i], 1e-13);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_nurbscurve, bezier_extraction)
 {
   SLIC_INFO("Testing NURBS Bezier extraction");
@@ -554,6 +620,45 @@ TEST(primal_nurbscurve, bezier_extraction)
       {
         EXPECT_NEAR(p[i], p4[i], 1e-13);
       }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, nurbs_reverse_orientation)
+{
+  SLIC_INFO("Testing NURBS reverse orientation");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[4] = {PointType {0.6, 1.2, 1.0},
+                       PointType {1.3, 1.6, 1.8},
+                       PointType {2.9, 2.4, 2.3},
+                       PointType {3.2, 3.5, 3.0}};
+
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  NURBSCurveType curve(data, weights, 4, 3);
+
+  // Insert some knots to stress test reversal
+  curve.insertKnot(0.33, 3);
+  curve.insertKnot(0.66, 1);
+  curve.insertKnot(0.77, 2);
+
+  NURBSCurveType curve_reversed(curve);
+  curve_reversed.reverseOrientation();
+
+  for(double t = 0.0; t < 1.0; t += 0.05)
+  {
+    PointType p = curve.evaluate(t);
+    PointType p_reversed = curve_reversed.evaluate(1.0 - t);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], p_reversed[i], 1e-13);
     }
   }
 }

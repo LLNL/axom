@@ -652,34 +652,33 @@ public:
     // Handle the special case of splitting at the endpoints
     if(t == 0.0)
     {
-      n1 = *this;
-      n2.clear();
-      n2.setDegree(p);
+      n1.setParameters(p + 1, p);
       for(int i = 0; i <= p; ++i)
       {
-        n2[i] = m_controlPoints[0];
+        n1[i] = m_controlPoints[0];
         if(isRational)
         {
-          n2.makeRational();
-          n2.setWeight(i, m_weights[0]);
+          n1.makeRational();
+          n1.setWeight(i, m_weights[0]);
         }
       }
+      n2 = *this;
       return;
     }
     else if(t == 1.0)
     {
-      n1.clear();
-      n1.setDegree(p);
+      n1 = *this;
+      n2.clear();
+      n2.setParameters(p + 1, p);
       for(int i = 0; i <= p; ++i)
       {
-        n1[i] = m_controlPoints[getNumControlPoints() - 1];
+        n2[i] = m_controlPoints[getNumControlPoints() - 1];
         if(isRational)
         {
-          n1.makeRational();
-          n1.setWeight(i, m_weights[getNumControlPoints() - 1]);
+          n2.makeRational();
+          n2.setWeight(i, m_weights[getNumControlPoints() - 1]);
         }
       }
-      n2 = *this;
       return;
     }
 
@@ -826,6 +825,7 @@ public:
    * 
    * \warning This method does NOT change the existing control points,
    *  i.e. is not performing degree elevation or reduction.
+   * \pre Requires degree < npts
    */
   void setDegree(int degree)
   {
@@ -992,18 +992,18 @@ public:
   /// \brief Reverses the order of the Bezier curve's control points and weights
   void reverseOrientation()
   {
-    const int deg = getDegree();
-    const int mid = (deg + 1) / 2;
-    for(int i = 0; i < mid; ++i)
+    const int npts = getNumControlPoints();
+    const int npts_mid = (npts + 1) / 2;
+    for(int i = 0; i < npts_mid; ++i)
     {
-      axom::utilities::swap(m_controlPoints[i], m_controlPoints[deg - i]);
+      axom::utilities::swap(m_controlPoints[i], m_controlPoints[npts - i - 1]);
     }
 
     if(isRational())
     {
-      for(int i = 0; i < mid; ++i)
+      for(int i = 0; i < npts_mid; ++i)
       {
-        axom::utilities::swap(m_weights[i], m_weights[deg - i]);
+        axom::utilities::swap(m_weights[i], m_weights[npts - i - 1]);
       }
     }
 
@@ -1012,7 +1012,7 @@ public:
     const int knot_mid = (num_knots + 1) / 2;
     for(int i = 0; i < knot_mid; ++i)
     {
-      axom::utilities::swap(m_knots[i], m_knots[num_knots - i]);
+      axom::utilities::swap(m_knots[i], m_knots[num_knots - i - 1]);
     }
 
     // Replace each knot with 1 - knot_value
