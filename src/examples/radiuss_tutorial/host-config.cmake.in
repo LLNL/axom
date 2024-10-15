@@ -53,6 +53,7 @@ endif()
 # HIP
 set(ENABLE_HIP                @ENABLE_HIP@                  CACHE BOOL "")
 if(ENABLE_HIP)
+  set(ROCM_PATH                 "@ROCM_PATH@"                 CACHE PATH "")
   set(HIP_ROOT_DIR              "@HIP_ROOT_DIR@"              CACHE PATH "")
   set(HIP_CLANG_PATH            "@HIP_CLANG_PATH@"            CACHE PATH "")
   set(HIP_CXX_COMPILER          "@HIP_CXX_COMPILER@"          CACHE PATH "")

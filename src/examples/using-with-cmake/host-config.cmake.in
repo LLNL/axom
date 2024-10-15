@@ -48,6 +48,7 @@ endif()
 set(ENABLE_HIP                @ENABLE_HIP@                  CACHE BOOL "")
 
 if(ENABLE_HIP)
+  set(ROCM_PATH                 "@ROCM_PATH@"                 CACHE PATH "")
   set(HIP_ROOT_DIR              "@HIP_ROOT_DIR@"              CACHE PATH "")
   set(HIP_CLANG_PATH            "@HIP_CLANG_PATH@"            CACHE PATH "")
   set(CMAKE_HIP_ARCHITECTURES   "@CMAKE_HIP_ARCHITECTURES@"   CACHE STRING "")
