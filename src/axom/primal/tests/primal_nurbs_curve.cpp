@@ -33,54 +33,26 @@ TEST(primal_nurbscurve, evaluate)
                                     PointType {2.9, 2.4, 2.3},
                                     PointType {3.2, 3.5, 3.0}};
 
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
   // clang-format off
   PointType exp_start_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-    /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
-    /* 2 pt */  {PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
-    /* 3 pt */  {PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}},
-    /* 4 pt */  {PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}, PointType {0.6, 1.2, 1.0}}};
+           /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
+           /* 2 pt */  {PointType {0.6, 1.2, 1.0}, PointType { 0.6,  1.2,  1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
+           /* 3 pt */  {PointType {0.6, 1.2, 1.0}, PointType { 0.6,  1.2,  1.0}, PointType { 0.6,  1.2,  1.0}, PointType {-999, -999, -999}},
+           /* 4 pt */  {PointType {0.6, 1.2, 1.0}, PointType { 0.6,  1.2,  1.0}, PointType { 0.6,  1.2,  1.0}, PointType { 0.6,  1.2,  1.0}}};
 
-  PointType exp_mid_vals[4][4] =  // degree 0                    degree 1                    degree 2                         degree 3
-    /* 1 pt */ {{PointType {0.6, 1.2, 1.0},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999}},
-                /* 2 pt */
-                {PointType {1.3, 1.6, 1.8},
-                 PointType {0.95, 1.4, 1.4},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999}},
-                /* 3 pt */
-                {PointType {1.3, 1.6, 1.8},
-                 PointType {1.3, 1.6, 1.8},
-                 PointType {1.525, 1.7, 1.725},
-                 PointType {-999, -999, -999}},
-                /* 4 pt */
-                {PointType {2.9, 2.4, 2.3},
-                 PointType {2.1, 2.0, 2.05},
-                 PointType {2.1, 2.0, 2.05},
-                 PointType {2.05, 2.0875, 2.0375}}};
+  PointType exp_mid_vals[4][4] =  // degree 0                           degree 1                                    degree 2                         degree 3
+           /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {   -999,     -999,     -999}, PointType {  -999,  -999,   -999}, PointType { -999, -999,  -999}},
+           /* 2 pt */  {PointType {1.3, 1.6, 1.8}, PointType {16./15.,  22./15.,  23./15.}, PointType {  -999,  -999,   -999}, PointType { -999, -999,  -999}},
+           /* 3 pt */  {PointType {1.3, 1.6, 1.8}, PointType {    1.3,      1.6,      1.8}, PointType {1.8125,  1.85, 1.8875}, PointType { -999, -999,  -999}},
+           /* 4 pt */  {PointType {2.9, 2.4, 2.3}, PointType {   2.26,     2.08,      2.1}, PointType {  2.26,  2.08,    2.1}, PointType {2.365, 2.32, 2.225}}};
 
-  PointType exp_end_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-    /* 1 pt */ {{PointType {0.6, 1.2, 1.0},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999}},
-                /* 2 pt */
-                {PointType {1.3, 1.6, 1.8},
-                 PointType {1.3, 1.6, 1.8},
-                 PointType {-999, -999, -999},
-                 PointType {-999, -999, -999}},
-                /* 3 pt */
-                {PointType {2.9, 2.4, 2.3},
-                 PointType {2.9, 2.4, 2.3},
-                 PointType {2.9, 2.4, 2.3},
-                 PointType {-999, -999, -999}},
-                /* 4 pt */
-                {PointType {3.2, 3.5, 3.0},
-                 PointType {3.2, 3.5, 3.0},
-                 PointType {3.2, 3.5, 3.0},
-                 PointType {3.2, 3.5, 3.0}}};
+  PointType exp_end_vals[4][4] =     // degree 0                   degree 1                     degree 2                      degree 3
+           /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},  
+           /* 2 pt */  {PointType {1.3, 1.6, 1.8}, PointType { 1.3,  1.6,  1.8}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
+           /* 3 pt */  {PointType {2.9, 2.4, 2.3}, PointType { 2.9,  2.4,  2.3}, PointType { 2.9,  2.4,  2.3}, PointType {-999, -999, -999}},
+           /* 4 pt */  {PointType {3.2, 3.5, 3.0}, PointType { 3.2,  3.5,  3.0}, PointType { 3.2,  3.5,  3.0}, PointType { 3.2,  3.5,  3.0}}};
   // clang-format on
 
   // Test evaluation at various degrees and various number of control
@@ -89,7 +61,7 @@ TEST(primal_nurbscurve, evaluate)
   {
     for(int deg = 0; deg <= npts - 1; ++deg)
     {
-      NURBSCurveType curve(data, npts, deg);
+      NURBSCurveType curve(data, weights, npts, deg);
 
       PointType calc_start = curve.evaluate(0.0);
       PointType calc_mid = curve.evaluate(0.5);
@@ -122,69 +94,26 @@ TEST(primal_nurbscurve, first_derivatives)
                                     PointType {2.9, 2.4, 2.3},
                                     PointType {3.2, 3.5, 3.0}};
 
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
   // clang-format off
-  VectorType exp_start_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-    /* 1 pt */ {{VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 2 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.7, 0.4, 0.8},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 3 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {1.4, 0.8, 1.6},
-                 VectorType {1.4, 0.8, 1.6},
-                 VectorType {-999, -999, -999}},
-                /* 4 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {2.1, 1.2, 2.4},
-                 VectorType {2.8, 1.6, 3.2},
-                 VectorType {2.1, 1.2, 2.4}}};
+  VectorType exp_start_vals[4][4] =  // degree 0                  degree 1                      degree 2                   degree 3
+           /* 1 pt */ {{VectorType {0.0, 0.0, 0.0}, VectorType {-999, -999, -999}, VectorType {-999, -999, -999}, VectorType {-999, -999, -999}},
+           /* 2 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType { 1.4,  0.8,  1.6}, VectorType {-999, -999, -999}, VectorType {-999, -999, -999}},
+           /* 3 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType { 2.8,  1.6,  3.2}, VectorType { 2.8,  1.6,  3.2}, VectorType {-999, -999, -999}},
+           /* 4 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType { 4.2,  2.4,  4.8}, VectorType { 5.6,  3.2,  6.4}, VectorType { 4.2,  2.4,  4.8}}};
 
   VectorType exp_mid_vals[4][4] =  // degree 0                    degree 1                    degree 2                         degree 3
-    /* 1 pt */ {{VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 2 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.7, 0.4, 0.8},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 3 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {3.2, 1.6, 1.0},
-                 VectorType {2.3, 1.2, 1.3},
-                 VectorType {-999, -999, -999}},
-                /* 4 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {4.8, 2.4, 1.5},
-                 VectorType {3.2, 1.6, 1.0},
-                 VectorType {3.15, 2.325, 1.875}}};
+           /* 1 pt */ {{VectorType {0.0, 0.0, 0.0}, VectorType {   -999,    -999,    -999}, VectorType {  -999,  -999,   -999}, VectorType { -999,  -999, -999}},
+           /* 2 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {28./45., 16./45., 32./45.}, VectorType {  -999,  -999,   -999}, VectorType { -999,  -999, -999}},
+           /* 3 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {    4.8,     2.4,     1.5}, VectorType {2.2375,  1.15, 1.0625}, VectorType { -999,  -999, -999}},
+           /* 4 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {  4.608,   2.304,    1.44}, VectorType { 3.072, 1.536,   0.96}, VectorType {2.652, 2.256, 1.62}}};
 
   VectorType exp_end_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-    /* 1 pt */ {{VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 2 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.7, 0.4, 0.8},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 3 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {3.2, 1.6, 1.0},
-                 VectorType {3.2, 1.6, 1.0},
-                 VectorType {-999, -999, -999}},
-                /* 4 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.9, 3.3, 2.1},
-                 VectorType {1.2, 4.4, 2.8},
-                 VectorType {0.9, 3.3, 2.1}}};
+           /* 1 pt */ {{VectorType {0.0, 0.0, 0.0}, VectorType {   -999,    -999,  -999}, VectorType {   -999,    -999,  -999}, VectorType { -999,  -999,  -999}},
+           /* 2 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {   0.35,     0.2,   0.4}, VectorType {   -999,    -999,  -999}, VectorType { -999,  -999,  -999}},
+           /* 3 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {32./15., 16./15., 2./3.}, VectorType {32./15., 16./15., 2./3.}, VectorType { -999,  -999,  -999}},
+           /* 4 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {  0.675,   2.475, 1.575}, VectorType {    0.9,     3.3,   2.1}, VectorType {0.675, 2.475, 1.575}}};
   // clang-format on
 
   // Test evaluation at various degrees and various number of control
@@ -193,7 +122,7 @@ TEST(primal_nurbscurve, first_derivatives)
   {
     for(int deg = 0; deg <= npts - 1; ++deg)
     {
-      NURBSCurveType curve(data, npts, deg);
+      NURBSCurveType curve(data, weights, npts, deg);
 
       VectorType calc_start = curve.dt(0.0);
       VectorType calc_mid = curve.dt(0.5);
@@ -226,69 +155,26 @@ TEST(primal_nurbscurve, second_derivatives)
                                     PointType {2.9, 2.4, 2.3},
                                     PointType {3.2, 3.5, 3.0}};
 
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
   // clang-format off
   VectorType exp_start_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-    /* 1 pt */ {{VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 2 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0, 0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 3 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0, 0, 0.0, 0.0},
-                 VectorType {1.8, 0.8, -0.6},
-                 VectorType {-999, -999, -999}},
-                /* 4 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0, 0, 0.0, 0.0},
-                 VectorType {0.8, 0.0, -4.4},
-                 VectorType {5.4, 2.4, -1.8}}};
+           /* 1 pt */ {{VectorType {0.0, 0.0, 0.0},  VectorType { -999,  -999,  -999},  VectorType { -999,  -999,  -999},  VectorType {-999, -999,  -999}},
+           /* 2 pt */  {VectorType {0.0, 0.0, 0.0},  VectorType { -2.8,  -1.6,  -3.2},  VectorType { -999,  -999,  -999},  VectorType {-999, -999,  -999}},
+           /* 3 pt */  {VectorType {0.0, 0.0, 0.0},  VectorType {-11.2,  -6.4, -12.8},  VectorType { -3.0,  -2.4, -11.4},  VectorType {-999, -999,  -999}},
+           /* 4 pt */  {VectorType {0.0, 0.0, 0.0},  VectorType {-25.2, -14.4, -28.8},  VectorType {-34.0, -20.8, -54.8},  VectorType {-0.6, -2.4, -24.6}}};
 
-  VectorType exp_mid_vals[4][4] =  // degree 0                    degree 1                    degree 2                         degree 3
-    /* 1 pt */ {{VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 2 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 3 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.0, 0.0, 0.0},
-                 VectorType {1.8, 0.8, -0.6},
-                 VectorType {-999, -999, -999}},
-                /* 4 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.0, 0.0, 0.0},
-                 VectorType {-4.0, 5.6, 3.6},
-                 VectorType {-1.2, 2.1, -0.3}}};
+  VectorType exp_mid_vals[4][4] =  // degree 0                     degree 1                    degree 2                         degree 3
+           /* 1 pt */ {{VectorType {0.0, 0.0, 0.0}, VectorType {      -999,       -999,       -999}, VectorType {   -999,   -999,   -999}, VectorType {   -999,   -999,   -999}},
+           /* 2 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {-112./135., -64.0/135., -128./135.}, VectorType {   -999,   -999,   -999}, VectorType {   -999,   -999,   -999}},
+           /* 3 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {      -9.6,       -4.8,       -3.0}, VectorType { -0.375,   -0.3, -1.425}, VectorType {   -999,   -999,   -999}},
+           /* 4 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {  -11.0592,    -5.5296,     -3.456}, VectorType {-5.1712, 9.5744,  6.144}, VectorType {-3.8448, 0.3456, -0.888}}};
 
-  VectorType exp_end_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-    /* 1 pt */ {{VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 2 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.0, 0.0, 0.0},
-                 VectorType {-999, -999, -999},
-                 VectorType {-999, -999, -999}},
-                /* 3 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.0, 0.0, 0.0},
-                 VectorType {1.8, 0.8, -0.6},
-                 VectorType {-999, -999, -999}},
-                /* 4 pt */
-                {VectorType {0.0, 0.0, 0.0},
-                 VectorType {0.0, 0.0, 0.0},
-                 VectorType {-4.0, 5.6, 3.6},
-                 VectorType {-7.8, 1.8, 1.2}}};
+  VectorType exp_end_vals[4][4] =  // degree 0                             degree 1                               degree 2                              degree 3
+           /* 1 pt */ {{VectorType {0.0, 0.0, 0.0}, VectorType {     -999,     -999,    -999}, VectorType {  -999,    -999,     -999}, VectorType {   -999,   -999,   -999}},
+           /* 2 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {    -0.35,     -0.2,    -0.4}, VectorType {  -999,    -999,     -999}, VectorType {   -999,   -999,   -999}},
+           /* 3 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {-128./45., -64./45.,  -8./9.}, VectorType {-1./9., -8./90., -19./45.}, VectorType {   -999,   -999,   -999}},
+           /* 4 pt */  {VectorType {0.0, 0.0, 0.0}, VectorType {  -1.0125,  -3.7125, -2.3625}, VectorType {  -2.9,    -0.5,     -0.3}, VectorType {-4.0125, 0.4875, 0.3375}}};
   // clang-format on
 
   // Test evaluation at various degrees and various number of control
@@ -297,7 +183,7 @@ TEST(primal_nurbscurve, second_derivatives)
   {
     for(int deg = 0; deg <= npts - 1; ++deg)
     {
-      NURBSCurveType curve(data, npts, deg);
+      NURBSCurveType curve(data, weights, npts, deg);
 
       VectorType calc_start = curve.dtdt(0.0);
       VectorType calc_mid = curve.dtdt(0.5);
@@ -423,28 +309,28 @@ TEST(primal_nurbscurve, curve_splitting)
   for(double t = 0.0; t < 1.0; t += 0.05)
   {
     PointType p = curve.evaluate(t);
-    
-    if( t <= 0.3 )
+
+    if(t <= 0.3)
     {
-      PointType p1 = curve1.evaluate( t / 0.3 );
+      PointType p1 = curve1.evaluate(t / 0.3);
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p1[i], 1e-13);
       }
     }
 
-    if( t >= 0.3 && t <= 0.6 )
+    if(t >= 0.3 && t <= 0.6)
     {
-      PointType p2 = curve2.evaluate( (t - 0.3) / (0.6 - 0.3) );
+      PointType p2 = curve2.evaluate((t - 0.3) / (0.6 - 0.3));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p2[i], 1e-13);
       }
     }
 
-    if( t >= 0.6 )
+    if(t >= 0.6)
     {
-      PointType p3 = curve3.evaluate( (t - 0.6) / (1 - 0.6) );
+      PointType p3 = curve3.evaluate((t - 0.6) / (1 - 0.6));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p3[i], 1e-13);
@@ -456,7 +342,7 @@ TEST(primal_nurbscurve, curve_splitting)
 //------------------------------------------------------------------------------
 TEST(primal_nurbscurve, bezier_extraction)
 {
-  return; 
+  return;
 
   SLIC_INFO("Testing NURBS Bezier extraction");
 
@@ -488,37 +374,37 @@ TEST(primal_nurbscurve, bezier_extraction)
   for(double t = 0.0; t < 1.0; t += 0.05)
   {
     PointType p = curve.evaluate(t);
-    
-    if( t <= 0.3 )
+
+    if(t <= 0.3)
     {
-      PointType p1 = bezier_list[0].evaluate( t / 0.3 );
+      PointType p1 = bezier_list[0].evaluate(t / 0.3);
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p1[i], 1e-13);
       }
     }
 
-    if( t >= 0.3 && t <= 0.6 )
+    if(t >= 0.3 && t <= 0.6)
     {
-      PointType p2 = bezier_list[1].evaluate( (t - 0.3) / (0.6 - 0.3) );
+      PointType p2 = bezier_list[1].evaluate((t - 0.3) / (0.6 - 0.3));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p2[i], 1e-13);
       }
     }
 
-    if( t >= 0.6 && t <= 0.8 )
+    if(t >= 0.6 && t <= 0.8)
     {
-      PointType p3 = bezier_list[2].evaluate( (t - 0.6) / (0.8 - 0.6) );
+      PointType p3 = bezier_list[2].evaluate((t - 0.6) / (0.8 - 0.6));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p3[i], 1e-13);
       }
     }
 
-    if( t >= 0.8 )
+    if(t >= 0.8)
     {
-      PointType p4 = bezier_list[3].evaluate( (t - 0.8) / (1 - 0.8) );
+      PointType p4 = bezier_list[3].evaluate((t - 0.8) / (1 - 0.8));
       for(int i = 0; i < DIM; ++i)
       {
         EXPECT_NEAR(p[i], p4[i], 1e-13);

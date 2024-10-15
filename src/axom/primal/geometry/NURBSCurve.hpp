@@ -357,25 +357,25 @@ public:
     const int p = getDegree();
     ders.resize(d);
 
+    const bool isRational = this - this->isRational();
+
     int du = std::min(d, p);
     const auto span = findSpan(t);
     axom::Array<axom::Array<T>> N_evals(d + 1);
     derivativeBasisFunctions(span, t, du, N_evals);
 
-    // Store w(u) in wders[0], w'(u) in wders[1], ...
-    // std::vector<PointType> Aders(d + 1);
-    // std::vector<double> wders(d + 1);
-
+    // Store w(u) in Awders[NDIMS][0], w'(u) in Awders[NDIMS][1], ...
     axom::Array<Point<T, NDIMS + 1>> Awders(d + 1);
 
     // Compute the point and d derivatives
     for(int k = 0; k <= du; k++)
     {
-      Point<T, NDIMS + 1> Pw;
+      Point<T, NDIMS + 1> Pw(0.0);
       for(int j = 0; j <= p; j++)
       {
+
         auto offset = span - p + j;
-        const double weight = isRational() ? m_weights[offset] : 1.0;
+        const double weight = isRational ? m_weights[offset] : 1.0;
 
         // Compute the weighted point.
         for(int i = 0; i < NDIMS; ++i)
@@ -419,12 +419,17 @@ public:
     for(int k = 2; k <= d; k++)
     {
       v = Awders[k];
-      for(int i = 1; i <= k; i++)
+      for(int j = 0; j < NDIMS; ++j)
+      {
+        v[j] = v[j] - Awders[k][NDIMS] * eval[j];
+      }
+     
+      for(int i = 1; i < k; i++)
       {
         auto bin = axom::utilities::binomialCoefficient(k, i);
         for(int j = 0; j < NDIMS; ++j)
         {
-          v[j] = v[j] - bin * Awders[i][NDIMS] * ders[k - 2][j];
+          v[j] = v[j] - bin * Awders[i][NDIMS] * ders[k - i - 1][j];
         }
       }
 
@@ -440,7 +445,7 @@ public:
     SLIC_ASSERT(t >= 0.0 && t <= 1.0);
     SLIC_ASSERT(multiplicity > 0);
 
-    const bool isRational = this- this->isRational();
+    const bool isRational = this - this->isRational();
 
     const int n = getNumControlPoints() - 1;
     const int p = getNumKnots() - n - 2;
@@ -507,7 +512,7 @@ public:
           (isRational ? m_weights[span - p + i] : 1.0);
       }
 
-      if( isRational )
+      if(isRational)
       {
         tempWeights[i] = m_weights[span - p + i];
       }
@@ -528,15 +533,18 @@ public:
 
         if(isRational)
         {
-          tempWeights[i] = (1.0 - alpha) * tempWeights[i] + alpha * tempWeights[i + 1];
+          tempWeights[i] =
+            (1.0 - alpha) * tempWeights[i] + alpha * tempWeights[i + 1];
         }
       }
 
       for(int N = 0; N < NDIMS; ++N)
       {
-        newControlPoints[L][N] = tempControlPoints[0][N] / (isRational ? tempWeights[0] : 1.0);
+        newControlPoints[L][N] =
+          tempControlPoints[0][N] / (isRational ? tempWeights[0] : 1.0);
         newControlPoints[span + multiplicity - j - s][N] =
-          tempControlPoints[p - j - s][N] / (isRational ? tempWeights[p - j - s] : 1.0);
+          tempControlPoints[p - j - s][N] /
+          (isRational ? tempWeights[p - j - s] : 1.0);
       }
 
       if(isRational)
@@ -550,7 +558,8 @@ public:
     {
       for(int N = 0; N < NDIMS; ++N)
       {
-        newControlPoints[i][N] = tempControlPoints[i - L][N] / (isRational ? tempWeights[i - L] : 1.0);
+        newControlPoints[i][N] =
+          tempControlPoints[i - L][N] / (isRational ? tempWeights[i - L] : 1.0);
       }
 
       if(isRational)
@@ -577,7 +586,7 @@ public:
   {
     SLIC_ASSERT(t >= 0.0 && t <= 1.0);
 
-    const bool isRational = this- this->isRational();
+    const bool isRational = this - this->isRational();
     const int p = getDegree();
 
     n1 = *this;
@@ -604,11 +613,10 @@ public:
     {
       n2.m_controlPoints[k - s - 2 - i] =
         n1.m_controlPoints[n1.m_controlPoints.size() - 1 - i];
-      
+
       if(isRational)
       {
-        n2.m_weights[k - s - 2 - i] =
-          n1.m_weights[n1.m_weights.size() - 1 - i];
+        n2.m_weights[k - s - 2 - i] = n1.m_weights[n1.m_weights.size() - 1 - i];
       }
     }
 
@@ -631,10 +639,31 @@ public:
    */
   axom::Array<BezierCurve<T, NDIMS>> extractBezier() const
   {
-    const bool isRational = this->isRational();
-    int p = getDegree();
-    int numBeziers = 1;
+    axom::Array<BezierCurve<T, NDIMS>> beziers;
 
+    const bool isRational = this->isRational();
+
+    int p = getDegree();
+    if(p == 0)  // Handle this special case
+    {
+      for(int i = 0; i < getNumControlPoints(); ++i)
+      {
+        BezierCurve<T, NDIMS> bezier(0);
+        bezier[0] = m_controlPoints[i];
+
+        if(isRational)
+        {
+          bezier.makeRational();
+          bezier.setWeight(0, m_weights[i]);
+        }
+
+        beziers.push_back(bezier);
+      }
+
+      return beziers;
+    }
+
+    int numBeziers = 1;
     // Split the curve at each knot value
     NURBSCurve<T, NDIMS> n1(*this);
     for(int i = p + 1; i < getNumKnots() - p - 1; ++i)
@@ -650,9 +679,8 @@ public:
     }
 
     // For each Bezier, copy the control nodes into Bezier curves
-    axom::Array<BezierCurve<T, NDIMS>> beziers;
     BezierCurve<T, NDIMS> bezier(p);
-    if( isRational )
+    if(isRational)
     {
       bezier.makeRational();
     }
@@ -661,11 +689,11 @@ public:
     for(int i = 0; i < n1.getNumControlPoints(); ++i)
     {
       bezier[the_node] = n1[i];
-      if( isRational )
+      if(isRational)
       {
         bezier.setWeight(the_node, n1.getWeight(i));
       }
-      
+
       the_node++;
       if(the_node == (p + 1))
       {

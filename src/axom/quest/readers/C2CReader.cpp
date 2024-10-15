@@ -550,8 +550,8 @@ struct NURBSInterpolator
       for(int i = 1; i <= k; i++)
       {
         auto bin = axom::utilities::binomialCoefficient(k, i);
-        v[0] = v[0] - bin * wders[i] * CK[k - 1][0];
-        v[1] = v[1] - bin * wders[i] * CK[k - 1][1];
+        v[0] = v[0] - bin * wders[i] * CK[k - i][0];
+        v[1] = v[1] - bin * wders[i] * CK[k - i][1];
       }
       CK[k][0] = v[0] / wders[0];
       CK[k][1] = v[1] / wders[0];
