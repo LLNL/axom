@@ -99,12 +99,15 @@ TEST(primal_nurbscurve, point_array_constructor)
   using PointType = primal::Point<CoordType, DIM>;
   using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
 
-  const int npts = 2;
+  const int npts = 3;
   const int degree = 1;
-  PointType controlPoints[npts] = {PointType {0.6, 1.2, 1.0},
-                                   PointType {0.0, 1.6, 1.8}};
 
-  double weights[npts] = {1.0, 2.0};
+  // Construct from C-Style arrays
+  PointType controlPoints[npts] = {PointType {0.6, 1.2, 1.0},
+                                   PointType {0.0, 1.6, 1.8},
+                                   PointType {0.2, 1.4, 2.0}};
+
+  double weights[npts] = {1.0, 2.0, 3.0};
 
   NURBSCurveType nCurve(controlPoints, npts, degree);
   NURBSCurveType wCurve(controlPoints, weights, npts, degree);
@@ -123,27 +126,55 @@ TEST(primal_nurbscurve, point_array_constructor)
       EXPECT_DOUBLE_EQ(controlPoints[p][i], pt2[i]);
     }
   }
+
+  // Construct from axom::Array
+  axom::Array<PointType> controlPointsArray {PointType {0.6, 1.2, 1.0},
+                                             PointType {0.0, 1.6, 1.8},
+                                             PointType {0.2, 1.4, 2.0}};
+  axom::Array<double> weightsArray {1.0, 2.0, 3.0};
+
+  NURBSCurveType nCurveArray(controlPointsArray, degree);
+  NURBSCurveType wCurveArray(controlPointsArray, weightsArray, degree);
+
+  EXPECT_EQ(1, nCurveArray.getDegree());
+  for(int p = 0; p <= nCurveArray.getDegree(); ++p)
+  {
+    auto& pt1 = nCurveArray[p];
+    auto& pt2 = wCurveArray[p];
+    double w = wCurveArray.getWeight(p);
+
+    EXPECT_DOUBLE_EQ(weightsArray[p], w);
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_DOUBLE_EQ(controlPointsArray[p][i], pt1[i]);
+      EXPECT_DOUBLE_EQ(controlPointsArray[p][i], pt2[i]);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbscurve, axom_array_constructor)
+TEST(primal_nurbscurve, knot_array_constructor)
 {
-  SLIC_INFO("Testing point array constructor");
+  SLIC_INFO("Testing knot array constructor");
 
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
 
-  const int npts = 2;
+  const int npts = 3;
   const int degree = 1;
-  axom::Array<PointType> controlPoints {PointType {0.6, 1.2, 1.0},
-                                        PointType {0.0, 1.6, 1.8}};
 
-  axom::Array<double> weights {1.0, 2.0};
+  // Construct from C-Style arrays
+  PointType controlPoints[npts] = {PointType {0.6, 1.2, 1.0},
+                                   PointType {0.0, 1.6, 1.8},
+                                   PointType {0.2, 1.4, 2.0}};
 
-  NURBSCurveType nCurve(controlPoints, degree);
-  NURBSCurveType wCurve(controlPoints, weights, degree);
+  double weights[npts] = {1.0, 2.0, 3.0};
+  double knots[npts + degree + 1] = {0.0, 0.0, 0.2, 1.0, 1.0};
+
+  NURBSCurveType nCurve(controlPoints, npts, knots, npts + degree + 1);
+  NURBSCurveType wCurve(controlPoints, weights, npts, knots, npts + degree + 1);
 
   EXPECT_EQ(1, nCurve.getDegree());
   for(int p = 0; p <= nCurve.getDegree(); ++p)
@@ -157,6 +188,31 @@ TEST(primal_nurbscurve, axom_array_constructor)
     {
       EXPECT_DOUBLE_EQ(controlPoints[p][i], pt1[i]);
       EXPECT_DOUBLE_EQ(controlPoints[p][i], pt2[i]);
+    }
+  }
+
+  // Construct from axom::Array
+  axom::Array<PointType> controlPointsArray {PointType {0.6, 1.2, 1.0},
+                                             PointType {0.0, 1.6, 1.8},
+                                             PointType {0.2, 1.4, 2.0}};
+  axom::Array<double> weightsArray {1.0, 2.0, 3.0};
+  axom::Array<double> knotsArray {0.0, 0.0, 0.2, 1.0, 1.0};
+
+  NURBSCurveType nCurveArray(controlPointsArray, knotsArray);
+  NURBSCurveType wCurveArray(controlPointsArray, weightsArray, knotsArray);
+
+  EXPECT_EQ(1, nCurveArray.getDegree());
+  for(int p = 0; p <= nCurveArray.getDegree(); ++p)
+  {
+    auto& pt1 = nCurveArray[p];
+    auto& pt2 = wCurveArray[p];
+    double w = wCurveArray.getWeight(p);
+
+    EXPECT_DOUBLE_EQ(weightsArray[p], w);
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_DOUBLE_EQ(controlPointsArray[p][i], pt1[i]);
+      EXPECT_DOUBLE_EQ(controlPointsArray[p][i], pt2[i]);
     }
   }
 }

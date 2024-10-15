@@ -111,11 +111,7 @@ public:
     int degree = bezierCurve.getOrder();
     m_knots.resize(2 * (degree + 1));
 
-    for(int i = 0; i < 2 * (degree + 1); ++i)
-    {
-      // Using integer division to get a uniform knot vector
-      m_knots[i] = static_cast<T>(i / (degree + 1));
-    }
+    makeKnotsUniform(degree + 1, degree);
   }
 
   /*!
@@ -142,7 +138,7 @@ public:
       m_controlPoints[i] = pts[i];
     }
 
-    makeKnotsUniform(degree, npts);
+    makeKnotsUniform(npts, degree);
   }
 
   /*!
@@ -172,17 +168,77 @@ public:
     }
 
     // Knots for the clamped curve
-    for(int i = 0; i < degree + 1; ++i)
+    makeKnotsUniform(npts, degree);
+  }
+
+  /*!
+   * \brief Constructor for a NURBS Curve with control points and knots
+   *
+   * \param [in] pts the control points of the curve
+   * \param [in] npts the number of control points and weights
+   * \param [in] knots the weights of the control points
+   * \param [in] nkts the length of the knot vector
+   * 
+   * For clamped (c0) curves, npts and nkts uniquely determine the degree
+   * 
+   * \pre Requires that the curve is c0, i.e. knot vector is valid
+   */
+  NURBSCurve(PointType* pts, int npts, T* knots, int nkts)
+  {
+    SLIC_ASSERT(nkts >= 0);
+    SLIC_ASSERT(npts >= 0);
+
+    m_controlPoints.resize(npts);
+    m_knots.resize(nkts);
+
+    for(int i = 0; i < npts; ++i)
     {
-      m_knots[i] = 0.0;
-      m_knots[npts + degree - i] = 1.0;
+      m_controlPoints[i] = pts[i];
     }
 
-    // Interior knots (if any)
-    for(int i = 0; i < npts - degree - 1; ++i)
+    for(int i = 0; i < nkts; ++i)
     {
-      m_knots[degree + 1 + i] = (i + 1.0) / (npts - degree);
+      m_knots[i] = knots[i];
     }
+
+    makeNonrational();
+    SLIC_ASSERT(isValidNURBS());
+  }
+
+  /*!
+   * \brief Constructor for a NURBS Curve with control points, weights, and knots
+   *
+   * \param [in] pts the control points of the curve
+   * \param [in] npts the number of control points and weights
+   * \param [in] weights the weights of the control points
+   * \param [in] knots the weights of the control points
+   * \param [in] nkts the length of the knot vector
+   * 
+   * For clamped (c0) curves, npts and nkts uniquely determine the degree
+   * 
+   * \pre Requires that the curve is c0, i.e. knot vector is valid
+   */
+  NURBSCurve(PointType* pts, T* weights, int npts, T* knots, int nkts)
+  {
+    SLIC_ASSERT(nkts >= 0);
+    SLIC_ASSERT(npts >= 0);
+
+    m_controlPoints.resize(npts);
+    m_weights.resize(npts);
+    m_knots.resize(nkts);
+
+    for(int i = 0; i < npts; ++i)
+    {
+      m_controlPoints[i] = pts[i];
+      m_weights[i] = weights[i];
+    }
+
+    for(int i = 0; i < nkts; ++i)
+    {
+      m_knots[i] = knots[i];
+    }
+
+    SLIC_ASSERT(isValidNURBS());
   }
 
   /*!
@@ -206,17 +262,7 @@ public:
     makeNonrational();
 
     // Knots for the clamped curve
-    for(int i = 0; i < degree + 1; ++i)
-    {
-      m_knots[i] = 0.0;
-      m_knots[npts + degree - i] = 1.0;
-    }
-
-    // Interior knots (if any)
-    for(int i = 0; i < npts - degree - 1; ++i)
-    {
-      m_knots[degree + 1 + i] = (i + 1.0) / (npts - degree);
-    }
+    makeKnotsUniform(npts, degree);
   }
 
   /*!
@@ -234,6 +280,7 @@ public:
              int degree)
   {
     SLIC_ASSERT(pts.size() >= degree + 1);
+    SLIC_ASSERT(pts.size() == weights.size());
     SLIC_ASSERT(degree >= 0);
 
     m_controlPoints = pts;
@@ -243,18 +290,54 @@ public:
     m_knots.resize(npts + degree + 1);
 
     // Knots for the clamped curve
-    for(int i = 0; i < degree + 1; ++i)
-    {
-      m_knots[i] = 0.0;
-      m_knots[npts + degree - i] = 1.0;
-    }
-
-    // Interior knots (if any)
-    for(int i = 0; i < npts - degree - 1; ++i)
-    {
-      m_knots[degree + 1 + i] = (i + 1.0) / (npts - degree);
-    }
+    makeKnotsUniform(npts, degree);
   }
+
+  /*!
+   * \brief Constructor for a NURBS Curve with axom arrays of nodes and knots
+   *
+   * \param [in] controlPoints the control points of the curve
+   * \param [in] knots the knot vector of the curve
+   *
+   * \pre requires npts >= 0, nkts >= 0, and that the knot vector is valid
+   */
+  NURBSCurve(const axom::Array<PointType>& pts,
+             const axom::Array<T>& knots)
+  {
+    SLIC_ASSERT(pts.size() >= 0);
+    SLIC_ASSERT(knots.size() >= 0);
+
+    m_controlPoints = pts;
+    m_knots = knots;
+    makeNonrational();
+
+    SLIC_ASSERT(isValidNURBS());
+  }
+
+  /*!
+   * \brief Constructor for a NURBS Curve with axom arrays of nodes, weights, and knots
+   *
+   * \param [in] pts the control points of the curve
+   * \param [in] weights the weights of the control points
+   * \param [in] knots the knot vector of the curve
+   *
+   * \pre requires npts >= 0, nkts >= 0, and that the knot vector is valid
+   */
+  NURBSCurve(const axom::Array<PointType>& pts,
+             const axom::Array<T>& weights,
+             const axom::Array<T>& knots)
+  {
+    SLIC_ASSERT(pts.size() >= 0);
+    SLIC_ASSERT(pts.size() == weights.size());
+    SLIC_ASSERT(knots.size() >= 0);
+
+    m_controlPoints = pts;
+    m_weights = weights;
+    m_knots = knots;
+
+    SLIC_ASSERT(isValidNURBS());
+  }
+
 
   /*!
    * \brief Evaluate a NURBS Curve at a particular parameter value \a t
@@ -815,7 +898,7 @@ public:
     m_knots.resize(npts + degree + 1);
     makeNonrational();
 
-    makeKnotsUniform(degree, npts);
+    makeKnotsUniform(npts, degree);
   }
 
   /*!
@@ -840,7 +923,7 @@ public:
       m_controlPoints.resize(degree + 1);
     }
 
-    makeKnotsUniform(degree, npts);
+    makeKnotsUniform(npts, degree);
   }
 
   /// \brief Returns the degree of the NURBS Curve
@@ -879,7 +962,7 @@ public:
 
     if(npts != old_npts)
     {
-      makeKnotsUniform(getDegree(), npts);
+      makeKnotsUniform(npts, old_deg);
     }
   }
 
@@ -1073,7 +1156,7 @@ public:
 
 private:
   /// \brief Private function to make the knots uniform
-  void makeKnotsUniform(int p, int npts)
+  void makeKnotsUniform(int npts, int p)
   {
     m_knots.resize(npts + p + 1);
 
@@ -1095,6 +1178,13 @@ private:
   bool isValidNURBS() const
   {
     int p = getDegree();
+    if(p < -1)
+    {
+      // Degree must be non-negative,
+      //  i.e. nkts - npts - 1 >= -1
+      return false;
+    }
+
     for(int i = 0; i < p + 1; ++i)
     {
       if(m_knots[i] != 0.0)
@@ -1112,7 +1202,7 @@ private:
 
     for(int i = 1; i < m_knots.size(); ++i)
     {
-      if(m_knots[i] <= m_knots[i - 1])
+      if(m_knots[i] < m_knots[i - 1])
       {
         // Knots must be non-decreasing
         return false;
