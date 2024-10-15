@@ -4,6 +4,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "mesh_helpers.hpp"
+#include <axom/sidre.hpp>
+#include <axom/slic.hpp>
+#include <conduit/conduit_blueprint_mesh.hpp>
+#include <iostream>
+#include "axom/core/WhereMacro.hpp"
 
 namespace axom
 {
@@ -82,6 +87,159 @@ mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bb
 }
 
 #endif  // AXOM_USE_MFEM
+
+#if defined(AXOM_USE_SIDRE)
+
+axom::sidre::Group* make_structured_blueprint_box_mesh(
+  axom::sidre::Group* meshGrp,
+  const primal::BoundingBox<double, 3>& bbox,
+  const primal::NumericArray<int, 3>& res,
+  const std::string& topologyName,
+  const std::string& coordsetName)
+{
+  constexpr int DIM = 3;
+
+  auto ni = res[0];
+  auto nj = res[1];
+  auto nk = res[2];
+
+  const axom::StackArray<axom::IndexType, DIM> vertsShape {res[0] + 1,
+                                                           res[1] + 1,
+                                                           res[2] + 1};
+  const auto numVerts = vertsShape[0] * vertsShape[1] * vertsShape[2];
+
+  auto* topoGrp = meshGrp->createGroup("topologies")->createGroup(topologyName);
+  auto* coordsetGrp =
+    meshGrp->createGroup("coordsets")->createGroup(coordsetName);
+
+  topoGrp->createView("type")->setString("structured");
+  topoGrp->createView("coordset")->setString(coordsetName);
+  auto* dimsGrp = topoGrp->createGroup("elements/dims");
+  dimsGrp->createViewScalar("i", ni);
+  dimsGrp->createViewScalar("j", nj);
+  dimsGrp->createViewScalar("k", nk);
+
+  coordsetGrp->createView("type")->setString("explicit");
+  auto* valuesGrp = coordsetGrp->createGroup("values");
+  auto* xVu =
+    valuesGrp->createViewAndAllocate("x",
+                                     axom::sidre::DataTypeId::FLOAT64_ID,
+                                     numVerts);
+  auto* yVu =
+    valuesGrp->createViewAndAllocate("y",
+                                     axom::sidre::DataTypeId::FLOAT64_ID,
+                                     numVerts);
+  auto* zVu =
+    valuesGrp->createViewAndAllocate("z",
+                                     axom::sidre::DataTypeId::FLOAT64_ID,
+                                     numVerts);
+
+  const axom::MDMapping<DIM> vertMapping(vertsShape, axom::ArrayStrideOrder::ROW);
+  axom::ArrayView<double, DIM> xView(xVu->getData(),
+                                     vertsShape,
+                                     vertMapping.strides());
+  axom::ArrayView<double, DIM> yView(yVu->getData(),
+                                     vertsShape,
+                                     vertMapping.strides());
+  axom::ArrayView<double, DIM> zView(zVu->getData(),
+                                     vertsShape,
+                                     vertMapping.strides());
+
+  double dx = bbox.getMax()[0] - bbox.getMin()[0];
+  double dy = bbox.getMax()[1] - bbox.getMin()[1];
+  double dz = bbox.getMax()[2] - bbox.getMin()[2];
+  for(int k = 0; k < nk + 1; ++k)
+  {
+    for(int j = 0; j < nj + 1; ++j)
+    {
+      for(int i = 0; i < ni + 1; ++i)
+      {
+        xView(i, j, k) = bbox.getMin()[0] + i * dx;
+        yView(i, j, k) = bbox.getMin()[1] + j * dy;
+        zView(i, j, k) = bbox.getMin()[2] + k * dz;
+      }
+    }
+  }
+
+  #if defined(AXOM_DEBUG) && defined(AXOM_USE_CONDUIT)
+  {
+    conduit::Node info;
+    bool isValid = verifyBlueprintMesh(meshGrp, info);
+    SLIC_ASSERT_MSG(isValid, "Internal error: Generated mesh is invalid.");
+  }
+  #endif
+
+  return meshGrp;
+}
+
+#if defined(AXOM_USE_CONDUIT)
+axom::sidre::Group* make_unstructured_blueprint_box_mesh(
+  axom::sidre::Group* meshGrp,
+  const primal::BoundingBox<double, 3>& bbox,
+  const primal::NumericArray<int, 3>& res,
+  const std::string& topologyName,
+  const std::string& coordsetName)
+{
+  make_structured_blueprint_box_mesh(meshGrp, bbox, res, topologyName, coordsetName);
+  convert_blueprint_structured_explicit_to_unstructured(meshGrp, topologyName);
+  return meshGrp;
+}
+
+void convert_blueprint_structured_explicit_to_unstructured(
+  axom::sidre::Group* meshGrp,
+  const std::string& topoName)
+{
+  const std::string& coordsetName =
+    meshGrp->getView(axom::fmt::format("topologies/{}/coordset", topoName))
+      ->getString();
+
+  // Convert mesh to conduit::Node to use conduit's blueprint support.
+  conduit::Node info;
+  conduit::Node curMesh;
+  meshGrp->createNativeLayout(curMesh);
+  const conduit::Node& curTopo =
+    curMesh.fetch_existing(axom::fmt::format("topologies/{}", topoName));
+  SLIC_ASSERT(
+    conduit::blueprint::mesh::topology::structured::verify(curTopo, info));
+
+  // Use conduit to convert to unstructured.
+  conduit::Node newTopo;
+  conduit::Node newCoords;
+  conduit::blueprint::mesh::topology::structured::to_unstructured(curTopo,
+                                                                  newTopo,
+                                                                  newCoords);
+
+  // Copy unstructured back into meshGrp.
+  meshGrp->getGroup("topologies")->destroyGroup(topoName);
+  meshGrp->getGroup("topologies")->createGroup(topoName)->importConduitTree(newTopo);
+  meshGrp->getGroup("coordsets")->destroyGroup(coordsetName);
+  meshGrp->getGroup("coordsets")
+    ->createGroup(coordsetName)
+    ->importConduitTree(newCoords);
+
+  meshGrp->getView(axom::fmt::format("topologies/{}/coordset", topoName))
+    ->setString(coordsetName);
+
+  #if defined(AXOM_DEBUG)
+  conduit::Node newMesh;
+  meshGrp->createNativeLayout(newMesh);
+  SLIC_ASSERT(conduit::blueprint::mesh::verify(newMesh, info));
+  #endif
+
+  return;
+}
+
+bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info)
+{
+  conduit::Node meshNode;
+  meshGrp->createNativeLayout(meshNode);
+  bool isValid = conduit::blueprint::mesh::verify(meshNode, info);
+  if(!isValid) info.print();
+  return isValid;
+}
+#endif
+
+#endif
 
 }  // namespace util
 }  // namespace quest

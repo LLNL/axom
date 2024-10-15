@@ -383,6 +383,17 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
   slic::flushStreams();
 }
 
+axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
+{
+  using BBox3D = primal::BoundingBox<double, 3>;
+  using Pt3D = primal::Point<double, 3>;
+  auto res = primal::NumericArray<int, 3>(params.boxResolution.data());
+  auto bbox = BBox3D(Pt3D(params.boxMins.data()), Pt3D(params.boxMaxs.data()));
+  axom::quest::util::make_unstructured_blueprint_box_mesh(meshGrp, bbox, res);
+
+  return meshGrp;
+}
+
 /// \brief Utility function to initialize the logger
 void initializeLogger()
 {
@@ -893,7 +904,8 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
   const std::string materialFieldName =
     axom::fmt::format("vol_frac_{}", material);
   mfem::GridFunction* volFracGf = dc->GetField(materialFieldName);
-  axom::ArrayView<double> volFracGfArrayView(volFracGf->GetData(), volFracGf->Size());
+  axom::ArrayView<double> volFracGfArrayView(volFracGf->GetData(),
+                                             volFracGf->Size());
   axom::quest::TempArrayView<ExecSpace> volFracView(volFracGfArrayView, true);
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -1069,6 +1081,10 @@ int main(int argc, char** argv)
   // TODO Port to GPUs.  Shaper should be data-parallel, but data may not be on devices yet.
   using ExecSpace = typename axom::SEQ_EXEC;
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
+
+  axom::sidre::Group* compMeshGrp =
+    createBoxMesh(ds.getRoot()->createGroup("compMesh"));
+  compMeshGrp->print();
 
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
