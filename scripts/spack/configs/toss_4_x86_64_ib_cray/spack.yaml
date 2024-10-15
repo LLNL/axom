@@ -420,6 +420,34 @@ spack:
       - spec: unzip@6.0
         prefix: /usr
 
+    # External dependencies for opencascade
+    # libx* versions found via `strings /path/to/libx*.so
+    mesa:
+      buildable: False
+      externals:
+      - spec: mesa@23.1.4  # found via: glxinfo | grep -i version
+        prefix: /
+    libxi:
+      buildable: False
+      externals:
+      - spec: libxi@1.7.10
+        prefix: /
+    libxt:
+      buildable: False
+      externals:
+      - spec: libxt@1.1.5
+        prefix: /
+    libxext:
+      buildable: False
+      externals:
+      - spec: libxext@1.3.4
+        prefix: /
+    libxmu:
+      buildable: False
+      externals:
+      - spec: libxmu@1.1.3
+        prefix: /
+
     # External dependencies for SCR
     lsf:
       buildable: False
