@@ -86,7 +86,7 @@ TEST(primal_nurbscurve, set_degree)
   EXPECT_TRUE(nCurve.isRational());
 
   nCurve.setWeight(0, 2.0);
-  EXPECT_EQ( nCurve.getWeight(0), 2.0 );
+  EXPECT_EQ(nCurve.getWeight(0), 2.0);
 }
 
 //------------------------------------------------------------------------------

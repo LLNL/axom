@@ -529,7 +529,7 @@ public:
     multiplicity = std::min(multiplicity, p - s);
     if(multiplicity <= 0)
     {
-      return; // Early exit if no knots to add
+      return;  // Early exit if no knots to add
     }
 
     // Get new vectors of knots and control points
@@ -682,7 +682,6 @@ public:
       n2 = *this;
       return;
     }
-
 
     // Will make the multiplicity of the knot equal to p,
     //  even if it is already >= 1
@@ -1207,8 +1206,8 @@ private:
     }
     return N;
   }
- 
-   /*!
+
+  /*!
    * \brief Evaluates the NURBS basis functions and derivatives for span at parameter value t
    * 
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
