@@ -301,8 +301,7 @@ public:
    *
    * \pre requires npts >= 0, nkts >= 0, and that the knot vector is valid
    */
-  NURBSCurve(const axom::Array<PointType>& pts,
-             const axom::Array<T>& knots)
+  NURBSCurve(const axom::Array<PointType>& pts, const axom::Array<T>& knots)
   {
     SLIC_ASSERT(pts.size() >= 0);
     SLIC_ASSERT(knots.size() >= 0);
@@ -337,7 +336,6 @@ public:
 
     SLIC_ASSERT(isValidNURBS());
   }
-
 
   /*!
    * \brief Evaluate a NURBS Curve at a particular parameter value \a t
