@@ -44,15 +44,14 @@ std::ostream& operator<<(std::ostream& os, const NURBSCurve<T, NDIMS>& bCurve);
 /*!
  * \class NURBSCurve
  *
- * \brief Represents a NURBS curve defined by an array of control points
+ * \brief Represents a NURBS curve defined by an array of control points and knots
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
  * A NURBS curve has degree `p`, `n+1` control points, optionally `n+1` weights, 
  * and a knot vector of length `k+1`. A valid curve has k+1 = n+p+2
  * and knot values t_{i-1} <= t_i for i=1,...,k.
- * The curve is approximated by the control points,
- * parametrized from t=0 to t=1.
+ * The curve must be c0 continuous and is parametrized from t=0 to t=1.
  * 
  * Nonrational Bezier curves are identified by an empty weights array.
  */
@@ -99,6 +98,11 @@ public:
     }
   }
 
+  /*!
+   * \brief Constructor for a NURBS curve from a Bezier curve
+   *
+   * \param [in] bezierCurve the Bezier curve to convert to a NURBS curve 
+   */
   explicit NURBSCurve(BezierCurve<T, NDIMS> bezierCurve)
   {
     m_controlPoints = bezierCurve.getControlPoints();
@@ -121,8 +125,8 @@ public:
    * \param [in] npts the number of control points
    * \param [in] degree the degree of the curve
    * 
-   * The knot vector is constructed such that the curve is clamped
-   * \pre requires npts >= degree+1
+   * The knot vector is constructed such that the curve is continuous
+   * \pre requires npts >= degree+1 and degree >= 0
    */
   NURBSCurve(PointType* pts, int npts, int degree)
   {
@@ -138,18 +142,7 @@ public:
       m_controlPoints[i] = pts[i];
     }
 
-    // Knots for the clamped curve
-    for(int i = 0; i < degree + 1; ++i)
-    {
-      m_knots[i] = 0.0;
-      m_knots[npts + degree - i] = 1.0;
-    }
-
-    // Interior knots (if any)
-    for(int i = 0; i < npts - degree - 1; ++i)
-    {
-      m_knots[degree + 1 + i] = (i + 1.0) / (npts - degree);
-    }
+    makeKnotsUniform(degree, npts);
   }
 
   /*!
@@ -160,8 +153,8 @@ public:
    * \param [in] npts the number of control points and weights
    * \param [in] degree the degree of the curve
    * 
-   * The knot vector is constructed such that the curve is clamped
-   * \pre requires npts >= degree+1
+   * The knot vector is constructed such that the curve is continuous
+   * \pre requires npts >= degree+1 and degree >= 0
    */
   NURBSCurve(PointType* pts, T* weights, int npts, int degree)
   {
@@ -198,8 +191,8 @@ public:
    * \param [in] controlPoints the control points of the curve
    * \param [in] degree the degree of the curve
    *
-   * The knot vector is constructed such that the curve is clamped
-   * \pre requires npts >= degree+1
+   * The knot vector is constructed such that the curve is continuous
+   * \pre requires npts >= degree+1 and degree >= 0
    */
   NURBSCurve(const axom::Array<PointType>& pts, int degree)
   {
@@ -234,7 +227,7 @@ public:
    * \param [in] degree the degree of the curve
    *
    * The knot vector is constructed such that the curve is clamped
-   * \pre requires npts >= degree+1
+   * \pre requires npts >= degree+1 and degree >= 0
    */
   NURBSCurve(const axom::Array<PointType>& pts,
              const axom::Array<T>& weights,
@@ -263,6 +256,16 @@ public:
     }
   }
 
+  /*!
+   * \brief Evaluate a NURBS Curve at a particular parameter value \a t
+   *
+   * \param [in] t The parameter value at which to evaluate
+   * \return p The point of the NURBS curve at t
+   * 
+   * Adapted from Algorithm A4.1 on page 124 of "The NURBS Book"
+   * 
+   * \note We typically evaluate the curve at \a t between 0 and 1
+   */
   PointType evaluate(T t) const
   {
     const auto span = findSpan(t);
@@ -311,6 +314,14 @@ public:
     }
   }
 
+  /*!
+   * \brief Evaluate the first derivative of NURBS Curve at parameter \a t
+   *
+   * \param [in] t The parameter value at which to evaluate
+   * \return p The vector of NURBS curve's derivative at t
+   * 
+   * \note We typically evaluate the curve at \a t between 0 and 1
+   */
   VectorType dt(T t) const
   {
     PointType eval;
@@ -320,6 +331,14 @@ public:
     return ders[0];
   }
 
+  /*!
+   * \brief Evaluate the second derivative of NURBS Curve at parameter \a t
+   *
+   * \param [in] t The parameter value at which to evaluate
+   * \return p The vector of NURBS curve's 2nd derivative at t
+   * 
+   * \note We typically evaluate the curve at \a t between 0 and 1
+   */
   VectorType dtdt(T t) const
   {
     PointType eval;
@@ -329,6 +348,15 @@ public:
     return ders[1];
   }
 
+  /*!
+   * \brief Evaluate the curve and the first derivative at parameter \a t
+   *
+   * \param [in] t The parameter value at which to evaluate
+   * \param [out] eval The point on the curve at t
+   * \param [out] Dt The first derivative of the curve at t
+   * 
+   * \note We typically evaluate the curve at \a t between 0 and 1
+   */
   void evaluate_first_derivative(T t, PointType& eval, VectorType& Dt) const
   {
     axom::Array<VectorType> ders;
@@ -337,6 +365,16 @@ public:
     Dt = ders[0];
   }
 
+  /*!
+   * \brief Evaluate the curve and the first two derivatives at parameter \a t
+   *
+   * \param [in] t The parameter value at which to evaluate
+   * \param [out] eval The point on the curve at t
+   * \param [out] Dt The first derivative of the curve at t
+   * \param [out] DtDt The second derivative of the curve at t
+   * 
+   * \note We typically evaluate the curve at \a t between 0 and 1
+   */
   void evaluate_second_derivative(T t,
                                   PointType& eval,
                                   VectorType& Dt,
@@ -349,6 +387,16 @@ public:
     DtDt = ders[1];
   }
 
+  /*!
+   * \brief Evaluate the curve and the first \a d derivatives at parameter \a t
+   *
+   * \param [in] t The parameter value at which to evaluate
+   * \param [out] eval The point on the curve at t
+   * \param [out] ders An array of the first d derivatives at t
+   * 
+   * Implementation adapted from Algorithm A3.2 on p. 93 of "The NURBS Book".
+   * Rational derivatives from Algorithm A4.2 on p. 127 of "The NURBS Book".
+   */
   void evaluate_derivatives(T t,
                             int d,
                             PointType& eval,
@@ -367,7 +415,7 @@ public:
     // Store w(u) in Awders[NDIMS][0], w'(u) in Awders[NDIMS][1], ...
     axom::Array<Point<T, NDIMS + 1>> Awders(d + 1);
 
-    // Compute the point and d derivatives
+    // Compute the homogenous point and its d derivatives
     for(int k = 0; k <= du; k++)
     {
       Point<T, NDIMS + 1> Pw(0.0);
@@ -385,12 +433,12 @@ public:
       }
 
       Awders[k] = Pw;
-      // Aders[k] = PointType {x, y};
-      // wders[k] = w;
     }
 
-    // Do the rational part from A4.2. Note that Aders[0] is the point A(u)
-    // and wders[0] is w(u).
+    // Do the rational part from A4.2. Note that Awders[0][0-NDIMS] is the point A(u)
+    // and Awders[0][NDIMS] is w(u).
+
+    // Zero out the points
     for(int i = 0; i < NDIMS; ++i)
     {
       eval[i] = 0.0;
@@ -400,21 +448,21 @@ public:
       }
     }
 
-    // k = 0
+    // Separate k = 0 case
     Point<T, NDIMS + 1> v = Awders[0];
     for(int i = 0; i < NDIMS; ++i)
     {
       eval[i] = v[i] / Awders[0][NDIMS];
     }
 
-    // k = 1
+    // Separate k = 1 case
     v = Awders[1];
     for(int j = 0; j < NDIMS; ++j)
     {
       ders[0][j] = (v[j] - Awders[1][NDIMS] * eval[j]) / Awders[0][NDIMS];
     }
 
-    // k >= 2
+    // Recursive formula for k >= 2
     for(int k = 2; k <= d; k++)
     {
       v = Awders[k];
@@ -439,6 +487,17 @@ public:
     }
   }
 
+  /*! 
+   * \brief Insert a knot with given multiplicity
+   *
+   * \param [in] t The parameter value of the knot to insert
+   * \param [in] multiplicity The multiplicity of the knot to insert
+   * 
+   * Algorithm A5.1 on p. 151 of "The NURBS Book"
+   * 
+   * \note If the knot is already present, it will be inserted
+   *  up to the given multiplicity
+   */
   void insertKnot(T t, int multiplicity = 1)
   {
     SLIC_ASSERT(t >= 0.0 && t <= 1.0);
@@ -470,7 +529,7 @@ public:
     multiplicity = std::min(multiplicity, p - s);
     if(multiplicity <= 0)
     {
-      return;
+      return; // Early exit if no knots to add
     }
 
     // Get new vectors of knots and control points
@@ -501,6 +560,7 @@ public:
       }
     }
 
+    // Insert the new control points
     CoordsVec tempControlPoints(p + 1);
     WeightsVec tempWeights(isRational ? p + 1 : 0);
     for(int i = 0; i <= p - s; ++i)
@@ -567,6 +627,7 @@ public:
       }
     }
 
+    // Update the knot vector and control points
     m_knots = newKnots;
     m_controlPoints = newControlPoints;
     m_weights = newWeights;
@@ -588,10 +649,44 @@ public:
     const bool isRational = this - this->isRational();
     const int p = getDegree();
 
-    n1 = *this;
+    // Handle the special case of splitting at the endpoints
+    if(t == 0.0)
+    {
+      n1 = *this;
+      n2.clear();
+      n2.setDegree(p);
+      for(int i = 0; i <= p; ++i)
+      {
+        n2[i] = m_controlPoints[0];
+        if(isRational)
+        {
+          n2.makeRational();
+          n2.setWeight(i, m_weights[0]);
+        }
+      }
+      return;
+    }
+    else if(t == 1.0)
+    {
+      n1.clear();
+      n1.setDegree(p);
+      for(int i = 0; i <= p; ++i)
+      {
+        n1[i] = m_controlPoints[getNumControlPoints() - 1];
+        if(isRational)
+        {
+          n1.makeRational();
+          n1.setWeight(i, m_weights[getNumControlPoints() - 1]);
+        }
+      }
+      n2 = *this;
+      return;
+    }
+
 
     // Will make the multiplicity of the knot equal to p,
     //  even if it is already >= 1
+    n1 = *this;
     n1.insertKnot(t, p);
 
     int k = n1.getNumKnots();
@@ -662,8 +757,8 @@ public:
       return beziers;
     }
 
-    int numBeziers = 1;
     // Split the curve at each knot value
+    int numBeziers = 1;
     NURBSCurve<T, NDIMS> n1(*this);
     for(int i = p + 1; i < getNumKnots() - p - 1; ++i)
     {
@@ -706,6 +801,26 @@ public:
   }
 
   /*!
+   * \brief Reset the degree and number of points in the curve
+   *
+   * \param [in] npts The target number of control points
+   * \param [in] degree The target degree
+   * 
+   * \note Will clear any data already in these arrays.
+   */
+  void setParameters(int npts, int degree)
+  {
+    SLIC_ASSERT(npts >= degree + 1);
+    SLIC_ASSERT(degree >= 0);
+
+    m_controlPoints.resize(npts);
+    m_knots.resize(npts + degree + 1);
+    makeNonrational();
+
+    makeKnotsUniform(degree, npts);
+  }
+
+  /*!
    * \brief Reset the knot vector and increase the number of control points
    *
    * \param [in] degree The target degree
@@ -716,27 +831,17 @@ public:
   void setDegree(int degree)
   {
     SLIC_ASSERT(degree >= 0);
+
     int npts = getNumControlPoints();
-    if( npts < degree + 1 )
+    SLIC_ASSERT(degree < npts);
+
+    if(npts < degree + 1)
     {
       npts = degree + 1;
       m_controlPoints.resize(degree + 1);
     }
 
-    m_knots.resize(npts + degree + 1);
-
-    // Knots for the clamped curve
-    for(int i = 0; i < degree + 1; ++i)
-    {
-      m_knots[i] = 0.0;
-      m_knots[npts + degree - i] = 1.0;
-    }
-
-    // Interior knots (if any)
-    for(int i = 0; i < npts - degree - 1; ++i)
-    {
-      m_knots[degree + 1 + i] = (i + 1.0) / (npts - degree);
-    }
+    makeKnotsUniform(degree, npts);
   }
 
   /// \brief Returns the degree of the NURBS Curve
@@ -752,7 +857,32 @@ public:
   }
 
   /// \brief Returns the number of control poitns in the NURBS Curve
-  int getNumControlPoints() const { return m_controlPoints.size(); }
+  int getNumControlPoints() const
+  {
+    return static_cast<int>(m_controlPoints.size());
+  }
+
+  /*!
+   * \brief Set the number control points
+   *
+   * \param [in] npts The target number of control points
+   * 
+   * \warning This method does NOT maintain the curve shape,
+   *  i.e. is not performing knot insertion/removal.
+   */
+  void setNumControlPoints(int npts)
+  {
+    const int old_npts = getNumControlPoints();
+    const int old_deg = getDegree();
+    SLIC_ASSERT(npts > old_deg);
+    m_controlPoints.resize(npts);
+    m_knots.resize(npts + old_deg + 1);
+
+    if(npts != old_npts)
+    {
+      makeKnotsUniform(getDegree(), npts);
+    }
+  }
 
   /// \brief Returns the number of knots in the NURBS Curve
   int getNumKnots() const { return m_knots.size(); }
@@ -770,10 +900,10 @@ public:
     }
   }
 
-  /// Use array size as flag for rationality
+  /// \brief Use array size as flag for rationality
   bool isRational() const { return !m_weights.empty(); }
 
-  /// Clears the list of control points, make nonrational
+  /// \brief Clears the list of control points, make nonrational
   void clear()
   {
     m_controlPoints.clear();
@@ -837,7 +967,7 @@ public:
     m_knots[idx] = knot;
   }
 
-  /// Checks equality of two Bezier Curve
+  /// \brief Checks equality of two Bezier Curve
   friend inline bool operator==(const NURBSCurve<T, NDIMS>& lhs,
                                 const NURBSCurve<T, NDIMS>& rhs)
   {
@@ -845,46 +975,62 @@ public:
       (lhs.m_knots == rhs.m_knots) && (lhs.m_weights == rhs.m_weights);
   }
 
+  /// \brief Checks inequality of two Bezier Curve
   friend inline bool operator!=(const NURBSCurve<T, NDIMS>& lhs,
                                 const NURBSCurve<T, NDIMS>& rhs)
   {
     return !(lhs == rhs);
   }
 
-  /// Returns a copy of the Bezier curve's control points
+  /// \brief Returns a copy of the Bezier curve's control points
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
+  /// \brief Returns a copy of the Bezier curve's control points
   WeightsVec getWeights() const { return m_weights; }
 
   KnotsVec getKnots() const { return m_knots; }
 
-  /// Reverses the order of the Bezier curve's control points and weights
+  /// \brief Reverses the order of the Bezier curve's control points and weights
   void reverseOrientation()
   {
-    const int ord = getOrder();
-    const int mid = (ord + 1) / 2;
+    const int deg = getDegree();
+    const int mid = (deg + 1) / 2;
     for(int i = 0; i < mid; ++i)
     {
-      axom::utilities::swap(m_controlPoints[i], m_controlPoints[ord - i]);
+      axom::utilities::swap(m_controlPoints[i], m_controlPoints[deg - i]);
     }
 
     if(isRational())
     {
       for(int i = 0; i < mid; ++i)
       {
-        axom::utilities::swap(m_weights[i], m_weights[ord - i]);
+        axom::utilities::swap(m_weights[i], m_weights[deg - i]);
       }
+    }
+
+    // Reverse the orientation of the knots
+    const int num_knots = getNumKnots();
+    const int knot_mid = (num_knots + 1) / 2;
+    for(int i = 0; i < knot_mid; ++i)
+    {
+      axom::utilities::swap(m_knots[i], m_knots[num_knots - i]);
+    }
+
+    // Replace each knot with 1 - knot_value
+    for(int i = 0; i < num_knots; ++i)
+    {
+      m_knots[i] = 1.0 - m_knots[i];
     }
   }
 
-  /// Returns an axis-aligned bounding box containing the Bezier curve
+  /// \brief Returns an axis-aligned bounding box containing the Bezier curve
   BoundingBoxType boundingBox() const
   {
     return BoundingBoxType(m_controlPoints.data(),
                            static_cast<int>(m_controlPoints.size()));
   }
 
-  /// Returns an oriented bounding box containing the Bezier curve
+  /// \brief Returns an oriented bounding box containing the Bezier curve
   OrientedBoundingBoxType orientedBoundingBox() const
   {
     return OrientedBoundingBoxType(m_controlPoints.data(),
@@ -927,6 +1073,26 @@ public:
   }
 
 private:
+  /// \brief Private function to make the knots uniform
+  void makeKnotsUniform(int p, int npts)
+  {
+    m_knots.resize(npts + p + 1);
+
+    // Knots for the clamped curve
+    for(int i = 0; i < p + 1; ++i)
+    {
+      m_knots[i] = 0.0;
+      m_knots[npts + p - i] = 1.0;
+    }
+
+    // Interior knots (if any)
+    for(int i = 0; i < npts - p - 1; ++i)
+    {
+      m_knots[p + 1 + i] = (i + 1.0) / (npts - p);
+    }
+  }
+
+  /// \brief Private function to check if the NURBS curve is valid
   bool isValidNURBS() const
   {
     int p = getDegree();
@@ -997,7 +1163,6 @@ private:
     }
 
     // perform binary search on the knots,
-    //  m_knots[mid] <= t < m_knots[mid+1]
     auto low = getDegree();
     auto high = n + 1;
     auto mid = (low + high) / 2;
@@ -1042,7 +1207,12 @@ private:
     }
     return N;
   }
-
+ 
+   /*!
+   * \brief Evaluates the NURBS basis functions and derivatives for span at parameter value t
+   * 
+   * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
+   */
   void derivativeBasisFunctions(axom::IndexType span,
                                 T t,
                                 int n,

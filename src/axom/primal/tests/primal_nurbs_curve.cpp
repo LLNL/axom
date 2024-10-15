@@ -38,7 +38,7 @@ TEST(primal_nurbscurve, constructor)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbscurve, set_order)
+TEST(primal_nurbscurve, set_degree)
 {
   const int DIM = 3;
   using CoordType = double;
@@ -51,16 +51,24 @@ TEST(primal_nurbscurve, set_order)
   EXPECT_EQ(-1, nCurve.getDegree());
 
   const int degree = 1;
-  PointType controlPoints[2] = {PointType {0.6, 1.2, 1.0},
-                                PointType {0.0, 1.6, 1.8}};
+  const int npts = 3;
+  PointType controlPoints[3] = {PointType {0.6, 1.2, 1.0},
+                                PointType {0.0, 1.6, 1.8},
+                                PointType {0.2, 1.4, 2.0}};
 
+  nCurve.setNumControlPoints(npts);
+  nCurve.setDegree(degree + 1);
   nCurve.setDegree(degree);
+
   EXPECT_EQ(nCurve.getDegree(), degree);
+  EXPECT_EQ(nCurve.getNumControlPoints(), npts);
+  EXPECT_EQ(nCurve.getNumKnots(), npts + degree + 1);
 
   nCurve[0] = controlPoints[0];
   nCurve[1] = controlPoints[1];
+  nCurve[2] = controlPoints[2];
 
-  for(int p = 0; p <= nCurve.getDegree(); ++p)
+  for(int p = 0; p < npts; ++p)
   {
     auto& pt = nCurve[p];
     for(int i = 0; i < DIM; ++i)
@@ -73,7 +81,7 @@ TEST(primal_nurbscurve, set_order)
   EXPECT_EQ(-1, nCurve.getDegree());
   EXPECT_FALSE(nCurve.isRational());
 
-  nCurve.setDegree(degree);
+  nCurve.setParameters(npts, degree);
   nCurve.makeRational();
   EXPECT_TRUE(nCurve.isRational());
 
