@@ -22,6 +22,7 @@
 #include <utility>
 #include <sstream>
 #include <stdexcept>
+#include <algorithm>
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
 #include "conduit_relay_io.hpp"
@@ -36,21 +37,68 @@ namespace
 char const RECORDS_KEY[] = "records";
 char const RELATIONSHIPS_KEY[] = "relationships";
 char const SAVE_TMP_FILE_EXTENSION[] = ".sina.tmp";
-}  // namespace
+}  
 
-std::string escapeSlashes(const std::string& name) {
-    std::string escaped = name;
-    std::string slash = "/";
-    std::string replacement = "__SLASH__";
-    size_t pos = 0;
+void removeSlashes(const conduit::Node& originalNode, conduit::Node& modifiedNode)
+{
+    for (auto it = originalNode.children(); it.has_next();)
+    {
+        it.next();
+        std::string key = it.name();
+        std::string modifiedKey = key;
+        //modifiedKey.erase(std::remove(modifiedKey.begin(), modifiedKey.end(), '/'), modifiedKey.end());
 
-    while ((pos = escaped.find(slash, pos)) != std::string::npos) {
-        escaped.replace(pos, slash.length(), replacement);
-        pos += replacement.length();
+        std::string toReplace = "/";
+        std::string replacement = "__SLASH__";
+
+        size_t pos = 0;
+        // Find and replace all occurrences of "/"
+        while ((pos = modifiedKey.find(toReplace, pos)) != std::string::npos) {
+          modifiedKey.replace(pos, toReplace.length(), replacement);
+          pos += replacement.length(); // Move past the replaced substring
+        }
+
+        modifiedNode[modifiedKey] = it.node();
+        
+        if (it.node().dtype().is_object())
+        {
+            conduit::Node nestedNode;
+            removeSlashes(it.node(), nestedNode);
+            modifiedNode[modifiedKey].set(nestedNode); 
+        }
     }
-
-    return escaped;
 }
+
+
+void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNode)
+{
+    for (auto it = modifiedNode.children(); it.has_next();)
+    {
+        it.next();
+        std::string key = it.name();
+        std::cout << key;
+        std::string restoredKey = key;
+        std::string toReplace = "__SLASH__";
+        std::string replacement = "/";
+
+        size_t pos = 0;
+        // Find and replace all occurrences of "__SLASH__"
+        while ((pos = restoredKey.find(toReplace, pos)) != std::string::npos) {
+          restoredKey.replace(pos, toReplace.length(), replacement);
+          pos += replacement.length(); // Move past the replaced substring
+        }
+
+        restoredNode[restoredKey] = it.node();
+        
+        if (it.node().number_of_children() > 0)
+        {
+            conduit::Node nestedNode;
+            restoreSlashes(it.node(), nestedNode);
+            restoredNode[restoredKey].set(nestedNode); 
+        }
+    }
+}
+
 
 void Document::add(std::unique_ptr<Record> record)
 {
@@ -125,6 +173,7 @@ void Document::createFromNode(conduit::Node const &asNode,
             add(Relationship{relationship});
         }
     }
+  asNode.print();
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -145,18 +194,20 @@ void Document::toHDF5(const std::string &filename) const
     conduit::Node &recordsNode = node["records"];
     conduit::Node &relationshipsNode = node["relationships"];
 
-    // Iterate through the list of records and add them to the Conduit node
     for (const auto& record : getRecords())
     {
         conduit::Node recordNode = record->toNode();
+        conduit::Node modifiedRecordNode;
 
-        recordsNode.append() = recordNode;
+        removeSlashes(recordNode, modifiedRecordNode);
+
+        recordsNode.append() = modifiedRecordNode; 
     }
 
+    // Process relationships
     for (const auto& relationship : getRelationships())
     {
         conduit::Node relationshipNode = relationship.toNode();
-
         relationshipsNode.append() = relationshipNode;
     }
 
@@ -244,18 +295,24 @@ Document loadDocument(std::string const &path, Protocol protocol)
 
 Document loadDocument(std::string const &path, RecordLoader const &recordLoader, Protocol protocol)
 {
-  conduit::Node node;
-  if (protocol == Protocol::JSON) {
-    std::ifstream file_in {path};
-    std::ostringstream file_contents;
-    file_contents << file_in.rdbuf();
-    file_in.close();
-    node.parse(file_contents.str(), "json");
-  } else if (protocol == Protocol::HDF5) {
-    conduit::relay::io::load(path, "hdf5", node);
-  }
+    conduit::Node node;
+    
+    // Load the file depending on the protocol
+    if (protocol == Protocol::JSON) {
+        std::ifstream file_in {path};
+        std::ostringstream file_contents;
+        file_contents << file_in.rdbuf();
+        file_in.close();
+        node.parse(file_contents.str(), "json");
+    } else if (protocol == Protocol::HDF5) {
+        conduit::Node modifiedNode;
+        conduit::relay::io::load(path, "hdf5", node);
+        restoreSlashes(node, modifiedNode);
+        node.print();
+    }
 
-  return Document {node, recordLoader};
+    // Finally, use the node to create the Document object (existing logic)
+    return Document {node, recordLoader};
 }
 
 }  // namespace sina
