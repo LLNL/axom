@@ -971,47 +971,6 @@ private:
   }
 
   /*!
-   * \brief Gets the grid function and material number for a material name.
-   *
-   * \param materialName The name of the material.
-   *
-   * \return A pair containing the associated grid function and material
-   *         number (its order in the list).
-   */
-  // std::pair<mfem::GridFunction*, int> getMaterial(const std::string& materialName)
-  std::pair<axom::ArrayView<double>, int> getMaterial(const std::string& materialName)
-  {
-    // If we already know about the material, return it.
-    for(size_t i = 0; i < m_vf_material_names.size(); i++)
-    {
-      if(m_vf_material_names[i] == materialName)
-      {
-        return std::make_pair(m_vf_grid_functions[i], static_cast<int>(i));
-      }
-    }
-
-    // Get or create the volume fraction field for this shape's material
-    auto materialVolFracName = materialNameToFieldName(materialName);
-
-    bool newData = !hasData(materialVolFracName);
-
-    auto matVolFrac = getScalarCellData(materialVolFracName);
-    if(newData)
-    {
-      // Zero out the volume fractions (on host).
-      // memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
-      memset(matVolFrac.data(), 0, matVolFrac.size() * sizeof(double));
-    }
-
-    // Add the material to our vectors.
-    int idx = static_cast<int>(m_vf_grid_functions.size());
-    m_vf_grid_functions.push_back(matVolFrac);
-    m_vf_material_names.push_back(materialName);
-
-    return std::make_pair(matVolFrac, idx);
-  }
-
-  /*!
    * \brief Scans the grid functions in the data collection and creates
    *        a material entry for any that do not already exist. We maintain
    *        our own vectors because we assume that the order of materials
@@ -1496,6 +1455,79 @@ public:
   void adjustVolumeFractions() override
   {
     // Implementation here -- not sure if this will require anything for intersection-based shaping
+  }
+
+  std::vector<std::string> getMaterialNames() const
+  {
+    std::vector<std::string> materialNames;
+#if defined(AXOM_USE_MFEM)
+    if(m_dc)
+    {
+      for(auto it : this->getDC()->GetFieldMap())
+      {
+        std::string materialName = fieldNameToMaterialName(it.first);
+        if(!materialName.empty())
+        {
+          materialNames.emplace_back(materialName);
+        }
+      }
+    }
+#endif
+#if defined(AXOM_USE_CONDUIT)
+    if(m_bpGrp)
+    {
+      auto fieldsGrp = m_bpGrp->getGroup("fields");
+      for(auto& group : fieldsGrp->groups())
+      {
+        std::string materialName = fieldNameToMaterialName(group.getName());
+        if(!materialName.empty())
+        {
+          materialNames.emplace_back(materialName);
+        }
+      }
+    }
+#endif
+    return materialNames;
+  }
+
+  /*!
+   * \brief Gets the grid function and material number for a material name.
+   *
+   * \param materialName The name of the material.
+   *
+   * \return A pair containing the associated grid function and material
+   *         number (its order in the list).
+   */
+  std::pair<axom::ArrayView<double>, int> getMaterial(const std::string& materialName)
+  {
+    // If we already know about the material, return it.
+    for(size_t i = 0; i < m_vf_material_names.size(); i++)
+    {
+      if(m_vf_material_names[i] == materialName)
+      {
+        return std::make_pair(m_vf_grid_functions[i], static_cast<int>(i));
+      }
+    }
+
+    // Get or create the volume fraction field for this shape's material
+    auto materialVolFracName = materialNameToFieldName(materialName);
+
+    bool newData = !hasData(materialVolFracName);
+
+    auto matVolFrac = getScalarCellData(materialVolFracName);
+    if(newData)
+    {
+      // Zero out the volume fractions (on host).
+      // memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
+      memset(matVolFrac.data(), 0, matVolFrac.size() * sizeof(double));
+    }
+
+    // Add the material to our vectors.
+    int idx = static_cast<int>(m_vf_grid_functions.size());
+    m_vf_grid_functions.push_back(matVolFrac);
+    m_vf_material_names.push_back(materialName);
+
+    return std::make_pair(matVolFrac, idx);
   }
 
 private:
@@ -2021,38 +2053,6 @@ private:
     }
 #endif
     return rval;
-  }
-
-  std::vector<std::string> getMaterialNames()
-  {
-    std::vector<std::string> materialNames;
-#if defined(AXOM_USE_MFEM)
-    if(m_dc)
-    {
-      for(auto it : this->getDC()->GetFieldMap())
-      {
-        std::string materialName = fieldNameToMaterialName(it.first);
-        if(!materialName.empty())
-        {
-          materialNames.emplace_back(materialName);
-        }
-      }
-    }
-#elif defined(AXOM_USE_CONDUIT)
-    if(m_bpGrp)
-    {
-      auto fieldsGrp = m_bpGrp->getGroup("fields");
-      for(auto& group : fieldsGrp->groups())
-      {
-        std::string materialName = fieldNameToMaterialName(group.getName());
-        if(!materialName.empty())
-        {
-          materialNames.emplace_back(materialName);
-        }
-      }
-    }
-#endif
-    return materialNames;
   }
 
 public:

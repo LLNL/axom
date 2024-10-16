@@ -60,16 +60,6 @@ public:
          sidre::Group* bpMesh,
          const std::string& topo = "");
 
-#if defined(AXOM_USE_CONDUIT)
-  /*!
-    @brief Construct Shaper to operate on a blueprint-formatted mesh
-    stored in a Conduit Node.
-  */
-  Shaper(const klee::ShapeSet& shapeSet,
-         conduit::Node* bpNode,
-         const std::string& topo = "");
-#endif
-
   virtual ~Shaper() = default;
 
 public:
@@ -99,6 +89,7 @@ public:
 
 #ifdef AXOM_USE_MFEM
   sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
+  const sidre::MFEMSidreDataCollection* getDC() const { return m_dc; }
 #endif
 
   /*!

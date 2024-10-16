@@ -392,8 +392,11 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
   using Pt3D = primal::Point<double, 3>;
   auto res = primal::NumericArray<int, 3>(params.boxResolution.data());
   auto bbox = BBox3D(Pt3D(params.boxMins.data()), Pt3D(params.boxMaxs.data()));
-  axom::quest::util::make_unstructured_blueprint_box_mesh(meshGrp, bbox, res,
-                                                          topoName, coordsetName);
+  axom::quest::util::make_unstructured_blueprint_box_mesh(meshGrp,
+                                                          bbox,
+                                                          res,
+                                                          topoName,
+                                                          coordsetName);
 
   return meshGrp;
 }
@@ -890,6 +893,100 @@ axom::sidre::View* getElementVolumes(
 }
 
 /*!
+  @brief Return the element volumes as a sidre::View.
+
+  If it doesn't exist, allocate and compute it.
+  \post The volume data is in the blueprint field \c volFieldName.
+
+  Most of this is lifted from IntersectionShaper::runShapeQueryImpl.
+*/
+template <typename ExecSpace>
+axom::sidre::View* getElementVolumes(
+  sidre::Group* meshGrp,
+  const std::string& volFieldName = std::string("elementVolumes"))
+{
+  std::unique_ptr<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>> mesh{
+    dynamic_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*>(axom::mint::getMesh(meshGrp, topoName)) };
+  using HexahedronType = axom::primal::Hexahedron<double, 3>;
+
+  axom::sidre::View* volSidreView = meshGrp->getView(axom::fmt::format("fields/{}/values", volFieldName));
+  if(volSidreView == nullptr)
+  {
+    const axom::IndexType cellCount = meshGrp->getView(axom::fmt::format("coordsets/{}/values/x", coordsetName))->getNumElements();
+
+    constexpr int NUM_VERTS_PER_HEX = 8;
+    constexpr int NUM_COMPS_PER_VERT = 3;
+    constexpr double ZERO_THRESHOLD = 1.e-10;
+
+    axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
+                                    cellCount * NUM_VERTS_PER_HEX);
+    auto vertCoordsView = vertCoords.view();
+
+    // This runs only only on host, because the mfem::Mesh only uses host memory, I think.
+    for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
+    {
+      // Get the indices of this element's vertices
+      axom::IndexType* verts = mesh->getCellNodeIDs(cellIdx);
+      mesh->getCellNodeIDs(cellIdx, verts);
+
+      // Get the coordinates for the vertices
+      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      {
+        int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
+        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+        {
+          vertCoordsView[vertIdx][k] = mesh->getNodeCoordinate(vertIdx, k);
+        }
+      }
+    }
+
+    // Set vertex coords to zero if within threshold.
+    // (I don't know why we do this.  I'm following examples.)
+    axom::ArrayView<double> flatCoordsView(
+      (double*)vertCoords.data(),
+      vertCoords.size() * Point3D::dimension());
+    assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
+    axom::for_all<ExecSpace>(
+      cellCount * 3,
+      AXOM_LAMBDA(axom::IndexType i) {
+        if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
+        {
+          flatCoordsView[i] = 0.0;
+        }
+      });
+
+    // Initialize hexahedral elements.
+    axom::Array<HexahedronType> hexes(cellCount, cellCount);
+    auto hexesView = hexes.view();
+    axom::for_all<ExecSpace>(
+      cellCount,
+      AXOM_LAMBDA(axom::IndexType cellIdx) {
+        // Set each hexahedral element vertices
+        hexesView[cellIdx] = HexahedronType();
+        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+        {
+          int vertIndex = (cellIdx * NUM_VERTS_PER_HEX) + j;
+          auto& hex = hexesView[cellIdx];
+          hex[j] = vertCoordsView[vertIndex];
+        }
+      });  // end of loop to initialize hexahedral elements and bounding boxes
+
+    // Allocate and populate cell volumes.
+    axom::sidre::Group* volGrp = meshGrp->createGroup(axom::fmt::format("fields/{}", volFieldName));
+    volSidreView = volGrp->createViewAndAllocate("values", axom::sidre::DataTypeId::FLOAT64_ID, cellCount);
+    axom::ArrayView<double> volView(volSidreView->getData(),
+                                    volSidreView->getNumElements());
+    axom::for_all<ExecSpace>(
+      cellCount,
+      AXOM_LAMBDA(axom::IndexType cellIdx) {
+        volView[cellIdx] = hexesView[cellIdx].volume();
+      });
+  }
+
+  return volSidreView;
+}
+
+/*!
   @brief Return global sum of volume of the given material.
 */
 template <typename ExecSpace>
@@ -911,6 +1008,42 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
   axom::ArrayView<double> volFracGfArrayView(volFracGf->GetData(),
                                              volFracGf->Size());
   axom::quest::TempArrayView<ExecSpace> volFracView(volFracGfArrayView, true);
+
+  using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
+  RAJA::ReduceSum<ReducePolicy, double> localVol(0);
+  axom::for_all<ExecSpace>(
+    cellCount,
+    AXOM_LAMBDA(axom::IndexType i) {
+      localVol += volFracView[i] * elementVolsView[i];
+    });
+
+  double globalVol = localVol.get();
+#ifdef AXOM_USE_MPI
+  MPI_Allreduce(MPI_IN_PLACE, &globalVol, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#endif
+  return globalVol;
+}
+
+template <typename ExecSpace>
+double sumMaterialVolumes(sidre::Group* meshGrp,
+                          const std::string& material)
+{
+  std::unique_ptr<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>> mesh{
+    dynamic_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*>(axom::mint::getMesh(meshGrp, topoName)) };
+  int const cellCount = mesh->getNumberOfCells();
+
+  // Get cell volumes from dc.
+  axom::sidre::View* elementVols = getElementVolumes<ExecSpace>(meshGrp);
+  axom::ArrayView<double> elementVolsView(elementVols->getData(),
+                                          elementVols->getNumElements());
+
+  // Get material volume fractions
+  const std::string materialFieldName =
+    axom::fmt::format("vol_frac_{}", material);
+  axom::sidre::View* volFrac = meshGrp->getView(axom::fmt::format("field/{}/values", materialFieldName));
+  axom::ArrayView<double> volFracArrayView(volFrac->getArray(),
+                                             cellCount);
+  axom::quest::TempArrayView<ExecSpace> volFracView(volFracArrayView, true);
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<ReducePolicy, double> localVol(0);
@@ -1094,10 +1227,10 @@ int main(int argc, char** argv)
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
   AXOM_ANNOTATE_BEGIN("setup shaping problem");
-  quest::Shaper* shaper = nullptr;
-  // shaper = new quest::IntersectionShaper(shapeSet, compMeshGrp);
-  shaper = new quest::IntersectionShaper(shapeSet, &shapingDC);
-  SLIC_ASSERT_MSG(shaper != nullptr, "Invalid shaping method selected!");
+  bool useBp = false;
+  quest::IntersectionShaper* shaper = (useBp) ?
+    new quest::IntersectionShaper(shapeSet, compMeshGrp) :
+    new quest::IntersectionShaper(shapeSet, &shapingDC);
 
   // Set generic parameters for the base Shaper instance
   shaper->setVertexWeldThreshold(params.weldThresh);
@@ -1110,7 +1243,12 @@ int main(int argc, char** argv)
 
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.
-  shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
+  if (useBp)
+  {
+    // TODO: What is the blueprint replacement for AssociateMaterialSet?
+  } else {
+    shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
+  }
 
   // Set specific parameters here for IntersectionShaper
   if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
@@ -1182,31 +1320,44 @@ int main(int argc, char** argv)
   // Compute and print volumes of each material's volume fraction
   //---------------------------------------------------------------------------
   using axom::utilities::string::startsWith;
-  for(auto& kv : shaper->getDC()->GetFieldMap())
+  if (useBp)
   {
-    if(startsWith(kv.first, "vol_frac_"))
+    // TODO: What is the blueprint equivalent?
+    std::vector<std::string> materialNames = shaper->getMaterialNames();
+    for (const auto& materialName : materialNames)
     {
-      const auto mat_name = kv.first.substr(9);
-      auto* gf = kv.second;
+      auto p = shaper->getMaterial(materialName);
+      axom::ArrayView<double>& materialField = p.first;
+      int materialIdx = p.second;
+      
+    }
+  } else {
+    for(auto& kv : shaper->getDC()->GetFieldMap())
+    {
+      if(startsWith(kv.first, "vol_frac_"))
+      {
+        const auto mat_name = kv.first.substr(9);
+        auto* gf = kv.second;
 
-      mfem::ConstantCoefficient one(1.0);
-      mfem::LinearForm vol_form(gf->FESpace());
-      vol_form.AddDomainIntegrator(new mfem::DomainLFIntegrator(one));
-      vol_form.Assemble();
+        mfem::ConstantCoefficient one(1.0);
+        mfem::LinearForm vol_form(gf->FESpace());
+        vol_form.AddDomainIntegrator(new mfem::DomainLFIntegrator(one));
+        vol_form.Assemble();
 
-      const double volume = shaper->allReduceSum(*gf * vol_form);
+        const double volume = shaper->allReduceSum(*gf * vol_form);
 
-      SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-                                  "Volume of material '{}' is {:.6Lf}",
-                                  mat_name,
-                                  volume));
+        SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                    "Volume of material '{}' is {:.6Lf}",
+                                    mat_name,
+                                    volume));
+      }
     }
   }
   AXOM_ANNOTATE_END("adjust");
 
   int failCounts = 0;
 
-  auto* volFracGroups =
+  axom::sidre::Group* volFracGroups =
     shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
 
   //---------------------------------------------------------------------------
@@ -1284,7 +1435,8 @@ int main(int argc, char** argv)
                         shapeMesh->getNumberOfCells())));
 
     const std::string& materialName = shape.getMaterial();
-    double shapeVol =
+    double shapeVol = useBp ?
+      sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName) :
       sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
     double correctShapeVol =
       params.testShape == "plane" ? params.boxMeshVolume() / 2 : shapeMeshVol;
