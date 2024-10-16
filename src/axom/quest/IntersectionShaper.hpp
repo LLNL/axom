@@ -1021,19 +1021,7 @@ private:
    */
   void populateMaterials()
   {
-  #if 1
     std::vector<std::string> materialNames = getMaterialNames();
-  #else
-    std::vector<std::string> materialNames;
-    for(auto it : this->getDC()->GetFieldMap())
-    {
-      std::string materialName = fieldNameToMaterialName(it.first);
-      if(!materialName.empty())
-      {
-        materialNames.emplace_back(materialName);
-      }
-    }
-  #endif
     // Add any of these existing fields to this class' bookkeeping.
     for(const auto& materialName : materialNames)
     {
@@ -1190,10 +1178,9 @@ public:
     }
     else
     {
-        // Include all materials except those in "does_not_replace".
-        // We'll also sort them by material number since the field map
-        // sorts them by name rather than order added.
-  #if 1
+      // Include all materials except those in "does_not_replace".
+      // We'll also sort them by material number since the field map
+      // sorts them by name rather than order added.
       std::vector<std::string> materialNames = getMaterialNames();
       for(auto name : materialNames)
       {
@@ -1225,39 +1212,6 @@ public:
           }
         }
       }
-  #else
-      for(auto it : this->getDC()->GetFieldMap())
-      {
-        // Check whether the field name looks like a VF field (and is not the
-        // "free" field, which we handle specially)
-        std::string name = fieldNameToMaterialName(it.first);
-        if(!name.empty() && name != m_free_mat_name)
-        {
-          // See if the field is in the exclusion list. For the normal
-          // case, the list is empty so we'd add the material.
-          auto it2 = std::find(shape.getMaterialsNotReplaced().cbegin(),
-                               shape.getMaterialsNotReplaced().cend(),
-                               name);
-          // The field is not in the exclusion list so add it to vfs.
-          if(it2 == shape.getMaterialsNotReplaced().cend())
-          {
-            // Do not add the current shape material since it should
-            // not end up in updateVFs.
-            if(name != shape.getMaterial())
-            {
-              gf_order_by_matnumber.emplace_back(getMaterial(name));
-            }
-          }
-          else
-          {
-            // The material was in the exclusion list. This means that
-            // cannot write to materials that have volume fraction in
-            // that zone.
-            excludeVFs.emplace_back(getMaterial(name).first);
-          }
-        }
-      }
-  #endif
     }
     // Sort eligible update materials by material number.
     std::sort(gf_order_by_matnumber.begin(),
