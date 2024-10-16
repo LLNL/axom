@@ -7,6 +7,7 @@ digraph dependencies {
   multimat -> {slic slam};
   spin -> {slam primal};
   sidre -> {slic core};
+  sina -> {core};
   slic -> core;
   slic -> lumberjack [style="dashed"];
   lumberjack -> core;
