@@ -55,10 +55,8 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
   conduit::Node info;
   SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
 #endif
-  m_cellCount =
-    conduit::blueprint::mesh::topology::length(
-      meshNode.fetch_existing(
-        axom::fmt::format("topologies/{}", m_bpTopo)));
+  m_cellCount = conduit::blueprint::mesh::topology::length(
+    meshNode.fetch_existing(axom::fmt::format("topologies/{}", m_bpTopo)));
 }
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)

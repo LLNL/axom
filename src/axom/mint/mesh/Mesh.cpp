@@ -124,7 +124,7 @@ Mesh::Mesh(sidre::Group* group, const std::string& topo)
     blueprint::getCoordsetGroup(m_group, getTopologyGroup())->getName();
 
   sidre::Group* state_group = m_group->getGroup("state");
-  if (state_group != nullptr && state_group->hasChildGroup(m_topology))
+  if(state_group != nullptr && state_group->hasChildGroup(m_topology))
   {
     state_group = state_group->getGroup(m_topology);
     if(state_group->hasChildView("block_id"))
