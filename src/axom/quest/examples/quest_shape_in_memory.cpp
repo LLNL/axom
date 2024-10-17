@@ -1034,9 +1034,17 @@ template <typename ExecSpace>
 double sumMaterialVolumes(sidre::Group* meshGrp,
                           const std::string& material)
 {
-  std::unique_ptr<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>> mesh{
-    dynamic_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*>(axom::mint::getMesh(meshGrp, topoName)) };
-  int const cellCount = mesh->getNumberOfCells();
+  conduit::Node meshNode;
+  meshGrp->createNativeLayout(meshNode);
+#if defined(AXOM_DEBUG)
+  conduit::Node info;
+  conduit::blueprint::mesh::verify(meshNode, info);
+  SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
+#endif
+  const int cellCount =
+    conduit::blueprint::mesh::topology::length(
+      meshNode.fetch_existing(
+        axom::fmt::format("topologies/{}", topoName)));
 
   // Get cell volumes from dc.
   axom::sidre::View* elementVols = getElementVolumes<ExecSpace>(meshGrp);
@@ -1332,7 +1340,12 @@ int main(int argc, char** argv)
       auto p = shaper->getMaterial(materialName);
       axom::ArrayView<double>& materialField = p.first;
       int materialIdx = p.second;
-      assert(false); // Incomplete code.
+      // Compute and print volume of material.
+      const double volume = sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
+      SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                  "Volume of material '{}' is {:.6Lf}",
+                                  materialName,
+                                  volume));
     }
   } else {
     for(auto& kv : shaper->getDC()->GetFieldMap())
