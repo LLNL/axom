@@ -397,6 +397,12 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
                                                           res,
                                                           topoName,
                                                           coordsetName);
+  #if defined(AXOM_DEBUG)
+  conduit::Node meshNode, info;
+  meshGrp->createNativeLayout(meshNode);
+meshNode.print();
+  SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
+  #endif
 
   return meshGrp;
 }
@@ -1228,9 +1234,9 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   AXOM_ANNOTATE_BEGIN("setup shaping problem");
   bool useBp = false;
-  quest::IntersectionShaper* shaper = (useBp) ?
-    new quest::IntersectionShaper(shapeSet, compMeshGrp) :
-    new quest::IntersectionShaper(shapeSet, &shapingDC);
+  std::shared_ptr<quest::IntersectionShaper> shaper = useBp ?
+    std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp) :
+    std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
 
   // Set generic parameters for the base Shaper instance
   shaper->setVertexWeldThreshold(params.weldThresh);
@@ -1251,19 +1257,16 @@ int main(int argc, char** argv)
   }
 
   // Set specific parameters here for IntersectionShaper
-  if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
-  {
-    intersectionShaper->setLevel(params.refinementLevel);
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      axom::fmt::format("Setting IntersectionShaper policy to '{}'",
-                        axom::runtime_policy::policyToName(params.policy))));
-    intersectionShaper->setExecPolicy(params.policy);
+  shaper->setLevel(params.refinementLevel);
+  SLIC_INFO(axom::fmt::format(
+              "{:-^80}",
+              axom::fmt::format("Setting IntersectionShaper policy to '{}'",
+                                axom::runtime_policy::policyToName(params.policy))));
+  shaper->setExecPolicy(params.policy);
 
-    if(!params.backgroundMaterial.empty())
-    {
-      intersectionShaper->setFreeMaterialName(params.backgroundMaterial);
-    }
+  if(!params.backgroundMaterial.empty())
+  {
+    shaper->setFreeMaterialName(params.backgroundMaterial);
   }
 
   AXOM_ANNOTATE_END("setup shaping problem");
@@ -1329,7 +1332,7 @@ int main(int argc, char** argv)
       auto p = shaper->getMaterial(materialName);
       axom::ArrayView<double>& materialField = p.first;
       int materialIdx = p.second;
-      
+      assert(false); // Incomplete code.
     }
   } else {
     for(auto& kv : shaper->getDC()->GetFieldMap())
@@ -1472,7 +1475,7 @@ int main(int argc, char** argv)
   }
 #endif
 
-  delete shaper;
+  shaper.reset();
 
   //---------------------------------------------------------------------------
   // Cleanup and exit

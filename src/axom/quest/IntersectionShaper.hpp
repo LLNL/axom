@@ -2145,28 +2145,29 @@ private:
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
 
-    const auto* topoGrp =
-      m_bpGrp->getGroup(axom::fmt::format("topologies/{}", m_bpTopo));
-    std::string coordsetName = topoGrp->getView("coordset")->getString();
+    conduit::Node meshNode;
+    m_bpGrp->createNativeLayout(meshNode);
+
+    const conduit::Node& topoNode = meshNode.fetch_existing(axom::fmt::format("topologies/{}", m_bpTopo));
+    const std::string coordsetName = topoNode.fetch_existing("coordset").as_string();
 
     // Assume unstructured and hexahedral
-    SLIC_ASSERT(std::string(topoGrp->getView("type")->getString()) ==
-                "unstructured");
-    SLIC_ASSERT(std::string(topoGrp->getView("elements/shape")->getString()) ==
-                "hex");
+    SLIC_ASSERT(topoNode["type"].as_string() == "unstructured");
+    SLIC_ASSERT(topoNode["elements/shape"].as_string() == "hex");
 
-    const auto connGrp = topoGrp->getView("elements/connectivity");
-    axom::ArrayView<const double, 2> conn(connGrp->getNode().as_double_ptr(),
-                                          m_cellCount,
-                                          NUM_VERTS_PER_HEX);
+    const auto connNode = topoNode["elements/connectivity"];
+    SLIC_ASSERT_MSG(connNode.dtype().is_int32(),
+                    "IntersectionShaper internal error: missing logic to handle multiple types.");
+    const std::int32_t* connPtr = connNode.as_int32_ptr();
+    axom::ArrayView<const std::int32_t, 2> conn(connPtr,
+                                                m_cellCount,
+                                                NUM_VERTS_PER_HEX);
 
-    const auto* coordGrp =
-      m_bpGrp->getGroup(axom::fmt::format("coordsets/{}", coordsetName));
-    const conduit::Node& coordValues = coordGrp->getView("values")->getNode();
+    // Put in Node so we can use conduit::blueprint utilities.
+    const conduit::Node& coordNode = meshNode[axom::fmt::format("coordsets/{}", coordsetName)];
+    // coordGrp->createNativeLayout(coordNode);
 
-    // Assume explicit coordinates.
-    SLIC_ASSERT(std::string(coordGrp->getView("type")->getString()) ==
-                "explicit");
+    const conduit::Node& coordValues = coordNode.fetch_existing("values");
 
     axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
     bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);

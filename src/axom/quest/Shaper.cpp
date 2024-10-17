@@ -11,6 +11,7 @@
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 #include "axom/quest/Shaper.hpp"
 #include "axom/quest/DiscreteShape.hpp"
+#include "conduit_blueprint_mesh.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -48,18 +49,16 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
 {
   SLIC_ASSERT(m_bpTopo != sidre::InvalidName);
 
-  auto* topologies = m_bpGrp->getGroup("topologies");
-  auto* topoGrp = topologies->getGroup(m_bpTopo);
-  auto* coordsetName = topoGrp->getView("coordset");
-  std::string coordsName = coordsetName->getString();
-#if 0
-  std::string coordsName =
-    m_bpGrp->getView(axom::fmt::format("topologies/{}/coordset", m_bpTopo))
-      ->getString();
+  conduit::Node meshNode;
+  bpGrp->createNativeLayout(meshNode);
+#if defined(AXOM_DEBUG)
+  conduit::Node info;
+  SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
 #endif
-  auto* coordsView =
-    m_bpGrp->getView(axom::fmt::format("coordsets/{}/values/x", coordsName));
-  m_cellCount = coordsView->getNumElements();
+  m_cellCount =
+    conduit::blueprint::mesh::topology::length(
+      meshNode.fetch_existing(
+        axom::fmt::format("topologies/{}", m_bpTopo)));
 }
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)
