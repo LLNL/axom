@@ -397,12 +397,12 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
                                                           res,
                                                           topoName,
                                                           coordsetName);
-  #if defined(AXOM_DEBUG)
+#if defined(AXOM_DEBUG)
   conduit::Node meshNode, info;
   meshGrp->createNativeLayout(meshNode);
-meshNode.print();
+  meshNode.print();
   SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
-  #endif
+#endif
 
   return meshGrp;
 }
@@ -911,14 +911,20 @@ axom::sidre::View* getElementVolumes(
   sidre::Group* meshGrp,
   const std::string& volFieldName = std::string("elementVolumes"))
 {
-  std::unique_ptr<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>> mesh{
-    dynamic_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*>(axom::mint::getMesh(meshGrp, topoName)) };
+  std::unique_ptr<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>> mesh {
+    dynamic_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*>(
+      axom::mint::getMesh(meshGrp, topoName))};
   using HexahedronType = axom::primal::Hexahedron<double, 3>;
 
-  axom::sidre::View* volSidreView = meshGrp->getView(axom::fmt::format("fields/{}/values", volFieldName));
-  if(volSidreView == nullptr)
+  const auto valuesPath = axom::fmt::format("fields/{}/values", volFieldName);
+  axom::sidre::View* volSidreView = nullptr;
+  if(meshGrp->hasView(valuesPath))
   {
-    const axom::IndexType cellCount = meshGrp->getView(axom::fmt::format("coordsets/{}/values/x", coordsetName))->getNumElements();
+    volSidreView = meshGrp->getView(valuesPath);
+  }
+  else
+  {
+    const axom::IndexType cellCount = mesh->getNumberOfCells();
 
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
@@ -941,7 +947,7 @@ axom::sidre::View* getElementVolumes(
         int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
         for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
         {
-          vertCoordsView[vertIdx][k] = mesh->getNodeCoordinate(vertIdx, k);
+          vertCoordsView[vertIdx][k] = mesh->getNodeCoordinate(verts[j], k);
         }
       }
     }
@@ -978,8 +984,12 @@ axom::sidre::View* getElementVolumes(
       });  // end of loop to initialize hexahedral elements and bounding boxes
 
     // Allocate and populate cell volumes.
-    axom::sidre::Group* volGrp = meshGrp->createGroup(axom::fmt::format("fields/{}", volFieldName));
-    volSidreView = volGrp->createViewAndAllocate("values", axom::sidre::DataTypeId::FLOAT64_ID, cellCount);
+    const auto volFieldPath = axom::fmt::format("fields/{}", volFieldName);
+    axom::sidre::Group* volGrp = meshGrp->createGroup(volFieldPath);
+    volSidreView =
+      volGrp->createViewAndAllocate("values",
+                                    axom::sidre::DataTypeId::FLOAT64_ID,
+                                    cellCount);
     axom::ArrayView<double> volView(volSidreView->getData(),
                                     volSidreView->getNumElements());
     axom::for_all<ExecSpace>(
@@ -1031,8 +1041,7 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
 }
 
 template <typename ExecSpace>
-double sumMaterialVolumes(sidre::Group* meshGrp,
-                          const std::string& material)
+double sumMaterialVolumes(sidre::Group* meshGrp, const std::string& material)
 {
   conduit::Node meshNode;
   meshGrp->createNativeLayout(meshNode);
@@ -1040,11 +1049,12 @@ double sumMaterialVolumes(sidre::Group* meshGrp,
   conduit::Node info;
   conduit::blueprint::mesh::verify(meshNode, info);
   SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
+  meshGrp->print();
+  meshNode.print();
 #endif
-  const int cellCount =
-    conduit::blueprint::mesh::topology::length(
-      meshNode.fetch_existing(
-        axom::fmt::format("topologies/{}", topoName)));
+  std::string topoPath = axom::fmt::format("topologies/{}", topoName);
+  conduit::Node& topoNode = meshNode.fetch_existing(topoPath);
+  const int cellCount = conduit::blueprint::mesh::topology::length(topoNode);
 
   // Get cell volumes from dc.
   axom::sidre::View* elementVols = getElementVolumes<ExecSpace>(meshGrp);
@@ -1052,11 +1062,11 @@ double sumMaterialVolumes(sidre::Group* meshGrp,
                                           elementVols->getNumElements());
 
   // Get material volume fractions
-  const std::string materialFieldName =
-    axom::fmt::format("vol_frac_{}", material);
-  axom::sidre::View* volFrac = meshGrp->getView(axom::fmt::format("field/{}/values", materialFieldName));
-  axom::ArrayView<double> volFracArrayView(volFrac->getArray(),
-                                             cellCount);
+  const auto vfFieldName = axom::fmt::format("vol_frac_{}", material);
+  const auto vfFieldValuesPath =
+    axom::fmt::format("fields/{}/values", vfFieldName);
+  axom::sidre::View* volFrac = meshGrp->getView(vfFieldValuesPath);
+  axom::ArrayView<double> volFracArrayView(volFrac->getArray(), cellCount);
   axom::quest::TempArrayView<ExecSpace> volFracView(volFracArrayView, true);
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -1242,9 +1252,9 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   AXOM_ANNOTATE_BEGIN("setup shaping problem");
   bool useBp = false;
-  std::shared_ptr<quest::IntersectionShaper> shaper = useBp ?
-    std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp) :
-    std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
+  std::shared_ptr<quest::IntersectionShaper> shaper = useBp
+    ? std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp)
+    : std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
 
   // Set generic parameters for the base Shaper instance
   shaper->setVertexWeldThreshold(params.weldThresh);
@@ -1257,19 +1267,21 @@ int main(int argc, char** argv)
 
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.
-  if (useBp)
+  if(useBp)
   {
     // TODO: What is the blueprint replacement for AssociateMaterialSet?
-  } else {
+  }
+  else
+  {
     shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
   }
 
   // Set specific parameters here for IntersectionShaper
   shaper->setLevel(params.refinementLevel);
   SLIC_INFO(axom::fmt::format(
-              "{:-^80}",
-              axom::fmt::format("Setting IntersectionShaper policy to '{}'",
-                                axom::runtime_policy::policyToName(params.policy))));
+    "{:-^80}",
+    axom::fmt::format("Setting IntersectionShaper policy to '{}'",
+                      axom::runtime_policy::policyToName(params.policy))));
   shaper->setExecPolicy(params.policy);
 
   if(!params.backgroundMaterial.empty())
@@ -1331,23 +1343,26 @@ int main(int argc, char** argv)
   // Compute and print volumes of each material's volume fraction
   //---------------------------------------------------------------------------
   using axom::utilities::string::startsWith;
-  if (useBp)
+  if(useBp)
   {
     // TODO: What is the blueprint equivalent?
     std::vector<std::string> materialNames = shaper->getMaterialNames();
-    for (const auto& materialName : materialNames)
+    for(const auto& materialName : materialNames)
     {
       auto p = shaper->getMaterial(materialName);
       axom::ArrayView<double>& materialField = p.first;
       int materialIdx = p.second;
       // Compute and print volume of material.
-      const double volume = sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
+      const double volume =
+        sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
       SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                                   "Volume of material '{}' is {:.6Lf}",
                                   materialName,
                                   volume));
     }
-  } else {
+  }
+  else
+  {
     for(auto& kv : shaper->getDC()->GetFieldMap())
     {
       if(startsWith(kv.first, "vol_frac_"))
@@ -1451,9 +1466,9 @@ int main(int argc, char** argv)
                         shapeMesh->getNumberOfCells())));
 
     const std::string& materialName = shape.getMaterial();
-    double shapeVol = useBp ?
-      sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName) :
-      sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
+    double shapeVol = useBp
+      ? sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName)
+      : sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
     double correctShapeVol =
       params.testShape == "plane" ? params.boxMeshVolume() / 2 : shapeMeshVol;
     double diff = shapeVol - correctShapeVol;

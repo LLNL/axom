@@ -8,6 +8,7 @@
 #include <axom/slic.hpp>
 #include <conduit/conduit_blueprint_mesh.hpp>
 #include <iostream>
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 #include "axom/core/WhereMacro.hpp"
 
 namespace axom
@@ -172,7 +173,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
   return meshGrp;
 }
 
-#if defined(AXOM_USE_CONDUIT)
+  #if defined(AXOM_USE_CONDUIT)
 axom::sidre::Group* make_unstructured_blueprint_box_mesh(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 3>& bbox,
@@ -211,20 +212,61 @@ void convert_blueprint_structured_explicit_to_unstructured(
 
   // Copy unstructured back into meshGrp.
   meshGrp->getGroup("topologies")->destroyGroup(topoName);
-  meshGrp->getGroup("topologies")->createGroup(topoName)->importConduitTree(newTopo);
+  auto* topoGrp = meshGrp->getGroup("topologies")->createGroup(topoName);
+  topoGrp->importConduitTree(newTopo);
+  topoGrp->getView("coordset")
+    ->setString(coordsetName);  // Is this needed?  Is coordset already set?
+
   meshGrp->getGroup("coordsets")->destroyGroup(coordsetName);
-  meshGrp->getGroup("coordsets")
-    ->createGroup(coordsetName)
-    ->importConduitTree(newCoords);
+  auto* coordsetGrp = meshGrp->getGroup("coordsets")->createGroup(coordsetName);
+  coordsetGrp->importConduitTree(newCoords);
 
-  meshGrp->getView(axom::fmt::format("topologies/{}/coordset", topoName))
-    ->setString(coordsetName);
+    #define ADD_EXTRA_DATA_FOR_MINT 1
+    #if ADD_EXTRA_DATA_FOR_MINT
+  /*
+    Constructing a mint mesh from meshGrp fails unless we add some
+    extra data.  Blueprint doesn't require this extra data.  (The mesh
+    passes conduit's Blueprint verification.)  This should be fixed,
+    or we should write better blueprint support utilities.
+  */
+  /*
+    Make the coordinate arrays 2D to use mint::Mesh.
+    For some reason, mint::Mesh requires the arrays to be
+    2D, even though the second dimension is always 1.
+  */
+  axom::IndexType curShape[2];
+  int curDim;
+  auto* valuesGrp = coordsetGrp->getGroup("values");
+  curDim = valuesGrp->getView("x")->getShape(2, curShape);
+  assert(curDim == 1);
+  axom::IndexType vertsShape[2] = {curShape[0], 1};
+  valuesGrp->getView("x")->reshapeArray(2, vertsShape);
+  valuesGrp->getView("y")->reshapeArray(2, vertsShape);
+  valuesGrp->getView("z")->reshapeArray(2, vertsShape);
 
-  #if defined(AXOM_DEBUG)
+  // Make connectivity array 2D for the same reason.
+  auto* elementsGrp = topoGrp->getGroup("elements");
+  auto* connView = elementsGrp->getView("connectivity");
+  curDim = connView->getShape(2, curShape);
+  constexpr axom::IndexType NUM_VERTS_PER_HEX = 8;
+  SLIC_ASSERT(curDim == 1);
+  SLIC_ASSERT(curShape[0] % NUM_VERTS_PER_HEX == 0);
+  axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX,
+                                  NUM_VERTS_PER_HEX};
+  connView->reshapeArray(2, connShape);
+
+  // mint::Mesh requires connectivity strides, even though Blueprint doesn't.
+  elementsGrp->createViewScalar("stride", NUM_VERTS_PER_HEX);
+
+  // mint::Mesh requires field group, even though Blueprint doesn't.
+  meshGrp->createGroup("fields");
+    #endif
+
+    #if defined(AXOM_DEBUG)
   conduit::Node newMesh;
   meshGrp->createNativeLayout(newMesh);
   SLIC_ASSERT(conduit::blueprint::mesh::verify(newMesh, info));
-  #endif
+    #endif
 
   return;
 }
@@ -237,7 +279,7 @@ bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info)
   if(!isValid) info.print();
   return isValid;
 }
-#endif
+  #endif
 
 #endif
 

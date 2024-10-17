@@ -2039,7 +2039,8 @@ private:
       {
         auto* fieldGrp = m_bpGrp->getGroup(fieldPath);
         valuesView = fieldGrp->getView("values");
-        SLIC_ASSERT(fieldGrp->getView("association")->getString() == std::string("element"));
+        SLIC_ASSERT(fieldGrp->getView("association")->getString() ==
+                    std::string("element"));
         SLIC_ASSERT(fieldGrp->getView("topology")->getString() == m_bpTopo);
         SLIC_ASSERT(valuesView->getNumElements() == m_cellCount);
         SLIC_ASSERT(valuesView->getNode().dtype().id() == dtype.id());
@@ -2050,13 +2051,15 @@ private:
         axom::IndexType shape[2] = {m_cellCount, componentCount};
         auto* fieldGrp = m_bpGrp->createGroup(fieldPath);
         // valuesView = fieldGrp->createView("values");
-        valuesView = fieldGrp->createViewWithShape("values",
-                                                   axom::sidre::DataTypeId::FLOAT64_ID,
-                                                   2, shape);
+        valuesView =
+          fieldGrp->createViewWithShape("values",
+                                        axom::sidre::DataTypeId::FLOAT64_ID,
+                                        2,
+                                        shape);
         fieldGrp->createView("association")->setString("element");
         fieldGrp->createView("topology")->setString(m_bpTopo);
-        fieldGrp->createView("volume_dependent")->setString(
-          std::string(volumeDependent ? "true" : "false"));
+        fieldGrp->createView("volume_dependent")
+          ->setString(std::string(volumeDependent ? "true" : "false"));
         valuesView->allocate();
       }
       rval =
@@ -2160,8 +2163,10 @@ private:
     conduit::Node meshNode;
     m_bpGrp->createNativeLayout(meshNode);
 
-    const conduit::Node& topoNode = meshNode.fetch_existing(axom::fmt::format("topologies/{}", m_bpTopo));
-    const std::string coordsetName = topoNode.fetch_existing("coordset").as_string();
+    const conduit::Node& topoNode =
+      meshNode.fetch_existing(axom::fmt::format("topologies/{}", m_bpTopo));
+    const std::string coordsetName =
+      topoNode.fetch_existing("coordset").as_string();
 
     // Assume unstructured and hexahedral
     SLIC_ASSERT(topoNode["type"].as_string() == "unstructured");
@@ -2169,14 +2174,16 @@ private:
 
     const auto connNode = topoNode["elements/connectivity"];
     SLIC_ASSERT_MSG(connNode.dtype().is_int32(),
-                    "IntersectionShaper internal error: missing logic to handle multiple types.");
+                    "IntersectionShaper internal error: missing logic to "
+                    "handle multiple types.");
     const std::int32_t* connPtr = connNode.as_int32_ptr();
     axom::ArrayView<const std::int32_t, 2> conn(connPtr,
                                                 m_cellCount,
                                                 NUM_VERTS_PER_HEX);
 
     // Put in Node so we can use conduit::blueprint utilities.
-    const conduit::Node& coordNode = meshNode[axom::fmt::format("coordsets/{}", coordsetName)];
+    const conduit::Node& coordNode =
+      meshNode[axom::fmt::format("coordsets/{}", coordsetName)];
     // coordGrp->createNativeLayout(coordNode);
 
     const conduit::Node& coordValues = coordNode.fetch_existing("values");
