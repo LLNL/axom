@@ -2008,7 +2008,8 @@ private:
   /*!
     @brief Get a scalar double-type field data from the mesh, creating it if it doesn't exist.
   */
-  axom::ArrayView<double> getScalarCellData(const std::string& fieldName)
+  axom::ArrayView<double> getScalarCellData(const std::string& fieldName,
+                                            bool volumeDependent = false)
   {
     axom::ArrayView<double> rval;
 
@@ -2036,16 +2037,27 @@ private:
       axom::sidre::View* valuesView = nullptr;
       if(m_bpGrp->hasGroup(fieldPath))
       {
-        auto* fieldsGrp = m_bpGrp->getGroup(fieldPath);
-        valuesView = fieldsGrp->getView("values");
+        auto* fieldGrp = m_bpGrp->getGroup(fieldPath);
+        valuesView = fieldGrp->getView("values");
+        SLIC_ASSERT(fieldGrp->getView("association")->getString() == std::string("element"));
+        SLIC_ASSERT(fieldGrp->getView("topology")->getString() == m_bpTopo);
         SLIC_ASSERT(valuesView->getNumElements() == m_cellCount);
         SLIC_ASSERT(valuesView->getNode().dtype().id() == dtype.id());
       }
       else
       {
-        auto* fieldsGrp = m_bpGrp->createGroup(fieldPath);
-        valuesView = fieldsGrp->createView("values");
-        valuesView->allocate(dtype);
+        constexpr axom::IndexType componentCount = 1;
+        axom::IndexType shape[2] = {m_cellCount, componentCount};
+        auto* fieldGrp = m_bpGrp->createGroup(fieldPath);
+        // valuesView = fieldGrp->createView("values");
+        valuesView = fieldGrp->createViewWithShape("values",
+                                                   axom::sidre::DataTypeId::FLOAT64_ID,
+                                                   2, shape);
+        fieldGrp->createView("association")->setString("element");
+        fieldGrp->createView("topology")->setString(m_bpTopo);
+        fieldGrp->createView("volume_dependent")->setString(
+          std::string(volumeDependent ? "true" : "false"));
+        valuesView->allocate();
       }
       rval =
         axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
