@@ -1990,8 +1990,11 @@ private:
     return has;
   }
 
-  /*!
-    @brief Get a scalar double-type field data from the mesh, creating it if it doesn't exist.
+  /*!  @brief Get a scalar double-type field data from the mesh,
+    "fields/fieldName/values", creating it if it doesn't exist.
+
+    Also add the corresponding entry in the blueprint field
+    "matsets/fieldName/volume_fractions".
   */
   axom::ArrayView<double> getScalarCellData(const std::string& fieldName,
                                             bool volumeDependent = false)
@@ -2046,6 +2049,24 @@ private:
         fieldGrp->createView("volume_dependent")
           ->setString(std::string(volumeDependent ? "true" : "false"));
         valuesView->allocate();
+        if (fieldName.rfind("vol_frac_", 0) == 0)
+        {
+          // This is a material volume fraction field.
+          // Shallow-copy valuesView to (uni-buffer) matsets.
+          const std::string matlName = fieldName.substr(9);
+          axom::sidre::Group* volFracGrp = nullptr;
+          if (m_bpGrp->hasGroup("matsets/material/volume_fractions"))
+          {
+            volFracGrp = m_bpGrp->getGroup("matsets/material/volume_fractions");
+          }
+          else
+          {
+            volFracGrp = m_bpGrp->createGroup("matsets/material/volume_fractions");
+            m_bpGrp->createViewString("matsets/material/topology", m_bpTopo);
+          }
+          auto* valuesViewInMatsets = volFracGrp->copyView(valuesView);
+          valuesViewInMatsets->rename(matlName);
+        }
       }
       rval =
         axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
