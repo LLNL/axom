@@ -69,36 +69,85 @@ void removeSlashes(const conduit::Node& originalNode, conduit::Node& modifiedNod
     }
 }
 
-
 void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNode)
 {
-    for (auto it = modifiedNode.children(); it.has_next();)
+    // Check if List or Object, if its a list the else statement would turn it into an object
+    // which breaks the Document
+
+    if (modifiedNode.dtype().is_list())
     {
-        it.next();
-        std::string key = it.name();
-        std::cout << key;
-        std::string restoredKey = key;
-        std::string toReplace = "__SLASH__";
-        std::string replacement = "/";
+        // If its empty with no children it's the end of a tree
 
-        size_t pos = 0;
-        // Find and replace all occurrences of "__SLASH__"
-        while ((pos = restoredKey.find(toReplace, pos)) != std::string::npos) {
-          restoredKey.replace(pos, toReplace.length(), replacement);
-          pos += replacement.length(); // Move past the replaced substring
-        }
-
-        restoredNode[restoredKey] = it.node();
-        
-        if (it.node().number_of_children() > 0)
+        for (auto it = modifiedNode.children(); it.has_next();)
         {
-            conduit::Node nestedNode;
-            restoreSlashes(it.node(), nestedNode);
-            restoredNode[restoredKey].set(nestedNode); 
+            it.next();
+            conduit::Node& newChild = restoredNode.append();
+
+            // Leaves empty nodes empty, if null data is set the
+            // Document breaks
+
+            if (it.node().dtype().is_string() || it.node().dtype().is_number())
+            {
+                newChild.set(it.node()); // Lists need .set
+            }
+            else
+            {
+                std::cout << "Invalid list item detected, skipping: " << it.node().to_string() << std::endl;
+            }
+            
+            // Recursive Call
+            if (it.node().number_of_children() > 0)
+            {
+                restoreSlashes(it.node(), newChild);
+            }
+        }
+    }
+    else
+    {
+        for (auto it = modifiedNode.children(); it.has_next();)
+        {
+            it.next();
+            std::string key = it.name();
+            std::string restoredKey = key;
+            std::string toReplace = "__SLASH__";
+            std::string replacement = "/";
+
+            size_t pos = 0;
+            // Find and replace all occurrences of "__SLASH__"
+
+            while ((pos = restoredKey.find(toReplace, pos)) != std::string::npos) {
+                restoredKey.replace(pos, toReplace.length(), replacement);
+                pos += replacement.length();
+            }
+
+
+            // Initialize a new node for the restored key
+            conduit::Node& newChild = restoredNode.add_child(restoredKey);
+
+            // Leaves empty keys empty but continues recursive call if its a list
+            if (it.node().dtype().is_string() || it.node().dtype().is_number() || it.node().dtype().is_object())
+            {
+                newChild.set(it.node());
+            }
+            else if (it.node().dtype().is_list())
+            {
+                restoreSlashes(it.node(), newChild);  // Handle nested lists
+            }
+            else
+            {
+                std::cout << "Invalid node detected for key: " << restoredKey << std::endl;
+            }
+
+            // If the node has children, recursively restore them
+            if (it.node().number_of_children() > 0)
+            {
+                conduit::Node nestedNode;
+                restoreSlashes(it.node(), nestedNode);
+                newChild.set(nestedNode);
+            }
         }
     }
 }
-
 
 void Document::add(std::unique_ptr<Record> record)
 {
@@ -173,7 +222,7 @@ void Document::createFromNode(conduit::Node const &asNode,
             add(Relationship{relationship});
         }
     }
-  asNode.print();
+    asNode.print();
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -304,15 +353,16 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
         file_contents << file_in.rdbuf();
         file_in.close();
         node.parse(file_contents.str(), "json");
+        return Document {node, recordLoader};
     } else if (protocol == Protocol::HDF5) {
         conduit::Node modifiedNode;
         conduit::relay::io::load(path, "hdf5", node);
         restoreSlashes(node, modifiedNode);
-        node.print();
+        modifiedNode.print();
+        return Document {modifiedNode, recordLoader};
     }
 
     // Finally, use the node to create the Document object (existing logic)
-    return Document {node, recordLoader};
 }
 
 }  // namespace sina

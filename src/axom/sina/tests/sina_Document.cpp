@@ -229,16 +229,6 @@ NamedTempFile::~NamedTempFile() { std::remove(fileName.data()); }
 
 TEST(Document, create_fromJson_roundtrip)
 {
-  NamedTempFile tmpFile;
-
-  // First, write some random stuff to the temp file to make sure it is
-  // overwritten.
-  {
-    std::ofstream fout {tmpFile.getName(), std::ofstream::trunc}; // Open file in truncation mode
-    fout << "Initial contents";
-    fout.close();
-  }
-
   std::string orig_json =
     "{\"records\": [{\"type\": \"test_rec\",\"id\": "
     "\"test\"}],\"relationships\": []}"; 
@@ -249,8 +239,8 @@ TEST(Document, create_fromJson_roundtrip)
   EXPECT_EQ("test_rec", myDocument.getRecords()[0]->getType());
   std::string returned_json1 = myDocument.toJson(0, 0, "", "");
   EXPECT_EQ(orig_json, returned_json1);
-  saveDocument(myDocument, tmpFile.getName(), Protocol::HDF5);
-  Document loadedDocument = loadDocument(tmpFile.getName(), Protocol::HDF5);
+  saveDocument(myDocument, "round_json.hdf5", Protocol::HDF5);
+  Document loadedDocument = loadDocument("round_json.hdf5", Protocol::HDF5);
   EXPECT_EQ(0, loadedDocument.getRelationships().size());
   ASSERT_EQ(1, loadedDocument.getRecords().size());
   EXPECT_EQ("test_rec", loadedDocument.getRecords()[0]->getType());
@@ -310,14 +300,14 @@ TEST(Document, create_fromJson_value_check)
   EXPECT_EQ(records1[0]->getFiles().count(File {"test/test.png"}), 1);
   saveDocument(myDocument, "data_json.hdf5", Protocol::HDF5);
   Document loadedDocument = loadDocument("data_json.hdf5", Protocol::HDF5);
-  // EXPECT_EQ(0, loadedDocument.getRelationships().size());
-  // auto &records2 = loadedDocument.getRecords();
-  // EXPECT_EQ(1, records2.size());
-  // EXPECT_EQ(records2[0]->getType(), "run");
-  // auto &data2 = records2[0]->getData();
-  // EXPECT_EQ(data2.at("int").getScalar(), 500.0);
-  // EXPECT_EQ(data2.at("str/ings").getStringArray(), expected_string_vals);
-  // EXPECT_EQ(records2[0]->getFiles().count(File {"test/test.png"}), 1);
+  EXPECT_EQ(0, loadedDocument.getRelationships().size());
+  auto &records2 = loadedDocument.getRecords();
+  EXPECT_EQ(1, records2.size());
+  EXPECT_EQ(records2[0]->getType(), "run");
+  auto &data2 = records2[0]->getData();
+  EXPECT_EQ(data2.at("int").getScalar(), 500.0);
+  EXPECT_EQ(data2.at("str/ings").getStringArray(), expected_string_vals);
+  EXPECT_EQ(records2[0]->getFiles().count(File {"test/test.png"}), 1);
 }
 
 TEST(Document, saveDocument_json)
@@ -369,7 +359,6 @@ TEST(Document, saveDocument_hdf5)
 
     saveDocument(document, tmpFile.getName(), Protocol::HDF5);
 
-    // Load the HDF5 file and verify its contents
     conduit::Node readContents;
     conduit::relay::io::load(tmpFile.getName(), "hdf5", readContents);
 
@@ -431,6 +420,8 @@ TEST(Document, load_defaultRecordLoaders)
     dynamic_cast<axom::sina::Run const *>(loadedDocument.getRecords()[0].get());
   EXPECT_NE(nullptr, loadedRun);
 }
+
+// NOTE: Append Records cases
 
 }  // namespace
 }  // namespace testing
