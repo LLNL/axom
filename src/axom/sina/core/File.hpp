@@ -11,7 +11,7 @@
  *
  * \file File.hpp
  *
- * \brief   Implementation file for Sina File class
+ * \brief   Header file for Sina File class
  *
  ******************************************************************************
  */

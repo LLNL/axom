@@ -23,14 +23,15 @@ Creating Documents and Records
 The basic working units in Sina are the Document, Record, and Relationship.
 A Document is a collection of Records and Relationships. A Record contains
 information about a particular entity, such as the run of an application,
-or a description of a UQ study. A Relationship describes how two records
-relate to each user (e.g. UQ studies contain runs).
+or a description of a uncertainty quantification (UQ) study. A Relationship
+describes how two records relate to each user (e.g. UQ studies contain runs).
 
 This first example shows how to create a record:
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 9-16
+   :start-after: //! [begin create record]
+   :end-before: //! [end create record]
 
 The record has an ID "some_record_id", which is unique to the enclosing
 document (it will be replaced by a global ID upon ingestion). The only
@@ -43,7 +44,8 @@ The type is automatically set to "run".
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 20-27
+   :start-after: //! [begin create run]
+   :end-before: //! [end create run]
 
 -----------
 Adding Data
@@ -55,7 +57,8 @@ the file.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 31-45
+   :start-after: //! [begin adding data]
+   :end-before: //! [end adding data]
 
 -----------------
 Adding Curve Sets
@@ -69,7 +72,8 @@ variable (e.g. "time"), and possibly multiple dependent variables (e.g.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 49-66
+   :start-after: //! [begin curve sets]
+   :end-before: //! [end curve sets]
 
 ------------
 Adding Files
@@ -84,7 +88,8 @@ For example if the file was deleted or renamed.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 72-78
+   :start-after: //! [begin file add_and_remove]
+   :end-before: //! [end file add_and_remove]
 
 -----------------------------
 Relationships Between Records
@@ -99,7 +104,8 @@ than "is part of", as in "the run is part of the study".
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 83-85
+   :start-after: //! [begin relationships]
+   :end-before: //! [end relationships]
 
 ---------------------
 Library-Specific Data
@@ -114,20 +120,23 @@ library ``foo`` defines ``foo_collectData()`` like this:
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 90-93
+   :start-after: //! [begin library data foo]
+   :end-before: //! [end library data foo]
 
 Library ``bar`` defines ``bar_gatherData()`` like this:
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 97-100
+   :start-after: //! [begin library data bar]
+   :end-before: //! [end library data bar]
 
 In your host application, you can define sections for ``foo`` and ``bar``
 to add their own data.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 104-112
+   :start-after: //! [begin library data host]
+   :end-before: //! [end library data host]
 
 In the example above, once the record is ingested into a Sina datastore,
 users will be able to search for "temperature" (value = 450),
@@ -146,7 +155,8 @@ which you can ingest into a Sina datastore.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 116-119
+   :start-after: //! [begin io write]
+   :end-before: //! [end io write]
 
 If needed, you can also load a document from a file. This can be useful,
 for example, if you wrote a document when writing a restart and you want to
@@ -156,7 +166,8 @@ an HDF5 set the Protocol to HDF5.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 122-124
+   :start-after: //! [begin io read]
+   :end-before: //! [end io read]
 
 ---------------------------------
 Non-Conforming, User-Defined Data
@@ -176,4 +187,5 @@ convert to and from JSON. The user-defined section is exposed as a
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
-   :lines: 128-137
+   :start-after: //! [begin user defined]
+   :end-before: //! [end user defined]

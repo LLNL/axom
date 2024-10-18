@@ -11,7 +11,7 @@
  *
  * \file ConduitUtil.hpp
  *
- * \brief   Implementation file for Sina Conduit utility functions
+ * \brief   Header file for Sina Conduit utility functions
  *
  ******************************************************************************
  */

@@ -11,7 +11,7 @@
  *
  * \file Record.hpp
  *
- * \brief   Implementation file for Sina Record class
+ * \brief   Header file for Sina Record class
  *
  * \sa DataHolder.hpp
  *

@@ -11,7 +11,7 @@
  *
  * \file Curve.hpp
  *
- * \brief   Implementation file for Sina Curve class
+ * \brief   Header file for Sina Curve class
  *
  ******************************************************************************
  */

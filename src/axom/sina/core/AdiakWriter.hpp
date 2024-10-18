@@ -11,7 +11,7 @@
  *
  * \file AdiakWriter.hpp
  *
- * \brief   Implementation file for the Adiak Sina callback function.
+ * \brief   Header file for the Adiak Sina callback function.
  *
  ******************************************************************************
  */

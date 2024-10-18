@@ -45,4 +45,9 @@ foreach(src ${sina_example_sources})
         DEPENDS_ON ${sina_example_depends}
         FOLDER     axom/sina/examples
         )
+
+    # Need to add this flag so XL will ignore trailing underscores in fortran function names
+    if (${exe_name}_ex STREQUAL "sina_fortran_ex" AND CMAKE_Fortran_COMPILER_ID STREQUAL "XL")
+        target_compile_options(${exe_name}_ex PRIVATE -qextname)
+    endif()
 endforeach()

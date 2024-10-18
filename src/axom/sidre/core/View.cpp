@@ -983,6 +983,14 @@ void View::describe(TypeID type, IndexType num_elems)
  */
 void View::describe(TypeID type, int ndims, const IndexType* shape)
 {
+  SLIC_CHECK_MSG(shape != nullptr,
+                 SIDRE_VIEW_LOG_PREPEND
+                   << "Could not allocate: specified shape is nullptr.");
+  if(shape == nullptr)
+  {
+    return;
+  }
+
   IndexType num_elems = 0;
   if(ndims > 0)
   {
@@ -1035,6 +1043,14 @@ void View::describeShape()
  */
 void View::describeShape(int ndims, const IndexType* shape)
 {
+  SLIC_CHECK_MSG(shape != nullptr,
+                 SIDRE_VIEW_LOG_PREPEND
+                   << "Could not allocate: specified shape is nullptr.");
+  if(shape == nullptr)
+  {
+    return;
+  }
+
   m_shape.clear();
   for(int i = 0; i < ndims; i++)
   {

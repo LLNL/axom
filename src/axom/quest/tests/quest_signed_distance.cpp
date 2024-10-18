@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
+#include "axom/core/NumericLimits.hpp"
 #include "axom/slic.hpp"
 #include "axom/mint.hpp"
 #include "axom/primal.hpp"
@@ -128,7 +129,7 @@ TEST(quest_signed_distance, sphere_test)
 
   double l1norm = 0.0;
   double l2norm = 0.0;
-  double linf = std::numeric_limits<double>::min();
+  double linf = axom::numeric_limits<double>::min();
 
   for(int inode = 0; inode < nnodes; ++inode)
   {
@@ -236,7 +237,7 @@ TEST(quest_signed_distance, sphere_test_with_normals)
 
   double l1norm = 0.0;
   double l2norm = 0.0;
-  double linf = std::numeric_limits<double>::min();
+  double linf = axom::numeric_limits<double>::min();
 
   for(int inode = 0; inode < nnodes; ++inode)
   {
@@ -369,7 +370,7 @@ void run_vectorized_sphere_test()
 
   double l1norm = 0.0;
   double l2norm = 0.0;
-  double linf = std::numeric_limits<double>::min();
+  double linf = axom::numeric_limits<double>::min();
 
   axom::Array<PointType> queryPts =
     axom::Array<PointType>(nnodes, nnodes, host_allocator);
@@ -552,7 +553,7 @@ TEST(quest_signed_distance, sphere_vec_device_custom_alloc)
 
   double l1norm = 0.0;
   double l2norm = 0.0;
-  double linf = std::numeric_limits<double>::min();
+  double linf = axom::numeric_limits<double>::min();
 
   axom::Array<PointType> queryPts =
     axom::Array<PointType>(nnodes, nnodes, host_allocator);

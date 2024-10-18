@@ -15,6 +15,15 @@ axom_component_requires(NAME       Sina
                         TPLS       Conduit )
 
 #------------------------------------------------------------------------------
+# Set sina version
+#------------------------------------------------------------------------------
+set(SINA_VERSION_MAJOR 1)
+set(SINA_VERSION_MINOR 14)
+set(SINA_VERSION_PATCH 0)
+axom_configure_file ( config.hpp.in
+                      ${PROJECT_BINARY_DIR}/include/axom/sina/config.hpp )
+
+#------------------------------------------------------------------------------
 # Specify the sina headers/sources
 #------------------------------------------------------------------------------
 
@@ -55,10 +64,6 @@ if (ENABLE_FORTRAN)
   blt_list_append( TO sina_headers ELEMENTS interface/sina_fortran_interface.h)
   blt_list_append( TO sina_sources
                    ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f90)
-
-  if(CMAKE_Fortran_COMPILER_ID STREQUAL "XL")
-    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -qextname")
-  endif()
 endif()
 
 #------------------------------------------------------------------------------

@@ -11,7 +11,7 @@
  *
  * \file Datum.hpp
  *
- * \brief   Implementation file for Sina Datum class
+ * \brief   Header file for Sina Datum class
  *
  ******************************************************************************
  */
