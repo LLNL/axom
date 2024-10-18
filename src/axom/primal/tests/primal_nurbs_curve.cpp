@@ -13,7 +13,7 @@
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NURBSCurve.hpp"
-#include "axom/primal/operators/squared_distance.hpp"
+#include "axom/primal/operators/winding_number.hpp"
 
 namespace primal = axom::primal;
 
@@ -715,6 +715,47 @@ TEST(primal_nurbscurve, nurbs_reverse_orientation)
     for(int i = 0; i < DIM; ++i)
     {
       EXPECT_NEAR(p[i], p_reversed[i], 1e-13);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, nurbs_winding_numbers)
+{
+  // Define a nurbs curve that represents a circle
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[7] = {PointType {1.0, 0.0},
+                       PointType {1.0, 2.0},
+                       PointType {-1.0, 2.0},
+                       PointType {-1.0, 0.0},
+                       PointType {-1.0, -2.0},
+                       PointType {1.0, -2.0},
+                       PointType {1.0, 0.0}};
+  double weights[7] = {1.0, 1. / 3., 1. / 3., 1.0, 1. / 3., 1. / 3., 1.0};
+
+  double knots[11] = {0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0};
+
+  NURBSCurveType circle(data, weights, 7, knots, 11);
+
+  // Check the winding number on a simple grid of points
+  for(double x = -2.0; x <= 2.0; x += 0.201)
+  {
+    for(double y = -2.0; y <= 2.0; y += 0.201)
+    {
+      PointType query {x, y};
+      double gwn = winding_number(query, circle);
+      if(x * x + y * y > 1.0)
+      {
+        EXPECT_DOUBLE_EQ(std::lround(gwn), 0.0);
+      }
+      else
+      {
+        EXPECT_DOUBLE_EQ(std::lround(gwn), 1.0);
+      }
     }
   }
 }
