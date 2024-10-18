@@ -640,6 +640,15 @@ public:
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  /*!
+    \tparam ShapeType either TetrahedeonType or OctahedronType.
+            depending on whether shape is tet or c2c.
+    \param shape the input shape to be superimposed on the mesh.
+    \param shapes either the array m_tets (if surface mesh is tet)
+           or m_octs (if surface mesh is c2c).
+    \param shape_count the count for the shapes array, maintained
+           separately from the array.
+  */
   template <typename ExecSpace, typename ShapeType>
   void runShapeQueryImpl(const klee::Shape& shape,
                          axom::Array<ShapeType>& shapes,
@@ -708,33 +717,9 @@ public:
     }
 
     // Set shape components to zero if within threshold
-    axom::for_all<ExecSpace>(
-      shape_count,
-      AXOM_LAMBDA(axom::IndexType i) {
-        for(int j = 0; j < ShapeType::NUM_VERTS; j++)
-        {
-          if(axom::utilities::isNearlyEqual(shapes_device_view[i][j][0],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            shapes_device_view[i][j][0] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(shapes_device_view[i][j][1],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            shapes_device_view[i][j][1] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(shapes_device_view[i][j][2],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            shapes_device_view[i][j][2] = 0.0;
-          }
-        }
-      });
+    snapShapeVerticesToZero<ExecSpace, ShapeType>(shapes,
+                                                  shape_count,
+                                                  ZERO_THRESHOLD);
 
     // Find which shape bounding boxes intersect hexahedron bounding boxes
     SLIC_INFO(axom::fmt::format(
@@ -2071,7 +2056,8 @@ private:
   }
 
 public:
-  // This should be private, but NVCC complains unless its public.
+  // These methods should be private, but NVCC complains unless its public.
+
   template <typename ExecSpace>
   void populateHexesFromMesh()
   {
@@ -2147,6 +2133,36 @@ public:
           }
         }
       });  // end of loop to initialize hexahedral elements and bounding boxes
+  }
+
+  //!@brief Set shape vertices to zero of within threshold.
+  template <typename ExecSpace, typename ShapeType>
+  void snapShapeVerticesToZero(axom::Array<ShapeType>& shapes,
+                               axom::IndexType shapeCount,
+                               double zeroThreshold)
+  {
+    axom::ArrayView<ShapeType> shapesView = shapes.view();
+    axom::for_all<ExecSpace>(
+      shapeCount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        for(int j = 0; j < ShapeType::NUM_VERTS; j++)
+        {
+          if(axom::utilities::isNearlyEqual(shapesView[i][j][0], 0.0, zeroThreshold))
+          {
+            shapesView[i][j][0] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(shapesView[i][j][1], 0.0, zeroThreshold))
+          {
+            shapesView[i][j][1] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(shapesView[i][j][2], 0.0, zeroThreshold))
+          {
+            shapesView[i][j][2] = 0.0;
+          }
+        }
+      });
   }
 
 private:
