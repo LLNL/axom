@@ -400,7 +400,6 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 #if defined(AXOM_DEBUG)
   conduit::Node meshNode, info;
   meshGrp->createNativeLayout(meshNode);
-  meshNode.print();
   SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
 #endif
 
@@ -473,7 +472,6 @@ axom::klee::ShapeSet create2DShapeSet(sidre::DataStore& ds)
   axom::IndexType conn[3] = {0, 1, 2};
   triangleMesh.appendCell(conn);
 
-  meshGroup->print();
   SLIC_ASSERT(axom::mint::blueprint::isValidRootGroup(meshGroup));
 
   axom::klee::TransformableGeometryProperties prop {
@@ -899,7 +897,8 @@ axom::sidre::View* getElementVolumes(
 }
 
 /*!
-  @brief Return the element volumes as a sidre::View.
+  @brief Return the element volumes as a sidre::View containing
+  the volumes in an array.
 
   If it doesn't exist, allocate and compute it.
   \post The volume data is in the blueprint field \c volFieldName.
@@ -911,20 +910,22 @@ axom::sidre::View* getElementVolumes(
   sidre::Group* meshGrp,
   const std::string& volFieldName = std::string("elementVolumes"))
 {
-  std::unique_ptr<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>> mesh {
-    dynamic_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>*>(
-      axom::mint::getMesh(meshGrp, topoName))};
   using HexahedronType = axom::primal::Hexahedron<double, 3>;
 
-  const auto valuesPath = axom::fmt::format("fields/{}/values", volFieldName);
   axom::sidre::View* volSidreView = nullptr;
-  if(meshGrp->hasView(valuesPath))
+
+  const auto fieldPath = axom::fmt::format("fields/{}", volFieldName);
+  if(meshGrp->hasGroup(fieldPath))
   {
-    volSidreView = meshGrp->getView(valuesPath);
+    sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
+    volSidreView = fieldGrp->getView(volFieldName);
   }
   else
   {
-    const axom::IndexType cellCount = mesh->getNumberOfCells();
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(meshGrp,
+                                                                topoName);
+
+    const axom::IndexType cellCount = mesh.getNumberOfCells();
 
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
@@ -938,8 +939,8 @@ axom::sidre::View* getElementVolumes(
     for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
     {
       // Get the indices of this element's vertices
-      axom::IndexType* verts = mesh->getCellNodeIDs(cellIdx);
-      mesh->getCellNodeIDs(cellIdx, verts);
+      axom::IndexType* verts = mesh.getCellNodeIDs(cellIdx);
+      mesh.getCellNodeIDs(cellIdx, verts);
 
       // Get the coordinates for the vertices
       for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
@@ -947,7 +948,7 @@ axom::sidre::View* getElementVolumes(
         int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
         for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
         {
-          vertCoordsView[vertIdx][k] = mesh->getNodeCoordinate(verts[j], k);
+          vertCoordsView[vertIdx][k] = mesh.getNodeCoordinate(verts[j], k);
         }
       }
     }
@@ -984,12 +985,16 @@ axom::sidre::View* getElementVolumes(
       });  // end of loop to initialize hexahedral elements and bounding boxes
 
     // Allocate and populate cell volumes.
-    const auto volFieldPath = axom::fmt::format("fields/{}", volFieldName);
-    axom::sidre::Group* volGrp = meshGrp->createGroup(volFieldPath);
+    axom::sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
+    fieldGrp->createViewString("topology", topoName);
+    fieldGrp->createViewString("association", "element");
+    fieldGrp->createViewString("volume_dependent", "true");
     volSidreView =
-      volGrp->createViewAndAllocate("values",
-                                    axom::sidre::DataTypeId::FLOAT64_ID,
-                                    cellCount);
+      fieldGrp->createViewAndAllocate("values",
+                                      axom::sidre::detail::SidreTT<double>::id,
+                                      cellCount);
+    axom::IndexType shape2d[] = {cellCount, 1};
+    volSidreView->reshapeArray(2, shape2d);
     axom::ArrayView<double> volView(volSidreView->getData(),
                                     volSidreView->getNumElements());
     axom::for_all<ExecSpace>(
@@ -1049,15 +1054,15 @@ double sumMaterialVolumes(sidre::Group* meshGrp, const std::string& material)
   conduit::Node info;
   conduit::blueprint::mesh::verify(meshNode, info);
   SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
-  meshGrp->print();
-  meshNode.print();
 #endif
   std::string topoPath = axom::fmt::format("topologies/{}", topoName);
   conduit::Node& topoNode = meshNode.fetch_existing(topoPath);
   const int cellCount = conduit::blueprint::mesh::topology::length(topoNode);
 
-  // Get cell volumes from dc.
-  axom::sidre::View* elementVols = getElementVolumes<ExecSpace>(meshGrp);
+  // Get cell volumes from meshGrp.
+  const std::string volsName = "vol_" + material;
+  axom::sidre::View* elementVols =
+    getElementVolumes<ExecSpace>(meshGrp, volsName);
   axom::ArrayView<double> elementVolsView(elementVols->getData(),
                                           elementVols->getNumElements());
 
@@ -1388,8 +1393,9 @@ int main(int argc, char** argv)
 
   int failCounts = 0;
 
-  axom::sidre::Group* volFracGroups =
-    shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+  axom::sidre::Group* volFracGroups = useBp
+    ? compMeshGrp->getGroup("matsets/material/volume_fractions")
+    : shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
 
   //---------------------------------------------------------------------------
   // Correctness test: volume fractions should be in [0,1].
