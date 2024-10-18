@@ -917,8 +917,8 @@ axom::sidre::View* getElementVolumes(
   const auto fieldPath = axom::fmt::format("fields/{}", volFieldName);
   if(meshGrp->hasGroup(fieldPath))
   {
-    sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
-    volSidreView = fieldGrp->getView(volFieldName);
+    sidre::Group* fieldGrp = meshGrp->getGroup(fieldPath);
+    volSidreView = fieldGrp->getView("values");
   }
   else
   {
@@ -1250,13 +1250,12 @@ int main(int argc, char** argv)
 
   axom::sidre::Group* compMeshGrp =
     createBoxMesh(ds.getRoot()->createGroup("compMesh"));
-  compMeshGrp->print();
 
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
   AXOM_ANNOTATE_BEGIN("setup shaping problem");
-  bool useBp = false;
+  bool useBp = true;
   std::shared_ptr<quest::IntersectionShaper> shaper = useBp
     ? std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp)
     : std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
