@@ -135,7 +135,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
                                      axom::sidre::DataTypeId::FLOAT64_ID,
                                      numVerts);
 
-  const axom::MDMapping<DIM> vertMapping(vertsShape, axom::ArrayStrideOrder::ROW);
+  const axom::MDMapping<DIM> vertMapping(vertsShape, axom::ArrayStrideOrder::COLUMN);
   axom::ArrayView<double, DIM> xView(xVu->getData(),
                                      vertsShape,
                                      vertMapping.strides());
@@ -146,9 +146,9 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
                                      vertsShape,
                                      vertMapping.strides());
 
-  double dx = bbox.getMax()[0] - bbox.getMin()[0];
-  double dy = bbox.getMax()[1] - bbox.getMin()[1];
-  double dz = bbox.getMax()[2] - bbox.getMin()[2];
+  double dx = (bbox.getMax()[0] - bbox.getMin()[0]) / res[0];
+  double dy = (bbox.getMax()[1] - bbox.getMin()[1]) / res[1];
+  double dz = (bbox.getMax()[2] - bbox.getMin()[2]) / res[2];
   for(int k = 0; k < nk + 1; ++k)
   {
     for(int j = 0; j < nj + 1; ++j)
