@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_KLEE_DISCRETE_SHAPE_HPP
-#define AXOM_KLEE_DISCRETE_SHAPE_HPP
+#ifndef AXOM_QUEST_DISCRETE_SHAPE_HPP
+#define AXOM_QUEST_DISCRETE_SHAPE_HPP
 
 #include <string>
 #include <vector>
