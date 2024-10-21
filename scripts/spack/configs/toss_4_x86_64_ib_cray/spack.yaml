@@ -117,6 +117,21 @@ spack:
         fc: /usr/tce/packages/cce-tce/cce-15.0.1/bin/crayftn
       spec: cce@15.0.1
       target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      # Flag for lowercase Fortran module names
+      flags:
+        fflags: -ef
+      modules: []
+      operating_system: rhel8
+      paths:
+        cc: /usr/tce/packages/cce-tce/cce-18.0.0/bin/craycc
+        cxx: /usr/tce/packages/cce-tce/cce-18.0.0/bin/crayCC
+        f77: /usr/tce/packages/cce-tce/cce-18.0.0/bin/crayftn
+        fc: /usr/tce/packages/cce-tce/cce-18.0.0/bin/crayftn
+      spec: cce@=18.0.0
+      target: x86_64
 
   packages:
     all:
@@ -125,6 +140,8 @@ spack:
         blas: [netlib-lapack]
         lapack: [netlib-lapack]
         mpi: [cray-mpich]
+        zlib-api: [zlib]
+
 
     hip:
       version: [5.2.3, 5.4.3, 5.6.0, 5.7.1, 6.1.2, 6.2.1]
@@ -265,6 +282,8 @@ spack:
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.2.1/
       - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
+      - spec: cray-mpich@8.1.29%cce@18.0.0+slurm
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.1.2-cce-18.0.0/
 
     # blas is a bit more complicated because its a virtual package so fake it with
     # the following per spack docs
@@ -365,6 +384,11 @@ spack:
       externals:
       - spec: m4@1.4.16
         prefix: /usr
+    ncurses:
+      externals:
+      - spec: ncurses@6.1.20180224+termlib abi=6
+        prefix: /usr
+      buildable: false
     perl:
       buildable: false
       externals:
@@ -389,11 +413,6 @@ spack:
       buildable: false
       externals:
       - spec: unzip@6.0
-        prefix: /usr
-    zlib:
-      buildable: false
-      externals:
-      - spec: zlib@1.2.7
         prefix: /usr
 
     # External dependencies for SCR
@@ -440,6 +459,18 @@ spack:
       require: "@3.0.1~shared~tests~examples"
     umpire:
       require: "@2024.07.0~shared~examples~werror"
+
+    # Failure with cce compiler:
+    # https://github.com/besser82/libxcrypt/issues/181
+    # Fix:
+    # https://github.com/NixOS/nixpkgs/pull/309884
+    libxcrypt:
+      require:
+      - ldflags=-Wl,--undefined-version
+
+    # cce compiler requires static zlib
+    zlib:
+      variants: ~shared
 
     # Lock in versions of Devtools
     cmake:
