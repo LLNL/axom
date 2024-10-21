@@ -156,6 +156,8 @@ public:
   }
 
   /// Addition-assignment operator
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE
   IterType& operator+=(PosType n)
   {
     adv(getIter(), n);
@@ -169,6 +171,8 @@ public:
   }
 
   /// Addition operator with iterator on left and position on right
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE
   friend IterType operator+(const IterType& it, PosType n)
   {
     IterType ret(it);

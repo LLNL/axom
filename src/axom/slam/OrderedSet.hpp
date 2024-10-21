@@ -422,7 +422,7 @@ public:
     }
 
   private:
-    OrderedSet m_orderedSet;
+    OrderedSet::ConcreteSet m_orderedSet;
   };
 
 public:  // Functions related to iteration

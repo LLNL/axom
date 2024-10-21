@@ -186,6 +186,11 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
   const int nbins = args.num_bins;
   const bool verifyPoints = args.should_verify_points;
 
+  // Get ids of necessary allocators
+  constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
+
   BoxType meshBb;
   {
     mfem::Vector meshMin, meshMax;
@@ -195,13 +200,13 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
   }
   SLIC_DEBUG("Mesh bounding box " << meshBb);
 
-  axom::Array<PointType> pts(npts, npts, axom::getDefaultAllocatorID());
+  axom::Array<PointType> pts_h(npts, npts, host_allocator);
 
   // Generate random points
   utilities::Timer timer(true);
   for(int i = 0; i < npts; i++)
   {
-    pts[i] = get_rand_pt(meshBb);
+    pts_h[i] = get_rand_pt(meshBb);
   }
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Constructed {:L} random points in {} s.",
@@ -222,10 +227,16 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
                               timer.elapsed()));
 
   // Run query
-  axom::Array<IndexType> outCellIds(npts, npts, axom::getDefaultAllocatorID());
-  axom::Array<PointType> outIsoParams(npts, npts, axom::getDefaultAllocatorID());
+  axom::Array<IndexType> outCellIds_d(npts, npts, device_allocator);
+  axom::Array<PointType> outIsoParams_d(npts, npts, device_allocator);
+
+  auto outCellIds_v = outCellIds_d.view();
+  auto outIsoParams_v = outIsoParams_d.view();
+
+  axom::Array<PointType> pts_d = axom::Array<PointType>(pts_h, device_allocator);
+
   timer.start();
-  query.locatePoints(pts.view(), outCellIds.data(), outIsoParams.data());
+  query.locatePoints(pts_d.view(), outCellIds_v.data(), outIsoParams_v.data());
   double time = timer.elapsed();
   SLIC_INFO(
     axom::fmt::format(axom::utilities::locale(),
@@ -233,6 +244,14 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
                       npts,
                       time,
                       npts / time));
+
+  // Copy back to host
+  axom::Array<IndexType> outCellIds_h = on_device
+    ? axom::Array<IndexType>(outCellIds_d, host_allocator)
+    : std::move(outCellIds_d);
+  axom::Array<PointType> outIsoParams_h = on_device
+    ? axom::Array<PointType>(outIsoParams_d, host_allocator)
+    : std::move(outIsoParams_d);
 
   // Verify the results by reconstructing physical points from refrerence coordinates
   if(verifyPoints)
@@ -244,24 +263,24 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
 
     for(int i = 0; i < npts; ++i)
     {
-      if(outCellIds[i] != NO_CELL)
+      if(outCellIds_h[i] != NO_CELL)
       {
         PointType reconstructed;
-        query.reconstructPoint(outCellIds[i],
-                               outIsoParams[i].data(),
+        query.reconstructPoint(outCellIds_h[i],
+                               outIsoParams_h[i].data(),
                                reconstructed.data());
-        if(primal::squared_distance(pts[i], reconstructed) > EPS)
+        if(primal::squared_distance(pts_h[i], reconstructed) > EPS)
         {
           ++num_wrong;
           SLIC_DEBUG(axom::fmt::format(
             "Incorrect reconstruction: Original point {}; "
             "reconstructed point {} found in cell {} w/ isoparametric "
             "coordinates {}; distance between these is {}",
-            pts[i],
+            pts_h[i],
             reconstructed[i],
-            outCellIds[i],
-            outIsoParams[i],
-            sqrt(primal::squared_distance(pts[i], reconstructed))));
+            outCellIds_h[i],
+            outIsoParams_h[i],
+            sqrt(primal::squared_distance(pts_h[i], reconstructed))));
         }
         else
         {
@@ -271,7 +290,7 @@ void benchmark_point_in_cell(mfem::Mesh& mesh, const Arguments& args)
       else
       {
         ++num_not_found;
-        SLIC_DEBUG(axom::fmt::format("Did not reconstruct point {}", pts[i]));
+        SLIC_DEBUG(axom::fmt::format("Did not reconstruct point {}", pts_h[i]));
       }
     }
 
@@ -322,13 +341,6 @@ int main(int argc, char** argv)
     retval = app.exit(e);
     return retval;
   }
-
-#ifdef AXOM_USE_GPU
-  if(args.exec_space == ExecPolicy::GPU)
-  {
-    axom::setDefaultAllocator(axom::execution_space<GPUExec>::allocatorID());
-  }
-#endif
 
   if(args.verbosity >= 0)
   {

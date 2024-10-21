@@ -324,22 +324,16 @@ public:
     const axom::StackArray<DirectionType, DIM>& v) const
   {
     // v is a permutation if all its values are unique and in [0, DIM).
-    axom::StackArray<bool, DIM> found;
-    for(int d = 0; d < DIM; ++d)
+    axom::StackArray<DirectionType, DIM> values_sorted = v;
+
+    // After sorting, the values should be the sequence {0, 1, ... DIM - 1}.
+    axom::utilities::insertionSort(&values_sorted[0], DIM);
+    for(int d = 0; d < DIM; d++)
     {
-      found[d] = false;
-    }
-    for(int d = 0; d < DIM; ++d)
-    {
-      if(v[d] < 0 || v[d] >= DIM)
+      if(values_sorted[d] != d)
       {
-        return false;  // Out of range.
+        return false;
       }
-      if(found[v[d]] == true)
-      {
-        return false;  // Repeated index.
-      }
-      found[v[d]] = true;
     }
     return true;
   }
