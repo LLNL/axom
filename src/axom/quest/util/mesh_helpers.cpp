@@ -134,7 +134,8 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
                                      axom::sidre::DataTypeId::FLOAT64_ID,
                                      numVerts);
 
-  const axom::MDMapping<DIM> vertMapping(vertsShape, axom::ArrayStrideOrder::COLUMN);
+  const axom::MDMapping<DIM> vertMapping(vertsShape,
+                                         axom::ArrayStrideOrder::COLUMN);
   axom::ArrayView<double, DIM> xView(xVu->getData(),
                                      vertsShape,
                                      vertMapping.strides());

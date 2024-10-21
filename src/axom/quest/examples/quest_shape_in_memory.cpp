@@ -172,7 +172,7 @@ public:
     }
 
     // Handle conversion to parallel mfem mesh
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
     {
       int* partitioning = nullptr;
       int part_method = 0;
@@ -182,7 +182,7 @@ public:
       delete mesh;
       mesh = parallelMesh;
     }
-#endif
+  #endif
 
     return mesh;
   }
@@ -351,14 +351,14 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
   namespace primal = axom::primal;
 
   int myRank = 0;
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
-#endif
+  #endif
 
   int numElements = mesh->GetNE();
 
   mfem::Vector mins, maxs;
-#ifdef MFEM_USE_MPI
+  #ifdef MFEM_USE_MPI
   auto* parallelMesh = dynamic_cast<mfem::ParMesh*>(mesh);
   if(parallelMesh != nullptr)
   {
@@ -367,7 +367,7 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
     myRank = parallelMesh->GetMyRank();
   }
   else
-#endif
+  #endif
   {
     mesh->GetBoundingBox(mins, maxs);
   }
@@ -1060,9 +1060,9 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
     });
 
   double globalVol = localVol.get();
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   MPI_Allreduce(MPI_IN_PLACE, &globalVol, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-#endif
+  #endif
   return globalVol;
 }
 #endif
@@ -1311,7 +1311,9 @@ int main(int argc, char** argv)
     cellCount = shapingMesh->GetNE();
   }
 #else
-  SLIC_ERROR_IF(params.useMfem(), "Cannot use MFEM mesh due to Axom configuration.  Please use Blueprint mesh or configure with MFEM.");
+  SLIC_ERROR_IF(params.useMfem(),
+                "Cannot use MFEM mesh due to Axom configuration.  Please use "
+                "Blueprint mesh or configure with MFEM.");
 #endif
 
   axom::sidre::Group* compMeshGrp = nullptr;
@@ -1343,7 +1345,7 @@ int main(int argc, char** argv)
     shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
   }
 #endif
-  SLIC_ASSERT( shaper != nullptr );
+  SLIC_ASSERT(shaper != nullptr);
 
   // Set generic parameters for the base Shaper instance
   shaper->setVertexWeldThreshold(params.weldThresh);
@@ -1481,7 +1483,8 @@ int main(int argc, char** argv)
 #if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
   if(params.useMfem())
   {
-    volFracGroups = shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+    volFracGroups =
+      shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
   }
 #endif
 
@@ -1599,7 +1602,7 @@ int main(int argc, char** argv)
   if(!params.outputFile.empty())
   {
     std::string fileName = params.outputFile + ".volfracs";
-    if (params.useBlueprint())
+    if(params.useBlueprint())
     {
       saveMesh(*compMeshGrp, fileName);
       SLIC_INFO(axom::fmt::format("{:=^80}", "Wrote output mesh " + fileName));

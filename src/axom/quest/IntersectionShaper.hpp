@@ -2049,19 +2049,20 @@ private:
         fieldGrp->createView("volume_dependent")
           ->setString(std::string(volumeDependent ? "true" : "false"));
         valuesView->allocate();
-        if (fieldName.rfind("vol_frac_", 0) == 0)
+        if(fieldName.rfind("vol_frac_", 0) == 0)
         {
           // This is a material volume fraction field.
           // Shallow-copy valuesView to (uni-buffer) matsets.
           const std::string matlName = fieldName.substr(9);
           axom::sidre::Group* volFracGrp = nullptr;
-          if (m_bpGrp->hasGroup("matsets/material/volume_fractions"))
+          if(m_bpGrp->hasGroup("matsets/material/volume_fractions"))
           {
             volFracGrp = m_bpGrp->getGroup("matsets/material/volume_fractions");
           }
           else
           {
-            volFracGrp = m_bpGrp->createGroup("matsets/material/volume_fractions");
+            volFracGrp =
+              m_bpGrp->createGroup("matsets/material/volume_fractions");
             m_bpGrp->createViewString("matsets/material/topology", m_bpTopo);
           }
           auto* valuesViewInMatsets = volFracGrp->copyView(valuesView);
