@@ -13,12 +13,12 @@
 #include "DataStore.hpp"
 
 // Other axom headers
+#include "axom/core/IndexedCollection.hpp"
+#include "axom/core/MapCollection.hpp"
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/streams/GenericOutputStream.hpp"
 
 // Sidre component headers
-#include "IndexedCollection.hpp"
-#include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "Attribute.hpp"

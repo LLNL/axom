@@ -56,9 +56,13 @@ set(core_headers
     ArrayIteratorBase.hpp
     ArrayView.hpp
     MDMapping.hpp
+    IndexedCollection.hpp
+    ItemCollection.hpp
     IteratorBase.hpp
+    ListCollection.hpp
     Macros.hpp
     Map.hpp
+    MapCollection.hpp
     FlatMap.hpp
     NumericLimits.hpp
     Path.hpp

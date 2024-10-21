@@ -12,6 +12,9 @@
 #ifndef AXOM_ITERBASE_HPP_
 #define AXOM_ITERBASE_HPP_
 
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
+
 namespace axom
 {
 /**

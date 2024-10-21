@@ -16,6 +16,15 @@ namespace utilities
 {
 namespace string
 {
+
+/*!
+ * \brief An invalid name string used in axom components
+ *
+ * This is an empty string that is available for axom components to compare
+ * as an invalid name.
+ */
+static const std::string InvalidName;
+
 /*!
  * \brief Tests whether a string ends with another string
  * https://stackoverflow.com/questions/20446201/how-to-check-if-string-ends-with-txt/20446257

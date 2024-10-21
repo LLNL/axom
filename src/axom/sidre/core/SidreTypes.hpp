@@ -16,6 +16,7 @@
 #include "SidreDataTypeIds.h"
 #include "conduit.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 namespace axom
 {
@@ -47,7 +48,12 @@ using IndexType = axom::IndexType;
 /*!
  * \brief Common invalid index identifier used in sidre.
  */
-const IndexType InvalidIndex = SIDRE_InvalidIndex;
+constexpr IndexType InvalidIndex = axom::InvalidIndex;
+
+/*!
+ * \brief Common invalid name string usde in sidre.
+ */
+const std::string InvalidName = axom::utilities::string::InvalidName;
 
 /*!
  * \brief Returns true if idx is valid, else false.
@@ -58,14 +64,12 @@ const IndexType InvalidIndex = SIDRE_InvalidIndex;
 inline bool indexIsValid(IndexType idx) { return idx != InvalidIndex; }
 
 /*!
- * \brief Common invalid name (string) identifier used in sidre.
- */
-const std::string InvalidName;
-
-/*!
  * \brief Returns true if name is valid, else false.
  */
-inline bool nameIsValid(const std::string& name) { return name != InvalidName; }
+inline bool nameIsValid(const std::string& name)
+{
+  return name != axom::utilities::string::InvalidName;
+}
 
 /*!
  * \brief Enum that holds the numeric data type id options for sidre types.
