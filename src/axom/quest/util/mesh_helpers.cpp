@@ -9,7 +9,6 @@
 #include <conduit/conduit_blueprint_mesh.hpp>
 #include <iostream>
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/core/WhereMacro.hpp"
 
 namespace axom
 {
