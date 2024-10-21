@@ -28,10 +28,23 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Removed
 
 ###  Fixed
-- Added a guard for sidre-related mint API usage in a quest example
+
+## [Version 0.10.1] - Release date 2024-10-dd
+
+###  Added
+- Constructor to Axom BVH that avoids an unnecessary copy of each bounding box.
+
+###  Fixed
+- Issue with uninitialized state in axom::Array class was causing
+  host-initialization of device-allocated memory in certain situations. This
+  could cause warnings about uninitialized memory or crashes in the axom::Array
+  constructor.
+- Added a guard for sidre-related mint API usage in a quest example.
 - Removed `std::ends` usage from `SLIC_ASSERT`,`SLIC_ASSERT_MSG`,`SLIC_CHECK`,
   and `SLIC_CHECK_MSG` macros that prevented Lumberjack from combining
   messages.
+- Some line numbers linking file contents into the Axom Quickstart Guide were
+  incorrect causing the docs to appear incomplete.
 
 
 ## [Version 0.10.0] - Release date 2024-09-27
