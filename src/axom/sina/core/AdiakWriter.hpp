@@ -43,8 +43,10 @@ namespace sina
  * like this:
  *
  * \code
- *     axom::sina::Record record{ID{"my_id", axom::sina::IDType::Local}, "my_record_type"};
- *     axom::sina::adiak_register_cb(1, adiak_category_all, axom::sina::adiakSinaCallback, 0, &record);
+ *     #include "axom/sina.hpp"
+ *
+ *     axom::sina::Record record{axom::sina::ID{"my_id", axom::sina::IDType::Local}, "my_record_type"};
+ *     adiak_register_cb(1, adiak_category_all, axom::sina::adiakSinaCallback, 0, &record);
  * \endcode
  *
  * \attention Not everything that Sina can capture an be captured through the
