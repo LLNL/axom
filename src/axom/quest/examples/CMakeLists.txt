@@ -265,14 +265,18 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
 endif()
 
 # Shaping in-memory example ------------------------------------------------------
-if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
-                   AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
-                   AND AXOM_ENABLE_KLEE)
+if((CONDUIT_FOUND OR
+      (AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+        AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION))
+    AND AXOM_ENABLE_KLEE)
+    if(MFEM_FOUND)
+        set(optional_dependency, "mfem")
+    endif()
     axom_add_executable(
         NAME        quest_shape_in_memory_ex
         SOURCES     quest_shape_in_memory.cpp
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends} mfem
+        DEPENDS_ON  ${quest_example_depends} ${optional_dependency}
         FOLDER      axom/quest/examples
         )
 
@@ -289,19 +293,22 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         endif()
 
         set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "plane")
+        set(_meshType "bp" "mfem")
 
         foreach(_policy ${_policies})
             foreach(_testshape ${_testshapes})
-              set(_testname "quest_shape_in_memory_${_policy}_${_testshape}")
-              axom_add_test(
-                NAME ${_testname}
-                COMMAND quest_shape_in_memory_ex
-                           --policy ${_policy}
-                           --testShape ${_testshape}
-                           --refinements 2
-                           --scale 0.75 0.75 0.75
-                           inline_mesh --min -3 -3 -3 --max 3 3 3 --res 20 20 20 -d 3
-                NUM_MPI_TASKS ${_nranks})
+              foreach(_meshType ${_meshType})
+                set(_testname "quest_shape_in_memory_${_policy}_${_meshType}_${_testshape}")
+                axom_add_test(
+                  NAME ${_testname}
+                  COMMAND quest_shape_in_memory_ex
+                             --policy ${_policy}
+                             --testShape ${_testshape}
+                             --refinements 2
+                             --scale 0.75 0.75 0.75
+                             inline_mesh --min -3 -3 -3 --max 3 3 3 --res 20 20 20 -d 3
+                  NUM_MPI_TASKS ${_nranks})
+              endforeach()
             endforeach()
         endforeach()
     endif()
@@ -371,6 +378,7 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
             endforeach()
         endforeach()
 
+        unset(optional_dependency)
         unset(_nranks)
         unset(_policies)
         unset(_test)

@@ -917,7 +917,7 @@ public:
     SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                                 "Total mesh volume is {:.3Lf}",
                                 this->allReduceSum(totalHex)));
-  }  // end of runShapeQuery() function
+  }  // end of runShapeQueryImpl() function
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)

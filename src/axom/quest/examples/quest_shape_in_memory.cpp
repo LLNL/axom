@@ -23,15 +23,15 @@
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
 
-#include "conduit_relay_io_blueprint.hpp"
-
-// NOTE: The shaping driver requires Axom to be configured with mfem as well as
-// the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION CMake option
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+#if !defined(AXOM_USE_CONDUIT)
+  #error Shaping functionality requires Axom to be configured with Conduit
 #endif
 
-#include "mfem.hpp"
+#include "conduit_relay_io_blueprint.hpp"
+
+#if defined(AXOM_USE_MFEM)
+  #include "mfem.hpp"
+#endif
 
 #ifdef AXOM_USE_MPI
   #include "mpi.h"
@@ -103,6 +103,15 @@ public:
 
   std::string backgroundMaterial;
 
+  // clang-format off
+  enum class MeshType { bp = 0, mfem = 1 };
+  const std::map<std::string, MeshType> meshTypeChoices
+    { {"bp", MeshType::bp} , {"mfem", MeshType::mfem} };
+  // clang-format on
+  MeshType meshType {MeshType::bp};
+  bool useMfem() { return meshType == MeshType::mfem; }
+  bool useBlueprint() { return meshType == MeshType::bp; }
+
 private:
   bool m_verboseOutput {false};
 
@@ -119,6 +128,7 @@ public:
     return volume;
   }
 
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
   /// Generate an mfem Cartesian mesh, scaled to the bounding box range
   mfem::Mesh* createBoxMesh()
   {
@@ -189,6 +199,7 @@ public:
 
     return dc;
   }
+#endif
 
   void parse(int argc, char** argv, axom::CLI::App& app)
   {
@@ -198,6 +209,11 @@ public:
     app.add_flag("-v,--verbose,!--no-verbose", m_verboseOutput)
       ->description("Enable/disable verbose output")
       ->capture_default_str();
+
+    app.add_flag("--meshType", meshType)
+      ->description("Use MFEM computational mesh instead of Blueprint")
+      ->capture_default_str()
+      ->transform(axom::CLI::CheckedTransformer(meshTypeChoices));
 
     app.add_option("-t,--weld-threshold", weldThresh)
       ->description("Threshold for welding")
@@ -323,6 +339,7 @@ public:
 };  // struct Input
 Input params;
 
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
 /**
  * \brief Print some info about the mesh
  *
@@ -382,6 +399,7 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 
   slic::flushStreams();
 }
+#endif
 
 const std::string topoName = "mesh";
 const std::string coordsetName = "coords";
@@ -803,6 +821,7 @@ double volumeOfTetMesh(
   return meshVolume;
 }
 
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
 /*!
   @brief Return the element volumes as a sidre::View.
 
@@ -895,6 +914,7 @@ axom::sidre::View* getElementVolumes(
 
   return volSidreView;
 }
+#endif
 
 /*!
   @brief Return the element volumes as a sidre::View containing
@@ -1007,6 +1027,7 @@ axom::sidre::View* getElementVolumes(
   return volSidreView;
 }
 
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
 /*!
   @brief Return global sum of volume of the given material.
 */
@@ -1044,6 +1065,7 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
 #endif
   return globalVol;
 }
+#endif
 
 template <typename ExecSpace>
 double sumMaterialVolumes(sidre::Group* meshGrp, const std::string& material)
@@ -1087,6 +1109,45 @@ double sumMaterialVolumes(sidre::Group* meshGrp, const std::string& material)
   MPI_Allreduce(MPI_IN_PLACE, &globalVol, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 #endif
   return globalVol;
+}
+
+/// Write blueprint mesh to disk
+void saveMesh(const conduit::Node& mesh, const std::string& filename)
+{
+  AXOM_ANNOTATE_SCOPE("save mesh (conduit)");
+
+#ifdef AXOM_USE_MPI
+  conduit::relay::mpi::io::blueprint::save_mesh(mesh,
+                                                filename,
+                                                "hdf5",
+                                                MPI_COMM_WORLD);
+#else
+  conduit::relay::io::blueprint::save_mesh(mesh, filename, "hdf5");
+#endif
+}
+
+/// Write blueprint mesh to disk
+void saveMesh(const sidre::Group& mesh, const std::string& filename)
+{
+  AXOM_ANNOTATE_SCOPE("save mesh (sidre)");
+
+  conduit::Node tmpMesh;
+  mesh.createNativeLayout(tmpMesh);
+  {
+    conduit::Node info;
+#ifdef AXOM_USE_MPI
+    if(!conduit::blueprint::mpi::verify("mesh", tmpMesh, info, MPI_COMM_WORLD))
+#else
+    if(!conduit::blueprint::verify("mesh", tmpMesh, info))
+#endif
+    {
+      SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
+      slic::flushStreams();
+      assert(false);
+    }
+    // info.print();
+  }
+  saveMesh(tmpMesh, filename);
 }
 
 //------------------------------------------------------------------------------
@@ -1211,54 +1272,78 @@ int main(int argc, char** argv)
                 "the C2C library");
 #endif
 
-  AXOM_ANNOTATE_BEGIN("load mesh");
-  //---------------------------------------------------------------------------
-  // Load the computational mesh
-  // originalMeshDC is the input MFEM mesh
-  // It's converted to shapingDC below, and that is used for shaping calls.
-  //---------------------------------------------------------------------------
-  auto originalMeshDC = params.loadComputationalMesh();
+  axom::IndexType cellCount = -1;
 
-  //---------------------------------------------------------------------------
-  // Set up DataCollection for shaping
-  // shapingDC is a "copy" of originalMeshDC, the MFEM mesh.
-  // It's created empty then populated by the SetMesh call.
-  // shapingMesh and parallelMesh are some kind of temporary versions of originalMeshDC.
-  //---------------------------------------------------------------------------
-  mfem::Mesh* shapingMesh = nullptr;
-  constexpr bool dc_owns_data = true;
-  sidre::MFEMSidreDataCollection shapingDC("shaping", shapingMesh, dc_owns_data);
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+  if(params.useMfem())
   {
-    shapingDC.SetMeshNodesName("positions");
+    AXOM_ANNOTATE_BEGIN("load mesh");
+    //---------------------------------------------------------------------------
+    // Load the computational mesh
+    // originalMeshDC is the input MFEM mesh
+    // It's converted to shapingDC below, and that is used for shaping calls.
+    //---------------------------------------------------------------------------
+    auto originalMeshDC = params.loadComputationalMesh();
 
-    // With MPI, loadComputationalMesh returns a parallel mesh.
-    mfem::ParMesh* parallelMesh =
-      dynamic_cast<mfem::ParMesh*>(originalMeshDC->GetMesh());
-    shapingMesh = (parallelMesh != nullptr)
-      ? new mfem::ParMesh(*parallelMesh)
-      : new mfem::Mesh(*originalMeshDC->GetMesh());
-    shapingDC.SetMesh(shapingMesh);
+    //---------------------------------------------------------------------------
+    // Set up DataCollection for shaping
+    // shapingDC is a "copy" of originalMeshDC, the MFEM mesh.
+    // It's created empty then populated by the SetMesh call.
+    // shapingMesh and parallelMesh are some kind of temporary versions of originalMeshDC.
+    //---------------------------------------------------------------------------
+    mfem::Mesh* shapingMesh = nullptr;
+    constexpr bool dc_owns_data = true;
+    sidre::MFEMSidreDataCollection shapingDC("shaping", shapingMesh, dc_owns_data);
+    {
+      shapingDC.SetMeshNodesName("positions");
+
+      // With MPI, loadComputationalMesh returns a parallel mesh.
+      mfem::ParMesh* parallelMesh =
+        dynamic_cast<mfem::ParMesh*>(originalMeshDC->GetMesh());
+      shapingMesh = (parallelMesh != nullptr)
+        ? new mfem::ParMesh(*parallelMesh)
+        : new mfem::Mesh(*originalMeshDC->GetMesh());
+      shapingDC.SetMesh(shapingMesh);
+    }
+    AXOM_ANNOTATE_END("load mesh");
+    printMfemMeshInfo(shapingDC.GetMesh(), "After loading");
+
+    cellCount = shapingMesh->GetNE();
   }
-  AXOM_ANNOTATE_END("load mesh");
-  printMfemMeshInfo(shapingDC.GetMesh(), "After loading");
+#else
+  SLIC_ERROR_IF(params.useMfem(), "Cannot use MFEM mesh due to Axom configuration.  Please use Blueprint mesh or configure with MFEM.");
+#endif
 
-  const axom::IndexType cellCount = shapingMesh->GetNE();
+  axom::sidre::Group* compMeshGrp = nullptr;
+  if(params.useBlueprint())
+  {
+    compMeshGrp = createBoxMesh(ds.getRoot()->createGroup("compMesh"));
+    conduit::Node meshNode;
+    compMeshGrp->createNativeLayout(meshNode);
+    const conduit::Node& topoNode = meshNode["topologies"][topoName];
+    cellCount = conduit::blueprint::mesh::topology::length(topoNode);
+  }
 
   // TODO Port to GPUs.  Shaper should be data-parallel, but data may not be on devices yet.
   using ExecSpace = typename axom::SEQ_EXEC;
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
-  axom::sidre::Group* compMeshGrp =
-    createBoxMesh(ds.getRoot()->createGroup("compMesh"));
-
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
   AXOM_ANNOTATE_BEGIN("setup shaping problem");
-  bool useBp = true;
-  std::shared_ptr<quest::IntersectionShaper> shaper = useBp
-    ? std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp)
-    : std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
+  std::shared_ptr<quest::IntersectionShaper> shaper = nullptr;
+  if(params.useBlueprint())
+  {
+    shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp);
+  }
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+  if(params.useMfem())
+  {
+    shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
+  }
+#endif
+  SLIC_ASSERT( shaper != nullptr );
 
   // Set generic parameters for the base Shaper instance
   shaper->setVertexWeldThreshold(params.weldThresh);
@@ -1271,14 +1356,12 @@ int main(int argc, char** argv)
 
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.
-  if(useBp)
-  {
-    // TODO: What is the blueprint replacement for AssociateMaterialSet?
-  }
-  else
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+  if(params.useMfem())
   {
     shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
   }
+#endif
 
   // Set specific parameters here for IntersectionShaper
   shaper->setLevel(params.refinementLevel);
@@ -1347,15 +1430,11 @@ int main(int argc, char** argv)
   // Compute and print volumes of each material's volume fraction
   //---------------------------------------------------------------------------
   using axom::utilities::string::startsWith;
-  if(useBp)
+  if(params.useBlueprint())
   {
-    // TODO: What is the blueprint equivalent?
     std::vector<std::string> materialNames = shaper->getMaterialNames();
     for(const auto& materialName : materialNames)
     {
-      auto p = shaper->getMaterial(materialName);
-      axom::ArrayView<double>& materialField = p.first;
-      int materialIdx = p.second;
       // Compute and print volume of material.
       const double volume =
         sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
@@ -1365,7 +1444,8 @@ int main(int argc, char** argv)
                                   volume));
     }
   }
-  else
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+  if(params.useMfem())
   {
     for(auto& kv : shaper->getDC()->GetFieldMap())
     {
@@ -1388,13 +1468,22 @@ int main(int argc, char** argv)
       }
     }
   }
+#endif
   AXOM_ANNOTATE_END("adjust");
 
   int failCounts = 0;
 
-  axom::sidre::Group* volFracGroups = useBp
-    ? compMeshGrp->getGroup("matsets/material/volume_fractions")
-    : shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+  axom::sidre::Group* volFracGroups = nullptr;
+  if(params.useBlueprint())
+  {
+    volFracGroups = compMeshGrp->getGroup("matsets/material/volume_fractions");
+  }
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+  if(params.useMfem())
+  {
+    volFracGroups = shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+  }
+#endif
 
   //---------------------------------------------------------------------------
   // Correctness test: volume fractions should be in [0,1].
@@ -1471,9 +1560,17 @@ int main(int argc, char** argv)
                         shapeMesh->getNumberOfCells())));
 
     const std::string& materialName = shape.getMaterial();
-    double shapeVol = useBp
-      ? sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName)
-      : sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
+    double shapeVol = -1;
+    if(params.useBlueprint())
+    {
+      shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
+    }
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    if(params.useMfem())
+    {
+      shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
+    }
+#endif
     double correctShapeVol =
       params.testShape == "plane" ? params.boxMeshVolume() / 2 : shapeMeshVol;
     double diff = shapeVol - correctShapeVol;
@@ -1499,14 +1596,21 @@ int main(int argc, char** argv)
   // Save meshes and fields
   //---------------------------------------------------------------------------
 
-#ifdef MFEM_USE_MPI
   if(!params.outputFile.empty())
   {
     std::string fileName = params.outputFile + ".volfracs";
-    shaper->getDC()->Save(fileName, sidre::Group::getDefaultIOProtocol());
-    SLIC_INFO(axom::fmt::format("{:=^80}", "Wrote output mesh " + fileName));
-  }
+    if (params.useBlueprint())
+    {
+      saveMesh(*compMeshGrp, fileName);
+      SLIC_INFO(axom::fmt::format("{:=^80}", "Wrote output mesh " + fileName));
+    }
+#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+    else
+    {
+      shaper->getDC()->Save(fileName, sidre::Group::getDefaultIOProtocol());
+    }
 #endif
+  }
 
   shaper.reset();
 
