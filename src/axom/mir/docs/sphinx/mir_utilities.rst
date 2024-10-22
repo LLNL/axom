@@ -48,7 +48,7 @@ data structure into a Conduit node since it can be constructed from the start in
 Conduit node. The size of the array must be known.
 
 The ``axom::mir::utilities::blueprint::ConduitAllocateThroughAxom``
-class is a template class that takes an execution space as a template argument and it
+class is a template class that takes an execution space as a template argument. The class
 installs an allocation routine in Conduit that can be used to allocate data through
 Axom. The Conduit allocator is set on each ``conduit::Node`` before setting data into
 the object.
