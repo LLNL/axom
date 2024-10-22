@@ -128,7 +128,7 @@ public:
     return volume;
   }
 
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
   /// Generate an mfem Cartesian mesh, scaled to the bounding box range
   mfem::Mesh* createBoxMesh()
   {
@@ -339,7 +339,7 @@ public:
 };  // struct Input
 Input params;
 
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
 /**
  * \brief Print some info about the mesh
  *
@@ -821,7 +821,7 @@ double volumeOfTetMesh(
   return meshVolume;
 }
 
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
 /*!
   @brief Return the element volumes as a sidre::View.
 
@@ -1027,7 +1027,7 @@ axom::sidre::View* getElementVolumes(
   return volSidreView;
 }
 
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
 /*!
   @brief Return global sum of volume of the given material.
 */
@@ -1274,7 +1274,7 @@ int main(int argc, char** argv)
 
   axom::IndexType cellCount = -1;
 
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
     AXOM_ANNOTATE_BEGIN("load mesh");
@@ -1339,7 +1339,7 @@ int main(int argc, char** argv)
   {
     shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp);
   }
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
     shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
@@ -1358,7 +1358,7 @@ int main(int argc, char** argv)
 
   // Associate any fields that begin with "vol_frac" with "material" so when
   // the data collection is written, a matset will be created.
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
     shaper->getDC()->AssociateMaterialSet("vol_frac", "material");
@@ -1446,7 +1446,7 @@ int main(int argc, char** argv)
                                   volume));
     }
   }
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
     for(auto& kv : shaper->getDC()->GetFieldMap())
@@ -1480,7 +1480,7 @@ int main(int argc, char** argv)
   {
     volFracGroups = compMeshGrp->getGroup("matsets/material/volume_fractions");
   }
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
     volFracGroups =
@@ -1568,7 +1568,7 @@ int main(int argc, char** argv)
     {
       shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
     }
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
     if(params.useMfem())
     {
       shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
@@ -1607,7 +1607,7 @@ int main(int argc, char** argv)
       saveMesh(*compMeshGrp, fileName);
       SLIC_INFO(axom::fmt::format("{:=^80}", "Wrote output mesh " + fileName));
     }
-#if defined(AXOM_USE_MFEM) && defined(AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION)
+#if defined(AXOM_USE_MFEM)
     else
     {
       shaper->getDC()->Save(fileName, sidre::Group::getDefaultIOProtocol());
