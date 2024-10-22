@@ -63,10 +63,11 @@ struct Input
 public:
   std::string outputFile;
 
-  std::vector<double> center {0.0, 0.0, 0.0};
+  // Values for some shape geometries
   double radius {1.0};
   double radius2 {0.3};
   double length {2.0};
+  std::vector<double> center {0.0, 0.0, -length / 2};
   std::vector<double> direction {0.0, 0.0, 1.0};
 
   // Shape transformation parameters
@@ -706,8 +707,8 @@ axom::klee::Shape createShape_Tet()
   const double len = params.length;
   const Point3D a {0.0, 0.0, 0.0};
   const Point3D b {len, 0.0, 0.0};
-  const Point3D c {len, 1.0, 0.0};
-  const Point3D d {0.0, 1.0, 0.0};
+  const Point3D c {0.0, len, 0.0};
+  const Point3D d {0.0, 0.0, len};
   const primal::Tetrahedron<double, 3> tet {a, b, c, d};
 
   axom::klee::Geometry tetGeometry(prop, tet, scaleOp);
