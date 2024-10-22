@@ -1275,6 +1275,7 @@ int main(int argc, char** argv)
   axom::IndexType cellCount = -1;
 
 #if defined(AXOM_USE_MFEM)
+  std::shared_ptr<sidre::MFEMSidreDataCollection> shapingDC;
   if(params.useMfem())
   {
     AXOM_ANNOTATE_BEGIN("load mesh");
@@ -1293,9 +1294,11 @@ int main(int argc, char** argv)
     //---------------------------------------------------------------------------
     mfem::Mesh* shapingMesh = nullptr;
     constexpr bool dc_owns_data = true;
-    sidre::MFEMSidreDataCollection shapingDC("shaping", shapingMesh, dc_owns_data);
+    shapingDC = std::make_shared<sidre::MFEMSidreDataCollection>("shaping",
+                                                                 shapingMesh,
+                                                                 dc_owns_data);
     {
-      shapingDC.SetMeshNodesName("positions");
+      shapingDC->SetMeshNodesName("positions");
 
       // With MPI, loadComputationalMesh returns a parallel mesh.
       mfem::ParMesh* parallelMesh =
@@ -1303,17 +1306,18 @@ int main(int argc, char** argv)
       shapingMesh = (parallelMesh != nullptr)
         ? new mfem::ParMesh(*parallelMesh)
         : new mfem::Mesh(*originalMeshDC->GetMesh());
-      shapingDC.SetMesh(shapingMesh);
+      shapingDC->SetMesh(shapingMesh);
     }
     AXOM_ANNOTATE_END("load mesh");
-    printMfemMeshInfo(shapingDC.GetMesh(), "After loading");
+    printMfemMeshInfo(shapingDC->GetMesh(), "Loaded MFEM mesh");
 
     cellCount = shapingMesh->GetNE();
   }
 #else
   SLIC_ERROR_IF(params.useMfem(),
                 "Cannot use MFEM mesh due to Axom configuration.  Please use "
-                "Blueprint mesh or configure with MFEM.");
+                "Blueprint mesh or configure with MFEM and "
+                "-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION.");
 #endif
 
   axom::sidre::Group* compMeshGrp = nullptr;
@@ -1322,6 +1326,8 @@ int main(int argc, char** argv)
     compMeshGrp = createBoxMesh(ds.getRoot()->createGroup("compMesh"));
     conduit::Node meshNode;
     compMeshGrp->createNativeLayout(meshNode);
+    SLIC_INFO(axom::fmt::format("{:-^80}", "Generated Blueprint mesh"));
+    meshNode.print();
     const conduit::Node& topoNode = meshNode["topologies"][topoName];
     cellCount = conduit::blueprint::mesh::topology::length(topoNode);
   }
@@ -1342,7 +1348,8 @@ int main(int argc, char** argv)
 #if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
-    shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, &shapingDC);
+    shaper =
+      std::make_shared<quest::IntersectionShaper>(shapeSet, shapingDC.get());
   }
 #endif
   SLIC_ASSERT(shaper != nullptr);
@@ -1484,7 +1491,7 @@ int main(int argc, char** argv)
   if(params.useMfem())
   {
     volFracGroups =
-      shapingDC.GetBPGroup()->getGroup("matsets/material/volume_fractions");
+      shapingDC->GetBPGroup()->getGroup("matsets/material/volume_fractions");
   }
 #endif
 
@@ -1571,7 +1578,8 @@ int main(int argc, char** argv)
 #if defined(AXOM_USE_MFEM)
     if(params.useMfem())
     {
-      shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>(&shapingDC, materialName);
+      shapeVol =
+        sumMaterialVolumes<axom::SEQ_EXEC>(shapingDC.get(), materialName);
     }
 #endif
     double correctShapeVol =
@@ -1605,7 +1613,7 @@ int main(int argc, char** argv)
     if(params.useBlueprint())
     {
       saveMesh(*compMeshGrp, fileName);
-      SLIC_INFO(axom::fmt::format("{:=^80}", "Wrote output mesh " + fileName));
+      SLIC_INFO(axom::fmt::format("{:-^80}", "Wrote output mesh " + fileName));
     }
 #if defined(AXOM_USE_MFEM)
     else
