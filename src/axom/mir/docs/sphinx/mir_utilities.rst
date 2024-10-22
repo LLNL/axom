@@ -17,14 +17,17 @@ for Blueprint meshes.
 Copying Blueprint Data
 #######################
 
-If a ``conduit::Node`` containing Blueprint data is not on the desired memory space, it can be
-moved using the ``axom::mir::utilities::blueprint::copy<ExecSpace>()`` function. The ``copy``
-function copies the source ``conduit::Node`` to the destination ``conduit::Node``, making sure
-to use the appropriate Axom allocator for non-string bulk arrays (e.g. arrays of ints, floats,
-doubles, etc.). Data small enough to fit in a ``conduit::Node`` and strings are left in the host
-memory space, which lets algorithms on the host side query them. For data that have been moved
-to the device, their sizes and data types can still be queried using normal Conduit mechanisms
-such as the ``conduit::Node::dtype()`` method.
+If a ``conduit::Node`` containing Blueprint data is not in a memory space appropriate
+for the target execution space, the data can be copied to a suitable memory space using
+the ``axom::mir::utilities::blueprint::copy<ExecSpace>()`` function. The target execution
+space (and thus its memory space) is specified using the ``copy`` function's ``ExecSpace``
+template argument. The ``copy`` function copies the source ``conduit::Node`` to
+the destination ``conduit::Node``, making sure to use the appropriate Axom allocator for
+non-string bulk arrays (e.g. arrays of ints, floats, doubles, etc.). Data small enough to
+fit in a ``conduit::Node`` and strings are left in the host memory space, which lets
+algorithms on the host side query them. For data that have been moved to the device,
+their sizes and data types can still be queried using normal Conduit mechanisms such
+as the ``conduit::Node::dtype()`` method.
 
 .. code-block:: cpp
 

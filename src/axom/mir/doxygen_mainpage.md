@@ -12,7 +12,7 @@ utility algorithms for processing and constructing meshes.
 
 This component's algorithms are mainly delivered as classes that are templated on
 an execution space, allowing them to operate on a variety of computing backends.
-The algorithms take Conduit nodes (containing Blueprint data) as input and they
+The algorithms take Conduit nodes (containing Blueprint data) as input and
 output new Blueprint data in an output Conduit node. Where possible, algorithms
 have been broken out into classes to promote reuse.
 

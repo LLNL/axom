@@ -13,7 +13,7 @@ or "outside" the clip boundary. The clipping algorithm is implemented in the
 ``axom::mir::clipping::ClipField`` class. The class can be instantiated with several
 template arguments that govern where it will execute, which coordset and topology
 types it supports, and how it performs intersection. The input to the algorithm is
-a Blueprint mesh and when instantiated with coordset and topology views appropriate
+a Blueprint mesh. When instantiated with coordset and topology views appropriate
 for the input data, the algorithm can operate on a wide variety of mesh types. This
 includes 2D/3D structured and unstructured topologies that can be represented using
 finite elements.
@@ -66,7 +66,7 @@ algorithm copies the options node to the memory space where it will be used.
 |                                 | algorithm will generate these fragments by default.  |
 +---------------------------------+------------------------------------------------------+
 | ``originalElementsField: name`` | The name of the field in which to store the original |
-|                                 | elements map.                                        |
+|                                 | elements map. The default is "originalElements".     |
 +---------------------------------+------------------------------------------------------+
 | ``outside: number``             | Indicates to the clipping algorithm that it should   |
 |                                 | preserve zone fragments "outside" the clip boundary. |
@@ -89,7 +89,7 @@ ClipField
 
 To use the ``ClipField`` class, one must have Blueprint data with at least one vertex-associated
 field. Views for the coordset and topology are created and their types are used to instantiate
-a ``ClipField`` object. This takes a Conduit node for the input Blueprint mesh, a Conduit
+a ``ClipField`` object. The ``ClipField`` constructor takes a Conduit node for the input Blueprint mesh, a Conduit
 node that contains the options, and a 3rd output Conduit node that will contain the clipped
 mesh and fields. The input mesh node needs to contain data arrays for coordinates, mesh
 topology, and fields. These data must exist in the memory space of the targeted device.
