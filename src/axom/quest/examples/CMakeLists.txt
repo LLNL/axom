@@ -293,16 +293,17 @@ if((CONDUIT_FOUND OR
         endif()
 
         set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "plane")
-        set(_meshType "bp" "mfem")
+        set(_meshTypes "bp" "mfem")
 
         foreach(_policy ${_policies})
             foreach(_testshape ${_testshapes})
-              foreach(_meshType ${_meshType})
+              foreach(_meshType ${_meshTypes})
                 set(_testname "quest_shape_in_memory_${_policy}_${_meshType}_${_testshape}")
                 axom_add_test(
                   NAME ${_testname}
                   COMMAND quest_shape_in_memory_ex
                              --policy ${_policy}
+                             --meshType ${_meshType}
                              --testShape ${_testshape}
                              --refinements 2
                              --scale 0.75 0.75 0.75

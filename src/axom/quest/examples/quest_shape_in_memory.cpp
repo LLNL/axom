@@ -210,8 +210,8 @@ public:
       ->description("Enable/disable verbose output")
       ->capture_default_str();
 
-    app.add_flag("--meshType", meshType)
-      ->description("Use MFEM computational mesh instead of Blueprint")
+    app.add_option("--meshType", meshType)
+      ->description("Type of computational mesh to shape on")
       ->capture_default_str()
       ->transform(axom::CLI::CheckedTransformer(meshTypeChoices));
 
