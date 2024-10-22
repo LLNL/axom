@@ -29,7 +29,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ###  Fixed
 
-## [Version 0.10.1] - Release date 2024-10-dd
+## [Version 0.10.1] - Release date 2024-10-22
 
 ###  Added
 - Constructor to Axom BVH that avoids an unnecessary copy of each bounding box.
