@@ -109,7 +109,6 @@ public:
     m_weights = bezierCurve.getWeights();
 
     int degree = bezierCurve.getOrder();
-    m_knots.resize(2 * (degree + 1));
 
     makeKnotsUniform(degree + 1, degree);
   }
@@ -130,7 +129,6 @@ public:
     SLIC_ASSERT(degree >= 0);
 
     m_controlPoints.resize(npts);
-    m_knots.resize(npts + degree + 1);
     makeNonrational();
 
     for(int i = 0; i < npts; ++i)
@@ -1154,21 +1152,21 @@ public:
 
 private:
   /// \brief Private function to make the knots uniform
-  void makeKnotsUniform(int npts, int p)
+  void makeKnotsUniform(int npts, int deg)
   {
-    m_knots.resize(npts + p + 1);
+    m_knots.resize(npts + deg + 1);
 
     // Knots for the clamped curve
-    for(int i = 0; i < p + 1; ++i)
+    for(int i = 0; i < deg + 1; ++i)
     {
       m_knots[i] = 0.0;
-      m_knots[npts + p - i] = 1.0;
+      m_knots[npts + deg - i] = 1.0;
     }
 
     // Interior knots (if any)
-    for(int i = 0; i < npts - p - 1; ++i)
+    for(int i = 0; i < npts - deg - 1; ++i)
     {
-      m_knots[p + 1 + i] = (i + 1.0) / (npts - p);
+      m_knots[deg + 1 + i] = (i + 1.0) / (npts - deg);
     }
   }
 
