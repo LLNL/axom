@@ -64,10 +64,11 @@ public:
   std::string outputFile;
 
   // Values for some shape geometries
+  // See createShape_*() for how specific shapes use them.
   double radius {1.0};
   double radius2 {0.3};
   double length {2.0};
-  std::vector<double> center {0.0, 0.0, -length / 2};
+  std::vector<double> center {0.1, 0.2, 0.3};
   std::vector<double> direction {0.0, 0.0, 1.0};
 
   // Shape transformation parameters
@@ -561,17 +562,20 @@ axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
     topo,
     coordset);
 
-  double lll = 4.0;
+  double lll = params.length;
+  double h = lll/2; // To center the shape.
 
-  // Insert tet at origin.
-  tetMesh.appendNode(0.0, 0.0, 0.0);
-  tetMesh.appendNode(lll, 0.0, 0.0);
-  tetMesh.appendNode(0.0, lll, 0.0);
-  tetMesh.appendNode(0.0, 0.0, lll);
-  tetMesh.appendNode(lll, lll, 0.0);
+  tetMesh.appendNode(0.0 - h, 0.0 - h, 0.0 - h);
+  tetMesh.appendNode(lll - h, 0.0 - h, 0.0 - h);
+  tetMesh.appendNode(0.0 - h, lll - h, 0.0 - h);
+  tetMesh.appendNode(0.0 - h, 0.0 - h, lll - h);
+  tetMesh.appendNode(lll - h, lll - h, lll - h);
+  tetMesh.appendNode(lll - h, lll - h, 0.0 - h);
+  tetMesh.appendNode(0.0 - h, lll - h, lll - h);
+  tetMesh.appendNode(lll - h, 0.0 - h, lll - h);
   axom::IndexType conn0[4] = {0, 1, 2, 3};
   tetMesh.appendCell(conn0);
-  axom::IndexType conn1[4] = {4, 1, 2, 3};
+  axom::IndexType conn1[4] = {4, 5, 6, 7};
   tetMesh.appendCell(conn1);
 
   SLIC_ASSERT(axom::mint::blueprint::isValidRootGroup(meshGroup));
@@ -629,15 +633,24 @@ axom::klee::Geometry createGeometry_Vor(axom::primal::Point<double, 3>& vorBase,
 
 axom::klee::Shape createShape_Vor()
 {
-  Point3D vorBase {params.center.data()};
+  Point3D vorBase {0.0, 0.0, -params.length/2};
   axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
-  axom::Array<double, 2> discreteFunction({3, 2}, axom::ArrayStrideOrder::ROW);
-  discreteFunction[0][0] = 0.0;
-  discreteFunction[0][1] = 1.0;
-  discreteFunction[1][0] = 0.5 * params.length;
-  discreteFunction[1][1] = 0.8;
-  discreteFunction[2][0] = params.length;
-  discreteFunction[2][1] = 1.0;
+  int numIntervals = 5;
+  axom::Array<double, 2> discreteFunction({numIntervals + 1, 2},
+                                          axom::ArrayStrideOrder::ROW);
+  double dz = params.length / numIntervals;
+  discreteFunction[0][0] = 0 * dz;
+  discreteFunction[0][1] = params.radius;
+  discreteFunction[1][0] = 1 * dz;
+  discreteFunction[1][1] = params.radius;
+  discreteFunction[2][0] = 2 * dz;
+  discreteFunction[2][1] = params.radius2;
+  discreteFunction[3][0] = 3 * dz;
+  discreteFunction[3][1] = params.radius2;
+  discreteFunction[4][0] = 4 * dz;
+  discreteFunction[4][1] = params.radius;
+  discreteFunction[5][0] = 5 * dz;
+  discreteFunction[5][1] = 0.0;
 
   axom::klee::Geometry vorGeometry =
     createGeometry_Vor(vorBase, vorDirection, discreteFunction);
@@ -649,7 +662,7 @@ axom::klee::Shape createShape_Vor()
 
 axom::klee::Shape createShape_Cylinder()
 {
-  Point3D vorBase {params.center.data()};
+  Point3D vorBase {0.0, 0.0, -params.length/2};
   axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double radius = params.radius;
@@ -669,7 +682,7 @@ axom::klee::Shape createShape_Cylinder()
 
 axom::klee::Shape createShape_Cone()
 {
-  Point3D vorBase {params.center.data()};
+  Point3D vorBase {0.0, 0.0, -params.length/2};
   axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double baseRadius = params.radius;
@@ -705,10 +718,11 @@ axom::klee::Shape createShape_Tet()
   }
 
   const double len = params.length;
-  const Point3D a {0.0, 0.0, 0.0};
-  const Point3D b {len, 0.0, 0.0};
-  const Point3D c {0.0, len, 0.0};
-  const Point3D d {0.0, 0.0, len};
+  const double h = len / 3;  // To center the shape.
+  const Point3D a {0.0 - h, 0.0 - h, 0.0 - h};
+  const Point3D b {len - h, 0.0 - h, 0.0 - h};
+  const Point3D c {0.0 - h, len - h, 0.0 - h};
+  const Point3D d {0.0 - h, 0.0 - h, len - h};
   const primal::Tetrahedron<double, 3> tet {a, b, c, d};
 
   axom::klee::Geometry tetGeometry(prop, tet, scaleOp);
@@ -734,14 +748,19 @@ axom::klee::Shape createShape_Hex()
   }
 
   const double len = params.length;
-  const Point3D p {0.0, 0.0, 0.0};
-  const Point3D q {len, 0.0, 0.0};
-  const Point3D r {len, 1.0, 0.0};
-  const Point3D s {0.0, 1.0, 0.0};
-  const Point3D t {0.0, 0.0, 1.0};
-  const Point3D u {len, 0.0, 1.0};
-  const Point3D v {len, 1.0, 1.0};
-  const Point3D w {0.0, 1.0, 1.0};
+  const double xhl = 0.5 * len * 0.8;
+  const double yhl = 0.5 * len * 1.0;
+  const double zhl = 0.5 * len * 1.2;
+  // clang-format off
+  const Point3D p {-xhl, -yhl, -zhl};
+  const Point3D q { xhl, -yhl, -zhl};
+  const Point3D r { xhl,  yhl, -zhl};
+  const Point3D s {-xhl,  yhl, -zhl};
+  const Point3D t {-xhl, -yhl,  zhl};
+  const Point3D u { xhl, -yhl,  zhl};
+  const Point3D v { xhl,  yhl,  zhl};
+  const Point3D w {-xhl,  yhl,  zhl};
+  // clang-format on
   const primal::Hexahedron<double, 3> hex {p, q, r, s, t, u, v, w};
 
   axom::klee::Geometry hexGeometry(prop, hex, scaleOp);
@@ -1585,9 +1604,13 @@ int main(int argc, char** argv)
 #endif
     double correctShapeVol =
       params.testShape == "plane" ? params.boxMeshVolume() / 2 : shapeMeshVol;
+    SLIC_ASSERT(correctShapeVol > 0.0);  // Indicates error in the test setup.
     double diff = shapeVol - correctShapeVol;
 
-    bool err = !axom::utilities::isNearlyEqual(shapeVol, correctShapeVol);
+    bool err = !axom::utilities::isNearlyEqualRelative(shapeVol,
+                                                       correctShapeVol,
+                                                       1e-6,
+                                                       1e-8);
     failCounts += err;
 
     SLIC_INFO(axom::fmt::format(

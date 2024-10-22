@@ -306,7 +306,7 @@ if((CONDUIT_FOUND OR
                              --meshType ${_meshType}
                              --testShape ${_testshape}
                              --refinements 2
-                             --scale 0.75 0.75 0.75
+                             --scale 2.0 2.0 2.0
                              inline_mesh --min -3 -3 -3 --max 3 3 3 --res 20 20 20 -d 3
                   NUM_MPI_TASKS ${_nranks})
               endforeach()
