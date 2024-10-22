@@ -69,7 +69,7 @@ public:
   double radius2 {0.3};
   double length {2.0};
   std::vector<double> center {0.1, 0.2, 0.3};
-  std::vector<double> direction {0.0, 0.0, 1.0};
+  std::vector<double> direction {0.0, 0.5, 1.0};
 
   // Shape transformation parameters
   std::vector<double> scaleFactors;
