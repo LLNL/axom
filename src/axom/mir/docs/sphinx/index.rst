@@ -9,8 +9,7 @@ MIR User Documentation
 
 Axom's Material Interface Reconstruction (MIR) component provides algorithms for
 reconstructing the interfaces between different materials in multimaterial
-meshes to go from a topology that contains mixed materials to a reconstructed one
-that contains zones with only one material. The algorithms take Blueprint meshes
+meshes. The algorithms take Blueprint meshes
 containing a coordset, topology, and matset as input and they output a new Blueprint
 node with a new coordset, topology, and matset that contains at most 1 material per zone.
 

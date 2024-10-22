@@ -18,7 +18,8 @@ Inputs
 
 MIR algorithms are designed to accept a Conduit node containing various options that can
 influence how the algorithm operates. The MIR algorithm copies the options node to the memory
-space where it will be used.
+space where it will be used. The only required option is ``matset``, the name of the matset
+to operate on. Other options have sensible defaults described in the table below.
 
 +---------------------------------+------------------------------------------------------+
 | Option                          | Description                                          |
@@ -43,7 +44,7 @@ space where it will be used.
 |                                 | name as the input matset.                            |
 +---------------------------------+------------------------------------------------------+
 | ``originalElementsField: name`` | The name of the field in which to store the original |
-|                                 | elements map.                                        |
+|                                 | elements map. The default is "originalElements".     |
 +---------------------------------+------------------------------------------------------+
 | ``selectedZones: [zone list]``  | An optional argument that provides a list of zone ids|
 |                                 | on which to operate. The output mesh will only have  |
@@ -60,7 +61,8 @@ EquiZAlgorithm
 ###############
 
 The `Equi-Z MIR algorithm <https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.osti.gov/servlets/purl/15014510&ved=2ahUKEwittMui-euIAxUzxOYEHXTWA2kQFnoECBcQAQ&usg=AOvVaw3qbX9qgwCn4qDP0iZ3Sq0J>`_ by J. Meredith 
-is a useful visualization-oriented algorithm for MIR. Whereas many MIR algorithms 
+is a useful visualization-oriented algorithm for MIR. Equi-Z can reconstruct mixed-material
+zones that contain many materials per zone. Whereas many MIR algorithms 
 produce disjointed element output, Equi-Z creates output that mostly forms continuous
 surfaces and shapes. Continuity is achieved by averaging material volume fractions to
 the mesh nodes for each material and then performing successive clipping for each
@@ -73,10 +75,11 @@ there points are made unique and a new output mesh is created.
 
 Axom's implementation of Equi-Z is data parallel and can run on the CPU and the GPU.
 First, the zones of interest are identified and they are classified as clean or mixed.
-Clean consist of a single material and are pulled out early into a new mesh while mixed
-zones are sent into the Equi-Z algorithm to reconstruct zones where material interfaces
-exist. The two meshes are finally merged to form a single output mesh. The mesh may
-consist of multiple Blueprint shape types in an unstructured "mixed" topology.
+Clean zones consist of a single material and are pulled out early into a new mesh while mixed
+zones are processed further. The Equi-Z algorithm reconstructs zones with boundaries along
+material interfaces. The clean zones mesh and reconstructed zones mesh are merged to form
+a single output mesh. The mesh may consist of multiple Blueprint shape types in an
+unstructured "mixed" topology.
 
 Axom's implementation supports 2D/3D zones from structured or unstructured topologies
 made of Finite Element Zoo elements *(e.g. triangles, quadrilaterals, tetrahedra, pyramids,
@@ -105,26 +108,29 @@ function can be used to copy Conduit nodes from one memory space to another.
    :end-before: _equiz_mir_end
    :language: C++
 
-The MIR output will contain a new field called *"originalElements"* that indicates which
-original zone number gave rise to the reconstructed zone. This field makes it possible
-to map back to the original mesh. The name of the field can be changed using options.
+The MIR output will contain a new field called, by default, *"originalElements"* that
+indicates which original zone number gave rise to the reconstructed zone. This field
+makes it possible to map back to the original mesh. The name of the field can be changed
+by providing a new name by setting "originalElementsField" in the options.
 
 #####################
 Example Application
 #####################
 
-The mir_concentric_circles application generates a uniform mesh populated with circular
-mixed material shells and then it performs MIR on the input mesh before writing the
-reconstructed mesh.
+The mir_concentric_circles application generates a uniform mesh with square zones, populated
+with circular mixed material shells. The application performs MIR on the input mesh and writes
+a file containing the reconstructed mesh. All program arguments (listed in the table below)
+are optional.
 
 +--------------------+---------------------------------------------------------------+
 | Argument           | Description                                                   |
 +====================+===============================================================+
-| --gridsize number  | The number of zones along an axis.                            |
+| --gridsize number  | The number of zones along an axis. The default is 5.          |
 +--------------------+---------------------------------------------------------------+
 | --numcircles number| The number of number of circles to use for material creation. |
+|                    | The default is 2.                                             |
 +--------------------+---------------------------------------------------------------+
-| --output filepath  | The file path for output files.                               |
+| --output filepath  | The file path for output files. The default is "output".      |
 +--------------------+---------------------------------------------------------------+
 | --policy policy    | Set the execution policy (seq, omp, cuda, hip)                |
 +--------------------+---------------------------------------------------------------+
@@ -149,5 +155,5 @@ view the Blueprint output from MIR algorithms. Blueprint data is saved in an HDF
 format and the top level file has a ".root" extension. Open the ".root" file in VisIt
 to get started and then add a *FilledBoundary* plot of the material defined on the
 mesh topology. Plotting the mesh lines will reveal that there is a single material
-per zone. If the input mesh is visualized in a similar manner, it will be evident that
-there are multiple materials in some of the zones, if viewing a mixed material dataset.
+per zone. If the input mesh is visualized in a similar manner, zones with multiple
+materials will contain different colors for each material.

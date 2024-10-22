@@ -167,8 +167,8 @@ Portability
 Adherence to the GPU porting guidelines generally results in code that will compile and run on
 multiple backends. However, backends such as CUDA require additional guidelines.
 
-Do not use generic lambda functions (auto parameters) with ``axom::for_all``
-or the code will not compile under nvcc.
+**Do not use ``auto`` lambda parameters** with ``axom::for_all`` or the code will not
+compile under nvcc.
 
 Do this:
 
@@ -184,7 +184,7 @@ Do NOT do this:
       axom::for_all<ExecSpace>(n, AXOM_LAMBDA(auto index) { /* body */});
 
 
-Data in Axom is often contained in useful containers such as ``axom::Array``.
+**Pass ArrayView by value**. Data in Axom is often contained in useful containers such as ``axom::Array``.
 Use ``axom::ArrayView`` to access array data from within kernels. Views contain
 a pointer to the data and memory shape information and can be constructed within
 device code to access data arrays. Views are captured by kernels and passed to
@@ -226,8 +226,10 @@ If pass by reference is used, create a new view inside the method and then use t
 "device" view in the kernel so the device code uses an object captured by value.
 
 
-Do not call ``axom::for_all`` from class methods that are marked as protected or private.
+**Do not call for_all from protected or private methods**.
 The nvcc compiler requires the method containing the kernel to be publicly accessible.
+Conditional compilation can be used to make methods public when they should otherwise
+be private or protected.
 
 Do this:
 
@@ -261,9 +263,9 @@ Do NOT do this:
         }
       };
 
-When calling a kernel via ``axom::for_all`` from a surrounding lambda function, 
+**Avoid for_all within a lambda**. When calling a kernel via ``axom::for_all`` from a surrounding lambda function, 
 consider calling ``axom::for_all`` from a class member method instead. The nvcc compiler will
-not compile kernel invokations inside lambda functions. This pattern comes up when an intermediate
+not compile kernel invocations inside lambda functions. This pattern comes up when an intermediate
 function is supplied a lambda that uses ``axom::for_all`` such as when handling many data types.
 
 Do this:
@@ -310,13 +312,12 @@ Do NOT do this:
         }
       };
 
-Avoid calling lambdas from kernels. This can work on some systems and not on others.
+**Avoid calling lambdas from kernels.** This can work on some systems and not on others.
 For best odds at a portable algorithm, design your kernel so it is "one level deep",
 and does not result in calling other functions that are also marked ``AXOM_LAMBDA``.
 
-Do not add template specialization for a class/struct from within the scope of another
-class/struct; the nvcc compiler does not allow it. Instead, it is necessary to extract
-the internal class/struct from the containing class before specializing it.
+**Specialize templates outside other classes.** It is necessary to extract
+a nested class/struct from the containing class before specializing it.
 
 Do this:
 
