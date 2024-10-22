@@ -374,7 +374,7 @@ void DiscreteShape::createPlaneRepresentation()
   const auto& plane = geometry.getPlane();
   // Generate a big bounding hex on the positive side of the plane.
   axom::primal::Hexahedron<double, 3> boundingHex;
-  const double len = 1e6;  // Big enough to contain anticipated mesh.
+  const double len = 1e4;  // Big enough to contain anticipated mesh.
   // We should compute based on the mesh.
   // clang-format off
   boundingHex[0] = Point3D{0.0, -len, -len};
