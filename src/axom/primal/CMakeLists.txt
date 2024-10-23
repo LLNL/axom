@@ -25,6 +25,7 @@ set( primal_headers
     geometry/BoundingBox.hpp
     geometry/CurvedPolygon.hpp
     geometry/Hexahedron.hpp
+    geometry/KnotVector.hpp
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
     geometry/NumericArray.hpp
