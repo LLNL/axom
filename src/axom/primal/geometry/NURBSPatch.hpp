@@ -37,8 +37,9 @@ template <typename T, int NDIMS>
 class NURBSPatch;
 
 /*! \brief Overloaded output operator for NURBS Patches*/
-template <typename T, int NURBSPatch<T, NDIMS>
-std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& patch);
+template <typename T,
+          int NURBSPatch<T, NDIMS> std::ostream&
+          operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& patch);
 
 /*!
  * \class NURBSPatch
@@ -65,7 +66,7 @@ public:
   using CoordsMat = axom::Array<PointType, 2>;
   using WeightsVec = axom::Array<T, 1>;
   using WeightsMat = axom::Array<T, 2>;
-  using KnotsVec = axom::Array<T>;
+  using KnotVectorType = KnotVector<T>;
 
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
@@ -95,20 +96,10 @@ public:
     SLIC_ASSERT(deg_u >= -1 && deg_v >= -1);
 
     m_controlPoints.resize(deg_u + 1, deg_v + 1);
-    m_knots_u.resize(2 * deg_u + 2);
-    m_knots_v.resize(2 * deg_v + 2);
+    m_knotvec_u = KnotVectorType(deg_u + 1, deg_u);
+    m_knotvec_v = KnotVectorType(deg_v + 1, deg_v);
 
     makeNonrational();
-
-    for(int i = 0; i < 2 * deg_u + 2; ++i)
-    {
-      m_knots_u[i] = static_cast<T>(i / (deg_u + 1));
-    }
-
-    for(int i = 0; i < 2 * deg_v + 2; ++i)
-    {
-      m_knots_v[i] = static_cast<T>(i / (deg_v + 1));
-    }
   }
 
   /*!
@@ -124,8 +115,8 @@ public:
     int deg_u = bezierPatch.getOrder_u();
     int deg_v = bezierPatch.getOrder_v();
 
-    makeKnotsUniform( m_knots_u, deg_u + 1, deg_u );
-    makeKnotsUniform( m_knots_v, deg_v + 1, deg_v );
+    makeKnotsUniform(m_knots_u, deg_u + 1, deg_u);
+    makeKnotsUniform(m_knots_v, deg_v + 1, deg_v);
   }
 
   /*!
@@ -157,8 +148,8 @@ public:
 
     makeNonrational();
 
-    makeKnotsUniform( m_knots_u, deg_u + 1, deg_u );
-    makeKnotsUniform( m_knots_v, deg_v + 1, deg_v );
+    makeKnotsUniform(m_knots_u, deg_u + 1, deg_u);
+    makeKnotsUniform(m_knots_v, deg_v + 1, deg_v);
   }
 
   /*!
@@ -198,8 +189,8 @@ public:
 
     SLIC_ASSERT(isValidRational());
 
-    makeKnotsUniform( m_knots_u, deg_u + 1, deg_u );
-    makeKnotsUniform( m_knots_v, deg_v + 1, deg_v );
+    makeKnotsUniform(m_knots_u, deg_u + 1, deg_u);
+    makeKnotsUniform(m_knots_v, deg_v + 1, deg_v);
   }
 
   /*!
@@ -214,27 +205,25 @@ public:
    */
   void setDegree(int deg_u, int deg_v)
   {
-    SLIC_ASSERT( deg_u >= 0 && deg_v >= 0 );
+    SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
 
     int npts_u = m_controlPoints.shape()[0];
-    SLIC_ASSERT( deg_u < npts_u );
+    SLIC_ASSERT(deg_u < npts_u);
 
     int npts_v = m_controlPoints.shape()[1];
-    SLIC_ASSERT( deg_v < npts_v );
+    SLIC_ASSERT(deg_v < npts_v);
 
-    if( npts_u < deg_u + 1 )
+    if(npts_u < deg_u + 1)
     {
       npts_u = deg_u + 1;
     }
 
-    if( npts_v < deg_v + 1 )
+    if(npts_v < deg_v + 1)
     {
       npts_v = deg_v + 1;
     }
 
     m_controlPoints.resize(npts_u, npts_v);
-    
-    
   }
 
   /// Returns the order of the Bezier Patch on the first axis
@@ -2000,7 +1989,7 @@ private:
 
   CoordsMat m_controlPoints;
   WeightsMat m_weights;
-  KnotsVec m_knots_u, m_knots_v;
+  KnotVectorType m_knotvec_u, m_knotvec_v;
 };
 
 //------------------------------------------------------------------------------
