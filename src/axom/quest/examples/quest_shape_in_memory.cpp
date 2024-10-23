@@ -69,7 +69,7 @@ public:
   double radius2 {0.3};
   double length {2.0};
   std::vector<double> center {0.1, 0.2, 0.3};
-  std::vector<double> direction {0.0, 0.5, 1.0};
+  std::vector<double> direction {0.1, 0.2, 0.4};
 
   // Shape transformation parameters
   std::vector<double> scaleFactors;
@@ -790,7 +790,7 @@ axom::klee::Shape createShape_Plane()
   Point3D center {0.5 *
                   (primal::NumericArray<double, 3>(params.boxMins.data()) +
                    primal::NumericArray<double, 3>(params.boxMaxs.data()))};
-  primal::Vector<double, 3> normal {1.0, 0.0, 0.0};
+  primal::Vector<double, 3> normal(params.direction.data());
   const primal::Plane<double, 3> plane {normal, center, true};
 
   axom::klee::Geometry planeGeometry(prop, plane, scaleOp);
