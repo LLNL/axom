@@ -563,7 +563,7 @@ axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
     coordset);
 
   double lll = params.length;
-  double h = lll/2; // To center the shape.
+  double h = lll / 2;  // To center the shape.
 
   tetMesh.appendNode(0.0 - h, 0.0 - h, 0.0 - h);
   tetMesh.appendNode(lll - h, 0.0 - h, 0.0 - h);
@@ -633,7 +633,7 @@ axom::klee::Geometry createGeometry_Vor(axom::primal::Point<double, 3>& vorBase,
 
 axom::klee::Shape createShape_Vor()
 {
-  Point3D vorBase {0.0, 0.0, -params.length/2};
+  Point3D vorBase {0.0, 0.0, -params.length / 2};
   axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   int numIntervals = 5;
   axom::Array<double, 2> discreteFunction({numIntervals + 1, 2},
@@ -662,7 +662,7 @@ axom::klee::Shape createShape_Vor()
 
 axom::klee::Shape createShape_Cylinder()
 {
-  Point3D vorBase {0.0, 0.0, -params.length/2};
+  Point3D vorBase {0.0, 0.0, -params.length / 2};
   axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double radius = params.radius;
@@ -682,7 +682,7 @@ axom::klee::Shape createShape_Cylinder()
 
 axom::klee::Shape createShape_Cone()
 {
-  Point3D vorBase {0.0, 0.0, -params.length/2};
+  Point3D vorBase {0.0, 0.0, -params.length / 2};
   axom::primal::Vector<double, 3> vorDirection {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double baseRadius = params.radius;
