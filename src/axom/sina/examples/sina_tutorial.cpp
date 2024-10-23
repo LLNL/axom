@@ -140,6 +140,7 @@ void load()
   axom::sina::Document doc1 = axom::sina::loadDocument("my_output.json");
   axom::sina::Document doc2 = axom::sina::loadDocument("my_output.json", axom::sina::Protocol::HDF5);
 }
+
 //! [end io read]
 
 //! [begin user defined]

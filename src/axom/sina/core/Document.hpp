@@ -238,3 +238,4 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
 }  // namespace axom
 
 #endif  //SINA_DOCUMENT_HPP
+

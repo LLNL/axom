@@ -26,6 +26,10 @@
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
 #include "conduit_relay_io.hpp"
+#include <algorithm>
+#include "conduit.hpp"
+#include "conduit_relay.hpp"
+#include "conduit_relay_io.hpp"
 
 namespace axom
 {
