@@ -1082,7 +1082,7 @@ public:
   std::ostream& print(std::ostream& os) const
   {
     int npts = getNumControlPoints();
-    int kpts = m_knotvec.getNumKnots();
+    int nkts = m_knotvec.getNumKnots();
 
     int deg = m_knotvec.getDegree();
 
@@ -1104,7 +1104,7 @@ public:
     os << ", knots {";
     for(int i = 0; i < nkts; ++i)
     {
-      os << m_knots[i] << (i < nkts - 1 ? ", " : "");
+      os << m_knotvec[i] << (i < nkts - 1 ? ", " : "");
     }
     os << "}";
 
@@ -1154,7 +1154,22 @@ private:
   KnotVectorType m_knotvec;
 };
 
+//------------------------------------------------------------------------------
+/// Free functions related to NURBSCurve
+//------------------------------------------------------------------------------
+template <typename T, int NDIMS>
+std::ostream& operator<<(std::ostream& os, const NURBSCurve<T, NDIMS>& nCurve)
+{
+  nCurve.print(os);
+  return os;
+}
+
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::NURBSCurve using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::NURBSCurve<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_NURBSCURVE_HPP_

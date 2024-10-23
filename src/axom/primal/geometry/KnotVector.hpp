@@ -455,12 +455,47 @@ public:
     return !(lhs == rhs);
   }
 
+  /*!
+   * \brief Simple formatted print of a knot vector instance
+   *
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   */
+  std::ostream& print(std::ostream& os) const
+  {
+    int nkts = m_knots.size();
+
+    os << "{ degree " << m_deg << " knot vector ";
+    for(int i = 0; i < nkts; ++i)
+    {
+      os << m_knots[i] << (i < nkts - 1 ? ", " : "");
+    }
+    os << "}";
+
+    return os;
+  }
+
 private:
   int m_deg;
   axom::Array<T> m_knots;
 };
 
+//------------------------------------------------------------------------------
+/// Free functions related to KnotVector
+//------------------------------------------------------------------------------
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const KnotVector<T>& kvector)
+{
+  kvector.print(os);
+  return os;
+}
+
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::NURBSCurve using fmt
+template <typename T>
+struct axom::fmt::formatter<axom::primal::KnotVector<T>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_KNOTVECTOR_HPP
