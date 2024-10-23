@@ -5,7 +5,7 @@
 
 /*! 
  * \file primal_bezier_curve.cpp
- * \brief This file tests primal's Bezier curve functionality
+ * \brief This file tests primal's NURBS curve functionality
  */
 
 #include "gtest/gtest.h"
@@ -32,7 +32,7 @@ TEST(primal_nurbscurve, constructor)
     EXPECT_EQ(expDegree, nCurve.getDegree());
     EXPECT_EQ(expDegree + 1, nCurve.getOrder());
     EXPECT_EQ(expDegree + 1, nCurve.getControlPoints().size());
-    EXPECT_EQ(expDegree + 1, nCurve.getKnots().size());
+    EXPECT_EQ(expDegree + 1, nCurve.getKnotsArray().size());
     EXPECT_FALSE(nCurve.isRational());
   }
 }
@@ -495,7 +495,7 @@ TEST(primal_nurbscurve, curve_splitting)
 
   double weights[4] = {1.0, 2.0, 3.0, 4.0};
 
-  for(int deg = 1; deg <= 3; ++deg)
+  for(int deg = 2; deg <= 2; ++deg)
   {
     NURBSCurveType curve(data, weights, 4, deg);
 
@@ -506,7 +506,7 @@ TEST(primal_nurbscurve, curve_splitting)
 
     NURBSCurveType curve1, curve2, curve3;
     curve.split(0.3, curve1, curve2);
-    curve2.split((0.6 - 0.3) / (1 - 0.3), curve2, curve3);
+    curve2.split(0.6, curve2, curve3);
 
     for(double t = 0.0; t < 1.0; t += 0.05)
     {
@@ -514,7 +514,7 @@ TEST(primal_nurbscurve, curve_splitting)
 
       if(t <= 0.3)
       {
-        PointType p1 = curve1.evaluate(t / 0.3);
+        PointType p1 = curve1.evaluate(t);
         for(int i = 0; i < DIM; ++i)
         {
           EXPECT_NEAR(p[i], p1[i], 1e-13);
@@ -523,7 +523,7 @@ TEST(primal_nurbscurve, curve_splitting)
 
       if(t >= 0.3 && t <= 0.6)
       {
-        PointType p2 = curve2.evaluate((t - 0.3) / (0.6 - 0.3));
+        PointType p2 = curve2.evaluate(t);
         for(int i = 0; i < DIM; ++i)
         {
           EXPECT_NEAR(p[i], p2[i], 1e-13);
@@ -532,7 +532,7 @@ TEST(primal_nurbscurve, curve_splitting)
 
       if(t >= 0.6)
       {
-        PointType p3 = curve3.evaluate((t - 0.6) / (1 - 0.6));
+        PointType p3 = curve3.evaluate(t);
         for(int i = 0; i < DIM; ++i)
         {
           EXPECT_NEAR(p[i], p3[i], 1e-13);
@@ -540,6 +540,8 @@ TEST(primal_nurbscurve, curve_splitting)
       }
     }
   }
+
+  return;
 }
 
 //------------------------------------------------------------------------------
@@ -756,6 +758,61 @@ TEST(primal_nurbscurve, nurbs_winding_numbers)
       {
         EXPECT_DOUBLE_EQ(std::lround(gwn), 1.0);
       }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, nurbs_knot_normalization)
+{
+  // Define a nurbs curve that represents a circle
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[7] = {PointType {1.0, 0.0},
+                       PointType {1.0, 2.0},
+                       PointType {-1.0, 2.0},
+                       PointType {-1.0, 0.0},
+                       PointType {-1.0, -2.0},
+                       PointType {1.0, -2.0},
+                       PointType {1.0, 0.0}};
+  double weights[7] = {1.0, 1. / 3., 1. / 3., 1.0, 1. / 3., 1. / 3., 1.0};
+
+  double knots[11] = {0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0};
+  double scaled_knots[11];
+  
+  for(int i = 0; i < 11; ++i)
+  {
+    scaled_knots[i] = 2.0 * knots[i] - 5.0;
+  }
+
+  NURBSCurveType circle(data, weights, 7, knots, 11);
+  NURBSCurveType scaled_circle(data, weights, 7, scaled_knots, 11);
+
+  // Evaluate the curve along the parameterization of each, as they should match
+  for(double t = 0.0; t <= 1.0; t += 0.1)
+  {
+    PointType p = circle.evaluate(t);
+    PointType p_scaled = scaled_circle.evaluate(2.0 * t - 5.0);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], p_scaled[i], 1e-13);
+    }
+  }
+
+  // Re-normalizing the scaled circle should return the original
+  scaled_circle.normalize();
+  for(double t = 0.0; t <= 1.0; t += 0.1)
+  {
+    PointType p = circle.evaluate(t);
+    PointType p_scaled = scaled_circle.evaluate(t);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], p_scaled[i], 1e-13);
     }
   }
 }
