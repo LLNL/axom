@@ -61,10 +61,10 @@ public:
    * \param [in] deg the degree
    * \pre degree is greater than or equal to -1, and deg < npts.
    */
-  KnotVector(int npts, int deg) { makeUniform(npts, deg); }
+  KnotVector(axom::IndexType npts, int deg) { makeUniform(npts, deg); }
 
   /// \brief Constructor from a user-supplied knot vector (C-style)
-  KnotVector(const T* knots, int nkts, int degree)
+  KnotVector(const T* knots, axom::IndexType nkts, int degree)
   {
     m_knots.resize(nkts);
     for(int i = 0; i < nkts; ++i)
@@ -84,7 +84,7 @@ public:
   /*!
    * \brief Make the knot vector uniform
    */
-  void makeUniform(int npts, int deg)
+  void makeUniform(axom::IndexType npts, int deg)
   {
     // Set the degree
     m_deg = deg;
@@ -143,9 +143,9 @@ public:
    * \pre Assumes that the multiplicity of the specific knot is equal
    *    to the degree of the knot vector
    */
-  void split(axom::IndexType span, KnotVector& k1, KnotVector& k2 ) const
+  void split(axom::IndexType span, KnotVector& k1, KnotVector& k2) const
   {
-    const int nkts = getNumKnots();
+    const auto nkts = getNumKnots();
 
     // Copy the degree
     k1.m_deg = m_deg;
@@ -299,10 +299,13 @@ public:
   int getDegree() const { return m_deg; }
 
   /// \brief Return the number of knots in the knot vector
-  int getNumKnots() const { return static_cast<int>(m_knots.size()); }
+  axom::IndexType getNumKnots() const { return m_knots.size(); }
 
   /// \brief Return the number of control points implied by the knot vector
-  int getNumControlPoints() const { return m_knots.size() - m_deg - 1; }
+  axom::IndexType getNumControlPoints() const
+  {
+    return m_knots.size() - m_deg - 1;
+  }
 
   /// \brief Clear the list of knots
   void clear()
@@ -318,7 +321,7 @@ public:
    */
   axom::IndexType findSpan(double t) const
   {
-    const auto nkts = m_knots.size();
+    const axom::IndexType nkts = m_knots.size();
 
     if(t <= m_knots[0])
     {
@@ -331,9 +334,9 @@ public:
     }
 
     // perform binary search on the knots,
-    auto low = m_deg;
-    auto high = nkts - m_deg - 1;
-    auto mid = (low + high) / 2;
+    axom::IndexType low = m_deg;
+    axom::IndexType high = nkts - m_deg - 1;
+    axom::IndexType mid = (low + high) / 2;
     while(t < m_knots[mid] || t >= m_knots[mid + 1])
     {
       (t < m_knots[mid]) ? high = mid : low = mid;
@@ -346,7 +349,7 @@ public:
   /// \brief Returns the index of the knot span and the multiplicity
   axom::IndexType findSpan(double t, int& multiplicity)
   {
-    const int nkts = m_knots.size();
+    const auto nkts = m_knots.size();
     const auto span = findSpan(t);
 
     multiplicity = 0;
@@ -368,8 +371,8 @@ public:
   /// \brief Reverse the knot vector
   void reverse()
   {
-    const int nkts = m_knots.size();
-    const int knot_mid = (nkts + 1) / 2;
+    const axom::IndexType nkts = m_knots.size();
+    const axom::IndexType knot_mid = (nkts + 1) / 2;
 
     // Flip the vector
     for(int i = 0; i < knot_mid; ++i)
@@ -404,7 +407,7 @@ public:
     }
 
     // Check for clamped-ness
-    int nkts = m_knots.size();
+    auto nkts = m_knots.size();
     for(int i = 0; i < m_deg + 1; ++i)
     {
       if(m_knots[i] != m_knots[0])

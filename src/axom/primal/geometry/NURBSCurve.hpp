@@ -241,7 +241,7 @@ public:
 
     m_controlPoints = pts;
 
-    int npts = pts.size();
+    const auto npts = pts.size();
     makeNonrational();
 
     m_knotvec = KnotVectorType(npts, degree);
@@ -270,7 +270,7 @@ public:
     m_controlPoints = pts;
     m_weights = weights;
 
-    int npts = pts.size();
+    const auto npts = pts.size();
 
     m_knotvec = KnotVectorType(npts, degree);
 
@@ -346,7 +346,7 @@ public:
       Point<T, NDIMS + 1> H;
       for(int j = 0; j <= degree; ++j)
       {
-        const int offset = span - degree + j;
+        const auto offset = span - degree + j;
         const T weight = m_weights[offset];
         const auto& controlPoint = m_controlPoints[offset];
 
@@ -368,7 +368,7 @@ public:
     {
       for(int j = 0; j <= degree; ++j)
       {
-        const int offset = span - degree + j;
+        const auto offset = span - degree + j;
         const auto& controlPoint = m_controlPoints[offset];
 
         for(int i = 0; i < NDIMS; ++i)
@@ -814,9 +814,9 @@ public:
     NURBSCurve<T, NDIMS> n1(*this);
     for(int i = p + 1; i < m_knotvec.getNumKnots() - p - 1; ++i)
     {
-      int old_knot_count = n1.getNumKnots();
+      auto old_knot_count = n1.getNumKnots();
       n1.insertKnot(m_knotvec[i], p);
-      int new_knot_count = n1.getNumKnots();
+      auto new_knot_count = n1.getNumKnots();
 
       if(new_knot_count != old_knot_count)
       {
@@ -927,7 +927,7 @@ public:
   }
 
   /// \brief Returns the number of knots in the NURBS Curve
-  int getNumKnots() const { return m_knotvec.getNumKnots(); }
+  axom::IndexType getNumKnots() const { return m_knotvec.getNumKnots(); }
 
   /// \brief Make nonrational. If already rational, do nothing
   void makeNonrational() { m_weights.resize(0); }

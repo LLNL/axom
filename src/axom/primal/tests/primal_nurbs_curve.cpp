@@ -458,7 +458,7 @@ TEST(primal_nurbscurve, knot_insertion)
 
   // Inserting knots shouldn't increase its multiplicty
   //  greater than the degree
-  const int num_knots = curve_knots.getNumKnots();
+  const auto num_knots = curve_knots.getNumKnots();
   curve_knots.insertKnot(0.5, 3);
   curve_knots.insertKnot(0.0, 1);
   curve_knots.insertKnot(1.0, 1);
@@ -782,7 +782,7 @@ TEST(primal_nurbscurve, nurbs_knot_normalization)
 
   double knots[11] = {0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0};
   double scaled_knots[11];
-  
+
   for(int i = 0; i < 11; ++i)
   {
     scaled_knots[i] = 2.0 * knots[i] - 5.0;
