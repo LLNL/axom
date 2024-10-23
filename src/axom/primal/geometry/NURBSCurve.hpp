@@ -88,6 +88,8 @@ public:
     SLIC_ASSERT(degree >= -1);
     m_controlPoints.resize(degree + 1);
     m_knotvec = KnotVectorType(degree + 1, degree);
+
+    makeNonrational();
   }
 
   /*!
