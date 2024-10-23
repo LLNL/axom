@@ -98,6 +98,8 @@ struct IndexedIndirection : public BasePolicy
   getIndirection(IndirectionRefType buf, PositionType pos = 0)
   {
 #ifdef AXOM_DEVICE_CODE
+    AXOM_UNUSED_VAR(buf);
+    AXOM_UNUSED_VAR(pos);
     SLIC_ASSERT_MSG(
       false,
       BasePolicy::Name
@@ -121,6 +123,8 @@ struct IndexedIndirection : public BasePolicy
   getConstIndirection(IndirectionConstRefType buf, PositionType pos = 0)
   {
 #ifdef AXOM_DEVICE_CODE
+    AXOM_UNUSED_VAR(buf);
+    AXOM_UNUSED_VAR(pos);
     SLIC_ASSERT_MSG(
       false,
       BasePolicy::Name

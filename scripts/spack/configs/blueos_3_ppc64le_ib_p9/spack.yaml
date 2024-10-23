@@ -278,6 +278,34 @@ spack:
       - spec: zlib@1.2.7
         prefix: /usr
 
+    # External dependencies for opencascade
+    # Couldn't find the exact versions for the libx* libraries, so copied from toss4 versions
+    mesa:
+      buildable: False
+      externals:
+      - spec: mesa@18.3.4  # found via: glxinfo | grep -i version
+        prefix: /
+    libxi:
+      buildable: False
+      externals:
+      - spec: libxi@1.7.10
+        prefix: /
+    libxt:
+      buildable: False
+      externals:
+      - spec: libxt@1.1.5
+        prefix: /
+    libxext:
+      buildable: False
+      externals:
+      - spec: libxext@1.3.4
+        prefix: /
+    libxmu:
+      buildable: False
+      externals:
+      - spec: libxmu@1.1.3
+        prefix: /
+
     # External dependencies for SCR
     lsf:
       buildable: False
@@ -323,6 +351,8 @@ spack:
       require: "@3.0.1~shared~tests~examples"
     umpire:
       require: "@2024.07.0~shared~examples~werror"
+    opencascade:
+      require: "@7.8.1+data_exchange~draw"
 
     # Globally lock in versions of Devtools
     cmake:
