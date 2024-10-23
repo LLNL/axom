@@ -29,6 +29,12 @@ namespace axom
 namespace sina
 {
 
+enum class Protocol
+{
+  JSON,
+  HDF5
+};
+
 /**
  * \brief An object representing the top-level object of a Sina JSON file
  *
@@ -170,6 +176,13 @@ public:
   conduit::Node toNode() const;
 
   /**
+   *  \brief Dump this document as an HDF5 File
+   * 
+   *  \return None, conduit automatically dumps the hdf5 file without a return
+   */
+  void toHDF5(const std::string &filename) const;
+
+  /**
      * \brief Convert this document to a JSON string.
      *
      * \return the contents of the document as a JSON string
@@ -195,18 +208,20 @@ private:
  *
  * \param document the Document to save
  * \param fileName the location to which to save the file
+ * \param protocol the file type requested to save as, default = JSON
  * \throws std::ios::failure if there are any IO errors
  */
-void saveDocument(Document const &document, std::string const &fileName);
+void saveDocument(Document const &document, std::string const &fileName, Protocol protocol = Protocol::JSON);
 
 /**
  * \brief Load a document from the given path. Only records which this library
  *        knows about will be able to be loaded.
  *
  * \param path the file system path from which to load the document
+ * \param protocol the type of file being loaded, default = JSON
  * \return the loaded Document
  */
-Document loadDocument(std::string const &path);
+Document loadDocument(std::string const &path, Protocol protocol = Protocol::JSON);
 
 /**
  * \brief Load a document from the given path.
@@ -214,11 +229,13 @@ Document loadDocument(std::string const &path);
  * \param path the file system path from which to load the document
  * \param recordLoader the RecordLoader to use to load the different types
  *                     of records
+ * \param protocol the type of file being loaded, default = JSON
  * \return the loaded Document
  */
-Document loadDocument(std::string const &path, RecordLoader const &recordLoader);
+Document loadDocument(std::string const &path, RecordLoader const &recordLoader, Protocol protocol = Protocol::JSON);
 
 }  // namespace sina
 }  // namespace axom
 
 #endif  //SINA_DOCUMENT_HPP
+
