@@ -293,7 +293,10 @@ if((CONDUIT_FOUND OR
         endif()
 
         set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "plane")
-        set(_meshTypes "bp" "mfem")
+        set(_meshTypes "bp")
+        if(MFEM_FOUND)
+          list(APPEND _meshTypes "mfem")
+        endif()
 
         foreach(_policy ${_policies})
             foreach(_testshape ${_testshapes})
