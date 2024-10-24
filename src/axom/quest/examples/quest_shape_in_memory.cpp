@@ -416,7 +416,8 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
                                                           bbox,
                                                           res,
                                                           topoName,
-                                                          coordsetName);
+                                                          coordsetName,
+                                                          params.policy);
 #if defined(AXOM_DEBUG)
   conduit::Node meshNode, info;
   meshGrp->createNativeLayout(meshNode);
@@ -971,11 +972,14 @@ axom::sidre::View* getElementVolumes(
     constexpr int NUM_COMPS_PER_VERT = 3;
     constexpr double ZERO_THRESHOLD = 1.e-10;
 
+    /*
+      Get vertex coordinates.  We use UnstructuredMesh for this,
+      so get it on host first then transfer to device if needed.
+    */
     axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
                                     cellCount * NUM_VERTS_PER_HEX);
     auto vertCoordsView = vertCoords.view();
 
-    // This runs only only on host, because the mfem::Mesh only uses host memory, I think.
     for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
     {
       // Get the indices of this element's vertices
@@ -991,6 +995,12 @@ axom::sidre::View* getElementVolumes(
           vertCoordsView[vertIdx][k] = mesh.getNodeCoordinate(verts[j], k);
         }
       }
+    }
+    if(vertCoords.getAllocatorID() != meshGrp->getDefaultAllocatorID())
+    {
+      vertCoords =
+        axom::Array<Point3D>(vertCoords, meshGrp->getDefaultAllocatorID());
+      vertCoordsView = vertCoords.view();
     }
 
     // Set vertex coords to zero if within threshold.
@@ -1009,7 +1019,9 @@ axom::sidre::View* getElementVolumes(
       });
 
     // Initialize hexahedral elements.
-    axom::Array<HexahedronType> hexes(cellCount, cellCount);
+    axom::Array<HexahedronType> hexes(cellCount,
+                                      cellCount,
+                                      meshGrp->getDefaultAllocatorID());
     auto hexesView = hexes.view();
     axom::for_all<ExecSpace>(
       cellCount,
@@ -1088,14 +1100,19 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
 #endif
 
 template <typename ExecSpace>
-double sumMaterialVolumes(sidre::Group* meshGrp, const std::string& material)
+double sumMaterialVolumesImpl(sidre::Group* meshGrp, const std::string& material)
 {
   conduit::Node meshNode;
   meshGrp->createNativeLayout(meshNode);
 #if defined(AXOM_DEBUG)
-  conduit::Node info;
-  conduit::blueprint::mesh::verify(meshNode, info);
-  SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
+  // Conduit can verify Blueprint mesh, but only if data is on host.
+  if(axom::detail::getAllocatorSpace(meshGrp->getDefaultAllocatorID()) ==
+     axom::MemorySpace::Host)
+  {
+    conduit::Node info;
+    conduit::blueprint::mesh::verify(meshNode, info);
+    SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
+  }
 #endif
   std::string topoPath = axom::fmt::format("topologies/{}", topoName);
   conduit::Node& topoNode = meshNode.fetch_existing(topoPath);
@@ -1129,6 +1146,34 @@ double sumMaterialVolumes(sidre::Group* meshGrp, const std::string& material)
   MPI_Allreduce(MPI_IN_PLACE, &globalVol, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 #endif
   return globalVol;
+}
+
+double sumMaterialVolumes(sidre::Group* meshGrp, const std::string& material)
+{
+  double rval = 0.0;
+  if(params.policy == RuntimePolicy::seq)
+  {
+    rval = sumMaterialVolumesImpl<axom::SEQ_EXEC>(meshGrp, material);
+  }
+#if defined(AXOM_USE_OPENMP)
+  if(params.policy == RuntimePolicy::omp)
+  {
+    rval = sumMaterialVolumesImpl<axom::OMP_EXEC>(meshGrp, material);
+  }
+#endif
+#if defined(AXOM_USE_CUDA)
+  if(params.policy == RuntimePolicy::cuda)
+  {
+    rval = sumMaterialVolumesImpl<axom::CUDA_EXEC<256>>(meshGrp, material);
+  }
+#endif
+#if defined(AXOM_USE_HIP)
+  if(params.policy == RuntimePolicy::hip)
+  {
+    rval = sumMaterialVolumesImpl<axom::HIP_EXEC<256>>(meshGrp, material);
+  }
+#endif
+  return rval;
 }
 
 /// Write blueprint mesh to disk
@@ -1205,6 +1250,26 @@ int main(int argc, char** argv)
 
   axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
     params.annotationMode);
+
+  // We will use array memory compatible with the specified runtime policy.
+  int defaultAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+#if defined(AXOM_USE_CUDA)
+  if(params.policy == RuntimePolicy::cuda)
+  {
+    defaultAllocId = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
+  }
+#endif
+#if defined(AXOM_USE_HIP)
+  if(params.policy == RuntimePolicy::hip)
+  {
+    defaultAllocId = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
+  }
+#endif
+  const axom::MemorySpace memorySpace =
+    axom::detail::getAllocatorSpace(defaultAllocId);
+  const bool onHost = memorySpace == axom::MemorySpace::Host ||
+    memorySpace == axom::MemorySpace::Dynamic ||
+    memorySpace == axom::MemorySpace::Unified;
 
   AXOM_ANNOTATE_BEGIN("quest example for shaping primals");
   AXOM_ANNOTATE_BEGIN("init");
@@ -1343,11 +1408,17 @@ int main(int argc, char** argv)
   axom::sidre::Group* compMeshGrp = nullptr;
   if(params.useBlueprint())
   {
-    compMeshGrp = createBoxMesh(ds.getRoot()->createGroup("compMesh"));
+    compMeshGrp = ds.getRoot()->createGroup("compMesh");
+    compMeshGrp->setDefaultAllocator(defaultAllocId);
+
+    createBoxMesh(compMeshGrp);
     conduit::Node meshNode;
     compMeshGrp->createNativeLayout(meshNode);
     SLIC_INFO(axom::fmt::format("{:-^80}", "Generated Blueprint mesh"));
-    meshNode.print();
+    if(onHost)
+    {
+      meshNode.print();
+    }
     const conduit::Node& topoNode = meshNode["topologies"][topoName];
     cellCount = conduit::blueprint::mesh::topology::length(topoNode);
   }
@@ -1373,6 +1444,7 @@ int main(int argc, char** argv)
   }
 #endif
   SLIC_ASSERT(shaper != nullptr);
+  shaper->setExecPolicy(params.policy);
 
   // Set generic parameters for the base Shaper instance
   shaper->setVertexWeldThreshold(params.weldThresh);
@@ -1398,7 +1470,6 @@ int main(int argc, char** argv)
     "{:-^80}",
     axom::fmt::format("Setting IntersectionShaper policy to '{}'",
                       axom::runtime_policy::policyToName(params.policy))));
-  shaper->setExecPolicy(params.policy);
 
   if(!params.backgroundMaterial.empty())
   {
@@ -1465,8 +1536,7 @@ int main(int argc, char** argv)
     for(const auto& materialName : materialNames)
     {
       // Compute and print volume of material.
-      const double volume =
-        sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
+      const double volume = sumMaterialVolumes(compMeshGrp, materialName);
       SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                                   "Volume of material '{}' is {:.6Lf}",
                                   materialName,
@@ -1593,7 +1663,7 @@ int main(int argc, char** argv)
     double shapeVol = -1;
     if(params.useBlueprint())
     {
-      shapeVol = sumMaterialVolumes<axom::SEQ_EXEC>(compMeshGrp, materialName);
+      shapeVol = sumMaterialVolumes(compMeshGrp, materialName);
     }
 #if defined(AXOM_USE_MFEM)
     if(params.useMfem())

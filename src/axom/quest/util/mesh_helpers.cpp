@@ -95,8 +95,26 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
   const primal::BoundingBox<double, 3>& bbox,
   const primal::NumericArray<int, 3>& res,
   const std::string& topologyName,
-  const std::string& coordsetName)
+  const std::string& coordsetName,
+  axom::runtime_policy::Policy runtimePolicy)
 {
+  auto* topoGrp = meshGrp->createGroup("topologies")->createGroup(topologyName);
+  SLIC_ERROR_IF(topoGrp == nullptr,
+                "Cannot allocate topology '" + topologyName +
+                  "' in blueprint mesh '" + meshGrp->getName() +
+                  "'.  It already exists.");
+
+  auto* coordsetGrp =
+    meshGrp->createGroup("coordsets")->createGroup(coordsetName);
+  SLIC_ERROR_IF(coordsetGrp == nullptr,
+                "Cannot allocate coordset '" + coordsetName +
+                  "' in blueprint mesh '" + meshGrp->getName() +
+                  "'.  It already exists.");
+
+  topoGrp->createView("type")->setString("structured");
+  topoGrp->createView("coordset")->setString(coordsetName);
+  auto* dimsGrp = topoGrp->createGroup("elements/dims");
+
   constexpr int DIM = 3;
 
   auto ni = res[0];
@@ -108,13 +126,6 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
                                                            res[2] + 1};
   const auto numVerts = vertsShape[0] * vertsShape[1] * vertsShape[2];
 
-  auto* topoGrp = meshGrp->createGroup("topologies")->createGroup(topologyName);
-  auto* coordsetGrp =
-    meshGrp->createGroup("coordsets")->createGroup(coordsetName);
-
-  topoGrp->createView("type")->setString("structured");
-  topoGrp->createView("coordset")->setString(coordsetName);
-  auto* dimsGrp = topoGrp->createGroup("elements/dims");
   dimsGrp->createViewScalar("i", ni);
   dimsGrp->createViewScalar("j", nj);
   dimsGrp->createViewScalar("k", nk);
@@ -146,21 +157,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
                                      vertsShape,
                                      vertMapping.strides());
 
-  double dx = (bbox.getMax()[0] - bbox.getMin()[0]) / res[0];
-  double dy = (bbox.getMax()[1] - bbox.getMin()[1]) / res[1];
-  double dz = (bbox.getMax()[2] - bbox.getMin()[2]) / res[2];
-  for(int k = 0; k < nk + 1; ++k)
-  {
-    for(int j = 0; j < nj + 1; ++j)
-    {
-      for(int i = 0; i < ni + 1; ++i)
-      {
-        xView(i, j, k) = bbox.getMin()[0] + i * dx;
-        yView(i, j, k) = bbox.getMin()[1] + j * dy;
-        zView(i, j, k) = bbox.getMin()[2] + k * dz;
-      }
-    }
-  }
+  fill_cartesian_coords_3d(runtimePolicy, bbox, xView, yView, zView);
 
   #if defined(AXOM_DEBUG) && defined(AXOM_USE_CONDUIT)
   {
@@ -179,9 +176,15 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh(
   const primal::BoundingBox<double, 3>& bbox,
   const primal::NumericArray<int, 3>& res,
   const std::string& topologyName,
-  const std::string& coordsetName)
+  const std::string& coordsetName,
+  axom::runtime_policy::Policy runtimePolicy)
 {
-  make_structured_blueprint_box_mesh(meshGrp, bbox, res, topologyName, coordsetName);
+  make_structured_blueprint_box_mesh(meshGrp,
+                                     bbox,
+                                     res,
+                                     topologyName,
+                                     coordsetName,
+                                     runtimePolicy);
   convert_blueprint_structured_explicit_to_unstructured(meshGrp, topologyName);
   return meshGrp;
 }
@@ -193,6 +196,27 @@ void convert_blueprint_structured_explicit_to_unstructured(
   const std::string& coordsetName =
     meshGrp->getView(axom::fmt::format("topologies/{}/coordset", topoName))
       ->getString();
+
+  sidre::Group* coordsetGrp = nullptr;
+    #if defined(AXOM_USE_UMPIRE)
+  /* If using device memory, temporarily copy coords to host
+     so we can use conduit's blueprint::mesh utilities.
+     When we re-import the newCoords, we will get the data
+     back to meshGrp memory space.
+  */
+  coordsetGrp = meshGrp->getGroup("coordsets")->getGroup(coordsetName);
+  int coordsetAllocId = coordsetGrp->getDefaultAllocatorID();
+  MemorySpace memSpace = detail::getAllocatorSpace(coordsetAllocId);
+  sidre::Group* stashGrp = nullptr;
+  sidre::Group* stashedValuesGrp = nullptr;
+  if(memSpace == MemorySpace::Device)
+  {
+    int hostAllocId = execution_space<axom::SEQ_EXEC>::allocatorID();
+    stashGrp = meshGrp->createGroup("tempStash");
+    stashedValuesGrp = stashGrp->moveGroup(coordsetGrp->getGroup("values"));
+    coordsetGrp->deepCopyGroup(stashedValuesGrp, hostAllocId);
+  }
+    #endif
 
   // Convert mesh to conduit::Node to use conduit's blueprint support.
   conduit::Node info;
@@ -218,7 +242,7 @@ void convert_blueprint_structured_explicit_to_unstructured(
     ->setString(coordsetName);  // Is this needed?  Is coordset already set?
 
   meshGrp->getGroup("coordsets")->destroyGroup(coordsetName);
-  auto* coordsetGrp = meshGrp->getGroup("coordsets")->createGroup(coordsetName);
+  coordsetGrp = meshGrp->getGroup("coordsets")->createGroup(coordsetName);
   coordsetGrp->importConduitTree(newCoords);
 
     #define ADD_EXTRA_DATA_FOR_MINT 1
@@ -282,6 +306,111 @@ bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info)
   #endif
 
 #endif
+
+void fill_cartesian_coords_3d(axom::runtime_policy::Policy runtimePolicy,
+                              const primal::BoundingBox<double, 3>& domainBox,
+                              axom::ArrayView<double, 3>& xView,
+                              axom::ArrayView<double, 3>& yView,
+                              axom::ArrayView<double, 3>& zView)
+{
+  if(runtimePolicy == axom::runtime_policy::Policy::seq)
+  {
+    fill_cartesian_coords_3d_impl<axom::SEQ_EXEC>(domainBox, xView, yView, zView);
+  }
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  if(runtimePolicy == axom::runtime_policy::Policy::omp)
+  {
+    fill_cartesian_coords_3d_impl<axom::OMP_EXEC>(domainBox, xView, yView, zView);
+  }
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+  if(runtimePolicy == axom::runtime_policy::Policy::cuda)
+  {
+    fill_cartesian_coords_3d_impl<axom::CUDA_EXEC<256>>(domainBox,
+                                                        xView,
+                                                        yView,
+                                                        zView);
+  }
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+  if(runtimePolicy == axom::runtime_policy::Policy::hip)
+  {
+    fill_cartesian_coords_3d_impl<axom::HIP_EXEC<256>>(domainBox,
+                                                       xView,
+                                                       yView,
+                                                       zView);
+  }
+#endif
+}
+
+template <typename ExecSpace>
+void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainBox,
+                                   axom::ArrayView<double, 3>& xView,
+                                   axom::ArrayView<double, 3>& yView,
+                                   axom::ArrayView<double, 3>& zView)
+{
+  const auto& shape = xView.shape();
+  const auto& mapping = xView.mapping();
+  auto order = mapping.getStrideOrder();
+
+  SLIC_ASSERT(shape == yView.shape());
+  SLIC_ASSERT(shape == zView.shape());
+  SLIC_ASSERT(mapping == yView.mapping());
+  SLIC_ASSERT(mapping == zView.mapping());
+
+  // Mesh resolution
+  const axom::primal::NumericArray<int, 3> res {shape[0] - 1,
+                                                shape[1] - 1,
+                                                shape[2] - 1};
+
+  // Mesh spacings.
+  double dx = (domainBox.getMax()[0] - domainBox.getMin()[0]) / res[0];
+  double dy = (domainBox.getMax()[1] - domainBox.getMin()[1]) / res[1];
+  double dz = (domainBox.getMax()[2] - domainBox.getMin()[2]) / res[2];
+
+#if defined(AXOM_USE_RAJA)
+  RAJA::RangeSegment kRange(0, shape[2]);
+  RAJA::RangeSegment jRange(0, shape[1]);
+  RAJA::RangeSegment iRange(0, shape[0]);
+  using EXEC_POL =
+    typename axom::internal::nested_for_exec<ExecSpace>::loop3d_policy;
+  if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
+  {
+    RAJA::kernel<EXEC_POL>(
+      RAJA::make_tuple(iRange, jRange, kRange),
+      AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
+        xView(i, j, k) = domainBox.getMin()[0] + i * dx;
+        yView(i, j, k) = domainBox.getMin()[1] + j * dy;
+        zView(i, j, k) = domainBox.getMin()[2] + k * dz;
+      });
+  }
+  else
+  {
+    RAJA::kernel<EXEC_POL>(
+      RAJA::make_tuple(kRange, jRange, iRange),
+      AXOM_LAMBDA(axom::IndexType k, axom::IndexType j, axom::IndexType i) {
+        xView(i, j, k) = domainBox.getMin()[0] + i * dx;
+        yView(i, j, k) = domainBox.getMin()[1] + j * dy;
+        zView(i, j, k) = domainBox.getMin()[2] + k * dz;
+      });
+  }
+#else
+  for(int k = 0; k < res[2]; ++k)
+  {
+    for(int j = 0; j < res[1]; ++j)
+    {
+      for(int i = 0; i < res[0]; ++i)
+      {
+        xView(i, j, k) = domainBox.getMin()[0] + i * dx;
+        yView(i, j, k) = domainBox.getMin()[1] + j * dy;
+        zView(i, j, k) = domainBox.getMin()[2] + k * dz;
+      }
+    }
+  }
+#endif
+
+  return;
+}
 
 }  // namespace util
 }  // namespace quest

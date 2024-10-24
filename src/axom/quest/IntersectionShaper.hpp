@@ -710,10 +710,16 @@ public:
       });  // end of loop to initialize hexahedral elements and bounding boxes
 
     // Set each shape volume fraction to 1
-    for(int i = 0; i < m_cellCount; i++)
+    // volFrac may be on the host (MFEM) or device (Sidre).
+    auto fillVolFrac = AXOM_LAMBDA(axom::IndexType i) { volFrac[i] = 1.0; };
+    if(axom::detail::getAllocatorSpace(volFrac.getAllocatorID()) ==
+       MemorySpace::Host)
     {
-      double vf = 1.0;
-      volFrac[i] = vf;
+      axom::for_all<axom::SEQ_EXEC>(m_cellCount, fillVolFrac);
+    }
+    else
+    {
+      axom::for_all<ExecSpace>(m_cellCount, fillVolFrac);
     }
 
     // Set shape components to zero if within threshold
@@ -1503,8 +1509,35 @@ public:
     if(newData)
     {
       // Zero out the volume fractions (on host).
-      // memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
-      memset(matVolFrac.data(), 0, matVolFrac.size() * sizeof(double));
+      auto allocId = matVolFrac.getAllocatorID();
+      const axom::MemorySpace memorySpace =
+        axom::detail::getAllocatorSpace(allocId);
+      const bool onDevice = memorySpace == axom::MemorySpace::Device ||
+        memorySpace == axom::MemorySpace::Unified;
+      if(onDevice)
+      {
+#if defined(AXOM_USE_CUDA)
+        if(m_execPolicy == RuntimePolicy::cuda)
+        {
+          axom::for_all<axom::CUDA_EXEC<256>>(
+            matVolFrac.size(),
+            AXOM_LAMBDA(axom::IndexType i) { matVolFrac[i] = 0.0; });
+        }
+#endif
+#if defined(AXOM_USE_HIP)
+        if(m_execPolicy == RuntimePolicy::hip)
+        {
+          axom::for_all<axom::HIP_EXEC<256>>(
+            matVolFrac.size(),
+            AXOM_LAMBDA(axom::IndexType i) { matVolFrac[i] = 0.0; });
+        }
+#endif
+      }
+      else
+      {
+        // memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
+        memset(matVolFrac.data(), 0, matVolFrac.size() * sizeof(double));
+      }
     }
 
     // Add the material to our vectors.
