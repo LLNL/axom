@@ -432,6 +432,16 @@ public:
   //@}
 
   /*!
+   * \brief Reshape the array without changing its size.
+   *
+   * \pre Old and new shapes must be the same size.
+   * \pre !isEmpty() && (isExternal() || hasBuffer())
+   * \post getNumDimensions() == ndims
+   * \post getNumElements() is unchanged.
+   */
+  View* reshapeArray(int ndims, const IndexType* shape);
+
+  /*!
    * \brief Attach Buffer object to data view.
    *
    * If the view has no description, then the buffer's description

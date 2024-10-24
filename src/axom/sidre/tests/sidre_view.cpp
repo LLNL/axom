@@ -1852,6 +1852,94 @@ TEST(sidre_view, deep_copy_shape)
 
 //------------------------------------------------------------------------------
 
+TEST(sidre_view, reshape_array)
+{
+  using namespace axom;
+  DataStore ds;
+  Group* root = ds.getRoot();
+
+  constexpr int DMAX = 4;
+  IndexType shapeOutput[DMAX];
+  int nDim = -1;
+
+  // A view with array in a buffer.
+  auto* viewA =
+    root->createView("viewA", sidre::detail::SidreTT<int32_t>::id, 12);
+
+  {
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], 12);
+  }
+
+  viewA->allocate();
+
+  {
+    IndexType shape2d[] = {3, 4};
+    viewA->reshapeArray(2, shape2d);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 2);
+    EXPECT_EQ(shapeOutput[0], 3);
+    EXPECT_EQ(shapeOutput[1], 4);
+  }
+
+  viewA->deallocate();
+
+  {
+    IndexType shape2d[] = {2, 6};
+    viewA->reshapeArray(2, shape2d);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 2);
+    EXPECT_EQ(shapeOutput[0], 2);
+    EXPECT_EQ(shapeOutput[1], 6);
+  }
+
+  viewA->allocate();
+
+  {
+    IndexType shape3d[] = {3, 2, 2};
+    viewA->reshapeArray(3, shape3d);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 3);
+    EXPECT_EQ(shapeOutput[0], 3);
+    EXPECT_EQ(shapeOutput[1], 2);
+    EXPECT_EQ(shapeOutput[2], 2);
+  }
+
+  // A view with external array data.
+  auto* viewB = root->createView("viewB");
+
+  std::int32_t extData[24];
+
+  {
+    viewB->setExternalDataPtr(sidre::detail::SidreTT<std::int32_t>::id,
+                              24,
+                              extData);
+    nDim = viewB->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewB->getNumElements(), 24);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], 24);
+  }
+
+  {
+    IndexType shape4d[] = {1, 2, 3, 4};
+    viewB->reshapeArray(4, shape4d);
+    nDim = viewB->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewB->getNumElements(), 24);
+    EXPECT_EQ(nDim, 4);
+    EXPECT_EQ(shapeOutput[0], 1);
+    EXPECT_EQ(shapeOutput[1], 2);
+    EXPECT_EQ(shapeOutput[2], 3);
+    EXPECT_EQ(shapeOutput[3], 4);
+  }
+}
+
+//------------------------------------------------------------------------------
+
 #ifdef AXOM_USE_UMPIRE
 
 class UmpireTest : public ::testing::TestWithParam<int>

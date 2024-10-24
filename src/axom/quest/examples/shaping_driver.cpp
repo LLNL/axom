@@ -20,10 +20,10 @@
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
 
-// NOTE: The shaping driver requires Axom to be configured with mfem as well as
+// NOTE: The shaping driver requires Axom to be configured with conduit or mfem and
 // the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION CMake option
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+#if !defined(AXOM_USE_MFEM) && !defined(AXOM_USE_CONDUIT)
+  #error Shaping functionality requires Axom to be configured with Conduit or MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
 #endif
 
 #include "mfem.hpp"
@@ -578,7 +578,7 @@ int main(int argc, char** argv)
   if(params.percentError > 0.)
   {
     shaper->setPercentError(params.percentError);
-    shaper->setRefinementType(quest::Shaper::RefinementDynamic);
+    shaper->setRefinementType(quest::DiscreteShape::RefinementDynamic);
   }
 
   // Associate any fields that begin with "vol_frac" with "material" so when

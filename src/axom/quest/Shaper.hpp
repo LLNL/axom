@@ -16,13 +16,22 @@
 #ifndef AXOM_USE_KLEE
   #error Shaping functionality requires Axom to be configured with the Klee component
 #endif
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+
+#if !defined(AXOM_USE_MFEM) && !defined(AXOM_USE_CONDUIT)
+  #error Shaping functionality requires Axom to be configured with Conduit or MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
 #endif
 
 #include "axom/sidre.hpp"
 #include "axom/klee.hpp"
 #include "axom/mint.hpp"
+#include "axom/quest/DiscreteShape.hpp"
+
+#if defined(AXOM_USE_MFEM)
+  #include "mfem.hpp"
+#endif
+#if defined(AXOM_USE_CONDUIT)
+  #include "conduit_node.hpp"
+#endif
 
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 
@@ -36,7 +45,20 @@ namespace quest
 class Shaper
 {
 public:
+#if defined(AXOM_USE_MFEM)
+  /*!
+    @brief Construct Shaper to operate on an MFEM mesh.
+  */
   Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc);
+#endif
+
+  /*!
+    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    stored in a sidre Group.
+  */
+  Shaper(const klee::ShapeSet& shapeSet,
+         sidre::Group* bpMesh,
+         const std::string& topo = "");
 
   virtual ~Shaper() = default;
 
@@ -48,7 +70,7 @@ public:
   static constexpr double DEFAULT_VERTEX_WELD_THRESHOLD {1e-9};
 
   /// Refinement type.
-  using RefinementType = enum { RefinementUniformSegments, RefinementDynamic };
+  using RefinementType = DiscreteShape::RefinementType;
 
   //@{
   //!  @name Functions to get and set shaping parameters
@@ -61,10 +83,14 @@ public:
 
   //@}
 
+  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh.get(); }
+
   bool isVerbose() const { return m_verboseOutput; }
 
+#ifdef AXOM_USE_MFEM
   sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
-  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+  const sidre::MFEMSidreDataCollection* getDC() const { return m_dc; }
+#endif
 
   /*!
    * \brief Predicate to determine if the specified format is valid
@@ -108,8 +134,8 @@ public:
 
 protected:
   /*!
-   * \brief Loads the shape from file into m_surfaceMesh and computes a revolvedVolume
-   *        for the shape.
+   * \brief Loads the shape from file into m_surfaceMesh and, if its a C2D
+   *        contour, computes a revolvedVolume for the shape.
    * \param shape The shape.
    * \param percentError A percent error to use when refining the shape. If it
    *                     positive then Axom will try to refine dynamically
@@ -151,14 +177,30 @@ protected:
   int getRank() const;
 
 protected:
-  const klee::ShapeSet& m_shapeSet;
-  sidre::MFEMSidreDataCollection* m_dc;
+  sidre::DataStore m_dataStore;
 
-  mint::Mesh* m_surfaceMesh {nullptr};
+  const klee::ShapeSet& m_shapeSet;
+
+#if defined(AXOM_USE_MFEM)
+  // For mesh represented as MFEMSidreDataCollection
+  sidre::MFEMSidreDataCollection* m_dc {nullptr};
+#endif
+
+#if defined(AXOM_USE_CONDUIT)
+  // For mesh represented in Conduit or sidre
+  sidre::DataStore m_ds;
+  axom::sidre::Group* m_bpGrp {nullptr};
+  const std::string m_bpTopo;
+  conduit::Node* m_bpNode {nullptr};
+#endif
+
+  axom::IndexType m_cellCount;
+
+  std::shared_ptr<mint::Mesh> m_surfaceMesh;
 
   int m_samplesPerKnotSpan {DEFAULT_SAMPLES_PER_KNOT_SPAN};
   double m_percentError {MINIMUM_PERCENT_ERROR};
-  RefinementType m_refinementType {RefinementUniformSegments};
+  RefinementType m_refinementType {DiscreteShape::RefinementUniformSegments};
   double m_vertexWeldThreshold {DEFAULT_VERTEX_WELD_THRESHOLD};
   bool m_verboseOutput {false};
 

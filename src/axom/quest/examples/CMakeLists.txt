@@ -264,6 +264,60 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
     endif()
 endif()
 
+# Shaping in-memory example ------------------------------------------------------
+if((CONDUIT_FOUND OR
+      (AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+        AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION))
+    AND AXOM_ENABLE_KLEE)
+    if(MFEM_FOUND)
+        set(optional_dependency, "mfem")
+    endif()
+    axom_add_executable(
+        NAME        quest_shape_in_memory_ex
+        SOURCES     quest_shape_in_memory.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} ${optional_dependency}
+        FOLDER      axom/quest/examples
+        )
+
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        # 3D shaping tests.  No 2D shaping in this feature, at least for now.
+        set(_nranks 1)
+
+        # Run the in-memory shaping example on with each enabled policy
+        set(_policies "seq")
+        if(RAJA_FOUND)
+            blt_list_append(TO _policies ELEMENTS "omp"  IF AXOM_ENABLE_OPENMP)
+            blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+            blt_list_append(TO _policies ELEMENTS "hip"  IF AXOM_ENABLE_HIP)
+        endif()
+
+        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "plane")
+        set(_meshTypes "bp")
+        if(MFEM_FOUND)
+          list(APPEND _meshTypes "mfem")
+        endif()
+
+        foreach(_policy ${_policies})
+            foreach(_testshape ${_testshapes})
+              foreach(_meshType ${_meshTypes})
+                set(_testname "quest_shape_in_memory_${_policy}_${_meshType}_${_testshape}")
+                axom_add_test(
+                  NAME ${_testname}
+                  COMMAND quest_shape_in_memory_ex
+                             --policy ${_policy}
+                             --meshType ${_meshType}
+                             --testShape ${_testshape}
+                             --refinements 2
+                             --scale 2.0 2.0 2.0
+                             inline_mesh --min -4 -4 -4 --max 4 4 4 --res 20 20 20 -d 3
+                  NUM_MPI_TASKS ${_nranks})
+              endforeach()
+            endforeach()
+        endforeach()
+    endif()
+endif()
+
 # Distributed closest point example -------------------------------------------
 if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
     axom_add_executable(
@@ -328,6 +382,7 @@ if(AXOM_ENABLE_MPI AND AXOM_ENABLE_SIDRE AND HDF5_FOUND)
             endforeach()
         endforeach()
 
+        unset(optional_dependency)
         unset(_nranks)
         unset(_policies)
         unset(_test)
