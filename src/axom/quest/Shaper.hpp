@@ -60,6 +60,14 @@ public:
          sidre::Group* bpMesh,
          const std::string& topo = "");
 
+  /*!
+    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    stored in a conduit Node.
+  */
+  Shaper(const klee::ShapeSet& shapeSet,
+         conduit::Node* bpNode,
+         const std::string& topo = "");
+
   virtual ~Shaper() = default;
 
 public:

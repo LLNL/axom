@@ -55,8 +55,31 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
   conduit::Node info;
   SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
 #endif
+
   m_cellCount = conduit::blueprint::mesh::topology::length(
-    meshNode.fetch_existing(axom::fmt::format("topologies/{}", m_bpTopo)));
+    meshNode.fetch_existing("topologies").fetch_existing(m_bpTopo));
+}
+
+Shaper::Shaper(const klee::ShapeSet& shapeSet,
+               conduit::Node* bpNode,
+               const std::string& topo)
+  : m_shapeSet(shapeSet)
+  , m_bpGrp(nullptr)
+  , m_bpTopo(topo.empty() ? bpNode->fetch_existing("topologies").child(0).name()
+                          : topo)
+  , m_bpNode(bpNode)
+  , m_comm(MPI_COMM_WORLD)
+{
+#if defined(AXOM_DEBUG)
+  conduit::Node info;
+  SLIC_ASSERT(conduit::blueprint::mesh::verify(*bpNode, info));
+#endif
+
+  m_bpGrp = m_ds.getRoot()->createGroup("internalGrp");
+  m_bpGrp->importConduitTreeExternal(*bpNode);
+
+  m_cellCount = conduit::blueprint::mesh::topology::length(
+    m_bpNode->fetch_existing("topologies").fetch_existing(m_bpTopo));
 }
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)

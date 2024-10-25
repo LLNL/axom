@@ -324,12 +324,23 @@ public:
 #if defined(AXOM_USE_CONDUIT)
   /*!
     @brief Construct Shaper to operate on a blueprint-formatted mesh
-    stored in a Conduit Node.
+    stored in a sidre Group.
   */
   IntersectionShaper(const klee::ShapeSet& shapeSet,
                      sidre::Group* bpGrp,
                      const std::string& topo = "")
     : Shaper(shapeSet, bpGrp, topo)
+    , m_free_mat_name("free")
+  { }
+
+  /*!
+    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    stored in a Conduit Node.
+  */
+  IntersectionShaper(const klee::ShapeSet& shapeSet,
+                     conduit::Node* bpNode,
+                     const std::string& topo = "")
+    : Shaper(shapeSet, bpNode, topo)
     , m_free_mat_name("free")
   { }
 #endif
