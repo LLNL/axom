@@ -91,6 +91,26 @@ public:
   }
 
   /*!
+   * \brief Constructor for a NURBS Curve with given size and degree
+   *
+   * \param [in] npts the number of control points
+   * \param [in] degree the degree of the curve
+   * 
+   * The knot vector is constructed such that the curve is continuous
+   * \pre requires npts >= degree+1 and degree >= 0
+   */
+  NURBSCurve(int npts, int degree)
+  {
+    SLIC_ASSERT(npts >= degree + 1);
+    SLIC_ASSERT(degree >= 0);
+
+    m_controlPoints.resize(npts);
+    makeNonrational();
+    m_knotvec = KnotVectorType(npts, degree);
+  }
+
+    
+  /*!
    * \brief Constructor for a NURBS curve from a Bezier curve
    *
    * \param [in] bezierCurve the Bezier curve to convert to a NURBS curve 
