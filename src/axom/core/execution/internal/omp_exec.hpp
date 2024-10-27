@@ -60,6 +60,22 @@ struct execution_space<OMP_EXEC>
     return axom::getDefaultAllocatorID();
 #endif
   }
+  static constexpr runtime_policy::Policy runtimePolicy() noexcept
+  {
+    return runtime_policy::Policy::omp;
+  }
+  static bool usesMemorySpace(axom::MemorySpace m) noexcept
+  {
+    return m == memory_space
+#ifdef AXOM_USE_UMPIRE
+       || m == MemorySpace::Unified
+#endif
+    ;
+  }
+  static bool usesAllocId(int allocId) noexcept
+  {
+    return usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+  }
 };
 
 }  // namespace axom

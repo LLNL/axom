@@ -8,6 +8,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
+#include "axom/core/execution/runtime_policy.hpp"
 
 /*!
  * \file execution_space.hpp
@@ -88,6 +89,18 @@ struct execution_space
   static constexpr bool onDevice() noexcept { return false; }
   static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; }
   static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; }
+  static constexpr runtime_policy::Policy runtimePolicy() noexcept
+  {
+    return runtime_policy::Policy::seq;
+  }
+  static bool usesMemorySpace(axom::MemorySpace m) noexcept
+  {
+    return m == memory_space;
+  }
+  static bool usesAllocId(int allocId) noexcept
+  {
+    return usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+  }
 };
 
 }  // namespace axom

@@ -111,6 +111,26 @@ inline int getDefaultAllocatorID()
 }
 
 /*!
+ * \brief Get the allocator id from which data has been allocated.
+ * \return Allocator id.  If Umpire doesn't have an allocator for
+ * the pointer, or Axom wasn't configured with Umpire, return 0.
+ *
+ * \pre ptr has a valid pointer value.
+ */
+inline int getAllocatorIDFromPointer(const void* ptr)
+{
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  if(rm.hasAllocator(const_cast<void*>(ptr)))
+  {
+    umpire::Allocator allocator = rm.getAllocator(const_cast<void*>(ptr));
+    return allocator.getId();
+  }
+#endif
+  return 0;
+}
+
+/*!
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
