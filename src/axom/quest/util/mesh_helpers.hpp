@@ -89,6 +89,14 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh(
   const std::string& coordsetName = "coords",
   axom::runtime_policy::Policy runtimePolicy = axom::runtime_policy::Policy::seq);
 
+/*!
+  \brief Convert a structured explicit blueprint mesh to unstructured.
+
+  All input mesh data are expected to have the allocator id of
+  meshGrp->getDefaultAllocatorID().  On output, they will also have
+  the same allocator id, even though some transfers to and from host
+  memory are used in intermediate steps.
+*/
 void convert_blueprint_structured_explicit_to_unstructured(
   axom::sidre::Group* meshGrp,
   const std::string& topoName);

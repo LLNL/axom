@@ -1196,8 +1196,16 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
 {
   AXOM_ANNOTATE_SCOPE("save mesh (sidre)");
 
+  axom::sidre::DataStore ds;
+  const sidre::Group* meshOnHost = &mesh;
+  if(mesh.getDefaultAllocatorID() != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
+  {
+    meshOnHost = ds.getRoot()->deepCopyGroup(
+      &mesh,
+      axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+  }
   conduit::Node tmpMesh;
-  mesh.createNativeLayout(tmpMesh);
+  meshOnHost->createNativeLayout(tmpMesh);
   {
     conduit::Node info;
 #ifdef AXOM_USE_MPI

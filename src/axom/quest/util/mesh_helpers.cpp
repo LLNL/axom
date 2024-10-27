@@ -144,6 +144,9 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
     valuesGrp->createViewAndAllocate("z",
                                      axom::sidre::DataTypeId::FLOAT64_ID,
                                      numVerts);
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(zVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
 
   const axom::MDMapping<DIM> vertMapping(vertsShape,
                                          axom::ArrayStrideOrder::COLUMN);
@@ -238,58 +241,61 @@ void convert_blueprint_structured_explicit_to_unstructured(
   meshGrp->getGroup("topologies")->destroyGroup(topoName);
   auto* topoGrp = meshGrp->getGroup("topologies")->createGroup(topoName);
   topoGrp->importConduitTree(newTopo);
-  topoGrp->getView("coordset")
-    ->setString(coordsetName);  // Is this needed?  Is coordset already set?
+  topoGrp->getView("coordset")->setString(coordsetName);
 
   meshGrp->getGroup("coordsets")->destroyGroup(coordsetName);
   coordsetGrp = meshGrp->getGroup("coordsets")->createGroup(coordsetName);
+  SLIC_ASSERT(coordsetGrp->getDefaultAllocatorID() == meshGrp->getDefaultAllocatorID());
   coordsetGrp->importConduitTree(newCoords);
 
-    #define ADD_EXTRA_DATA_FOR_MINT 1
-    #if ADD_EXTRA_DATA_FOR_MINT
-  /*
-    Constructing a mint mesh from meshGrp fails unless we add some
-    extra data.  Blueprint doesn't require this extra data.  (The mesh
-    passes conduit's Blueprint verification.)  This should be fixed,
-    or we should write better blueprint support utilities.
-  */
-  /*
-    Make the coordinate arrays 2D to use mint::Mesh.
-    For some reason, mint::Mesh requires the arrays to be
-    2D, even though the second dimension is always 1.
-  */
-  axom::IndexType curShape[2];
-  int curDim;
-  auto* valuesGrp = coordsetGrp->getGroup("values");
-  curDim = valuesGrp->getView("x")->getShape(2, curShape);
-  assert(curDim == 1);
-  axom::IndexType vertsShape[2] = {curShape[0], 1};
-  valuesGrp->getView("x")->reshapeArray(2, vertsShape);
-  valuesGrp->getView("y")->reshapeArray(2, vertsShape);
-  valuesGrp->getView("z")->reshapeArray(2, vertsShape);
+  auto* elemGrp = topoGrp->getGroup("elements");
+  auto* connView = elemGrp->getView("connectivity");
 
-  // Make connectivity array 2D for the same reason.
-  auto* elementsGrp = topoGrp->getGroup("elements");
-  auto* connView = elementsGrp->getView("connectivity");
-  curDim = connView->getShape(2, curShape);
-  constexpr axom::IndexType NUM_VERTS_PER_HEX = 8;
-  SLIC_ASSERT(curDim == 1);
-  SLIC_ASSERT(curShape[0] % NUM_VERTS_PER_HEX == 0);
-  axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX,
-                                  NUM_VERTS_PER_HEX};
-  connView->reshapeArray(2, connShape);
+  const bool addExtraDataForMint = true;
+  if(addExtraDataForMint)
+  {
+    /*
+      Constructing a mint mesh from meshGrp fails unless we add some
+      extra data.  Blueprint doesn't require this extra data.  (The mesh
+      passes conduit's Blueprint verification.)  This should be fixed,
+      or we should write better blueprint support utilities.
+    */
+    /*
+      Make the coordinate arrays 2D to use mint::Mesh.
+      For some reason, mint::Mesh requires the arrays to be
+      2D, even though the second dimension is always 1.
+    */
+    axom::IndexType curShape[2];
+    int curDim;
+    auto* valuesGrp = coordsetGrp->getGroup("values");
+    curDim = valuesGrp->getView("x")->getShape(2, curShape);
+    assert(curDim == 1);
+    axom::IndexType vertsShape[2] = {curShape[0], 1};
+    valuesGrp->getView("x")->reshapeArray(2, vertsShape);
+    valuesGrp->getView("y")->reshapeArray(2, vertsShape);
+    valuesGrp->getView("z")->reshapeArray(2, vertsShape);
 
-  // mint::Mesh requires connectivity strides, even though Blueprint doesn't.
-  elementsGrp->createViewScalar("stride", NUM_VERTS_PER_HEX);
+    // Make connectivity array 2D for the same reason.
+    auto* elementsGrp = topoGrp->getGroup("elements");
+    auto* connView = elementsGrp->getView("connectivity");
+    curDim = connView->getShape(2, curShape);
+    constexpr axom::IndexType NUM_VERTS_PER_HEX = 8;
+    SLIC_ASSERT(curDim == 1);
+    SLIC_ASSERT(curShape[0] % NUM_VERTS_PER_HEX == 0);
+    axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX,
+                                    NUM_VERTS_PER_HEX};
+    connView->reshapeArray(2, connShape);
 
-  // mint::Mesh requires field group, even though Blueprint doesn't.
-  meshGrp->createGroup("fields");
-    #endif
+    // mint::Mesh requires connectivity strides, even though Blueprint doesn't.
+    elementsGrp->createViewScalar("stride", NUM_VERTS_PER_HEX);
+
+    // mint::Mesh requires field group, even though Blueprint doesn't.
+    meshGrp->createGroup("fields");
+  }
 
     #if defined(AXOM_DEBUG)
-  conduit::Node newMesh;
-  meshGrp->createNativeLayout(newMesh);
-  SLIC_ASSERT(conduit::blueprint::mesh::verify(newMesh, info));
+  bool isValid = verifyBlueprintMesh(meshGrp, info);
+  SLIC_ASSERT_MSG(isValid, "Internal error: Generated mesh is invalid.");
     #endif
 
   return;
@@ -349,6 +355,17 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
                                    axom::ArrayView<double, 3>& yView,
                                    axom::ArrayView<double, 3>& zView)
 {
+  using XS = axom::execution_space<ExecSpace>;
+  SLIC_ASSERT_MSG(
+    XS::usesAllocId(xView.getAllocatorID()) &&
+    XS::usesAllocId(yView.getAllocatorID()) &&
+    XS::usesAllocId(zView.getAllocatorID()),
+    std::string("fill_cartesian_coords_3d_impl: alloc ids ") +
+    std::to_string(xView.getAllocatorID()) +
+    ", " + std::to_string(yView.getAllocatorID()) +
+    " and " + std::to_string(zView.getAllocatorID()) +
+    " are not all compatible with execution space " + XS::name());
+
   const auto& shape = xView.shape();
   const auto& mapping = xView.mapping();
   auto order = mapping.getStrideOrder();
