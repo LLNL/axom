@@ -2127,16 +2127,17 @@ public:
   template <typename ExecSpace>
   void populateHexesFromMesh()
   {
+    using XS = axom::execution_space<ExecSpace>;
+
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
-    const int hostAllocator =
-      axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-    const int deviceAllocator = axom::execution_space<ExecSpace>::allocatorID();
+    // const int hostAllocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+    const int allocId = XS::allocatorID();
 
     axom::Array<double> vertCoords(
       m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
       m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
-      hostAllocator);
+      allocId);
 
 #if defined(AXOM_USE_MFEM)
     if(m_dc != nullptr)
@@ -2147,19 +2148,14 @@ public:
 #if defined(AXOM_USE_CONDUIT)
     if(m_bpGrp != nullptr)
     {
-      populateVertCoordsFromBlueprintMesh(vertCoords);
+      populateVertCoordsFromBlueprintMesh<ExecSpace>(vertCoords);
     }
 #endif
-
-    if(deviceAllocator != hostAllocator)
-    {
-      vertCoords = axom::Array<double>(vertCoords, deviceAllocator);
-    }
 
     auto vertCoords_device_view = vertCoords.view();
 
     m_hexes =
-      axom::Array<HexahedronType>(m_cellCount, m_cellCount, deviceAllocator);
+      axom::Array<HexahedronType>(m_cellCount, m_cellCount, allocId);
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
     constexpr double ZERO_THRESHOLD = 1.e-10;
     axom::for_all<ExecSpace>(
@@ -2231,10 +2227,15 @@ public:
       });
   }
 
-private:
 #if defined(AXOM_USE_CONDUIT)
-  void populateVertCoordsFromBlueprintMesh(axom::Array<double>& vertCoords_host)
+  template <typename ExecSpace>
+  void populateVertCoordsFromBlueprintMesh(axom::Array<double>& vertCoords)
   {
+    using XS = axom::execution_space<ExecSpace>;
+
+    SLIC_ASSERT_MSG(XS::usesAllocId(vertCoords.getAllocatorID()),
+                    std::string(XS::name()) + " cannot use the vertCoords allocator id");
+
     // Initialize vertices from blueprint mesh and
     // set each shape volume fraction to 1
     // Allocation size is:
@@ -2242,11 +2243,12 @@ private:
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
 
+    // Put mesh in Node so we can use conduit::blueprint utilities.
     conduit::Node meshNode;
     m_bpGrp->createNativeLayout(meshNode);
 
     const conduit::Node& topoNode =
-      meshNode.fetch_existing(axom::fmt::format("topologies/{}", m_bpTopo));
+      meshNode.fetch_existing("topologies").fetch_existing(m_bpTopo);
     const std::string coordsetName =
       topoNode.fetch_existing("coordset").as_string();
 
@@ -2254,7 +2256,7 @@ private:
     SLIC_ASSERT(topoNode["type"].as_string() == "unstructured");
     SLIC_ASSERT(topoNode["elements/shape"].as_string() == "hex");
 
-    const auto connNode = topoNode["elements/connectivity"];
+    const auto& connNode = topoNode["elements/connectivity"];
     SLIC_ASSERT_MSG(connNode.dtype().is_int32(),
                     "IntersectionShaper internal error: missing logic to "
                     "handle multiple types.");
@@ -2262,17 +2264,15 @@ private:
     axom::ArrayView<const std::int32_t, 2> conn(connPtr,
                                                 m_cellCount,
                                                 NUM_VERTS_PER_HEX);
+    SLIC_ASSERT_MSG(XS::usesAllocId(conn.getAllocatorID()),
+                    std::string(XS::name()) + " cannot use the connectivity allocator id");
 
-    // Put in Node so we can use conduit::blueprint utilities.
-    const conduit::Node& coordNode =
-      meshNode[axom::fmt::format("coordsets/{}", coordsetName)];
-    // coordGrp->createNativeLayout(coordNode);
-
+    const conduit::Node& coordNode = meshNode["coordsets"][coordsetName];
     const conduit::Node& coordValues = coordNode.fetch_existing("values");
-
     axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
     bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
     int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
+
     axom::StackArray<axom::ArrayView<const double>, 3> coordArrays {
       axom::ArrayView<const double>(coordValues["x"].as_double_ptr(),
                                     {vertexCount},
@@ -2284,26 +2284,27 @@ private:
                                     {vertexCount},
                                     stride)};
 
-    for(int i = 0; i < m_cellCount; i++)
-    {
-      // Get the indices of this element's vertices
-      auto hexVerts = conn[i];
-      SLIC_ASSERT(hexVerts.size() == NUM_VERTS_PER_HEX);
+    auto vertCoordsView = vertCoords.view();
 
-      // Get the coordinates for the vertices
-      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
-      {
-        auto vertId = hexVerts[j];
-        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+    axom::for_all<ExecSpace>(m_cellCount, AXOM_LAMBDA(axom::IndexType i) {
+        // Get the indices of this element's vertices
+        auto hexVerts = conn[i];
+
+        // Get the coordinates for the vertices
+        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
         {
-          vertCoords_host[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
-                          (j * NUM_COMPS_PER_VERT) + k] = coordArrays[k][vertId];
+          auto vertId = hexVerts[j];
+          for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+          {
+            vertCoordsView[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+                           (j * NUM_COMPS_PER_VERT) + k] = coordArrays[k][vertId];
+          }
         }
-      }
-    }
+      });
   }
-#endif
+#endif // AXOM_USE_CONDUIT
 
+private:
 #if defined(AXOM_USE_MFEM)
   void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords_host)
   {
@@ -2361,7 +2362,7 @@ private:
 
     return volFrac;
   }
-#endif
+#endif // AXOM_USE_MFEM
 
   bool surfaceMeshIsTet() const
   {
