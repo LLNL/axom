@@ -284,6 +284,7 @@ bool loadBaseline(const std::string &filename, conduit::Node &n)
   return loaded;
 }
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 void replacementRuleTest(const std::string &shapeFile,
                          const std::string &policyName,
                          RuntimePolicy policy,
@@ -771,6 +772,7 @@ shapes:
                                     policy);
   }
 }
+#endif
 
 //---------------------------------------------------------------------------
 // Define testing functions for different modes.

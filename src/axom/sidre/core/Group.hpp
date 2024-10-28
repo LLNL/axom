@@ -275,7 +275,6 @@ public:
   bool isRoot() const { return m_parent == this; }
 
 #ifdef AXOM_USE_UMPIRE
-
   /*!
    * \brief Return the ID of the default umpire::Allocator associated with this
    * Group.
@@ -306,6 +305,22 @@ public:
   Group* setDefaultAllocator(int allocId)
   {
     m_default_allocator_id = allocId;
+    return this;
+  }
+#else
+  /*!
+   * \brief Return the ID of the default umpire::Allocator associated with this
+   * Group.
+   */
+  int getDefaultAllocatorID() const { return axom::getDefaultAllocatorID(); }
+
+  /*!
+   * \brief Set the default umpire::Allocator associated with this Group.
+   */
+  Group* setDefaultAllocator(int allocId)
+  {
+    AXOM_UNUSED_VAR(allocId);
+    SLIC_ASSERT(allocId == axom::getDefaultAllocatorID());
     return this;
   }
 #endif

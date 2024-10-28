@@ -132,11 +132,13 @@ blt_list_append( TO quest_depends_on ELEMENTS conduit::conduit IF CONDUIT_FOUND 
 
 if(AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND ((MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION) OR CONDUIT_FOUND))
     list(APPEND quest_headers Shaper.hpp
-                              IntersectionShaper.hpp
                               DiscreteShape.hpp)
     list(APPEND quest_sources Shaper.cpp
                               DiscreteShape.cpp)
     list(APPEND quest_depends_on klee)
+    if(RAJA_FOUND)
+        list(APPEND quest_headers IntersectionShaper.hpp)
+    endif()
 endif()
 
 if(AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND (MFEM_FOUND AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION))

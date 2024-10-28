@@ -38,9 +38,10 @@
 #endif
 
 // RAJA
-#ifdef AXOM_USE_RAJA
-  #include "RAJA/RAJA.hpp"
+#if !defined(AXOM_USE_RAJA)
+#error quest_shape_in_memory example and IntersectionShaper require RAJA
 #endif
+#include "RAJA/RAJA.hpp"
 
 // C/C++ includes
 #include <string>
@@ -1135,7 +1136,9 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
   mfem::GridFunction* volFracGf = dc->GetField(materialFieldName);
   axom::ArrayView<double> volFracGfArrayView(volFracGf->GetData(),
                                              volFracGf->Size());
-  axom::quest::TempArrayView<ExecSpace> volFracView(volFracGfArrayView, true);
+  axom::Array<double>volFracGfArray(volFracGfArrayView,
+                                    axom::execution_space<ExecSpace>::allocatorID());
+  auto volFracView = volFracGfArray.view();
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<ReducePolicy, double> localVol(0);
@@ -1160,8 +1163,7 @@ double sumMaterialVolumesImpl(sidre::Group* meshGrp, const std::string& material
   meshGrp->createNativeLayout(meshNode);
 #if defined(AXOM_DEBUG)
   // Conduit can verify Blueprint mesh, but only if data is on host.
-  if(axom::detail::getAllocatorSpace(meshGrp->getDefaultAllocatorID()) ==
-     axom::MemorySpace::Host)
+  if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(meshGrp->getDefaultAllocatorID()))
   {
     conduit::Node info;
     conduit::blueprint::mesh::verify(meshNode, info);
@@ -1184,8 +1186,7 @@ double sumMaterialVolumesImpl(sidre::Group* meshGrp, const std::string& material
   const auto vfFieldValuesPath =
     axom::fmt::format("fields/{}/values", vfFieldName);
   axom::sidre::View* volFrac = meshGrp->getView(vfFieldValuesPath);
-  axom::ArrayView<double> volFracArrayView(volFrac->getArray(), cellCount);
-  axom::quest::TempArrayView<ExecSpace> volFracView(volFracArrayView, true);
+  axom::ArrayView<double> volFracView(volFrac->getArray(), cellCount);
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
   RAJA::ReduceSum<ReducePolicy, double> localVol(0);
@@ -1328,11 +1329,16 @@ int main(int argc, char** argv)
     defaultAllocId = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
   }
 #endif
+
+#ifdef AXOM_USE_UMPIRE
   const axom::MemorySpace memorySpace =
     axom::detail::getAllocatorSpace(defaultAllocId);
   const bool onHost = memorySpace == axom::MemorySpace::Host ||
     memorySpace == axom::MemorySpace::Dynamic ||
     memorySpace == axom::MemorySpace::Unified;
+#else
+  const bool onHost = true;
+#endif
 
   AXOM_ANNOTATE_BEGIN("quest example for shaping primals");
   AXOM_ANNOTATE_BEGIN("init");

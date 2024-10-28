@@ -566,7 +566,11 @@ int main(int argc, char** argv)
     shaper = new quest::SamplingShaper(params.shapeSet, &shapingDC);
     break;
   case ShapingMethod::Intersection:
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     shaper = new quest::IntersectionShaper(params.shapeSet, &shapingDC);
+#else
+    SLIC_ERROR("IntersectionShaper requires Axom to be configured with Umpire.");
+#endif
     break;
   }
   SLIC_ASSERT_MSG(shaper != nullptr, "Invalid shaping method selected!");
@@ -604,6 +608,7 @@ int main(int argc, char** argv)
     }
   }
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   // Set specific parameters here for IntersectionShaper
   if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
   {
@@ -615,6 +620,7 @@ int main(int argc, char** argv)
       intersectionShaper->setFreeMaterialName(params.backgroundMaterial);
     }
   }
+#endif
 
   //---------------------------------------------------------------------------
   // Project initial volume fractions, if applicable
