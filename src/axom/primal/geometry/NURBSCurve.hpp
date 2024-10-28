@@ -118,6 +118,7 @@ public:
    */
   NURBSCurve(PointType* pts, int npts, int degree)
   {
+    SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(npts >= degree + 1);
     SLIC_ASSERT(degree >= 0);
 
@@ -147,6 +148,7 @@ public:
    */
   NURBSCurve(PointType* pts, T* weights, int npts, int degree)
   {
+    SLIC_ASSERT(pts != nullptr && weights != nullptr);
     SLIC_ASSERT(npts >= degree + 1);
     SLIC_ASSERT(degree >= 0);
 
@@ -210,6 +212,7 @@ public:
    */
   NURBSCurve(PointType* pts, T* weights, int npts, T* knots, int nkts)
   {
+    SLIC_ASSERT(pts != nullptr && weights != nullptr);
     SLIC_ASSERT(nkts >= 0);
     SLIC_ASSERT(npts >= 0);
 
@@ -893,7 +896,10 @@ public:
     {
       npts = degree + 1;
       m_controlPoints.resize(degree + 1);
-      m_weights.resize(degree + 1);
+      if(isRational())
+      {
+        m_weights.resize(degree + 1);
+      }
     }
 
     m_knotvec.makeUniform(npts, degree);
