@@ -56,66 +56,113 @@ TEST(primal_nurbspatch, constructor)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch, set_order)
+TEST(primal_nurbspatch, set_degree)
 {
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
 
-  SLIC_INFO("Test adding control points to an empty Bezier patch");
+  SLIC_INFO("Test adding control points to an empty NURBS patch");
 
-  BezierPatchType bPatch;
-  EXPECT_EQ(bPatch.getOrder_u(), -1);
-  EXPECT_EQ(bPatch.getOrder_v(), -1);
+  NURBSPatchType nPatch;
+  EXPECT_EQ(nPatch.getDegree_u(), -1);
+  EXPECT_EQ(nPatch.getDegree_v(), -1);
 
-  const int order_u = 1;
-  const int order_v = 1;
+  const int degree_u = 1;
+  const int degree_v = 1;
 
-  bPatch.setOrder(order_u, order_v);
-  EXPECT_EQ(bPatch.getOrder_u(), order_u);
-  EXPECT_EQ(bPatch.getOrder_v(), order_v);
+  const int npts_u = 3;
+  const int npts_v = 3;
 
-  PointType controlPoints[4] = {PointType {0.0, 0.0, 1.0},
+  nPatch.setNumControlPoints(npts_u, npts_v);
+  nPatch.setDegree(degree_u + 1, degree_v + 1);
+  nPatch.setDegree(degree_u, degree_v);
+
+  EXPECT_EQ(nPatch.getNumControlPoints_u(), npts_u);
+  EXPECT_EQ(nPatch.getNumControlPoints_v(), npts_v);
+
+  EXPECT_EQ(nPatch.getDegree_u(), degree_u);
+  EXPECT_EQ(nPatch.getDegree_v(), degree_v);
+
+  EXPECT_EQ(nPatch.getNumKnots_u(), degree_u + npts_u + 1);
+  EXPECT_EQ(nPatch.getNumKnots_v(), degree_v + npts_v + 1);
+
+  PointType controlPoints[9] = {PointType {0.0, 0.0, 1.0},
                                 PointType {0.0, 1.0, 0.0},
+                                PointType {0.0, 2.0, 0.0},
                                 PointType {1.0, 0.0, 0.0},
-                                PointType {1.0, 1.0, -1.0}};
+                                PointType {1.0, 1.0, -1.0},
+                                PointType {1.0, 2.0, 0.0},
+                                PointType {2.0, 0.0, 0.0},
+                                PointType {2.0, 1.0, 0.0},
+                                PointType {2.0, 2.0, 1.0}};
 
-  bPatch(0, 0) = controlPoints[0];
-  bPatch(0, 1) = controlPoints[1];
-  bPatch(1, 0) = controlPoints[2];
-  bPatch(1, 1) = controlPoints[3];
+  nPatch(0, 0) = controlPoints[0];
+  nPatch(0, 1) = controlPoints[1];
+  nPatch(0, 2) = controlPoints[2];
+  nPatch(1, 0) = controlPoints[3];
+  nPatch(1, 1) = controlPoints[4];
+  nPatch(1, 2) = controlPoints[5];
+  nPatch(2, 0) = controlPoints[6];
+  nPatch(2, 1) = controlPoints[7];
+  nPatch(2, 2) = controlPoints[8];
 
-  for(int p = 0; p <= bPatch.getOrder_u(); ++p)
+  for(int p = 0; p < npts_u; ++p)
   {
-    for(int q = 0; q <= bPatch.getOrder_v(); ++q)
+    for(int q = 0; q < npts_v; ++q)
     {
-      auto& pt = bPatch(p, q);
+      auto& pt = nPatch(p, q);
       for(int i = 0; i < DIM; ++i)
       {
-        EXPECT_DOUBLE_EQ(controlPoints[p * (order_u + 1) + q][i], pt[i]);
+        EXPECT_DOUBLE_EQ(controlPoints[p * npts_u + q][i], pt[i]);
       }
     }
   }
+
+  nPatch.clear();
+  EXPECT_EQ(nPatch.getDegree_u(), -1);
+  EXPECT_EQ(nPatch.getDegree_v(), -1);
+  EXPECT_FALSE(nPatch.isRational());
+
+  nPatch.setDegree_u(degree_u);
+  nPatch.setDegree_v(degree_v);
+
+  nPatch.setNumControlPoints_u(npts_u);
+  nPatch.setNumControlPoints_v(npts_v);
+
+  nPatch.makeRational();
+  nPatch.setWeight(0, 0, 2.0);
+
+  EXPECT_TRUE(nPatch.isRational());
+  EXPECT_DOUBLE_EQ(2.0, nPatch.getWeight(0, 0));
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch, array_constructors)
+TEST(primal_nurbspatch, point_array_constructors)
 {
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using NURBSPatchType = primal::NURBSPatchType<CoordType, DIM>;
 
   SLIC_INFO("Testing point array constructor");
 
-  const int order_u = 1;
-  const int order_v = 1;
+  const int degree_u = 1;
+  const int degree_v = 1;
 
-  PointType controlPoints[4] = {PointType {0.0, 0.0, 1.0},
+  const int npts_u = 3;
+  const int npts_v = 3;
+
+  PointType controlPoints[9] = {PointType {0.0, 0.0, 1.0},
                                 PointType {0.0, 1.0, 0.0},
+                                PointType {0.0, 2.0, 0.0},
                                 PointType {1.0, 0.0, 0.0},
-                                PointType {1.0, 1.0, -1.0}};
+                                PointType {1.0, 1.0, -1.0},
+                                PointType {1.0, 2.0, 0.0},
+                                PointType {2.0, 0.0, 0.0},
+                                PointType {2.0, 1.0, 0.0},
+                                PointType {2.0, 2.0, 1.0}};
 
   CoordType weights[4] = {1.0, 2.0, 1.0, 0.5};
 

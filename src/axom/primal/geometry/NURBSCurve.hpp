@@ -109,7 +109,6 @@ public:
     m_knotvec = KnotVectorType(npts, degree);
   }
 
-    
   /*!
    * \brief Constructor for a NURBS curve from a Bezier curve
    *
@@ -911,7 +910,10 @@ public:
     {
       npts = degree + 1;
       m_controlPoints.resize(degree + 1);
-      m_weights.resize(degree + 1);
+      if(isRational())
+      {
+        m_weights.resize(degree + 1);
+      }
     }
 
     m_knotvec.makeUniform(npts, degree);
