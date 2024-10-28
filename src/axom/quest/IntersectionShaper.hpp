@@ -13,6 +13,8 @@
 #define AXOM_QUEST_INTERSECTION_SHAPER__HPP_
 
 #include "axom/config.hpp"
+#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
@@ -407,8 +409,6 @@ public:
   //@{
   //!  @name Functions related to the stages for a given shape
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-
   // Prepares the tet mesh mesh cells for the spatial index
   template <typename ExecSpace>
   void prepareTetCells()
@@ -648,9 +648,7 @@ public:
         axom::fmt::format("The shape format {} is unsupported", shapeFormat));
     }
   }
-#endif
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   /*!
     \tparam ShapeType either TetrahedeonType or OctahedronType.
             depending on whether shape is tet or c2c.
@@ -935,9 +933,7 @@ public:
                                 "Total mesh volume is {:.3Lf}",
                                 this->allReduceSum(totalHex)));
   }  // end of runShapeQueryImpl() function
-#endif
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   // These methods are private in support of replacement rules.
 private:
   /*!
@@ -1290,7 +1286,6 @@ public:
       }
     }
   }
-#endif
 
   /*!
    * \brief Apply material replacement rules for the current shape, using
@@ -1302,7 +1297,6 @@ public:
 
     switch(m_execPolicy)
     {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::seq:
       applyReplacementRulesImpl<seq_exec>(shape);
       break;
@@ -1321,7 +1315,6 @@ public:
       applyReplacementRulesImpl<hip_exec>(shape);
       break;
   #endif  // AXOM_USE_HIP
-#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     }
     AXOM_UNUSED_VAR(shape);
   }
@@ -1358,7 +1351,6 @@ public:
     // Now that the mesh is refined, dispatch to device implementations.
     switch(m_execPolicy)
     {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::seq:
       prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
       break;
@@ -1377,7 +1369,6 @@ public:
       prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_HIP
-#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
     }
     AXOM_UNUSED_VAR(shapeDimension);
     AXOM_UNUSED_VAR(shape);
@@ -1399,7 +1390,6 @@ public:
     {
       switch(m_execPolicy)
       {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
@@ -1418,14 +1408,12 @@ public:
         runShapeQueryImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_HIP
-#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
       }
     }
     else if(shapeFormat == "c2c")
     {
       switch(m_execPolicy)
       {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
@@ -1444,7 +1432,6 @@ public:
         runShapeQueryImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_HIP
-#endif    // AXOM_USE_RAJA && AXOM_USE_UMPIRE
       }
     }
     else
@@ -1520,11 +1507,15 @@ public:
     if(newData)
     {
       // Zero out the volume fractions (on host).
+#ifdef AXOM_USE_UMPIRE
       auto allocId = matVolFrac.getAllocatorID();
       const axom::MemorySpace memorySpace =
         axom::detail::getAllocatorSpace(allocId);
       const bool onDevice = memorySpace == axom::MemorySpace::Device ||
         memorySpace == axom::MemorySpace::Unified;
+#else
+      const bool onDevice = false;
+#endif
       if(onDevice)
       {
 #if defined(AXOM_USE_CUDA)
@@ -1546,7 +1537,6 @@ public:
       }
       else
       {
-        // memset(matVolFrac->begin(), 0, matVolFrac->Size() * sizeof(double));
         memset(matVolFrac.data(), 0, matVolFrac.size() * sizeof(double));
       }
     }
@@ -2312,9 +2302,6 @@ public:
   template <typename ExecSpace>
   void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords)
   {
-    using XS = axom::execution_space<ExecSpace>;
-    const int allocId = XS::allocatorID();
-
     mfem::Mesh* mesh = getDC()->GetMesh();
     // Intersection algorithm only works on linear elements
     SLIC_ASSERT(mesh != nullptr);
@@ -2406,8 +2393,8 @@ private:
 
   axom::Array<double> m_hex_volumes;
   axom::Array<double> m_overlap_volumes;
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   double m_vertexWeldThreshold {1.e-10};
+  // Guard these to prevent warnings.
   int m_octcount {0};
   int m_tetcount {0};
 
@@ -2421,10 +2408,11 @@ private:
   // Views of volume-fraction data owned by grid.
   std::vector<axom::ArrayView<double>> m_vf_grid_functions;
   std::vector<std::string> m_vf_material_names;
-#endif
 };
 
 }  // end namespace quest
 }  // end namespace axom
+
+#endif // AXOM_USE_RAJA && AXOM_USE_UMPIRE
 
 #endif  // AXOM_QUEST_INTERSECTION_SHAPER__HPP_

@@ -127,6 +127,7 @@ inline int getAllocatorIDFromPointer(const void* ptr)
     return allocator.getId();
   }
 #endif
+  AXOM_UNUSED_VAR(ptr);
   return 0;
 }
 

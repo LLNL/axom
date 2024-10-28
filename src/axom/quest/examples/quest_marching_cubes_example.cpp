@@ -1663,6 +1663,7 @@ int allocatorIdToTest(axom::runtime_policy::Policy policy)
   #endif
     axom::INVALID_ALLOCATOR_ID;
 #else
+  AXOM_UNUSED_VAR(policy);
   int allocatorID = axom::getDefaultAllocatorID();
 #endif
   return allocatorID;
