@@ -144,14 +144,14 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
     valuesGrp->createViewAndAllocate("z",
                                      axom::sidre::DataTypeId::FLOAT64_ID,
                                      numVerts);
-#ifdef AXOM_USE_UMPIRE
+  #ifdef AXOM_USE_UMPIRE
   SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) ==
               meshGrp->getDefaultAllocatorID());
   SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) ==
               meshGrp->getDefaultAllocatorID());
   SLIC_ASSERT(axom::getAllocatorIDFromPointer(zVu->getVoidPtr()) ==
               meshGrp->getDefaultAllocatorID());
-#endif
+  #endif
 
   const axom::MDMapping<DIM> vertMapping(vertsShape,
                                          axom::ArrayStrideOrder::COLUMN);

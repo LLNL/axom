@@ -39,7 +39,7 @@
 
 // RAJA
 #if !defined(AXOM_USE_RAJA)
-#error quest_shape_in_memory example and IntersectionShaper require RAJA
+  #error quest_shape_in_memory example and IntersectionShaper require RAJA
 #endif
 #include "RAJA/RAJA.hpp"
 
@@ -1136,8 +1136,9 @@ double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
   mfem::GridFunction* volFracGf = dc->GetField(materialFieldName);
   axom::ArrayView<double> volFracGfArrayView(volFracGf->GetData(),
                                              volFracGf->Size());
-  axom::Array<double>volFracGfArray(volFracGfArrayView,
-                                    axom::execution_space<ExecSpace>::allocatorID());
+  axom::Array<double> volFracGfArray(
+    volFracGfArrayView,
+    axom::execution_space<ExecSpace>::allocatorID());
   auto volFracView = volFracGfArray.view();
 
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
@@ -1163,7 +1164,8 @@ double sumMaterialVolumesImpl(sidre::Group* meshGrp, const std::string& material
   meshGrp->createNativeLayout(meshNode);
 #if defined(AXOM_DEBUG)
   // Conduit can verify Blueprint mesh, but only if data is on host.
-  if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(meshGrp->getDefaultAllocatorID()))
+  if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(
+       meshGrp->getDefaultAllocatorID()))
   {
     conduit::Node info;
     conduit::blueprint::mesh::verify(meshNode, info);
