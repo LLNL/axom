@@ -26,6 +26,10 @@ spack:
   # - Use amdgpu_target=gfx942 for rzadams
   # - Use amdgpu_target=gfx90a for tioga/rzvernal
   # - Use amdgpu_target=gfx908 for rznevada
+  #
+  # Devtools are built on rzvernal for compatibility with both
+  # rzvernal and rzadams.
+  #
   compilers::
   - compiler:
       environment: {}
@@ -216,14 +220,11 @@ spack:
       - spec: libtool@2.4.6
         prefix: /usr
       buildable: false
-
-    # May cause problems
     libunwind:
       buildable: false
       externals:
       - spec: libunwind@8.0.1
         prefix: /usr
-
     libx11:
       buildable: false
       externals:
@@ -300,23 +301,11 @@ spack:
       - spec: cmake@3.24.2
         prefix: /usr/tce
 
-    # Throws an error
-    # llvm:
-    #   version: [17.0.6]
-    #   buildable: false
-    #   externals:
-    #   - spec: llvm@17.0.6+clang+lld+lldb
-    #     prefix: /usr
-
     # Lie to spack, say this is llvm@10 when it's actually llvm@14
-    # to prevent spack from building
+    # to prevent spack from building and allow concretization
     llvm:
       version: [10.0.0]
       buildable: false
       externals:
       - spec: llvm@10.0.0%gcc@10.3.1
         prefix: /usr/tce/packages/rocmcc/rocmcc-5.2.3-magic/llvm
-#/opt/rocm-6.1.2/lib/llvm/bin/clang-format
-
-# This one is clang@14
-#/usr/tce/packages/rocmcc/rocmcc-5.2.3-magic/llvm/bin/clang-format
