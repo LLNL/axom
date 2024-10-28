@@ -368,7 +368,6 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
 
   const auto& shape = xView.shape();
   const auto& mapping = xView.mapping();
-  auto order = mapping.getStrideOrder();
 
   SLIC_ASSERT(shape == yView.shape());
   SLIC_ASSERT(shape == zView.shape());
@@ -391,6 +390,7 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
   RAJA::RangeSegment iRange(0, shape[0]);
   using EXEC_POL =
     typename axom::internal::nested_for_exec<ExecSpace>::loop3d_policy;
+  auto order = mapping.getStrideOrder();
   if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
   {
     RAJA::kernel<EXEC_POL>(
