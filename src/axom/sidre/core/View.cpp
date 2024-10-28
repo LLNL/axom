@@ -1494,7 +1494,7 @@ void View::importFrom(conduit::Node& data_holder,
  *
  *************************************************************************
  */
-View* View::importArrayNode(const Node& array, int allocID)
+View* View::importArrayNode(const Node& array)
 {
   conduit::DataType array_dtype = array.dtype();
 
@@ -1511,7 +1511,7 @@ View* View::importArrayNode(const Node& array, int allocID)
       conduit::index_t num_ele = array_dtype.number_of_elements();
       conduit::index_t ele_bytes = DataType::default_bytes(array_dtype.id());
 
-      allocID = getValidAllocatorID(allocID);
+      int allocID = m_owning_group->getDefaultAllocatorID();
       buff->allocate((TypeID)array_dtype.id(), num_ele, allocID);
 
       // copy the data in a way that matches
