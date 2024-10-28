@@ -26,9 +26,6 @@ find_package(OpenCASCADE CONFIG QUIET NO_DEFAULT_PATH
           ${OPENCASCADE_DIR}
 )
 
-#blt_print_variables(NAME_REGEX  cascade IGNORE_CASE)
-#blt_print_variables(VALUE_REGEX cascade IGNORE_CASE)
-
 #Update the include dir to not include 'opencascade'
 string(REPLACE "include/opencascade" "include" OpenCASCADE_INCLUDE_DIR ${OpenCASCADE_INCLUDE_DIR})
 
