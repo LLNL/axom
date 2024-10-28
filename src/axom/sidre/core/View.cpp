@@ -304,9 +304,12 @@ View* View::reallocate(const DataType& dtype)
  */
 View* View::reshapeArray(int ndims, const IndexType* shape)
 {
-  SLIC_ERROR_IF(m_state != BUFFER && m_state != EXTERNAL,
-                SIDRE_VIEW_LOG_PREPEND
-                  << "Can only reshape array Views (BUFFER or EXTERNAL).");
+  if(m_state != BUFFER && m_state != EXTERNAL)
+  {
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View can only reshape array states (BUFFER or EXTERNAL.");
+    return this;
+  }
 
   IndexType oldSize = 1;
   for(const auto& s : m_shape)
@@ -318,9 +321,12 @@ View* View::reshapeArray(int ndims, const IndexType* shape)
   {
     newSize *= shape[d];
   }
-  SLIC_ERROR_IF(newSize != oldSize,
-                SIDRE_VIEW_LOG_PREPEND
-                  << "Reshape must not change the number of elements.");
+  if(newSize != oldSize)
+  {
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View reshape must not change the number of elements.");
+    return this;
+  }
 
   // If View was applied before reshape, then reapply it.
   const bool is_applied = m_is_applied;

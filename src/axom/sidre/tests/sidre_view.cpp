@@ -1873,7 +1873,31 @@ TEST(sidre_view, reshape_array)
     EXPECT_EQ(shapeOutput[0], 12);
   }
 
+  {
+    // Attempt to reshape empty View should be no-op.
+    EXPECT_TRUE(viewA->isEmpty());
+    IndexType badShape[] = {1, 2, 3};
+    viewA->reshapeArray(3, badShape);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], 12);
+  }
+
   viewA->allocate();
+  EXPECT_FALSE(viewA->isEmpty());
+  EXPECT_FALSE(viewA->isScalar());
+  EXPECT_TRUE(viewA->hasBuffer());
+
+  {
+    // Attempt to change size should be no-op.
+    IndexType badShape[] = {1, 2, 3};
+    viewA->reshapeArray(3, badShape);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], 12);
+  }
 
   {
     IndexType shape2d[] = {3, 4};
@@ -1919,6 +1943,7 @@ TEST(sidre_view, reshape_array)
     viewB->setExternalDataPtr(sidre::detail::SidreTT<std::int32_t>::id,
                               24,
                               extData);
+    EXPECT_TRUE(viewB->isExternal());
     nDim = viewB->getShape(DMAX, shapeOutput);
     EXPECT_EQ(viewB->getNumElements(), 24);
     EXPECT_EQ(nDim, 1);
