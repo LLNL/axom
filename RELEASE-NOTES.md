@@ -22,6 +22,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Added
 
 ###  Changed
+- Importing Conduit array data into `sidre::View` now allocates destination
+  data using the `View`'s parent's allocator ID, insteading of always using
+  host memory.  This is consistent with the behavior of deep-copying data
+  from Sidre.
 
 ###  Deprecated
 
