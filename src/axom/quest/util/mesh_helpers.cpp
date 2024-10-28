@@ -248,9 +248,6 @@ void convert_blueprint_structured_explicit_to_unstructured(
   SLIC_ASSERT(coordsetGrp->getDefaultAllocatorID() == meshGrp->getDefaultAllocatorID());
   coordsetGrp->importConduitTree(newCoords);
 
-  auto* elemGrp = topoGrp->getGroup("elements");
-  auto* connView = elemGrp->getView("connectivity");
-
   const bool addExtraDataForMint = true;
   if(addExtraDataForMint)
   {

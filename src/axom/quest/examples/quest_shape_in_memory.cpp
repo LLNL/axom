@@ -405,6 +405,7 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 
 const std::string topoName = "mesh";
 const std::string coordsetName = "coords";
+int cellCount = -1;
 
 axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
@@ -823,10 +824,10 @@ double volumeOfTetMesh(
   axom::ArrayView<const double> x(tetMesh.getCoordinateArray(0), nodesShape);
   axom::ArrayView<const double> y(tetMesh.getCoordinateArray(1), nodesShape);
   axom::ArrayView<const double> z(tetMesh.getCoordinateArray(2), nodesShape);
-  const axom::IndexType cellCount = tetMesh.getNumberOfCells();
-  axom::Array<double> tetVolumes(cellCount, cellCount);
+  const axom::IndexType tetCount = tetMesh.getNumberOfCells();
+  axom::Array<double> tetVolumes(tetCount, tetCount);
   double meshVolume = 0.0;
-  for(axom::IndexType ic = 0; ic < cellCount; ++ic)
+  for(axom::IndexType ic = 0; ic < tetCount; ++ic)
   {
     const axom::IndexType* nodeIds = tetMesh.getCellNodeIDs(ic);
     TetType tet;
@@ -862,7 +863,6 @@ axom::sidre::View* getElementVolumes(
   if(volSidreView == nullptr)
   {
     mfem::Mesh* mesh = dc->GetMesh();
-    const axom::IndexType cellCount = mesh->GetNE();
 
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
@@ -951,6 +951,7 @@ axom::sidre::View* getElementVolumes(
   sidre::Group* meshGrp,
   const std::string& volFieldName = std::string("elementVolumes"))
 {
+  using XS = axom::execution_space<ExecSpace>;
   using HexahedronType = axom::primal::Hexahedron<double, 3>;
 
   axom::sidre::View* volSidreView = nullptr;
@@ -966,8 +967,6 @@ axom::sidre::View* getElementVolumes(
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(meshGrp,
                                                                 topoName);
 
-    const axom::IndexType cellCount = mesh.getNumberOfCells();
-
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
     constexpr double ZERO_THRESHOLD = 1.e-10;
@@ -976,10 +975,63 @@ axom::sidre::View* getElementVolumes(
       Get vertex coordinates.  We use UnstructuredMesh for this,
       so get it on host first then transfer to device if needed.
     */
+#if 1
+    auto* connData = meshGrp->getGroup("topologies")->getGroup(topoName)
+      ->getGroup("elements")->getView("connectivity");
+    SLIC_ASSERT(connData->getNode().dtype().is_int32());
+
+    conduit::Node coordNode;
+    meshGrp->getGroup("coordsets")->getGroup(coordsetName)->createNativeLayout(coordNode);
+    const conduit::Node& coordValues = coordNode.fetch_existing("values");
+    axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
+    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+    int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
+    axom::StackArray<axom::ArrayView<const double>, 3> coordArrays {
+      axom::ArrayView<const double>(coordValues["x"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride),
+      axom::ArrayView<const double>(coordValues["y"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride),
+      axom::ArrayView<const double>(coordValues["z"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride)};
+
+    const std::int32_t* connPtr = connData->getArray();
+    SLIC_ASSERT(connPtr != nullptr);
+    axom::ArrayView<const std::int32_t, 2> conn(connPtr,
+                                                cellCount,
+                                                NUM_VERTS_PER_HEX);
+    axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
+                                    cellCount * NUM_VERTS_PER_HEX,
+                                    XS::allocatorID());
+    auto vertCoordsView = vertCoords.view();
+
+    axom::for_all<ExecSpace>(
+      cellCount, AXOM_LAMBDA(axom::IndexType cellIdx)
+      {
+        // Get the indices of this element's vertices
+        auto verts = conn[cellIdx];
+
+        // Get the coordinates for the vertices
+        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+        {
+          int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
+          for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+          {
+            vertCoordsView[vertIdx][k] = coordArrays[k][verts[j]];
+            // vertCoordsView[vertIdx][k] = mesh.getNodeCoordinate(verts[j], k);
+          }
+        }
+      });
+#else
     axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
                                     cellCount * NUM_VERTS_PER_HEX);
     auto vertCoordsView = vertCoords.view();
 
+// DEBUG to here: This code doesn't work when the mesh is on device.
+// Fix this error-checking code.  Or copy the mesh to host for checking.
+// NOTE: This method uses a mix of host and device loops.  Make more consistent.
     for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
     {
       // Get the indices of this element's vertices
@@ -1002,6 +1054,7 @@ axom::sidre::View* getElementVolumes(
         axom::Array<Point3D>(vertCoords, meshGrp->getDefaultAllocatorID());
       vertCoordsView = vertCoords.view();
     }
+#endif
 
     // Set vertex coords to zero if within threshold.
     // (I don't know why we do this.  I'm following examples.)
@@ -1067,9 +1120,6 @@ template <typename ExecSpace>
 double sumMaterialVolumes(sidre::MFEMSidreDataCollection* dc,
                           const std::string& material)
 {
-  mfem::Mesh* mesh = dc->GetMesh();
-  int const cellCount = mesh->GetNE();
-
   // Get cell volumes from dc.
   axom::sidre::View* elementVols = getElementVolumes<ExecSpace>(dc);
   axom::ArrayView<double> elementVolsView(elementVols->getData(),
@@ -1364,8 +1414,6 @@ int main(int argc, char** argv)
                 "Shaping with contour files requires an Axom configured with "
                 "the C2C library");
 #endif
-
-  axom::IndexType cellCount = -1;
 
 #if defined(AXOM_USE_MFEM)
   std::shared_ptr<sidre::MFEMSidreDataCollection> shapingDC;

@@ -2131,7 +2131,6 @@ public:
 
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
-    // const int hostAllocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
     const int allocId = XS::allocatorID();
 
     axom::Array<double> vertCoords(
@@ -2142,7 +2141,7 @@ public:
 #if defined(AXOM_USE_MFEM)
     if(m_dc != nullptr)
     {
-      populateVertCoordsFromMFEMMesh(vertCoords);
+      populateVertCoordsFromMFEMMesh<ExecSpace>(vertCoords);
     }
 #endif
 #if defined(AXOM_USE_CONDUIT)
@@ -2233,8 +2232,7 @@ public:
   {
     using XS = axom::execution_space<ExecSpace>;
 
-    SLIC_ASSERT_MSG(XS::usesAllocId(vertCoords.getAllocatorID()),
-                    std::string(XS::name()) + " cannot use the vertCoords allocator id");
+    const int allocId = XS::allocatorID();
 
     // Initialize vertices from blueprint mesh and
     // set each shape volume fraction to 1
@@ -2284,6 +2282,9 @@ public:
                                     {vertexCount},
                                     stride)};
 
+    vertCoords = axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+                                     m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+                                     allocId);
     auto vertCoordsView = vertCoords.view();
 
     axom::for_all<ExecSpace>(m_cellCount, AXOM_LAMBDA(axom::IndexType i) {
@@ -2304,10 +2305,13 @@ public:
   }
 #endif // AXOM_USE_CONDUIT
 
-private:
 #if defined(AXOM_USE_MFEM)
-  void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords_host)
+  template <typename ExecSpace>
+  void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords)
   {
+    using XS = axom::execution_space<ExecSpace>;
+    const int allocId = XS::allocatorID();
+
     mfem::Mesh* mesh = getDC()->GetMesh();
     // Intersection algorithm only works on linear elements
     SLIC_ASSERT(mesh != nullptr);
@@ -2318,13 +2322,24 @@ private:
                   mesh->GetNodes()->FESpace()->GetOrder(0));
     }
 
-    // Initialize vertices from mfem mesh and
-    // set each shape volume fraction to 1
     // Allocation size is:
     // # of elements * # of vertices per hex * # of components per vertex
     constexpr int NUM_VERTS_PER_HEX = 8;
     constexpr int NUM_COMPS_PER_VERT = 3;
 
+    // The MFEM mesh interface works only on host.
+    // If on device, fill temporary host array then copy to device.
+    axom::Array<double> tmpVertCoords;
+
+    axom::Array<double>& fillVertCoords =
+      axom::execution_space<ExecSpace>::onDevice() ? tmpVertCoords : vertCoords;
+    fillVertCoords = axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+                                         m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT);
+
+    // Initialize vertices from mfem mesh and
+    // set each shape volume fraction to 1
+
+    auto fillVertCoordsView = fillVertCoords.view();
     for(int i = 0; i < m_cellCount; i++)
     {
       // Get the indices of this element's vertices
@@ -2337,14 +2352,21 @@ private:
       {
         for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
         {
-          vertCoords_host[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
-                          (j * NUM_COMPS_PER_VERT) + k] =
+          fillVertCoordsView[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
+                             (j * NUM_COMPS_PER_VERT) + k] =
             (mesh->GetVertex(verts[j]))[k];
         }
       }
     }
+    if(vertCoords.data() != fillVertCoords.data())
+    {
+      axom::copy(vertCoords.data(),
+                 fillVertCoords.data(),
+                 sizeof(double)*vertCoords.size());
+    }
   }
 
+private:
   /// Create and return a new volume fraction grid function for the current mesh
   // TODO: change to generic name.  Nothing in here is about volume fractions.  BTNG.
   mfem::GridFunction* newVolFracGridFunction()
