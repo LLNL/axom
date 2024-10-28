@@ -20,6 +20,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ###  Added
+- `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapArray`.
 
 ###  Changed
 
