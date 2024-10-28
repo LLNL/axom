@@ -144,9 +144,12 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
     valuesGrp->createViewAndAllocate("z",
                                      axom::sidre::DataTypeId::FLOAT64_ID,
                                      numVerts);
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(zVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) ==
+              meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) ==
+              meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(zVu->getVoidPtr()) ==
+              meshGrp->getDefaultAllocatorID());
 
   const axom::MDMapping<DIM> vertMapping(vertsShape,
                                          axom::ArrayStrideOrder::COLUMN);
@@ -245,7 +248,8 @@ void convert_blueprint_structured_explicit_to_unstructured(
 
   meshGrp->getGroup("coordsets")->destroyGroup(coordsetName);
   coordsetGrp = meshGrp->getGroup("coordsets")->createGroup(coordsetName);
-  SLIC_ASSERT(coordsetGrp->getDefaultAllocatorID() == meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(coordsetGrp->getDefaultAllocatorID() ==
+              meshGrp->getDefaultAllocatorID());
   coordsetGrp->importConduitTree(newCoords);
 
   const bool addExtraDataForMint = true;
@@ -353,15 +357,14 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
                                    axom::ArrayView<double, 3>& zView)
 {
   using XS = axom::execution_space<ExecSpace>;
-  SLIC_ASSERT_MSG(
-    XS::usesAllocId(xView.getAllocatorID()) &&
-    XS::usesAllocId(yView.getAllocatorID()) &&
-    XS::usesAllocId(zView.getAllocatorID()),
-    std::string("fill_cartesian_coords_3d_impl: alloc ids ") +
-    std::to_string(xView.getAllocatorID()) +
-    ", " + std::to_string(yView.getAllocatorID()) +
-    " and " + std::to_string(zView.getAllocatorID()) +
-    " are not all compatible with execution space " + XS::name());
+  SLIC_ASSERT_MSG(XS::usesAllocId(xView.getAllocatorID()) &&
+                    XS::usesAllocId(yView.getAllocatorID()) &&
+                    XS::usesAllocId(zView.getAllocatorID()),
+                  std::string("fill_cartesian_coords_3d_impl: alloc ids ") +
+                    std::to_string(xView.getAllocatorID()) + ", " +
+                    std::to_string(yView.getAllocatorID()) + " and " +
+                    std::to_string(zView.getAllocatorID()) +
+                    " are not all compatible with execution space " + XS::name());
 
   const auto& shape = xView.shape();
   const auto& mapping = xView.mapping();

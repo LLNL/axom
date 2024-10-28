@@ -976,12 +976,16 @@ axom::sidre::View* getElementVolumes(
       so get it on host first then transfer to device if needed.
     */
 #if 1
-    auto* connData = meshGrp->getGroup("topologies")->getGroup(topoName)
-      ->getGroup("elements")->getView("connectivity");
+    auto* connData = meshGrp->getGroup("topologies")
+                       ->getGroup(topoName)
+                       ->getGroup("elements")
+                       ->getView("connectivity");
     SLIC_ASSERT(connData->getNode().dtype().is_int32());
 
     conduit::Node coordNode;
-    meshGrp->getGroup("coordsets")->getGroup(coordsetName)->createNativeLayout(coordNode);
+    meshGrp->getGroup("coordsets")
+      ->getGroup(coordsetName)
+      ->createNativeLayout(coordNode);
     const conduit::Node& coordValues = coordNode.fetch_existing("values");
     axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
     bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
@@ -1008,8 +1012,8 @@ axom::sidre::View* getElementVolumes(
     auto vertCoordsView = vertCoords.view();
 
     axom::for_all<ExecSpace>(
-      cellCount, AXOM_LAMBDA(axom::IndexType cellIdx)
-      {
+      cellCount,
+      AXOM_LAMBDA(axom::IndexType cellIdx) {
         // Get the indices of this element's vertices
         auto verts = conn[cellIdx];
 
@@ -1029,9 +1033,9 @@ axom::sidre::View* getElementVolumes(
                                     cellCount * NUM_VERTS_PER_HEX);
     auto vertCoordsView = vertCoords.view();
 
-// DEBUG to here: This code doesn't work when the mesh is on device.
-// Fix this error-checking code.  Or copy the mesh to host for checking.
-// NOTE: This method uses a mix of host and device loops.  Make more consistent.
+    // DEBUG to here: This code doesn't work when the mesh is on device.
+    // Fix this error-checking code.  Or copy the mesh to host for checking.
+    // NOTE: This method uses a mix of host and device loops.  Make more consistent.
     for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
     {
       // Get the indices of this element's vertices
@@ -1248,7 +1252,8 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
 
   axom::sidre::DataStore ds;
   const sidre::Group* meshOnHost = &mesh;
-  if(mesh.getDefaultAllocatorID() != axom::execution_space<axom::SEQ_EXEC>::allocatorID())
+  if(mesh.getDefaultAllocatorID() !=
+     axom::execution_space<axom::SEQ_EXEC>::allocatorID())
   {
     meshOnHost = ds.getRoot()->deepCopyGroup(
       &mesh,

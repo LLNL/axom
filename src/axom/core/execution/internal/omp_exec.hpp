@@ -68,9 +68,9 @@ struct execution_space<OMP_EXEC>
   {
     return m == memory_space
 #ifdef AXOM_USE_UMPIRE
-       || m == MemorySpace::Unified
+      || m == MemorySpace::Unified
 #endif
-    ;
+      ;
   }
   static bool usesAllocId(int allocId) noexcept
   {

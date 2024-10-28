@@ -824,10 +824,7 @@ public:
   }
 
   /// \overload
-  Node::ConstValue getArray() const
-  {
-    return getData();
-  }
+  Node::ConstValue getArray() const { return getData(); }
 
   /*!
    * \brief Returns a pointer to the string contained in the view.

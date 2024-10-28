@@ -2153,8 +2153,7 @@ public:
 
     auto vertCoords_device_view = vertCoords.view();
 
-    m_hexes =
-      axom::Array<HexahedronType>(m_cellCount, m_cellCount, allocId);
+    m_hexes = axom::Array<HexahedronType>(m_cellCount, m_cellCount, allocId);
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
     constexpr double ZERO_THRESHOLD = 1.e-10;
     axom::for_all<ExecSpace>(
@@ -2262,8 +2261,9 @@ public:
     axom::ArrayView<const std::int32_t, 2> conn(connPtr,
                                                 m_cellCount,
                                                 NUM_VERTS_PER_HEX);
-    SLIC_ASSERT_MSG(XS::usesAllocId(conn.getAllocatorID()),
-                    std::string(XS::name()) + " cannot use the connectivity allocator id");
+    SLIC_ASSERT_MSG(
+      XS::usesAllocId(conn.getAllocatorID()),
+      std::string(XS::name()) + " cannot use the connectivity allocator id");
 
     const conduit::Node& coordNode = meshNode["coordsets"][coordsetName];
     const conduit::Node& coordValues = coordNode.fetch_existing("values");
@@ -2282,12 +2282,15 @@ public:
                                     {vertexCount},
                                     stride)};
 
-    vertCoords = axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
-                                     m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
-                                     allocId);
+    vertCoords =
+      axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+                          m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+                          allocId);
     auto vertCoordsView = vertCoords.view();
 
-    axom::for_all<ExecSpace>(m_cellCount, AXOM_LAMBDA(axom::IndexType i) {
+    axom::for_all<ExecSpace>(
+      m_cellCount,
+      AXOM_LAMBDA(axom::IndexType i) {
         // Get the indices of this element's vertices
         auto hexVerts = conn[i];
 
@@ -2303,7 +2306,7 @@ public:
         }
       });
   }
-#endif // AXOM_USE_CONDUIT
+#endif  // AXOM_USE_CONDUIT
 
 #if defined(AXOM_USE_MFEM)
   template <typename ExecSpace>
@@ -2333,8 +2336,9 @@ public:
 
     axom::Array<double>& fillVertCoords =
       axom::execution_space<ExecSpace>::onDevice() ? tmpVertCoords : vertCoords;
-    fillVertCoords = axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
-                                         m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT);
+    fillVertCoords =
+      axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
+                          m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT);
 
     // Initialize vertices from mfem mesh and
     // set each shape volume fraction to 1
@@ -2362,7 +2366,7 @@ public:
     {
       axom::copy(vertCoords.data(),
                  fillVertCoords.data(),
-                 sizeof(double)*vertCoords.size());
+                 sizeof(double) * vertCoords.size());
     }
   }
 
@@ -2384,7 +2388,7 @@ private:
 
     return volFrac;
   }
-#endif // AXOM_USE_MFEM
+#endif  // AXOM_USE_MFEM
 
   bool surfaceMeshIsTet() const
   {
