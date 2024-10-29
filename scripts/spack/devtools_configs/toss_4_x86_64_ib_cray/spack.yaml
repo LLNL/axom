@@ -21,15 +21,8 @@ spack:
       projections:
         all: '{name}-{version}'
 
-  # Target specific AMD GPU architectures for specific machines:
-  #
-  # - Use amdgpu_target=gfx942 for rzadams
-  # - Use amdgpu_target=gfx90a for tioga/rzvernal
-  # - Use amdgpu_target=gfx908 for rznevada
-  #
   # Devtools are built on rzvernal for compatibility with both
   # rzvernal and rzadams.
-  #
   compilers::
   - compiler:
       environment: {}
@@ -302,7 +295,7 @@ spack:
         prefix: /usr/tce
 
     # Lie to spack, say this is llvm@10 when it's actually llvm@14
-    # to prevent spack from building and allow concretization
+    # to allow concretization and prevent spack from building
     llvm:
       version: [10.0.0]
       buildable: false
