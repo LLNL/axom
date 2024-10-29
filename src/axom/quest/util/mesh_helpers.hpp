@@ -8,7 +8,9 @@
 
 #include "axom/config.hpp"
 #include "axom/primal.hpp"
-#include "axom/sidre.hpp"
+#if defined(AXOM_USE_SIDRE)
+  #include "axom/sidre.hpp"
+#endif
 
 #ifdef AXOM_USE_MFEM
   #include "mfem.hpp"

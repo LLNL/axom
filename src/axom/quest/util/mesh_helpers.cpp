@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "mesh_helpers.hpp"
-#include <axom/sidre.hpp>
+#if defined(AXOM_USE_SIDRE)
+  #include <axom/sidre.hpp>
+#endif
 #include <axom/slic.hpp>
 #include <conduit/conduit_blueprint_mesh.hpp>
 #include <iostream>
@@ -314,7 +316,7 @@ bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info)
 }
   #endif
 
-#endif
+#endif  // AXOM_USE_SIDRE
 
 void fill_cartesian_coords_3d(axom::runtime_policy::Policy runtimePolicy,
                               const primal::BoundingBox<double, 3>& domainBox,

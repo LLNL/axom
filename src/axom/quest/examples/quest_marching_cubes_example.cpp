@@ -30,7 +30,9 @@
 #include "axom/core/MDMapping.hpp"
 #include "axom/quest/MarchingCubes.hpp"
 #include "axom/quest/MeshViewUtil.hpp"
-#include "axom/sidre.hpp"
+#if defined(AXOM_USE_SIDRE)
+  #include "axom/sidre.hpp"
+#endif
 #include "axom/core/Types.hpp"
 #include "axom/core/numerics/floating_point_limits.hpp"
 
@@ -56,7 +58,9 @@
 
 namespace quest = axom::quest;
 namespace slic = axom::slic;
+#if defined(AXOM_USE_SIDRE)
 namespace sidre = axom::sidre;
+#endif
 namespace primal = axom::primal;
 namespace mint = axom::mint;
 namespace numerics = axom::numerics;
@@ -667,6 +671,7 @@ void saveMesh(const conduit::Node& mesh, const std::string& filename)
 #endif
 }
 
+#if defined(AXOM_USE_SIDRE)
 /// Write blueprint mesh to disk
 void saveMesh(const sidre::Group& mesh, const std::string& filename)
 {
@@ -676,11 +681,11 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
   mesh.createNativeLayout(tmpMesh);
   {
     conduit::Node info;
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
     if(!conduit::blueprint::mpi::verify("mesh", tmpMesh, info, MPI_COMM_WORLD))
-#else
+  #else
     if(!conduit::blueprint::verify("mesh", tmpMesh, info))
-#endif
+  #endif
     {
       SLIC_INFO("Invalid blueprint for mesh: \n" << info.to_yaml());
       slic::flushStreams();
@@ -690,6 +695,7 @@ void saveMesh(const sidre::Group& mesh, const std::string& filename)
   }
   saveMesh(tmpMesh, filename);
 }
+#endif
 
 template <typename T, int DIM>
 T product(const axom::StackArray<T, DIM>& a)
@@ -914,11 +920,13 @@ struct ContourTestBase
     AXOM_ANNOTATE_BEGIN("error checking");
 
     AXOM_ANNOTATE_BEGIN("convert to mint mesh");
+#if defined(AXOM_USE_SIDRE)
     std::string sidreGroupName = "contour_mesh";
     sidre::DataStore objectDS;
     // While awaiting fix for PR #1271, don't use Sidre storage in contourMesh.
     auto* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
     AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
+#endif
 
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
@@ -954,6 +962,7 @@ struct ContourTestBase
         checkCellsContainingContour(computationalMesh, contourMesh);
     }
 
+#if defined(AXOM_USE_SIDRE)
     if(contourMesh.hasSidreGroup())
     {
       assert(contourMesh.getSidreGroup() == meshGroup);
@@ -962,9 +971,10 @@ struct ContourTestBase
       saveMesh(*contourMesh.getSidreGroup(), outputName);
       SLIC_INFO(axom::fmt::format("Wrote contour mesh to {}", outputName));
     }
-    AXOM_ANNOTATE_END("error checking");
-
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);
+#endif
+
+    AXOM_ANNOTATE_END("error checking");
 
     return localErrCount;
   }
