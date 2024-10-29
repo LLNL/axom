@@ -19,6 +19,8 @@
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
 #include "conduit_relay_io.hpp"
+#include "axom/sina/core/CurveSet.hpp" 
+#include "axom/sina/core/Record.hpp"   
 
 namespace axom
 {
@@ -419,6 +421,37 @@ TEST(Document, load_defaultRecordLoaders)
   auto loadedRun =
     dynamic_cast<axom::sina::Run const *>(loadedDocument.getRecords()[0].get());
   EXPECT_NE(nullptr, loadedRun);
+}
+
+TEST(Document, append_test)
+{
+  // Document doc;
+
+  // CurveSet curveSet('SampleCurveSet');
+
+  // Curve independentCurve1("independentCurve1");
+  // independentCurve1.setData({1.0, 2.0, 3.0});
+  // curveSet.addIndependentCurve(std::move(independentCurve1));
+
+  // Curve independentCurve2("independentCurve2");
+  // independentCurve2.setData({4.0, 5.0, 6.0});
+  // curveSet.addIndependentCurve(std::move(independentCurve2));
+
+  // Curve dependentCurve1("dependentCurve1");
+  // dependentCurve1.setData({7.0, 8.0, 9.0});
+  // curveSet.addDependentCurve(std::move(dependentCurve1));
+
+  // auto record = std::make_unique<Record>("SampleRecord");
+  // record->setCurveSet(std::move(curveSet)); 
+  // doc.add(std::move(record));
+  
+  // doc.print();
+
+  // std::vector<double> valuesToAppend = {10.0, 11.0};
+
+  // Document newDoc = append_to_curve_sets(doc, valuesToAppend);
+
+  // newDoc.print();
 }
 
 // NOTE: Append Records cases

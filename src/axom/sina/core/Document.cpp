@@ -14,6 +14,9 @@
  */
 
 #include "axom/sina/core/Document.hpp"
+#include "axom/sina/core/CurveSet.hpp"
+#include "axom/sina/core/Curve.hpp"
+#include "axom/sina/core/Record.hpp"
 
 #include <cstdio>
 #include <fstream>
@@ -23,6 +26,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
+#include <nlohmann/json.hpp>
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
 #include "conduit_relay_io.hpp"
@@ -30,6 +34,9 @@
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
 #include "conduit_relay_io.hpp"
+
+
+using json = nlohmann::json;
 
 namespace axom
 {
@@ -324,21 +331,6 @@ void saveDocument(Document const &document, std::string const &fileName, Protoco
   // file is in the same directory to ensure that it is part of the same
   // file system as the destination file so that the move operation is
   // atomic.
-
-  // std::string tmpFileName = fileName + SAVE_TMP_FILE_EXTENSION;
-  // auto asJson = document.toJson();
-  // std::ofstream fout {tmpFileName};
-  // fout.exceptions(std::ostream::failbit | std::ostream::badbit);
-  // fout << asJson;
-  // fout.close();
-
-  // if(rename(tmpFileName.c_str(), fileName.c_str()) != 0)
-  // {
-  //   std::string message {"Could not save to '"};
-  //   message += fileName;
-  //   message += "'";
-  //   throw std::ios::failure {message};
-  // }
 }
 
 Document loadDocument(std::string const &path, Protocol protocol)
@@ -368,6 +360,30 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
 
     // Finally, use the node to create the Document object (existing logic)
 }
+
+// Document append_to_curve_sets(Document &newDoc, const std::vector<double> &valuesToAppend) {
+//     for (auto &record : newDoc.getRecords()) {
+//         auto &curveSets = record->getCurveSets(); // This should return an unordered_map or similar
+
+//         for (auto &curveSetEntry : curveSets) {
+//             auto &curveSet = curveSetEntry.second; // Access the CurveSet by reference
+            
+//             auto independentCurves = curveSet.getIndependentCurves(); // Use public method to get independent curves
+//             for (auto &curve : independentCurves) {
+//                 std::vector<double> data = curve.getData(); // Assuming getData() returns a vector
+//                 data.insert(data.end(), valuesToAppend.begin(), valuesToAppend.end());
+//                 curve.setData(data); // Update the curve with the new data
+//             }
+            
+//             auto dependentCurves = curveSet.getDependentCurves(); // Use public method to get dependent curves
+//             for (auto &curve : dependentCurves) {
+//                 std::vector<double> data = curve.getData(); // Assuming getData() returns a vector
+//                 data.insert(data.end(), valuesToAppend.begin(), valuesToAppend.end());
+//                 curve.setData(data); // Update the curve with the new data
+//             }
+//         }
+//     }
+// }
 
 }  // namespace sina
 }  // namespace axom
