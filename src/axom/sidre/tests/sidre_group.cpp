@@ -3422,12 +3422,14 @@ inline int pointerToAllocatorID(const void* ptr)
 
 TEST(sidre_group, import_conduit_into_mem_space)
 {
-  const int hostAllocId = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
 #if defined(AXOM_USE_UMPIRE) && defined(UMPIRE_ENABLE_DEVICE)
+  const int hostAllocId = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
   const int devAllocId =
     axom::detail::getAllocatorID<axom::MemorySpace::Device>();
 #else
   // Memory space testing is trivial without device memory.
+  const int hostAllocId =
+    axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>();
   const int devAllocId = hostAllocId;
 #endif
 
