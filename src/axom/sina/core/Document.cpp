@@ -357,33 +357,7 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
         modifiedNode.print();
         return Document {modifiedNode, recordLoader};
     }
-
-    // Finally, use the node to create the Document object (existing logic)
 }
-
-// Document append_to_curve_sets(Document &newDoc, const std::vector<double> &valuesToAppend) {
-//     for (auto &record : newDoc.getRecords()) {
-//         auto &curveSets = record->getCurveSets(); // This should return an unordered_map or similar
-
-//         for (auto &curveSetEntry : curveSets) {
-//             auto &curveSet = curveSetEntry.second; // Access the CurveSet by reference
-            
-//             auto independentCurves = curveSet.getIndependentCurves(); // Use public method to get independent curves
-//             for (auto &curve : independentCurves) {
-//                 std::vector<double> data = curve.getData(); // Assuming getData() returns a vector
-//                 data.insert(data.end(), valuesToAppend.begin(), valuesToAppend.end());
-//                 curve.setData(data); // Update the curve with the new data
-//             }
-            
-//             auto dependentCurves = curveSet.getDependentCurves(); // Use public method to get dependent curves
-//             for (auto &curve : dependentCurves) {
-//                 std::vector<double> data = curve.getData(); // Assuming getData() returns a vector
-//                 data.insert(data.end(), valuesToAppend.begin(), valuesToAppend.end());
-//                 curve.setData(data); // Update the curve with the new data
-//             }
-//         }
-//     }
-// }
 
 }  // namespace sina
 }  // namespace axom
