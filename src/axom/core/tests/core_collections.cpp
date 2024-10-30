@@ -3,19 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/// Tests sidre's ItemCollection hierachy,
+/// Tests axom's ItemCollection hierachy,
 /// including MapCollection, ListCollection and IndexedCollection
 
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
-#include "axom/slic.hpp"
-#include "axom/sidre.hpp"
 
 #include "axom/fmt.hpp"
-
-namespace sidre = axom::sidre;
 
 struct NamedItem
 {
@@ -45,7 +41,7 @@ protected:
   void TearDown() override
   {
     // Remove and deallocate items
-    for(auto idx = m_coll->getFirstValidIndex(); idx != sidre::InvalidIndex;
+    for(auto idx = m_coll->getFirstValidIndex(); idx != axom::InvalidIndex;
         idx = m_coll->getNextValidIndex(idx))
     {
       auto* val = m_coll->removeItem(idx);
@@ -655,14 +651,14 @@ TYPED_TEST(MapCollectionTest, insertAlreadyPresent)
       if(hasItem)
       {
         // new item was not removed, must deallocate
-        EXPECT_EQ(sidre::InvalidIndex, idx);
+        EXPECT_EQ(axom::InvalidIndex, idx);
         delete val;
         val = nullptr;
       }
       else
       {
         // new item was added
-        EXPECT_NE(sidre::InvalidIndex, idx);
+        EXPECT_NE(axom::InvalidIndex, idx);
         ++num_added;
       }
       EXPECT_TRUE(map_coll->hasItem(str));
@@ -874,14 +870,14 @@ TYPED_TEST(IndexedCollectionTest, insertAlreadyPresent)
       if(hasItem)
       {
         // new item was not removed, must deallocate
-        EXPECT_EQ(sidre::InvalidIndex, newIndex);
+        EXPECT_EQ(axom::InvalidIndex, newIndex);
         delete val;
         val = nullptr;
       }
       else
       {
         // new item was added
-        EXPECT_NE(sidre::InvalidIndex, newIndex);
+        EXPECT_NE(axom::InvalidIndex, newIndex);
         ++num_added;
       }
       EXPECT_TRUE(indexed_coll->hasItem(idx));
@@ -933,7 +929,7 @@ TYPED_TEST(IndexedCollectionTest, insertBadIdx)
       auto insertedIdx = indexed_coll->insertItem(val, idx);
       if(idx < 0)
       {
-        EXPECT_EQ(sidre::InvalidIndex, insertedIdx);
+        EXPECT_EQ(axom::InvalidIndex, insertedIdx);
         delete val;
       }
       else
