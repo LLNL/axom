@@ -39,4 +39,28 @@ if (RAJA_FOUND AND UMPIRE_FOUND)
         FOLDER      axom/primal/examples
         )
 
+    # Add unit tests
+    if(AXOM_ENABLE_TESTS)
+
+        # Run the hex_tet_volume_ex example with different raja policies
+        # to check for completion
+
+        set (_policies "seq")
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+
+        foreach(_policy ${_policies})
+
+            set(_testname "primal_hex_tet_volume_ex_${_policy}")
+            axom_add_test(
+              NAME ${_testname}
+              COMMAND hex_tet_volume_ex
+                      --policy ${_policy}
+            )
+
+            set_tests_properties(${_testname} PROPERTIES
+                PASS_REGULAR_EXPRESSION  "Difference between sums")
+        endforeach()
+    endif()
 endif()

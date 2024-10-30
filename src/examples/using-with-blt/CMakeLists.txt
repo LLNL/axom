@@ -27,7 +27,7 @@ project(using_with_blt)
 # Define some config options
 option(EXAMPLE_VERBOSE_OUTPUT "Verbose output about imported targets" OFF)
 
-
+# _zerotoaxom_docs_start
 #------------------------------------------------------------------------------
 # Set up BLT with validity checks
 #------------------------------------------------------------------------------
@@ -60,7 +60,7 @@ find_dependency(axom REQUIRED
 blt_add_executable(NAME       example 
                    SOURCES    example.cpp
                    DEPENDS_ON axom axom::fmt)
-
+# _zerotoaxom_docs_end
 
 #------------------------------------------------------------------------------
 # Optionally, print out information about imported targets

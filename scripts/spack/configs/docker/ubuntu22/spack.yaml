@@ -150,9 +150,9 @@ spack:
     caliper:
       require: "@2.10.0~kokkos"
     camp:
-      require: "@2024.02.0"
+      require: "@2024.07.0"
     conduit:
-      require: "@0.9.1~shared~test~examples~utilities"
+      require: "@0.9.2~shared~test~examples~utilities"
     hdf5:
       variants: ~shared~mpi
     hypre:
@@ -161,11 +161,11 @@ spack:
     mfem:
       require: "@4.6.0+shared~static"
     raja:
-      require: "@2024.02.0~shared~examples~exercises"
+      require: "@2024.07.0~shared~examples~exercises"
     scr:
       require: "@3.0.1~shared~tests~examples"
     umpire:
-      require: "@2024.02.0~shared~examples~werror"
+      require: "@2024.07.0+shared~examples~werror"
 
     # Globally lock in version of devtools
     cmake:

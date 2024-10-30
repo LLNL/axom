@@ -258,7 +258,6 @@ struct SequentialLookupPolicy : ProbePolicy
       {
         // Stop probing if the "overflow" bit is not set.
         keep_going = false;
-        curr_group = NO_MATCH;
       }
 
       if(!keep_going)

@@ -221,7 +221,7 @@ public:
    * memory spaces
    */
   template <typename OtherArrayType>
-  ArrayBase(
+  AXOM_HOST_DEVICE ArrayBase(
     const ArrayBase<typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
     , m_mapping(other.mapping())
@@ -230,7 +230,7 @@ public:
 
   /// \overload
   template <typename OtherArrayType>
-  ArrayBase(
+  AXOM_HOST_DEVICE ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, DIM, OtherArrayType>& other)
     : m_shape(other.shape())
     , m_mapping(other.mapping())
@@ -618,12 +618,13 @@ public:
 
   // Empty implementation because no member data
   template <typename OtherArrayType>
-  ArrayBase(const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
+  AXOM_HOST_DEVICE ArrayBase(
+    const ArrayBase<typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
 
   // Empty implementation because no member data
   template <typename OtherArrayType>
-  ArrayBase(
+  AXOM_HOST_DEVICE ArrayBase(
     const ArrayBase<const typename std::remove_const<T>::type, 1, OtherArrayType>&)
   { }
 
@@ -1812,7 +1813,10 @@ public:
   /*!
    * \brief Get the ID for the umpire allocator
    */
-  int getAllocatorID() const { return m_array->getAllocatorID(); }
+  AXOM_HOST_DEVICE int getAllocatorID() const
+  {
+    return m_array->getAllocatorID();
+  }
 
 protected:
   friend BaseClass;

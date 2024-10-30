@@ -155,7 +155,7 @@ TEST(mint_su2_io, write_read_mixed_cell_topology_mesh)
 
   // cleanup
   delete test_mesh;
-  axom::utilities::filesystem::removeFile(su2File);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(su2File), 0);
 }
 
 //------------------------------------------------------------------------------
@@ -212,7 +212,7 @@ TEST(mint_su2_io, write_read_single_cell_topology_mesh)
 
   // cleanup
   delete test_mesh;
-  axom::utilities::filesystem::removeFile(su2File);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(su2File), 0);
 }
 
 //------------------------------------------------------------------------------

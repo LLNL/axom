@@ -916,13 +916,18 @@ struct ContourTestBase
     AXOM_ANNOTATE_BEGIN("convert to mint mesh");
     std::string sidreGroupName = "contour_mesh";
     sidre::DataStore objectDS;
-    // While awaiting fix for PR #1271, don't use Sidre storage in contourMesh.
-    auto* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
-    AXOM_UNUSED_VAR(meshGroup);  // variable is only referenced in debug configs
 
+#ifdef AXOM_MINT_USE_SIDRE
+    auto* meshGroup = objectDS.getRoot()->createGroup(sidreGroupName);
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
+      DIM,
+      DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE,
+      meshGroup);
+#else
     axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> contourMesh(
       DIM,
       DIM == 2 ? mint::CellType::SEGMENT : mint::CellType::TRIANGLE);
+#endif
     axom::utilities::Timer extractTimer(false);
     extractTimer.start();
     mc.populateContourMesh(contourMesh, m_parentCellIdField, m_domainIdField);
@@ -954,6 +959,7 @@ struct ContourTestBase
         checkCellsContainingContour(computationalMesh, contourMesh);
     }
 
+#ifdef AXOM_MINT_USE_SIDRE
     if(contourMesh.hasSidreGroup())
     {
       assert(contourMesh.getSidreGroup() == meshGroup);
@@ -962,6 +968,7 @@ struct ContourTestBase
       saveMesh(*contourMesh.getSidreGroup(), outputName);
       SLIC_INFO(axom::fmt::format("Wrote contour mesh to {}", outputName));
     }
+#endif
     AXOM_ANNOTATE_END("error checking");
 
     objectDS.getRoot()->destroyGroupAndData(sidreGroupName);

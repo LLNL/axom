@@ -318,7 +318,8 @@ public:
   using pointer = value_type*;
   using iterator_category = std::forward_iterator_tag;
 
-  BivariateSetIterator(const BivariateSetType* bset, IndexType flatPos = 0)
+  AXOM_HOST_DEVICE BivariateSetIterator(const BivariateSetType* bset,
+                                        IndexType flatPos = 0)
     : BaseType(flatPos)
     , m_bset(bset)
   { }

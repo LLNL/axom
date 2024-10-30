@@ -17,6 +17,7 @@
 
 // C/C++ includes
 #include <iostream>  // for std::ostream
+#include <fstream>   // for ofstream
 
 // MPI
 #include <mpi.h>  // For MPI
@@ -46,13 +47,128 @@ namespace slic
 class LumberjackStream : public LogStream
 {
 public:
+  /*!
+   * \brief Constructs a LumberjackStream instance with the given stream,
+   *  MPI communicator, and rank limit.
+   * \param [in] stream pointer to a user-supplied ostream instance.
+   * \param [in] comm MPI communicator
+   * \param [in] ranksLimit limit on how many ranks are individually tracked per
+   *             message
+   * \pre stream != NULL
+   */
   LumberjackStream(std::ostream* stream, MPI_Comm comm, int ranksLimit);
+
+  /*!
+   * \brief Constructs a LumberjackStream instance with the given stream,
+   *  MPI communicator, rank limit, and message formatting.
+   * \param [in] stream pointer to a user-supplied ostream instance.
+   * \param [in] comm MPI communicator
+   * \param [in] ranksLimit limit on how many ranks are individually tracked per
+   *             message
+   * \param [in] format the format string.
+   * \pre stream != NULL
+   * \see LogStream::setFormatString for the format string.
+   */
   LumberjackStream(std::ostream* stream,
                    MPI_Comm comm,
                    int ranksLimit,
                    const std::string& format);
+
+  /*!
+   * \brief Constructs a LumberjackStream instance with the given stream
+   *        and Lumberjack communicator.
+   * \param [in] stream pointer to a user-supplied ostream instance.
+   * \param [in] lj Lumberjack communicator
+   * \pre stream != NULL
+   */
   LumberjackStream(std::ostream* stream, axom::lumberjack::Lumberjack* lj);
+
+  /*!
+   * \brief Constructs a LumberjackStream instance with the given stream
+   *        Lumberjack communicator, and message formatting.
+   * \param [in] stream pointer to a user-supplied ostream instance.
+   * \param [in] lj Lumberjack communicator
+   * \param [in] format the format string.
+   * \pre stream != NULL
+   */
   LumberjackStream(std::ostream* stream,
+                   axom::lumberjack::Lumberjack* lj,
+                   const std::string& format);
+
+  /*!
+   * \brief Constructs a LumberjackStream instance specified by the given
+   *  string, MPI communicator, and rank limit.
+   *  The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   * \param [in] comm MPI communicator
+   * \param [in] ranksLimit limit on how many ranks are individually tracked per
+   *             message
+   * \pre stream != NULL
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
+   */
+  LumberjackStream(std::string stream, MPI_Comm comm, int ranksLimit);
+
+  /*!
+   * \brief Constructs a LumberjackStream instance specified by the given
+   *  string, MPI communicator, rank limit, and message formatting.
+   *  The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   * \param [in] comm MPI communicator
+   * \param [in] ranksLimit limit on how many ranks are individually tracked per
+   *             message
+   * \param [in] format the format string.
+   * \pre stream != NULL
+   * \see LogStream::setFormatString for the format string.
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
+   */
+  LumberjackStream(std::string stream,
+                   MPI_Comm comm,
+                   int ranksLimit,
+                   const std::string& format);
+
+  /*!
+   * \brief Constructs a LumberjackStream instance specified by the given
+   *  string and Lumberjack communicator.
+   *  The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   * \param [in] lj Lumberjack communicator
+   * \pre stream != NULL
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
+   */
+  LumberjackStream(std::string stream, axom::lumberjack::Lumberjack* lj);
+
+  /*!
+   * \brief Constructs a LumberjackStream instance specified by the given
+   *  string, Lumberjack communicator, and message formatting.
+   *  The string input determines the stream as follows:
+   *   - "cout" makes std::cout the output stream
+   *   - "cerr" makes std::cerr the output stream
+   *   - Any other input will construct a std::ofstream associated with input
+   * \param [in] stream the string to control type of stream created
+   * \param [in] lj Lumberjack communicator
+   * \param [in] format the format string.
+   * \pre stream != NULL
+   * \see LogStream::setFormatString for the format string.
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       LumberjackStream never flushes a message.
+   */
+  LumberjackStream(std::string stream,
                    axom::lumberjack::Lumberjack* lj,
                    const std::string& format);
 
@@ -136,7 +252,11 @@ private:
   axom::lumberjack::Lumberjack* m_lj;
   axom::lumberjack::Communicator* m_ljComm;
   bool m_isLJOwnedBySLIC;
+  bool m_isOstreamOwnedBySLIC;
   std::ostream* m_stream;
+  std::string m_file_name;
+  bool m_opened;
+
   /// @}
 
   /*!

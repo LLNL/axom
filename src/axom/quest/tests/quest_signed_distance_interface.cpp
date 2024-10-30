@@ -233,7 +233,7 @@ void check_analytic_plane(bool use_shared = false)
   EXPECT_FALSE(quest::signed_distance_initialized());
 
 #ifdef REMOVE_FILES
-  axom::utilities::filesystem::removeFile(file);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(file), 0);
 #endif
 }
 
@@ -373,7 +373,7 @@ TEST(quest_signed_distance_interface, initialize)
 
   // remove temp STL file
 #ifdef REMOVE_FILES
-  axom::utilities::filesystem::removeFile(fileName);
+  EXPECT_EQ(axom::utilities::filesystem::removeFile(fileName), 0);
 #endif
 }
 
