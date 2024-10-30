@@ -49,43 +49,19 @@
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
  *
- *          - // Return true if item with given name in collection; else false.
- *
- *               bool hasItem(const std::string& name) const;
- *
  *          - // Return true if item with given index in collection; else false.
  *
  *               bool hasItem(IndexType idx) const;
- *
- *          - // Return pointer to item with given name (nullptr if none).
- *
- *               T* getItem(const std::string& name);
- *               T const* getItem(const std::string& name) const ;
  *
  *          - // Return pointer to item with given index (nullptr if none).
  *
  *               T* getItem(IndexType idx);
  *               T const* getItem(IndexType idx) const;
  *
- *          - // Return name of object with given index
- *            // (axom::utilities::string::InvalidName if none).
- *
- *               std::string getItemName(IndexType idx) const;
- *
- *          - // Return index of object with given name
- *            // (axom::InvalidIndex if none).
- *
- *               IndexType getItemIndex(const std::string& name) const;
- *
  *          - // Insert item with given name; return index if insertion
  *            // succeeded, and InvalidIndex otherwise.
  *
  *               IndexType insertItem(T* item, const std::string& name);
- *
- *          - // Remove item with given name if it exists and return a
- *            // pointer to it. If it doesn't exist, return nullptr.
- *
- *               T* removeItem(const std::string& name);
  *
  *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
@@ -95,10 +71,6 @@
  *          - // Remove all items (items not destroyed).
  *
  *               void removeAllItems();
- *
- *          - // Clear all items and destroy them.
- *
- *               void deleteAllItems();
  *
  *          \endverbatim
  *

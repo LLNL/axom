@@ -70,7 +70,7 @@
  *          - // Return name of object with given index
  *            // (axom::utilities::string::InvalidName if none).
  *
- *               std::string getItemName(IndexType idx) const;
+ *               const std::string& getItemName(IndexType idx) const;
  *
  *          - // Return index of object with given name
  *            // (axom::InvalidIndex if none).
