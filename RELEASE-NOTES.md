@@ -22,6 +22,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Added
 
 ###  Changed
+- ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
+  to core.  The namespace prefix for these classes is now axom:: insteand of axom::sidre.  The internal usage of
+  these types within Sidre Datastore and Group is unchanged.
 
 ###  Deprecated
 
