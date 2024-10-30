@@ -227,7 +227,7 @@ NamedTempFile::NamedTempFile()
 NamedTempFile::~NamedTempFile() { std::remove(fileName.data()); }
 
 
-TEST(Document, create_fromJson_roundtrip)
+TEST(Document, create_fromJson_roundtrip_json)
 {
   std::string orig_json =
     "{\"records\": [{\"type\": \"test_rec\",\"id\": "
@@ -239,6 +239,15 @@ TEST(Document, create_fromJson_roundtrip)
   EXPECT_EQ("test_rec", myDocument.getRecords()[0]->getType());
   std::string returned_json1 = myDocument.toJson(0, 0, "", "");
   EXPECT_EQ(orig_json, returned_json1);
+}
+
+TEST(Document, create_fromJson_roundtrip_hdf5)
+{
+  std::string orig_json =
+    "{\"records\": [{\"type\": \"test_rec\",\"id\": "
+    "\"test\"}],\"relationships\": []}"; 
+  axom::sina::Document myDocument =
+    Document(orig_json, createRecordLoaderWithAllKnownTypes());
   saveDocument(myDocument, "round_json.hdf5", Protocol::HDF5);
   Document loadedDocument = loadDocument("round_json.hdf5", Protocol::HDF5);
   EXPECT_EQ(0, loadedDocument.getRelationships().size());
@@ -248,7 +257,7 @@ TEST(Document, create_fromJson_roundtrip)
   EXPECT_EQ(orig_json, returned_json2);
 }
 
-TEST(Document, create_fromJson_full)
+TEST(Document, create_fromJson_full_json)
 {
   std::string long_json =
     "{\"records\": [{\"type\": \"foo\",\"id\": "
@@ -273,6 +282,30 @@ TEST(Document, create_fromJson_full)
   EXPECT_EQ(2, myDocument.getRelationships().size());
   auto &records1 = myDocument.getRecords();
   EXPECT_EQ(4, records1.size());
+}
+
+TEST(Document, create_fromJson_full_hdf5)
+{
+  std::string long_json =
+    "{\"records\": [{\"type\": \"foo\",\"id\": "
+    "\"test_1\",\"user_defined\":{\"name\":\"bob\"},\"files\":{\"foo/"
+    "bar.png\":{\"mimetype\":\"image\"}},\"data\":{\"scalar\": {\"value\": "
+    "500,\"units\": \"miles\"}}},{\"type\":\"bar\",\"id\": "
+    "\"test_2\",\"data\": {\"scalar_list\": {\"value\": [1, 2, 3]}, "
+    "\"string_list\": {\"value\": [\"a\",\"wonderful\",\"world\"], "
+    "\"tags\":[\"observation\"]}}},{\"type\": "
+    "\"run\",\"application\":\"sina_test\",\"id\": "
+    "\"test_3\",\"data\":{\"scalar\": {\"value\": 12.3, \"units\": \"g/s\", "
+    "\"tags\": [\"hi\"]}, \"scalar_list\": {\"value\": [1,2,3.0,4]}}}, "
+    "{\"type\": \"bar\",\"id\": \"test_4\",\"data\":{\"string\": {\"value\": "
+    "\"yarr\"}, \"string_list\": {\"value\": [\"y\",\"a\",\"r\"]}}, "
+    "\"files\":{\"test/test.png\":{}}, "
+    "\"user_defined\":{\"hello\":\"there\"}}],\"relationships\": "
+    "[{\"predicate\": \"completes\",\"subject\": \"test_2\",\"object\": "
+    "\"test_1\"},{\"subject\": \"test_3\", \"predicate\": \"overrides\", "
+    "\"object\": \"test_4\"}]}";
+  axom::sina::Document myDocument =
+    Document(long_json, createRecordLoaderWithAllKnownTypes());
   saveDocument(myDocument, "long_json.hdf5", Protocol::HDF5);
   Document loadedDocument = loadDocument("long_json.hdf5", Protocol::HDF5);
   EXPECT_EQ(2, loadedDocument.getRelationships().size());
@@ -280,7 +313,7 @@ TEST(Document, create_fromJson_full)
   EXPECT_EQ(4, records2.size());
 }
 
-TEST(Document, create_fromJson_value_check)
+TEST(Document, create_fromJson_value_check_json)
 {
   std::string data_json =
     "{\"records\": [{\"type\": \"run\", \"application\":\"test\", \"id\": "
@@ -298,6 +331,18 @@ TEST(Document, create_fromJson_value_check)
   std::vector<std::string> expected_string_vals = {"z", "o", "o"};
   EXPECT_EQ(data1.at("str/ings").getStringArray(), expected_string_vals);
   EXPECT_EQ(records1[0]->getFiles().count(File {"test/test.png"}), 1);
+}
+
+TEST(Document, create_fromJson_value_check_hdf5)
+{
+  std::string data_json =
+    "{\"records\": [{\"type\": \"run\", \"application\":\"test\", \"id\": "
+    "\"test_1\",\"data\":{\"int\": {\"value\": 500,\"units\": \"miles\"}, "
+    "\"str/ings\": {\"value\":[\"z\", \"o\", \"o\"]}}, "
+    "\"files\":{\"test/test.png\":{}}}]}";
+  axom::sina::Document myDocument =
+    Document(data_json, createRecordLoaderWithAllKnownTypes());
+  std::vector<std::string> expected_string_vals = {"z", "o", "o"};
   saveDocument(myDocument, "data_json.hdf5", Protocol::HDF5);
   Document loadedDocument = loadDocument("data_json.hdf5", Protocol::HDF5);
   EXPECT_EQ(0, loadedDocument.getRelationships().size());
@@ -420,8 +465,6 @@ TEST(Document, load_defaultRecordLoaders)
     dynamic_cast<axom::sina::Run const *>(loadedDocument.getRecords()[0].get());
   EXPECT_NE(nullptr, loadedRun);
 }
-
-// NOTE: Append Records cases
 
 }  // namespace
 }  // namespace testing

@@ -49,7 +49,7 @@ void removeSlashes(const conduit::Node& originalNode, conduit::Node& modifiedNod
         //modifiedKey.erase(std::remove(modifiedKey.begin(), modifiedKey.end(), '/'), modifiedKey.end());
 
         std::string toReplace = "/";
-        std::string replacement = "__SLASH__";
+        std::string replacement = "__SINA_SLASHREPLACE__";
 
         size_t pos = 0;
         // Find and replace all occurrences of "/"
@@ -90,10 +90,6 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             {
                 newChild.set(it.node()); // Lists need .set
             }
-            else
-            {
-                std::cout << "Invalid list item detected, skipping: " << it.node().to_string() << std::endl;
-            }
             
             // Recursive Call
             if (it.node().number_of_children() > 0)
@@ -109,7 +105,7 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             it.next();
             std::string key = it.name();
             std::string restoredKey = key;
-            std::string toReplace = "__SLASH__";
+            std::string toReplace = "__SINA_SLASHREPLACE__";
             std::string replacement = "/";
 
             size_t pos = 0;
@@ -132,10 +128,6 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             else if (it.node().dtype().is_list())
             {
                 restoreSlashes(it.node(), newChild);  // Handle nested lists
-            }
-            else
-            {
-                std::cout << "Invalid node detected for key: " << restoredKey << std::endl;
             }
 
             // If the node has children, recursively restore them
@@ -222,7 +214,6 @@ void Document::createFromNode(conduit::Node const &asNode,
             add(Relationship{relationship});
         }
     }
-    asNode.print();
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -358,7 +349,6 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
         conduit::Node modifiedNode;
         conduit::relay::io::load(path, "hdf5", node);
         restoreSlashes(node, modifiedNode);
-        modifiedNode.print();
         return Document {modifiedNode, recordLoader};
     }
 
