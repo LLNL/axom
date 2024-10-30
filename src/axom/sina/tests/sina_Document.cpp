@@ -125,24 +125,86 @@ TEST(Document, create_fromJson_roundtrip)
 
 TEST(Document, create_fromJson_full)
 {
-  std::string long_json =
-    "{\"records\": [{\"type\": \"foo\",\"id\": "
-    "\"test_1\",\"user_defined\":{\"name\":\"bob\"},\"files\":{\"foo/"
-    "bar.png\":{\"mimetype\":\"image\"}},\"data\":{\"scalar\": {\"value\": "
-    "500,\"units\": \"miles\"}}},{\"type\":\"bar\",\"id\": "
-    "\"test_2\",\"data\": {\"scalar_list\": {\"value\": [1, 2, 3]}, "
-    "\"string_list\": {\"value\": [\"a\",\"wonderful\",\"world\"], "
-    "\"tags\":[\"observation\"]}}},{\"type\": "
-    "\"run\",\"application\":\"sina_test\",\"id\": "
-    "\"test_3\",\"data\":{\"scalar\": {\"value\": 12.3, \"units\": \"g/s\", "
-    "\"tags\": [\"hi\"]}, \"scalar_list\": {\"value\": [1,2,3.0,4]}}}, "
-    "{\"type\": \"bar\",\"id\": \"test_4\",\"data\":{\"string\": {\"value\": "
-    "\"yarr\"}, \"string_list\": {\"value\": [\"y\",\"a\",\"r\"]}}, "
-    "\"files\":{\"test/test.png\":{}}, "
-    "\"user_defined\":{\"hello\":\"there\"}}],\"relationships\": "
-    "[{\"predicate\": \"completes\",\"subject\": \"test_2\",\"object\": "
-    "\"test_1\"},{\"subject\": \"test_3\", \"predicate\": \"overrides\", "
-    "\"object\": \"test_4\"}]}";
+  std::string long_json = R"({
+    "records": [
+        {
+            "type": "foo",
+            "id": "test_1",
+            "user_defined": {
+                "name": "bob"
+            },
+            "files": {
+                "foo/bar.png": {
+                    "mimetype": "image"
+                }
+            },
+            "data": {
+                "scalar": {
+                    "value": 500,
+                    "units": "miles"
+                }
+            }
+        },
+        {
+            "type": "bar",
+            "id": "test_2",
+            "data": {
+                "scalar_list": {
+                    "value": [1, 2, 3]
+                },
+                "string_list": {
+                    "value": ["a", "wonderful", "world"],
+                    "tags": ["observation"]
+                }
+            }
+        },
+        {
+            "type": "run",
+            "application": "sina_test",
+            "id": "test_3",
+            "data": {
+                "scalar": {
+                    "value": 12.3,
+                    "units": "g/s",
+                    "tags": ["hi"]
+                },
+                "scalar_list": {
+                    "value": [1, 2, 3.0, 4]
+                }
+            }
+        },
+        {
+            "type": "bar",
+            "id": "test_4",
+            "data": {
+                "string": {
+                    "value": "yarr"
+                },
+                "string_list": {
+                    "value": ["y", "a", "r"]
+                }
+            },
+            "files": {
+                "test/test.png": {}
+            },
+            "user_defined": {
+                "hello": "there"
+            }
+        }
+    ],
+    "relationships": [
+        {
+            "predicate": "completes",
+            "subject": "test_2",
+            "object": "test_1"
+        },
+        {
+            "subject": "test_3",
+            "predicate": "overrides",
+            "object": "test_4"
+        }
+    ]
+  })";
   axom::sina::Document myDocument =
     Document(long_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(2, myDocument.getRelationships().size());
