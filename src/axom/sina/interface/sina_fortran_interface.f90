@@ -1,5 +1,8 @@
 module sina_functions
 
+  integer, parameter :: JSON = 0
+  integer, parameter :: HDF5 = 1
+
   interface
     
     subroutine create_document_and_record(id) 
@@ -126,19 +129,19 @@ module sina_functions
 
 
   interface write_sina_document
-    module procedure with_proto
-    module procedure without_proto
+    module procedure save_with_protocol
+    module procedure save_without_protocol
   end interface
 
 contains
-  subroutine with_proto(fname, proto)
+  subroutine save_with_protocol(fname, proto)
     character(*) fname
     integer proto
     call write_sina_document_protocol(fname, proto)
-  end subroutine with_proto
-  subroutine without_proto(fname)
+  end subroutine save_with_protocol
+  subroutine save_without_protocol(fname)
     character(*) fname
     call write_sina_document_noprotocol(fname)
-  end subroutine without_proto
+  end subroutine save_without_protocol
 
 end module 
