@@ -17,14 +17,6 @@ module sina_functions
     
   end interface
   
-  interface
-    
-    subroutine write_sina_document(file_nm) 
-      character(*) file_nm  
-    end subroutine write_sina_document
-    
-  end interface
-
   interface sina_add
   
     subroutine sina_add_long(key, value, units, tags)
@@ -114,5 +106,39 @@ module sina_functions
     end subroutine sina_add_curve_long
     
   end interface
+  
+  interface
+    
+    subroutine write_sina_document_protocol(file_nm, protocol) 
+      character(*) file_nm  
+      integer protocol
+    end subroutine write_sina_document_protocol
+    
+  end interface
+
+  interface
+    
+    subroutine write_sina_document_noprotocol(file_nm) 
+      character(*) file_nm  
+    end subroutine write_sina_document_noprotocol
+    
+  end interface
+
+
+  interface write_sina_document
+    module procedure with_proto
+    module procedure without_proto
+  end interface
+
+contains
+  subroutine with_proto(fname, proto)
+    character(*) fname
+    integer proto
+    call write_sina_document_protocol(fname, proto)
+  end subroutine with_proto
+  subroutine without_proto(fname)
+    character(*) fname
+    call write_sina_document_noprotocol(fname)
+  end subroutine without_proto
 
 end module 

@@ -286,12 +286,10 @@ void saveDocument(Document const &document, std::string const &fileName, Protoco
           fout.exceptions(std::ostream::failbit | std::ostream::badbit);
           fout << asJson;
           fout.close();
-          std::cout << "Document saved successfully as JSON!";
       }
       else if (protocol == Protocol::HDF5)
       {
           document.toHDF5(tmpFileName);
-          std::cout << "Document saved successfully as HDF5!";
       }
       else
       {

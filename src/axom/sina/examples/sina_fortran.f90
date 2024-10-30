@@ -28,6 +28,7 @@ program example
   character(:), allocatable :: tag
   character(:), allocatable :: units 
   character(20) :: json_fn
+  character(20) :: hdf5_fn
   character(15) :: name
   character(25) :: curve
   
@@ -56,6 +57,7 @@ program example
   full_path = make_cstring(wrk_dir//''//fle_nme)
   ofull_path = make_cstring(wrk_dir//''//ofle_nme)
   json_fn = make_cstring('sina_dump.json')
+  hdf5_fn = make_cstring('sina_dump.hdf5')
   
   
   mime_type = make_cstring('')
@@ -149,6 +151,7 @@ program example
   ! write out the Sina Document
   print *,'Writing out the Sina Document'
   call write_sina_document(json_fn)
+  call write_sina_document(hdf5_fn, 1)
 
   
 contains
