@@ -164,6 +164,12 @@ continue from where you left off.  To load from a JSON file simply run loadDocum
 with the optional argument Protocol set to JSON or set as nothing, and to load from
 an HDF5 set the Protocol to HDF5.
 
+Note that due to HDF5's handling of '/' as indicators for nested structures,
+our saveDocument() function will string-replace '/' in parent nodes to 
+'__SINA_SLASHREPLACE__' in the resulting HDF5 file, while our loadDocument()
+function will string-replace them back to normal.
+
+
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
    :start-after: //! [begin io read]
