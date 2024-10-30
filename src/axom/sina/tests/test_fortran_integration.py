@@ -48,7 +48,7 @@ class TestFortranExampleIntegration(unittest.TestCase):
         os.remove(self.dump_file)
     
     def test_file_validity(self):
-        """ Make sure the files we"re importing follow the Sina schema. """
+        """ Make sure the files we're importing follow the Sina schema. """
         try:
             import jsonschema
             schema_file = os.path.join(f"{self.binary_dir}/tests/sina_schema.json")
