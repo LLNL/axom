@@ -6,12 +6,16 @@
 #include "axom/sina.hpp"
 #include "axom/slic.hpp"
 
-using ValueTypeUnderlying = typename std::underlying_type<axom::sina::ValueType>::type;
+using ValueTypeUnderlying =
+  typename std::underlying_type<axom::sina::ValueType>::type;
 
 void getType(axom::sina::Datum datum, std::string datumName, std::string errMsg)
 {
   auto datumType = static_cast<ValueTypeUnderlying>(datum.getType());
-  SLIC_ASSERT_MSG(static_cast<bool>(std::is_same<decltype(datumType), ValueTypeUnderlying>::value), errMsg);
+  SLIC_ASSERT_MSG(
+    static_cast<bool>(
+      std::is_same<decltype(datumType), ValueTypeUnderlying>::value),
+    errMsg);
   std::cout << datumName << " type: " << datumType << std::endl;
 }
 
@@ -25,16 +29,25 @@ int main(void)
   std::string value = "foobar";
   axom::sina::Datum myOtherDatum {value};
   std::vector<double> scalars = {1, 2, 20.0};
-  axom::sina::Datum myArrayDatum {scalars};  
+  axom::sina::Datum myArrayDatum {scalars};
 
   // Prints 1, corresponding to Scalar
-  getType(myDatum, "myDatum", "myDatumType did not match the expected type 'Scalar' (numerically represented as 1).");
+  getType(myDatum,
+          "myDatum",
+          "myDatumType did not match the expected type 'Scalar' (numerically "
+          "represented as 1).");
 
   // Prints 0, corresponding to String
-  getType(myOtherDatum, "myOtherDatum", "myDatumType did not match the expected type 'String' (numerically represented as 0).");
+  getType(myOtherDatum,
+          "myOtherDatum",
+          "myDatumType did not match the expected type 'String' (numerically "
+          "represented as 0).");
 
   // Prints 3, corresponding to ScalarArray
-  getType(myArrayDatum, "myArrayDatum", "myArrayDatum did not match the expected type 'ScalarArray' (numerically represented as 3).");
+  getType(myArrayDatum,
+          "myArrayDatum",
+          "myArrayDatum did not match the expected type 'ScalarArray' "
+          "(numerically represented as 3).");
 
   // Finalize slic
   axom::slic::finalize();

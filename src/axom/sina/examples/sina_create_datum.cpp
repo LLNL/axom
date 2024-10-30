@@ -40,7 +40,8 @@ int main(void)
   "type": "my_type",
   "local_id": "my_record"
 })";
-  SLIC_ASSERT_MSG(actualJsonString.compare(expectedJsonString) == 0, "JSON output does not match expected structure.");
+  SLIC_ASSERT_MSG(actualJsonString.compare(expectedJsonString) == 0,
+                  "JSON output does not match expected structure.");
   std::cout << actualJsonString << std::endl;
 
   // Finalize slic

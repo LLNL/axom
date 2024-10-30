@@ -344,7 +344,10 @@ NamedTempFile::NamedTempFile()
   fileName = tmpFileName.data();
 }
 
-NamedTempFile::~NamedTempFile() { axom::utilities::filesystem::removeFile(fileName.data()); }
+NamedTempFile::~NamedTempFile()
+{
+  axom::utilities::filesystem::removeFile(fileName.data());
+}
 
 TEST(Document, saveDocument)
 {

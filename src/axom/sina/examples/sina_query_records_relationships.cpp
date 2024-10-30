@@ -41,7 +41,8 @@ int main(void)
 
   SLIC_ASSERT_MSG(records.size() == 2, "Unexpected number of records found.");
   std::cout << "Number of Records: " << records.size() << std::endl;
-  SLIC_ASSERT_MSG(relationships.size() == 1, "Unexpected number of relationships found.");
+  SLIC_ASSERT_MSG(relationships.size() == 1,
+                  "Unexpected number of relationships found.");
   std::cout << "Number of Relationships: " << relationships.size() << std::endl;
 
   // Finalize slic

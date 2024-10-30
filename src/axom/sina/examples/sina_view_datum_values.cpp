@@ -34,15 +34,18 @@ int main(void)
 
   // Print the datum values
   double datum1Val = data.at("datum1").getScalar();
-  SLIC_ASSERT_MSG(datum1Val == scalarValue, "Data stored in record at 'datum1' is unexpected.");
+  SLIC_ASSERT_MSG(datum1Val == scalarValue,
+                  "Data stored in record at 'datum1' is unexpected.");
   std::cout << "datum1: " << datum1Val << std::endl;
 
   std::string datum2Val = data.at("datum2").getValue();
-  SLIC_ASSERT_MSG(datum2Val == stringValue, "Data stored in record at 'datum2' is unexpected.");
+  SLIC_ASSERT_MSG(datum2Val == stringValue,
+                  "Data stored in record at 'datum2' is unexpected.");
   std::cout << "datum2: " << datum2Val << std::endl;
 
   std::vector<double> datum3Val = data.at("datum3").getScalarArray();
-  SLIC_ASSERT_MSG(datum3Val == scalarArrayValue, "Data stored in record at 'datum3' is unexpected.");
+  SLIC_ASSERT_MSG(datum3Val == scalarArrayValue,
+                  "Data stored in record at 'datum3' is unexpected.");
   std::cout << "datum3: ";
   for(const auto& value : datum3Val)
   {
