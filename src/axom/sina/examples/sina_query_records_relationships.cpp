@@ -4,9 +4,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/sina.hpp"
+#include "axom/slic.hpp"
 
 int main(void)
 {
+  // Initialize slic
+  axom::slic::initialize();
+
   // Create a new document
   axom::sina::Document document;
 
@@ -35,6 +39,11 @@ int main(void)
   auto &records = document.getRecords();
   auto &relationships = document.getRelationships();
 
+  SLIC_ASSERT_MSG(records.size() == 2, "Unexpected number of records found.");
   std::cout << "Number of Records: " << records.size() << std::endl;
+  SLIC_ASSERT_MSG(relationships.size() == 1, "Unexpected number of relationships found.");
   std::cout << "Number of Relationships: " << relationships.size() << std::endl;
+
+  // Finalize slic
+  axom::slic::finalize();
 }

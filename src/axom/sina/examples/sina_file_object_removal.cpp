@@ -4,9 +4,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/sina.hpp"
+#include "axom/slic.hpp"
 
 int main(void)
 {
+  // Initialize slic
+  axom::slic::initialize();
+
   // Create 2 different files
   axom::sina::File myFile {"/path/to/file.png"};
   myFile.setMimeType("image/png");
@@ -25,5 +29,28 @@ int main(void)
   // Remove a file from the record
   myRecord->remove(myFile);
 
-  std::cout << myRecord->toNode().to_json() << std::endl;
+  // Compare the actual output to the expected JSON output, then print it to console
+  std::string actualJsonString = myRecord->toNode().to_json();
+  std::string expectedJsonString = R"(
+{
+  "type": "my_type",
+  "local_id": "my_record",
+  "files": 
+  {
+    "/path/to/other/file.txt": 
+    {
+      "tags": 
+      [
+        "these",
+        "are",
+        "tags"
+      ]
+    }
+  }
+})";
+  SLIC_ASSERT_MSG(actualJsonString.compare(expectedJsonString) == 0, "JSON output does not match expected structure.");
+  std::cout << actualJsonString << std::endl;
+
+  // Finalize slic
+  axom::slic::finalize();
 }
