@@ -30,7 +30,7 @@ set(sina_example_sources
 set(sina_example_depends sina conduit slic)
 
 if (ENABLE_FORTRAN)
-    blt_list_append( TO sina_example_sources ELEMENTS sina_fortran.f90)
+    blt_list_append( TO sina_example_sources ELEMENTS sina_fortran.f)
 endif()
 
 #------------------------------------------------------------------------------
