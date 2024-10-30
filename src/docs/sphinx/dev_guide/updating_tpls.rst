@@ -245,6 +245,22 @@ instructions on how to update a built-in TPL are:
 
 .. _local-tpls-label:
 
+
+CLI11
+^^^^^^
+
+CLI11 is a 3rd party builtin library that Axom uses to handle command
+line processing. Axom packages the library in a header-only format. The CLI11.hpp
+header file must be downloaded from a released version of CLI11 since the source
+code repository provides sources in separate header files. The patch file contains
+many small changes that can be summarized as follows:
+
+#. Add "namspace axom {" near the top of the file.
+#. Add "} // namspace axom" near the bottom of the file.
+#. Move "#pragma once" from below the copyright to the top of the file.
+#. Replace "CLI::" with "axom::CLI::".
+#. Replace "Success" with "CLI11_Success". This avoids a symbol collision with X11.
+
 Local Third-party Library Installation
 --------------------------------------
 
