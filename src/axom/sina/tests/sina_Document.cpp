@@ -12,6 +12,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/sina/core/Document.hpp"
 #include "axom/sina/core/Run.hpp"
 
@@ -281,7 +282,7 @@ NamedTempFile::NamedTempFile()
   fileName = tmpFileName.data();
 }
 
-NamedTempFile::~NamedTempFile() { std::remove(fileName.data()); }
+NamedTempFile::~NamedTempFile() { axom::utilities::filesystem::removeFile(fileName.data()); }
 
 TEST(Document, saveDocument)
 {
