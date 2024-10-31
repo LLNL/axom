@@ -4,9 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file NURBSCurve.hpp
+ * \file KnotVector.hpp
  *
- * \brief A NURBS curve primitive
+ * \brief A class to represent knot vectors for NURBS
  */
 
 #ifndef AXOM_PRIMAL_KNOTVECTOR_HPP
@@ -26,7 +26,7 @@ namespace primal
 template <typename T>
 class KnotVector;
 
-/*! \brief Overloaded output operator for Bezier Curves*/
+/*! \brief Overloaded output operator for knot vectors */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const KnotVector<T>& kVec);
 
@@ -82,7 +82,7 @@ public:
   { }
 
   /*!
-   * \brief Make the knot vector uniform
+   * \brief Give the knot vector uniformly spaced internal knots
    */
   void makeUniform(axom::IndexType npts, int deg)
   {
@@ -317,6 +317,10 @@ public:
   /*!
    * \brief Returns the index of the knot span containing parameter t
    * 
+   * For knot vector {u_0, ..., u_n}, returns i such that u_i <= t < u_i+1
+   *  if t <= u_0, returns i such that u_i <= t < u_i+1 (i.e. i = degree)
+   *  if t >= u_n, returns i such that u_i < t <= u_i+1 (i.e. i = n - degree - 1)
+   * 
    * Implementation adapted from Algorithm A2.1 on page 68 of "The NURBS Book"
    */
   axom::IndexType findSpan(double t) const
@@ -489,11 +493,10 @@ std::ostream& operator<<(std::ostream& os, const KnotVector<T>& kvector)
   kvector.print(os);
   return os;
 }
-
 }  // namespace primal
 }  // namespace axom
 
-/// Overload to format a primal::NURBSCurve using fmt
+/// Overload to format a primal::KnotVector using fmt
 template <typename T>
 struct axom::fmt::formatter<axom::primal::KnotVector<T>> : ostream_formatter
 { };

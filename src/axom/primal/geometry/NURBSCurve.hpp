@@ -37,20 +37,20 @@ namespace primal
 template <typename T, int NDIMS>
 class NURBSCurve;
 
-/*! \brief Overloaded output operator for Bezier Curves*/
+/*! \brief Overloaded output operator for NURBS Curves*/
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const NURBSCurve<T, NDIMS>& bCurve);
 
 /*!
  * \class NURBSCurve
  *
- * \brief Represents a NURBS curve defined by an array of control points and knots
+ * \brief Represents a NURBS curve defined by an array of control points, weights and knots
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
  * A NURBS curve has degree `p`, `n+1` control points, optionally `n+1` weights, 
  * and a knot vector of length `k+1`. A valid curve has k+1 = n+p+2
- * The curve must be open (clamped on each end) and continuous
+ * The curve must be open (clamped on each end) and continuous (unless p = 0)
  * 
  * Nonrational Bezier curves are identified by an empty weights array.
  */
@@ -696,6 +696,9 @@ public:
    * \param [out] n2 Second output NURBS curve
    * \param [in] normalize Whether to normalize the output curves
    * 
+   * If t is at the knot u_0 or u_max, will return the original curve and
+   *  a degenerate curve with the first or last control point
+   * 
    * \pre Parameter \a t must be in the span of the knots
    */
   void split(T t,
@@ -708,7 +711,7 @@ public:
     const bool isCurveRational = this->isRational();
     const int p = getDegree();
 
-    // Handle the special case of splgitting at the endpoints
+    // Handle the special case of splitting at the endpoints
     if(t == 0.0)
     {
       n1.setParameters(p + 1, p);
@@ -795,7 +798,9 @@ public:
     const bool isCurveRational = this->isRational();
 
     int p = getDegree();
-    if(p == 0)  // Handle this special case
+
+    // Handle this special case, which returns a set of disconnected, order 0 Bezier curves
+    if(p == 0)
     {
       for(int i = 0; i < getNumControlPoints(); ++i)
       {
@@ -863,7 +868,7 @@ public:
    * \param [in] npts The target number of control points
    * \param [in] degree The target degree
    * 
-   * \note Will clear any data already in these arrays.
+   * \note Will make control points invalid, and make knots uniform.
    */
   void setParameters(int npts, int degree)
   {
@@ -1067,14 +1072,14 @@ public:
     m_knotvec.reverse();
   }
 
-  /// \brief Returns an axis-aligned bounding box containing the Bezier curve
+  /// \brief Returns an axis-aligned bounding box containing the NURBS curve
   BoundingBoxType boundingBox() const
   {
     return BoundingBoxType(m_controlPoints.data(),
                            static_cast<int>(m_controlPoints.size()));
   }
 
-  /// \brief Returns an oriented bounding box containing the Bezier curve
+  /// \brief Returns an oriented bounding box containing the NURBS curve
   OrientedBoundingBoxType orientedBoundingBox() const
   {
     return OrientedBoundingBoxType(m_controlPoints.data(),
