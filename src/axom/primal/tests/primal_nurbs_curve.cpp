@@ -618,7 +618,7 @@ TEST(primal_nurbscurve, curve_splitting_endpoints)
   for(int deg = 1; deg <= 3; ++deg)
   {
     NURBSCurveType curve(data, weights, 4, deg);
-    
+
     for(int i = 0; i < curve.getNumKnots(); ++i)
     {
       curve.setKnot(i, 3 * curve.getKnot(i) - 1);
