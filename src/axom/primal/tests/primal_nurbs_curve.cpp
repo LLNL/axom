@@ -618,18 +618,23 @@ TEST(primal_nurbscurve, curve_splitting_endpoints)
   for(int deg = 1; deg <= 3; ++deg)
   {
     NURBSCurveType curve(data, weights, 4, deg);
+    
+    for(int i = 0; i < curve.getNumKnots(); ++i)
+    {
+      curve.setKnot(i, 3 * curve.getKnot(i) - 1);
+    }
 
     // Do some knot insertion to make it interesting
-    curve.insertKnot(0.3, 2);
-    curve.insertKnot(0.6, 1);
+    curve.insertKnot(-0.1, 2);
     curve.insertKnot(0.8, 1);
+    curve.insertKnot(1.4, 1);
 
     const int npts = curve.getNumControlPoints();
 
     NURBSCurveType curve1, curve2;
-    curve.split(0.0, curve1, curve2);
+    curve.split(-1.0, curve1, curve2);
 
-    for(double t = 0.0; t <= 1.0; t += 0.05)
+    for(double t = -1.0; t <= 2.0; t += 0.15)
     {
       PointType p = curve.evaluate(t);
 
@@ -643,9 +648,9 @@ TEST(primal_nurbscurve, curve_splitting_endpoints)
       }
     }
 
-    curve.split(1.0, curve1, curve2);
+    curve.split(2.0, curve1, curve2);
 
-    for(double t = 0.0; t <= 1.0; t += 0.05)
+    for(double t = -1.0; t <= 2.0; t += 0.15)
     {
       PointType p = curve.evaluate(t);
 

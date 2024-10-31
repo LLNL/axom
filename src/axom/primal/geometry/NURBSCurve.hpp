@@ -712,7 +712,7 @@ public:
     const int p = getDegree();
 
     // Handle the special case of splitting at the endpoints
-    if(t == 0.0)
+    if(t == m_knotvec[0])
     {
       n1.setParameters(p + 1, p);
       for(int i = 0; i <= p; ++i)
@@ -727,7 +727,7 @@ public:
       n2 = *this;
       return;
     }
-    else if(t == 1.0)
+    else if(t == m_knotvec[m_knotvec.getNumKnots() - 1])
     {
       n1 = *this;
       n2.clear();
