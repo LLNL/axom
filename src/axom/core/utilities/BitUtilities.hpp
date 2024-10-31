@@ -287,31 +287,6 @@ constexpr void setBitOn(FlagType &flags, BitType bit)
   flags |= (1 << bit);
 }
 
-/*!
- * \brief Count the number if bits that are on in the value.
- * \accelerated
- *
- * \tparam IntType The integer type being tested.
- *
- * \param[in] value The value whose bits are counted.
- *
- * \return
- */
-template <typename IntType>
-AXOM_HOST_DEVICE
-int countBits(IntType value)
-{
-  constexpr size_t n = sizeof(IntType) << 3;
-  int count = 0;
-  IntType mask = 1;
-  for(size_t i = 0; i < n; i++)
-  {
-    count += ((value & mask) > 0) ? 1 : 0;
-    mask <<= 1;
-  }
-  return count;
-}
-
 }  // namespace utilities
 }  // namespace axom
 

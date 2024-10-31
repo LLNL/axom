@@ -2056,7 +2056,7 @@ private:
     SLIC_ASSERT_MSG(shapesUsed != 0, "No shapes were produced!");
     const auto shapeMap = shapeMap_FromFlags(shapesUsed);
     SLIC_ASSERT_MSG(shapeMap.empty() == false, "The shape map is empty!");
-    if(axom::utilities::countBits(shapesUsed) > 1)
+    if(axom::utilities::popcount(static_cast<std::uint64_t>(shapesUsed)) > 1)
     {
       n_newTopo["elements/shape"] = "mixed";
       conduit::Node &n_shape_map = n_newTopo["elements/shape_map"];

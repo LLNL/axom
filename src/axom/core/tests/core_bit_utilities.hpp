@@ -204,9 +204,6 @@ TEST(core_bit_utilities, setbit_bitisset)
     }
   }
 
-  EXPECT_EQ(axom::utilities::countBits(pattern), 16);
-  EXPECT_EQ(axom::utilities::countBits(value), 5);
-
   for(size_t i = 0; i < axom::utilities::BitTraits<std::uint8_t>::BITS_PER_WORD;
       i++)
   {
