@@ -222,56 +222,100 @@ TEST(primal_nurbscurve, evaluate)
 {
   SLIC_INFO("Testing NURBS evaluation");
 
-  const int DIM = 3;
+  const int MAX_DIM = 3;
   using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+  using Point1D = primal::Point<CoordType, 1>;
+  using Point2D = primal::Point<CoordType, 2>;
+  using Point3D = primal::Point<CoordType, 3>;
+
+  using NURBSCurve1D = primal::NURBSCurve<CoordType, 1>;
+  using NURBSCurve2D = primal::NURBSCurve<CoordType, 2>;
+  using NURBSCurve3D = primal::NURBSCurve<CoordType, 3>;
 
   const int max_degree = 3;
-  PointType data[max_degree + 1] = {PointType {0.6, 1.2, 1.0},
-                                    PointType {1.3, 1.6, 1.8},
-                                    PointType {2.9, 2.4, 2.3},
-                                    PointType {3.2, 3.5, 3.0}};
+  Point1D data_1d[max_degree + 1] = {Point1D {0.6},
+                                     Point1D {1.3},
+                                     Point1D {2.9},
+                                     Point1D {3.2}};
+
+  Point2D data_2d[max_degree + 1] = {Point2D {0.6, 1.2},
+                                     Point2D {1.3, 1.6},
+                                     Point2D {2.9, 2.4},
+                                     Point2D {3.2, 3.5}};
+
+  Point3D data_3d[max_degree + 1] = {Point3D {0.6, 1.2, 1.0},
+                                     Point3D {1.3, 1.6, 1.8},
+                                     Point3D {2.9, 2.4, 2.3},
+                                     Point3D {3.2, 3.5, 3.0}};
 
   double weights[4] = {1.0, 2.0, 3.0, 4.0};
 
   // clang-format off
-  PointType exp_start_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
-           /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
-           /* 2 pt */  {PointType {0.6, 1.2, 1.0}, PointType { 0.6,  1.2,  1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
-           /* 3 pt */  {PointType {0.6, 1.2, 1.0}, PointType { 0.6,  1.2,  1.0}, PointType { 0.6,  1.2,  1.0}, PointType {-999, -999, -999}},
-           /* 4 pt */  {PointType {0.6, 1.2, 1.0}, PointType { 0.6,  1.2,  1.0}, PointType { 0.6,  1.2,  1.0}, PointType { 0.6,  1.2,  1.0}}};
+  Point3D exp_start_vals[4][4] =  // degree 0                  degree 1                   degree 2                   degree 3
+           /* 1 pt */ {{Point3D {0.6, 1.2, 1.0}, Point3D {-999, -999, -999}, Point3D {-999, -999, -999}, Point3D {-999, -999, -999}},
+           /* 2 pt */  {Point3D {0.6, 1.2, 1.0}, Point3D { 0.6,  1.2,  1.0}, Point3D {-999, -999, -999}, Point3D {-999, -999, -999}},
+           /* 3 pt */  {Point3D {0.6, 1.2, 1.0}, Point3D { 0.6,  1.2,  1.0}, Point3D { 0.6,  1.2,  1.0}, Point3D {-999, -999, -999}},
+           /* 4 pt */  {Point3D {0.6, 1.2, 1.0}, Point3D { 0.6,  1.2,  1.0}, Point3D { 0.6,  1.2,  1.0}, Point3D { 0.6,  1.2,  1.0}}};
 
-  PointType exp_mid_vals[4][4] =  // degree 0                           degree 1                                    degree 2                         degree 3
-           /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {   -999,     -999,     -999}, PointType {  -999,  -999,   -999}, PointType { -999, -999,  -999}},
-           /* 2 pt */  {PointType {1.3, 1.6, 1.8}, PointType {16./15.,  22./15.,  23./15.}, PointType {  -999,  -999,   -999}, PointType { -999, -999,  -999}},
-           /* 3 pt */  {PointType {1.3, 1.6, 1.8}, PointType {    1.3,      1.6,      1.8}, PointType {1.8125,  1.85, 1.8875}, PointType { -999, -999,  -999}},
-           /* 4 pt */  {PointType {2.9, 2.4, 2.3}, PointType {   2.26,     2.08,      2.1}, PointType {  2.26,  2.08,    2.1}, PointType {2.365, 2.32, 2.225}}};
+  Point3D exp_mid_vals[4][4] =  // degree 0                         degree 1                             degree 2                       degree 3
+           /* 1 pt */ {{Point3D {0.6, 1.2, 1.0}, Point3D {   -999,     -999,     -999}, Point3D {  -999,  -999,   -999}, Point3D { -999, -999,  -999}},
+           /* 2 pt */  {Point3D {1.3, 1.6, 1.8}, Point3D {16./15.,  22./15.,  23./15.}, Point3D {  -999,  -999,   -999}, Point3D { -999, -999,  -999}},
+           /* 3 pt */  {Point3D {1.3, 1.6, 1.8}, Point3D {    1.3,      1.6,      1.8}, Point3D {1.8125,  1.85, 1.8875}, Point3D { -999, -999,  -999}},
+           /* 4 pt */  {Point3D {2.9, 2.4, 2.3}, Point3D {   2.26,     2.08,      2.1}, Point3D {  2.26,  2.08,    2.1}, Point3D {2.365, 2.32, 2.225}}};
 
-  PointType exp_end_vals[4][4] =     // degree 0                   degree 1                     degree 2                      degree 3
-           /* 1 pt */ {{PointType {0.6, 1.2, 1.0}, PointType {-999, -999, -999}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},  
-           /* 2 pt */  {PointType {1.3, 1.6, 1.8}, PointType { 1.3,  1.6,  1.8}, PointType {-999, -999, -999}, PointType {-999, -999, -999}},
-           /* 3 pt */  {PointType {2.9, 2.4, 2.3}, PointType { 2.9,  2.4,  2.3}, PointType { 2.9,  2.4,  2.3}, PointType {-999, -999, -999}},
-           /* 4 pt */  {PointType {3.2, 3.5, 3.0}, PointType { 3.2,  3.5,  3.0}, PointType { 3.2,  3.5,  3.0}, PointType { 3.2,  3.5,  3.0}}};
+  Point3D exp_end_vals[4][4] =     // degree 0                degree 1                     degree 2                   degree 3
+           /* 1 pt */ {{Point3D {0.6, 1.2, 1.0}, Point3D {-999, -999, -999}, Point3D {-999, -999, -999}, Point3D {-999, -999, -999}},  
+           /* 2 pt */  {Point3D {1.3, 1.6, 1.8}, Point3D { 1.3,  1.6,  1.8}, Point3D {-999, -999, -999}, Point3D {-999, -999, -999}},
+           /* 3 pt */  {Point3D {2.9, 2.4, 2.3}, Point3D { 2.9,  2.4,  2.3}, Point3D { 2.9,  2.4,  2.3}, Point3D {-999, -999, -999}},
+           /* 4 pt */  {Point3D {3.2, 3.5, 3.0}, Point3D { 3.2,  3.5,  3.0}, Point3D { 3.2,  3.5,  3.0}, Point3D { 3.2,  3.5,  3.0}}};
   // clang-format on
 
-  // Test evaluation at various degrees and various number of control
-  //  points in `data`.
+  // Test evaluation at various spatial dimensions, various degrees,
+  //  and various number of control points in `data`.
   for(int npts = 1; npts <= 4; ++npts)
   {
     for(int deg = 0; deg <= npts - 1; ++deg)
     {
-      NURBSCurveType curve(data, weights, npts, deg);
+      // 1D NURBS Curve
+      NURBSCurve1D curve1(data_1d, weights, npts, deg);
 
-      PointType calc_start = curve.evaluate(0.0);
-      PointType calc_mid = curve.evaluate(0.5);
-      PointType calc_end = curve.evaluate(1.0);
+      Point1D calc_start1 = curve1.evaluate(0.0);
+      Point1D calc_mid1 = curve1.evaluate(0.5);
+      Point1D calc_end1 = curve1.evaluate(1.0);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int i = 0; i < 1; ++i)
       {
-        EXPECT_NEAR(calc_start[i], exp_start_vals[npts - 1][deg][i], 1e-15);
-        EXPECT_NEAR(calc_mid[i], exp_mid_vals[npts - 1][deg][i], 1e-15);
-        EXPECT_NEAR(calc_end[i], exp_end_vals[npts - 1][deg][i], 1e-15);
+        EXPECT_NEAR(calc_start1[i], exp_start_vals[npts - 1][deg][i], 1e-15);
+        EXPECT_NEAR(calc_mid1[i], exp_mid_vals[npts - 1][deg][i], 1e-15);
+        EXPECT_NEAR(calc_end1[i], exp_end_vals[npts - 1][deg][i], 1e-15);
+      }
+
+      // 2D NURBS Curve
+      NURBSCurve2D curve2(data_2d, weights, npts, deg);
+
+      Point2D calc_start2 = curve2.evaluate(0.0);
+      Point2D calc_mid2 = curve2.evaluate(0.5);
+      Point2D calc_end2 = curve2.evaluate(1.0);
+
+      for(int i = 0; i < 2; ++i)
+      {
+        EXPECT_NEAR(calc_start2[i], exp_start_vals[npts - 1][deg][i], 1e-15);
+        EXPECT_NEAR(calc_mid2[i], exp_mid_vals[npts - 1][deg][i], 1e-15);
+        EXPECT_NEAR(calc_end2[i], exp_end_vals[npts - 1][deg][i], 1e-15);
+      }
+
+      // 3D NURBS Curve
+      NURBSCurve3D curve3(data_3d, weights, npts, deg);
+
+      Point3D calc_start3 = curve3.evaluate(0.0);
+      Point3D calc_mid3 = curve3.evaluate(0.5);
+      Point3D calc_end3 = curve3.evaluate(1.0);
+
+      for(int i = 0; i < 3; ++i)
+      {
+        EXPECT_NEAR(calc_start3[i], exp_start_vals[npts - 1][deg][i], 1e-15);
+        EXPECT_NEAR(calc_mid3[i], exp_mid_vals[npts - 1][deg][i], 1e-15);
+        EXPECT_NEAR(calc_end3[i], exp_end_vals[npts - 1][deg][i], 1e-15);
       }
     }
   }
