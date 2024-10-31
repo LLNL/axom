@@ -467,7 +467,9 @@ TEST(primal_nurbscurve, knot_insertion)
   //  of the curve.
 
   // Insert a knot at 0.5
+  auto num_knots = curve_knots.getNumKnots();
   curve_knots.insertKnot(0.5, 3);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 3);
   for(double t = 0.0; t <= 1.0; t += 0.1)
   {
     PointType p = curve.evaluate(t);
@@ -478,7 +480,9 @@ TEST(primal_nurbscurve, knot_insertion)
     }
   }
 
+  num_knots = curve_knots.getNumKnots();
   curve_knots.insertKnot(0.7, 1);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 1);
   for(double t = 0.0; t <= 1.0; t += 0.1)
   {
     PointType p = curve.evaluate(t);
@@ -489,7 +493,9 @@ TEST(primal_nurbscurve, knot_insertion)
     }
   }
 
+  num_knots = curve_knots.getNumKnots();
   curve_knots.insertKnot(0.4, 2);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 1);
   for(double t = 0.0; t <= 1.0; t += 0.1)
   {
     PointType p = curve.evaluate(t);
@@ -502,12 +508,13 @@ TEST(primal_nurbscurve, knot_insertion)
 
   // Inserting knots shouldn't increase its multiplicty
   //  greater than the degree
-  const auto num_knots = curve_knots.getNumKnots();
+  num_knots = curve_knots.getNumKnots();
   curve_knots.insertKnot(0.5, 3);
   curve_knots.insertKnot(0.0, 1);
   curve_knots.insertKnot(1.0, 1);
   EXPECT_EQ(curve_knots.getNumKnots(), num_knots);
 
+  // This knot has already been inserted twice
   curve_knots.insertKnot(0.4, 2);
   EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 1);
 
