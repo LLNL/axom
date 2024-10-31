@@ -476,6 +476,101 @@ TEST(primal_winding_number, degenerate_cases)
     abs_tol);
 }
 
+TEST(primal_winding_number, rational_winding_number)
+{
+  using Point2D = primal::Point<double, 2>;
+  using Bezier = primal::BezierCurve<double, 2>;
+  using CPolygon = primal::CurvedPolygon<double, 2>;
+
+  double abs_tol = 1e-8;
+  double edge_tol = 0;
+  double EPS = 0;
+
+  // Simple quarter circle shape
+  Point2D circle_nodes[] = {Point2D {1.0, 0.0},
+                            Point2D {1.0, 1.0},
+                            Point2D {0.0, 1.0}};
+  double weights[] = {2.0, 1.0, 1.0};
+  Bezier circle_arc(circle_nodes, weights, 2);
+
+  Point2D leg1_nodes[] = {Point2D {0.0, 1.0}, {0.0, 0.0}};
+  Bezier leg1(leg1_nodes, 1);
+
+  Point2D leg2_nodes[] = {Point2D {0.0, 0.0}, {1.0, 0.0}};
+  Bezier leg2(leg2_nodes, 1);
+
+  CPolygon quarter_circle;
+  quarter_circle.addEdge(circle_arc);
+  quarter_circle.addEdge(leg1);
+  quarter_circle.addEdge(leg2);
+
+  for(double theta = 0.01; theta < 1.5; theta += 0.05)
+  {
+    for(int i = 1; i < 9; i++)
+    {
+      const double offset = std::pow(10, -i);
+      const double ri = 1.0 - offset;
+      const double ro = 1.0 + offset;
+
+      EXPECT_NEAR(
+        winding_number(Point2D({ri * std::cos(theta), ri * std::sin(theta)}),
+                       quarter_circle,
+                       edge_tol,
+                       EPS),
+        1.0,
+        abs_tol);
+
+      EXPECT_NEAR(
+        winding_number(Point2D({ro * std::cos(theta), ro * std::sin(theta)}),
+                       quarter_circle,
+                       edge_tol,
+                       EPS),
+        0.0,
+        abs_tol);
+    }
+  }
+}
+
+TEST(primal_winding_number, nurbs_winding_numbers)
+{
+  // Define a nurbs curve that represents a circle
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[7] = {PointType {1.0, 0.0},
+                       PointType {1.0, 2.0},
+                       PointType {-1.0, 2.0},
+                       PointType {-1.0, 0.0},
+                       PointType {-1.0, -2.0},
+                       PointType {1.0, -2.0},
+                       PointType {1.0, 0.0}};
+  double weights[7] = {1.0, 1. / 3., 1. / 3., 1.0, 1. / 3., 1. / 3., 1.0};
+
+  double knots[11] = {0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0};
+
+  NURBSCurveType circle(data, weights, 7, knots, 11);
+
+  // Check the winding number on a simple grid of points
+  for(double x = -2.0; x <= 2.0; x += 0.201)
+  {
+    for(double y = -2.0; y <= 2.0; y += 0.201)
+    {
+      PointType query {x, y};
+      double gwn = winding_number(query, circle);
+      if(x * x + y * y > 1.0)
+      {
+        EXPECT_DOUBLE_EQ(std::lround(gwn), 0.0);
+      }
+      else
+      {
+        EXPECT_DOUBLE_EQ(std::lround(gwn), 1.0);
+      }
+    }
+  }
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
