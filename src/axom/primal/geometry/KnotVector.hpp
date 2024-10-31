@@ -77,8 +77,8 @@ public:
 
   /// \brief Constructor from a user-supplied knot vector (axom::Array)
   KnotVector(const axom::Array<T>& knots, int degree)
-    : m_knots(knots)
-    , m_deg(degree)
+    : m_deg(degree)
+    , m_knots(knots)
   { }
 
   /*!
