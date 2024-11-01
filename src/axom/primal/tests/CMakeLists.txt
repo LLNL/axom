@@ -21,6 +21,7 @@ set( primal_tests
     primal_in_sphere.cpp
     primal_intersect.cpp
     primal_intersect_impl.cpp
+    primal_knot_vector.cpp
     primal_numeric_array.cpp
     primal_nurbs_curve.cpp
     primal_orientation.cpp
