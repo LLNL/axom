@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*! 
- * \file primal_bezier_curve.cpp
+ * \file primal_nurbs_curve.cpp
  * \brief This file tests primal's NURBS curve functionality
  */
 
@@ -13,7 +13,6 @@
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NURBSCurve.hpp"
-#include "axom/primal/operators/winding_number.hpp"
 
 namespace primal = axom::primal;
 
@@ -495,7 +494,7 @@ TEST(primal_nurbscurve, knot_insertion)
 
   num_knots = curve_knots.getNumKnots();
   curve_knots.insertKnot(0.4, 2);
-  EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 1);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 2);
   for(double t = 0.0; t <= 1.0; t += 0.1)
   {
     PointType p = curve.evaluate(t);
@@ -618,11 +617,7 @@ TEST(primal_nurbscurve, curve_splitting_endpoints)
   for(int deg = 1; deg <= 3; ++deg)
   {
     NURBSCurveType curve(data, weights, 4, deg);
-
-    for(int i = 0; i < curve.getNumKnots(); ++i)
-    {
-      curve.setKnot(i, 3 * curve.getKnot(i) - 1);
-    }
+    curve.rescale(-1.0, 2.0);
 
     // Do some knot insertion to make it interesting
     curve.insertKnot(-0.1, 2);

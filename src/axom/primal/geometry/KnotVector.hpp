@@ -233,6 +233,19 @@ public:
     }
   }
 
+  /// \brief Rescale the knot vector to the span of [a, b]
+  void rescale(T a, T b)
+  {
+    T min_knot = m_knots[0];
+    T max_knot = m_knots[m_knots.size() - 1];
+    T span = max_knot - min_knot;
+
+    for(int i = 0; i < m_knots.size(); ++i)
+    {
+      m_knots[i] = a + (m_knots[i] - min_knot) * (b - a) / span;
+    }
+  }
+
   /*!
    * \brief Insert a knot into the vector r times
    * 
@@ -261,15 +274,20 @@ public:
    * 
    * \param [in] t The value of the knot to insert
    * \param [in] target_mutliplicity The number of times the knot will be present
+   *
+   * \note If the knot is already present, it will be inserted
+   *  up to the given multiplicity, or the maximum permitted by the degree
    */
   void insertKnot(T t, int target_multiplicity)
   {
-    SLIC_ASSERT(target_multiplicity <= m_deg);
+    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
 
     int multiplicity;
     auto span = findSpan(t, multiplicity);
 
-    insertKnotBySpan(span, t, target_multiplicity - multiplicity);
+    int r = std::min(target_multiplicity, m_deg - multiplicity);
+
+    insertKnotBySpan(span, t, r);
   }
 
   /*!
@@ -339,8 +357,6 @@ public:
 
     k1 = *this;
     k1.insertKnotBySpan(span, t, m_deg - multiplicity);
-
-    std::cout << k1 << std::endl;
 
     k1.splitBySpan(span + m_deg - multiplicity, k1, k2, normalize);
   }

@@ -242,6 +242,13 @@ TEST(primal_knotvector, normalize)
       EXPECT_NEAR(basis[i], basis_norm[i], 1e-10);
     }
   }
+
+  // Check rescaling the knot vector
+  kvector_norm.rescale(-1.0, 4.0);
+  for(int i = 0; i < kvector.getNumKnots(); ++i)
+  {
+    EXPECT_DOUBLE_EQ(kvector[i], kvector_norm[i]);
+  }
 }
 
 //------------------------------------------------------------------------------

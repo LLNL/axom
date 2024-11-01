@@ -52,7 +52,7 @@ std::ostream& operator<<(std::ostream& os, const NURBSCurve<T, NDIMS>& bCurve);
  * and a knot vector of length `k+1`. A valid curve has k+1 = n+p+2
  * The curve must be open (clamped on each end) and continuous (unless p = 0)
  * 
- * Nonrational Bezier curves are identified by an empty weights array.
+ * Nonrational NURBS curves are identified by an empty weights array.
  */
 template <typename T, int NDIMS>
 class NURBSCurve
@@ -563,20 +563,20 @@ public:
    * \brief Insert a knot with given multiplicity
    *
    * \param [in] t The parameter value of the knot to insert
-   * \param [in] multiplicity The multiplicity of the knot to insert
+   * \param [in] target_multiplicity The multiplicity of the knot to insert
    * \return The index of the new knot
    * 
    * Algorithm A5.1 on p. 151 of "The NURBS Book"
    * 
    * \note If the knot is already present, it will be inserted
-   *  up to the given multiplicity. Must be in the span of the knots
+   *  up to the given multiplicity, or the maximum permitted by the degree
    */
   axom::IndexType insertKnot(T t, int target_multiplicity = 1)
   {
     SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
     SLIC_ASSERT(target_multiplicity > 0);
 
-    const bool isRational = this - this->isRational();
+    const bool isRational = this->isRational();
 
     const int n = getNumControlPoints() - 1;
     const int p = m_knotvec.getDegree();
@@ -681,7 +681,7 @@ public:
     }
 
     // Update the knot vector and control points
-    m_knotvec.insertKnot(span, t, r);
+    m_knotvec.insertKnotBySpan(span, t, r);
     m_controlPoints = newControlPoints;
     m_weights = newWeights;
 
@@ -753,7 +753,7 @@ public:
 
     // Split the knot vector
     KnotVectorType k1, k2;
-    m_knotvec.split(s, k1, k2);
+    m_knotvec.splitBySpan(s, k1, k2);
 
     n1.m_knotvec = k1;
     n2.m_knotvec = k2;
@@ -783,8 +783,11 @@ public:
     }
   }
 
-  /// \brief Normalize the parameterization of the knot vector
+  /// \brief Normalize the knot vector to the span of [0, 1]
   void normalize() { m_knotvec.normalize(); }
+
+  /// \brief Rescale the knot vector to the span of [a, b]
+  void rescale(T a, T b) { m_knotvec.rescale(a, b); }
 
   /*!
    * \brief Splits a NURBS curve (at each internal knot) into several Bezier curves
@@ -1050,7 +1053,7 @@ public:
   /// \brief Return a copy of the knot vector as an array
   axom::Array<T> getKnotsArray() const { return m_knotvec.getArray(); }
 
-  /// \brief Reverses the order of the Bezier curve's control points and weights
+  /// \brief Reverses the order of the NURBS curve's control points and weights
   void reverseOrientation()
   {
     const int npts = getNumControlPoints();
