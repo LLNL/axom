@@ -27,16 +27,32 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   oriented algorithm that produces smooth interfaces between zones and their neighbors.
 
 ###  Changed
+- ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
+  to core.  The namespace prefix for these classes is now axom:: insteand of axom::sidre.  The internal usage of
+  these types within Sidre Datastore and Group is unchanged.
 
 ###  Deprecated
 
 ###  Removed
 
 ###  Fixed
-- Added a guard for sidre-related mint API usage in a quest example
+
+## [Version 0.10.1] - Release date 2024-10-22
+
+###  Added
+- Constructor to Axom BVH that avoids an unnecessary copy of each bounding box.
+
+###  Fixed
+- Issue with uninitialized state in axom::Array class was causing
+  host-initialization of device-allocated memory in certain situations. This
+  could cause warnings about uninitialized memory or crashes in the axom::Array
+  constructor.
+- Added a guard for sidre-related mint API usage in a quest example.
 - Removed `std::ends` usage from `SLIC_ASSERT`,`SLIC_ASSERT_MSG`,`SLIC_CHECK`,
   and `SLIC_CHECK_MSG` macros that prevented Lumberjack from combining
   messages.
+- Some line numbers linking file contents into the Axom Quickstart Guide were
+  incorrect causing the docs to appear incomplete.
 
 
 ## [Version 0.10.0] - Release date 2024-09-27
@@ -1121,7 +1137,8 @@ fractions for the associated materials must be supplied before shaping.
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:     https://github.com/LLNL/axom/compare/v0.10.0...develop
+[Unreleased]:     https://github.com/LLNL/axom/compare/v0.10.1...develop
+[Version 0.10.1]: https://github.com/LLNL/axom/compare/v0.10.0...v0.10.1
 [Version 0.10.0]: https://github.com/LLNL/axom/compare/v0.9.0...v0.10.0
 [Version 0.9.0]:  https://github.com/LLNL/axom/compare/v0.8.1...v0.9.0
 [Version 0.8.1]:  https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1

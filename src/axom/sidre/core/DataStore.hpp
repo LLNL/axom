@@ -22,16 +22,16 @@
 
 // Other axom headers
 #include "axom/config.hpp"
+#include "axom/core/ItemCollection.hpp"
+#include "axom/core/IndexedCollection.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/MapCollection.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 // Sidre project headers
 #include "Attribute.hpp"
 #include "SidreTypes.hpp"
-#include "ItemCollection.hpp"
-#include "IndexedCollection.hpp"
-#include "MapCollection.hpp"
 
 namespace axom
 {
@@ -39,12 +39,6 @@ namespace sidre
 {
 class Buffer;
 class Group;
-
-template <typename TYPE>
-class IndexedCollection;
-
-template <typename TYPE>
-class MapCollection;
 
 /*!
  * \class DataStore
@@ -60,8 +54,8 @@ class MapCollection;
 class DataStore
 {
 public:
-  using AttributeCollection = MapCollection<Attribute>;
-  using BufferCollection = IndexedCollection<Buffer>;
+  using AttributeCollection = axom::MapCollection<Attribute>;
+  using BufferCollection = axom::IndexedCollection<Buffer>;
 
 public:
   /*!

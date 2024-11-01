@@ -66,6 +66,8 @@ using IndexType = std::int64_t;
 using IndexType = std::int32_t;
 #endif
 
+static constexpr IndexType InvalidIndex = -1;
+
 #ifdef AXOM_USE_MPI
 
 // Note: MSVC complains about uninitialized static const integer class members,
