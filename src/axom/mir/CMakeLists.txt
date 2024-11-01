@@ -11,7 +11,7 @@
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       MIR
                         COMPONENTS SLIC SLAM PRIMAL
-                        TPLS       Conduit RAJA umpire)
+                        TPLS       Conduit RAJA)
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
