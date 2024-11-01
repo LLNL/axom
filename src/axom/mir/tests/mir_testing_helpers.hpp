@@ -15,15 +15,15 @@
 
 //------------------------------------------------------------------------------
 // clang-format off
+using seq_exec = axom::SEQ_EXEC;
+
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+  using omp_exec = axom::OMP_EXEC;
+#else
+  using omp_exec = seq_exec;
+#endif
+
 #if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
-  using seq_exec = axom::SEQ_EXEC;
-
-  #if defined(AXOM_USE_OPENMP)
-    using omp_exec = axom::OMP_EXEC;
-  #else
-    using omp_exec = seq_exec;
-  #endif
-
   #if defined(AXOM_USE_CUDA)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
@@ -260,7 +260,7 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
   }
   if(!success && count == 0)
   {
-    SLIC_INFO(fmt::format("No baselines found for {}", baselineName));
+    SLIC_INFO(axom::fmt::format("No baselines found for {}", baselineName));
   }
   return success;
 }
