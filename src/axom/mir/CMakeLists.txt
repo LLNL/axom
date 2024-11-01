@@ -107,7 +107,7 @@ set(mir_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(mir_depends_on core slic slam primal conduit::conduit RAJA umpire)
+set(mir_depends_on core slic slam primal conduit::conduit RAJA)
 
 blt_add_library(
     NAME        mir
