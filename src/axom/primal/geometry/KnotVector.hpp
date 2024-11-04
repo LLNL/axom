@@ -310,7 +310,8 @@ public:
     int multiplicity;
     auto span = findSpan(t, multiplicity);
 
-    int r = axom::utilities::clampVal( target_multiplicity - multiplicity, 0, m_deg);
+    int r =
+      axom::utilities::clampVal(target_multiplicity - multiplicity, 0, m_deg);
 
     insertKnotBySpan(span, t, r);
   }
