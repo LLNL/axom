@@ -117,18 +117,18 @@ public:
     * 
     * \pre npts > degree, degree >= 0
     */
-  //   NURBSCurve(int npts, int degree)
-  //   {
-  //     SLIC_ASSERT(npts > degree);
-  //     SLIC_ASSERT(degree >= 0);
+  NURBSCurve(int npts, int degree)
+  {
+    SLIC_ASSERT(npts > degree);
+    SLIC_ASSERT(degree >= 0);
 
-  //     m_controlPoints.resize(npts);
-  //     m_knotvec = KnotVectorType(npts, degree);
+    m_controlPoints.resize(npts);
+    m_knotvec = KnotVectorType(npts, degree);
 
-  //     makeNonrational();
+    makeNonrational();
 
-  //     SLIC_ASSERT(isValidNURBS());
-  //   }
+    SLIC_ASSERT(isValidNURBS());
+  }
 
   /*!
    * \brief Constructor for a NURBS curve from a Bezier curve
@@ -275,7 +275,7 @@ public:
   /*!
    * \brief Constructor for a NURBS Curve with axom arrays of data
    *
-   * \param [in] controlPoints the control points of the curve
+   * \param [in] pts the control points of the curve
    * \param [in] degree the degree of the curve
    *
    * A uniform knot vector is constructed such that the curve is continuous
@@ -316,7 +316,7 @@ public:
   /*!
    * \brief Constructor for a NURBS Curve with axom arrays of nodes and knots
    *
-   * \param [in] controlPoints the control points of the curve
+   * \param [in] pts the control points of the curve
    * \param [in] knots the knot vector of the curve
    *
    * For clamped and continuous curves, npts and the knot vector 
@@ -360,7 +360,7 @@ public:
   /*!
    * \brief Constructor from axom array of nodes and KnotVector object
    *
-   * \param [in] controlPoints the control points of the curve
+   * \param [in] pts the control points of the curve
    * \param [in] knotVector A KnotVector object
    * 
    * For clamped and continuous curves, npts and the knot vector 
@@ -380,7 +380,7 @@ public:
   /*!
    * \brief Constructor from axom array of nodes, weights, and KnotVector object
    *
-   * \param [in] controlPoints the control points of the curve
+   * \param [in] pts the control points of the curve
    * \param [in] weights the weights of the control points
    * \param [in] knotVector A KnotVector object
    *
@@ -536,6 +536,7 @@ public:
    * \brief Evaluate the curve and the first \a d derivatives at parameter \a t
    *
    * \param [in] t The parameter value at which to evaluate
+   * \param [in] d The number of derivatives to evaluate
    * \param [out] eval The point on the curve at t
    * \param [out] ders An array of the first d derivatives at t
    * 
