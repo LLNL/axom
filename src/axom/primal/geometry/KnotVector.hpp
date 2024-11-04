@@ -270,9 +270,11 @@ public:
     }
   }
 
-  /// \brief Rescale the knot vector to the span of [a, b]
+  /// \brief Rescale the knot vector to the span of [a, b], (a < b)
   void rescale(T a, T b)
   {
+    SLIC_ASSERT(a < b);
+
     T min_knot = m_knots[0];
     T max_knot = m_knots[m_knots.size() - 1];
     T span = max_knot - min_knot;

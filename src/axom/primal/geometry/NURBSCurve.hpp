@@ -573,7 +573,6 @@ public:
    */
   axom::IndexType insertKnot(T t, int target_multiplicity = 1)
   {
-    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
     SLIC_ASSERT(target_multiplicity > 0);
 
     const bool isRational = this->isRational();
@@ -706,8 +705,6 @@ public:
              NURBSCurve<T, NDIMS>& n2,
              bool normalize = false) const
   {
-    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
-
     const bool isCurveRational = this->isRational();
     const int p = getDegree();
 
@@ -786,8 +783,12 @@ public:
   /// \brief Normalize the knot vector to the span of [0, 1]
   void normalize() { m_knotvec.normalize(); }
 
-  /// \brief Rescale the knot vector to the span of [a, b]
-  void rescale(T a, T b) { m_knotvec.rescale(a, b); }
+  /// \brief Rescale the knot vector to the span of [a, b] (a < b)
+  void rescale(T a, T b)
+  {
+    SLIC_ASSERT(a < b);
+    m_knotvec.rescale(a, b);
+  }
 
   /*!
    * \brief Splits a NURBS curve (at each internal knot) into several Bezier curves
