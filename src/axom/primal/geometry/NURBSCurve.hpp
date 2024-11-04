@@ -341,7 +341,7 @@ public:
   PointType evaluate(T t) const
   {
     const auto span = m_knotvec.findSpan(t);
-    const auto N_evals = m_knotvec.calculateBasisFunctions(span, t);
+    const auto N_evals = m_knotvec.calculateBasisFunctionsBySpan(span, t);
     const int degree = m_knotvec.getDegree();
 
     PointType P;
@@ -482,7 +482,7 @@ public:
     int du = std::min(d, p);
     const auto span = m_knotvec.findSpan(t);
     axom::Array<axom::Array<T>> N_evals(d + 1);
-    m_knotvec.derivativeBasisFunctions(span, t, du, N_evals);
+    m_knotvec.derivativeBasisFunctionsBySpan(span, t, du, N_evals);
 
     // Store w(u) in Awders[NDIMS][0], w'(u) in Awders[NDIMS][1], ...
     axom::Array<Point<T, NDIMS + 1>> Awders(d + 1);
@@ -1017,14 +1017,7 @@ public:
    * \param [in] knot The updated value of the knot
    * \pre Requires that the knot value be internal and between its neighbors
    */
-  void setKnot(int idx, T knot)
-  {
-    SLIC_ASSERT(idx > m_knotvec.getDegree() &&
-                idx < m_knotvec.getNumKnots() - m_knotvec.getDegree() - 1);
-    SLIC_ASSERT(knot >= m_knotvec[idx - 1] && knot <= m_knotvec[idx + 1]);
-
-    m_knotvec[idx] = knot;
-  }
+  void setKnot(int idx, T knot) { m_knotvec[idx] = knot; }
 
   /// \brief Checks equality of two NURBS Curve
   friend inline bool operator==(const NURBSCurve<T, NDIMS>& lhs,

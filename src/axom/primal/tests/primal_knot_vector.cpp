@@ -58,6 +58,7 @@ TEST(primal_knotvector, array_constructor)
   EXPECT_EQ(degree, kvector.getDegree());
   EXPECT_EQ(npts, kvector.getNumControlPoints());
   EXPECT_EQ(npts + degree + 1, kvector.getNumKnots());
+  EXPECT_EQ(4, kvector.getNumKnotSpans());
 
   EXPECT_TRUE(kvector.isValid());
 
@@ -83,6 +84,7 @@ TEST(primal_knotvector, axom_array_constructor)
   EXPECT_EQ(degree, kvector.getDegree());
   EXPECT_EQ(npts, kvector.getNumControlPoints());
   EXPECT_EQ(npts + degree + 1, kvector.getNumKnots());
+  EXPECT_EQ(4, kvector.getNumKnotSpans());
 
   EXPECT_TRUE(kvector.isValid());
 
@@ -181,6 +183,9 @@ TEST(primal_knotvector, find_knot_span)
 
   kvector = primal::KnotVector<double>(knots, degree);
 
+  // Check for the number of knot spans
+  EXPECT_EQ(6, kvector.getNumKnotSpans());
+
   // Check for knot spans
   EXPECT_EQ(3, kvector.findSpan(0.0));
   EXPECT_EQ(3, kvector.findSpan(0.1));
@@ -230,6 +235,10 @@ TEST(primal_knotvector, normalize)
   // Check that both vectors are valid
   EXPECT_TRUE(kvector.isValid());
   EXPECT_TRUE(kvector_norm.isValid());
+
+  // Check for the number of knot spans
+  EXPECT_EQ(4, kvector.getNumKnotSpans());
+  EXPECT_EQ(4, kvector_norm.getNumKnotSpans());
 
   // Check that the knot vectors are equivalent
   for(double t = 0.0; t <= 1.0; t += 0.1)
@@ -284,6 +293,9 @@ TEST(primal_knotvector, insert_knot)
   EXPECT_EQ(20, kvector.getNumKnots());
   kvector.insertKnot(1.0, 1);
   EXPECT_EQ(20, kvector.getNumKnots());
+
+  // Check for the new number of knot spans
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
 
   // Insert knots into the vector a given number of times
   kvector = primal::KnotVector<double>(knots, degree);

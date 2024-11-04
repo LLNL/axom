@@ -116,8 +116,18 @@ public:
   /// \brief Getter for the knot vector
   const T& operator[](axom::IndexType i) const { return m_knots[i]; }
 
-  /// \brief Setter for the knot vector
-  T& operator[](axom::IndexType i) { return m_knots[i]; }
+  /*!
+   * \brief Setter for the knot vector
+   *
+   * \param [in] i The vector index
+   * 
+   * \pre Assumes that the knot vector will remain valid after the change
+   */
+  T& operator[](axom::IndexType i)
+  {
+    return m_knots[i];
+    SLIC_ASSERT(isValid());
+  }
 
   /// \brief Return the degree of the knot vector
   int getDegree() const { return m_deg; }
@@ -148,6 +158,21 @@ public:
 
   /// \brief Return the number of knots in the knot vector
   axom::IndexType getNumKnots() const { return m_knots.size(); }
+
+  /// \brief Return the number of valid knot spans
+  axom::IndexType getNumKnotSpans() const
+  {
+    axom::IndexType num_spans = 0;
+    for(int i = 0; i < m_knots.size() - 1; ++i)
+    {
+      if(m_knots[i] != m_knots[i + 1])
+      {
+        num_spans++;
+      }
+    }
+
+    return num_spans;
+  }
 
   /// \brief Return the number of control points implied by the knot vector
   axom::IndexType getNumControlPoints() const
@@ -285,7 +310,7 @@ public:
     int multiplicity;
     auto span = findSpan(t, multiplicity);
 
-    int r = std::min(target_multiplicity, m_deg - multiplicity);
+    int r = axom::utilities::clampVal( target_multiplicity - multiplicity, 0, m_deg);
 
     insertKnotBySpan(span, t, r);
   }
@@ -307,6 +332,8 @@ public:
                    KnotVector& k2,
                    bool normalize = false) const
   {
+    SLIC_ASSERT(isValidSpan(span));
+
     const auto nkts = getNumKnots();
 
     // Create a copy of the vector in case k1 or k2 is the same as *this
@@ -366,8 +393,10 @@ public:
    * 
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
    */
-  axom::Array<T> calculateBasisFunctions(axom::IndexType span, T t) const
+  axom::Array<T> calculateBasisFunctionsBySpan(axom::IndexType span, T t) const
   {
+    SLIC_ASSERT(isValidSpan(span));
+
     axom::Array<T> N(m_deg + 1);
     axom::Array<T> left(m_deg + 1);
     axom::Array<T> right(m_deg + 1);
@@ -396,7 +425,7 @@ public:
   /// \brief Calculate the basis functions at parameter t in unknown span
   axom::Array<T> calculateBasisFunctions(T t) const
   {
-    return calculateBasisFunctions(findSpan(t), t);
+    return calculateBasisFunctionsBySpan(findSpan(t), t);
   }
 
   /*!
@@ -404,11 +433,13 @@ public:
    * 
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
    */
-  void derivativeBasisFunctions(axom::IndexType span,
-                                T t,
-                                int n,
-                                axom::Array<axom::Array<T>>& ders) const
+  void derivativeBasisFunctionsBySpan(axom::IndexType span,
+                                      T t,
+                                      int n,
+                                      axom::Array<axom::Array<T>>& ders) const
   {
+    SLIC_ASSERT(isValidSpan(span));
+
     const int m_deg = getDegree();
 
     axom::Array<axom::Array<T>> ndu(m_deg + 1), a(2);
@@ -497,7 +528,7 @@ public:
   /// \brief Calculate the basis functions and derivatives at parameter t in unknown span
   void derivativeBasisFunctions(T t, int n, axom::Array<axom::Array<T>>& ders) const
   {
-    derivativeBasisFunctions(findSpan(t), t, n, ders);
+    derivativeBasisFunctionsBySpan(findSpan(t), t, n, ders);
   }
 
   /// \brief Reverse the knot vector
