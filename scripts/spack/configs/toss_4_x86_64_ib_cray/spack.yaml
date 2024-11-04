@@ -478,7 +478,7 @@ spack:
       variants: ~shared
 
     # Lock in versions of Devtools
-    # Devtools are built on rzvernal for compatibility for
+    # Devtools are built on rzvernal for compatibility with both
     # rzvernal and rzadams.
     cmake:
       version: [3.24.2]
