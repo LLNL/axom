@@ -51,7 +51,7 @@ public:
     "A knot vector must be defined using an arithmetic type");
 
 public:
-  /// \brief Default constructor
+  /// \brief Default constructor for an empty (invalid) knot vector
   KnotVector() : m_deg(-1) { m_knots.resize(0); }
 
   /*!

@@ -77,6 +77,18 @@ public:
 
 public:
   /*!
+   * \brief Default constructor for a NURBS Curve
+   *
+   * \note An empty NURBS curve is not valid
+   */
+  explicit NURBSCurve()
+  {
+    m_controlPoints.resize(0);
+    m_knotvec = KnotVectorType();
+    makeNonrational();
+  }
+
+  /*!
    * \brief Constructor for a simple NURBS Curve that reserves space for
    *  the minimum (sensible) number of points for the given degree
    *
@@ -84,11 +96,11 @@ public:
    * 
    * A uniform knot vector is constructed such that the curve is continuous
    * 
-   * \pre degree is greater than or equal to -1.
+   * \pre degree is greater than or equal to 0.
    */
-  explicit NURBSCurve(int degree = -1)
+  explicit NURBSCurve(int degree)
   {
-    SLIC_ASSERT(degree >= -1);
+    SLIC_ASSERT(degree >= 0);
     m_controlPoints.resize(degree + 1);
     m_knotvec = KnotVectorType(degree + 1, degree);
 
