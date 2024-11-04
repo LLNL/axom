@@ -440,7 +440,7 @@ public:
    */
   void split(T t, KnotVector& k1, KnotVector& k2, bool normalize = false) const
   {
-    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+    SLIC_ASSERT(t > m_knots[0] && t < m_knots[m_knots.size() - 1]);
 
     int multiplicity;
     axom::IndexType span = findSpan(t, multiplicity);

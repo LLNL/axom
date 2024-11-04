@@ -768,14 +768,14 @@ public:
    * If t is at the knot u_0 or u_max, will return the original curve and
    *  a degenerate curve with the first or last control point
    *
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the *interior* of the span of the knots
    */
   void split(T t,
              NURBSCurve<T, NDIMS>& n1,
              NURBSCurve<T, NDIMS>& n2,
              bool normalize = false) const
   {
-    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
+    SLIC_ASSERT(t > m_knotvec[0] && t < m_knotvec[m_knotvec.getNumKnots() - 1]);
 
     const bool isCurveRational = this->isRational();
     const int p = getDegree();
