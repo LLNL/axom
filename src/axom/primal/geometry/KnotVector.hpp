@@ -190,22 +190,22 @@ public:
   /*!
    * \brief Returns the index of the knot span containing parameter t
    * 
+   * \param [in] t The parameter value
+   * 
    * For knot vector {u_0, ..., u_n}, returns i such that u_i <= t < u_i+1
-   *  if t <= u_0, returns i such that u_i <= t < u_i+1 (i.e. i = degree)
-   *  if t >= u_n, returns i such that u_i < t <= u_i+1 (i.e. i = n - degree - 1)
+   *  if t == u_n, returns i such that u_i < t <= u_i+1 (i.e. i = n - degree - 1)
+   * 
+   * \pre Assumes that the input t is within the knot vector
    * 
    * Implementation adapted from Algorithm A2.1 on page 68 of "The NURBS Book"
    */
   axom::IndexType findSpan(T t) const
   {
+    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+
     const axom::IndexType nkts = m_knots.size();
 
-    if(t <= m_knots[0])
-    {
-      return m_deg;
-    }
-
-    if(t >= m_knots[nkts - 1])
+    if(t == m_knots[nkts - 1])
     {
       return nkts - m_deg - 2;
     }
@@ -223,9 +223,21 @@ public:
     return mid;
   }
 
-  /// \brief Returns the index of the knot span and the multiplicity
-  axom::IndexType findSpan(double t, int& multiplicity) const
+  /*!
+   * \brief Returns the index of the knot span containing parameter t and its multiplicity
+   * 
+   * \param [in] t The parameter value
+   * \param [out] multiplicity The multiplicity of the knot at t
+   *
+   * For knot vector {u_0, ..., u_n}, returns i such that u_i <= t < u_i+1
+   *  if t == u_n, returns i such that u_i < t <= u_i+1 (i.e. i = n - degree - 1)
+   * 
+   * \pre Assumes that the input t is within the knot vector
+   */
+  axom::IndexType findSpan(T t, int& multiplicity) const
   {
+    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+
     const auto nkts = m_knots.size();
     const auto span = findSpan(t);
 
@@ -283,8 +295,7 @@ public:
    */
   void insertKnotBySpan(axom::IndexType span, T t, int r)
   {
-    SLIC_ASSERT(span >= 0 && span < getNumKnots() - 1);
-    SLIC_ASSERT(t <= m_knots[span + 1] && t >= m_knots[span]);
+    SLIC_ASSERT(isValidSpan(span, t));
 
     for(int i = 0; i < r; ++i)
     {
@@ -300,12 +311,14 @@ public:
    * \param [in] t The value of the knot to insert
    * \param [in] target_mutliplicity The number of times the knot will be present
    *
+   * \pre Assumes that the input t is within the knot vector
+   * 
    * \note If the knot is already present, it will be inserted
    *  up to the given multiplicity, or the maximum permitted by the degree
    */
   void insertKnot(T t, int target_multiplicity)
   {
-    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
+    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
 
     int multiplicity;
     auto span = findSpan(t, multiplicity);
@@ -377,9 +390,13 @@ public:
    * \param [out] k1 The first knot vector
    * \param [out] k2 The second knot vector
    * \param [in] normalize Whether to normalize the output knot vectors
+   * 
+   * \pre Assumes that the input t is within the knot vector
    */
   void split(T t, KnotVector& k1, KnotVector& k2, bool normalize = false) const
   {
+    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+
     int multiplicity;
     axom::IndexType span = findSpan(t, multiplicity);
 
@@ -392,11 +409,15 @@ public:
   /*!
    * \brief Evaluates the NURBS basis functions for span at parameter value t
    * 
+   * \param [in] span The span in which to evaluate the basis functions
+   * \param [in] t The parameter value
+   * 
+   * \pre Assumes that the input t is within the knot vector and that the span is valid
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
    */
   axom::Array<T> calculateBasisFunctionsBySpan(axom::IndexType span, T t) const
   {
-    SLIC_ASSERT(isValidSpan(span));
+    SLIC_ASSERT(isValidSpan(span, t));
 
     axom::Array<T> N(m_deg + 1);
     axom::Array<T> left(m_deg + 1);
@@ -426,6 +447,7 @@ public:
   /// \brief Calculate the basis functions at parameter t in unknown span
   axom::Array<T> calculateBasisFunctions(T t) const
   {
+    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
     return calculateBasisFunctionsBySpan(findSpan(t), t);
   }
 
@@ -439,7 +461,7 @@ public:
                                       int n,
                                       axom::Array<axom::Array<T>>& ders) const
   {
-    SLIC_ASSERT(isValidSpan(span));
+    SLIC_ASSERT(isValidSpan(span, t));
 
     const int m_deg = getDegree();
 
@@ -529,6 +551,7 @@ public:
   /// \brief Calculate the basis functions and derivatives at parameter t in unknown span
   void derivativeBasisFunctions(T t, int n, axom::Array<axom::Array<T>>& ders) const
   {
+    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
     derivativeBasisFunctionsBySpan(findSpan(t), t, n, ders);
   }
 
@@ -612,6 +635,12 @@ public:
   {
     return span >= m_deg && span < m_knots.size() - m_deg - 1 &&
       m_knots[span] != m_knots[span + 1];
+  }
+
+  /// \brief Check that a knot span is valid for a given parameter value
+  bool isValidSpan(axom::IndexType span, T t) const
+  {
+    return isValidSpan(span) && t >= m_knots[span] && t <= m_knots[span + 1];
   }
 
   /// \brief Check equality of two knot vectors

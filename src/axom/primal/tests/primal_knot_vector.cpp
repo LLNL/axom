@@ -209,17 +209,6 @@ TEST(primal_knotvector, find_knot_span)
   EXPECT_EQ(multiplicity, 3);
   EXPECT_EQ(11, kvector.findSpan(1.0, multiplicity));
   EXPECT_EQ(multiplicity, 4);
-
-  // Check for knot spans with out-of-range values
-  //  This method implicitly clamps the input value to the knot span
-  EXPECT_EQ(3, kvector.findSpan(-0.1));
-  EXPECT_EQ(11, kvector.findSpan(1.1));
-
-  EXPECT_EQ(3, kvector.findSpan(-0.1, multiplicity));
-  EXPECT_EQ(multiplicity, 0);
-
-  EXPECT_EQ(11, kvector.findSpan(1.1, multiplicity));
-  EXPECT_EQ(multiplicity, 0);
 }
 
 //------------------------------------------------------------------------------
