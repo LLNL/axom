@@ -268,34 +268,53 @@ TEST(primal_knotvector, insert_knot)
 
   // Insert knots into the vector to have specific multiplicities
   EXPECT_EQ(16, kvector.getNumKnots());
+  EXPECT_EQ(6, kvector.getNumKnotSpans());
+
   kvector.insertKnot(0.0, 2);
   EXPECT_EQ(16, kvector.getNumKnots());
+  EXPECT_EQ(6, kvector.getNumKnotSpans());
+
   kvector.insertKnot(0.1, 1);
   EXPECT_EQ(17, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
   kvector.insertKnot(0.2, 2);
   EXPECT_EQ(18, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
   kvector.insertKnot(0.3, 2);
   EXPECT_EQ(18, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
   kvector.insertKnot(0.5, 3);
   EXPECT_EQ(20, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
   kvector.insertKnot(0.8, 1);
   EXPECT_EQ(20, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
   kvector.insertKnot(1.0, 1);
   EXPECT_EQ(20, kvector.getNumKnots());
-
-  // Check for the new number of knot spans
   EXPECT_EQ(7, kvector.getNumKnotSpans());
 
   // Insert knots into the vector a given number of times
   kvector = primal::KnotVector<double>(knots, degree);
 
   EXPECT_EQ(16, kvector.getNumKnots());
+  EXPECT_EQ(6, kvector.getNumKnotSpans());
+ 
   kvector.insertKnotBySpan(3, 0.1, 2);
   EXPECT_EQ(18, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+ 
   kvector.insertKnotBySpan(5, 0.2, 2);
   EXPECT_EQ(20, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+ 
   kvector.insertKnotBySpan(8, 0.25, 3);
   EXPECT_EQ(23, kvector.getNumKnots());
+  EXPECT_EQ(8, kvector.getNumKnotSpans());
 }
 
 //------------------------------------------------------------------------------
