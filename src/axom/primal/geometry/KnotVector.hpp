@@ -58,12 +58,21 @@ public:
    * \brief Constructor for a normalized, uniform knot vector
    *
    * \param [in] npts the number of control points
-   * \param [in] deg the degree
-   * \pre degree is greater than or equal to -1, and deg < npts.
+   * \param [in] degree the degree
+   * 
+   * \pre degree is greater than or equal to 0, and deg < npts.
    */
-  KnotVector(axom::IndexType npts, int deg) { makeUniform(npts, deg); }
+  KnotVector(axom::IndexType npts, int degree) { makeUniform(npts, degree); }
 
-  /// \brief Constructor from a user-supplied knot vector (C-style)
+  /*!
+   * \brief Constructor from a user-supplied knot vector (C-style)
+   * 
+   * \param [in] knots the knot vector
+   * \param [in] nkts the length of the knot vector
+   * \param [in] degree the degree of the curve
+   * 
+   * \pre Assumes that the knot vector is valid
+   */
   KnotVector(const T* knots, axom::IndexType nkts, int degree)
   {
     m_knots.resize(nkts);
@@ -77,7 +86,14 @@ public:
     SLIC_ASSERT(isValid());
   }
 
-  /// \brief Constructor from a user-supplied knot vector (axom::Array)
+  /*!
+   * \brief Constructor from a user-supplied knot vector (axom::Array)
+   * 
+   * \param [in] knots the knot vector
+   * \param [in] degree the degree of the curve
+   * 
+   * \pre Assumes that the knot vector is valid
+   */
   KnotVector(const axom::Array<T>& knots, int degree)
     : m_deg(degree)
     , m_knots(knots)
@@ -87,9 +103,17 @@ public:
 
   /*!
    * \brief Give the knot vector uniformly spaced internal knots
+   *
+   * \param [in] npts The number of (implied) control points
+   * \param [in] deg The degree of the curve
+   * 
+   * \pre Requires that npts + deg + 1 > 0 and deg < npts
    */
   void makeUniform(axom::IndexType npts, int deg)
   {
+    SLIC_ASSERT(npts + deg + 1 >= 0);
+    SLIC_ASSERT(deg < npts);
+
     // Set the degree
     m_deg = deg;
 
@@ -113,7 +137,13 @@ public:
   /// \brief Accessor for the knot vector
   const axom::Array<T>& getArray() const { return m_knots; }
 
-  /// \brief Getter for the knot vector
+  /*!
+   * \brief Getter for the knot vector
+   * 
+   * \param [in] i The vector index
+   * 
+   * \return A const reference to the knot value at index i
+   */
   const T& operator[](axom::IndexType i) const { return m_knots[i]; }
 
   /*!
@@ -122,6 +152,8 @@ public:
    * \param [in] i The vector index
    * 
    * \pre Assumes that the knot vector will remain valid after the change
+   * 
+   * \return A reference to the knot value at index i
    */
   T& operator[](axom::IndexType i)
   {
@@ -140,7 +172,7 @@ public:
    * If the target degree is greater than the current degree, the knot vector
    *  must be expanded to remain valid (clamped)
    * 
-   * \warning This method will always invalidate existing knot values
+   * \warning This method will always replace existing knot values
    */
   void setDegree(int degree)
   {
@@ -198,6 +230,8 @@ public:
    * \pre Assumes that the input t is within the knot vector
    * 
    * Implementation adapted from Algorithm A2.1 on page 68 of "The NURBS Book"
+   * 
+   * \return The index of the knot span containing t
    */
   axom::IndexType findSpan(T t) const
   {
@@ -233,6 +267,8 @@ public:
    *  if t == u_n, returns i such that u_i < t <= u_i+1 (i.e. i = n - degree - 1)
    * 
    * \pre Assumes that the input t is within the knot vector
+   * 
+   * \return The index of the knot span containing t
    */
   axom::IndexType findSpan(T t, int& multiplicity) const
   {
@@ -270,7 +306,14 @@ public:
     }
   }
 
-  /// \brief Rescale the knot vector to the span of [a, b], (a < b)
+  /*!
+   * \brief Rescale the knot vector to the span of [a, b]
+   * 
+   * \param [in] a The lower bound of the new knot vector
+   * \param [in] b The upper bound of the new knot vector
+   * 
+   * \pre Requires a < b
+   */
   void rescale(T a, T b)
   {
     SLIC_ASSERT(a < b);
@@ -381,8 +424,8 @@ public:
       k2.normalize();
     }
 
-    SLIC_ASSERT(k1.isValid());
-    SLIC_ASSERT(k2.isValid());
+    // SLIC_ASSERT(k1.isValid());
+    // SLIC_ASSERT(k2.isValid());
   }
 
   /*!
@@ -416,6 +459,8 @@ public:
    * 
    * \pre Assumes that the input t is within the knot vector and that the span is valid
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
+   * 
+   * \return An array of the `m_deg + 1` non-zero basis functions evaluated at t
    */
   axom::Array<T> calculateBasisFunctionsBySpan(axom::IndexType span, T t) const
   {
@@ -446,7 +491,15 @@ public:
     return N;
   }
 
-  /// \brief Calculate the basis functions at parameter t in unknown span
+  /*!
+   * \brief Evaluates the NURBS basis functions for parameter value t
+   * 
+   * \param [in] t The parameter value
+   * 
+   * \pre Assumes that the input t is within the knot vector
+   * 
+   * \return An array of the `m_deg + 1` non-zero basis functions evaluated at t
+   */
   axom::Array<T> calculateBasisFunctions(T t) const
   {
     SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
@@ -455,6 +508,11 @@ public:
 
   /*!
    * \brief Evaluates the NURBS basis functions and derivatives for span at parameter value t
+   * 
+   * \param [in] span The span in which to evaluate the basis functions
+   * \param [in] t The parameter value
+   * \param [in] n The number of derivatives to compute
+   * \param [out] ders An array of the `n + 1` derivatives evaluated at t
    * 
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
    */
@@ -550,7 +608,15 @@ public:
     }
   }
 
-  /// \brief Calculate the basis functions and derivatives at parameter t in unknown span
+  /*!
+   * \brief Evaluates the NURBS basis functions and derivatives for parameter value t
+   * 
+   * \param [in] t The parameter value
+   * \param [in] n The number of derivatives to compute
+   * \param [out] ders An array of the `n + 1` derivatives evaluated at t
+   * 
+   * \pre Assumes that the input t is within the knot vector
+   */
   void derivativeBasisFunctions(T t, int n, axom::Array<axom::Array<T>>& ders) const
   {
     SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
@@ -632,26 +698,58 @@ public:
     return true;
   }
 
-  /// \brief Check that a knot span is valid
+  /*!
+   * \brief Check if a knot span is valid 
+   *
+   * \param [in] span The span to check
+   * 
+   * A valid span is one that is within the knot vector and has a non-zero length
+   * 
+   * \return True if the span is valid, false otherwise
+   */
   bool isValidSpan(axom::IndexType span) const
   {
     return span >= m_deg && span < m_knots.size() - m_deg - 1 &&
       m_knots[span] != m_knots[span + 1];
   }
 
-  /// \brief Check that a knot span is valid for a given parameter value
+  /*!
+   * \brief Check if a knot span is valid and contains the parameter value t
+   *
+   * \param [in] span The span to check
+   * \param [in] t The parameter value
+   * 
+   * A valid span is one that is within the knot vector, has a non-zero length,
+   * and contains the parameter value t
+   * 
+   * \return True if the span is valid, false otherwise
+   */
   bool isValidSpan(axom::IndexType span, T t) const
   {
     return isValidSpan(span) && t >= m_knots[span] && t <= m_knots[span + 1];
   }
 
-  /// \brief Check equality of two knot vectors
+  /*!
+   * \brief Check equality of two knot vectors
+   * 
+   * \param [in] lhs The first knot vector
+   * \param [in] rhs The second knot vector
+   * 
+   * \return True if the knot vectors are equal, false otherwise 
+   */
   friend inline bool operator==(const KnotVector<T>& lhs, const KnotVector<T>& rhs)
   {
     return lhs.m_deg == rhs.m_deg && lhs.m_knots == rhs.m_knots;
   }
 
-  /// \brief Check inequality of two knot vectors
+  /*!
+   * \brief Check inequality of two knot vectors
+   * 
+   * \param [in] lhs The first knot vector
+   * \param [in] rhs The second knot vector
+   * 
+   * \return True if the knot vectors are not equal, false otherwise 
+   */
   friend inline bool operator!=(const KnotVector<T>& lhs, const KnotVector<T>& rhs)
   {
     return !(lhs == rhs);

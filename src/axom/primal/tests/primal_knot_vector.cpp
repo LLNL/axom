@@ -314,7 +314,7 @@ TEST(primal_knotvector, insert_knot)
 
   kvector.insertKnotBySpan(8, 0.25, 3);
   EXPECT_EQ(23, kvector.getNumKnots());
-  EXPECT_EQ(7, kvector.getNumKnotSpans());
+  EXPECT_EQ(8, kvector.getNumKnotSpans());
 }
 
 //------------------------------------------------------------------------------

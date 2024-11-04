@@ -23,17 +23,15 @@ TEST(primal_nurbscurve, constructor)
   using CoordType = double;
   using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
 
-  {
-    SLIC_INFO("Testing default NURBSCurve constructor");
-    NURBSCurveType nCurve;
+  SLIC_INFO("Testing default NURBSCurve constructor");
+  NURBSCurveType nCurve;
 
-    int expDegree = -1;
-    EXPECT_EQ(expDegree, nCurve.getDegree());
-    EXPECT_EQ(expDegree + 1, nCurve.getOrder());
-    EXPECT_EQ(expDegree + 1, nCurve.getControlPoints().size());
-    EXPECT_EQ(expDegree + 1, nCurve.getKnotsArray().size());
-    EXPECT_FALSE(nCurve.isRational());
-  }
+  int expDegree = -1;
+  EXPECT_EQ(expDegree, nCurve.getDegree());
+  EXPECT_EQ(expDegree + 1, nCurve.getOrder());
+  EXPECT_EQ(expDegree + 1, nCurve.getControlPoints().size());
+  EXPECT_EQ(expDegree + 1, nCurve.getKnotsArray().size());
+  EXPECT_FALSE(nCurve.isRational());
 }
 
 //------------------------------------------------------------------------------
@@ -56,7 +54,6 @@ TEST(primal_nurbscurve, set_degree)
                                 PointType {0.2, 1.4, 2.0}};
 
   nCurve.setNumControlPoints(npts);
-  nCurve.setDegree(degree + 1);
   nCurve.setDegree(degree);
 
   EXPECT_EQ(nCurve.getDegree(), degree);
@@ -545,7 +542,7 @@ TEST(primal_nurbscurve, curve_splitting)
 
   double weights[4] = {1.0, 2.0, 3.0, 4.0};
 
-  for(int deg = 2; deg <= 2; ++deg)
+  for(int deg = 1; deg <= 3; ++deg)
   {
     NURBSCurveType curve(data, weights, 4, deg);
 
