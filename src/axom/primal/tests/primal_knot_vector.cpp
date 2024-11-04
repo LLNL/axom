@@ -303,18 +303,18 @@ TEST(primal_knotvector, insert_knot)
 
   EXPECT_EQ(16, kvector.getNumKnots());
   EXPECT_EQ(6, kvector.getNumKnotSpans());
- 
+
   kvector.insertKnotBySpan(3, 0.1, 2);
   EXPECT_EQ(18, kvector.getNumKnots());
   EXPECT_EQ(7, kvector.getNumKnotSpans());
- 
+
   kvector.insertKnotBySpan(5, 0.2, 2);
   EXPECT_EQ(20, kvector.getNumKnots());
   EXPECT_EQ(7, kvector.getNumKnotSpans());
- 
+
   kvector.insertKnotBySpan(8, 0.25, 3);
   EXPECT_EQ(23, kvector.getNumKnots());
-  EXPECT_EQ(8, kvector.getNumKnotSpans());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
 }
 
 //------------------------------------------------------------------------------

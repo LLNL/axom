@@ -476,7 +476,7 @@ TEST(primal_winding_number, degenerate_cases)
     abs_tol);
 }
 
-TEST(primal_winding_number, rational_winding_number)
+TEST(primal_winding_number, rational_bezier_winding_number)
 {
   using Point2D = primal::Point<double, 2>;
   using Bezier = primal::BezierCurve<double, 2>;
