@@ -1511,14 +1511,15 @@ View* View::importArrayNode(const Node& array)
       conduit::index_t num_ele = array_dtype.number_of_elements();
       conduit::index_t ele_bytes = DataType::default_bytes(array_dtype.id());
 
-      buff->allocate((TypeID)array_dtype.id(), num_ele);
+      int allocID = m_owning_group->getDefaultAllocatorID();
+      buff->allocate((TypeID)array_dtype.id(), num_ele, allocID);
 
       // copy the data in a way that matches
       // to compact representation of the buffer
       conduit::uint8* data_ptr = (conduit::uint8*)buff->getVoidPtr();
       for(conduit::index_t i = 0; i < num_ele; i++)
       {
-        memcpy(data_ptr, array.element_ptr(i), ele_bytes);
+        axom::copy(data_ptr, array.element_ptr(i), ele_bytes);
         data_ptr += ele_bytes;
       }
 
