@@ -12,7 +12,7 @@
  *
  *          This is a templated abstract base class defining an interface for
  *          classes holding a collection of items of a fixed
- *          type that can be accessed by string name or sidre::IndexType.
+ *          type that can be accessed by string name or axom::IndexType.
  *
  *          The primary intent is to decouple the implementation of the
  *          collections from the Group class which owns collections of
@@ -39,53 +39,29 @@
  *               size_t getNumItems() const;
  *
  *          - // Return first valid item index for iteration.
- *            // sidre::InvalidIndex returned if no items in collection
+ *            // axom::InvalidIndex returned if no items in collection
  *
  *               IndexType getFirstValidIndex() const;
  *
  *          - // Return next valid item index for iteration.
- *            // sidre::InvalidIndex returned if there are no more items
+ *            // axom::InvalidIndex returned if there are no more items
  *            // to be iterated over.
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
  *
- *          - // Return true if item with given name in collection; else false.
- *
- *               bool hasItem(const std::string& name) const;
- *
  *          - // Return true if item with given index in collection; else false.
  *
  *               bool hasItem(IndexType idx) const;
- *
- *          - // Return pointer to item with given name (nullptr if none).
- *
- *               T* getItem(const std::string& name);
- *               T const* getItem(const std::string& name) const ;
  *
  *          - // Return pointer to item with given index (nullptr if none).
  *
  *               T* getItem(IndexType idx);
  *               T const* getItem(IndexType idx) const;
  *
- *          - // Return name of object with given index
- *            // (sidre::InvalidName if none).
- *
- *               std::string getItemName(IndexType idx) const;
- *
- *          - // Return index of object with given name
- *            // (sidre::InvalidIndex if none).
- *
- *               IndexType getItemIndex(const std::string& name) const;
- *
  *          - // Insert item with given name; return index if insertion
  *            // succeeded, and InvalidIndex otherwise.
  *
  *               IndexType insertItem(T* item, const std::string& name);
- *
- *          - // Remove item with given name if it exists and return a
- *            // pointer to it. If it doesn't exist, return nullptr.
- *
- *               T* removeItem(const std::string& name);
  *
  *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
@@ -96,29 +72,22 @@
  *
  *               void removeAllItems();
  *
- *          - // Clear all items and destroy them.
- *
- *               void deleteAllItems();
- *
  *          \endverbatim
  *
  ******************************************************************************
  */
 
-#ifndef SIDRE_ITEMCOLLECTIONS_HPP_
-#define SIDRE_ITEMCOLLECTIONS_HPP_
+#ifndef AXOM_ITEMCOLLECTIONS_HPP_
+#define AXOM_ITEMCOLLECTIONS_HPP_
+
+#include <string>
 
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/core/IteratorBase.hpp"
 
-// Sidre project headers
-#include "SidreTypes.hpp"
-
 namespace axom
-{
-namespace sidre
 {
 /*!
  *************************************************************************
@@ -221,9 +190,9 @@ public:
 public:
   iterator(CollectionType* coll, bool is_first) : m_collection(coll)
   {
-    SLIC_ASSERT(coll != nullptr);
+    assert(coll != nullptr);
 
-    BaseType::m_pos = is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
+    BaseType::m_pos = is_first ? coll->getFirstValidIndex() : axom::InvalidIndex;
   }
 
   IndexType index() const { return BaseType::m_pos; }
@@ -275,9 +244,9 @@ public:
 public:
   const_iterator(const CollectionType* coll, bool is_first) : m_collection(coll)
   {
-    SLIC_ASSERT(coll != nullptr);
+    assert(coll != nullptr);
 
-    BaseType::m_pos = is_first ? coll->getFirstValidIndex() : sidre::InvalidIndex;
+    BaseType::m_pos = is_first ? coll->getFirstValidIndex() : axom::InvalidIndex;
   }
 
   IndexType index() const { return BaseType::m_pos; }
@@ -364,7 +333,6 @@ private:
   const CollectionType* m_collection {nullptr};
 };
 
-} /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* SIDRE_ITEMCOLLECTIONS_HPP_ */
+#endif /* AXOM_ITEMCOLLECTIONS_HPP_ */
