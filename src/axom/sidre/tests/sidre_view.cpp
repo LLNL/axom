@@ -1877,6 +1877,9 @@ TEST(sidre_view, reshape_array)
     // Attempt to reshape empty View should be no-op.
     EXPECT_TRUE(viewA->isEmpty());
     IndexType badShape[] = {1, 2, 3};
+    SLIC_INFO(
+      "Next warning about reshaping non-array view is expected and can be "
+      "ignored.");
     viewA->reshapeArray(3, badShape);
     nDim = viewA->getShape(DMAX, shapeOutput);
     EXPECT_EQ(viewA->getNumElements(), 12);
@@ -1892,6 +1895,9 @@ TEST(sidre_view, reshape_array)
   {
     // Attempt to change size should be no-op.
     IndexType badShape[] = {1, 2, 3};
+    SLIC_INFO(
+      "Next warning about changing number of elemnents is expected and can be "
+      "ignored.");
     viewA->reshapeArray(3, badShape);
     nDim = viewA->getShape(DMAX, shapeOutput);
     EXPECT_EQ(viewA->getNumElements(), 12);
