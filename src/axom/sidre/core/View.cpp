@@ -307,21 +307,16 @@ View* View::reshapeArray(int ndims, const IndexType* shape)
   if(m_state != BUFFER && m_state != EXTERNAL)
   {
     SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
-                 << "View can only reshape array states (BUFFER or EXTERNAL.");
+                 << "View can only reshape array states (BUFFER or EXTERNAL).");
     return this;
   }
 
-  IndexType oldSize = 1;
-  for(const auto& s : m_shape)
-  {
-    oldSize *= s;
-  }
-  IndexType newSize = 1;
-  for(int d = 0; d < ndims; ++d)
+  IndexType newSize = shape[0];
+  for(int d = 1; d < ndims; ++d)
   {
     newSize *= shape[d];
   }
-  if(newSize != oldSize)
+  if(newSize != getNumElements())
   {
     SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
                  << "View reshape must not change the number of elements.");
