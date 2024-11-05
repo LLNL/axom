@@ -25,8 +25,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   to split any input zones that contain multiple materials into zones that contain a single material.
   The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
   oriented algorithm that produces smooth interfaces between zones and their neighbors.
+- `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
 
 ###  Changed
+- Importing Conduit array data into `sidre::View` now allocates destination
+  data using the `View`'s parent's allocator ID, instead of always using
+  host memory.  This is consistent with the behavior of deep-copying data
+  from Sidre.
 - ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
   to core.  The namespace prefix for these classes is now axom:: insteand of axom::sidre.  The internal usage of
   these types within Sidre Datastore and Group is unchanged.

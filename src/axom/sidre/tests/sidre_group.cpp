@@ -3405,6 +3405,96 @@ TEST(sidre_group, import_conduit_lists)
 }
 
 //------------------------------------------------------------------------------
+
+inline int pointerToAllocatorID(const void* ptr)
+{
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  if(rm.hasAllocator(const_cast<void*>(ptr)))
+  {
+    umpire::Allocator allocator = rm.getAllocator(const_cast<void*>(ptr));
+    return allocator.getId();
+  }
+#endif
+  AXOM_UNUSED_VAR(ptr);
+  return axom::getDefaultAllocatorID();
+}
+
+TEST(sidre_group, import_conduit_into_mem_space)
+{
+#if defined(AXOM_USE_UMPIRE) && defined(UMPIRE_ENABLE_DEVICE)
+  const int hostAllocId = axom::detail::getAllocatorID<axom::MemorySpace::Host>();
+  const int devAllocId =
+    axom::detail::getAllocatorID<axom::MemorySpace::Device>();
+#else
+  // Memory space testing is trivial without device memory.
+  const int hostAllocId =
+    axom::detail::getAllocatorID<axom::MemorySpace::Dynamic>();
+  const int devAllocId = hostAllocId;
+#endif
+
+  DataStore ds;
+  Group* root = ds.getRoot();
+
+  constexpr IndexType N = 5;
+  int32_t* devArray = axom::allocate<std::int32_t>(N, devAllocId);
+  auto dtype = conduit::DataType::int32(N);
+
+  conduit::Node node;
+  node["origOnHost"].set_dtype(dtype);
+  node["origOnDev"].set_external(dtype, devArray);
+  EXPECT_EQ(pointerToAllocatorID(node["origOnHost"].data_ptr()), hostAllocId);
+  EXPECT_EQ(pointerToAllocatorID(node["origOnDev"].data_ptr()), devAllocId);
+
+  /*
+    Regardless of where the source data is, the destination
+    data should be in the destination group's allocator id.
+  */
+
+  {
+    // Import host and device data into host memory
+    const int destAllocId = hostAllocId;
+    Group* destGroup = root->createGroup("destGroupWithHostData");
+    destGroup->setDefaultAllocator(destAllocId);
+
+    destGroup->importConduitTree(node);
+    EXPECT_EQ(destGroup->getDefaultAllocatorID(), destAllocId);
+    EXPECT_TRUE(destGroup->hasView("origOnHost"));
+    EXPECT_TRUE(destGroup->hasView("origOnDev"));
+
+    const auto* viewWithHostData = destGroup->getView("origOnHost");
+    int allocIdForHostData = pointerToAllocatorID(viewWithHostData->getVoidPtr());
+    EXPECT_EQ(allocIdForHostData, destAllocId);
+
+    const auto* viewWithDevData = destGroup->getView("origOnDev");
+    int allocIdForDevData = pointerToAllocatorID(viewWithDevData->getVoidPtr());
+    EXPECT_EQ(allocIdForDevData, destAllocId);
+  }
+
+  {
+    // Import host and device data into device memory
+    const int destAllocId = devAllocId;
+    Group* destGroup = root->createGroup("destGroupWithDeviceData");
+    destGroup->setDefaultAllocator(destAllocId);
+
+    destGroup->importConduitTree(node);
+    EXPECT_EQ(destGroup->getDefaultAllocatorID(), destAllocId);
+    EXPECT_TRUE(destGroup->hasView("origOnHost"));
+    EXPECT_TRUE(destGroup->hasView("origOnDev"));
+
+    const auto* viewWithHostData = destGroup->getView("origOnHost");
+    int allocIdForHostData = pointerToAllocatorID(viewWithHostData->getVoidPtr());
+    EXPECT_EQ(allocIdForHostData, destAllocId);
+
+    const auto* viewWithDevData = destGroup->getView("origOnDev");
+    int allocIdForDevData = pointerToAllocatorID(viewWithDevData->getVoidPtr());
+    EXPECT_EQ(allocIdForDevData, destAllocId);
+  }
+
+  axom::deallocate(devArray);
+}
+
+//------------------------------------------------------------------------------
 // getDataInfo()
 //------------------------------------------------------------------------------
 // Local variables and methods to avoid redundant code
