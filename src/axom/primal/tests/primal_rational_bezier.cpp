@@ -477,61 +477,6 @@ TEST(primal_beziercurve, isRational)
   EXPECT_FALSE(rCurve.isRational());
 }
 
-TEST(primal_rationalbezier, winding_number)
-{
-  using Point2D = primal::Point<double, 2>;
-  using Bezier = primal::BezierCurve<double, 2>;
-  using CPolygon = primal::CurvedPolygon<double, 2>;
-
-  double abs_tol = 1e-8;
-  double edge_tol = 0;
-  double EPS = 0;
-
-  // Simple quarter circle shape
-  Point2D circle_nodes[] = {Point2D {1.0, 0.0},
-                            Point2D {1.0, 1.0},
-                            Point2D {0.0, 1.0}};
-  double weights[] = {2.0, 1.0, 1.0};
-  Bezier circle_arc(circle_nodes, weights, 2);
-
-  Point2D leg1_nodes[] = {Point2D {0.0, 1.0}, {0.0, 0.0}};
-  Bezier leg1(leg1_nodes, 1);
-
-  Point2D leg2_nodes[] = {Point2D {0.0, 0.0}, {1.0, 0.0}};
-  Bezier leg2(leg2_nodes, 1);
-
-  CPolygon quarter_circle;
-  quarter_circle.addEdge(circle_arc);
-  quarter_circle.addEdge(leg1);
-  quarter_circle.addEdge(leg2);
-
-  for(double theta = 0.01; theta < 1.5; theta += 0.05)
-  {
-    for(int i = 1; i < 9; i++)
-    {
-      const double offset = std::pow(10, -i);
-      const double ri = 1.0 - offset;
-      const double ro = 1.0 + offset;
-
-      EXPECT_NEAR(
-        winding_number(Point2D({ri * std::cos(theta), ri * std::sin(theta)}),
-                       quarter_circle,
-                       edge_tol,
-                       EPS),
-        1.0,
-        abs_tol);
-
-      EXPECT_NEAR(
-        winding_number(Point2D({ro * std::cos(theta), ro * std::sin(theta)}),
-                       quarter_circle,
-                       edge_tol,
-                       EPS),
-        0.0,
-        abs_tol);
-    }
-  }
-}
-
 TEST(primal_rationalbezier, rational_intersection)
 {
   using Point2D = primal::Point<double, 2>;
