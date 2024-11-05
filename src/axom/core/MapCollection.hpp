@@ -12,7 +12,7 @@
  *
  *          MapCollection is an implemenation of ItemCollection to
  *          hold a collection of items of a fixed type that can be accessed
- *          accessed by string name or sidre::IndexType.
+ *          accessed by string name or axom::IndexType.
  *
  *          The primary intent is to decouple the implementation of the
  *          collection of times from the Group class which owns collections of
@@ -39,13 +39,13 @@
  *
  *          - // Return first valid item index (i.e., smallest index over
  *            // all items).
- *            // sidre::InvalidIndex returned if no items in collection
+ *            // axom::InvalidIndex returned if no items in collection
  *
  *               IndexType getFirstValidIndex() const;
  *
  *          - // Return next valid item index after given index (i.e., smallest
  *            // index over all indices larger than given one).
- *            // sidre::InvalidIndex returned
+ *            // axom::InvalidIndex returned
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
  *
@@ -68,12 +68,12 @@
  *               T const* getItem(IndexType idx) const;
  *
  *          - // Return name of object with given index
- *            // (sidre::InvalidName if none).
+ *            // (axom::utilities::string::InvalidName if none).
  *
- *               std::string getItemName(IndexType idx) const;
+ *               const std::string& getItemName(IndexType idx) const;
  *
  *          - // Return index of object with given name
- *            // (sidre::InvalidIndex if none).
+ *            // (axom::InvalidIndex if none).
  *
  *               IndexType getItemIndex(const std::string& name) const;
  *
@@ -105,8 +105,8 @@
  ******************************************************************************
  */
 
-#ifndef SIDRE_MAP_COLLECTIONS_HPP_
-#define SIDRE_MAP_COLLECTIONS_HPP_
+#ifndef AXOM_MAP_COLLECTIONS_HPP_
+#define AXOM_MAP_COLLECTIONS_HPP_
 
 // Standard C++ headers
 #include <map>
@@ -117,9 +117,9 @@
 // Other axom headers
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 // Sidre project headers
-#include "SidreTypes.hpp"
 #include "ItemCollection.hpp"
 
 #if defined(AXOM_USE_SPARSEHASH)
@@ -129,8 +129,6 @@
 #endif
 
 namespace axom
-{
-namespace sidre
 {
 ////////////////////////////////////////////////////////////////////////
 //
@@ -222,7 +220,7 @@ public:
   const std::string& getItemName(IndexType idx) const
   {
     return (hasItem(idx) ? m_items[static_cast<unsigned>(idx)]->getName()
-                         : InvalidName);
+                         : axom::utilities::string::InvalidName);
   }
 
   ///
@@ -394,7 +392,6 @@ T* MapCollection<T>::removeItem(IndexType idx)
   }
 }
 
-} /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* SIDRE_MAP_COLLECTIONS_HPP_ */
+#endif /* AXOM_MAP_COLLECTIONS_HPP_ */

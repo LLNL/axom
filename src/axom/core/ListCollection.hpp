@@ -32,12 +32,12 @@
  *               size_t getNumItems() const;
  *
  *          - // Return first item index for iteration.
- *            // sidre::InvalidIndex returned if no items in collection
+ *            // axom::InvalidIndex returned if no items in collection
  *
  *               IndexType getFirstValidIndex() const;
  *
  *          - // Return next valid item index for iteration.
- *            // sidre::InvalidIndex returned if there are no further items
+ *            // axom::InvalidIndex returned if there are no further items
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
  * *
@@ -75,10 +75,11 @@
  ******************************************************************************
  */
 
-#ifndef SIDRE_LISTCOLLECTIONS_HPP_
-#define SIDRE_LISTCOLLECTIONS_HPP_
+#ifndef AXOM_LISTCOLLECTIONS_HPP_
+#define AXOM_LISTCOLLECTIONS_HPP_
 
 // Standard C++ headers
+#include <iostream>
 #include <map>
 #include <list>
 #include <stack>
@@ -90,12 +91,9 @@
 #include "axom/core/Types.hpp"
 
 // Sidre project headers
-#include "SidreTypes.hpp"
-#include "ItemCollection.hpp"
+#include "axom/core/ItemCollection.hpp"
 
 namespace axom
-{
-namespace sidre
 {
 ////////////////////////////////////////////////////////////////////////
 //
@@ -224,10 +222,16 @@ IndexType ListCollection<T>::getNextValidIndex(IndexType idx) const
 template <typename T>
 IndexType ListCollection<T>::insertItem(T* item, const std::string& name)
 {
-  SLIC_WARNING_IF(!name.empty(),
-                  "Item " << name << " added to Group "
-                          << "which holds items in list format. "
-                          << "The name of this item will be ignored.");
+#ifdef AXOM_DEBUG
+  if(!name.empty())
+  {
+    std::cerr << "Item " << name << " added to Group "
+              << "which holds items in list format. "
+              << "The name of this item will be ignored." << std::endl;
+  }
+#else
+  AXOM_UNUSED_VAR(name);
+#endif
 
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
@@ -273,7 +277,6 @@ T* ListCollection<T>::removeItem(IndexType idx)
   return ret_val;
 }
 
-} /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* SIDRE_LIST_COLLECTIONS_HPP_ */
+#endif /* AXOM_LIST_COLLECTIONS_HPP_ */
