@@ -1934,6 +1934,15 @@ TEST(sidre_view, reshape_array)
     EXPECT_EQ(shapeOutput[2], 2);
   }
 
+  {
+    IndexType shape1d = viewA->getNumElements();
+    viewA->reshapeArray(1, &shape1d);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), shape1d);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], shape1d);
+  }
+
   // A view with external array data.
   auto* viewB = root->createView("viewB");
 
