@@ -18,7 +18,9 @@
 
 // axom headers
 #include "axom/config.hpp"
+#include "axom/core/ItemCollection.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/MapCollection.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic.hpp"
 #include "axom/export/sidre.h"
@@ -40,19 +42,15 @@
 // Sidre headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
-#include "ItemCollection.hpp"
 
 namespace axom
 {
+
 namespace sidre
 {
 class Buffer;
 class Group;
 class DataStore;
-template <typename TYPE>
-class ItemCollection;
-template <typename TYPE>
-class MapCollection;
 
 /*!
  * \class Group

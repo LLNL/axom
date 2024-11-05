@@ -80,6 +80,22 @@ foreach(test_suite ${core_serial_tests})
 endforeach()
 
 #------------------------------------------------------------------------------
+# Test for ItemCollection classes
+#------------------------------------------------------------------------------
+
+axom_add_executable(NAME core_collections_test
+                    SOURCES core_collections.cpp
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON ${core_test_depends}
+                    FOLDER axom/core/tests
+                    )
+
+axom_add_test( NAME    core_collections
+               COMMAND core_collections_test
+             )
+
+
+#------------------------------------------------------------------------------
 # MPI GTests
 #------------------------------------------------------------------------------
 if (AXOM_ENABLE_MPI)
