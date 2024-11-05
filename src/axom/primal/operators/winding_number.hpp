@@ -23,6 +23,7 @@
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/geometry/NURBSCurve.hpp"
 #include "axom/primal/geometry/BezierPatch.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -211,7 +212,7 @@ int winding_number(const Point<T, 2>& R,
  * that constructs a polygon with the same *integer* WN as 
  * the curve closed with a linear segment. The *generalized* WN 
  * of the closing line is then subtracted from the integer WN to
- * return the GWN of the original curve. (See )
+ * return the GWN of the original curve.
  *  
  * Nearly-linear Bezier curves are the base case for recursion.
  * 
@@ -231,7 +232,7 @@ double winding_number(const Point<T, 2>& q,
   const int ord = c.getOrder();
   if(ord <= 0) return 0.0;
 
-  // Early return is possible for must points + curves
+  // Early return is possible for most points + curves
   if(!c.boundingBox().expand(edge_tol).contains(q))
   {
     return detail::linear_winding_number(q, c[0], c[ord], edge_tol);
@@ -290,6 +291,51 @@ double winding_number(const Point<T, 2>& q,
 }
 
 /*!
+ * \brief Computes the GWN for a 2D point wrt a 2D NURBS curve
+ *
+ * \param [in] query The query point to test
+ * \param [in] n The NURBS curve object 
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ *
+ * Computes the GWN by decomposing into rational Bezier curves
+ *  and summing the resulting GWNs. Far-away curves can be evaluated
+ *  without decomposition using direct formula.
+ * 
+ * \return The GWN.
+ */
+template <typename T>
+double winding_number(const Point<T, 2>& q,
+                      const NURBSCurve<T, 2>& n,
+                      double edge_tol = 1e-8,
+                      double EPS = 1e-8)
+{
+  const int deg = n.getDegree();
+  if(deg <= 0) return 0.0;
+
+  // Early return is possible for most points + curves
+  if(!n.boundingBox().expand(edge_tol).contains(q))
+  {
+    return detail::linear_winding_number(q,
+                                         n[0],
+                                         n[n.getNumControlPoints() - 1],
+                                         edge_tol);
+  }
+
+  // Decompose the NURBS curve into Bezier segments
+  auto beziers = n.extractBezier();
+
+  // Compute the GWN for each Bezier segment
+  double gwn = 0.0;
+  for(int i = 0; i < beziers.size(); i++)
+  {
+    gwn += winding_number(q, beziers[i], edge_tol, EPS);
+  }
+
+  return gwn;
+}
+
+/*!
  * \brief Computes the GWN for a 2D point wrt to a 2D curved polygon
  *
  * \param [in] query The query point to test
@@ -320,7 +366,7 @@ double winding_number(const Point<T, 2>& q,
  * \brief Computes the GWN for a 2D point wrt to a collection of 2D Bezier curves
  *
  * \param [in] query The query point to test
- * \param [in] cpoly The CurvedPolygon object
+ * \param [in] carray The array of Bezier curves
  * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
  *
@@ -344,6 +390,36 @@ double winding_number(const Point<T, 2>& q,
 
   return ret_val;
 }
+
+/*!
+ * \brief Computes the GWN for a 2D point wrt to a collection of 2D NURBS curves
+ *
+ * \param [in] query The query point to test
+ * \param [in] narray The array of NURBS curves
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ *
+ * Sums the GWN at `query` for each curved edge
+ * 
+ * \return The GWN.
+ */
+template <typename T>
+double winding_number(const Point<T, 2>& q,
+                      const axom::Array<NURBSCurve<T, 2>>& narray,
+                      double edge_tol = 1e-8,
+                      double EPS = 1e-8)
+{
+  AXOM_UNUSED_VAR(EPS);
+
+  double ret_val = 0.0;
+  for(int i = 0; i < narray.size(); i++)
+  {
+    ret_val += winding_number(q, narray[i], edge_tol);
+  }
+
+  return ret_val;
+}
+
 //@}
 
 //@{
