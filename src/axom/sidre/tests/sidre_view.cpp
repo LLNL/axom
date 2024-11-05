@@ -1916,9 +1916,12 @@ TEST(sidre_view, reshape_array)
   }
 
   viewA->deallocate();
+  EXPECT_FALSE(viewA->isAllocated());
 
   {
+    // Reshaping an unallocated array is allowed, as long as it is described.
     IndexType shape2d[] = {2, 6};
+    EXPECT_TRUE(viewA->isDescribed());
     viewA->reshapeArray(2, shape2d);
     nDim = viewA->getShape(DMAX, shapeOutput);
     EXPECT_EQ(viewA->getNumElements(), 12);
@@ -1928,6 +1931,7 @@ TEST(sidre_view, reshape_array)
   }
 
   viewA->allocate();
+  EXPECT_TRUE(viewA->isAllocated());
 
   {
     IndexType shape3d[] = {3, 2, 2};
