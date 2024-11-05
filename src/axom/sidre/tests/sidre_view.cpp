@@ -1951,6 +1951,12 @@ TEST(sidre_view, reshape_array)
     EXPECT_EQ(viewA->getNumElements(), shape1d);
     EXPECT_EQ(nDim, 1);
     EXPECT_EQ(shapeOutput[0], shape1d);
+    // Test a valid reshape that doesn't change the shape.
+    viewA->reshapeArray(1, &shape1d);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), shape1d);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], shape1d);
   }
 
   // A view with external array data.
