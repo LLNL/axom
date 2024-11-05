@@ -298,6 +298,45 @@ View* View::reallocate(const DataType& dtype)
 /*
  *************************************************************************
  *
+ * Reshape an array View.
+ *
+ *************************************************************************
+ */
+View* View::reshapeArray(int ndims, const IndexType* shape)
+{
+  if(m_state != BUFFER && m_state != EXTERNAL)
+  {
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View can only reshape array states (BUFFER or EXTERNAL).");
+    return this;
+  }
+
+  IndexType newSize = shape[0];
+  for(int d = 1; d < ndims; ++d)
+  {
+    newSize *= shape[d];
+  }
+  if(newSize != getNumElements())
+  {
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View reshape must not change the number of elements.");
+    return this;
+  }
+
+  // If View was applied before reshape, then reapply it.
+  const bool is_applied = m_is_applied;
+  describe(getTypeID(), ndims, shape);
+  if(is_applied)
+  {
+    apply();
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Attach/detach buffer to view.
  *
  *************************************************************************
