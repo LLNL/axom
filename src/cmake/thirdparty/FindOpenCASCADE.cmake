@@ -11,16 +11,8 @@
 #  OPENCASCADE_LIBRARIES - The OpenCASCADE libraries
 #------------------------------------------------------------------------------
 
-# First check for OPENCASCADE_DIR
-if (NOT EXISTS "${OPENCASCADE_DIR}")
-    message(FATAL_ERROR "Given OPENCASCADE_DIR does not exist: ${OPENCASCADE_DIR}")
-endif()
-
-if (NOT IS_DIRECTORY "${OPENCASCADE_DIR}")
-    message(FATAL_ERROR "Given OPENCASCADE_DIR is not a directory: ${OPENCASCADE_DIR}")
-endif()
-
 # Note: Axom is using OpenCASCADE for its data exchange component
+axom_assert_is_directory(DIR_VARIABLE OPENCASCADE_DIR)
 find_package(OpenCASCADE CONFIG QUIET NO_DEFAULT_PATH
     HINTS ${OPENCASCADE_DIR}/lib/cmake
           ${OPENCASCADE_DIR}
