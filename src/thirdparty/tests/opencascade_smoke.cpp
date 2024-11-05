@@ -6,24 +6,24 @@
 #include "gtest/gtest.h"
 #include <iostream>
 
-#include <opencascade/Standard_Version.hxx>
+#include "opencascade/Standard_Version.hxx"
 
-#include <opencascade/Bnd_Box.hxx>
-#include <opencascade/BRepBndLib.hxx>
-#include <opencascade/BRepBuilderAPI_MakeFace.hxx>
-#include <opencascade/BRepBuilderAPI_MakeWire.hxx>
-#include <opencascade/BRepBuilderAPI_MakeEdge.hxx>
-#include <opencascade/BRepBuilderAPI_MakeShell.hxx>
-#include <opencascade/BRepPrimAPI_MakeBox.hxx>
-#include <opencascade/gp_Pnt.hxx>
-#include <opencascade/IFSelect_ReturnStatus.hxx>
-#include <opencascade/TopAbs.hxx>
-#include <opencascade/TopoDS_Shape.hxx>
-#include <opencascade/TopoDS_Face.hxx>
-#include <opencascade/TopExp_Explorer.hxx>
+#include "opencascade/Bnd_Box.hxx"
+#include "opencascade/BRepBndLib.hxx"
+#include "opencascade/BRepBuilderAPI_MakeFace.hxx"
+#include "opencascade/BRepBuilderAPI_MakeWire.hxx"
+#include "opencascade/BRepBuilderAPI_MakeEdge.hxx"
+#include "opencascade/BRepBuilderAPI_MakeShell.hxx"
+#include "opencascade/BRepPrimAPI_MakeBox.hxx"
+#include "opencascade/gp_Pnt.hxx"
+#include "opencascade/IFSelect_ReturnStatus.hxx"
+#include "opencascade/TopAbs.hxx"
+#include "opencascade/TopoDS_Shape.hxx"
+#include "opencascade/TopoDS_Face.hxx"
+#include "opencascade/TopExp_Explorer.hxx"
 
-#include <opencascade/STEPControl_Writer.hxx>
-#include <opencascade/STEPControl_Reader.hxx>
+#include "opencascade/STEPControl_Writer.hxx"
+#include "opencascade/STEPControl_Reader.hxx"
 
 //------------------------------------------------------------------------------
 // Some basic smoke tests for OpenCASCADE
