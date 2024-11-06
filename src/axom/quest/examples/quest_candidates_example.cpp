@@ -67,8 +67,12 @@ using RuntimePolicy = axom::runtime_policy::Policy;
   using cuda_exec = seq_exec;
 #endif
 
-// Hip exec included from IntersectionShaper header
-
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+  constexpr int HIP_BLK_SZ = 256;
+  using hip_exec = axom::HIP_EXEC<HIP_BLK_SZ>;
+#else
+  using hip_exec = seq_exec;
+#endif
 // clang-format on
 
 //-----------------------------------------------------------------------------
