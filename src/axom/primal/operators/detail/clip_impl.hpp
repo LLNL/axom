@@ -714,19 +714,19 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   const int numClipEdges = planePoints.numVertices();
 
   // Iterate through edges of clip polygon, represented as planes
-  for(int i = 0; i < numClipEdges; i++)
+  for(int iEdge = 0; iEdge < numClipEdges; iEdge++)
   {
     PlaneType plane =
-      make_plane(planePoints[i], planePoints[(i + 1) % numClipEdges]);
+      make_plane(planePoints[iEdge], planePoints[(iEdge + 1) % numClipEdges]);
 
     PolygonType inputList = outputList;
     outputList.clear();
 
-    for(int i = 0; i < inputList.numVertices(); i++)
+    for(int iVert = 0; iVert < inputList.numVertices(); iVert++)
     {
-      PointType current_point = inputList[i];
+      PointType current_point = inputList[iVert];
       PointType prev_point =
-        inputList[(i - 1) == -1 ? (inputList.numVertices() - 1) : (i - 1)];
+        inputList[(iVert - 1) == -1 ? (inputList.numVertices() - 1) : (iVert - 1)];
 
       T seg_param;
       PointType intersecting_point;
