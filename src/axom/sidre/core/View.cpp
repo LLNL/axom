@@ -1164,7 +1164,6 @@ void View::deepCopyView(View* copy, int allocID) const
     {
       copy->describe(getTypeID(), getNumDimensions(), m_shape.data());
     }
-    copy->describe(getTypeID(), getNumDimensions(), m_shape.data());
   }
 
   switch(m_state)
