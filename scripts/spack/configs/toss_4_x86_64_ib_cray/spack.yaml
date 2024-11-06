@@ -478,6 +478,8 @@ spack:
       variants: ~shared
 
     # Lock in versions of Devtools
+    # Devtools are built on rzvernal for compatibility with both
+    # rzvernal and rzadams.
     cmake:
       version: [3.24.2]
       buildable: false
@@ -490,3 +492,32 @@ spack:
       externals:
       - spec: py-shroud@0.13.0
         prefix: /collab/usr/gapps/shroud/public/toss_4_x86_64_ib_cray/shroud-0.13.0
+    cppcheck:
+      version: [2.9]
+      buildable: false
+      externals:
+      - spec: cppcheck@2.9
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/cppcheck-2.9
+    doxygen:
+      version: [1.11.0]
+      buildable: false
+      externals:
+      - spec: doxygen@1.11.0
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/doxygen-1.11.0
+    llvm:
+      version: [14.0.0]
+      buildable: false
+      externals:
+      - spec: llvm@14.0.0+clang+python
+        prefix: /usr/tce/packages/rocmcc/rocmcc-5.2.3-magic/llvm
+    py-sphinx:
+      version: [8.0.2]
+      buildable: false
+      externals:
+      - spec: py-sphinx@8.0.2
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/python-3.12.5
+    python:
+      buildable: false
+      externals:
+      - spec: python@3.12.5
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/python-3.12.5
