@@ -9,6 +9,7 @@
     "lua",
     "mfem",
     "openmp",
+    "opencascade",
     "raja"
   ],
   "features": {
@@ -23,6 +24,16 @@
     "mfem": {
       "description": "mfem functionality for axom",
       "dependencies" : ["mfem"]
+    },
+    "opencascade": {
+      "description": "opencascade functionality for axom",
+      "dependencies": [
+        {
+          "name": "opencascade",
+          "default-features": false,
+          "features": []
+        }
+      ]
     },
     "raja": {
       "description": "raja functionality for axom",

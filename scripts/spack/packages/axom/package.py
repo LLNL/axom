@@ -92,7 +92,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         description="Build with hooks for Adiak/Caliper performance analysis",
     )
 
-    variant("c2c",      default=False, description="Build with c2c")
+    variant("c2c", default=False, description="Build with c2c")
+    variant("opencascade", default=False, description="Build with opencascade")
 
     variant("mfem", default=False, description="Build with mfem")
     variant("hdf5", default=True, description="Build with hdf5")
@@ -180,6 +181,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("rocprim", when="+rocm")
 
     depends_on("c2c", when="+c2c")
+    depends_on("opencascade", when="+opencascade")
 
     with when("+mfem"):
         depends_on("mfem+mpi", when="+mpi")
@@ -489,7 +491,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries.append(cmake_cache_path("CONDUIT_DIR", conduit_dir))
 
         # optional tpls
-        for dep in ("c2c", "mfem", "hdf5", "lua", "raja", "umpire"):
+        for dep in ("c2c", "mfem", "hdf5", "lua", "raja", "umpire", "opencascade"):
             if "+%s" % dep in spec:
                 dep_dir = get_spec_path(spec, dep, path_replacements)
                 entries.append(cmake_cache_path("%s_DIR" % dep.upper(), dep_dir))

@@ -312,6 +312,24 @@ else()
 endif()
 
 #------------------------------------------------------------------------------
+# OpenCASCADE
+#------------------------------------------------------------------------------
+if (OPENCASCADE_DIR)
+    axom_assert_is_directory(DIR_VARIABLE OPENCASCADE_DIR)
+    include(cmake/thirdparty/FindOpenCASCADE.cmake)
+    blt_import_library(
+        NAME          opencascade
+        INCLUDES      ${OpenCASCADE_INCLUDE_DIR}
+        LIBRARIES     ${OpenCASCADE_LIBRARIES}
+        TREAT_INCLUDES_AS_SYSTEM ON
+        EXPORTABLE    ON)
+    blt_list_append(TO TPL_DEPS ELEMENTS opencascade)
+else()
+    message(STATUS "OpenCASCADE support is OFF")
+    set(OPENCASCADE_FOUND FALSE)
+endif()
+
+#------------------------------------------------------------------------------
 # jsonschema - for Inlet testing purposes
 #------------------------------------------------------------------------------
 set(ENABLE_JSONSCHEMA ON) # required by blt_find_executable
