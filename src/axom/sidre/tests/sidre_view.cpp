@@ -1873,7 +1873,37 @@ TEST(sidre_view, reshape_array)
     EXPECT_EQ(shapeOutput[0], 12);
   }
 
+  {
+    // Attempt to reshape empty View should be no-op.
+    EXPECT_TRUE(viewA->isEmpty());
+    IndexType badShape[] = {1, 2, 3};
+    SLIC_INFO(
+      "Next warning about reshaping non-array view is expected and can be "
+      "ignored.");
+    viewA->reshapeArray(3, badShape);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], 12);
+  }
+
   viewA->allocate();
+  EXPECT_FALSE(viewA->isEmpty());
+  EXPECT_FALSE(viewA->isScalar());
+  EXPECT_TRUE(viewA->hasBuffer());
+
+  {
+    // Attempt to change size should be no-op.
+    IndexType badShape[] = {1, 2, 3};
+    SLIC_INFO(
+      "Next warning about changing number of elemnents is expected and can be "
+      "ignored.");
+    viewA->reshapeArray(3, badShape);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), 12);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], 12);
+  }
 
   {
     IndexType shape2d[] = {3, 4};
@@ -1886,9 +1916,12 @@ TEST(sidre_view, reshape_array)
   }
 
   viewA->deallocate();
+  EXPECT_FALSE(viewA->isAllocated());
 
   {
+    // Reshaping an unallocated array is allowed, as long as it is described.
     IndexType shape2d[] = {2, 6};
+    EXPECT_TRUE(viewA->isDescribed());
     viewA->reshapeArray(2, shape2d);
     nDim = viewA->getShape(DMAX, shapeOutput);
     EXPECT_EQ(viewA->getNumElements(), 12);
@@ -1898,6 +1931,7 @@ TEST(sidre_view, reshape_array)
   }
 
   viewA->allocate();
+  EXPECT_TRUE(viewA->isAllocated());
 
   {
     IndexType shape3d[] = {3, 2, 2};
@@ -1910,6 +1944,21 @@ TEST(sidre_view, reshape_array)
     EXPECT_EQ(shapeOutput[2], 2);
   }
 
+  {
+    IndexType shape1d = viewA->getNumElements();
+    viewA->reshapeArray(1, &shape1d);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), shape1d);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], shape1d);
+    // Test a valid reshape that doesn't change the shape.
+    viewA->reshapeArray(1, &shape1d);
+    nDim = viewA->getShape(DMAX, shapeOutput);
+    EXPECT_EQ(viewA->getNumElements(), shape1d);
+    EXPECT_EQ(nDim, 1);
+    EXPECT_EQ(shapeOutput[0], shape1d);
+  }
+
   // A view with external array data.
   auto* viewB = root->createView("viewB");
 
@@ -1919,6 +1968,7 @@ TEST(sidre_view, reshape_array)
     viewB->setExternalDataPtr(sidre::detail::SidreTT<std::int32_t>::id,
                               24,
                               extData);
+    EXPECT_TRUE(viewB->isExternal());
     nDim = viewB->getShape(DMAX, shapeOutput);
     EXPECT_EQ(viewB->getNumElements(), 24);
     EXPECT_EQ(nDim, 1);

@@ -28,13 +28,13 @@
   #include "axom/quest/interface/internal/QuestHelpers.hpp"
   #include "axom/fmt.hpp"
 
-  // RAJA
-  #if defined(AXOM_USE_RAJA)
-    #include "RAJA/RAJA.hpp"
-  #endif
+#ifdef AXOM_USE_MFEM
+#include "mfem.hpp"
+#endif
 
-  // clang-format off
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+#include "axom/fmt.hpp"
+
+// clang-format off
   using seq_exec = axom::SEQ_EXEC;
 
   #if defined(AXOM_USE_OPENMP)
@@ -43,20 +43,19 @@
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined (AXOM_USE_UMPIRE)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
     using cuda_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined (AXOM_USE_UMPIRE)
     constexpr int HIP_BLOCK_SIZE = 64;
     using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
   #else
     using hip_exec = seq_exec;
   #endif
-#endif
 // clang-format on
 
 namespace axom
@@ -291,6 +290,8 @@ AXOM_HOST_DEVICE inline void TempArrayView<hip_exec>::finalize()
  * starts out as all 1's indicating that it contains 100% of all possible
  * material in a zone. Volume fractions for other materials are then
  * subtracted from the free material so no zone exceeds 100% of material.
+ *
+ * IntersectionShaper requires Axom configured with RAJA and Umpire.
  */
 class IntersectionShaper : public Shaper
 {
@@ -1305,12 +1306,12 @@ public:
       applyReplacementRulesImpl<omp_exec>(shape);
       break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::cuda:
       applyReplacementRulesImpl<cuda_exec>(shape);
       break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::hip:
       applyReplacementRulesImpl<hip_exec>(shape);
       break;
@@ -1359,12 +1360,12 @@ public:
       prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::cuda:
       prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::hip:
       prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
       break;
@@ -1398,12 +1399,12 @@ public:
         runShapeQueryImpl<omp_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
@@ -1422,12 +1423,12 @@ public:
         runShapeQueryImpl<omp_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;

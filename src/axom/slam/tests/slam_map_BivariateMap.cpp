@@ -389,7 +389,6 @@ void constructAndTestBivariateMapIterator(int stride)
   SLIC_INFO("Checking the elements with BivariateMap flat iterator.");
   {
     auto iter = m.begin();
-    // auto flat_idx = 0;
 
     for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
     {
@@ -417,10 +416,6 @@ void constructAndTestBivariateMapIterator(int stride)
   SLIC_INFO("Checking the elements with BivariateMap range iterator.");
   {
     auto iter = m.set_begin();
-    //auto begin_iter = m.begin();
-    //auto end_iter = m.end();
-    //auto inval_iter = end_iter + 1;
-    // auto flat_idx = 0;
     for(auto idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
     {
       for(auto idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
@@ -1052,8 +1047,6 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
 
   rel[0].bindBeginOffsets(MAX_SET_SIZE1, begin_vec.view());
   rel[0].bindIndices(index_vec.size(), index_vec.view());
-
-  // RelationType* relPtr = &rel[0];
 
   RelationSetType relSet(&rel[0]);
   EXPECT_EQ(index_vec.size(), relSet.totalSize());

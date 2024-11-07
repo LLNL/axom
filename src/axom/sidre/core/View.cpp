@@ -304,23 +304,24 @@ View* View::reallocate(const DataType& dtype)
  */
 View* View::reshapeArray(int ndims, const IndexType* shape)
 {
-  SLIC_ERROR_IF(m_state != BUFFER && m_state != EXTERNAL,
-                SIDRE_VIEW_LOG_PREPEND
-                  << "Can only reshape array Views (BUFFER or EXTERNAL).");
-
-  IndexType oldSize = 1;
-  for(const auto& s : m_shape)
+  if(m_state != BUFFER && m_state != EXTERNAL)
   {
-    oldSize *= s;
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View can only reshape array states (BUFFER or EXTERNAL).");
+    return this;
   }
-  IndexType newSize = 1;
-  for(int d = 0; d < ndims; ++d)
+
+  IndexType newSize = shape[0];
+  for(int d = 1; d < ndims; ++d)
   {
     newSize *= shape[d];
   }
-  SLIC_ERROR_IF(newSize != oldSize,
-                SIDRE_VIEW_LOG_PREPEND
-                  << "Reshape must not change the number of elements.");
+  if(newSize != getNumElements())
+  {
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View reshape must not change the number of elements.");
+    return this;
+  }
 
   // If View was applied before reshape, then reapply it.
   const bool is_applied = m_is_applied;
@@ -1163,7 +1164,6 @@ void View::deepCopyView(View* copy, int allocID) const
     {
       copy->describe(getTypeID(), getNumDimensions(), m_shape.data());
     }
-    copy->describe(getTypeID(), getNumDimensions(), m_shape.data());
   }
 
   switch(m_state)
@@ -1550,7 +1550,7 @@ View* View::importArrayNode(const Node& array, int allocID)
       conduit::index_t num_ele = array_dtype.number_of_elements();
       conduit::index_t ele_bytes = DataType::default_bytes(array_dtype.id());
 
-      allocID = getValidAllocatorID(allocID);
+      int allocID = m_owning_group->getDefaultAllocatorID();
       buff->allocate((TypeID)array_dtype.id(), num_ele, allocID);
 
       // copy the data in a way that matches

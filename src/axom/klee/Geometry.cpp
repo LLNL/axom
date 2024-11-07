@@ -172,6 +172,8 @@ bool Geometry::isBlueprintTetMesh(const axom::sidre::Group* meshGroup) const
 
   conduit::Node info;
   bool isValid = conduit::blueprint::mesh::verify(bpMesh, info);
+  // The above call to verify causes the crash, even though this
+  // function is never entered.
   if(!isValid)
   {
     return false;

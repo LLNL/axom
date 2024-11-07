@@ -246,7 +246,11 @@ void DiscreteShape::createBlueprintTetsRepresentation()
 
   // Put the in-memory geometry in m_meshRep.
   const axom::sidre::Group* inputGroup = geometry.getBlueprintMesh();
+#ifdef AXOM_USE_UMPIRE
   int allocID = inputGroup->getDefaultAllocatorID();
+#else
+  int allocID = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+#endif
 
   std::string modName = inputGroup->getName() + "_modified";
   while(m_sidreGroup->hasGroup(modName))

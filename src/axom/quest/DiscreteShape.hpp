@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_KLEE_DISCRETE_SHAPE_HPP
-#define AXOM_KLEE_DISCRETE_SHAPE_HPP
+#ifndef AXOM_QUEST_DISCRETE_SHAPE_HPP
+#define AXOM_QUEST_DISCRETE_SHAPE_HPP
 
 #include <string>
 #include <vector>
@@ -115,7 +115,7 @@ public:
     If the sidre parent group was used in the constructor, the
     mesh data is stored under that group.
 
-    If the discrete mesh isn't generated yet (for analytical shapes)
+    If the discrete mesh isn't generated yet (for analytical shapes),
     generate it.
   */
   std::shared_ptr<mint::Mesh> createMeshRepresentation();

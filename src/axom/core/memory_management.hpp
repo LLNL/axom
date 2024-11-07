@@ -256,28 +256,7 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
   }
   else
   {
-    auto oldPointer = pointer;
-    auto foundAllocator = rm.getAllocator(pointer);
-    auto size = foundAllocator.getSize(pointer);
-    constexpr bool workAround = true;
-    if(workAround)
-    {
-      /*
-        This empty-buffer work-around addresses issue #1287 and PR
-        #1271.  The reproducer is the immediate_ug_reserve test in
-        file axom/src/axom/quest/test/quest_initialize.cpp.  This
-        work-around doesn't address the actual cause of the problem,
-        something we should try to identify and fix.
-      */
-      pointer = static_cast<T*>(foundAllocator.allocate(numbytes));
-      auto copysize = std::min(size, numbytes);
-      axom::copy(pointer, oldPointer, copysize);
-      axom::deallocate(oldPointer);
-    }
-    else
-    {
-      pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
-    }
+    pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
   }
 
 #else
@@ -413,6 +392,23 @@ inline int getAllocatorID<MemorySpace::Constant>()
 #endif
 
 }  // namespace detail
+
+/*!
+ * \brief Determines whether an allocator id is on device.
+ *
+ * \param allocator_id An allocator id.
+ *
+ * \return True if the allocator id is for a device; false otherwise.
+ */
+inline bool isDeviceAllocator(int allocator_id)
+{
+#if defined(AXOM_USE_UMPIRE)
+  return axom::detail::getAllocatorSpace(allocator_id) ==
+    axom::MemorySpace::Device;
+#else
+  return false;
+#endif
+}
 
 }  // namespace axom
 

@@ -84,8 +84,8 @@ void split(const Octahedron<Tp, NDIMS>& oct,
  * \tparam Tp the coordinate type, such double or float
  * \tparam NDIMS the number of spatial dimensions (must be 3).
  * \param [in] oct The Octahedron to split
- * \param [out] out C array of 8 Tetrahedron objects; the fragments of
- *              oct are appended to out.
+ * \param [out] outPtr C-style array of 8 Tetrahedron objects;
+ *              the fragments of oct are appended to out.
  *
  * \pre NDIMS == 3
  *

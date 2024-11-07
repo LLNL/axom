@@ -30,6 +30,7 @@ project(using_with_cmake)
 
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
+# _zerotoaxom_docs_start
 #------------------------------------------------------------------------------
 # Check for AXOM_DIR and use CMake's find_package to import axom's targets
 #------------------------------------------------------------------------------
@@ -85,3 +86,4 @@ target_include_directories(example PRIVATE ${AXOM_INCLUDE_DIRS})
 # link to axom targets
 target_link_libraries(example axom)
 target_link_libraries(example axom::fmt)
+# _zerotoaxom_docs_end

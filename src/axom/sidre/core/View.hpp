@@ -434,6 +434,11 @@ public:
   /*!
    * \brief Reshape the array without changing its size.
    *
+   * The View state must be either BUFFER or EXTERNAL.
+   * The new shape must have the same size as the current.
+   * If either conditions are not met, a warning is issued
+   * and this is a no-op.
+   *
    * \pre Old and new shapes must be the same size.
    * \pre !isEmpty() && (isExternal() || hasBuffer())
    * \post getNumDimensions() == ndims
