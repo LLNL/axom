@@ -75,7 +75,7 @@ jobs:
         TEST_TARGET: 'linux_clang14'
         HOST_CONFIG: 'clang@14.0.0'
       osx_gcc:
-        VM_ImageName: 'macos-12'
+        VM_ImageName: 'macos-13'
         CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE:BOOL=OFF -DAXOM_ENABLE_INLET:BOOL=OFF -DAXOM_ENABLE_KLEE:BOOL=OFF -DAXOM_ENABLE_SINA:BOOL=OFF'
         TEST_TARGET: 'osx_gcc'
       windows:

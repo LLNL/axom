@@ -65,6 +65,7 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
   set(AXOM_USE_LUA            "@AXOM_USE_LUA@")
   set(AXOM_USE_MFEM           "@AXOM_USE_MFEM@")
+  set(AXOM_USE_OPENCASCADE    "@AXOM_USE_OPENCASCADE@")
   set(AXOM_USE_RAJA           "@AXOM_USE_RAJA@")
   set(AXOM_USE_SCR            "@AXOM_USE_SCR@")
   set(AXOM_USE_UMPIRE         "@AXOM_USE_UMPIRE@")
@@ -98,7 +99,7 @@ if(NOT AXOM_FOUND)
   # c2c
   if(AXOM_USE_C2C)
     set(AXOM_C2C_DIR     "@C2C_DIR@")
-    # Note: Targets not currently imported
+    # Note: 'c2c' target is exported as 'axom::c2c'
   endif()
 
   # caliper
@@ -161,25 +162,31 @@ if(NOT AXOM_FOUND)
   # hdf5
   if(AXOM_USE_HDF5)
     set(AXOM_HDF5_DIR     "@HDF5_DIR@")
-    # Note: 'hdf5" target is exported as 'axom::hdf5'
+    # Note: 'hdf5' target is exported as 'axom::hdf5'
   endif()
 
   # lua
   if(AXOM_USE_LUA)
     set(AXOM_LUA_DIR     "@LUA_DIR@")
-    # Note: 'lua" target is exported as 'axom::lua'
+    # Note: 'lua' target is exported as 'axom::lua'
   endif()
 
   # mfem
   if(AXOM_USE_MFEM)
     set(AXOM_MFEM_DIR     "@MFEM_DIR@")
-    # Note: 'mfem" target is exported as 'axom::mfem'
+    # Note: 'mfem' target is exported as 'axom::mfem'
+  endif()
+
+  # OpenCASCADE
+  if(AXOM_USE_OPENCASCADE)
+    set(AXOM_OPENCASCADE_DIR     "@OPENCASCADE_DIR@")
+    # Note: 'opencascade' target is exported as 'axom::opencascade'
   endif()
 
   # scr
   if(AXOM_USE_SCR)
     set(AXOM_SCR_DIR      "@SCR_DIR@")
-    # Note: 'scr" target is exported as 'axom::scr'
+    # Note: 'scr' target is exported as 'axom::scr'
   endif()
 
   #----------------------------------------------------------------------------

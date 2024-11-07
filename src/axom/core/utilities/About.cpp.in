@@ -178,6 +178,10 @@ void about(std::ostream &oss)
     libs.push_back("mfem");
 #endif
 
+#ifdef AXOM_USE_OPENCASCADE
+    libs.push_back("opencascade");
+#endif
+
 #ifdef AXOM_USE_RAJA
     libs.push_back("raja");
 #endif
