@@ -33,21 +33,21 @@ int main(void)
 
   // Prints 1, corresponding to Scalar
   printType(myDatum,
-          "myDatum",
-          "myDatumType did not match the expected type 'Scalar' (numerically "
-          "represented as 1).");
+            "myDatum",
+            "myDatumType did not match the expected type 'Scalar' (numerically "
+            "represented as 1).");
 
   // Prints 0, corresponding to String
   printType(myOtherDatum,
-          "myOtherDatum",
-          "myDatumType did not match the expected type 'String' (numerically "
-          "represented as 0).");
+            "myOtherDatum",
+            "myDatumType did not match the expected type 'String' (numerically "
+            "represented as 0).");
 
   // Prints 3, corresponding to ScalarArray
   printType(myArrayDatum,
-          "myArrayDatum",
-          "myArrayDatum did not match the expected type 'ScalarArray' "
-          "(numerically represented as 3).");
+            "myArrayDatum",
+            "myArrayDatum did not match the expected type 'ScalarArray' "
+            "(numerically represented as 3).");
 
   // Finalize slic
   axom::slic::finalize();
