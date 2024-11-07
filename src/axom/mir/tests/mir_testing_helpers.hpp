@@ -276,20 +276,9 @@ bool compare_views(const Container1 &a, const Container2 &b)
   }
   if(!eq)
   {
-    std::cout << "a={";
-    for(axom::IndexType i = 0; i < a.size(); i++)
-    {
-      if(i > 0) std::cout << ", ";
-      std::cout << a[i];
-    }
-    std::cout << "}" << std::endl;
-    std::cout << "b={";
-    for(axom::IndexType i = 0; i < a.size(); i++)
-    {
-      if(i > 0) std::cout << ", ";
-      std::cout << b[i];
-    }
-    std::cout << "}" << std::endl;
+    axom::fmt::format("a={{{}}}\nb={{{}}}",
+                      axom::fmt::join(a, ","),
+                      axom::fmt::join(b, ","));
   }
   return eq;
 }
