@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "benchmark/benchmark_api.h"
+#include "benchmark/benchmark.h"
 #include "axom/slic.hpp"
 
 //------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ DataArray generateRandomDataField(int sz)
 class SetFixture : public ::benchmark::Fixture
 {
 public:
-  void SetUp()
+  void SetUp(const ::benchmark::State& /*state*/) override
   {
     volatile int str_vol = STRIDE;  // pass through volatile variable so the
     str = str_vol;                  // number is not a compile time constant
@@ -89,7 +89,7 @@ public:
     data = nullptr;
   }
 
-  void TearDown()
+  void TearDown(const ::benchmark::State& /*state*/) override
   {
     if(ind != nullptr)
     {
@@ -160,7 +160,7 @@ BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S3);
 
 BENCHMARK_DEFINE_F(SetFixture, contig_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -176,7 +176,7 @@ BENCHMARK_REGISTER_F(SetFixture, contig_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, strided_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -192,7 +192,7 @@ BENCHMARK_REGISTER_F(SetFixture, strided_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -208,7 +208,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -225,7 +225,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence)->Apply(CustomArgs);
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -245,7 +245,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered)->Apply(CustomArgs
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -266,7 +266,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -287,7 +287,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_offset)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -308,7 +308,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided_offset)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -328,7 +328,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted)->Apply(CustomArg
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -349,7 +349,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -370,7 +370,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_offset)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -391,7 +391,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided_offset)
 /// --------------------  Benchmarks for array indexing ---------------------
 BENCHMARK_DEFINE_F(SetFixture, contig_sequence_field)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -409,7 +409,7 @@ BENCHMARK_REGISTER_F(SetFixture, contig_sequence_field)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, strided_sequence_field)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -427,7 +427,7 @@ BENCHMARK_REGISTER_F(SetFixture, strided_sequence_field)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_sequence_field)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -446,7 +446,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_sequence_field)->Apply(CustomArgs);
 BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence_field)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -465,7 +465,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence_field)->Apply(CustomArg
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_field)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(sz, false);
   data = generateRandomDataField(maxIndex(sz));
@@ -495,7 +495,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_field)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_field)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(sz, true);
   data = generateRandomDataField(maxIndex(sz));
