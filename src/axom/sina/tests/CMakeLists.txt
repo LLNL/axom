@@ -98,7 +98,7 @@ endif()
 #------------------------------------------------------------------------------
 # Add fortran integration test
 #------------------------------------------------------------------------------
-if (ENABLE_FORTRAN)
+if (ENABLE_FORTRAN AND DEFINED PYTHON_EXECUTABLE)
     configure_file(
         ${CMAKE_SOURCE_DIR}/axom/sina/tests/test_fortran_integration.py
         ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py

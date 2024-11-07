@@ -21,6 +21,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ###  Added
 - `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
+- Sina C++ library is now a component of Axom
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination

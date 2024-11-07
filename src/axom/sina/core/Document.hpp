@@ -212,9 +212,10 @@ void saveDocument(Document const &document, std::string const &fileName);
  *
  * \return A string representing the file format version.
  */
-inline std::string getSinaFileFormatVersion() {
+inline std::string getSinaFileFormatVersion()
+{
   return std::to_string(SINA_FILE_FORMAT_VERSION_MAJOR) + "." +
-         std::to_string(SINA_FILE_FORMAT_VERSION_MINOR);
+    std::to_string(SINA_FILE_FORMAT_VERSION_MINOR);
 }
 
 /**
