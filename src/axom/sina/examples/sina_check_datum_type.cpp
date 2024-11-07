@@ -9,7 +9,7 @@
 using ValueTypeUnderlying =
   typename std::underlying_type<axom::sina::ValueType>::type;
 
-void getType(axom::sina::Datum datum, std::string datumName, std::string errMsg)
+void printType(axom::sina::Datum datum, std::string datumName, std::string errMsg)
 {
   auto datumType = static_cast<ValueTypeUnderlying>(datum.getType());
   SLIC_ASSERT_MSG(
@@ -32,19 +32,19 @@ int main(void)
   axom::sina::Datum myArrayDatum {scalars};
 
   // Prints 1, corresponding to Scalar
-  getType(myDatum,
+  printType(myDatum,
           "myDatum",
           "myDatumType did not match the expected type 'Scalar' (numerically "
           "represented as 1).");
 
   // Prints 0, corresponding to String
-  getType(myOtherDatum,
+  printType(myOtherDatum,
           "myOtherDatum",
           "myDatumType did not match the expected type 'String' (numerically "
           "represented as 0).");
 
   // Prints 3, corresponding to ScalarArray
-  getType(myArrayDatum,
+  printType(myArrayDatum,
           "myArrayDatum",
           "myArrayDatum did not match the expected type 'ScalarArray' "
           "(numerically represented as 3).");
