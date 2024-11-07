@@ -17,3 +17,24 @@ axom_add_executable(
     DEPENDS_ON ${mir_example_dependencies}
     FOLDER     axom/mir/examples
     )
+
+if(AXOM_ENABLE_TESTS)
+    set (_policies "seq")
+    blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+    blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+    blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+
+    foreach(_policy ${_policies})
+        set(_testname "mir_concentric_circles_${_policy}")
+        axom_add_test(
+            NAME ${_testname}
+            COMMAND mir_concentric_circles
+                --gridsize 100
+                --numcircles 5
+                --policy ${_policy}
+            )
+
+        set_tests_properties(${_testname} PROPERTIES
+            PASS_REGULAR_EXPRESSION  "Material interface reconstruction time:")
+    endforeach()
+endif()

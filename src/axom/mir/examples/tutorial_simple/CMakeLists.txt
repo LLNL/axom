@@ -37,3 +37,26 @@ axom_add_executable(
     DEPENDS_ON ${mir_example_dependencies}
     FOLDER     axom/mir/examples
     )
+
+if(AXOM_ENABLE_TESTS)
+    set(_test_numbers 1 2 3 4 5)
+    set (_policies "seq")
+    blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+    blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+    blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+
+    foreach(_policy ${_policies})
+        foreach(_testnum ${_test_numbers})
+            set(_testname "mir_tutorial_simple_${_policy}_${_testnum}")
+            axom_add_test(
+                NAME ${_testname}
+                COMMAND mir_tutorial_simple
+                    --test-case ${_testnum}
+                    --policy ${_policy}
+                )
+
+            set_tests_properties(${_testname} PROPERTIES
+                PASS_REGULAR_EXPRESSION  "Reconstruction time:")
+        endforeach()
+    endforeach()
+endif()
