@@ -10,6 +10,9 @@
 
 #include "runMIR.hpp"
 
+#include <conduit.hpp>
+#include <conduit_relay.hpp>
+
 #include <string>
 
 // namespace aliases
@@ -20,6 +23,9 @@ namespace fs = axom::utilities::filesystem;
 namespace bputils = axom::mir::utilities::blueprint;
 
 using RuntimePolicy = axom::runtime_policy::Policy;
+
+// Enable when EquiZ supports iteration.
+// #define AXOM_EQUIZ_SUPPORTS_ITERATION
 
 //--------------------------------------------------------------------------------
 /// Contain program options.
@@ -39,16 +45,23 @@ struct Input
   int parse(int argc, char **argv)
   {
     m_app.add_option("--test-case", m_test_case)
+      ->check(axom::CLI::Range(1, 5))
       ->description("Select the test case.");
 
+    m_output_dir = axom::utilities::filesystem::getCWD();
     m_app.add_option("--output-dir", m_output_dir)
-      ->description("The directory for output files");
+      ->check(axom::CLI::ExistingDirectory)
+      ->description("The directory for HDF5/YAML output files");
 
+#if defined(AXOM_EQUIZ_SUPPORTS_ITERATION)
     m_app.add_option("--iter-count", m_iter_count)
+      ->check(axom::CLI::Range(1, 100))
       ->description("The number of iterations for MIR");
 
     m_app.add_option("--iter-percent", m_iter_percent)
+      ->check(axom::CLI::Bound(1.e-6, 10.)
       ->description("The percent error for iterative MIR");
+#endif
 
     m_app.add_flag("--verbose", m_verbose)->description("Verbose output");
 
@@ -89,52 +102,12 @@ struct Input
       return m_app.exit(e);
     }
 
-    int retval = 0;
-    checkTestCase(retval);
-    checkOutputDir();
-    checkIterationParams(retval);
-    return retval;
+    return 0;
   }
 
   bool shouldIterate() const { return m_should_iterate; }
   int numIterations() const { return m_iter_count; }
   int iterPercentage() const { return m_iter_percent; }
-
-private:
-  void checkTestCase(int &retval)
-  {
-    if(m_test_case < 1 || m_test_case > 6)
-    {
-      retval = -1;
-      SLIC_ERROR("Invalid test case " << m_test_case);
-    }
-  }
-
-  void checkOutputDir()
-  {
-    if(!fs::pathExists(m_output_dir))
-    {
-      fs::makeDirsForPath(m_output_dir);
-    }
-  }
-
-  void checkIterationParams(int &retval)
-  {
-    if(m_should_iterate)
-    {
-      if(m_iter_count < 1)
-      {
-        retval = -2;
-        SLIC_ERROR("Invalid iteration count " << m_iter_count);
-      }
-
-      if(m_iter_percent <= 0. || m_iter_percent > 1.)
-      {
-        retval = -3;
-        SLIC_ERROR("Invalid iteration percentage " << m_iter_percent);
-      }
-    }
-  }
 };
 
 //--------------------------------------------------------------------------------
@@ -153,8 +126,7 @@ void printNode(const conduit::Node &n)
  */
 int main(int argc, char **argv)
 {
-  axom::slic::SimpleLogger logger;  // create & initialize test logger
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   // Parse arguments
   Input params;
@@ -204,14 +176,17 @@ int main(int argc, char **argv)
   timer.stop();
   SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
+#if defined(CONDUIT_RELAY_IO_HDF5_ENABLED)
+  std::string protocol("hdf5");
+#else
+  std::string protocol("yaml");
+#endif
+
   // Save input mesh
   std::string filepath, filename("inputMesh");
-  if(params.m_output_dir.empty())
-    filepath = filename;
-  else
-    filepath =
-      axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
-  conduit::relay::io::blueprint::save_mesh(mesh, filepath, "hdf5");
+  filepath =
+    axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+  conduit::relay::io::blueprint::save_mesh(mesh, filepath, protocol);
 
   if(params.m_verbose)
   {
@@ -225,11 +200,14 @@ int main(int argc, char **argv)
   // Set up options.
   conduit::Node options;
   options["matset"] = "mat";
+#if defined(AXOM_EQUIZ_SUPPORTS_ITERATION)
   // Future options
   options["iterate"] = params.shouldIterate() ? 1 : 0;
   options["iterate_percentage"] = params.iterPercentage();
+#endif
 
-  // Run MIR
+  // Run MIR. Note - the runMIR_xxx functions currently handle just the
+  // topology types that are created by MeshTester: unstructured (tet, quad, hex).
   conduit::Node resultMesh;
   if(params.m_policy == RuntimePolicy::seq)
   {
@@ -267,12 +245,9 @@ int main(int argc, char **argv)
   if(retval == 0)
   {
     std::string filepath, filename("processedMesh");
-    if(params.m_output_dir.empty())
-      filepath = filename;
-    else
-      filepath =
-        axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
-    conduit::relay::io::blueprint::save_mesh(resultMesh, filepath, "hdf5");
+    filepath =
+      axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+    conduit::relay::io::blueprint::save_mesh(resultMesh, filepath, protocol);
   }
 
   if(params.m_verbose)

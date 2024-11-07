@@ -10,7 +10,7 @@
 #include "runMIR.hpp"
 
 #include <conduit.hpp>
-#include <conduit_relay_io_blueprint.hpp>
+#include <conduit_relay.hpp>
 
 #include <string>
 
@@ -58,9 +58,14 @@ int runMIR(RuntimePolicy policy,
   SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
   // Output initial mesh.
+#if defined(CONDUIT_RELAY_IO_HDF5_ENABLED)
+  std::string protocol("hdf5");
+#else
+  std::string protocol("yaml");
+#endif
   {
     AXOM_ANNOTATE_SCOPE("save_input");
-    conduit::relay::io::blueprint::save_mesh(mesh, "concentric_circles", "hdf5");
+    conduit::relay::io::blueprint::save_mesh(mesh, "concentric_circles", protocol);
   }
 
   // Begin material interface reconstruction
@@ -107,7 +112,7 @@ int runMIR(RuntimePolicy policy,
   // Output results
   {
     AXOM_ANNOTATE_SCOPE("save_output");
-    conduit::relay::io::blueprint::save_mesh(resultMesh, outputFilePath, "hdf5");
+    conduit::relay::io::blueprint::save_mesh(resultMesh, outputFilePath, protocol);
   }
 
   return retval;
@@ -116,8 +121,7 @@ int runMIR(RuntimePolicy policy,
 //--------------------------------------------------------------------------------
 int main(int argc, char **argv)
 {
-  axom::slic::SimpleLogger logger;  // create & initialize test logger
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
   // Define command line options.
   bool handler = true;
@@ -129,11 +133,13 @@ int main(int argc, char **argv)
     ->description("Install a custom error handler that loops forever.")
     ->capture_default_str();
   app.add_option("--gridsize", gridSize)
+    ->check(axom::CLI::PositiveNumber)
     ->description("The number of zones along an axis.");
   app.add_option("--numcircles", numCircles)
+    ->check(axom::CLI::PositiveNumber)
     ->description("The number of circles to use for material creation.");
   app.add_option("--output", outputFilePath)
-    ->description("The file path for output files");
+    ->description("The file path for HDF5/YAML output files");
 
 #if defined(AXOM_USE_CALIPER)
   std::string annotationMode("report");

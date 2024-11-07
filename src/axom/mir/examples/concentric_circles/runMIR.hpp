@@ -31,7 +31,6 @@ int runMIR(const conduit::Node &hostMesh,
     return -4;
   }
 
-  // host->device
   conduit::Node deviceMesh;
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
@@ -65,7 +64,6 @@ int runMIR(const conduit::Node &hostMesh,
 
   AXOM_ANNOTATE_END("runMIR");
 
-  // device->host
   bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
 
   return 0;
