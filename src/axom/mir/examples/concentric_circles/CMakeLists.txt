@@ -20,9 +20,11 @@ axom_add_executable(
 
 if(AXOM_ENABLE_TESTS)
     set (_policies "seq")
-    blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
-    blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
-    blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+    if(RAJA_FOUND AND UMPIRE_FOUND)
+        blt_list_append(TO _policies ELEMENTS "omp" IF AXOM_ENABLE_OPENMP)
+        blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+        blt_list_append(TO _policies ELEMENTS "hip" IF AXOM_ENABLE_HIP)
+    endif()
 
     foreach(_policy ${_policies})
         set(_testname "mir_concentric_circles_${_policy}")
