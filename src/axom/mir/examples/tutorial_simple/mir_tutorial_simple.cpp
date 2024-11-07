@@ -184,8 +184,7 @@ int main(int argc, char **argv)
 
   // Save input mesh
   std::string filepath, filename("inputMesh");
-  filepath =
-    axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+  filepath = axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
   conduit::relay::io::blueprint::save_mesh(mesh, filepath, protocol);
 
   if(params.m_verbose)
