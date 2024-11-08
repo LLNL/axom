@@ -530,6 +530,7 @@ void DiscreteShape::createVORRepresentation()
     m_shape.getGeometry().getLevelOfRefinement(),
     octs,
     octCount);
+  AXOM_UNUSED_VAR(good);
   SLIC_ASSERT(good);
 
   // Rotate to the VOR axis direction and translate to the base location.

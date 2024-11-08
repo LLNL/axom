@@ -692,7 +692,6 @@ public:
 
   /*
  * \brief set the View to hold an array in a Buffer
- * \param allocID Allocator id for array data allocation.
  *
  * This takes a Node that holds an array of data and sets up the View to
  * hold a copy of that data in an attached Buffer.
@@ -708,7 +707,7 @@ public:
  *
  * \return pointer to this View object
  */
-  View* importArrayNode(const Node& array, int allocID = INVALID_ALLOCATOR_ID);
+  View* importArrayNode(const Node& array);
 
   //
   // RDH -- Add an overload of the following that takes a const char *.

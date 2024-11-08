@@ -523,23 +523,23 @@ public:
   {
     SLIC_ASSERT(isValidSpan(span, t));
 
-    const int m_deg = getDegree();
+    const int deg = getDegree();
 
-    axom::Array<axom::Array<T>> ndu(m_deg + 1), a(2);
-    axom::Array<T> left(m_deg + 1), right(m_deg + 1);
-    for(int j = 0; j <= m_deg; j++)
+    axom::Array<axom::Array<T>> ndu(deg + 1), a(2);
+    axom::Array<T> left(deg + 1), right(deg + 1);
+    for(int j = 0; j <= deg; j++)
     {
-      ndu[j].resize(m_deg + 1);
+      ndu[j].resize(deg + 1);
     }
     for(int j = 0; j <= n; j++)
     {
-      ders[j].resize(m_deg + 1);
+      ders[j].resize(deg + 1);
     }
-    a[0].resize(m_deg + 1);
-    a[1].resize(m_deg + 1);
+    a[0].resize(deg + 1);
+    a[1].resize(deg + 1);
 
     ndu[0][0] = 1.;
-    for(int j = 1; j <= m_deg; j++)
+    for(int j = 1; j <= deg; j++)
     {
       left[j] = t - m_knots[span + 1 - j];
       right[j] = m_knots[span + j] - t;
@@ -556,15 +556,15 @@ public:
       ndu[j][j] = saved;
     }
     // Load basis functions
-    for(int j = 0; j <= m_deg; j++)
+    for(int j = 0; j <= deg; j++)
     {
-      ders[0][j] = ndu[j][m_deg];
+      ders[0][j] = ndu[j][deg];
     }
 
     // This section computes the derivatives (Eq. [2.9])
 
     // Loop over function index.
-    for(int r = 0; r <= m_deg; r++)
+    for(int r = 0; r <= deg; r++)
     {
       int s1 = 0, s2 = 1;  // Alternate rows in array a
       a[0][0] = 1.;
@@ -573,14 +573,14 @@ public:
       {
         T d = 0.;
         int rk = r - k;
-        int pk = m_deg - k;
+        int pk = deg - k;
         if(r >= k)
         {
           a[s2][0] = a[s1][0] / ndu[pk + 1][rk];
           d = a[s2][0] * ndu[rk][pk];
         }
         int j1 = (rk >= -1) ? 1 : -rk;
-        int j2 = (r - 1 <= pk) ? (k - 1) : (m_deg - r);
+        int j2 = (r - 1 <= pk) ? (k - 1) : (deg - r);
         for(int j = j1; j <= j2; j++)
         {
           a[s2][j] = (a[s1][j] - a[s1][j - 1]) / ndu[pk + 1][rk + j];
@@ -597,14 +597,14 @@ public:
       }
     }
     // Multiply through by the correct factors (Eq. [2.9])
-    T r = static_cast<T>(m_deg);
+    T r = static_cast<T>(deg);
     for(int k = 1; k <= n; k++)
     {
-      for(int j = 0; j <= m_deg; j++)
+      for(int j = 0; j <= deg; j++)
       {
         ders[k][j] *= r;
       }
-      r *= static_cast<T>(m_deg - k);
+      r *= static_cast<T>(deg - k);
     }
   }
 

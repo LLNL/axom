@@ -304,9 +304,9 @@ public:
     {
       const auto SZ = relationCardinality();
       const auto beg_idx = idx * SZ;
-      for(auto idx = beg_idx; idx < (beg_idx + SZ); ++idx)
+      for(auto i = beg_idx; i < (beg_idx + SZ); ++i)
       {
-        if(m_relationsVec[idx] != INVALID_INDEX)
+        if(m_relationsVec[i] != INVALID_INDEX)
         {
           return true;
         }

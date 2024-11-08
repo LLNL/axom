@@ -360,6 +360,7 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
                                    axom::ArrayView<double, 3>& yView,
                                    axom::ArrayView<double, 3>& zView)
 {
+#if defined(AXOM_DEBUG)
   using XS = axom::execution_space<ExecSpace>;
   SLIC_ASSERT_MSG(XS::usesAllocId(xView.getAllocatorID()) &&
                     XS::usesAllocId(yView.getAllocatorID()) &&
@@ -369,6 +370,7 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
                     std::to_string(yView.getAllocatorID()) + " and " +
                     std::to_string(zView.getAllocatorID()) +
                     " are not all compatible with execution space " + XS::name());
+#endif
 
   const auto& shape = xView.shape();
   const auto& mapping = xView.mapping();

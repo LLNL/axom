@@ -218,7 +218,6 @@ TEST(primal_nurbscurve, evaluate)
 {
   SLIC_INFO("Testing NURBS evaluation");
 
-  const int MAX_DIM = 3;
   using CoordType = double;
   using Point1D = primal::Point<CoordType, 1>;
   using Point2D = primal::Point<CoordType, 2>;

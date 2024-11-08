@@ -918,18 +918,18 @@ public:
     }
 
     // Split the curve at each knot value
-    int numBeziers = 1;
+    // int numBeziers = 1;
     NURBSCurve<T, NDIMS> n1(*this);
     for(int i = p + 1; i < m_knotvec.getNumKnots() - p - 1; ++i)
     {
-      auto old_knot_count = n1.getNumKnots();
+      n1.getNumKnots();
       n1.insertKnot(m_knotvec[i], p);
-      auto new_knot_count = n1.getNumKnots();
+      n1.getNumKnots();
 
-      if(new_knot_count != old_knot_count)
-      {
-        numBeziers++;
-      }
+      // if(new_knot_count != old_knot_count)
+      // {
+      //   numBeziers++;
+      // }
     }
 
     // For each Bezier, copy the control nodes into Bezier curves

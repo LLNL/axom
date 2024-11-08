@@ -97,7 +97,9 @@ struct InOutHelper
 
     // load the mesh
     int rc = QUEST_INOUT_FAILED;
+#ifdef AXOM_USE_C2C
     double revolvedVolume = 0.;
+#endif
     switch(DIM)
     {
     case 2:
