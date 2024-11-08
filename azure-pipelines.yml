@@ -9,6 +9,7 @@ variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
   DO_CLEAN: 'no'
+  DO_BENCHMARKS: 'no'
   CLANG14_IMAGENAME: 'axom/tpls:clang-14_10-10-24_01h-31m'
   GCC13_IMAGENAME: 'axom/tpls:gcc-13_10-10-24_01h-31m'
   system.debug: false
@@ -37,11 +38,12 @@ jobs:
       linux_clang14:
         VM_ImageName: 'ubuntu-22.04'
         Compiler_ImageName: '$(CLANG14_IMAGENAME)'
-        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON'
+        CMAKE_EXTRA_FLAGS: '-DBUILD_SHARED_LIBS=ON -DAXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS:BOOL=ON -DENABLE_BENCHMARKS:BOOL=ON'
         BUILD_TYPE: 'Release'
         COMPILER: 'clang++'
         TEST_TARGET: 'linux_clang14'
         HOST_CONFIG: 'clang@14.0.0'
+        DO_BENCHMARKS: 'yes'  
       linux_clang14_noraja:
         VM_ImageName: 'ubuntu-22.04'
         Compiler_ImageName: '$(CLANG14_IMAGENAME)'
