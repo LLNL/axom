@@ -30,6 +30,7 @@ template <typename T>
 struct Wrapper
 {
   T j;
+  bool operator==(const Wrapper& other) const { return j == other.j; }
 };
 
 using Types = std::tuple<int, std::pair<int, int>, Wrapper<int>, std::string>;
@@ -299,6 +300,74 @@ void Vector_emplace_back_startEmpty(benchmark::State& state)
     benchmark::DoNotOptimize(arr);
   }
 }
+
+//-----------------------------------------------------------------------------
+// Use test fixtures for testing other operations
+//-----------------------------------------------------------------------------
+template <typename Container>
+struct ArrFixture
+{
+public:
+  using T = typename Container::value_type;
+
+  ArrFixture(int size)
+  {
+    data.resize(size);
+    for(int i = 0; i < size; ++i)
+    {
+      data.emplace_back(get_value<T>(i));
+    }
+  }
+
+  Container data;
+};
+
+template <typename Container>
+void iterate_range(benchmark::State& state)
+{
+  using T = typename Container::value_type;
+  const int size = state.range(0);
+  ArrFixture<Container> fixture(size);
+
+  int count = 0;
+  const T element = get_value<T>(state.range(0) / 2);
+  for(auto _ : state)
+  {
+    for(const T& item : fixture.data)
+    {
+      if(item == element)
+      {
+        ++count;
+      }
+    }
+    assert(count == 1);
+    benchmark::DoNotOptimize(count);
+  }
+}
+
+template <typename Container>
+void iterate_direct(benchmark::State& state)
+{
+  using T = typename Container::value_type;
+  const int size = state.range(0);
+  ArrFixture<Container> fixture(size);
+
+  int count = 0;
+  const T element = get_value<T>(state.range(0) / 2);
+  for(auto _ : state)
+  {
+    for(auto it = fixture.data.begin(); it != fixture.data.end(); ++it)
+    {
+      if(*it == element)
+      {
+        ++count;
+      }
+    }
+    assert(count == 1);
+    benchmark::DoNotOptimize(count);
+  }
+}
+
 //-----------------------------------------------------------------------------
 // Register all the tests
 //-----------------------------------------------------------------------------
@@ -319,10 +388,15 @@ void RegisterBenchmark()
   benchmark::RegisterBenchmark(tname("Array::push_back_initialSize"), &Array_push_back_initialSize<T>)->Apply(CustomArgs);
   benchmark::RegisterBenchmark(tname("Array::emplace_back_initialSize"), &Array_emplace_back_initialSize<T>)->Apply(CustomArgs);
 
-  benchmark::RegisterBenchmark(tname("vector::push_back_startEmpty"), &Array_push_back_startEmpty<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("vector::emplace_back_startEmpty"), &Array_emplace_back_startEmpty<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("vector::push_back_initialSize"), &Array_push_back_initialSize<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("vector::emplace_back_initialSize"), &Array_emplace_back_initialSize<T>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::push_back_startEmpty"), &Vector_push_back_startEmpty<T>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::emplace_back_startEmpty"), &Vector_emplace_back_startEmpty<T>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::push_back_initialSize"), &Vector_push_back_initialSize<T>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::emplace_back_initialSize"), &Vector_emplace_back_initialSize<T>)->Apply(CustomArgs);
+
+  benchmark::RegisterBenchmark(tname("Array::iterate_range"), &iterate_range<axom::Array<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("Array::iterate_direct"), &iterate_direct<axom::Array<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::iterate_range"), &iterate_range<std::vector<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::iterate_direct"), &iterate_direct<std::vector<T>>)->Apply(CustomArgs);
   // clang-format on
 }
 
