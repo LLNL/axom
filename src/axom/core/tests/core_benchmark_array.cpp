@@ -20,10 +20,10 @@
 
 void CustomArgs(benchmark::internal::Benchmark* b)
 {
-  b->Arg(1 << 3);   // small
+  // b->Arg(1 << 3);   // small
   b->Arg(1 << 16);  // larger than  32K L1 cache
-  b->Arg(1 << 19);  // larger than 256K L2 cache
-  //b->Arg(1 << 25);  // larger than  25M L3 cache
+  // b->Arg(1 << 19);  // larger than 256K L2 cache
+  // b->Arg(1 << 25);  // larger than  25M L3 cache
 }
 
 template <typename T>
@@ -101,6 +101,34 @@ std::string get_type_name<std::string>()
   return "std::string";
 }
 
+// Helper function to check that an array's size and capacity match expectation
+// Since we're benchmarking, let's do our best to ensure it's a no-op in release configs
+template <typename Arr>
+void assert_size_and_capacity(const Arr& arr, int exp_size, int exp_capacity)
+{
+#ifdef NDEBUG
+  AXOM_UNUSED_VAR(arr);
+  AXOM_UNUSED_VAR(exp_size);
+  AXOM_UNUSED_VAR(exp_capacity);
+#else
+  assert(arr.size() == exp_size);
+  assert(arr.capacity() >= exp_capacity);
+#endif
+}
+
+template <typename Arr>
+void assert_size_and_strict_capacity(const Arr& arr, int exp_size, int exp_capacity)
+{
+#ifdef NDEBUG
+  AXOM_UNUSED_VAR(arr);
+  AXOM_UNUSED_VAR(exp_size);
+  AXOM_UNUSED_VAR(exp_capacity);
+#else
+  assert(arr.size() == exp_size);
+  assert(arr.capacity() == exp_capacity);
+#endif
+}
+
 //-----------------------------------------------------------------------------
 // Benchmarks for array and vector construction
 //-----------------------------------------------------------------------------
@@ -111,8 +139,7 @@ static void Array_ctor(benchmark::State& state)
   for(auto _ : state)
   {
     axom::Array<T> arr(size);
-    assert(arr.size() == size);
-    assert(arr.capacity() >= size);
+    assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -124,8 +151,7 @@ static void Vector_ctor(benchmark::State& state)
   for(auto _ : state)
   {
     std::vector<T> arr(size);
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) >= size);
+    assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -140,15 +166,13 @@ void Array_push_back_initialSize(benchmark::State& state)
   for(auto _ : state)
   {
     axom::Array<T> arr(0, size);
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, 0, size);
 
     for(int i = 0; i < size; ++i)
     {
       arr.push_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -160,15 +184,13 @@ void Array_emplace_back_initialSize(benchmark::State& state)
   for(auto _ : state)
   {
     axom::Array<T> arr(0, size);
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, 0, size);
 
     for(int i = 0; i < size; ++i)
     {
       arr.emplace_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -180,15 +202,13 @@ void Array_push_back_startEmpty(benchmark::State& state)
   for(auto _ : state)
   {
     axom::Array<T> arr;
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == 0);
+    assert_size_and_strict_capacity(arr, 0, 0);
 
     for(int i = 0; i < size; ++i)
     {
       arr.push_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) >= size);
+    assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -200,14 +220,12 @@ void Array_emplace_back_startEmpty(benchmark::State& state)
   for(auto _ : state)
   {
     axom::Array<T> arr;
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == 0);
+    assert_size_and_strict_capacity(arr, 0, 0);
     for(int i = 0; i < size; ++i)
     {
       arr.emplace_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) >= size);
+    assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -220,14 +238,12 @@ void Vector_push_back_initialSize(benchmark::State& state)
   {
     std::vector<T> arr;
     arr.reserve(size);
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, 0, size);
     for(int i = 0; i < size; ++i)
     {
       arr.push_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -240,14 +256,12 @@ void Vector_emplace_back_initialSize(benchmark::State& state)
   {
     std::vector<T> arr;
     arr.reserve(size);
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, 0, size);
     for(int i = 0; i < size; ++i)
     {
       arr.emplace_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) == size);
+    assert_size_and_strict_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -259,14 +273,12 @@ void Vector_push_back_startEmpty(benchmark::State& state)
   for(auto _ : state)
   {
     std::vector<T> arr;
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == 0);
+    assert_size_and_strict_capacity(arr, 0, 0);
     for(int i = 0; i < size; ++i)
     {
       arr.push_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) >= size);
+    assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -278,14 +290,12 @@ void Vector_emplace_back_startEmpty(benchmark::State& state)
   for(auto _ : state)
   {
     std::vector<T> arr;
-    assert(static_cast<int>(arr.size()) == 0);
-    assert(static_cast<int>(arr.capacity()) == 0);
+    assert_size_and_strict_capacity(arr, 0, 0);
     for(int i = 0; i < size; ++i)
     {
       arr.emplace_back(get_value<T>(i));
     }
-    assert(static_cast<int>(arr.size()) == size);
-    assert(static_cast<int>(arr.capacity()) >= size);
+    assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -303,7 +313,6 @@ void RegisterBenchmark()
   // clang-format off
   benchmark::RegisterBenchmark(tname("Array::ctor"), &Array_ctor<T>)->Apply(CustomArgs);
   benchmark::RegisterBenchmark(tname("vector::ctor"), &Vector_ctor<T>)->Apply(CustomArgs);
-
 
   benchmark::RegisterBenchmark(tname("Array::push_back_startEmpty"), &Array_push_back_startEmpty<T>)->Apply(CustomArgs);
   benchmark::RegisterBenchmark(tname("Array::emplace_back_startEmpty"), &Array_emplace_back_startEmpty<T>)->Apply(CustomArgs);
