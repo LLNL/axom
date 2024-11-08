@@ -112,8 +112,8 @@ void assert_size_and_capacity(const Arr& arr, int exp_size, int exp_capacity)
   AXOM_UNUSED_VAR(exp_size);
   AXOM_UNUSED_VAR(exp_capacity);
 #else
-  assert(arr.size() == exp_size);
-  assert(arr.capacity() >= exp_capacity);
+  assert(static_cast<int>(arr.size()) == exp_size);
+  assert(static_cast<int>(arr.capacity()) >= exp_capacity);
 #endif
 }
 
@@ -125,8 +125,8 @@ void assert_size_and_strict_capacity(const Arr& arr, int exp_size, int exp_capac
   AXOM_UNUSED_VAR(exp_size);
   AXOM_UNUSED_VAR(exp_capacity);
 #else
-  assert(arr.size() == exp_size);
-  assert(arr.capacity() == exp_capacity);
+  assert(static_cast<int>(arr.size()) == exp_size);
+  assert(static_cast<int>(arr.capacity()) == exp_capacity);
 #endif
 }
 
@@ -253,10 +253,10 @@ void iterate_range(benchmark::State& state)
   const int size = state.range(0);
   ArrFixture<Container> fixture(size);
 
-  int count = 0;
-  const T element = get_value<T>(state.range(0) / 2);
+  const T element = get_value<T>(size / 2);
   for(auto _ : state)
   {
+    int count = 0;
     for(const T& item : fixture.data)
     {
       if(item == element)
@@ -276,10 +276,10 @@ void iterate_direct(benchmark::State& state)
   const int size = state.range(0);
   ArrFixture<Container> fixture(size);
 
-  int count = 0;
-  const T element = get_value<T>(state.range(0) / 2);
+  const T element = get_value<T>(size / 2);
   for(auto _ : state)
   {
+    int count = 0;
     for(auto it = fixture.data.begin(); it != fixture.data.end(); ++it)
     {
       if(*it == element)
