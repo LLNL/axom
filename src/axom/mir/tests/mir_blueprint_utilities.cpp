@@ -680,23 +680,27 @@ matsets:
 
 TEST(mir_blueprint_utilities, zonelistbuilder_seq)
 {
+  AXOM_ANNOTATE_SCOPE("zonelistbuilder_seq");
   test_zonelistbuilder<seq_exec>::test();
 }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_blueprint_utilities, zonelistbuilder_omp)
 {
+  AXOM_ANNOTATE_SCOPE("zonelistbuilder_omp");
   test_zonelistbuilder<omp_exec>::test();
 }
 #endif
 #if defined(AXOM_USE_CUDA)
 TEST(mir_blueprint_utilities, zonelistbuilder_cuda)
 {
+  AXOM_ANNOTATE_SCOPE("zonelistbuilder_cuda");
   test_zonelistbuilder<cuda_exec>::test();
 }
 #endif
 #if defined(AXOM_USE_HIP)
 TEST(mir_blueprint_utilities, zonelistbuilder_hip)
 {
+  AXOM_ANNOTATE_SCOPE("zonelistbuilder_hip");
   test_zonelistbuilder<hip_exec>::test();
 }
 #endif
@@ -708,7 +712,22 @@ int main(int argc, char *argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
+#if defined(AXOM_USE_CALIPER)
+  axom::CLI::App app;
+  std::string annotationMode("none");
+  app.add_option("--caliper", annotationMode)
+    ->description(
+      "caliper annotation mode. Valid options include 'none' and 'report'. "
+      "Use 'help' to see full list.")
+    ->capture_default_str()
+    ->check(axom::utilities::ValidCaliperMode);
 
+  // Parse command line options.
+  app.parse(argc, argv);
+
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+    annotationMode);
+#endif
   result = RUN_ALL_TESTS();
   return result;
 }
