@@ -133,25 +133,13 @@ void assert_size_and_strict_capacity(const Arr& arr, int exp_size, int exp_capac
 //-----------------------------------------------------------------------------
 // Benchmarks for array and vector construction
 //-----------------------------------------------------------------------------
-template <typename T>
-static void Array_ctor(benchmark::State& state)
+template <typename Container>
+static void ctor(benchmark::State& state)
 {
   const int size = state.range(0);
   for(auto _ : state)
   {
-    axom::Array<T> arr(size);
-    assert_size_and_capacity(arr, size, size);
-    benchmark::DoNotOptimize(arr);
-  }
-}
-
-template <typename T>
-static void Vector_ctor(benchmark::State& state)
-{
-  const int size = state.range(0);
-  for(auto _ : state)
-  {
-    std::vector<T> arr(size);
+    Container arr(size);
     assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
@@ -160,143 +148,79 @@ static void Vector_ctor(benchmark::State& state)
 //-----------------------------------------------------------------------------
 // Benchmarks for array and vector push_back and emplace_back
 //-----------------------------------------------------------------------------
-template <typename T>
-void Array_push_back_initialSize(benchmark::State& state)
+template <typename Container>
+void push_back_startEmpty(benchmark::State& state)
 {
+  using T = typename Container::value_type;
   const int size = state.range(0);
   for(auto _ : state)
   {
-    axom::Array<T> arr(0, size);
-    assert_size_and_strict_capacity(arr, 0, size);
-
-    for(int i = 0; i < size; ++i)
-    {
-      arr.push_back(get_value<T>(i));
-    }
-    assert_size_and_strict_capacity(arr, size, size);
-    benchmark::DoNotOptimize(arr);
-  }
-}
-
-template <typename T>
-void Array_emplace_back_initialSize(benchmark::State& state)
-{
-  const int size = state.range(0);
-  for(auto _ : state)
-  {
-    axom::Array<T> arr(0, size);
-    assert_size_and_strict_capacity(arr, 0, size);
-
-    for(int i = 0; i < size; ++i)
-    {
-      arr.emplace_back(get_value<T>(i));
-    }
-    assert_size_and_strict_capacity(arr, size, size);
-    benchmark::DoNotOptimize(arr);
-  }
-}
-
-template <typename T>
-void Array_push_back_startEmpty(benchmark::State& state)
-{
-  const int size = state.range(0);
-  for(auto _ : state)
-  {
-    axom::Array<T> arr;
+    Container arr;
     assert_size_and_strict_capacity(arr, 0, 0);
 
     for(int i = 0; i < size; ++i)
     {
-      arr.push_back(get_value<T>(i));
+      arr.push_back(get_value<T>(i));  // using push_back on initially empty container
     }
     assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
 
-template <typename T>
-void Array_emplace_back_startEmpty(benchmark::State& state)
+template <typename Container>
+void emplace_back_startEmpty(benchmark::State& state)
 {
+  using T = typename Container::value_type;
   const int size = state.range(0);
   for(auto _ : state)
   {
-    axom::Array<T> arr;
+    Container arr;
     assert_size_and_strict_capacity(arr, 0, 0);
     for(int i = 0; i < size; ++i)
     {
-      arr.emplace_back(get_value<T>(i));
+      arr.emplace_back(
+        get_value<T>(i));  // using emplace_back on initially empty container
     }
     assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
 
-template <typename T>
-void Vector_push_back_initialSize(benchmark::State& state)
+template <typename Container>
+void push_back_initialReserve(benchmark::State& state)
 {
+  using T = typename Container::value_type;
   const int size = state.range(0);
   for(auto _ : state)
   {
-    std::vector<T> arr;
+    Container arr;
     arr.reserve(size);
     assert_size_and_strict_capacity(arr, 0, size);
     for(int i = 0; i < size; ++i)
     {
-      arr.push_back(get_value<T>(i));
+      arr.push_back(get_value<T>(i));  // using push_back on container w/ reserved size
     }
     assert_size_and_strict_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
 
-template <typename T>
-void Vector_emplace_back_initialSize(benchmark::State& state)
+template <typename Container>
+void emplace_back_initialReserve(benchmark::State& state)
 {
+  using T = typename Container::value_type;
   const int size = state.range(0);
   for(auto _ : state)
   {
-    std::vector<T> arr;
+    Container arr;
     arr.reserve(size);
     assert_size_and_strict_capacity(arr, 0, size);
     for(int i = 0; i < size; ++i)
     {
-      arr.emplace_back(get_value<T>(i));
+      arr.emplace_back(
+        get_value<T>(i));  // using emplace_back on container w/ reserved size
     }
     assert_size_and_strict_capacity(arr, size, size);
-    benchmark::DoNotOptimize(arr);
-  }
-}
-
-template <typename T>
-void Vector_push_back_startEmpty(benchmark::State& state)
-{
-  const int size = state.range(0);
-  for(auto _ : state)
-  {
-    std::vector<T> arr;
-    assert_size_and_strict_capacity(arr, 0, 0);
-    for(int i = 0; i < size; ++i)
-    {
-      arr.push_back(get_value<T>(i));
-    }
-    assert_size_and_capacity(arr, size, size);
-    benchmark::DoNotOptimize(arr);
-  }
-}
-
-template <typename T>
-void Vector_emplace_back_startEmpty(benchmark::State& state)
-{
-  const int size = state.range(0);
-  for(auto _ : state)
-  {
-    std::vector<T> arr;
-    assert_size_and_strict_capacity(arr, 0, 0);
-    for(int i = 0; i < size; ++i)
-    {
-      arr.emplace_back(get_value<T>(i));
-    }
-    assert_size_and_capacity(arr, size, size);
     benchmark::DoNotOptimize(arr);
   }
 }
@@ -380,18 +304,18 @@ void RegisterBenchmark()
   };
 
   // clang-format off
-  benchmark::RegisterBenchmark(tname("Array::ctor"), &Array_ctor<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("vector::ctor"), &Vector_ctor<T>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("Array::ctor"), &ctor<axom::Array<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::ctor"), &ctor<std::vector<T>>)->Apply(CustomArgs);
 
-  benchmark::RegisterBenchmark(tname("Array::push_back_startEmpty"), &Array_push_back_startEmpty<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("Array::emplace_back_startEmpty"), &Array_emplace_back_startEmpty<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("Array::push_back_initialSize"), &Array_push_back_initialSize<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("Array::emplace_back_initialSize"), &Array_emplace_back_initialSize<T>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("Array::push_back_startEmpty"), &push_back_startEmpty<axom::Array<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("Array::emplace_back_startEmpty"), &emplace_back_startEmpty<axom::Array<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("Array::push_back_initialReserve"), &push_back_initialReserve<axom::Array<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("Array::emplace_back_initialReserve"), &emplace_back_initialReserve<axom::Array<T>>)->Apply(CustomArgs);
 
-  benchmark::RegisterBenchmark(tname("vector::push_back_startEmpty"), &Vector_push_back_startEmpty<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("vector::emplace_back_startEmpty"), &Vector_emplace_back_startEmpty<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("vector::push_back_initialSize"), &Vector_push_back_initialSize<T>)->Apply(CustomArgs);
-  benchmark::RegisterBenchmark(tname("vector::emplace_back_initialSize"), &Vector_emplace_back_initialSize<T>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::push_back_startEmpty"), &push_back_startEmpty<std::vector<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::emplace_back_startEmpty"), &emplace_back_startEmpty<std::vector<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::push_back_initialReserve"), &push_back_initialReserve<std::vector<T>>)->Apply(CustomArgs);
+  benchmark::RegisterBenchmark(tname("vector::emplace_back_initialReserve"), &emplace_back_initialReserve<std::vector<T>>)->Apply(CustomArgs);
 
   benchmark::RegisterBenchmark(tname("Array::iterate_range"), &iterate_range<axom::Array<T>>)->Apply(CustomArgs);
   benchmark::RegisterBenchmark(tname("Array::iterate_direct"), &iterate_direct<axom::Array<T>>)->Apply(CustomArgs);
