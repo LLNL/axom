@@ -70,6 +70,7 @@
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_LUA
 #cmakedefine AXOM_USE_MFEM
+#cmakedefine AXOM_USE_OPENCASCADE
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SOL

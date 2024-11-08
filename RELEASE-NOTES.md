@@ -26,6 +26,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
   oriented algorithm that produces smooth interfaces between zones and their neighbors.
 - `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
+- Adds optional dependency on [Open CASCADE](https://dev.opencascade.org). The initial intention is 
+to use Open CASCADE's file I/O capabilities in support of Quest applications.
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination
@@ -41,6 +43,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Removed
 
 ###  Fixed
+- Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
+This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
+as well as support for 32-bit `Word`s in Slam's `BitSet` class.
 
 ## [Version 0.10.1] - Release date 2024-10-22
 
