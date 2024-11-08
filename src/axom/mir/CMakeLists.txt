@@ -37,6 +37,14 @@ set(mir_reference_sources
     reference/CellGenerator.cpp
    )
 
+# Future classes (evaluate whether to keep them)
+set(mir_future_headers
+    future/ClipFieldFilterDevice.hpp
+    future/ClipFieldFilter.hpp
+    )
+set(mir_future_sources
+    future/ClipFieldFilter.cpp
+    )
 
 set(mir_headers
     ${mir_reference_headers}
@@ -109,7 +117,7 @@ set(mir_sources
 #------------------------------------------------------------------------------
 set(mir_depends_on core slic slam primal conduit::conduit RAJA)
 
-blt_add_library(
+axom_add_library(
     NAME        mir
     SOURCES     ${mir_sources}
     HEADERS     ${mir_headers}

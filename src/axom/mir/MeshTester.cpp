@@ -521,9 +521,6 @@ void addConcentricCircleMaterial(const TopoView& topoView,
       auto v2 = coordsetView[zone.getId(2)];
 
       // Run the uniform sampling to determine how much of the current cell is composed of each material
-      int materialCount[numMaterials];
-      for(int i = 0; i < numMaterials; ++i) materialCount[i] = 0;
-
       float delta_x =
         axom::utilities::abs(v1[0] - v0[0]) / (float)(numSamples - 1);
       float delta_y =
@@ -542,14 +539,14 @@ void addConcentricCircleMaterial(const TopoView& topoView,
             const auto r = circleRadiiView[cID];
             if(primal::squared_distance(samplePoint, circleCenter) < r * r)
             {
-              materialCount[cID]++;
+              matvfViews[cID][eID] += 1.;
               isPointSampled = true;
             }
           }
           if(!isPointSampled)
           {
             // The point was not within any of the circles, so increment the count for the default material
-            materialCount[defaultMaterialID]++;
+            matvfViews[defaultMaterialID][eID] += 1.;
           }
         }
       }
@@ -557,8 +554,7 @@ void addConcentricCircleMaterial(const TopoView& topoView,
       // Assign the element volume fractions based on the count of the samples in each circle
       for(int matID = 0; matID < numMaterials; ++matID)
       {
-        matvfViews[matID][eID] =
-          materialCount[matID] / (axom::float64)(numSamples * numSamples);
+        matvfViews[matID][eID] /= (axom::float64)(numSamples * numSamples);
       }
     });
 
