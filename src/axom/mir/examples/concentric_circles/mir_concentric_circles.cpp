@@ -43,7 +43,8 @@ void printNode(const conduit::Node &n)
 int runMIR(RuntimePolicy policy,
            int gridSize,
            int numCircles,
-           const std::string &outputFilePath)
+           const std::string &outputFilePath,
+           bool writeFiles)
 {
   // Initialize a mesh for testing MIR
   auto timer = axom::utilities::Timer(true);
@@ -63,6 +64,7 @@ int runMIR(RuntimePolicy policy,
 #else
   std::string protocol("yaml");
 #endif
+  if(writeFiles)
   {
     AXOM_ANNOTATE_SCOPE("save_input");
     conduit::relay::io::blueprint::save_mesh(mesh, "concentric_circles", protocol);
@@ -110,6 +112,7 @@ int runMIR(RuntimePolicy policy,
             << timer.elapsedTimeInMilliSec() << " ms.");
 
   // Output results
+  if(writeFiles)
   {
     AXOM_ANNOTATE_SCOPE("save_output");
     conduit::relay::io::blueprint::save_mesh(resultMesh, outputFilePath, protocol);
@@ -127,6 +130,7 @@ int main(int argc, char **argv)
   bool handler = true;
   int gridSize = 5;
   int numCircles = 2;
+  bool disable_write = false;
   std::string outputFilePath("output");
   axom::CLI::App app;
   app.add_flag("--handler", handler)
@@ -140,6 +144,8 @@ int main(int argc, char **argv)
     ->description("The number of circles to use for material creation.");
   app.add_option("--output", outputFilePath)
     ->description("The file path for HDF5/YAML output files");
+  app.add_flag("--disable-write", disable_write)
+    ->description("Disable writing data files");
 
 #if defined(AXOM_USE_CALIPER)
   std::string annotationMode("report");
@@ -186,7 +192,7 @@ int main(int argc, char **argv)
   int retval = 0;
   try
   {
-    retval = runMIR(policy, gridSize, numCircles, outputFilePath);
+    retval = runMIR(policy, gridSize, numCircles, outputFilePath, !disable_write);
   }
   catch(std::invalid_argument const &e)
   {

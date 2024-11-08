@@ -36,6 +36,7 @@ struct Input
   int m_iter_count {0};
   double m_iter_percent {0.};
   bool m_verbose {false};
+  bool m_disable_write {false};
   std::string m_output_dir {};
   RuntimePolicy m_policy {RuntimePolicy::seq};
   std::string m_annotationMode {"report"};
@@ -64,6 +65,7 @@ struct Input
 #endif
 
     m_app.add_flag("--verbose", m_verbose)->description("Verbose output");
+    m_app.add_flag("--disable-write", m_disable_write)->description("Disable writing data files");
 
 #if defined(AXOM_USE_CALIPER)
     m_app.add_option("--caliper", m_annotationMode)
@@ -108,6 +110,7 @@ struct Input
   bool shouldIterate() const { return m_should_iterate; }
   int numIterations() const { return m_iter_count; }
   int iterPercentage() const { return m_iter_percent; }
+  bool writeFiles() const { return !m_disable_write; }
 };
 
 //--------------------------------------------------------------------------------
@@ -183,10 +186,13 @@ int main(int argc, char **argv)
 #endif
 
   // Save input mesh
-  std::string filepath, filename("inputMesh");
-  filepath = axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
-  conduit::relay::io::blueprint::save_mesh(mesh, filepath, protocol);
-
+  if(params.writeFiles())
+  {
+    std::string filepath, filename("inputMesh");
+    filepath =
+      axom::utilities::filesystem::joinPath(params.m_output_dir, filename);
+    conduit::relay::io::blueprint::save_mesh(mesh, filepath, protocol);
+  }
   if(params.m_verbose)
   {
     SLIC_INFO("Initial mesh:");
@@ -241,7 +247,7 @@ int main(int argc, char **argv)
   SLIC_INFO("Reconstruction time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
   // Save output.
-  if(retval == 0)
+  if(retval == 0 && params.writeFiles())
   {
     std::string filepath, filename("processedMesh");
     filepath =

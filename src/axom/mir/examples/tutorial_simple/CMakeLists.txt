@@ -55,6 +55,7 @@ if(AXOM_ENABLE_TESTS)
                 COMMAND mir_tutorial_simple
                     --test-case ${_testnum}
                     --policy ${_policy}
+                    --disable-write
                 )
 
             set_tests_properties(${_testname} PROPERTIES

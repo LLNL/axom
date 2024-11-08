@@ -34,6 +34,7 @@ if(AXOM_ENABLE_TESTS)
                 --gridsize 100
                 --numcircles 5
                 --policy ${_policy}
+                --disable-write
             )
 
         set_tests_properties(${_testname} PROPERTIES
