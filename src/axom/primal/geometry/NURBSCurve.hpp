@@ -472,7 +472,7 @@ public:
     PointType eval;
     axom::Array<VectorType> ders;
 
-    evaluate_derivatives(t, 1, eval, ders);
+    evaluateDerivatives(t, 1, eval, ders);
     return ders[0];
   }
 
@@ -489,7 +489,7 @@ public:
     PointType eval;
     axom::Array<VectorType> ders;
 
-    evaluate_derivatives(t, 2, eval, ders);
+    evaluateDerivatives(t, 2, eval, ders);
     return ders[1];
   }
 
@@ -506,7 +506,7 @@ public:
   {
     axom::Array<VectorType> ders;
 
-    evaluate_derivatives(t, 1, eval, ders);
+    evaluateDerivatives(t, 1, eval, ders);
     Dt = ders[0];
   }
 
@@ -527,7 +527,7 @@ public:
   {
     axom::Array<VectorType> ders;
 
-    evaluate_derivatives(t, 2, eval, ders);
+    evaluateDerivatives(t, 2, eval, ders);
     Dt = ders[0];
     DtDt = ders[1];
   }
@@ -545,10 +545,10 @@ public:
    * 
    * \pre Requires \a t in the span of the knots
    */
-  void evaluate_derivatives(T t,
-                            int d,
-                            PointType& eval,
-                            axom::Array<VectorType>& ders) const
+  void evaluateDerivatives(T t,
+                           int d,
+                           PointType& eval,
+                           axom::Array<VectorType>& ders) const
   {
     SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
 
@@ -559,8 +559,7 @@ public:
 
     int du = std::min(d, p);
     const auto span = m_knotvec.findSpan(t);
-    axom::Array<axom::Array<T>> N_evals(d + 1);
-    m_knotvec.derivativeBasisFunctionsBySpan(span, t, du, N_evals);
+    const auto N_evals = m_knotvec.derivativeBasisFunctionsBySpan(span, t, du);
 
     // Store w(u) in Awders[NDIMS][0], w'(u) in Awders[NDIMS][1], ...
     axom::Array<Point<T, NDIMS + 1>> Awders(d + 1);
@@ -668,7 +667,7 @@ public:
     const auto span = m_knotvec.findSpan(t, s);
 
     // Fix the maximum multiplicity of the knot
-    int r = std::min(target_multiplicity, p - s);
+    int r = std::min(target_multiplicity - s, p - s);
     if(r <= 0)
     {
       return span;  // Early exit if no knots to add
@@ -891,69 +890,125 @@ public:
    */
   axom::Array<BezierCurve<T, NDIMS>> extractBezier() const
   {
-    axom::Array<BezierCurve<T, NDIMS>> beziers;
-
-    const bool isCurveRational = this->isRational();
-
+    bool isCurveRational = this->isRational();
     int p = getDegree();
+    int n = getNumControlPoints() - 1;
+
+    axom::Array<BezierCurve<T, NDIMS>> beziers(m_knotvec.getNumKnotSpans());
+    for(auto& bezier : beziers)
+    {
+      bezier.setOrder(p);
+      if(isCurveRational)
+      {
+        bezier.makeRational();
+      }
+    }
 
     // Handle this special case
     if(p == 0)
     {
       for(int i = 0; i < getNumControlPoints(); ++i)
       {
-        BezierCurve<T, NDIMS> bezier(0);
-        bezier[0] = m_controlPoints[i];
+        beziers[i][0] = m_controlPoints[i];
 
         if(isCurveRational)
         {
-          bezier.makeRational();
-          bezier.setWeight(0, m_weights[i]);
+          beziers[i].setWeight(0, m_weights[i]);
         }
-
-        beziers.push_back(bezier);
       }
 
       return beziers;
     }
 
-    // Split the curve at each knot value
-    int numBeziers = 1;
-    NURBSCurve<T, NDIMS> n1(*this);
-    for(int i = p + 1; i < m_knotvec.getNumKnots() - p - 1; ++i)
-    {
-      auto old_knot_count = n1.getNumKnots();
-      n1.insertKnot(m_knotvec[i], p);
-      auto new_knot_count = n1.getNumKnots();
+    axom::Array<T> alphas(10);
 
-      if(new_knot_count != old_knot_count)
-      {
-        numBeziers++;
-      }
-    }
+    int m = n + p + 1;
+    int a = p;
+    int b = p + 1;
 
-    // For each Bezier, copy the control nodes into Bezier curves
-    BezierCurve<T, NDIMS> bezier(p);
-    if(isCurveRational)
-    {
-      bezier.makeRational();
-    }
+    int nb = 0;
 
-    int the_node = 0;
-    for(int i = 0; i < n1.getNumControlPoints(); ++i)
+    for(int i = 0; i <= p; ++i)
     {
-      bezier[the_node] = n1[i];
+      beziers[nb][i] = m_controlPoints[i];
       if(isCurveRational)
       {
-        bezier.setWeight(the_node, n1.getWeight(i));
+        beziers[nb].setWeight(i, m_weights[i]);
+      }
+    }
+
+    while(b < m)
+    {
+      int i = b;
+      while(b < m && m_knotvec[b] == m_knotvec[b + 1])
+      {
+        b++;
       }
 
-      the_node++;
-      if(the_node == (p + 1))
+      int mult = b - i + 1;
+
+      if(mult < p)
       {
-        --i;  // Endpoint nodes are shared between Bezier curves
-        the_node = 0;
-        beziers.push_back(bezier);
+        T numer = m_knotvec[b] - m_knotvec[a];
+
+        for(int j = p; j > mult; j--)
+        {
+          alphas[j - mult - 1] = numer / (m_knotvec[a + j] - m_knotvec[a]);
+        }
+
+        int r = p - mult;
+
+        for(int j = 1; j <= r; ++j)
+        {
+          int save = r - j;
+          int s = mult + j;
+          for(int k = p; k >= s; k--)
+          {
+            T weight_k = isCurveRational ? beziers[nb].getWeight(k) : 1.0;
+            T weight_km1 = isCurveRational ? beziers[nb].getWeight(k - 1) : 1.0;
+            T alpha = alphas[k - s];
+
+            if(isCurveRational)
+            {
+              beziers[nb].setWeight(
+                k,
+                alpha * weight_k + (1.0 - alpha) * weight_km1);
+            }
+
+            for(int N = 0; N < NDIMS; ++N)
+            {
+              beziers[nb][k][N] =
+                (alpha * beziers[nb][k][N] * weight_k +
+                 (1.0 - alpha) * beziers[nb][k - 1][N] * weight_km1) /
+                (isCurveRational ? beziers[nb].getWeight(k) : 1.0);
+            }
+          }
+
+          if(b < m)
+          {
+            beziers[nb + 1][save] = beziers[nb][p];
+            if(isCurveRational)
+            {
+              beziers[nb + 1].setWeight(save, beziers[nb].getWeight(p));
+            }
+          }
+        }
+      }
+
+      ++nb;
+
+      if(b < m)
+      {
+        for(int i = p - mult; i <= p; ++i)
+        {
+          beziers[nb][i] = m_controlPoints[b - p + i];
+          if(isCurveRational)
+          {
+            beziers[nb].setWeight(i, m_weights[b - p + i]);
+          }
+        }
+        a = b;
+        b++;
       }
     }
 
@@ -984,7 +1039,7 @@ public:
   }
 
   /*!
-   * \brief Reset the knot vector and increase the number of control points
+   * \brief Reset the knot vector
    *
    * \param [in] degree The target degree
    * 
@@ -992,7 +1047,7 @@ public:
    *  i.e. does not perform degree elevation/reduction. 
    *  Will replace existing knot vector with a uniform one.
    *  
-   * \pre Requires target degree < npts
+   * \pre Requires target degree < npts and degree >= 0
    */
   void setDegree(int degree)
   {
@@ -1028,6 +1083,11 @@ public:
     SLIC_ASSERT(npts > deg);
 
     m_controlPoints.resize(npts);
+    if(isRational())
+    {
+      m_weights.resize(npts);
+    }
+
     m_knotvec.makeUniform(npts, deg);
   }
 
@@ -1122,6 +1182,23 @@ public:
    * \param [in] knot The updated value of the knot
    */
   void setKnot(int idx, T knot) { m_knotvec[idx] = knot; }
+
+  /*! 
+   * \brief Set the knot vector by an axom::Array
+   *
+   * \param [in] knots The new knot vector
+   */
+  void setKnots(const axom::Array<T>& knots, int degree)
+  {
+    m_knotvec = KnotVectorType(knots, degree);
+  }
+
+  /*! 
+   * \brief Set the knot vector by a KnotVector object
+   *
+   * \param [in] knotVector The new knot vector
+   */
+  void setKnots(const KnotVectorType& knotVector) { m_knotvec = knotVector; }
 
   /*!
    * \brief Equality operator for NURBS Curves
@@ -1238,7 +1315,7 @@ public:
     return os;
   }
 
-  /// \brief Private function to check if the NURBS curve is valid
+  /// \brief Function to check if the NURBS curve is valid
   bool isValidNURBS() const
   {
     // Check monotonicity, open-ness, continuity
