@@ -384,6 +384,7 @@ void MeshTester::createUniformGridTestCaseMesh(int gridSize,
 //--------------------------------------------------------------------------------
 void MeshTester::generateGrid(int gridSize, conduit::Node& mesh)
 {
+  AXOM_ANNOTATE_SCOPE("generateGrid");
   int nx = gridSize + 1;
   int ny = gridSize + 1;
   int nzones = gridSize * gridSize;
@@ -436,6 +437,7 @@ static void addMaterial(
   const std::vector<std::vector<axom::float64>>& materialVolumeFractionsData,
   conduit::Node& mesh)
 {
+  AXOM_ANNOTATE_SCOPE("addMaterial");
   // Figure out the material buffers from the volume fractions.
   std::vector<int> material_ids, sizes, offsets, indices;
   std::vector<float> volume_fractions;
@@ -487,6 +489,7 @@ void addConcentricCircleMaterial(const TopoView& topoView,
                                  int numSamples,
                                  conduit::Node& mesh)
 {
+  AXOM_ANNOTATE_SCOPE("addConcentricCircleMaterial");
   // Generate the element volume fractions with concentric circles
   int numMaterials = circleRadii.size() + 1;
   int defaultMaterialID =
@@ -504,9 +507,13 @@ void addConcentricCircleMaterial(const TopoView& topoView,
     matvfViews[i] =
       axom::ArrayView<axom::float64>(materialVolumeFractionsData[i].data(), len);
   }
-  auto circleRadiiView =
-    axom::ArrayView<axom::float64>(circleRadii.data(), circleRadii.size());
-  const int numCircles = circleRadii.size();
+  // Make a vector of radius^2.
+  std::vector<axom::float64> circleRadii2;
+  for(const auto& r : circleRadii) circleRadii2.push_back(r * r);
+
+  auto circleRadii2View =
+    axom::ArrayView<axom::float64>(circleRadii2.data(), circleRadii2.size());
+  const int numCircles = circleRadii2.size();
 
   // Use the uniform sampling method to generate volume fractions for each material
   // Note: Assumes that the cell is a parallelogram. This could be modified via biliear interpolation
@@ -516,9 +523,9 @@ void addConcentricCircleMaterial(const TopoView& topoView,
     AXOM_LAMBDA(axom::IndexType eID) {
       const auto zone = deviceTopologyView.zone(eID);
 
-      auto v0 = coordsetView[zone.getId(0)];
-      auto v1 = coordsetView[zone.getId(1)];
-      auto v2 = coordsetView[zone.getId(2)];
+      const auto v0 = coordsetView[zone.getId(0)];
+      const auto v1 = coordsetView[zone.getId(1)];
+      const auto v2 = coordsetView[zone.getId(2)];
 
       // Run the uniform sampling to determine how much of the current cell is composed of each material
       float delta_x =
@@ -526,35 +533,71 @@ void addConcentricCircleMaterial(const TopoView& topoView,
       float delta_y =
         axom::utilities::abs(v2[1] - v1[1]) / (float)(numSamples - 1);
 
-      for(int y = 0; y < numSamples; ++y)
+      // If the corners are all in the same circle then we can skip checking for mix.
+      int circle = defaultMaterialID;
+      bool sameCircles = true;
+      for(int c = 0; c < 4; c++)
       {
-        for(int x = 0; x < numSamples; ++x)
+        const auto corner = coordsetView[zone.getId(c)];
+        const auto dist2 = primal::squared_distance(corner, circleCenter);
+        // Check which circle the point is in.
+        int currentCircle = defaultMaterialID;
+        for(int cID = 0; cID < numCircles; ++cID)
         {
-          MeshTester::Point2 samplePoint(
-            {static_cast<float>(delta_x * x + v0[0]),
-             static_cast<float>(delta_y * y + v0[1])});
-          bool isPointSampled = false;
-          for(int cID = 0; cID < numCircles && !isPointSampled; ++cID)
+          if(dist2 < circleRadii2View[cID])
           {
-            const auto r = circleRadiiView[cID];
-            if(primal::squared_distance(samplePoint, circleCenter) < r * r)
-            {
-              matvfViews[cID][eID] += 1.;
-              isPointSampled = true;
-            }
-          }
-          if(!isPointSampled)
-          {
-            // The point was not within any of the circles, so increment the count for the default material
-            matvfViews[defaultMaterialID][eID] += 1.;
+            currentCircle = cID;
+            break;
           }
         }
+        if(c > 0)
+        {
+          sameCircles = circle == currentCircle;
+        }
+        circle = currentCircle;
       }
 
-      // Assign the element volume fractions based on the count of the samples in each circle
-      for(int matID = 0; matID < numMaterials; ++matID)
+      if(sameCircles)
       {
-        matvfViews[matID][eID] /= (axom::float64)(numSamples * numSamples);
+        // All of the points were found to be in circle.
+        matvfViews[circle][eID] = 1.;
+      }
+      else
+      {
+        // There was variation along the edge path so the element is mixed.
+        for(int y = 0; y < numSamples; ++y)
+        {
+          const float yc = static_cast<float>(delta_y * y + v0[1]);
+          for(int x = 0; x < numSamples; ++x)
+          {
+            const float xc = static_cast<float>(delta_x * x + v0[0]);
+            bool isPointSampled = false;
+            const auto dist2 =
+              primal::squared_distance(MeshTester::Point2({xc, yc}),
+                                       circleCenter);
+            for(int cID = 0; cID < numCircles && !isPointSampled; ++cID)
+            {
+              if(dist2 < circleRadii2View[cID])
+              {
+                matvfViews[cID][eID] += 1.;
+                isPointSampled = true;
+              }
+            }
+            if(!isPointSampled)
+            {
+              // The point was not within any of the circles, so increment the count for the default material
+              matvfViews[defaultMaterialID][eID] += 1.;
+            }
+          }
+        }
+
+        // Assign the element volume fractions based on the count of the samples in each circle
+        const axom::float64 ns2 =
+          static_cast<axom::float64>(numSamples * numSamples);
+        for(int matID = 0; matID < numMaterials; ++matID)
+        {
+          matvfViews[matID][eID] /= ns2;
+        }
       }
     });
 
@@ -805,6 +848,7 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
 //--------------------------------------------------------------------------------
 void MeshTester::generateGrid3D(int gridSize, conduit::Node& mesh)
 {
+  AXOM_ANNOTATE_SCOPE("generateGrid3D");
   const int nzones = gridSize * gridSize * gridSize;
   const int dims[3] = {gridSize + 1, gridSize + 1, gridSize + 1};
   const int nnodes = dims[0] * dims[1] * dims[2];
