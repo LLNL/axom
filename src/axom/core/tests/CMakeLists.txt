@@ -204,7 +204,7 @@ if (ENABLE_BENCHMARKS)
     axom_add_executable(NAME       ${test_name}
                         SOURCES    ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON fmt core slic gbenchmark
+                        DEPENDS_ON fmt core slic gbenchmark cli11
                         FOLDER     axom/core/benchmarks)
 
     blt_add_benchmark(NAME    ${test_name}
