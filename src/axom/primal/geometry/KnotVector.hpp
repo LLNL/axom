@@ -368,8 +368,10 @@ public:
     int multiplicity;
     auto span = findSpan(t, multiplicity);
 
-    int r =
-      axom::utilities::clampVal(target_multiplicity - multiplicity, 0, m_deg);
+    // Compute how many knots should be inserted
+    int r = axom::utilities::clampVal(target_multiplicity - multiplicity,
+                                      0,
+                                      m_deg - multiplicity);
 
     insertKnotBySpan(span, t, r);
   }
@@ -512,18 +514,22 @@ public:
    * \param [in] span The span in which to evaluate the basis functions
    * \param [in] t The parameter value
    * \param [in] n The number of derivatives to compute
-   * \param [out] ders An array of the `n + 1` derivatives evaluated at t
    * 
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
+   *
+   * \pre Assumes that the input t is within the knot vector and that the span is valid
+   * 
+   * \return An array of the `n + 1` derivatives evaluated at t
    */
-  void derivativeBasisFunctionsBySpan(axom::IndexType span,
-                                      T t,
-                                      int n,
-                                      axom::Array<axom::Array<T>>& ders) const
+  axom::Array<axom::Array<T>> derivativeBasisFunctionsBySpan(axom::IndexType span,
+                                                             T t,
+                                                             int n) const
   {
     SLIC_ASSERT(isValidSpan(span, t));
 
     const int m_deg = getDegree();
+
+    axom::Array<axom::Array<T>> ders(n + 1);
 
     axom::Array<axom::Array<T>> ndu(m_deg + 1), a(2);
     axom::Array<T> left(m_deg + 1), right(m_deg + 1);
@@ -596,6 +602,7 @@ public:
         std::swap(s1, s2);
       }
     }
+
     // Multiply through by the correct factors (Eq. [2.9])
     T r = static_cast<T>(m_deg);
     for(int k = 1; k <= n; k++)
@@ -606,6 +613,8 @@ public:
       }
       r *= static_cast<T>(m_deg - k);
     }
+
+    return ders;
   }
 
   /*!
@@ -613,14 +622,15 @@ public:
    * 
    * \param [in] t The parameter value
    * \param [in] n The number of derivatives to compute
-   * \param [out] ders An array of the `n + 1` derivatives evaluated at t
    * 
    * \pre Assumes that the input t is within the knot vector
+   * 
+   * \return An array of the `n + 1` derivatives evaluated at t
    */
-  void derivativeBasisFunctions(T t, int n, axom::Array<axom::Array<T>>& ders) const
+  axom::Array<axom::Array<T>> derivativeBasisFunctions(T t, int n) const
   {
     SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
-    derivativeBasisFunctionsBySpan(findSpan(t), t, n, ders);
+    return derivativeBasisFunctionsBySpan(findSpan(t), t, n);
   }
 
   /// \brief Reverse the knot vector
