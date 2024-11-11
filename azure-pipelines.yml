@@ -119,9 +119,9 @@ jobs:
     condition: eq( variables['Agent.OS'], 'Darwin')
     displayName: 'Darwin Test ($(TEST_TARGET))'
   - script:  |
-      echo " -e $TEST_TARGET -e $COMPILER -e $DO_BUILD -e $DO_TEST -e $CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh"
+      echo " -e TEST_TARGET=$TEST_TARGET -e COMPILER=$COMPILER -e DO_BUILD=$DO_BUILD -e DO_TEST=$DO_TEST -e DO_BENCHMARKS=$DO_BENCHMARKS -e $CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh"
       docker run --rm --user='root' -v `pwd`:/home/axom/axom $(Compiler_ImageName) chown -R axom /home/axom
-      docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS -e BUILD_TYPE $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
+      docker run --rm -v `pwd`:/home/axom/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e DO_CLEAN -e DO_BENCHMARKS -e HOST_CONFIG -e CMAKE_EXTRA_FLAGS -e BUILD_TYPE $(Compiler_ImageName) ./axom/scripts/azure-pipelines/linux-build_and_test.sh
 
     condition: eq( variables['Agent.OS'], 'Linux')
     displayName: 'Linux Build & Test ($(TEST_TARGET))'
