@@ -419,7 +419,7 @@ void RegisterBenchmark()
 // Main and helper functions to consistently register templated test types
 //
 // Note: This can likely be simplified/streamlined a bit when we move to C++17,
-// e.g. using std::apply and paraeter pack fold expressions
+// e.g. using std::apply and parameter pack fold expressions
 //-----------------------------------------------------------------------------
 
 template <typename Tuple, std::size_t... Is>
