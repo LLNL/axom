@@ -760,7 +760,7 @@ TEST(primal_nurbscurve, bezier_extraction_full)
   {
     PointType p = curve.evaluate(t);
     PointType pt = bezier_list[0].evaluate(t);
-    
+
     for(int i = 0; i < DIM; ++i)
     {
       EXPECT_NEAR(p[i], pt[i], 1e-13);

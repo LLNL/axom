@@ -853,6 +853,8 @@ public:
    *   
    * If the curve is of degree 0, will return a set of disconnected, order 0 Bezier curves
    * 
+   * Adapted from Algorithm A5.6 on p. 173 of "The NURBS Book"
+   * 
    * \return An array of Bezier curves
    */
   axom::Array<BezierCurve<T, NDIMS>> extractBezier() const

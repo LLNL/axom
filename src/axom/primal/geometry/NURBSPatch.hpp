@@ -954,6 +954,62 @@ public:
     m_knotvec_v.makeUniform(npts, getDegree_v());
   }
 
+  /*!
+   * \brief Set the knot value in the u vector at a specific index
+   *
+   * \param [in] idx The index of the knot
+   * \param [in] knot The updated value of the knot
+   */
+  void setKnot_u(int idx_p, int idx_q, T knot) { m_knotvec_u[idx] = knot; }
+
+  /*!
+   * \brief Set the knot value in the v vector at a specific index
+   *
+   * \param [in] idx The index of the knot
+   * \param [in] knot The updated value of the knot
+   */
+  void setKnot_v(int idx_p, int idx_q, T knot) { m_knotvec_v[idx] = knot; }
+
+  /*! 
+   * \brief Set the u knot vector by an axom::Array
+   *
+   * \param [in] knots The new knot vector
+   */
+  void setKnots_u(const axom::Array<T>& knots, int degree)
+  {
+    m_knotvec_u = KnotVectorType(knots, degree);
+  }
+
+  /*! 
+   * \brief Set the v knot vector by an axom::Array
+   *
+   * \param [in] knots The new knot vector
+   */
+  void setKnots_v(const axom::Array<T>& knots, int degree)
+  {
+    m_knotvec_v = KnotVectorType(knots, degree);
+  }
+
+  /*! 
+   * \brief Set the u knot vector by a KnotVector object
+   *
+   * \param [in] knotVector The new knot vector
+   */
+  void setKnots_u(const KnotVectorType& knotVector)
+  {
+    m_knotvec_u = knotVector;
+  }
+
+  /*! 
+   * \brief Set the v knot vector by a KnotVector object
+   *
+   * \param [in] knotVector The new knot vector
+   */
+  void setKnots_v(const KnotVectorType& knotVector)
+  {
+    m_knotvec_v = knotVector;
+  }
+
   /// \brief Returns the degree of the NURBS Patch on the first axis
   int getDegree_u() const { return m_knotvec_u.getDegree(); }
 
@@ -1061,7 +1117,14 @@ public:
     m_weights(ui, vi) = weight;
   }
 
-  /// Checks equality of two Bezier Patches
+  /*!
+   * \brief Equality operator for NURBS patches
+   * 
+   * \param [in] lhs The left-hand side NURBS patch
+   * \param [in] rhs The right-hand side NURBS patch
+   * 
+   * \return True if the two patches are equal, false otherwise
+   */
   friend inline bool operator==(const NURBSPatch<T, NDIMS>& lhs,
                                 const NURBSPatch<T, NDIMS>& rhs)
   {
@@ -1070,6 +1133,14 @@ public:
       (lhs.m_knotvec_v == rhs.m_knotvec_v);
   }
 
+  /*!
+   * \brief Inequality operator for NURBS patches
+   * 
+   * \param [in] lhs The left-hand side NURBS patch
+   * \param [in] rhs The right-hand side NURBS patch
+   * 
+   * \return True if the two patches are not equal, false otherwise
+   */
   friend inline bool operator!=(const NURBSPatch<T, NDIMS>& lhs,
                                 const NURBSPatch<T, NDIMS>& rhs)
   {
@@ -1153,7 +1224,7 @@ public:
     m_knotvec_v.reverse();
   }
 
-  /// Swap the axes such that s(u, v) becomes s(v, u)
+  /// \brief Swap the axes such that s(u, v) becomes s(v, u)
   void swapAxes()
   {
     auto patch_shape = m_controlPoints.shape();
@@ -1188,14 +1259,14 @@ public:
     std::swap(m_knotvec_u, m_knotvec_v);
   }
 
-  /// Returns an axis-aligned bounding box containing the patch
+  /// \brief Returns an axis-aligned bounding box containing the patch
   BoundingBoxType boundingBox() const
   {
     return BoundingBoxType(m_controlPoints.data(),
                            static_cast<int>(m_controlPoints.size()));
   }
 
-  /// Returns an oriented bounding box containing the patch
+  /// \brief Returns an oriented bounding box containing the patch
   OrientedBoundingBoxType orientedBoundingBox() const
   {
     return OrientedBoundingBoxType(m_controlPoints.data(),
@@ -1828,6 +1899,22 @@ public:
     return k + r;
   }
 
+  /*! 
+   * \brief Insert a knot to the v knot vector to have the given multiplicity
+   *
+   * \param [in] v The parameter value of the knot to insert
+   * \param [in] target_multiplicity The multiplicity of the knot to insert
+   * \return The index of the new knot
+   * 
+   * Algorithm A5.3 on p. 155 of "The NURBS Book"
+   * 
+   * \note If the knot is already present, it will be inserted
+   *  up to the given multiplicity, or the maximum permitted by the degree
+   * 
+   * \pre Requires \a v in the span of the knots
+   * 
+   * \return The (maximum) index of the new knot
+   */
   axom::IndexType insertKnot_v(T v, int target_multiplicity = 1)
   {
     SLIC_ASSERT(v >= m_knotvec_v[0] &&
@@ -2188,6 +2275,8 @@ public:
    * If either degree_u or degree_v is zero, the resulting Bezier patches along 
    *  that axis will be disconnected and order 0
    * 
+   * Algorithm A5.7 on p. 177 of "The NURBS Book"
+   * 
    * \return An array of Bezier patches ordered lexicographically (in v, then u)
    */
   axom::Array<BezierPatch<T, NDIMS>> extractBezier() const
@@ -2215,7 +2304,7 @@ public:
     axom::Array<T> alphas(std::max(0, std::max(p - 1, q - 1)));
 
     // Do Bezier extraction on the u-axis, which returns a collection of Bezier strips
-    if( p == 0 )
+    if(p == 0)
     {
       for(int i = 0; i < n + 1; ++i)
       {
@@ -2227,7 +2316,7 @@ public:
             strips[i].setWeight(0, row, m_weights(i, row));
           }
         }
-      }        
+      }
     }
     else
     {
@@ -2355,7 +2444,7 @@ public:
       int nb = s_i * m_knotvec_v.getNumKnotSpans();
 
       // Handle this case separately
-      if( q == 0 )
+      if(q == 0)
       {
         for(int i = 0; i < m + 1; ++i)
         {
@@ -2370,7 +2459,7 @@ public:
 
           ++nb;
         }
-      
+
         continue;
       }
 
@@ -2561,7 +2650,8 @@ public:
     {
       for(int q = 0; q < patch_shape[1]; ++q)
       {
-        os << m_controlPoints(p, q) << ((p < patch_shape[0] -1 || q < patch_shape[1]-1) ? "," : "]");
+        os << m_controlPoints(p, q)
+           << ((p < patch_shape[0] - 1 || q < patch_shape[1] - 1) ? "," : "]");
       }
     }
 
@@ -2572,7 +2662,8 @@ public:
       {
         for(int q = 0; q < patch_shape[1]; ++q)
         {
-          os << m_weights(p, q) << ((p < patch_shape[0]-1 || q < patch_shape[1]-1) ? "," : "]");
+          os << m_weights(p, q)
+             << ((p < patch_shape[0] - 1 || q < patch_shape[1] - 1) ? "," : "]");
         }
       }
     }
