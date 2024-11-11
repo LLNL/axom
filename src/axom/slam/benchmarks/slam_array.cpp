@@ -11,11 +11,14 @@
 #include "benchmark/benchmark.h"
 #include "axom/slic.hpp"
 
+// Uncomment the following line to enable larger test sizes
+// #define SLAM_BENCHMARK_LARGE_SIZES
+
 //------------------------------------------------------------------------------
 namespace
 {
-const int STRIDE = 7;
-const int OFFSET = 12;
+constexpr int STRIDE = 7;
+constexpr int OFFSET = 12;
 
 using IndexType = int;
 using IndexArray = IndexType*;
@@ -124,8 +127,11 @@ enum ArrSizes
 {
   S0 = 1 << 3,   // small
   S1 = 1 << 16,  // larger than  32K L1 cache
-  S2 = 1 << 19,  // Larger than 256K L2 cache
-  S3 = 1 << 25   // Larger than  25M L3 cache
+  S2 = 1 << 19   // Larger than 256K L2 cache
+#if defined(SLAM_BENCHMARK_LARGE_SIZES)
+  ,
+  S3 = 1 << 25  // Larger than  25M L3 cache
+#endif
 };
 
 void CustomArgs(benchmark::internal::Benchmark* b)
@@ -133,7 +139,9 @@ void CustomArgs(benchmark::internal::Benchmark* b)
   b->Arg(S0);
   b->Arg(S1);
   b->Arg(S2);
+#if defined(SLAM_BENCHMARK_LARGE_SIZES)
   b->Arg(S3);
+#endif
 }
 
 }  // namespace
@@ -156,7 +164,9 @@ void contig_sequence_compileTimeSize(benchmark::State& state)
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S0);
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S1);
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S2);
+#if defined(SLAM_BENCHMARK_LARGE_SIZES)
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S3);
+#endif
 
 BENCHMARK_DEFINE_F(SetFixture, contig_sequence)(benchmark::State& state)
 {
