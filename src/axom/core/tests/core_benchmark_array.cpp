@@ -107,7 +107,7 @@ std::string get_type_name<std::string>()
 template <typename Arr>
 void assert_size_and_capacity(const Arr& arr, int exp_size, int exp_capacity)
 {
-#ifdef NDEBUG
+#if defined(NDEBUG)
   AXOM_UNUSED_VAR(arr);
   AXOM_UNUSED_VAR(exp_size);
   AXOM_UNUSED_VAR(exp_capacity);
@@ -120,7 +120,7 @@ void assert_size_and_capacity(const Arr& arr, int exp_size, int exp_capacity)
 template <typename Arr>
 void assert_size_and_strict_capacity(const Arr& arr, int exp_size, int exp_capacity)
 {
-#ifdef NDEBUG
+#if defined(NDEBUG)
   AXOM_UNUSED_VAR(arr);
   AXOM_UNUSED_VAR(exp_size);
   AXOM_UNUSED_VAR(exp_capacity);
