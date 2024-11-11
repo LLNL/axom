@@ -792,39 +792,6 @@ public:
     const bool isCurveRational = this->isRational();
     const int p = getDegree();
 
-    // Handle the special case of splitting at the endpoints
-    if(t == m_knotvec[0])
-    {
-      n1.setParameters(p + 1, p);
-      for(int i = 0; i <= p; ++i)
-      {
-        n1[i] = m_controlPoints[0];
-        if(isCurveRational)
-        {
-          n1.makeRational();
-          n1.setWeight(i, m_weights[0]);
-        }
-      }
-      n2 = *this;
-      return;
-    }
-    else if(t == m_knotvec[m_knotvec.getNumKnots() - 1])
-    {
-      n1 = *this;
-      n2.clear();
-      n2.setParameters(p + 1, p);
-      for(int i = 0; i <= p; ++i)
-      {
-        n2[i] = m_controlPoints[getNumControlPoints() - 1];
-        if(isCurveRational)
-        {
-          n2.makeRational();
-          n2.setWeight(i, m_weights[getNumControlPoints() - 1]);
-        }
-      }
-      return;
-    }
-
     n1 = *this;
 
     // Will make the multiplicity of the knot equal to p,
@@ -893,8 +860,9 @@ public:
     bool isCurveRational = this->isRational();
     int p = getDegree();
     int n = getNumControlPoints() - 1;
+    int ks = m_knotvec.getNumKnotSpans();
 
-    axom::Array<BezierCurve<T, NDIMS>> beziers(m_knotvec.getNumKnotSpans());
+    axom::Array<BezierCurve<T, NDIMS>> beziers(ks);
     for(auto& bezier : beziers)
     {
       bezier.setOrder(p);
@@ -920,7 +888,7 @@ public:
       return beziers;
     }
 
-    axom::Array<T> alphas(10);
+    axom::Array<T> alphas(p - 1);
 
     int m = n + p + 1;
     int a = p;
@@ -956,11 +924,10 @@ public:
           alphas[j - mult - 1] = numer / (m_knotvec[a + j] - m_knotvec[a]);
         }
 
-        int r = p - mult;
-
-        for(int j = 1; j <= r; ++j)
+        // Do the knot insertion in-place
+        for(int j = 1; j <= p - mult; ++j)
         {
-          int save = r - j;
+          int save = p - mult - j;
           int s = mult + j;
           for(int k = p; k >= s; k--)
           {
@@ -1305,10 +1272,10 @@ public:
       }
     }
 
-    os << ", knots {";
+    os << ", knots [";
     for(int i = 0; i < nkts; ++i)
     {
-      os << m_knotvec[i] << (i < nkts - 1 ? ", " : "");
+      os << m_knotvec[i] << (i < nkts - 1 ? ", " : "]");
     }
     os << "}";
 

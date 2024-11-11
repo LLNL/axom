@@ -620,7 +620,6 @@ TEST(primal_nurbscurve, bezier_extraction)
   curve.insertKnot(0.66, 1);
   curve.insertKnot(0.77, 2);
 
-  NURBSCurveType bezier_curve;
   auto bezier_list = curve.extractBezier();
 
   EXPECT_EQ(bezier_list.size(), 4);
@@ -729,6 +728,42 @@ TEST(primal_nurbscurve, bezier_extraction_zero)
       {
         EXPECT_NEAR(p[i], pt[i], 1e-13);
       }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, bezier_extraction_full)
+{
+  SLIC_INFO("Testing NURBS Bezier extraction on a 'Bezier' curve");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[4] = {PointType {0.6, 1.2, 1.0},
+                       PointType {1.3, 1.6, 1.8},
+                       PointType {2.9, 2.4, 2.3},
+                       PointType {3.2, 3.5, 3.0}};
+
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  NURBSCurveType curve(data, weights, 4, 3);
+
+  NURBSCurveType bezier_curve;
+  auto bezier_list = curve.extractBezier();
+
+  EXPECT_EQ(bezier_list.size(), 1);
+
+  for(double t = 0.0; t < 1.0; t += 0.05)
+  {
+    PointType p = curve.evaluate(t);
+    PointType pt = bezier_list[0].evaluate(t);
+    
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], pt[i], 1e-13);
     }
   }
 }
