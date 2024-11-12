@@ -24,7 +24,7 @@ TEST(primal_nurbspatch, constructor)
 {
   const int DIM = 3;
   using CoordType = double;
-  using NURBSPatchType = primal::NURBSPatch<CoordType, 3>;
+  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
 
   SLIC_INFO("Testing default NURBS Patch constructor ");
   NURBSPatchType nPatch;
@@ -542,7 +542,9 @@ TEST(primal_nurbspatch, isocurve_evaluate)
     for(int j = 0; j < 5; ++j)
     {
       auto pt_u = isocurve_u[j];
+      auto weight_u = isocurve_u.getWeight(j);
 
+      EXPECT_NEAR(weight_u, weights_u[i][j], 1e-10);
       for(int k = 0; k < DIM; ++k)
       {
         EXPECT_NEAR(pt_u[k], isocurves_u[i][j][k], 1e-10);
@@ -552,7 +554,9 @@ TEST(primal_nurbspatch, isocurve_evaluate)
     for(int j = 0; j < 4; ++j)
     {
       auto pt_v = isocurve_v[j];
+      auto weight_v = isocurve_v.getWeight(j);
 
+      EXPECT_NEAR(weight_v, weights_v[i][j], 1e-10);
       for(int k = 0; k < DIM; ++k)
       {
         EXPECT_NEAR(pt_v[k], isocurves_v[i][j][k], 1e-10);
@@ -988,7 +992,7 @@ TEST(primal_nurbspatch, split_degenerate)
   CoordType weights[9] = {1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 4.0, 5.0};
 
   // Degenerate in u, full in v
-  NURBSPatchType nPatch_u(controlPoints, npts_u, npts_v, 0, degree_v);
+  NURBSPatchType nPatch_u(controlPoints, weights, npts_u, npts_v, 0, degree_v);
   auto bezier_list_u = nPatch_u.extractBezier();
 
   EXPECT_EQ(bezier_list_u.size(),

@@ -960,7 +960,7 @@ public:
    * \param [in] idx The index of the knot
    * \param [in] knot The updated value of the knot
    */
-  void setKnot_u(int idx_p, int idx_q, T knot) { m_knotvec_u[idx] = knot; }
+  void setKnot_u(int idx, T knot) { m_knotvec_u[idx] = knot; }
 
   /*!
    * \brief Set the knot value in the v vector at a specific index
@@ -968,7 +968,7 @@ public:
    * \param [in] idx The index of the knot
    * \param [in] knot The updated value of the knot
    */
-  void setKnot_v(int idx_p, int idx_q, T knot) { m_knotvec_v[idx] = knot; }
+  void setKnot_v(int idx, T knot) { m_knotvec_v[idx] = knot; }
 
   /*! 
    * \brief Set the u knot vector by an axom::Array
@@ -1730,7 +1730,7 @@ public:
    */
   VectorType normal(T u, T v) const
   {
-    PointTyope eval;
+    PointType eval;
     VectorType Du, Dv;
     evaluateFirstDerivatives(u, v, eval, Du, Dv);
 
@@ -1765,7 +1765,6 @@ public:
     const int p = getDegree_u();
 
     const int nq = getNumControlPoints_v() - 1;
-    const int q = getDegree_v();
 
     // Find the span and initial multiplicity of the knot
     int s = 0;
@@ -2117,11 +2116,8 @@ public:
 
     const bool isRationalPatch = isRational();
 
-    const int np = getNumControlPoints_u() - 1;
     const int p = getDegree_u();
-
     const int nq = getNumControlPoints_v() - 1;
-    const int q = getDegree_v();
 
     p1 = *this;
 
@@ -2163,6 +2159,7 @@ public:
       }
     }
 
+    // Assumes that the resizing is done on the *flattened* array
     p1.m_controlPoints.resize(k - p + 1, nq + 1);
     if(isRationalPatch)
     {
@@ -2191,9 +2188,6 @@ public:
     const bool isRationalPatch = isRational();
 
     const int np = getNumControlPoints_u() - 1;
-    const int p = getDegree_u();
-
-    const int nq = getNumControlPoints_v() - 1;
     const int q = getDegree_v();
 
     p1 = *this;
