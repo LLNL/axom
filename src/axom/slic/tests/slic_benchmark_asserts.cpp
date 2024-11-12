@@ -7,6 +7,9 @@
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/core/SimpleLogger.hpp"
 
+#include <cstdint>
+#include <iostream>
+
 /*!
  * \file
  *
@@ -24,9 +27,9 @@ namespace
 static constexpr bool IS_VALID = true;
 static constexpr bool SHOULD_PRINT = false;
 
-void printMsg(std::string const& str, bool override = false)
+void printMsg(std::string const& str, bool always_print = false)
 {
-  if(SHOULD_PRINT || override)
+  if(SHOULD_PRINT || always_print)
   {
     std::cout << str << std::endl;
   }
@@ -168,11 +171,11 @@ static void BM_CallAssertDtorDuring(benchmark::State& state)
 
 }  // namespace
 
-BENCHMARK(BM_AssertBefore);
-BENCHMARK(BM_AssertAfter);
-BENCHMARK(BM_CallAssertCtorBefore);
-BENCHMARK(BM_CallAssertDtorBefore);
-BENCHMARK(BM_CallAssertDtorDuring);
+BENCHMARK(BM_AssertBefore)->Iterations(1);
+BENCHMARK(BM_AssertAfter)->Iterations(1);
+BENCHMARK(BM_CallAssertCtorBefore)->Iterations(1);
+BENCHMARK(BM_CallAssertDtorBefore)->Iterations(1);
+BENCHMARK(BM_CallAssertDtorDuring)->Iterations(1);
 
 BENCHMARK_F(SetFixtureC, assertCtor)(benchmark::State& state)
 {
@@ -182,6 +185,8 @@ BENCHMARK_F(SetFixtureC, assertCtor)(benchmark::State& state)
     benchmark::DoNotOptimize(x);
   }
 }
+BENCHMARK_REGISTER_F(SetFixtureC, assertCtor)->Iterations(1);
+
 BENCHMARK_F(SetFixtureS, assertSetup)(benchmark::State& state)
 {
   while(state.KeepRunning())
@@ -190,6 +195,8 @@ BENCHMARK_F(SetFixtureS, assertSetup)(benchmark::State& state)
     benchmark::DoNotOptimize(x);
   }
 }
+BENCHMARK_REGISTER_F(SetFixtureS, assertSetup)->Iterations(1);
+
 BENCHMARK_F(SetFixtureT, assertTeardown)(benchmark::State& state)
 {
   while(state.KeepRunning())
@@ -198,6 +205,8 @@ BENCHMARK_F(SetFixtureT, assertTeardown)(benchmark::State& state)
     benchmark::DoNotOptimize(x);
   }
 }
+BENCHMARK_REGISTER_F(SetFixtureT, assertTeardown)->Iterations(1);
+
 BENCHMARK_F(SetFixtureD, assertDtor)(benchmark::State& state)
 {
   while(state.KeepRunning())
@@ -206,6 +215,7 @@ BENCHMARK_F(SetFixtureD, assertDtor)(benchmark::State& state)
     benchmark::DoNotOptimize(x);
   }
 }
+BENCHMARK_REGISTER_F(SetFixtureD, assertDtor)->Iterations(1);
 
 // The following two benchmarks are here to show the order of construction,
 // setup, teardown and destruction of benchmarks fixtures.
@@ -220,6 +230,8 @@ BENCHMARK_F(SetFixtureOutput, process1)(benchmark::State& state)
   }
   printMsg("   P1 (after)");
 }
+BENCHMARK_REGISTER_F(SetFixtureOutput, process1)->Iterations(1);
+
 BENCHMARK_F(SetFixtureOutput, process2)(benchmark::State& state)
 {
   printMsg("   P2 (before)");
@@ -230,13 +242,14 @@ BENCHMARK_F(SetFixtureOutput, process2)(benchmark::State& state)
   }
   printMsg("   P2 (after)");
 }
+BENCHMARK_REGISTER_F(SetFixtureOutput, process2)->Iterations(1);
 
 int main(int argc, char* argv[])
 {
   printMsg("at start of main");
 
   printMsg(" Before init logger");
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
   printMsg(" After init logger");
 
   printMsg(" Before init benchmark");
