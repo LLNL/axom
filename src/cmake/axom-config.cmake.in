@@ -48,6 +48,7 @@ if(NOT AXOM_FOUND)
   set(AXOM_ENABLE_SLAM        "@AXOM_ENABLE_SLAM@")
   set(AXOM_ENABLE_SLIC        "@AXOM_ENABLE_SLIC@")
   set(AXOM_ENABLE_SPIN        "@AXOM_ENABLE_SPIN@")
+  set(AXOM_ENABLE_SINA        "@AXOM_ENABLE_SINA@")
 
   # Axom built-in TPLs
   set(AXOM_USE_CLI11          "@AXOM_USE_CLI11@")

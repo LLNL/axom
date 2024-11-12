@@ -103,6 +103,7 @@
 #cmakedefine AXOM_USE_PRIMAL
 #cmakedefine AXOM_USE_QUEST
 #cmakedefine AXOM_USE_SIDRE
+#cmakedefine AXOM_USE_SINA
 #cmakedefine AXOM_USE_SLAM
 #cmakedefine AXOM_USE_SLIC
 #cmakedefine AXOM_USE_SPIN
