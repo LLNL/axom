@@ -318,11 +318,12 @@ public:
 
   ArrFixture(int size)
   {
-    data.resize(size);
+    data.reserve(size);
     for(int i = 0; i < size; ++i)
     {
       data.emplace_back(get_value<T>(i));
     }
+    assert_size_and_capacity(data, size, size);
   }
 
   Container data;
