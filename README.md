@@ -19,8 +19,9 @@ Axom provides robust, flexible software infrastructure for the development of mu
 Documentation
 -------------
 
-To access the latest docs for Axom as well as those for specific versions:
-https://app.readthedocs.org/projects/axom/
+To access the latest docs for Axom: https://axom.readthedocs.io/en/develop/
+
+To access Axom docs for specific versions: https://app.readthedocs.org/projects/axom/
 
 Getting Involved
 ----------------
