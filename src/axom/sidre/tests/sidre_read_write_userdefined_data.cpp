@@ -9,11 +9,7 @@
 using axom::sidre::DataStore;
 using axom::sidre::Group;
 using axom::sidre::View;
-using axom::sidre::indexIsValid;
 using axom::sidre::IndexType;
-using axom::sidre::InvalidIndex;
-using axom::sidre::InvalidName;
-using axom::sidre::nameIsValid;
 
 //-----Mock Serac Structs------------------------------------------------------
 
