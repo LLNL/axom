@@ -29,6 +29,7 @@
 #include "opencascade/Geom2d_Curve.hxx"
 #include "opencascade/Geom2d_BSplineCurve.hxx"
 #include "opencascade/BRep_Tool.hxx"
+#include "opencascade/TopoDS_Wire.hxx"
 
 #include <iostream>
 
@@ -132,7 +133,7 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
     BBox patchBbox;
     BBox expandedPatchBbox;
     {
-      TopoDS_Face face = TopoDS::Face(faceExp.Current());
+      const TopoDS_Face& face = TopoDS::Face(faceExp.Current());
       Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
 
       Standard_Real u1, u2, v1, v2;
@@ -157,152 +158,159 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
 
     axom::Array<axom::primal::NURBSCurve<double, 2>> curves;
 
-    for(TopExp_Explorer edgeExp(faceExp.Current(), TopAbs_EDGE); edgeExp.More();
-        edgeExp.Next())
+    for(TopExp_Explorer wireExp(faceExp.Current(), TopAbs_WIRE); wireExp.More();
+        wireExp.Next())
     {
-      TopoDS_Edge edge = TopoDS::Edge(edgeExp.Current());
-
-      BRepAdaptor_Curve curveAdaptor(edge);
-      GeomAbs_CurveType curveType = curveAdaptor.GetType();
-
-      if(curveType == GeomAbs_BSplineCurve || curveType == GeomAbs_BezierCurve)
+      const TopoDS_Wire& wire = TopoDS::Wire(wireExp.Current());
+      for(TopExp_Explorer edgeExp(wire, TopAbs_EDGE); edgeExp.More();
+          edgeExp.Next())
       {
-        Standard_Real first, last;
-        // Handle(Geom_Curve) geomCurve = BRep_Tool::Curve(edge, first, last);
-        // Handle(Geom_BSplineCurve) bsplineCurve =
-        //   Handle(Geom_BSplineCurve)::DownCast(geomCurve);
+        const TopoDS_Edge& edge = TopoDS::Edge(edgeExp.Current());
 
-        //Handle(Geom_Surface) surface = BRep_Tool::Surface(TopoDS::Face(faceExp.Current()));
+        BRepAdaptor_Curve curveAdaptor(edge);
+        GeomAbs_CurveType curveType = curveAdaptor.GetType();
 
-        Handle(Geom2d_Curve) parametricCurve =
-          BRep_Tool::CurveOnSurface(edge,
-                                    TopoDS::Face(faceExp.Current()),
-                                    first,
-                                    last);
-        Handle(Geom2d_BSplineCurve) bsplineCurve =
-          Handle(Geom2d_BSplineCurve)::DownCast(parametricCurve);
-        if(!parametricCurve.IsNull() && !bsplineCurve.IsNull())
+        if(curveType == GeomAbs_BSplineCurve || curveType == GeomAbs_BezierCurve)
         {
-          // Extract the control points in parametric space
-          TColgp_Array1OfPnt2d paraPoints(1, bsplineCurve->NbPoles());
-          bsplineCurve->Poles(paraPoints);
+          Standard_Real first, last;
+          // Handle(Geom_Curve) geomCurve = BRep_Tool::Curve(edge, first, last);
+          // Handle(Geom_BSplineCurve) bsplineCurve =
+          //   Handle(Geom_BSplineCurve)::DownCast(geomCurve);
 
-          axom::Array<PointType> controlPoints;
-          for(Standard_Integer i = paraPoints.Lower(); i <= paraPoints.Upper();
-              ++i)
+          //Handle(Geom_Surface) surface = BRep_Tool::Surface(TopoDS::Face(faceExp.Current()));
+
+          Handle(Geom2d_Curve) parametricCurve =
+            BRep_Tool::CurveOnSurface(edge,
+                                      TopoDS::Face(faceExp.Current()),
+                                      first,
+                                      last);
+          Handle(Geom2d_BSplineCurve) bsplineCurve =
+            Handle(Geom2d_BSplineCurve)::DownCast(parametricCurve);
+          if(!parametricCurve.IsNull() && !bsplineCurve.IsNull())
           {
-            gp_Pnt2d paraPt = paraPoints(i);
-            auto pt = PointType {paraPt.X(), paraPt.Y()};
-            SLIC_DEBUG_IF(
-              !expandedPatchBbox.contains(pt),
-              axom::fmt::format(
-                "Distance of {} to {} is {}",
-                pt,
-                patchBbox,
-                sqrt(axom::primal::squared_distance(pt, patchBbox))));
-            controlPoints.emplace_back(pt);
-          }
+            // Extract the control points in parametric space
+            TColgp_Array1OfPnt2d paraPoints(1, bsplineCurve->NbPoles());
+            bsplineCurve->Poles(paraPoints);
 
-          SLIC_INFO(
-            axom::fmt::format("[Patch {} Curve {}] Control Points: [{}]",
-                              patchIndex,
-                              curves.size(),
-                              axom::fmt::join(controlPoints, ", ")));
-
-          // Extract the weights for the control points
-          TColStd_Array1OfReal weights(1, bsplineCurve->NbPoles());
-          bsplineCurve->Weights(weights);
-
-          bool isRational = false;
-          axom::Array<double> weightsVector(weights.Length());
-          for(int i = 1; i <= weights.Length(); ++i)
-          {
-            weightsVector[i - 1] = weights(i);
-            if(!isRational && i > 2 && weightsVector[i - 1] != weightsVector[0])
+            axom::Array<PointType> controlPoints;
+            for(Standard_Integer i = paraPoints.Lower(); i <= paraPoints.Upper();
+                ++i)
             {
-              isRational = true;
+              gp_Pnt2d paraPt = paraPoints(i);
+              auto pt = PointType {paraPt.X(), paraPt.Y()};
+              SLIC_DEBUG_IF(
+                !expandedPatchBbox.contains(pt),
+                axom::fmt::format(
+                  "Distance of {} to {} is {}",
+                  pt,
+                  patchBbox,
+                  sqrt(axom::primal::squared_distance(pt, patchBbox))));
+              controlPoints.emplace_back(pt);
             }
-          }
-          SLIC_INFO(axom::fmt::format(
-            "[Patch {} Curve {}] Weights: [{}]; spline {} rational",
-            patchIndex,
-            curves.size(),
-            axom::fmt::join(weightsVector, ", "),
-            isRational ? "is" : "is not"));
 
-          // Extract the knots and their multiplicities
-          TColStd_Array1OfReal knots(1, bsplineCurve->NbKnots());
-          bsplineCurve->Knots(knots);
+            SLIC_INFO(
+              axom::fmt::format("[Patch {} Curve {}] Control Points: [{}]",
+                                patchIndex,
+                                curves.size(),
+                                axom::fmt::join(controlPoints, ", ")));
 
-          TColStd_Array1OfInteger multiplicities(1, bsplineCurve->NbKnots());
-          bsplineCurve->Multiplicities(multiplicities);
+            // Extract the weights for the control points
+            // TODO: Use IsRational to check this; only extract when rational
+            TColStd_Array1OfReal weights(1, bsplineCurve->NbPoles());
+            bsplineCurve->Weights(weights);
 
-          SLIC_ASSERT(knots.Length() == multiplicities.Length());
-          const int curveDegree = bsplineCurve->Degree();
-          const bool isClamped = (multiplicities.First() == curveDegree + 1) &&
-            (multiplicities.Last() == curveDegree + 1);
-
-          axom::Array<double> knotVector;
-          axom::Array<double> debug_multipliciesVector;  // delete me!
-          for(int i = 1; i <= knots.Length(); ++i)
-          {
-            debug_multipliciesVector.push_back(multiplicities(i));
-            for(int j = 0; j < multiplicities(i); ++j)
+            bool isRational = false;
+            axom::Array<double> weightsVector(weights.Length());
+            for(int i = 1; i <= weights.Length(); ++i)
             {
-              knotVector.push_back(knots(i));
+              weightsVector[i - 1] = weights(i);
+              if(!isRational && i > 2 && weightsVector[i - 1] != weightsVector[0])
+              {
+                isRational = true;
+              }
             }
-          }
-          SLIC_INFO(axom::fmt::format("[Patch {} Curve {}] Knots: [{}]",
-                                      patchIndex,
-                                      curves.size(),
-                                      axom::fmt::join(knotVector, ", ")));
-
-          SLIC_INFO(axom::fmt::format("[Patch {} Curve {}] Degree: {}",
-                                      patchIndex,
-                                      curves.size(),
-                                      curveDegree));
-
-          SLIC_INFO(
-            axom::fmt::format("[Patch {} Curve {}] knot multiplicities: {}, "
-                              "degree: {}, is clamped: {}",
-                              patchIndex,
-                              curves.size(),
-                              axom::fmt::join(debug_multipliciesVector, ", "),
-                              curveDegree,
-                              isClamped));
-
-          if(!isClamped)
-          {
-            SLIC_WARNING(axom::fmt::format(
-              "[Patch {} Curve {}] skipping curve -- Axom only currently "
-              "supports clamped trimming curves",
+            SLIC_INFO(axom::fmt::format(
+              "[Patch {} Curve {}] Weights: [{}]; spline {} rational",
               patchIndex,
-              curves.size()));
-            SLIC_INFO("---");
-            continue;
-          }
-          else
-          {
-            SLIC_INFO("---");
-          }
+              curves.size(),
+              axom::fmt::join(weightsVector, ", "),
+              isRational ? "is" : "is not"));
 
-          if(isRational)
-          {
-            NCurve nurbs {controlPoints, weightsVector, knotVector};
-            SLIC_ASSERT(nurbs.isValidNURBS());
-            SLIC_ASSERT(nurbs.getDegree() == curveDegree);
+            // Extract the knots and their multiplicities
+            // TODO: Use IsPeriodic to check if the curve is closed
+            TColStd_Array1OfReal knots(1, bsplineCurve->NbKnots());
+            bsplineCurve->Knots(knots);
 
-            curves.emplace_back(nurbs);
-          }
-          else
-          {
-            NCurve nurbs {controlPoints, knotVector};
-            SLIC_ASSERT(nurbs.isValidNURBS());
-            SLIC_ASSERT(nurbs.getDegree() == curveDegree);
+            TColStd_Array1OfInteger multiplicities(1, bsplineCurve->NbKnots());
+            bsplineCurve->Multiplicities(multiplicities);
 
-            curves.emplace_back(nurbs);
+            SLIC_ASSERT(knots.Length() == multiplicities.Length());
+            const int curveDegree = bsplineCurve->Degree();
+            const bool isClamped = (multiplicities.First() == curveDegree + 1) &&
+              (multiplicities.Last() == curveDegree + 1);
+
+            axom::Array<double> knotVector;
+            axom::Array<double> debug_multipliciesVector;  // delete me!
+            for(int i = 1; i <= knots.Length(); ++i)
+            {
+              debug_multipliciesVector.push_back(multiplicities(i));
+              for(int j = 0; j < multiplicities(i); ++j)
+              {
+                knotVector.push_back(knots(i));
+              }
+            }
+            SLIC_INFO(axom::fmt::format("[Patch {} Curve {}] Knots: [{}]",
+                                        patchIndex,
+                                        curves.size(),
+                                        axom::fmt::join(knotVector, ", ")));
+
+            SLIC_INFO(axom::fmt::format("[Patch {} Curve {}] Degree: {}",
+                                        patchIndex,
+                                        curves.size(),
+                                        curveDegree));
+
+            SLIC_INFO(
+              axom::fmt::format("[Patch {} Curve {}] knot multiplicities: {}, "
+                                "degree: {}, is clamped: {}",
+                                patchIndex,
+                                curves.size(),
+                                axom::fmt::join(debug_multipliciesVector, ", "),
+                                curveDegree,
+                                isClamped));
+
+            if(!isClamped)
+            {
+              SLIC_WARNING(axom::fmt::format(
+                "[Patch {} Curve {}] skipping curve -- Axom only currently "
+                "supports clamped trimming curves",
+                patchIndex,
+                curves.size()));
+              SLIC_INFO("---");
+              continue;
+            }
+            else
+            {
+              SLIC_INFO("---");
+            }
+
+            if(isRational)
+            {
+              NCurve nurbs {controlPoints, weightsVector, knotVector};
+              SLIC_ASSERT(nurbs.isValidNURBS());
+              SLIC_ASSERT(nurbs.getDegree() == curveDegree);
+
+              curves.emplace_back(nurbs);
+            }
+            else
+            {
+              NCurve nurbs {controlPoints, knotVector};
+              SLIC_ASSERT(nurbs.isValidNURBS());
+              SLIC_ASSERT(nurbs.getDegree() == curveDegree);
+
+              curves.emplace_back(nurbs);
+            }
+            AXOM_UNUSED_VAR(curveDegree);
           }
-          AXOM_UNUSED_VAR(curveDegree);
         }
       }
     }
@@ -328,6 +336,246 @@ TopoDS_Shape convertToNURBS(const TopoDS_Shape& shape)
   }
 
   return nurbsShape;
+}
+
+std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve)
+{
+  using PointType = axom::primal::Point<double, 2>;
+
+  const int degree = curve.getDegree();
+  const auto& knotVector = curve.getKnots();
+  const bool isRational = curve.isRational();
+
+  axom::fmt::memory_buffer svgPath;
+  axom::fmt::format_to(std::back_inserter(svgPath),
+                       "<path class=\"{} degree-{}\" d=\"",
+                       isRational ? "rational" : "non-rational",
+                       degree);
+
+  if(curve.isRational() || degree > 3)
+  {
+    const int numSamples = 10;
+    const double tMin = knotVector[0];
+    const double tMax = knotVector[knotVector.getNumKnots() - 1];
+
+    for(int i = 0; i <= numSamples; ++i)
+    {
+      const double t =
+        axom::utilities::lerp(tMin, tMax, static_cast<double>(i) / numSamples);
+
+      PointType pt = curve.evaluate(t);
+      if(i == 0)
+      {
+        axom::fmt::format_to(std::back_inserter(svgPath), "M {} {} ", pt[0], pt[1]);
+      }
+      else
+      {
+        axom::fmt::format_to(std::back_inserter(svgPath), "L {} {} ", pt[0], pt[1]);
+      }
+    }
+  }
+  else
+  {
+    auto bezierCurves = curve.extractBezier();
+    for(const auto& bezier : bezierCurves)
+    {
+      const auto& bezierControlPoints = bezier.getControlPoints();
+      if(degree == 2)
+      {
+        for(int i = 0; i < bezierControlPoints.size(); ++i)
+        {
+          const PointType& pt = bezierControlPoints[i];
+          if(i == 0)
+          {
+            axom::fmt::format_to(std::back_inserter(svgPath),
+                                 "M {} {} ",
+                                 pt[0],
+                                 pt[1]);
+          }
+          else if(i == 2)
+          {
+            axom::fmt::format_to(std::back_inserter(svgPath),
+                                 "Q {} {} {} {} ",
+                                 bezierControlPoints[1][0],
+                                 bezierControlPoints[1][1],
+                                 pt[0],
+                                 pt[1]);
+          }
+        }
+      }
+      else if(degree == 3)
+      {
+        for(int i = 0; i < bezierControlPoints.size(); ++i)
+        {
+          const PointType& pt = bezierControlPoints[i];
+          if(i == 0)
+          {
+            axom::fmt::format_to(std::back_inserter(svgPath),
+                                 "M {} {} ",
+                                 pt[0],
+                                 pt[1]);
+          }
+          else if(i == 3)
+          {
+            axom::fmt::format_to(std::back_inserter(svgPath),
+                                 "C {} {} {} {} {} {} ",
+                                 bezierControlPoints[1][0],
+                                 bezierControlPoints[1][1],
+                                 bezierControlPoints[2][0],
+                                 bezierControlPoints[2][1],
+                                 pt[0],
+                                 pt[1]);
+          }
+        }
+      }
+      else
+      {
+        for(int i = 0; i < bezierControlPoints.size(); ++i)
+        {
+          const PointType& pt = bezierControlPoints[i];
+          if(i == 0)
+          {
+            axom::fmt::format_to(std::back_inserter(svgPath),
+                                 "M {} {} ",
+                                 pt[0],
+                                 pt[1]);
+          }
+          else
+          {
+            axom::fmt::format_to(std::back_inserter(svgPath),
+                                 "L {} {} ",
+                                 pt[0],
+                                 pt[1]);
+          }
+        }
+      }
+    }
+  }
+
+  axom::fmt::format_to(std::back_inserter(svgPath), "\"  />");
+
+  return axom::fmt::to_string(svgPath);
+}
+
+void generateSVGForPatch(
+  const TopoDS_Shape& shape,
+  int patchIndex,
+  const std::map<int, axom::Array<axom::primal::NURBSCurve<double, 2>>>& nurbsCurvesMap)
+{
+  using PointType = axom::primal::Point<double, 2>;
+
+  auto it = nurbsCurvesMap.find(patchIndex);
+  if(it == nurbsCurvesMap.end())
+  {
+    std::cerr << "Error: Patch index " << patchIndex
+              << " not found in the NURBS curves map." << std::endl;
+    return;
+  }
+
+  // Get the bounding box of this patch in parameter space
+  TopExp_Explorer faceExp(shape, TopAbs_FACE);
+  for(int i = 0; i < patchIndex && faceExp.More(); ++i)
+  {
+    faceExp.Next();
+  }
+  if(!faceExp.More())
+  {
+    std::cerr << "Error: Patch index " << patchIndex << " is out of range."
+              << std::endl;
+    return;
+  }
+  TopoDS_Face face = TopoDS::Face(faceExp.Current());
+  Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
+
+  Standard_Real uMin, uMax, vMin, vMax;
+  surface->Bounds(uMin, uMax, vMin, vMax);
+
+  axom::primal::BoundingBox<double, 2> parametricBBox;
+  parametricBBox.addPoint(PointType {uMin, vMin});
+  parametricBBox.addPoint(PointType {uMax, vMax});
+
+  SLIC_INFO(axom::fmt::format("Parametric BBox for patch {}: {}",
+                              patchIndex,
+                              parametricBBox));
+
+  const auto& curves = it->second;
+  axom::fmt::memory_buffer svgContent;
+
+  // Create a new bounding box by scaling and translating the parametricBBox by a factor of two, keeping the center the same
+  PointType center = parametricBBox.getCentroid();
+  PointType min = parametricBBox.getMin();
+  PointType max = parametricBBox.getMax();
+
+  PointType newMin = center + 2.0 * (min - center);
+  PointType newMax = center + 2.0 * (max - center);
+
+  axom::primal::BoundingBox<double, 2> scaledParametricBBox;
+  scaledParametricBBox.addPoint(newMin);
+  scaledParametricBBox.addPoint(newMax);
+
+  SLIC_INFO(
+    axom::fmt::format("Scaled and translated parametric BBox for patch {}: {}",
+                      patchIndex,
+                      scaledParametricBBox));
+  axom::fmt::format_to(
+    std::back_inserter(svgContent),
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" "
+    "version=\"1.1\" viewBox=\"{} {} {} {}\">\n",
+    scaledParametricBBox.getMin()[0],
+    scaledParametricBBox.getMin()[1],
+    scaledParametricBBox.getMax()[0] - scaledParametricBBox.getMin()[0],
+    scaledParametricBBox.getMax()[1] - scaledParametricBBox.getMin()[1]);
+
+  axom::fmt::format_to(std::back_inserter(svgContent), R"raw(
+  <style>
+    path {{ fill:none; stroke:black; stroke-width:.1; marker-end:url(#arrow);paint-order:fill stroke markers;stroke-linejoin:round;stroke-linecap:round; }}
+    rect {{ fill: white; stroke: gray; stroke-width: 0.1; }}
+  </style>
+  )raw");
+  // add a marker for the arrow's head to indicate the orientation
+  axom::fmt::format_to(std::back_inserter(svgContent), R"raw(
+  <defs>
+    <marker id="arrow" style="overflow:visible" orient="auto-start-reverse"
+        refX="0" refY="0"
+        markerWidth="3.3239999" markerHeight="3.8427744"
+        viewBox="0 0 5.3244081 6.1553851">
+      <path
+          transform="scale(0.5)"
+          style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+          d="M 5.77,0 -2.88,5 V -5 Z" />
+    </marker>
+  </defs>
+  )raw");
+
+  axom::fmt::format_to(
+    std::back_inserter(svgContent),
+    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" />\n",
+    parametricBBox.getMin()[0],
+    parametricBBox.getMin()[1],
+    parametricBBox.getMax()[0] - parametricBBox.getMin()[0],
+    parametricBBox.getMax()[1] - parametricBBox.getMin()[1]);
+
+  for(const auto& curve : curves)
+  {
+    std::string pathData = nurbsCurveToSVGPath(curve);
+    axom::fmt::format_to(std::back_inserter(svgContent), "{}\n", pathData);
+  }
+
+  axom::fmt::format_to(std::back_inserter(svgContent), "</svg>");
+
+  std::string svgFilename = axom::fmt::format("patch_{}.svg", patchIndex);
+  std::ofstream svgFile(svgFilename);
+  if(svgFile.is_open())
+  {
+    svgFile << axom::fmt::to_string(svgContent);
+    svgFile.close();
+    std::cout << "SVG file generated: " << svgFilename << std::endl;
+  }
+  else
+  {
+    std::cerr << "Error: Unable to open file " << svgFilename << " for writing."
+              << std::endl;
+  }
 }
 
 int main(int argc, char** argv)
@@ -360,6 +608,14 @@ int main(int argc, char** argv)
   {
     std::cout << "Patch " << entry.first << " has " << entry.second.size()
               << " NURBS curves." << std::endl;
+  }
+
+  std::string cwd = axom::utilities::filesystem::getCWD();
+  std::cout << "Current working directory: " << cwd << std::endl;
+
+  for(const auto& entry : nurbsCurvesMap)
+  {
+    generateSVGForPatch(nurbs_shape, entry.first, nurbsCurvesMap);
   }
 
   return 0;
