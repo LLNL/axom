@@ -278,7 +278,7 @@ TEST(sidre_external, verify_external_layout)
   }
 }
 
-#if 0
+#if 1
 //------------------------------------------------------------------------------
 // Test Group::save(), Group::load() with described external views
 // TODO - The save/load functionality needs to be fixed.
@@ -299,37 +299,34 @@ TEST(sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  View* iview = root->createView("idata", idata)->apply(INT_ID, len);
-  View* dview = root->createView("ddata", ddata)->apply(DOUBLE_ID, len);
+  root->createView("idata", idata)->apply(INT_ID, len);
+  root->createView("ddata", ddata)->apply(DOUBLE_ID, len);
   EXPECT_EQ(root->getNumViews(), 2u);
 
-//  iview->print();
-//  dview->print();
-
   ds->getRoot()->save("out_sidre_external_save_restore_external_view",
-                      "conduit");
-
-//  ds->print();
-
+                      "sidre_hdf5");
 
   DataStore* ds2 = new DataStore();
-
-  ds2->getRoot()->load("out_sidre_external_save_restore_external_view",
-                       "conduit");
-
-//  ds2->print();
-
   Group* root2 = ds2->getRoot();
+
+  root2->load("out_sidre_external_save_restore_external_view");
+
+  int* new_idata = new int[len];
+  double* new_ddata = new double[len];
+
+  root2->getView("idata")->setExternalDataPtr(new_idata);
+  root2->getView("ddata")->setExternalDataPtr(new_ddata);
+  root2->loadExternalData("out_sidre_external_save_restore_external_view");
 
   EXPECT_EQ(root2->getNumViews(), 2u);
 
-  int* idata_chk = iview->getData();
+  int* idata_chk = root2->getView("idata")->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double* ddata_chk = dview->getData();
+  double* ddata_chk = root2->getView("ddata")->getData();
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -339,5 +336,7 @@ TEST(sidre_external, save_load_external_view)
   delete ds2;
   delete [] idata;
   delete [] ddata;
+  delete [] new_idata;
+  delete [] new_ddata;
 }
 #endif
