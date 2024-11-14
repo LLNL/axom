@@ -8,8 +8,8 @@
 
 using axom::sidre::DataStore;
 using axom::sidre::Group;
-using axom::sidre::View;
 using axom::sidre::IndexType;
+using axom::sidre::View;
 
 //-----Mock Serac Structs------------------------------------------------------
 
@@ -29,54 +29,60 @@ void fill(T&, double)
 //---------------------
 
 template <typename T, std::size_t Rows, std::size_t Cols>
-class Tensor {
+class Tensor
+{
 public:
-    // Constructor to initialize all elements to a specific value
-    Tensor(const T& value = T()) {
-        for (auto& row : data) {
-            row.fill(value);
-        }
+  // Constructor to initialize all elements to a specific value
+  Tensor(const T& value = T())
+  {
+    for(auto& row : data)
+    {
+      row.fill(value);
     }
+  }
 
-    // Constructor to initialize from an initializer list
-    Tensor(std::initializer_list<std::initializer_list<T>> init) {
-        size_t row = 0;
-        for (auto& rowData : init) {
-            size_t col = 0;
-            for (auto& element : rowData) {
-                data[row][col++] = element;
-            }
-            row++;
-        }
+  // Constructor to initialize from an initializer list
+  Tensor(std::initializer_list<std::initializer_list<T>> init)
+  {
+    size_t row = 0;
+    for(auto& rowData : init)
+    {
+      size_t col = 0;
+      for(auto& element : rowData)
+      {
+        data[row][col++] = element;
+      }
+      row++;
     }
+  }
 
-    // Accessor for elements (read/write)
-    T& at(size_t row, size_t col) {
-        return data[row][col];
-    }
+  // Accessor for elements (read/write)
+  T& at(size_t row, size_t col) { return data[row][col]; }
 
-    // Const accessor for elements (read-only)
-    const T& at(size_t row, size_t col) const {
-        return data[row][col];
-    }
+  // Const accessor for elements (read-only)
+  const T& at(size_t row, size_t col) const { return data[row][col]; }
 
-    // Get tensor dimensions
-    std::pair<size_t, size_t> dimensions() const {
-        return {Rows, Cols};
-    }
+  // Get tensor dimensions
+  std::pair<size_t, size_t> dimensions() const { return {Rows, Cols}; }
 
-    // Print the tensor for demonstration purposes
-    void print() const {
-        for (const auto& row : data) {
-            for (const auto& element : row) {
-                std::cout << element << " ";
-            }
-            std::cout << "\n";
-        }
+  // Function to return a string representation of the tensor
+  std::string to_string() const
+  {
+    std::ostringstream oss;
+    for(const auto& row : data)
+    {
+      oss << "[ ";
+      for(const auto& elem : row)
+      {
+        oss << elem << " ";
+      }
+      oss << "]\n";
     }
+    return oss.str();
+  }
 
 private:
-    std::array<std::array<T, Cols>, Rows> data;
+  std::array<std::array<T, Cols>, Rows> data;
 };
 
 //---------------------
@@ -96,7 +102,8 @@ void fill(double& state, double value)
 
 //---------------------
 
-struct StateOne {
+struct StateOne
+{
   double x;
 };
 
@@ -115,7 +122,8 @@ void fill(StateOne& state, double value)
 
 //---------------------
 
-struct StateTwo {
+struct StateTwo
+{
   double x;
   double y;
 };
@@ -135,7 +143,8 @@ void fill(StateTwo& state, double value)
 
 //---------------------
 
-struct StateThree {
+struct StateThree
+{
   double x;
   double y;
   double z;
@@ -144,7 +153,8 @@ struct StateThree {
 template <>
 bool check(const StateThree& state, double value)
 {
-  return (state.x == value) && (state.y == (value + 1)) && (state.z == (value + 2));
+  return (state.x == value) && (state.y == (value + 1)) &&
+    (state.z == (value + 2));
 }
 
 template <>
@@ -157,7 +167,8 @@ void fill(StateThree& state, double value)
 
 //---------------------
 
-struct StateTensor {
+struct StateTensor
+{
   Tensor<double, 2, 2> t;
   double x;
 };
@@ -165,9 +176,9 @@ struct StateTensor {
 template <>
 bool check(const StateTensor& state, double value)
 {
-  return (state.t.at(0,0) == value) && (state.t.at(0,1) == (value + 1)) &&
-         (state.t.at(1,0) == (value + 2)) && (state.t.at(1,1) == (value + 3)) &&
-         (state.x == (value + 4));
+  return (state.t.at(0, 0) == value) && (state.t.at(0, 1) == (value + 1)) &&
+    (state.t.at(1, 0) == (value + 2)) && (state.t.at(1, 1) == (value + 3)) &&
+    (state.x == (value + 4));
 }
 
 template <>
@@ -193,7 +204,8 @@ void test_user_defined_data()
   constexpr IndexType size = 10;
   QuadratureData1D<T> states(size, size);
   IndexType i = 0;
-  for(auto& state: states){
+  for(auto& state : states)
+  {
     fill(state, i++);
   }
 
@@ -212,23 +224,23 @@ void test_user_defined_data()
   qd_group->createViewScalar("total_size", total_size);
 
   // write data to datastore as bytes
-  View* data_view = qd_group->createViewAndAllocate("states",
-                                                    axom::sidre::UINT8_ID,
-                                                    total_size);
+  View* data_view =
+    qd_group->createViewAndAllocate("states", axom::sidre::UINT8_ID, total_size);
   std::uint8_t* sidre_state_data = data_view->getData();
   memcpy(sidre_state_data, states.data(), static_cast<std::size_t>(total_size));
 
   // mess with data before overriding it back to original in sidre
   fill(states[0], 123);
-  fill(states[size/2], 456);
-  fill(states[size-1], 789);
+  fill(states[size / 2], 456);
+  fill(states[size - 1], 789);
 
   // Copy original data back over local data
   memcpy(states.data(), sidre_state_data, static_cast<std::size_t>(total_size));
 
   // Test data is back to original
   i = 0;
-  for(auto& state: states){
+  for(auto& state : states)
+  {
     EXPECT_TRUE(check(state, i++));
   }
 }
@@ -240,7 +252,8 @@ void test_external_user_defined_data()
   constexpr IndexType size = 10;
   QuadratureData1D<T> states(size, size);
   IndexType i = 0;
-  for(auto& state: states){
+  for(auto& state : states)
+  {
     fill(state, i++);
   }
 
@@ -261,7 +274,9 @@ void test_external_user_defined_data()
 
   // Add states as an external buffer
   View* states_view = qd_group->createView("states");
-  states_view->setExternalDataPtr(axom::sidre::UINT8_ID, num_uint8s, states.data());
+  states_view->setExternalDataPtr(axom::sidre::UINT8_ID,
+                                  num_uint8s,
+                                  states.data());
 
   // Save the array data in to a file
   std::string filename = "sidre_external_quadraturedata";
@@ -269,7 +284,8 @@ void test_external_user_defined_data()
 
   // Create new array to fill with saved data
   QuadratureData1D<T> saved_states(size, size);
-  for(auto& state: saved_states){
+  for(auto& state : saved_states)
+  {
     fill(state, -1);
   }
 
@@ -283,27 +299,19 @@ void test_external_user_defined_data()
 
   // Test data is back to original
   i = 0;
-  for(auto& state: saved_states){
+  for(auto& state : saved_states)
+  {
     EXPECT_TRUE(check(state, i++));
   }
 }
 
 //------------------------------------------------------------------------------
 
-TEST(sidre, QD_double_readandwrite)
-{
-  test_user_defined_data<double>();
-}
+TEST(sidre, QD_double_readandwrite) { test_user_defined_data<double>(); }
 
-TEST(sidre, QD_StateOne_readandwrite)
-{
-  test_user_defined_data<StateOne>();
-}
+TEST(sidre, QD_StateOne_readandwrite) { test_user_defined_data<StateOne>(); }
 
-TEST(sidre, QD_StateTwo_readandwrite)
-{
-  test_user_defined_data<StateTwo>();
-}
+TEST(sidre, QD_StateTwo_readandwrite) { test_user_defined_data<StateTwo>(); }
 
 TEST(sidre, QD_StateThree_readandwrite)
 {
@@ -339,4 +347,3 @@ int main(int argc, char* argv[])
 
   return result;
 }
-
