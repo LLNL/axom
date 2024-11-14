@@ -41,6 +41,7 @@
 #include "opencascade/Precision.hxx"
 #include "opencascade/Geom_Surface.hxx"
 #include "opencascade/BRep_Tool.hxx"
+#include "opencascade/Geom2dConvert.hxx"
 
 #include <iostream>
 
@@ -137,6 +138,17 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
   std::map<int, axom::Array<NCurve>> patchTrimmingCurves;
   int patchIndex = 0;
 
+  std::map<GeomAbs_CurveType, std::string> curveTypeMap = {
+    {GeomAbs_Line, "Line"},
+    {GeomAbs_Circle, "Circle"},
+    {GeomAbs_Ellipse, "Ellipse"},
+    {GeomAbs_Hyperbola, "Hyperbola"},
+    {GeomAbs_Parabola, "Parabola"},
+    {GeomAbs_BezierCurve, "Bezier Curve"},
+    {GeomAbs_BSplineCurve, "BSpline Curve"},
+    {GeomAbs_OffsetCurve, "Offset Curve"},
+    {GeomAbs_OtherCurve, "Other Curve"}};
+
   for(TopExp_Explorer faceExp(shape, TopAbs_FACE); faceExp.More();
       faceExp.Next(), ++patchIndex)
   {
@@ -169,27 +181,37 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
     }
 
     axom::Array<axom::primal::NURBSCurve<double, 2>> curves;
-
+    int wireIndex = 0;
     for(TopExp_Explorer wireExp(faceExp.Current(), TopAbs_WIRE); wireExp.More();
-        wireExp.Next())
+        wireExp.Next(), ++wireIndex)
     {
       const TopoDS_Wire& wire = TopoDS::Wire(wireExp.Current());
+
+      int edgeIndex = 0;
       for(TopExp_Explorer edgeExp(wire, TopAbs_EDGE); edgeExp.More();
-          edgeExp.Next())
+          edgeExp.Next(), ++edgeIndex)
       {
         const TopoDS_Edge& edge = TopoDS::Edge(edgeExp.Current());
+
+        TopAbs_Orientation orientation = edge.Orientation();
+        const bool isReversed = orientation == TopAbs_REVERSED;
 
         BRepAdaptor_Curve curveAdaptor(edge);
         GeomAbs_CurveType curveType = curveAdaptor.GetType();
 
-        if(curveType == GeomAbs_BSplineCurve || curveType == GeomAbs_BezierCurve)
+        std::string curveTypeStr = curveTypeMap[curveType];
+        SLIC_INFO(
+          axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] Processing "
+                            "edge with curve type: {}",
+                            patchIndex,
+                            wireIndex,
+                            edgeIndex,
+                            curves.size(),
+                            curveTypeStr));
+
+        if(true)  // curveType == GeomAbs_BSplineCurve || curveType == GeomAbs_BezierCurve)
         {
           Standard_Real first, last;
-          // Handle(Geom_Curve) geomCurve = BRep_Tool::Curve(edge, first, last);
-          // Handle(Geom_BSplineCurve) bsplineCurve =
-          //   Handle(Geom_BSplineCurve)::DownCast(geomCurve);
-
-          //Handle(Geom_Surface) surface = BRep_Tool::Surface(TopoDS::Face(faceExp.Current()));
 
           Handle(Geom2d_Curve) parametricCurve =
             BRep_Tool::CurveOnSurface(edge,
@@ -197,7 +219,8 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
                                       first,
                                       last);
           Handle(Geom2d_BSplineCurve) bsplineCurve =
-            Handle(Geom2d_BSplineCurve)::DownCast(parametricCurve);
+            Geom2dConvert::CurveToBSplineCurve(parametricCurve);
+
           if(!parametricCurve.IsNull() && !bsplineCurve.IsNull())
           {
             // Extract the control points in parametric space
@@ -220,11 +243,13 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
               controlPoints.emplace_back(pt);
             }
 
-            SLIC_INFO(
-              axom::fmt::format("[Patch {} Curve {}] Control Points: [{}]",
-                                patchIndex,
-                                curves.size(),
-                                axom::fmt::join(controlPoints, ", ")));
+            SLIC_INFO(axom::fmt::format(
+              "[Patch {} Wire {} Edge {} Curve {}] Control Points: [{}]",
+              patchIndex,
+              wireIndex,
+              edgeIndex,
+              curves.size(),
+              axom::fmt::join(controlPoints, ", ")));
 
             // Extract the weights for the control points
             // TODO: Use IsRational to check this; only extract when rational
@@ -241,15 +266,19 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
                 isRational = true;
               }
             }
-            SLIC_INFO(axom::fmt::format(
-              "[Patch {} Curve {}] Weights: [{}]; spline {} rational",
-              patchIndex,
-              curves.size(),
-              axom::fmt::join(weightsVector, ", "),
-              isRational ? "is" : "is not"));
+            SLIC_INFO(
+              axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] Weights: "
+                                "[{}]; spline {} rational",
+                                patchIndex,
+                                wireIndex,
+                                edgeIndex,
+                                curves.size(),
+                                axom::fmt::join(weightsVector, ", "),
+                                isRational ? "is" : "is not"));
 
             // Extract the knots and their multiplicities
             // TODO: Use IsPeriodic to check if the curve is closed
+            //   this will likely handle the cases that are not clamped.
             TColStd_Array1OfReal knots(1, bsplineCurve->NbKnots());
             bsplineCurve->Knots(knots);
 
@@ -271,32 +300,43 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
                 knotVector.push_back(knots(i));
               }
             }
-            SLIC_INFO(axom::fmt::format("[Patch {} Curve {}] Knots: [{}]",
-                                        patchIndex,
-                                        curves.size(),
-                                        axom::fmt::join(knotVector, ", ")));
+            SLIC_INFO(axom::fmt::format(
+              "[Patch {} Wire {} Edge {} Curve {}] Knots: [{}]",
+              patchIndex,
+              wireIndex,
+              edgeIndex,
+              curves.size(),
+              axom::fmt::join(knotVector, ", ")));
 
-            SLIC_INFO(axom::fmt::format("[Patch {} Curve {}] Degree: {}",
-                                        patchIndex,
-                                        curves.size(),
-                                        curveDegree));
+            SLIC_INFO(axom::fmt::format(
+              "[Patch {} Wire {} Edge {} Curve {}] Degree: {}",
+              patchIndex,
+              wireIndex,
+              edgeIndex,
+              curves.size(),
+              curveDegree));
 
-            SLIC_INFO(
-              axom::fmt::format("[Patch {} Curve {}] knot multiplicities: {}, "
-                                "degree: {}, is clamped: {}",
-                                patchIndex,
-                                curves.size(),
-                                axom::fmt::join(debug_multipliciesVector, ", "),
-                                curveDegree,
-                                isClamped));
+            SLIC_INFO(axom::fmt::format(
+              "[Patch {} Wire {} Edge {} Curve {}] knot multiplicities: {}, "
+              "degree: {}, is clamped: {}",
+              patchIndex,
+              wireIndex,
+              edgeIndex,
+              curves.size(),
+              axom::fmt::join(debug_multipliciesVector, ", "),
+              curveDegree,
+              isClamped));
 
             if(!isClamped)
             {
-              SLIC_WARNING(axom::fmt::format(
-                "[Patch {} Curve {}] skipping curve -- Axom only currently "
-                "supports clamped trimming curves",
-                patchIndex,
-                curves.size()));
+              SLIC_WARNING(
+                axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] "
+                                  "skipping curve -- Axom only currently "
+                                  "supports clamped trimming curves",
+                                  patchIndex,
+                                  wireIndex,
+                                  edgeIndex,
+                                  curves.size()));
               SLIC_INFO("---");
               continue;
             }
@@ -308,6 +348,10 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
             if(isRational)
             {
               NCurve nurbs {controlPoints, weightsVector, knotVector};
+              if(isReversed)
+              {
+                nurbs.reverseOrientation();
+              }
               SLIC_ASSERT(nurbs.isValidNURBS());
               SLIC_ASSERT(nurbs.getDegree() == curveDegree);
 
@@ -316,6 +360,10 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
             else
             {
               NCurve nurbs {controlPoints, knotVector};
+              if(isReversed)
+              {
+                nurbs.reverseOrientation();
+              }
               SLIC_ASSERT(nurbs.isValidNURBS());
               SLIC_ASSERT(nurbs.getDegree() == curveDegree);
 
