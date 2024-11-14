@@ -41,6 +41,9 @@ namespace quest
 {
 /**
  * Abstract base class for shaping material volume fractions
+ *
+ * Shaper requires Axom to be configured with Conduit or MFEM
+ * or both.
  */
 class Shaper
 {
@@ -63,12 +66,17 @@ public:
   /*!
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a conduit Node.
+
+    Because \c conduit::Node doesn't support application-specified
+    allocator id for (only) arrays, the incoming \c bpNode must have
+    all arrays pre-allocated in a space accessible by the runtime
+    policy.  Any missing space would lead to an exception.
   */
   Shaper(const klee::ShapeSet& shapeSet,
          conduit::Node* bpNode,
          const std::string& topo = "");
 
-  virtual ~Shaper() = default;
+  virtual ~Shaper();
 
 public:
   // Some default values.
@@ -79,6 +87,9 @@ public:
 
   /// Refinement type.
   using RefinementType = DiscreteShape::RefinementType;
+
+  //! @brief Verify the input mesh is okay for this class to work with.
+  bool verifyInputMesh(std::string& whyBad) const;
 
   //@{
   //!  @name Functions to get and set shaping parameters
@@ -197,9 +208,13 @@ protected:
 #if defined(AXOM_USE_CONDUIT)
   // For mesh represented in Conduit or sidre
   sidre::DataStore m_ds;
-  axom::sidre::Group* m_bpGrp {nullptr};
+  //! @brief Version of the mesh for computations.
+  axom::sidre::Group* m_bpGrp;
   const std::string m_bpTopo;
-  conduit::Node* m_bpNode {nullptr};
+  //! @brief Mesh in an external Node, when provided as a Node.
+  conduit::Node* m_bpNodeExt;
+  //! @brief Initial copy of mesh in an internal Node storage.
+  conduit::Node m_bpNodeInt;
 #endif
 
   axom::IndexType m_cellCount;

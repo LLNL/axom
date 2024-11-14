@@ -11,7 +11,9 @@
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 #include "axom/quest/Shaper.hpp"
 #include "axom/quest/DiscreteShape.hpp"
+#include "axom/quest/util/mesh_helpers.hpp"
 #include "conduit_blueprint_mesh.hpp"
+#include "axom/core/WhereMacro.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -30,6 +32,12 @@ constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
+#if defined(AXOM_USE_CONDUIT)
+  , m_bpGrp(nullptr)
+  , m_bpTopo()
+  , m_bpNodeExt(nullptr)
+  , m_bpNodeInt()
+#endif
 {
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = m_dc->GetComm();
@@ -42,44 +50,68 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
                sidre::Group* bpGrp,
                const std::string& topo)
   : m_shapeSet(shapeSet)
+#if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(bpGrp)
   , m_bpTopo(topo.empty() ? bpGrp->getGroup("topologies")->getGroupName(0) : topo)
-  , m_bpNode(nullptr)
+  , m_bpNodeExt(nullptr)
+  , m_bpNodeInt()
+#endif
   , m_comm(MPI_COMM_WORLD)
 {
   SLIC_ASSERT(m_bpTopo != sidre::InvalidName);
 
-  conduit::Node meshNode;
-  bpGrp->createNativeLayout(meshNode);
+  m_bpGrp->createNativeLayout(m_bpNodeInt);
+
 #if defined(AXOM_DEBUG)
-  conduit::Node info;
-  SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
+  std::string whyBad;
+  bool goodMesh = verifyInputMesh(whyBad);
+  SLIC_ASSERT_MSG(goodMesh, whyBad);
 #endif
 
   m_cellCount = conduit::blueprint::mesh::topology::length(
-    meshNode.fetch_existing("topologies").fetch_existing(m_bpTopo));
+    m_bpNodeInt.fetch_existing("topologies").fetch_existing(m_bpTopo));
 }
 
 Shaper::Shaper(const klee::ShapeSet& shapeSet,
                conduit::Node* bpNode,
                const std::string& topo)
   : m_shapeSet(shapeSet)
+#if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)
   , m_bpTopo(topo.empty() ? bpNode->fetch_existing("topologies").child(0).name()
                           : topo)
-  , m_bpNode(bpNode)
+  , m_bpNodeExt(bpNode)
+  , m_bpNodeInt()
+#endif
   , m_comm(MPI_COMM_WORLD)
 {
-#if defined(AXOM_DEBUG)
-  conduit::Node info;
-  SLIC_ASSERT(conduit::blueprint::mesh::verify(*bpNode, info));
-#endif
-
   m_bpGrp = m_ds.getRoot()->createGroup("internalGrp");
+
   m_bpGrp->importConduitTreeExternal(*bpNode);
 
+  // We want unstructured topo but can accomodate structured.
+  const std::string topoType =
+    bpNode->fetch_existing("topologies").fetch_existing(m_bpTopo).fetch_existing("type").as_string();
+  if(topoType == "structured")
+  {
+    axom::quest::util::convert_blueprint_structured_explicit_to_unstructured(
+      m_bpGrp, m_bpTopo);
+  }
+
+  m_bpGrp->createNativeLayout(m_bpNodeInt);
+
+#if defined(AXOM_DEBUG)
+  std::string whyBad;
+  bool goodMesh = verifyInputMesh(whyBad);
+  SLIC_ASSERT_MSG(goodMesh, whyBad);
+#endif
+
   m_cellCount = conduit::blueprint::mesh::topology::length(
-    m_bpNode->fetch_existing("topologies").fetch_existing(m_bpTopo));
+    bpNode->fetch_existing("topologies").fetch_existing(m_bpTopo));
+}
+
+Shaper::~Shaper()
+{
 }
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)
@@ -174,6 +206,41 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   }
   m_surfaceMesh = discreteShape.createMeshRepresentation();
   revolvedVolume = discreteShape.getRevolvedVolume();
+}
+
+bool Shaper::verifyInputMesh(std::string& whyBad) const
+{
+  bool rval = true;
+
+#if defined(AXOM_USE_CONDUIT)
+  if(m_bpGrp != nullptr)
+  {
+    conduit::Node info;
+    rval = conduit::blueprint::mesh::verify(m_bpNodeInt, info);
+    if(rval)
+    {
+      std::string topoType = m_bpNodeInt.fetch("topologies")[m_bpTopo]["type"].as_string();
+      rval = topoType == "unstructured";
+      info[0].set_string("Topology is not unstructured.");
+    }
+    if(rval)
+    {
+      std::string elemShape = m_bpNodeInt.fetch("topologies")[m_bpTopo]["elements"]["shape"].as_string();
+      rval = elemShape == "hex";
+      info[0].set_string("Topology elements are not hex.");
+    }
+    whyBad = info.to_summary_string();
+  }
+#endif
+
+#if defined(AXOM_USE_MFEM)
+  if(m_dc != nullptr)
+  {
+    // No specific requirements for MFEM mesh.
+  }
+#endif
+
+  return rval;
 }
 
 // ----------------------------------------------------------------------------

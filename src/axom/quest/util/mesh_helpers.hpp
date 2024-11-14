@@ -96,8 +96,8 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh(
 
   All input mesh data are expected to have the allocator id of
   meshGrp->getDefaultAllocatorID().  On output, they will also have
-  the same allocator id, even though some transfers to and from host
-  memory are used in intermediate steps.
+  the same allocator id, even if the intermediate steps have to
+  transfers memory to and from another space.
 */
 void convert_blueprint_structured_explicit_to_unstructured(
   axom::sidre::Group* meshGrp,

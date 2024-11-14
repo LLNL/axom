@@ -1601,6 +1601,11 @@ int main(int argc, char** argv)
   using axom::utilities::string::startsWith;
   if(params.useBlueprint())
   {
+#if defined(AXOM_DEBUG)
+    conduit::Node meshNode, info;
+    compMeshGrp->createNativeLayout(meshNode);
+    SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
+#endif
     std::vector<std::string> materialNames = shaper->getMaterialNames();
     for(const auto& materialName : materialNames)
     {

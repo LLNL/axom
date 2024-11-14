@@ -28,11 +28,11 @@
   #include "axom/quest/interface/internal/QuestHelpers.hpp"
   #include "axom/fmt.hpp"
 
-#ifdef AXOM_USE_MFEM
-#include "mfem.hpp"
-#endif
+  #ifdef AXOM_USE_MFEM
+    #include "mfem.hpp"
+  #endif
 
-#include "axom/fmt.hpp"
+  #include "axom/fmt.hpp"
 
 // clang-format off
   using seq_exec = axom::SEQ_EXEC;
@@ -2070,6 +2070,21 @@ private:
       }
       else
       {
+        /*
+          If the computational mesh is an external conduit::Node,
+          it must have all necessary fields.  We will not create
+          any field because we don't want overrid the user's memory
+          management.  We will only generate fields for meshes in
+          sidre::Group, where the user can set the allocator id.
+        */
+        SLIC_ERROR_IF(m_bpNodeExt != nullptr,
+                      "For a computational mesh in an external conduit::Node,"
+                      " all output fields must be preallocated before shaping."
+                      "  IntersectionShaper will NOT override the user's memory"
+                      " management.  The field '" + fieldPath + "' is missing."
+                      "  To have IntersectionShaper allocate output memory, you can "
+                      " put the mesh in a sidre::Group and set its allocator id.");
+
         constexpr axom::IndexType componentCount = 1;
         axom::IndexType shape[2] = {m_cellCount, componentCount};
         auto* fieldGrp = m_bpGrp->createGroup(fieldPath);
@@ -2086,6 +2101,11 @@ private:
         valuesView->allocate();
         if(fieldName.rfind("vol_frac_", 0) == 0)
         {
+          // TODO: I think this arrangement of matsets is wrong.
+          // It passes the conduit blueprint verification but maybe
+          // because conduit doesn't check matsets.
+          // Needs more verification.
+          //
           // This is a material volume fraction field.
           // Shallow-copy valuesView to (uni-buffer) matsets.
           const std::string matlName = fieldName.substr(9);
@@ -2232,11 +2252,11 @@ public:
     constexpr int NUM_COMPS_PER_VERT = 3;
 
     // Put mesh in Node so we can use conduit::blueprint utilities.
-    conduit::Node meshNode;
-    m_bpGrp->createNativeLayout(meshNode);
+    // conduit::Node meshNode;
+    // m_bpGrp->createNativeLayout(m_bpNodeInt);
 
     const conduit::Node& topoNode =
-      meshNode.fetch_existing("topologies").fetch_existing(m_bpTopo);
+      m_bpNodeInt.fetch_existing("topologies").fetch_existing(m_bpTopo);
     const std::string coordsetName =
       topoNode.fetch_existing("coordset").as_string();
 
@@ -2256,7 +2276,7 @@ public:
       XS::usesAllocId(conn.getAllocatorID()),
       std::string(XS::name()) + " cannot use the connectivity allocator id");
 
-    const conduit::Node& coordNode = meshNode["coordsets"][coordsetName];
+    const conduit::Node& coordNode = m_bpNodeInt["coordsets"][coordsetName];
     const conduit::Node& coordValues = coordNode.fetch_existing("values");
     axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
     bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);

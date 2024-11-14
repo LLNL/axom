@@ -275,7 +275,7 @@ void convert_blueprint_structured_explicit_to_unstructured(
     auto* valuesGrp = coordsetGrp->getGroup("values");
     curDim = valuesGrp->getView("x")->getShape(2, curShape);
     assert(curDim == 1);
-    axom::IndexType vertsShape[2] = {curShape[0], 1};
+    const axom::IndexType vertsShape[2] = {curShape[0], 1};
     valuesGrp->getView("x")->reshapeArray(2, vertsShape);
     valuesGrp->getView("y")->reshapeArray(2, vertsShape);
     valuesGrp->getView("z")->reshapeArray(2, vertsShape);
