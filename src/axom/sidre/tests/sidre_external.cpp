@@ -314,6 +314,12 @@ TEST(sidre_external, save_load_external_view)
   int* new_idata = new int[len];
   double* new_ddata = new double[len];
 
+    for (int ii = 0 ; ii < len ; ++ii)
+  {
+    idata[ii] = -1;
+    ddata[ii] = -2.0;
+  }
+
   root2->getView("idata")->setExternalDataPtr(new_idata);
   root2->getView("ddata")->setExternalDataPtr(new_ddata);
   root2->loadExternalData("out_sidre_external_save_restore_external_view");
