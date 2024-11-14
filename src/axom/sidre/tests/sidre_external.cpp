@@ -278,10 +278,8 @@ TEST(sidre_external, verify_external_layout)
   }
 }
 
-#if 1
 //------------------------------------------------------------------------------
 // Test Group::save(), Group::load() with described external views
-// TODO - The save/load functionality needs to be fixed.
 //------------------------------------------------------------------------------
 TEST(sidre_external, save_load_external_view)
 {
@@ -309,30 +307,46 @@ TEST(sidre_external, save_load_external_view)
   DataStore* ds2 = new DataStore();
   Group* root2 = ds2->getRoot();
 
+  // Load from file, the Views with external data will be described but
+  // have no pointer to data
   root2->load("out_sidre_external_save_restore_external_view");
 
+  EXPECT_TRUE(root2->hasView("idata")); 
+  EXPECT_TRUE(root2->hasView("ddata")); 
+
+  // Allocate new raw arrays 
   int* new_idata = new int[len];
   double* new_ddata = new double[len];
 
-    for (int ii = 0 ; ii < len ; ++ii)
+  // Initialize new arrays to wrong values
+  for (int ii = 0 ; ii < len ; ++ii)
   {
-    idata[ii] = -1;
-    ddata[ii] = -2.0;
+    new_idata[ii] = -1;
+    new_ddata[ii] = -2.0;
   }
 
+  // Set the new array pointers into the Views
   root2->getView("idata")->setExternalDataPtr(new_idata);
   root2->getView("ddata")->setExternalDataPtr(new_ddata);
+
+  // Load external data; now that the external Views have pointers to
+  // allocated storage, return to the file to load the data values into
+  // those address spaces
   root2->loadExternalData("out_sidre_external_save_restore_external_view");
 
-  EXPECT_EQ(root2->getNumViews(), 2u);
-
+  // The pointer retrieved from each View is the same address as the raw array
   int* idata_chk = root2->getView("idata")->getData();
+  EXPECT_EQ(idata_chk, new_idata);
+
+  // idata_chk has been loaded with the values from the file, which must
+  // be the same of the original idata array that was saved
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
   double* ddata_chk = root2->getView("ddata")->getData();
+  EXPECT_EQ(ddata_chk, new_ddata);
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -345,4 +359,3 @@ TEST(sidre_external, save_load_external_view)
   delete [] new_idata;
   delete [] new_ddata;
 }
-#endif
