@@ -18,6 +18,13 @@ using axom::sidre::IndexType;
 using axom::sidre::INT_ID;
 using axom::sidre::View;
 
+/* This test code contains snippets used in the Sidre Sphinx documentation.
+ * They begin and end with comments
+ *
+ * _external_save_load_start
+ * _external_save_load_end
+ */
+
 //------------------------------------------------------------------------------
 // Test Group::createView() -- external
 //------------------------------------------------------------------------------
@@ -286,10 +293,10 @@ TEST(sidre_external, save_load_external_view)
   DataStore* ds   = new DataStore();
   Group* root = ds->getRoot();
 
-  const IndexType len = 11;
+  constexpr IndexType len = 11;
 
-  int* idata = new int[len];
-  double* ddata = new double[len];
+  std::array<int, len> idata;
+  std::array<double, len> ddata;
 
   for (int ii = 0 ; ii < len ; ++ii)
   {
@@ -297,46 +304,52 @@ TEST(sidre_external, save_load_external_view)
     ddata[ii] = idata[ii] * 2.0;
   }
 
-  root->createView("idata", idata)->apply(INT_ID, len);
-  root->createView("ddata", ddata)->apply(DOUBLE_ID, len);
+  root->createView("idata", idata.data())->apply(INT_ID, len);
+  root->createView("ddata", ddata.data())->apply(DOUBLE_ID, len);
   EXPECT_EQ(root->getNumViews(), 2u);
 
-  ds->getRoot()->save("out_sidre_external_save_restore_external_view",
+  ds->getRoot()->save("sidre_external_save_load_external_view",
                       "sidre_hdf5");
 
   DataStore* ds2 = new DataStore();
-  Group* root2 = ds2->getRoot();
+  Group* load_group = ds2->getRoot();
 
+  // _external_save_load_start
   // Load from file, the Views with external data will be described but
   // have no pointer to data
-  root2->load("out_sidre_external_save_restore_external_view");
+  load_group->load("sidre_external_save_load_external_view");
 
-  EXPECT_TRUE(root2->hasView("idata")); 
-  EXPECT_TRUE(root2->hasView("ddata")); 
+  // Verify load_group has external Views named "idata" and "ddata".
+  // idata describes an int array of length len.
+  // ddata describes a double array of length len.
+  // These Views do not yet have valid data.
+  EXPECT_TRUE(load_group->hasView("idata"));
+  EXPECT_TRUE(load_group->hasView("ddata"));
+  View* load_idata = load_group->getView("idata"); 
+  View* load_ddata = load_group->getView("ddata"); 
+  EXPECT_TRUE(load_idata->isExternal());
+  EXPECT_TRUE(load_ddata->isExternal());
+  EXPECT_TRUE(load_idata->getNumElements() == len);
+  EXPECT_TRUE(load_ddata->getNumElements() == len);
+  EXPECT_TRUE(load_idata->getTypeID() == INT_ID);
+  EXPECT_TRUE(load_ddata->getTypeID() == DOUBLE_ID);
 
-  // Allocate new raw arrays 
-  int* new_idata = new int[len];
-  double* new_ddata = new double[len];
+  // Create arrays that will serve as locations for external data
+  std::array<int,len> new_idata;
+  std::array<double,len> new_ddata;
 
-  // Initialize new arrays to wrong values
-  for (int ii = 0 ; ii < len ; ++ii)
-  {
-    new_idata[ii] = -1;
-    new_ddata[ii] = -2.0;
-  }
+  // Set the new arrays' pointers into the Views
+  load_idata->setExternalDataPtr(new_idata.data());
+  load_ddata->setExternalDataPtr(new_ddata.data());
 
-  // Set the new array pointers into the Views
-  root2->getView("idata")->setExternalDataPtr(new_idata);
-  root2->getView("ddata")->setExternalDataPtr(new_ddata);
-
-  // Load external data; now that the external Views have pointers to
-  // allocated storage, return to the file to load the data values into
-  // those address spaces
-  root2->loadExternalData("out_sidre_external_save_restore_external_view");
-
+  // Load external data; values located in the file will be loaded into
+  // the storage identified by the external pointers.
+  load_group->loadExternalData("sidre_external_save_load_external_view");
+  // _external_save_load_end
+ 
   // The pointer retrieved from each View is the same address as the raw array
-  int* idata_chk = root2->getView("idata")->getData();
-  EXPECT_EQ(idata_chk, new_idata);
+  int* idata_chk = load_group->getView("idata")->getData();
+  EXPECT_EQ(idata_chk, new_idata.data());
 
   // idata_chk has been loaded with the values from the file, which must
   // be the same of the original idata array that was saved
@@ -345,8 +358,8 @@ TEST(sidre_external, save_load_external_view)
     EXPECT_EQ(idata_chk[ii], idata[ii]);
   }
 
-  double* ddata_chk = root2->getView("ddata")->getData();
-  EXPECT_EQ(ddata_chk, new_ddata);
+  double* ddata_chk = load_group->getView("ddata")->getData();
+  EXPECT_EQ(ddata_chk, new_ddata.data());
   for (int ii = 0 ; ii < len ; ++ii)
   {
     EXPECT_EQ(ddata_chk[ii], ddata[ii]);
@@ -354,8 +367,5 @@ TEST(sidre_external, save_load_external_view)
 
   delete ds;
   delete ds2;
-  delete [] idata;
-  delete [] ddata;
-  delete [] new_idata;
-  delete [] new_ddata;
+
 }

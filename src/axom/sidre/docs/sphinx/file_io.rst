@@ -50,7 +50,23 @@ which omits error-checking and recovery for brevity and clarity.
 The ``loadExternalData()`` method is used to read "external" data from an HDF5 
 file created with the ``sidre_hdf5`` protocol.  This is data referred to by 
 *external* views. Such views refer to data that is not stored in Sidre buffers 
-but in an external data allocation.
+but in an external data allocation.  ``loadExternalData()`` enables the
+loading of a ``DataStore`` with external data that preserves the state that
+was originally saved.  This requires a three step process.
+
+.. literalinclude:: ../../tests/sidre_external.cpp
+   :start-after: _external_save_load_start
+   :end-before: _external_save_load_end
+   :language: C++
+
+The first step is to call ``load()`` as before.  This will load the entire
+Sidre hierarchy stored in the file, including all ``View`` descriptions,
+but it will *not* allocate storage or load data values for the views with
+external data.  Second, the calling code must provide each external ``View``
+a pointer to valid storage that will hold the external data, using
+``setExternalDataPtr()``.  Finally, ``loadExternalData()`` is called,
+reading the file again to load data values into the provided external data
+locations.
 
 Overloads of the ``save()`` and ``load()`` methods that take HDF5 handles and 
 the ``loadExternalData()`` method are used to implement parallel I/O through 
