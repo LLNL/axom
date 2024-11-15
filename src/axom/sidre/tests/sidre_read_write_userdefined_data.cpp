@@ -90,7 +90,6 @@ private:
 template <>
 bool check(const double& state, double value)
 {
-  SLIC_INFO(axom::fmt::format("{} == {}", state, value));
   return state == value;
 }
 
@@ -110,7 +109,6 @@ struct StateOne
 template <>
 bool check(const StateOne& state, double value)
 {
-  SLIC_INFO(axom::fmt::format("{} == {}", state.x, value));
   return state.x == value;
 }
 
@@ -265,7 +263,7 @@ void test_external_user_defined_data()
   auto num_states = static_cast<IndexType>(states.size());
   auto state_size = static_cast<IndexType>(sizeof(states[0]));
   auto total_size = num_states * state_size;
-  auto num_uint8s = total_size / sizeof(axom::sidre::UINT8_ID);
+  auto num_uint8s = total_size / sizeof(std::uint8_t);
 
   // write shape
   qd_group->createViewScalar("num_states", num_states);
