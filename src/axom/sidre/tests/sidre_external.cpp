@@ -346,12 +346,13 @@ TEST(sidre_external, save_load_external_view)
   load_group->loadExternalData("sidre_external_save_load_external_view");
   // _external_save_load_end
 
-  // The pointer retrieved from each View is the same address as the raw array
+  // The pointer retrieved from each View is the same address as the new
+  // std::arrays.
   int* idata_chk = load_group->getView("idata")->getData();
   EXPECT_EQ(idata_chk, new_idata.data());
 
   // idata_chk has been loaded with the values from the file, which must
-  // be the same of the original idata array that was saved
+  // be the same as the original idata array that was saved
   for(int ii = 0; ii < len; ++ii)
   {
     EXPECT_EQ(idata_chk[ii], idata[ii]);
