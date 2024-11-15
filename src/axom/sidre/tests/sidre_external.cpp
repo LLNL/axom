@@ -19,10 +19,10 @@ using axom::sidre::INT_ID;
 using axom::sidre::View;
 
 /* This test code contains snippets used in the Sidre Sphinx documentation.
- * They begin and end with comments
+ * They begin and end with comments.
  *
- * _external_save_load_start
- * _external_save_load_end
+ * external_save_load_start
+ * external_save_load_end
  */
 
 //------------------------------------------------------------------------------
