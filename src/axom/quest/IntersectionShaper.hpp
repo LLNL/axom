@@ -677,6 +677,7 @@ public:
 
     // Generate the BVH tree over the shapes
     // Access-aligned bounding boxes
+    // Does m_aabbs need to be a member?  It's only used here.  BTNG.
     m_aabbs =
       axom::Array<BoundingBoxType>(shape_count, shape_count, device_allocator);
 
@@ -698,9 +699,11 @@ public:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
+    // Does m_hexes have to be a member?  It can be passed into populateHexesFromMesh.  BTNG.
     populateHexesFromMesh<ExecSpace>();
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
 
+    // Does m_hex_bbs have to be a member?  I's only used here.  BTNG.
     m_hex_bbs =
       axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
     axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
@@ -2176,6 +2179,7 @@ public:
 
     auto vertCoords_device_view = vertCoords.view();
 
+    // Does m_hexes have to be a member?  It can be a function argument.  BTNG.
     m_hexes = axom::Array<HexahedronType>(m_cellCount, m_cellCount, allocId);
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
     constexpr double ZERO_THRESHOLD = 1.e-10;
