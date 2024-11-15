@@ -70,7 +70,7 @@ public:
     Because \c conduit::Node doesn't support application-specified
     allocator id for (only) arrays, the incoming \c bpNode must have
     all arrays pre-allocated in a space accessible by the runtime
-    policy.  Any missing space would lead to an exception.
+    policy.  Any needed-but-missing space would lead to an exception.
   */
   Shaper(const klee::ShapeSet& shapeSet,
          conduit::Node* bpNode,

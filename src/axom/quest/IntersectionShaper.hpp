@@ -994,6 +994,7 @@ public:
     bool newData = !hasData(fieldName);
 
     axom::ArrayView<double> cfgf = getScalarCellData(fieldName);
+    SLIC_ASSERT(!cfgf.empty());
 
     if(newData)
     {
@@ -1092,7 +1093,10 @@ public:
       axom::fmt::format("shape_vol_frac_{}", shape.getName());
     // auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
     auto shapeVolFrac = getScalarCellData(shapeVolFracName);
-    // SLIC_ASSERT(shapeVolFrac != nullptr);
+    SLIC_ERROR_IF(shapeVolFrac.empty(),
+                  "Field '" + shapeVolFracName + "' must be pre-allocated"
+                  " in the Conduit Node computational mesh before using"
+                  " IntersectionShaper::applyReplacementRules." );
 
     // Allocate some memory for the replacement rule data arrays.
     int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -1486,6 +1490,7 @@ public:
     bool newData = !hasData(materialVolFracName);
 
     auto matVolFrac = getScalarCellData(materialVolFracName);
+    SLIC_ASSERT(!matVolFrac.empty());
     if(newData)
     {
         // Zero out the volume fractions (on host).
@@ -2011,6 +2016,11 @@ private:
 
     Also add the corresponding entry in the blueprint field
     "matsets/fieldName/volume_fractions".
+
+    If mesh is in an external Conduit Node, and the field
+    doesn't exist, emit a warning and return an empty ArrayView.
+    We don't add fields to the external Conduit Node.
+    \see Shaper::Shaper().
   */
   axom::ArrayView<double> getScalarCellData(const std::string& fieldName,
                                             bool volumeDependent = false)
@@ -2051,63 +2061,70 @@ private:
       }
       else
       {
-        /*
-          If the computational mesh is an external conduit::Node,
-          it must have all necessary fields.  We will not create
-          any field because we don't want overrid the user's memory
-          management.  We will only generate fields for meshes in
-          sidre::Group, where the user can set the allocator id.
-        */
-        SLIC_ERROR_IF(m_bpNodeExt != nullptr,
-                      "For a computational mesh in an external conduit::Node,"
-                      " all output fields must be preallocated before shaping."
-                      "  IntersectionShaper will NOT override the user's memory"
-                      " management.  The field '" + fieldPath + "' is missing."
-                      "  To have IntersectionShaper allocate output memory, you can "
-                      " put the mesh in a sidre::Group and set its allocator id.");
-
-        constexpr axom::IndexType componentCount = 1;
-        axom::IndexType shape[2] = {m_cellCount, componentCount};
-        auto* fieldGrp = m_bpGrp->createGroup(fieldPath);
-        // valuesView = fieldGrp->createView("values");
-        valuesView =
-          fieldGrp->createViewWithShape("values",
-                                        axom::sidre::DataTypeId::FLOAT64_ID,
-                                        2,
-                                        shape);
-        fieldGrp->createView("association")->setString("element");
-        fieldGrp->createView("topology")->setString(m_bpTopo);
-        fieldGrp->createView("volume_dependent")
-          ->setString(std::string(volumeDependent ? "true" : "false"));
-        valuesView->allocate();
-        if(fieldName.rfind("vol_frac_", 0) == 0)
+        if(m_bpNodeExt != nullptr)
         {
-          // TODO: I think this arrangement of matsets is wrong.
-          // It passes the conduit blueprint verification but maybe
-          // because conduit doesn't check matsets.
-          // Needs more verification.
-          //
-          // This is a material volume fraction field.
-          // Shallow-copy valuesView to (uni-buffer) matsets.
-          const std::string matlName = fieldName.substr(9);
-          axom::sidre::Group* volFracGrp = nullptr;
-          if(m_bpGrp->hasGroup("matsets/material/volume_fractions"))
-          {
-            volFracGrp = m_bpGrp->getGroup("matsets/material/volume_fractions");
-          }
-          else
-          {
-            volFracGrp =
-              m_bpGrp->createGroup("matsets/material/volume_fractions");
-            m_bpGrp->createViewString("matsets/material/topology", m_bpTopo);
-          }
-          auto* valuesViewInMatsets = volFracGrp->copyView(valuesView);
-          valuesViewInMatsets->rename(matlName);
+          /*
+            If the computational mesh is an external conduit::Node, it
+            must have all necessary fields.  We will only generate
+            fields for meshes in sidre::Group, where the user can set
+            the allocator id for only array data.  conduit::Node doesn't
+            have this capability.
+          */
+          SLIC_WARNING_IF(m_bpNodeExt != nullptr,
+                          "For a computational mesh in a conduit::Node, all"
+                          " output fields must be preallocated before shaping."
+                          "  IntersectionShaper will NOT contravene the user's"
+                          " memory management.  The cell-centered field '"
+                          + fieldPath + "' is missing.  Please pre-allocate"
+                          " this output memory, or to have IntersectionShaper"
+                          " allocate it, pass in the mesh as a sidre::Group"
+                          " with your specific allocator id.");
         }
+        else
+        {
+          constexpr axom::IndexType componentCount = 1;
+          axom::IndexType shape[2] = {m_cellCount, componentCount};
+          auto* fieldGrp = m_bpGrp->createGroup(fieldPath);
+          // valuesView = fieldGrp->createView("values");
+          valuesView =
+            fieldGrp->createViewWithShape("values",
+                                          axom::sidre::DataTypeId::FLOAT64_ID,
+                                          2,
+                                          shape);
+          fieldGrp->createView("association")->setString("element");
+          fieldGrp->createView("topology")->setString(m_bpTopo);
+          fieldGrp->createView("volume_dependent")
+            ->setString(std::string(volumeDependent ? "true" : "false"));
+          valuesView->allocate();
+          if(fieldName.rfind("vol_frac_", 0) == 0)
+          {
+            // TODO: I think this arrangement of matsets is wrong.
+            // It passes the conduit blueprint verification but maybe
+            // because conduit doesn't check matsets.
+            // Needs more verification.
+            //
+            // This is a material volume fraction field.
+            // Shallow-copy valuesView to (uni-buffer) matsets.
+            const std::string matlName = fieldName.substr(9);
+            axom::sidre::Group* volFracGrp = nullptr;
+            if(m_bpGrp->hasGroup("matsets/material/volume_fractions"))
+            {
+              volFracGrp = m_bpGrp->getGroup("matsets/material/volume_fractions");
+            }
+            else
+            {
+              volFracGrp =
+                m_bpGrp->createGroup("matsets/material/volume_fractions");
+              m_bpGrp->createViewString("matsets/material/topology", m_bpTopo);
+            }
+            auto* valuesViewInMatsets = volFracGrp->copyView(valuesView);
+            valuesViewInMatsets->rename(matlName);
+          }
+        }
+        rval =
+          axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
+                                  m_cellCount);
       }
-      rval =
-        axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
-                                m_cellCount);
     }
   #endif
     return rval;
