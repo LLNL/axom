@@ -1366,6 +1366,10 @@ public:
 
   // Runs the shaping query, based on the policy member and shape format set
   // (default is sequential)
+  // Fills m_overlap_volumes and m_hex_volumes, whose data
+  // will be in the default memory space for m_execPolicy.
+  // The data will be used in applyReplacementRules and can
+  // also be accessed by getOverlapVolumes() and getHexVolumes().
   void runShapeQuery(const klee::Shape& shape) override
   {
     AXOM_ANNOTATE_SCOPE("runShapeQuery");
@@ -1425,6 +1429,16 @@ public:
       SLIC_ERROR(
         axom::fmt::format("The shape format {} is unsupported", shapeFormat));
     }
+  }
+
+  axom::ArrayView<const double> getOverlapVolumes() const
+  {
+    return m_overlap_volumes.view();
+  }
+
+  axom::ArrayView<const double> getHexVolumes() const
+  {
+    return m_hex_volumes.view();
   }
 
   void adjustVolumeFractions() override
