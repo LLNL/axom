@@ -698,12 +698,6 @@ public:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    // Create and register a scalar field for this shape's volume fractions
-    // The Degrees of Freedom will be in correspondence with the elements
-    std::string volFracName =
-      axom::fmt::format("shape_vol_frac_{}", shape.getName());
-    auto volFrac = getScalarCellData(volFracName);
-
     populateHexesFromMesh<ExecSpace>();
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
 
@@ -718,19 +712,6 @@ public:
         hex_bbs_device_view[i] =
           primal::compute_bounding_box<double, 3>(hexes_device_view[i]);
       });  // end of loop to initialize hexahedral elements and bounding boxes
-
-    // Set each shape volume fraction to 1
-    // volFrac may be on the host (MFEM) or device (Sidre).
-    auto fillVolFrac = AXOM_LAMBDA(axom::IndexType i) { volFrac[i] = 1.0; };
-    if(axom::detail::getAllocatorSpace(volFrac.getAllocatorID()) ==
-       MemorySpace::Host)
-    {
-      axom::for_all<axom::SEQ_EXEC>(m_cellCount, fillVolFrac);
-    }
-    else
-    {
-      axom::for_all<ExecSpace>(m_cellCount, fillVolFrac);
-    }
 
     // Set shape components to zero if within threshold
     snapShapeVerticesToZero<ExecSpace, ShapeType>(shapes,
