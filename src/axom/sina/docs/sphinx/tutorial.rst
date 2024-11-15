@@ -169,6 +169,11 @@ our saveDocument() function will string-replace '/' in parent nodes to
 '__SINA_SLASHREPLACE__' in the resulting HDF5 file, while our loadDocument()
 function will string-replace them back to normal.
 
+Additionally, Sina is also equipped to handle missing, broken, or incorrect file 
+extensions.  In such an event (for example: saving a JSON file as Example, Example.jso, 
+or Example.hdf5), Sina will replace incorrect file extensions and append to missing or 
+broken ones while outputting a WARNING message to let you know of said occurance.
+
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp

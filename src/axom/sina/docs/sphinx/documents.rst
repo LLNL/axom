@@ -115,7 +115,7 @@ In addition to assembling ``Document`` instances from existing JSON files, it
 is possible to generate ``Document`` objects from existing HDF5 files using
 conduit.
 
-Sina's ``loadDocument()`` function supports HDF5 assembly if we provide it
+Sina's ``saveDocument()`` and ``loadDocument()`` functions support HDF5 assembly if we provide it
 the optional Protocol variable set to HDF5:
 
 .. code:: cpp

@@ -36,6 +36,11 @@ char const TEST_RECORD_TYPE[] = "test type";
 char const EXPECTED_RECORDS_KEY[] = "records";
 char const EXPECTED_RELATIONSHIPS_KEY[] = "relationships";
 
+bool fileExists(const std::string& filename) {
+    std::ifstream file(filename);
+    return file.good();
+}
+
 TEST(Document, create_fromNode_empty)
 {
   conduit::Node documentAsNode;
@@ -374,7 +379,7 @@ TEST(Document, saveDocument_json)
 
   conduit::Node readContents;
   {
-    std::ifstream fin {tmpFile.getName()};
+    std::ifstream fin {tmpFile.getName() + ".json"};
     std::stringstream f_buf;
     f_buf << fin.rdbuf();
     readContents.parse(f_buf.str(), "json");
@@ -405,7 +410,7 @@ TEST(Document, saveDocument_hdf5)
     saveDocument(document, tmpFile.getName(), Protocol::HDF5);
 
     conduit::Node readContents;
-    conduit::relay::io::load(tmpFile.getName(), "hdf5", readContents);
+    conduit::relay::io::load(tmpFile.getName() + ".hdf5", "hdf5", readContents);
 
     ASSERT_TRUE(readContents[EXPECTED_RECORDS_KEY].dtype().is_list());
     EXPECT_EQ(1, readContents[EXPECTED_RECORDS_KEY].number_of_children());
@@ -464,6 +469,158 @@ TEST(Document, load_defaultRecordLoaders)
   auto loadedRun =
     dynamic_cast<axom::sina::Run const *>(loadedDocument.getRecords()[0].get());
   EXPECT_NE(nullptr, loadedRun);
+}
+
+TEST(Document, protocol_set_json_normal)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "test", Protocol::JSON);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("test.json"));
+
+  std::string expectedOutput = "|| WARNING: NO FILE EXTENSION FOUND, SINA WILL BE ADDING THE .json FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
+}
+
+TEST(Document, protocol_set_json_replace_existing)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "testi.hdf5", Protocol::JSON);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("testi.json"));
+
+  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .hdf5; EXPECTED: .json),  SINA WILL BE REPLACING IT TO THE .json FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
+}
+
+TEST(Document, protocol_set_json_replace_nonexisting)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "testin.jso", Protocol::JSON);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("testin.jso.json"));
+
+  std::string expectedOutput = "|| WARNING: BROKEN FILE EXTENSION FOUND, SINA WILL BE APPENDING THE .json FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
+}
+
+TEST(Document, protocol_set_json_replace_multiple)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "testing.json.hdf5", Protocol::JSON);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("testing.json.json"));
+
+  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .hdf5; EXPECTED: .json),  SINA WILL BE REPLACING IT TO THE .json FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
+}
+
+TEST(Document, protocol_set_hdf5_normal)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "testingtest", Protocol::HDF5);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("testingtest.hdf5"));
+
+  std::string expectedOutput = "|| WARNING: NO FILE EXTENSION FOUND, SINA WILL BE ADDING THE .hdf5 FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
+}
+
+TEST(Document, protocol_set_hdf5_replace_existing)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "testingtesti.json", Protocol::HDF5);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("testingtesti.hdf5"));
+
+  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .json; EXPECTED: .hdf5),  SINA WILL BE REPLACING IT TO THE .hdf5 FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
+}
+
+TEST(Document, protocol_set_hdf5_replace_nonexisting)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "testingtestin.hdf", Protocol::HDF5);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("testingtestin.hdf.hdf5"));
+
+  std::string expectedOutput = "|| WARNING: BROKEN FILE EXTENSION FOUND, SINA WILL BE APPENDING THE .hdf5 FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
+}
+
+TEST(Document, protocol_set_hdf5_replace_multiple)
+{
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+
+  std::stringstream buffer;
+  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+
+  saveDocument(document, "testingtesting.hdf5.json", Protocol::HDF5);
+
+  std::cout.rdbuf(oldCoutBuffer);
+  
+  EXPECT_TRUE(fileExists("testingtesting.hdf5.hdf5"));
+
+  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .json; EXPECTED: .hdf5),  SINA WILL BE REPLACING IT TO THE .hdf5 FILE EXTENSION ||";
+  EXPECT_EQ(buffer.str(), expectedOutput);
 }
 
 }  // namespace
