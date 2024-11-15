@@ -47,7 +47,7 @@ which omits error-checking and recovery for brevity and clarity.
    :end-before: _serial_io_save_end
    :language: C++
 
-The ``loadExternalData()`` method is used to read "external" data from an HDF5 
+The ``loadExternalData()`` method is used to read external data from an HDF5 
 file created with the ``sidre_hdf5`` protocol.  This is data referred to by 
 *external* views. Such views refer to data that is not stored in Sidre buffers 
 but in an external data allocation.  ``loadExternalData()`` enables the
