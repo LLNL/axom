@@ -21,7 +21,7 @@ Documentation
 
 To access the latest docs for Axom: https://axom.readthedocs.io/en/develop/
 
-To access Axom docs for specific versions: https://app.readthedocs.org/projects/axom/
+To access another version of Axom docs, please expand the sub-window on the lower right of any Axom Document page.
 
 Getting Involved
 ----------------
