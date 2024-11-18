@@ -60,13 +60,16 @@ was originally saved.  This requires a three step process.
    :language: C++
 
 The first step is to call ``load()`` as before.  This will load the entire
-Sidre hierarchy stored in the file, including all ``View`` descriptions,
-but it will *not* allocate storage or load data values for the views with
-external data.  Second, the calling code must provide each external ``View``
-a pointer to valid storage that will hold the external data, using
-``setExternalDataPtr()``.  Finally, ``loadExternalData()`` is called,
-reading the file again to load data values into the provided external data
-locations.
+Sidre hierarchy of groups and views stored in the file.  For views with
+external data, it will load their descriptions that were saved but it will
+*not* allocate storage or load data values for the views with external data.
+Second, the calling code must provide each external ``View`` a pointer to
+valid storage that will hold the external data, using
+``setExternalDataPtr()``.  It is the responsibility of the calling code to
+ensure that the provided external data pointer points to memory that is
+properly allocated and of the correct size.  Finally, ``loadExternalData()``
+is called, reading the file again to load data values into the provided
+external data locations.
 
 Overloads of the ``save()`` and ``load()`` methods that take HDF5 handles and 
 the ``loadExternalData()`` method are used to implement parallel I/O through 
