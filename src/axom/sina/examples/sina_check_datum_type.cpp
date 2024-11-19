@@ -9,13 +9,17 @@
 using ValueTypeUnderlying =
   typename std::underlying_type<axom::sina::ValueType>::type;
 
-void printType(axom::sina::Datum datum, std::string datumName, std::string errMsg)
+void printType(axom::sina::Datum datum,
+               std::string datumName,
+               const std::string& errMsg)
 {
   auto datumType = static_cast<ValueTypeUnderlying>(datum.getType());
   SLIC_ASSERT_MSG(
     static_cast<bool>(
       std::is_same<decltype(datumType), ValueTypeUnderlying>::value),
     errMsg);
+  AXOM_UNUSED_VAR(errMsg);
+
   std::cout << datumName << " type: " << datumType << std::endl;
 }
 

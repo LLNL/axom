@@ -454,8 +454,14 @@ TEST(RecordLoader, load_missingLoader)
   asNode[EXPECTED_GLOBAL_ID_KEY] = "the ID";
   asNode[EXPECTED_TYPE_KEY] = "unknownType";
   auto loaded = loader.load(asNode);
-  auto &actualType = typeid(*loaded);
-  EXPECT_EQ(typeid(Record), actualType) << "Type was " << actualType.name();
+
+  EXPECT_NE(loaded.get(), nullptr);
+  if(loaded)
+  {
+    auto &loadedRef = *loaded;
+    EXPECT_EQ(typeid(Record), typeid(loadedRef))
+      << "Type was " << typeid(loadedRef).name();
+  }
 }
 
 TEST(RecordLoader, load_loaderPresent)

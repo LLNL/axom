@@ -41,6 +41,10 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
         echo "~~~~~~ RUNNING TESTS ~~~~~~~~"
         make CTEST_OUTPUT_ON_FAILURE=1 test ARGS='-T Test -VV -j8'
     fi
+    if [[ "${DO_BENCHMARKS}" == "yes" ]] ; then
+        echo "~~~~~~ RUNNING BENCHMARKS ~~~~~~~~"
+        make CTEST_OUTPUT_ON_FAILURE=1 run_benchmarks
+    fi
     if [[ "${DO_MEMCHECK}" == "yes" ]] ; then
         echo "~~~~~~ RUNNING MEMCHECK ~~~~~~~~"
         or_die ctest -T memcheck
