@@ -452,6 +452,474 @@ TEST(primal_bezier_inter, cubic_bezier_nine_intersections)
   checkIntersections(curve1, curve2, exp_s, exp_t, eps, eps_test);
 }
 
+/**
+ * Helper function to compute the intersections of a curve and a ray and check that
+ * their intersection points match our expectations, stored in \a exp_s
+ * and \a exp_t. Intersections are computed within tolerance \a eps
+ * and our checks use \a test_eps.
+ *
+ * Param \a shouldPrintIntersections is used for debugging and for generating
+ * the initial array of expected intersections.
+ */
+template <typename CoordType>
+void checkIntersectionsRay(const primal::Ray<CoordType, 2>& ray,
+                           const primal::BezierCurve<CoordType, 2>& curve,
+                           const std::vector<CoordType>& exp_s,
+                           const std::vector<CoordType>& exp_t,
+                           double eps,
+                           double test_eps,
+                           bool shouldPrintIntersections = false)
+{
+  constexpr int DIM = 2;
+  using Array = std::vector<CoordType>;
+
+  // Check validity of input data exp_s and exp_t.
+  // They should have the same size
+  EXPECT_EQ(exp_s.size(), exp_t.size());
+
+  const int num_exp_intersections = static_cast<int>(exp_s.size());
+  const bool exp_intersect = (num_exp_intersections > 0);
+
+  // Intersect the curve and ray, intersection parameters will be
+  // in arrays s and t, for curve and ray, respectively
+  Array s, t;
+  bool curves_intersect = intersect(ray, curve, s, t, eps);
+  EXPECT_EQ(exp_intersect, curves_intersect);
+  EXPECT_EQ(s.size(), t.size());
+
+  // check that we found the expected number of intersection points
+  const int num_actual_intersections = static_cast<int>(s.size());
+  EXPECT_EQ(num_exp_intersections, num_actual_intersections);
+
+  // check that the evaluated intersection points are identical
+  for(int i = 0; i < num_actual_intersections; ++i)
+  {
+    auto p1 = curve.evaluate(t[i]);
+    auto p2 = ray.at(s[i]);
+
+    EXPECT_NEAR(0., primal::squared_distance(p1, p2), test_eps);
+
+    for(int d = 0; d < DIM; ++d)
+    {
+      EXPECT_NEAR(p1[d], p2[d], test_eps);
+    }
+  }
+
+  // check that the intersections match our precomputed values
+  std::sort(s.begin(), s.end());
+  std::sort(t.begin(), t.end());
+
+  if(shouldPrintIntersections)
+  {
+    std::stringstream sstr;
+
+    sstr << "Intersections for curve and ray: "
+         << "\n\t" << curve << "\n\t" << ray;
+
+    sstr << "\ns (" << s.size() << "): ";
+    for(auto i = 0u; i < s.size(); ++i)
+    {
+      sstr << std::setprecision(16) << s[i] << ",";
+    }
+
+    sstr << "\nt (" << t.size() << "): ";
+    for(auto i = 0u; i < t.size(); ++i)
+    {
+      sstr << std::setprecision(16) << t[i] << ",";
+    }
+
+    SLIC_INFO(sstr.str());
+  }
+
+  for(int i = 0; i < num_actual_intersections; ++i)
+  {
+    // EXPECT_NEAR(exp_s[i], s[i], test_eps);
+    // EXPECT_NEAR(exp_t[i], t[i], test_eps);
+
+    if(shouldPrintIntersections)
+    {
+      SLIC_INFO("\t" << i << ": {s:" << s[i] << ", t:" << t[i]
+                     << std::setprecision(16) << ", s_actual:" << exp_s[i]
+                     << ", t_actual:" << exp_t[i] << "}");
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, ray_linear_bezier)
+{
+  static const int DIM = 2;
+
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int order = 1;
+
+  // case 1 -- Intersect the curve at the midpoint
+  {
+    SCOPED_TRACE("linear bezier simple");
+
+    PointType ray_origin = PointType::zero();
+    VectorType ray_direction({1.0, 1.0});
+    RayType ray(ray_origin, ray_direction);
+
+    PointType data[order + 1] = {PointType {1.0, 0.0}, PointType {0.0, 1.0}};
+    BezierCurveType curve(data, order);
+
+    std::vector<CoordType> exp_intersections1 = {std::sqrt(0.5)};
+    std::vector<CoordType> exp_intersections2 = {0.5};
+
+    const double eps = 1E-3;
+    checkIntersectionsRay(ray,
+                          curve,
+                          exp_intersections1,
+                          exp_intersections2,
+                          eps,
+                          eps);
+  }
+
+  // case 2 -- Intersect the curve at an endpoint
+  {
+    SCOPED_TRACE("linear bezier endpoints");
+
+    PointType data[order + 1] = {PointType {1.0, 0.0}, PointType {0.0, 1.0}};
+    BezierCurveType curve(data, order);
+
+    // Only count intersections at the t = 0 parameter of the curve
+    PointType ray_origin1 = PointType::zero();
+    VectorType ray_direction1({1.0, 0.0});
+    RayType ray1(ray_origin1, ray_direction1);
+
+    const double eps = 1E-3;
+    checkIntersectionsRay(ray1,
+                          curve,
+                          std::vector<CoordType>({1.0}),
+                          std::vector<CoordType>({0.0}),
+                          eps,
+                          eps);
+
+    // Don't count intersections at the t = 1 parameter of the curve
+    PointType ray_origin2 = PointType::zero();
+    VectorType ray_direction2({0.0, 1.0});
+    RayType ray2(ray_origin2, ray_direction2);
+
+    checkIntersectionsRay(ray2,
+                          curve,
+                          std::vector<CoordType>(),
+                          std::vector<CoordType>(),
+                          eps,
+                          eps);
+
+    // Count intersections at the t = 0 parameter of the ray
+    PointType ray_origin3({0.5, 0.5});
+    VectorType ray_direction3({1.0, 1.0});
+    RayType ray3(ray_origin3, ray_direction3);
+
+    checkIntersectionsRay(ray3,
+                          curve,
+                          std::vector<CoordType>({0.0}),
+                          std::vector<CoordType>({0.5}),
+                          eps,
+                          eps);
+  }
+
+  // case 3 -- A ray that intersects a curve at an interior point
+  {
+    SCOPED_TRACE("linear bezier non-midpoint");
+
+    PointType data[order + 1] = {PointType {1.0, 0.0}, PointType {0.0, 1.0}};
+    BezierCurveType curve(data, order);
+
+    PointType ray_origin({0.0, 0.0});
+    VectorType ray_direction({1.0, 2.0});
+    RayType ray(ray_origin, ray_direction);
+
+    std::vector<CoordType> exp_intersections1 = {std::sqrt(5) / 3.0};
+    std::vector<CoordType> exp_intersections2 = {2.0 / 3.0};
+
+    const double eps = 1E-3;
+    checkIntersectionsRay(ray,
+                          curve,
+                          exp_intersections1,
+                          exp_intersections2,
+                          eps,
+                          eps);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, ray_no_intersections_bezier)
+{
+  static const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  SLIC_INFO("primal: testing bezier intersection");
+  SCOPED_TRACE("no intersections");
+
+  const int order = 3;
+
+  // Ray
+  PointType ray_origin({0.0, 0.0});
+  VectorType ray_direction({1.0, 0.0});
+  RayType ray(ray_origin, ray_direction);
+
+  // Cubic curve
+  PointType data[order + 1] = {PointType {0.0, 0.5},
+                               PointType {1.0, 1.0},
+                               PointType {2.0, 3.0},
+                               PointType {3.0, 1.5}};
+  BezierCurveType curve(data, order);
+
+  std::vector<CoordType> exp_intersections;
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+
+  checkIntersectionsRay(ray,
+                        curve,
+                        exp_intersections,
+                        exp_intersections,
+                        eps,
+                        eps_test);
+}
+
+TEST(primal_bezier_inter, ray_linear_bezier_interp_params)
+{
+  constexpr int DIM = 2;
+
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int order = 1;
+  const double eps = 1E-3;
+
+  const int num_i_samples = 37;
+  const int num_j_samples = 13;
+
+  // NOTE: Skipping endpoints for now.
+  for(int i = 0; i < num_i_samples; ++i)
+  {
+    double t = i / static_cast<double>(num_i_samples + 1);
+
+    for(int j = 0; j < num_j_samples; ++j)
+    {
+      double s = j / static_cast<double>(num_j_samples + 1);
+
+      std::stringstream sstr;
+      sstr << "linear bezier perpendicular (s,t) = (" << s << "," << t << ")";
+      SCOPED_TRACE(sstr.str());
+
+      PointType data1[order + 1] = {PointType {0.0, s}, PointType {1.0, s}};
+      BezierCurveType curve1(data1, order);
+
+      PointType ray_origin1({t, 0.0});
+      VectorType ray_direction1({0.0, 1.0});
+      RayType ray1(ray_origin1, ray_direction1);
+
+      std::vector<CoordType> exp_intersections_t = {t};
+      std::vector<CoordType> exp_intersections_s = {s};
+
+      // test for intersections
+      checkIntersectionsRay(ray1,
+                            curve1,
+                            exp_intersections_s,
+                            exp_intersections_t,
+                            eps,
+                            eps);
+
+      // test for intersections after swapping the curve and ray directions
+      PointType data2[order + 1] = {PointType {t, 0.0}, PointType {t, 1.0}};
+      BezierCurveType curve2(data2, order);
+
+      PointType ray_origin2({0.0, s});
+      VectorType ray_direction2({1.0, 0.0});
+      RayType ray2(ray_origin2, ray_direction2);
+
+      checkIntersectionsRay(ray2,
+                            curve2,
+                            exp_intersections_t,
+                            exp_intersections_s,
+                            eps,
+                            eps);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, ray_cubic_quadratic_bezier)
+{
+  static const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  SLIC_INFO("primal: testing bezier intersection");
+
+  const int order = 3;
+
+  // Ray direction
+  VectorType ray_direction({1.0, 0.0});
+
+  // Cubic curve
+  PointType data[order + 1] = {PointType {0.0, 0.5},
+                               PointType {1.0, -1.0},
+                               PointType {2.0, 1.0},
+                               PointType {3.0, -0.5}};
+  BezierCurveType curve(data, order);
+
+  std::vector<CoordType> all_intersections = {0.17267316464601146,
+                                              0.5,
+                                              0.827326835353989};
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+
+  for(CoordType origin = 0.0; origin <= 1.0; origin += 0.05)
+  {
+    PointType ray_origin({origin, 0.0});
+    SLIC_INFO("Testing w/ origin at " << ray_origin);
+
+    RayType ray(ray_origin, ray_direction);
+
+    auto curve_pt_0 = curve.evaluate(all_intersections[0]);
+    auto curve_pt_1 = curve.evaluate(all_intersections[1]);
+    auto curve_pt_2 = curve.evaluate(all_intersections[2]);
+
+    std::vector<CoordType> exp_intersections;
+    std::vector<CoordType> ray_intersections;
+    if(origin < curve_pt_0[0])
+    {
+      exp_intersections.push_back(all_intersections[0]);
+      ray_intersections.push_back(curve_pt_0[0] - origin);
+    }
+
+    if(origin < curve_pt_1[0])
+    {
+      exp_intersections.push_back(all_intersections[1]);
+      ray_intersections.push_back(curve_pt_1[0] - origin);
+    }
+
+    if(origin < curve_pt_2[0])
+    {
+      exp_intersections.push_back(all_intersections[2]);
+      ray_intersections.push_back(curve_pt_2[0] - origin);
+    }
+
+    checkIntersectionsRay(ray,
+                          curve,
+                          ray_intersections,
+                          exp_intersections,
+                          eps,
+                          eps_test);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, ray_cubic_bezier_varying_eps)
+{
+  static const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  SLIC_INFO("primal: testing bezier intersection");
+
+  const int order = 3;
+
+  // Ray
+  PointType ray_origin({0.0, 0.0});
+  VectorType ray_direction({1.0, 0.0});
+  RayType ray(ray_origin, ray_direction);
+
+  // Cubic curve
+  PointType data[order + 1] = {PointType {0.0, 0.5},
+                               PointType {1.0, -1.0},
+                               PointType {2.0, 1.0},
+                               PointType {3.0, -0.5}};
+  BezierCurveType curve(data, order);
+
+  // Note: same intersection params for curve and line
+  std::vector<CoordType> exp_intersections = {0.17267316464601146,
+                                              0.5,
+                                              0.827326835353989};
+
+  for(int exp = 1; exp <= 16; ++exp)
+  {
+    const double eps = std::pow(10, -exp);
+    const double eps_test = std::pow(10, -exp + 1);
+    SLIC_INFO("Testing w/ eps = " << eps);
+    std::stringstream sstr;
+    sstr << "cubic eps study " << eps;
+    SCOPED_TRACE(sstr.str());
+
+    checkIntersectionsRay(ray,
+                          curve,
+                          exp_intersections,
+                          exp_intersections,
+                          eps,
+                          eps_test);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, ray_cubic_bezier_nine_intersections)
+{
+  static const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  SLIC_INFO("primal: testing bezier intersection");
+
+  // An intersection of a ray and a high-order Bezier curve,
+  //  with one intersection repeated in physical space
+  const int order = 7;
+  PointType data[order + 1] = {PointType {100, 90},
+                               PointType {125, 260},
+                               PointType {125, 0},
+                               PointType {140, 145},
+                               PointType {75, 110},
+                               PointType {265, 120},
+                               PointType {0, 130},
+                               PointType {145, 135}};
+  BezierCurveType curve(data, order);
+
+  PointType ray_origin({90.0, 100.0});
+  VectorType ray_direction({1.0, 1.0961665896209309});
+  RayType ray(ray_origin, ray_direction);
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+
+  std::vector<CoordType> exp_s = {21.19004780603474,
+                                  45.76845689117871,
+                                  35.941606827,
+                                  45.76845689117871};
+
+  std::vector<CoordType> exp_t = {0.0264232742968,
+                                  0.2047732691922508,
+                                  0.813490954734,
+                                  0.96880275626114684};
+
+  checkIntersectionsRay(ray, curve, exp_s, exp_t, eps, eps_test);
+}
+
 int main(int argc, char* argv[])
 {
   int result = 0;

@@ -7,7 +7,7 @@
  * \file intersect_bezier_impl.hpp
  *
  * This file provides helper functions for testing the intersection
- * of Bezier curves
+ * of Bezier curves with other Bezier curves and other geometric objects
  */
 
 #ifndef AXOM_PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
@@ -96,7 +96,6 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
  *
  * \note This function does not properly handle collinear lines
  */
-
 template <typename T>
 bool intersect_2d_linear(const Point<T, 2> &a,
                          const Point<T, 2> &b,
@@ -105,6 +104,43 @@ bool intersect_2d_linear(const Point<T, 2> &a,
                          T &s,
                          T &t);
 
+/*!
+ * \brief Recursive function to find intersections between a ray and a Bezier curve
+ *
+ * \param [in] c The input curve
+ * \param [in] r The input ray
+ * \param [out] cp Parametric coordinates of intersections in \a c [0, 1)
+ * \param [out] rp Parametric coordinates of intersections in \a r [0, inf)
+ * \param [in] sq_tol The squared tolerance parameter for determining if a
+ * Bezier curve is linear
+ * \param [in] order The order of \a c
+ * \param s_offset The offset in parameter space for \a c
+ * \param s_scale The scale in parameter space for \a c
+ *
+ * A ray can only intersect a Bezier curve if it intersects its bounding box
+ * The base case of the recursion is when we can approximate the curves with
+ * line segments, where we directly find their intersection with the ray. Otherwise,
+ * check for intersections recursively after bisecting the curve.
+ *
+ * \note A BezierCurve is parametrized in [0,1). The scale and offset parameters
+ * are used to track the local curve parameters during subdivisions
+ *
+ * \note This function assumes the all intersections have multiplicity
+ * one, i.e. there are no points at which the curves and their derivatives
+ * both intersect. Thus, the function does not find tangencies.
+ * 
+ * \return True if the two curves intersect, False otherwise
+ * \sa intersect_bezier
+ */
+template <typename T>
+bool intersect_ray_bezier(const Ray<T, 2> &r,
+                          const BezierCurve<T, 2> &c,
+                          std::vector<T> &rp,
+                          std::vector<T> &cp,
+                          double sq_tol,
+                          int order,
+                          double c_offset,
+                          double c_scale);
 //------------------------------ IMPLEMENTATIONS ------------------------------
 
 template <typename T>
@@ -225,6 +261,70 @@ bool intersect_2d_linear(const Point<T, 2> &a,
   t = area1 / (area1 - area2);
 
   return true;
+}
+
+template <typename T>
+bool intersect_ray_bezier(const Ray<T, 2> &r,
+                          const BezierCurve<T, 2> &c,
+                          std::vector<T> &rp,
+                          std::vector<T> &cp,
+                          double sq_tol,
+                          int order,
+                          double c_offset,
+                          double c_scale)
+{
+  using BCurve = BezierCurve<T, 2>;
+
+  // Check bounding box to short-circuit the intersection
+  T r0, s0;
+  Point<T, 2> ip;
+  constexpr T factor = 1e-8;
+
+  // Need to expand the bounding box, since this ray-bb intersection routine
+  //  only parameterizes the ray on (0, inf)
+  if(!intersect(r, c.boundingBox().expand(factor), ip))
+  {
+    return false;
+  }
+
+  bool foundIntersection = false;
+
+  // For the base case, represent the Bezier curve as a line segment
+  if(c.isLinear(sq_tol))
+  {
+    Segment<T, 2> seg(c[0], c[order]);
+
+    // Need to check intersection with zero tolerance
+    //  to handle cases where `intersect` treats the ray as collinear
+    if(intersect(r, seg, r0, s0, 0.0) && s0 < 1.0)
+    {
+      rp.push_back(r0);
+      cp.push_back(c_offset + c_scale * s0);
+      foundIntersection = true;
+    }
+  }
+  else
+  {
+    constexpr double splitVal = 0.5;
+    constexpr double scaleFac = 0.5;
+
+    BCurve c1(order);
+    BCurve c2(order);
+    c.split(splitVal, c1, c2);
+    c_scale *= scaleFac;
+
+    // Note: we want to find all intersections, so don't short-circuit
+    if(intersect_ray_bezier(r, c1, rp, cp, sq_tol, order, c_offset, c_scale))
+    {
+      foundIntersection = true;
+    }
+    if(intersect_ray_bezier(r, c2, rp, cp, sq_tol, order, c_offset + c_scale, c_scale))
+    {
+      foundIntersection = true;
+    }
+  }
+
+  return foundIntersection;
 }
 
 }  // end namespace detail

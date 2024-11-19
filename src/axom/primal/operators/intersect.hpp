@@ -534,6 +534,22 @@ bool intersect(const BezierCurve<T, 2>& c1,
                                          scale);
 }
 
+template <typename T>
+bool intersect(const Ray<T, 2>& r,
+               const BezierCurve<T, 2>& c,
+               std::vector<T>& rp,
+               std::vector<T>& cp,
+               double tol = 1E-8)
+{
+  const double offset = 0.;
+  const double scale = 1.;
+
+  // for efficiency, linearity check actually uses a squared tolerance
+  const double sq_tol = tol * tol;
+
+  return detail::intersect_ray_bezier(r, c, rp, cp, sq_tol, c.getOrder(), offset, scale);
+}
+
 /// @}
 
 /// \name Plane Intersection Routines
