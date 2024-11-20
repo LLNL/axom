@@ -32,10 +32,10 @@ struct Sorting
    * \param n The number of values in the array. 
    */
   AXOM_HOST_DEVICE
-  static void sort(T *values, int n)
+  inline static void sort(T *values, int n)
   {
     if(n < 11)
-      bubble_sort(values, n);
+      insertionSort(values, n);
     else
       qsort(values, n);
   }
@@ -120,27 +120,29 @@ struct Sorting
   }
 
   /**
-   * \brief Sort the input array using bubble sort.
+   * \brief Sort the input array using insertion sort.
    *
    * \param[inout] values The array to be sorted.
    * \param n The number of values in the array.
    */
   AXOM_HOST_DEVICE
-  static void bubble_sort(T *values, int n)
+  inline static void insertionSort(T* values, int n)
   {
-    for(int i = 0; i < n - 1; i++)
+    for(int i = 1; i < n; i++)
     {
-      const int m = n - i - 1;
-      for(int j = 0; j < m; j++)
+      int j = i;
+      // Keep swapping elements until we're not out-of-order.
+      while(j > 0 && (values[j] < values[j - 1]))
       {
-        if(values[j] > values[j + 1])
-        {
-          axom::utilities::swap(values[j], values[j + 1]);
-        }
+        axom::utilities::swap(values[j], values[j - 1]);
+        j--;
       }
     }
   }
 };
+
+namespace detail
+{
 
 /**
  * \brief Swap 2 elements if b < a.
@@ -158,8 +160,11 @@ AXOM_HOST_DEVICE inline void ifswap(T &a, T &b)
   }
 }
 
+} // end namespace detail
+
 /**
  * \brief Template specialization for sorting arrays with 3 elements.
+ * \note Specializing resulted in a small speedup over general sorting.
  */
 template <typename T>
 struct Sorting<T, 3>
@@ -172,14 +177,15 @@ struct Sorting<T, 3>
   AXOM_HOST_DEVICE
   inline static void sort(T *values)
   {
-    ifswap(values[0], values[1]);
-    ifswap(values[1], values[2]);
-    ifswap(values[0], values[1]);
+    detail::ifswap(values[0], values[1]);
+    detail::ifswap(values[1], values[2]);
+    detail::ifswap(values[0], values[1]);
   }
 };
 
 /**
  * \brief Template specialization for sorting arrays with 4 elements.
+ * \note Specializing resulted in a small speedup over general sorting.
  */
 template <typename T>
 struct Sorting<T, 4>
@@ -192,12 +198,12 @@ struct Sorting<T, 4>
   AXOM_HOST_DEVICE
   inline static void sort(T *values)
   {
-    ifswap(values[0], values[1]);
-    ifswap(values[2], values[3]);
-    ifswap(values[1], values[2]);
-    ifswap(values[0], values[1]);
-    ifswap(values[2], values[3]);
-    ifswap(values[1], values[2]);
+    detail::ifswap(values[0], values[1]);
+    detail::ifswap(values[2], values[3]);
+    detail::ifswap(values[1], values[2]);
+    detail::ifswap(values[0], values[1]);
+    detail::ifswap(values[2], values[3]);
+    detail::ifswap(values[1], values[2]);
   }
 };
 
