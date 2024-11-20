@@ -533,8 +533,8 @@ void checkIntersectionsRay(const primal::Ray<CoordType, 2>& ray,
 
   for(int i = 0; i < num_actual_intersections; ++i)
   {
-    // EXPECT_NEAR(exp_s[i], s[i], test_eps);
-    // EXPECT_NEAR(exp_t[i], t[i], test_eps);
+    EXPECT_NEAR(exp_s[i], s[i], test_eps);
+    EXPECT_NEAR(exp_t[i], t[i], test_eps);
 
     if(shouldPrintIntersections)
     {
