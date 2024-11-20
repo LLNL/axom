@@ -126,7 +126,7 @@ struct Sorting
    * \param n The number of values in the array.
    */
   AXOM_HOST_DEVICE
-  inline static void insertionSort(T* values, int n)
+  inline static void insertionSort(T *values, int n)
   {
     for(int i = 1; i < n; i++)
     {
@@ -160,7 +160,7 @@ AXOM_HOST_DEVICE inline void ifswap(T &a, T &b)
   }
 }
 
-} // end namespace detail
+}  // end namespace detail
 
 /**
  * \brief Template specialization for sorting arrays with 3 elements.

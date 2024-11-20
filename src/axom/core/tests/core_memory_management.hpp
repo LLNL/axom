@@ -503,6 +503,6 @@ TEST(core_memory_management, allocator_id_for_address)
   buf = new int[N];
   id = axom::getAllocatorIDForAddress(buf);
   EXPECT_EQ(id, axom::INVALID_ALLOCATOR_ID);
-  delete [] buf;
+  delete[] buf;
 }
 #endif
