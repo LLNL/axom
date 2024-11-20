@@ -552,7 +552,7 @@ void addConcentricCircleMaterial(const TopoView& topoView,
         }
         if(c > 0)
         {
-          sameCircles = circle == currentCircle;
+          sameCircles &= circle == currentCircle;
         }
         circle = currentCircle;
       }
@@ -779,6 +779,7 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
   const auto sphereCenter = PointType({c, c, c});
 
   // Use the uniform sampling method to generate volume fractions for each material
+  axom::Array<int> materialCount(numMaterials, 0);
   for(int eID = 0; eID < topologyView.numberOfZones(); ++eID)
   {
     const auto zone = topologyView.zone(eID);
@@ -788,7 +789,6 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
     const auto v4 = coordsetView[zone.getId(4)];
 
     // Run the uniform sampling to determine how much of the current cell is composed of each material
-    int materialCount[numMaterials];
     for(int i = 0; i < numMaterials; ++i)
     {
       materialCount[i] = 0;
