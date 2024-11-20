@@ -24,6 +24,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Line.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
@@ -1685,6 +1686,160 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
   }
 
   return caseNumber > 0 && caseNumber < 15;
+}
+
+/*! \brief Determines if a line intersects a bilinear patch.
+ * \param [in] p0 The first corner of the bilinear patch.
+ * \param [in] p1 The second corner in ccw order.
+ * \param [in] p2 The third corner.
+ * \param [in] p3 The fourth corner.
+ * \param [in] line The line to intersect with the bilinear patch.
+ * \param [out] u The u parameter(s) of the intersection point.
+ * \param [out] v The v parameter(s) of the intersection point.
+ * \param [out] t The t parameter(s) of the intersection point.
+ * \param [in] isRay If true, only return intersections with t >= 0.
+ *
+ * Implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
+ *
+ * \return true iff the line intersects the bilinear patch, otherwise false.
+ */
+AXOM_HOST_DEVICE
+inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
+                                          const Point3& p0,
+                                          const Point3& p1,
+                                          const Point3& p2,
+                                          const Point3& p3,
+                                          axom::Array<double>& u,
+                                          axom::Array<double>& v,
+                                          axom::Array<double>& t,
+                                          bool isRay = false)
+{
+  Vector3 q00(p0), q10(p1), q11(p2), q01(p3);
+
+  Vector3 e10 = q10 - q00;
+  Vector3 e11 = q11 - q10;
+  Vector3 e00 = q01 - q00;
+
+  Vector3 qn = Vector3::cross_product(e10, q01 - q11);
+
+  q00.array() -= line.origin().array();
+  q10.array() -= line.origin().array();
+
+  double a = Vector3::scalar_triple_product(q00, line.direction(), e00);
+  double c = Vector3::dot_product(qn, line.direction());
+  double b = Vector3::scalar_triple_product(q10, line.direction(), e11) - a - c;
+
+  double det = b * b - 4 * a * c;
+  if(det < 0)
+  {
+    return false;
+  }
+
+  det = std::sqrt(det);
+  double u1, u2;
+  if(c == 0)
+  {
+    u1 = -a / b;
+    u2 = -1;
+  }
+  else
+  {
+    u1 = 0.5 * (-b - std::copysign(det, b));
+    u2 = a / u1;
+    u1 /= c;
+  }
+
+  if(0.0 <= u1 && u1 <= 1.0)
+  {
+    Vector3 pa = (1 - u1) * q00 + u1 * q10;
+    Vector3 pb = (1 - u1) * e00 + u1 * e11; // actually stores pb - pa
+    Vector3 n = Vector3::cross_product(line.direction(), pb);
+    det = Vector3::dot_product(n, n);
+
+    if( det != 0 )
+    {
+      n = Vector3::cross_product(n, pa);
+      double t1 = Vector3::dot_product(n, pb);
+      double v1 = Vector3::dot_product(n, line.direction());
+      if(0 <= v1 && v1 <= det)
+      {
+        if(t1 >= 0 || !isRay)
+        {
+          t.push_back(t1 / det);
+          u.push_back(u1);
+          v.push_back(v1 / det);
+        }
+      }
+    }
+    else // Ray is parallel to the line segment pa + v * (pb - pa)
+    {
+      // Determine if the line is colinear to the segment
+      double cross = Vector3::cross_product( pa, line.direction() ).norm();
+      if( cross == 0 )
+      {
+        // Parameters of intersection are non-unique,
+        //  so take the smallest magnitude t parameter as the intersection
+        double t1 = Vector3::dot_product( pa, line.direction() );
+        double t2 = Vector3::dot_product( pa + pb, line.direction() );
+        if( t1 * t2 < 0 )
+        {
+          // Means the origin is inside the segment
+          t.push_back(0.0);
+          u.push_back(u1);
+          v.push_back(t1 / (t1 - t2));
+          return true;
+        }
+        else if( t1 >= 0 )
+        {
+          // The origin is outside the segment, but the ray intersects
+          t.push_back(t1);
+          u.push_back(u1);
+          v.push_back(0.0);          
+          return true;
+        }
+        else if( !isRay )
+        {
+          // The origin is outside the segment and the ray doesn't intersect
+          auto isSmaller = std::abs(t1) < std::abs(t2);
+          t.push_back(isSmaller ? t1 : t2);
+          u.push_back(u1);
+          v.push_back(isSmaller ? 0.0 : 1.0);
+          return true;
+        }
+      }
+    } 
+  }
+
+  if(0.0 <= u2 && u2 <= 1.0)
+  {
+    Vector3 pa = (1 - u2) * q00 + u2 * q10;
+    Vector3 pb = (1 - u2) * e00 + u2 * e11; // actually stores pb - pa
+    Vector3 n = Vector3::cross_product(line.direction(), pb);
+    det = Vector3::dot_product(n, n);
+
+    if( det != 0 )
+    {
+      n = Vector3::cross_product(n, pa);
+      double t2 = Vector3::dot_product(n, pb) / det;
+      double v2 = Vector3::dot_product(n, line.direction());
+      if(0 <= v2 && v2 <= det && t2 >= 0)
+      {
+        if( t2 >= 0 || !isRay)
+        {
+          t.push_back(t2);
+          u.push_back(u2);
+          v.push_back(v2 / det);
+        }
+      }
+    }
+    else // Ray is parallel to the line segment pa + v * (pb - pa)
+    {
+      // If the line is colinear to the segment, it 
+      //  will have been handled in the u1 case, as u1 == u2
+    }
+  }
+
+  return !t.empty();
 }
 
 }  // end namespace detail

@@ -23,11 +23,13 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Line.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/geometry/BezierPatch.hpp"
 
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
@@ -629,6 +631,50 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
 }
 
 /// @}
+
+/*! \brief Determines if a ray intersects a Bezier patch.
+ * \param [in] patch The Bezier patch to intersect with the ray.
+ * \param [in] ray The ray to intersect with the patch.
+ * \param [out] u The u parameter(s) of intersection point(s).
+ * \param [out] v The v parameter(s) of intersection point(s).
+ * \param [out] t The t parameter(s) of intersection point(s).
+ * \param [in] EPS The tolerance for intersection.
+ *
+ * For bilinear patches, implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
+ * For higher order patches, intersections are found through recursive subdivison
+ *  until the subpatch is approximated by a bilinear patch.
+ *  
+ * \return true iff the ray intersects the patch, otherwise false.
+ */
+template <typename T>
+AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
+                                const BezierPatch<T, 3>& patch,
+                                axom::Array<T>& u,
+                                axom::Array<T>& v,
+                                axom::Array<T>& t)
+{
+  const int order_u = patch.getOrder_u();
+  const int order_v = patch.getOrder_v();
+
+  if(order_u < 1 || order_v < 1)
+  {
+    // Patch has no surface area, ergo no intersections
+    return false;
+  }
+  else if(order_u == 1 && order_v == 1)
+  {
+    primal::Line<T, 3> line(ray.origin(), ray.direction());
+    return detail::intersect_line_bilinear_patch(line,
+                                                 patch(0, 0),
+                                                 patch(order_u, 0),
+                                                 patch(order_u, order_v),
+                                                 patch(0, order_v),
+                                                 u,
+                                                 v,
+                                                 t,
+                                                 true);
+  }
+}
 
 }  // namespace primal
 }  // namespace axom

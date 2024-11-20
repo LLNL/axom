@@ -36,6 +36,7 @@ set( primal_tests
     primal_sphere.cpp
     primal_split.cpp
     primal_squared_distance.cpp
+    primal_surface_intersect.cpp
     primal_tetrahedron.cpp
     primal_octahedron.cpp
     primal_triangle.cpp
