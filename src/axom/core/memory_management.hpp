@@ -121,12 +121,32 @@ inline int getDefaultAllocatorID()
 inline int getAllocatorIDForAddress(void* ptr)
 {
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  return rm.getAllocator(ptr).getId();
+  int id;
+  try
+  {
+    id = rm.getAllocator(ptr).getId();
+  }
+  catch(...)
+  {
+    // The pointer was likely not allocated via umpire.
+    id = INVALID_ALLOCATOR_ID;
+  }
+  return id;
 }
 inline int getAllocatorIDForAddress(const void* ptr)
 {
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  return rm.getAllocator(const_cast<void*>(ptr)).getId();
+  int id;
+  try
+  {
+    id = rm.getAllocator(const_cast<void*>(ptr)).getId();
+  }
+  catch(...)
+  {
+    // The pointer was likely not allocated via umpire.
+    id = INVALID_ALLOCATOR_ID;
+  }
+  return id;
 }
 #else
 inline int getAllocatorIDForAddress(void* AXOM_UNUSED_PARAM(ptr))

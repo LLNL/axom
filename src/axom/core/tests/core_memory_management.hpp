@@ -483,3 +483,26 @@ TEST(core_memory_management, basic_alloc_realloc_dealloc)
   axom::deallocate<int>(buf);
   EXPECT_EQ(buf, nullptr);
 }
+
+//------------------------------------------------------------------------------
+#ifdef AXOM_USE_UMPIRE
+TEST(core_memory_management, allocator_id_for_address)
+{
+  constexpr std::size_t N = 5;
+
+  int* buf = nullptr;
+
+  // Allocate through allocator.
+  buf = axom::allocate<int>(N);
+  EXPECT_NE(buf, nullptr);
+  int id = axom::getAllocatorIDForAddress(buf);
+  EXPECT_EQ(id, axom::getDefaultAllocatorID());
+  axom::deallocate<int>(buf);
+
+  // Allocate directly (not through allocator).
+  buf = new int[N];
+  id = axom::getAllocatorIDForAddress(buf);
+  EXPECT_EQ(id, axom::INVALID_ALLOCATOR_ID);
+  delete [] buf;
+}
+#endif
