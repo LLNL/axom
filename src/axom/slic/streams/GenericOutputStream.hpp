@@ -49,6 +49,9 @@ public:
    *   - "cerr" makes std::cerr the output stream
    *   - Any other input will construct a std::ofstream associated with input
    * \param [in] stream the string to control type of stream created
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       GenericOutputStream never flushes a message.
    */
   GenericOutputStream(const std::string& stream);
 
@@ -57,13 +60,14 @@ public:
    *  message formatting.
    * \param [in] os pointer to a user-supplied ostream instance.
    * \param [in] format the format string.
+   * \pre os != NULL
    * \see LogStream::setFormatString for the format string.
    */
   GenericOutputStream(std::ostream* os, const std::string& format);
 
   /*!
    * \brief Constructs a GenericOutputStream instance specified by the given
-   *  string  and message formatting.
+   *  string and message formatting.
    *  The string input determines the stream as follows:
    *   - "cout" makes std::cout the output stream
    *   - "cerr" makes std::cerr the output stream
@@ -71,6 +75,9 @@ public:
    * \param [in] stream the string to control type of stream created
    * \param [in] format the format string.
    * \see LogStream::setFormatString for the format string.
+   *
+   * \note This constructor avoids creating an empty file if this
+   *       GenericOutputStream never flushes a message.
    */
   GenericOutputStream(const std::string& stream, const std::string& format);
 
@@ -100,12 +107,25 @@ public:
 
 private:
   std::ostream* m_stream;
+  std::string m_file_name;
+  bool m_opened;
+  bool m_isOstreamOwnedBySLIC;
 
   /*!
    * \brief Default constructor.
    * \note Made private to prevent applications from using it.
    */
-  GenericOutputStream() : m_stream(static_cast<std::ostream*>(nullptr)) {};
+  GenericOutputStream()
+    : m_stream(static_cast<std::ostream*>(nullptr))
+    , m_file_name()
+    , m_opened(false)
+    , m_isOstreamOwnedBySLIC(false) {};
+
+  /*!
+   * \brief Opens a file before flushing stream when GenericOutputStream
+   *        has ownership of ostream to a file (std::string constructor)
+   */
+  void openBeforeFlush();
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
   DISABLE_MOVE_AND_ASSIGNMENT(GenericOutputStream);

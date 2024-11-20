@@ -83,7 +83,7 @@ template <typename T,
           typename IndPol =
             policies::STLVectorIndirection<typename BSet::PositionType, T>,
           typename StrPol = policies::StrideOne<typename BSet::PositionType>,
-          typename IfacePol = policies::VirtualInterface>
+          typename IfacePol = policies::ConcreteInterface>
 class BivariateMap
   : public policies::MapInterface<IfacePol, typename BSet::PositionType>,
     public StrPol
@@ -481,10 +481,8 @@ protected:
 
 public:
   /** BivariateMap iterator functions */
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE iterator begin() { return iterator(this, 0); }
 
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE iterator end()
   {
     return iterator(this, totalSize() * numComp());
@@ -500,25 +498,21 @@ public:
     return const_iterator(this, totalSize() * numComp());
   }
 
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE range_iterator set_begin()
   {
     return range_iterator(this, 0);
   }
 
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE range_iterator set_end()
   {
     return range_iterator(this, totalSize());
   }
 
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE const_range_iterator set_begin() const
   {
     return const_range_iterator(this, 0);
   }
 
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE const_range_iterator set_end() const
   {
     return const_range_iterator(this, totalSize());
@@ -562,9 +556,9 @@ public:
 public:
   AXOM_HOST_DEVICE const BivariateSetType* set() const { return m_bset.get(); }
 
-  const MapType* getMap() const { return &m_map; }
+  AXOM_HOST_DEVICE const MapType* getMap() const { return &m_map; }
 
-  MapType* getMap() { return &m_map; }
+  AXOM_HOST_DEVICE MapType* getMap() { return &m_map; }
 
   bool isValid(bool verboseOutput = false) const
   {
@@ -576,11 +570,10 @@ public:
   ///
 
   /** \brief Returns the BivariateSet size. */
-  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE SetPosition size() const { return set()->size(); }
 
   /** \brief Returns the BivariateSet size. */
-  SetPosition totalSize() const { return set()->size(); }
+  AXOM_HOST_DEVICE SetPosition totalSize() const { return set()->size(); }
 
   SetPosition firstSetSize() const { return set()->firstSetSize(); }
 
@@ -594,7 +587,7 @@ public:
   SetPosition size(SetPosition s) const { return set()->size(s); }
 
   /** \brief Return the number of components of the map  */
-  SetPosition numComp() const { return StrPol::stride(); }
+  AXOM_HOST_DEVICE SetPosition numComp() const { return StrPol::stride(); }
 
   /// @}
 
@@ -682,7 +675,7 @@ public:
   /**
      * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
      */
-  FlatIterator(BivariateMapPtr sMap, PositionType pos)
+  AXOM_HOST_DEVICE FlatIterator(BivariateMapPtr sMap, PositionType pos)
     : IterBase(pos)
     , m_map(sMap)
     , m_bsetIterator(m_map->set(), pos / m_map->numComp())
@@ -771,7 +764,7 @@ public:
   /*!
    * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
    */
-  RangeIterator(BivariateMapPtr sMap, PositionType pos)
+  AXOM_HOST_DEVICE RangeIterator(BivariateMapPtr sMap, PositionType pos)
     : IterBase(pos)
     , m_map(sMap)
     , m_mapIterator(m_map->getMap()->set_begin() + pos)
@@ -809,7 +802,7 @@ public:
    *  index. Same as operator()
    */
   template <typename... ComponentIndex>
-  DataRefType value(ComponentIndex... comp) const
+  AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp) const
   {
     return m_mapIterator(comp...);
   }
@@ -828,7 +821,10 @@ public:
   /**
    * \brief Return the current iterator's flat bivariate index.
    */
-  PositionType flatIndex() const { return m_mapIterator.flatIndex(); }
+  AXOM_HOST_DEVICE PositionType flatIndex() const
+  {
+    return m_mapIterator.flatIndex();
+  }
 
   /** \brief Returns the number of components per element in the map. */
   PositionType numComp() const { return m_map->numComp(); }

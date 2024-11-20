@@ -35,6 +35,11 @@ enum class Protocol
   HDF5
 };
 
+const std::string supported_types[] = {
+   "JSON",
+   "HDF5"
+};
+
 /**
  * \brief An object representing the top-level object of a Sina JSON file
  *

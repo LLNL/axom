@@ -55,7 +55,7 @@ are identified.
    * Primal: Computational geometry primitives
    * Quest: Querying on surface tool
    * Sidre: Simulation data repository
-   * Sina: Write data in a common file format
+   * Sina: Simulation insight and analysis
    * Slam: Set-theoretic lightweight API for meshes
    * Slic: Simple Logging Interface Code
    * Spin: Spatial index structures for managing and accelerating spatial searches

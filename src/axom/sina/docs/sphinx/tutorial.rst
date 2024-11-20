@@ -164,6 +164,17 @@ continue from where you left off.  To load from a JSON file simply run loadDocum
 with the optional argument Protocol set to JSON or set as nothing, and to load from
 an HDF5 set the Protocol to HDF5.
 
+Note that due to HDF5's handling of '/' as indicators for nested structures,
+our saveDocument() function will string-replace '/' in parent nodes to 
+'__SINA_SLASHREPLACE__' in the resulting HDF5 file, while our loadDocument()
+function will string-replace them back to normal.
+
+Additionally, Sina is also equipped to handle missing, broken, or incorrect file 
+extensions.  In such an event (for example: saving a JSON file as Example, Example.jso, 
+or Example.hdf5), Sina will replace incorrect file extensions and append to missing or 
+broken ones while outputting a WARNING message to let you know of said occurance.
+
+
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
    :start-after: //! [begin io read]

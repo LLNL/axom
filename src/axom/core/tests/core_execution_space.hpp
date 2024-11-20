@@ -212,6 +212,40 @@ TEST(core_execution_space, check_cuda_exec_async)
                                                    IS_ASYNC,
                                                    ON_DEVICE);
 }
+//------------------------------------------------------------------------------
+void build(axom::Array<axom::IndexType> &values,
+           axom::Array<axom::IndexType> &ids,
+           int allocatorID)
+{
+  const std::vector<axom::IndexType> data {{0, 1, 2, 3}};
+  const axom::IndexType n = static_cast<axom::IndexType>(data.size());
+
+  values = axom::Array<axom::IndexType>(n, n, allocatorID);
+  ids = axom::Array<axom::IndexType>(n, n, allocatorID);
+
+  axom::copy(values.data(), data.data(), sizeof(axom::IndexType) * n);
+  axom::copy(ids.data(), data.data(), sizeof(axom::IndexType) * n);
+}
+
+template <typename ExecSpace>
+void test_check_cuda_array()
+{
+  int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+  axom::Array<axom::IndexType> values, ids;
+  build(values, ids, allocatorID);
+
+  EXPECT_EQ(values.size(), ids.size());
+  EXPECT_TRUE(axom::isDeviceAllocator(values.getAllocatorID()));
+  EXPECT_TRUE(axom::isDeviceAllocator(ids.getAllocatorID()));
+}
+
+TEST(core_execution_space, check_cuda_array)
+{
+  constexpr int BLOCK_SIZE = 256;
+  using ExecSpace = axom::CUDA_EXEC<BLOCK_SIZE>;
+  test_check_cuda_array<ExecSpace>();
+}
   #endif  // defined(AXOM_USE_CUDA)
 
   //------------------------------------------------------------------------------

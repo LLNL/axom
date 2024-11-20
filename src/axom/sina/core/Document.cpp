@@ -48,7 +48,40 @@ namespace
 char const RECORDS_KEY[] = "records";
 char const RELATIONSHIPS_KEY[] = "relationships";
 char const SAVE_TMP_FILE_EXTENSION[] = ".sina.tmp";
-}  
+}
+
+std::string protocol_set(std::string protocol, std::string const &name) {
+  size_t pos = name.rfind('.');
+  std::string toReturn = name;
+
+  if (pos != std::string::npos) {
+        std::string found = name.substr(pos+1);
+
+        if (("." + found) != protocol) {
+          for (const std::string& file_type : supported_types) {
+            std::string lower_case_type = file_type; 
+            std::transform(lower_case_type.begin(), lower_case_type.end(), lower_case_type.begin(), [](unsigned char c) { return std::tolower(c); });
+
+            if ((lower_case_type != protocol) && (lower_case_type == found)) {
+              std::cout << "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: ." << found << "; EXPECTED: " << protocol << "),  SINA WILL BE REPLACING IT TO THE " << protocol << " FILE EXTENSION ||";
+              toReturn = name.substr(0, pos);
+              toReturn = toReturn.append(protocol);
+              return toReturn;
+            }
+          }
+          std::cout << "|| WARNING: BROKEN FILE EXTENSION FOUND, SINA WILL BE APPENDING THE " << protocol << " FILE EXTENSION ||";
+          toReturn = toReturn.append(protocol);
+          return toReturn;
+          
+        } else {
+          return name;
+        }
+  } else {
+    std::cout << "|| WARNING: NO FILE EXTENSION FOUND, SINA WILL BE ADDING THE " << protocol << " FILE EXTENSION ||";
+    toReturn = toReturn.append(protocol);
+    return toReturn;
+  }
+}
 
 void removeSlashes(const conduit::Node& originalNode, conduit::Node& modifiedNode)
 {
@@ -60,7 +93,7 @@ void removeSlashes(const conduit::Node& originalNode, conduit::Node& modifiedNod
         //modifiedKey.erase(std::remove(modifiedKey.begin(), modifiedKey.end(), '/'), modifiedKey.end());
 
         std::string toReplace = "/";
-        std::string replacement = "__SLASH__";
+        std::string replacement = "__SINA_SLASHREPLACE__";
 
         size_t pos = 0;
         // Find and replace all occurrences of "/"
@@ -101,10 +134,6 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             {
                 newChild.set(it.node()); // Lists need .set
             }
-            else
-            {
-                std::cout << "Invalid list item detected, skipping: " << it.node().to_string() << std::endl;
-            }
             
             // Recursive Call
             if (it.node().number_of_children() > 0)
@@ -120,7 +149,7 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             it.next();
             std::string key = it.name();
             std::string restoredKey = key;
-            std::string toReplace = "__SLASH__";
+            std::string toReplace = "__SINA_SLASHREPLACE__";
             std::string replacement = "/";
 
             size_t pos = 0;
@@ -143,10 +172,6 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             else if (it.node().dtype().is_list())
             {
                 restoreSlashes(it.node(), newChild);  // Handle nested lists
-            }
-            else
-            {
-                std::cout << "Invalid node detected for key: " << restoredKey << std::endl;
             }
 
             // If the node has children, recursively restore them
@@ -233,7 +258,6 @@ void Document::createFromNode(conduit::Node const &asNode,
             add(Relationship{relationship});
         }
     }
-    asNode.print();
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -268,6 +292,7 @@ void Document::toHDF5(const std::string &filename) const
     for (const auto& relationship : getRelationships())
     {
         conduit::Node relationshipNode = relationship.toNode();
+        //TODO:: Remove Slashes
         relationshipsNode.append() = relationshipNode;
     }
 
@@ -287,29 +312,30 @@ std::string Document::toJson(conduit::index_t indent,
 void saveDocument(Document const &document, std::string const &fileName, Protocol protocol)
 {
   std::string tmpFileName = fileName + SAVE_TMP_FILE_EXTENSION;
+  std::string name;
 
   try
   {
       if (protocol == Protocol::JSON)
       {
+          name = protocol_set(".json", fileName);
           auto asJson = document.toJson();
           std::ofstream fout {tmpFileName};
           fout.exceptions(std::ostream::failbit | std::ostream::badbit);
           fout << asJson;
           fout.close();
-          std::cout << "Document saved successfully as JSON!";
       }
       else if (protocol == Protocol::HDF5)
       {
+          name = protocol_set(".hdf5", fileName);
           document.toHDF5(tmpFileName);
-          std::cout << "Document saved successfully as HDF5!";
       }
       else
       {
           throw std::invalid_argument("Invalid format choice. Please enter 'json' or 'hdf5'.");
       }
 
-      if (rename(tmpFileName.c_str(), fileName.c_str()) != 0)
+      if (rename(tmpFileName.c_str(), name.c_str()) != 0)
       {
           std::string message {"Could not save to '"};
           message += fileName;
@@ -354,7 +380,6 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
         conduit::Node modifiedNode;
         conduit::relay::io::load(path, "hdf5", node);
         restoreSlashes(node, modifiedNode);
-        modifiedNode.print();
         return Document {modifiedNode, recordLoader};
     }
 }
