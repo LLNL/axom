@@ -759,7 +759,7 @@ TEST(primal_nurbspatch, knot_insertion)
   axom::numerics::linspace(0.0, 1.0, u_pts, npts);
   axom::numerics::linspace(0.0, 1.0, v_pts, npts);
 
-  for(auto u: u_pts)
+  for(auto u : u_pts)
   {
     for(auto v : v_pts)
     {
@@ -1037,7 +1037,7 @@ TEST(primal_nurbspatch, extract_degenerate)
 
   for(auto u : u_pts)
   {
-    for(auto v: v_pts)
+    for(auto v : v_pts)
     {
       auto pt1 = nPatch_u.evaluate(u, v);
 
