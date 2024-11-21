@@ -1020,22 +1020,22 @@ public:
   /// \brief Returns the degree of the NURBS Patch on the second axis
   int getDegree_v() const { return m_knotvec_v.getDegree(); }
 
-  /// \brief Returns the order of the NURBS Patch on the first axis
+  /// \brief Returns the order (degree + 1) of the NURBS Patch on the first axis
   int getOrder_u() const { return m_knotvec_u.getDegree() + 1; }
 
   /// \brief Returns the order of the NURBS Patch on the second axis
   int getOrder_v() const { return m_knotvec_v.getDegree() + 1; }
 
-  /// \brief Return a copy of the knot vector on the first axis
+  /// \brief Return a copy of the KnotVector instance on the first axis
   KnotVectorType getKnots_u() const { return m_knotvec_u; }
 
-  /// \brief Return a copy of the knot vector on the first axis as an array
+  /// \brief Return an array of knot values on the first axis
   axom::Array<T> getKnotsArray_u() const { return m_knotvec_u.getArray(); }
 
-  /// \brief Return a copy of the knot vector on the second axis
+  /// \brief Return a copy of the KnotVector instance on the second axis
   KnotVectorType getKnots_v() const { return m_knotvec_v; }
 
-  /// \brief Return a copy of the knot vector on the second axis as an array
+  /// \brief Return an array of knot values on the second axis
   axom::Array<T> getKnotsArray_v() const { return m_knotvec_v.getArray(); }
 
   /// \brief Returns the number of control points in the NURBS Patch on the first axis
@@ -1312,7 +1312,7 @@ public:
   {
     SLIC_ASSERT(u >= m_knotvec_u[0] &&
                 u <= m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
-    
+
     using axom::utilities::lerp;
 
     bool isRationalPatch = isRational();
@@ -1374,7 +1374,7 @@ public:
   {
     SLIC_ASSERT(v >= m_knotvec_v[0] &&
                 v <= m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
-    
+
     using axom::utilities::lerp;
 
     bool isRationalPatch = isRational();
