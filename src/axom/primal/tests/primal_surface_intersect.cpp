@@ -199,6 +199,43 @@ TEST(primal_surface_inter, bilinear_intersect)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_surface_inter, difficult_garp_case)
+{
+  static const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+
+  SLIC_INFO("primal: testing bilinear patch intersection");
+
+  // Set control points
+  BezierPatchType bilinear_patch(1, 1);
+  bilinear_patch(0, 0) = PointType({-2.0, 1.0, 2.0});
+  bilinear_patch(1, 0) = PointType({-1.0, -1.0, 1.0});
+  bilinear_patch(1, 1) = PointType({1.0, -1.0, 1.0});
+  bilinear_patch(0, 1) = PointType({2.0, 1.0, 1.0});
+
+  VectorType ray_direction({-1.0, -2.0, 0.0});
+  // The first step of the GARP algorithm is to solve a quadratic equation a + bt + ct^2 = 0,
+  //   and this configuration of patch + ray direction is such that c = 0
+  
+  // Ray with single intersection
+  PointType ray_origin({0.0, 1.0, 1.25});
+  RayType ray(ray_origin, ray_direction);
+  checkIntersections(ray, bilinear_patch, {2./3.}, {0.25}, {sqrt(20. / 9.)}, eps, eps_test);
+
+  // Ray with no intersections
+  ray_origin = PointType({0.0, 1.0, 1.75});
+  ray = RayType(ray_origin, ray_direction);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_surface_inter, flat_bilinear_intersect)
 {
   static const int DIM = 3;
