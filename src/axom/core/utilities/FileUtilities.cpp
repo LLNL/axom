@@ -117,6 +117,22 @@ std::string prefixRelativePath(const std::string& path, const std::string& prefi
 }
 
 //-----------------------------------------------------------------------------
+std::string getParentPath(const std::string& path)
+{
+  char separator = '/';
+  std::size_t found = path.rfind(separator);
+
+  std::string parent;
+
+  if(found != std::string::npos)
+  {
+    parent = path.substr(0, found);
+  }
+
+  return parent;
+}
+
+//-----------------------------------------------------------------------------
 void getDirName(std::string& dir, const std::string& path)
 {
   char separator = '/';

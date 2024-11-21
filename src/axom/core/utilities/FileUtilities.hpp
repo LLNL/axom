@@ -79,6 +79,16 @@ int makeDirsForPath(const std::string& path);
 std::string prefixRelativePath(const std::string& path, const std::string& prefix);
 
 /*!
+ * \brief Get parent path name from a filesystem path.
+ *
+ * \param [in] path an absolute or relative filesystem path
+ *
+ * \return a directory path formed by removing the last part of the
+ *    input path
+ */
+std::string getParentPath(const std::string& path);
+
+/*!
  * \brief Get directory name from a path that contains a file name
  *
  * \param [out] dir  a directory path formed by removing the file name from

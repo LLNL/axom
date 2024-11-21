@@ -129,7 +129,7 @@ void Shaper::setFilePath(const std::string& filePath)
   }
   else
   {
-    utilities::filesystem::getDirName(m_prefixPath, filePath);
+    m_prefixPath = utilities::filesystem::getParentPath(filePath);
   }
 }
 
