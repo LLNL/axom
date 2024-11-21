@@ -42,177 +42,514 @@
 #include "opencascade/Geom_Surface.hxx"
 #include "opencascade/BRep_Tool.hxx"
 #include "opencascade/Geom2dConvert.hxx"
+#include "opencascade/TopExp.hxx"
+#include "opencascade/TopTools_IndexedMapOfShape.hxx"
+#include "opencascade/Geom2dAPI_ExtremaCurveCurve.hxx"
 
 #include <iostream>
 
-TopoDS_Shape processStepFile(const std::string& filename)
+class StepFileProcessor
 {
-  STEPControl_Reader reader;
-  IFSelect_ReturnStatus status = reader.ReadFile(filename.c_str());
-
-  if(status != IFSelect_RetDone)
+public:
+  enum class LoadStatus
   {
-    std::cerr << "Error: Cannot read the file." << std::endl;
-    return TopoDS_Shape();
+    UNINITIALIZED = 0,
+    SUCEESS = 1 << 0,
+    FAILED_TO_READ = 1 << 1,
+    FAILED_NO_SHAPES = 1 << 2,
+    FAILED_TO_CONVERT = 1 << 3,
+    FAILED = FAILED_TO_READ | FAILED_TO_CONVERT
+  };
+
+  static constexpr int CurveDim = 2;
+  using NCurve = axom::primal::NURBSCurve<double, CurveDim>;
+  using PointType = axom::primal::Point<double, CurveDim>;
+  using BBox = axom::primal::BoundingBox<double, CurveDim>;
+  using NCurveArray = axom::Array<NCurve>;
+  using PatchToTrimmingCurvesMap = std::map<int, NCurveArray>;
+
+private:
+  BBox faceBoundingBox(const TopoDS_Face& face) const
+  {
+    BBox bbox;
+
+    Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
+
+    // TODO: Do we need to handle closed and/or periodicity for U or V?
+    Standard_Real u1, u2, v1, v2;
+    surface->Bounds(u1, u2, v1, v2);
+    bbox.addPoint(PointType {u1, v1});
+    bbox.addPoint(PointType {u2, v2});
+
+    return bbox;
   }
 
-  Standard_Integer numRoots = reader.NbRootsForTransfer();
-  reader.TransferRoots();
-  TopoDS_Shape shape = reader.OneShape();
-
-  if(shape.IsNull())
+  /// Helper class in support of extracting necessary information from trimming curves
+  class CurveProcessor
   {
-    std::cerr << "Error: No shape found in the file." << std::endl;
-    return TopoDS_Shape();
-  }
+  public:
+    CurveProcessor(const Handle(Geom2d_BSplineCurve) & curve) : m_curve(curve)
+    { }
 
-  SLIC_INFO(axom::fmt::format("Successfully read the STEP file with {} roots",
-                              numRoots));
+    const Handle(Geom2d_BSplineCurve) & getCurve() const { return m_curve; }
 
-  return shape;
-}
+    // note: should only be called after extractKnots()
+    bool isClamped() const { return m_isClamped; }
 
-void printShapeStats(const TopoDS_Shape& shape)
-{
-  if(shape.IsNull())
-  {
-    std::cerr << "Error: The shape is invalid or empty." << std::endl;
-    return;
-  }
-
-  int numPatches = 0;
-  int numTrimmingCurves = 0;
-
-  for(TopExp_Explorer exp(shape, TopAbs_FACE); exp.More(); exp.Next())
-  {
-    numPatches++;
-  }
-
-  for(TopExp_Explorer exp(shape, TopAbs_EDGE); exp.More(); exp.Next())
-  {
-    numTrimmingCurves++;
-  }
-  std::map<int, int> patchTrimmingCurves;
-  int patchIndex = 0;
-
-  for(TopExp_Explorer faceExp(shape, TopAbs_FACE); faceExp.More();
-      faceExp.Next(), ++patchIndex)
-  {
-    int trimmingCurvesCount = 0;
-    for(TopExp_Explorer edgeExp(faceExp.Current(), TopAbs_EDGE); edgeExp.More();
-        edgeExp.Next())
+    void convertPeriodicToClamped()
     {
-      trimmingCurvesCount++;
+      if(!m_curve->IsPeriodic())
+      {
+        return;
+      }
+
+      // Copy original poles, knots, and multiplicities
+      axom::Array<PointType> orig_poles(m_curve->NbPoles());
+      axom::Array<double> orig_knots(m_curve->NbKnots());
+      axom::Array<int> orig_mults(m_curve->NbKnots());
+      int orig_knots_total = 0;
+      {
+        TColgp_Array1OfPnt2d originalPoles(1, m_curve->NbPoles());
+        m_curve->Poles(originalPoles);
+        for(int i = 1; i <= originalPoles.Length(); ++i)
+        {
+          orig_poles[i - 1] =
+            PointType {originalPoles(i).X(), originalPoles(i).Y()};
+        }
+
+        TColStd_Array1OfReal originalKnots(1, m_curve->NbKnots());
+        TColStd_Array1OfInteger originalMultiplicities(1, m_curve->NbKnots());
+        m_curve->Knots(originalKnots);
+        m_curve->Multiplicities(originalMultiplicities);
+        for(int i = 1; i <= originalKnots.Length(); ++i)
+        {
+          orig_knots[i - 1] = originalKnots(i);
+          orig_mults[i - 1] = originalMultiplicities(i);
+          orig_knots_total += originalMultiplicities(i);
+        }
+      }
+
+      // Get the value of the curve at the first and last knot
+      PointType orig_first, orig_last;
+      {
+        gp_Pnt2d firstKnotPoint = m_curve->Value(orig_knots.front());
+        orig_first = PointType {firstKnotPoint.X(), firstKnotPoint.Y()};
+
+        gp_Pnt2d lastKnotPoint = m_curve->Value(orig_knots.back());
+        orig_last = PointType {lastKnotPoint.X(), lastKnotPoint.Y()};
+      }
+
+      // Set the curve to not periodic
+      m_curve->SetNotPeriodic();
+
+      // Copy new poles, knots, and multiplicities
+      axom::Array<PointType> new_poles(m_curve->NbPoles());
+      axom::Array<double> new_knots(m_curve->NbKnots());
+      axom::Array<int> new_mults(m_curve->NbKnots());
+      int new_knots_total = 0;
+      {
+        TColgp_Array1OfPnt2d newPoles(1, m_curve->NbPoles());
+        m_curve->Poles(newPoles);
+        for(int i = 1; i <= newPoles.Length(); ++i)
+        {
+          new_poles[i - 1] = PointType {newPoles(i).X(), newPoles(i).Y()};
+        }
+
+        TColStd_Array1OfReal newKnots(1, m_curve->NbKnots());
+        TColStd_Array1OfInteger newMultiplicities(1, m_curve->NbKnots());
+        m_curve->Knots(newKnots);
+        m_curve->Multiplicities(newMultiplicities);
+        for(int i = 1; i <= newKnots.Length(); ++i)
+        {
+          new_knots[i - 1] = newKnots(i);
+          new_mults[i - 1] = newMultiplicities(i);
+          new_knots_total += newMultiplicities(i);
+        }
+      }
+
+      // Create axom arrays for updated knots, multiplicities, and poles
+      auto updated_poles = new_poles;
+      auto updated_knots = orig_knots;
+
+      axom::Array<int> updated_mults(new_mults.size() - 2);
+      for(int i = 0; i < updated_mults.size(); ++i)
+      {
+        updated_mults[i] = new_mults[i + 1];
+      }
+      updated_mults.front() += new_mults.front();
+      updated_mults.back() += new_mults.back();
+      SLIC_ASSERT(updated_mults.size() == updated_knots.size());
+
+      // Copy updated multiplicities, knots, and poles into OpenCascade arrays
+      TColStd_Array1OfReal updatedKnots(1, updated_knots.size());
+      TColStd_Array1OfInteger updatedMultiplicities(1, updated_mults.size());
+      TColgp_Array1OfPnt2d updatedPoles(1, updated_poles.size());
+
+      for(int i = 1; i <= updated_knots.size(); ++i)
+      {
+        updatedKnots.SetValue(i, updated_knots[i - 1]);
+      }
+
+      for(int i = 1; i <= updated_mults.size(); ++i)
+      {
+        updatedMultiplicities.SetValue(i, updated_mults[i - 1]);
+      }
+
+      for(int i = 1; i <= updated_poles.size(); ++i)
+      {
+        updatedPoles.SetValue(
+          i,
+          gp_Pnt2d(updated_poles[i - 1][0], updated_poles[i - 1][1]));
+      }
+
+      SLIC_INFO(
+        axom::fmt::format("\nOrig knots ({}): [{}]"
+                          "\nNew knots ({}): [{}]",
+                          orig_knots.size(),
+                          axom::fmt::join(orig_knots, ", "),
+                          new_knots.size(),
+                          axom::fmt::join(new_knots, ", ")));
+
+      SLIC_INFO(
+        axom::fmt::format("\nOrig multiplicities ({}): [{}]"
+                          "\nNew multiplicities ({}): [{}]"
+                          "\nUpdated multiplicities ({}): [{}]",
+                          orig_mults.size(),
+                          axom::fmt::join(orig_mults, ", "),
+                          new_mults.size(),
+                          axom::fmt::join(new_mults, ", "),
+                          updated_mults.size(),
+                          axom::fmt::join(updated_mults, ", ")));
+
+      SLIC_INFO(
+        axom::fmt::format("\nOrig poles ({}): [{}]"
+                          "\nNew poles ({}): [{}]"
+                          "\nUpdated poles ({}): [{}]",
+                          orig_poles.size(),
+                          axom::fmt::join(orig_poles, ", "),
+                          new_poles.size(),
+                          axom::fmt::join(new_poles, ", "),
+                          updated_poles.size(),
+                          axom::fmt::join(updated_poles, ", ")));
+
+      const int degree = m_curve->Degree();
+      SLIC_INFO(
+        axom::fmt::format("Degree (d): {}"
+                          "\nOrig curve total knots (m): {} and poles (n): {}"
+                          "\nNew curve total knots (m): {} and poles (n): {}",
+                          degree,
+                          orig_knots_total,
+                          orig_poles.size(),
+                          new_knots_total,
+                          new_poles.size()));
+
+      // Save the points as axom PointType
+      PointType new_first, new_last;
+      {
+        gp_Pnt2d firstKnotPoint = m_curve->Value(new_knots.front());
+        new_first = PointType {firstKnotPoint.X(), firstKnotPoint.Y()};
+
+        gp_Pnt2d lastKnotPoint = m_curve->Value(new_knots.back());
+        new_last = PointType {lastKnotPoint.X(), lastKnotPoint.Y()};
+      }
+
+      axom::slic::flushStreams();
+
+      // Copy updated weights into OpenCascade array
+      TColStd_Array1OfReal updatedWeights(1, updated_poles.size());
+      //if (m_curve->IsRational())
+      {
+        m_curve->Weights(updatedWeights);
+      }
+
+      // try
+      // {
+      Handle(Geom2d_BSplineCurve) clamped_curve =
+        new Geom2d_BSplineCurve(updatedPoles,
+                                updatedWeights,
+                                updatedKnots,
+                                updatedMultiplicities,
+                                degree);
+
+      // Save the points as axom PointType
+      PointType updated_first, updated_last;
+      {
+        gp_Pnt2d firstKnotPoint = clamped_curve->Value(updated_knots.front());
+        updated_first = PointType {firstKnotPoint.X(), firstKnotPoint.Y()};
+
+        gp_Pnt2d lastKnotPoint = clamped_curve->Value(updated_knots.back());
+        updated_last = PointType {lastKnotPoint.X(), lastKnotPoint.Y()};
+      }
+
+      SLIC_INFO(axom::fmt::format(
+        "Original, new, and updated curve at first knot: {} -> {} -> {}",
+        orig_first,
+        new_first,
+        updated_first));
+      SLIC_INFO(axom::fmt::format(
+        "Original, new, and updated curve at last knot: {} -> {} -> {}",
+        orig_last,
+        new_last,
+        updated_last));
+
+      // } catch (Standard_Failure& e) {
+      //     std::cerr << "***  Error: " << e.GetMessageString() << std::endl;
+      //     std::cout << "**** Error: " << e.GetMessageString() << std::endl;
+      //     throw std::runtime_error(e.GetMessageString());
+      // }
+
+      // Use Geom2dAPI_ExtremaCurveCurve to find the extrema between the original and clamped curves
+      {
+        using RangeType = axom::primal::BoundingBox<double, 1>;
+        using RangePoint = axom::primal::Point<double, 1>;
+
+        Geom2dAPI_ExtremaCurveCurve extrema(m_curve,
+                                            clamped_curve,
+                                            m_curve->FirstParameter(),
+                                            m_curve->LastParameter(),
+                                            clamped_curve->FirstParameter(),
+                                            clamped_curve->LastParameter());
+
+        RangeType range;
+        for(int i = 1; i <= extrema.NbExtrema(); ++i)
+        {
+          Standard_Real U1, U2;
+          extrema.Parameters(i, U1, U2);
+          gp_Pnt2d P1 = m_curve->Value(U1);
+          gp_Pnt2d P2 = clamped_curve->Value(U2);
+          SLIC_INFO(axom::fmt::format(
+            "Extrema {}: Distance = {}, Location on original curve = ({}, {}), "
+            "Location on clamped curve = ({}, {})",
+            i,
+            extrema.Distance(i),
+            P1.X(),
+            P1.Y(),
+            P2.X(),
+            P2.Y()));
+          range.addPoint(RangePoint {extrema.Distance(i)});
+        }
+
+        SLIC_INFO(axom::fmt::format(
+          "Distance between original and clamped curve using extrema: {}",
+          range));
+      }
+      // Swap clamped_curve and m_curve
+      m_curve = clamped_curve;
+      m_isClamped = true;
     }
-    patchTrimmingCurves[patchIndex] = trimmingCurvesCount;
+
+    // note: bounding boxes are used as debug checks that control points
+    // lie within the parameter space of the parent patch
+    axom::Array<PointType> extractControlPoints(const BBox& bbox,
+                                                const BBox& expandedBBox) const
+    {
+      axom::Array<PointType> controlPoints;
+      TColgp_Array1OfPnt2d paraPoints(1, m_curve->NbPoles());
+      m_curve->Poles(paraPoints);
+
+      for(Standard_Integer i = paraPoints.Lower(); i <= paraPoints.Upper(); ++i)
+      {
+        gp_Pnt2d paraPt = paraPoints(i);
+        auto pt = PointType {paraPt.X(), paraPt.Y()};
+        SLIC_DEBUG_IF(
+          !expandedBBox.contains(pt),
+          axom::fmt::format("Distance of {} to {} is {}",
+                            pt,
+                            bbox,
+                            sqrt(axom::primal::squared_distance(pt, bbox))));
+        controlPoints.emplace_back(pt);
+      }
+
+      AXOM_UNUSED_VAR(bbox);
+      AXOM_UNUSED_VAR(expandedBBox);
+
+      return controlPoints;
+    }
+
+    axom::Array<double> extractWeights() const
+    {
+      axom::Array<double> weights;
+      if(m_curve->IsRational())
+      {
+        TColStd_Array1OfReal curveWeights(1, m_curve->NbPoles());
+        m_curve->Weights(curveWeights);
+        weights.resize(curveWeights.Length());
+        for(int i = 1; i <= curveWeights.Length(); ++i)
+        {
+          weights[i - 1] = curveWeights(i);
+        }
+      }
+      return weights;
+    }
+
+    axom::Array<double> extractKnots()
+    {
+      axom::Array<double> knots;
+
+      TColStd_Array1OfReal curveKnots(1, m_curve->NbKnots());
+      m_curve->Knots(curveKnots);
+
+      TColStd_Array1OfInteger multiplicities(1, m_curve->NbKnots());
+      m_curve->Multiplicities(multiplicities);
+
+      SLIC_ASSERT(curveKnots.Length() == multiplicities.Length());
+
+      const int curveDegree = m_curve->Degree();
+      m_isClamped = (multiplicities.First() == curveDegree + 1) &&
+        (multiplicities.Last() == curveDegree + 1);
+
+      for(int i = 1; i <= curveKnots.Length(); ++i)
+      {
+        for(int j = 0; j < multiplicities(i); ++j)
+        {
+          knots.push_back(curveKnots(i));
+        }
+      }
+
+      return knots;
+    }
+
+  private:
+    Handle(Geom2d_BSplineCurve) m_curve;
+    bool m_isClamped {false};
+  };
+
+public:
+  StepFileProcessor() = delete;
+
+  StepFileProcessor(const std::string& filename, bool verboseOutput = false)
+    : m_verbose(verboseOutput)
+  {
+    m_shape = loadStepFile(filename);
   }
 
-  axom::fmt::memory_buffer out;
-  axom::fmt::format_to(std::back_inserter(out), "Shape statistics:\n");
-  axom::fmt::format_to(std::back_inserter(out),
-                       " - Number of patches: {}\n",
-                       numPatches);
-  axom::fmt::format_to(std::back_inserter(out),
-                       " - Number of trimming curves: {}\n",
-                       numTrimmingCurves);
-  axom::fmt::format_to(std::back_inserter(out), "---- \n");
-  axom::fmt::format_to(std::back_inserter(out),
-                       " - Trimming curves per patch:\n");
-  for(const auto& entry : patchTrimmingCurves)
+  void setVerbosity(bool verbose) { m_verbose = verbose; }
+
+  const TopoDS_Shape& getShape() const { return m_shape; }
+
+  bool isLoaded() const { return m_loadStatus == LoadStatus::SUCEESS; }
+
+  void printShapeStats() const
   {
+    if(m_shape.IsNull())
+    {
+      std::cerr << "Error: The shape is invalid or empty." << std::endl;
+      return;
+    }
+
+    int numPatches = 0;
+    int numTrimmingCurves = 0;
+
+    for(TopExp_Explorer exp(m_shape, TopAbs_FACE); exp.More(); exp.Next())
+    {
+      numPatches++;
+    }
+
+    for(TopExp_Explorer exp(m_shape, TopAbs_EDGE); exp.More(); exp.Next())
+    {
+      numTrimmingCurves++;
+    }
+    std::map<int, int> patchTrimmingCurves;
+    int patchIndex = 0;
+
+    for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
+        faceExp.Next(), ++patchIndex)
+    {
+      int trimmingCurvesCount = 0;
+      for(TopExp_Explorer edgeExp(faceExp.Current(), TopAbs_EDGE); edgeExp.More();
+          edgeExp.Next())
+      {
+        trimmingCurvesCount++;
+      }
+      patchTrimmingCurves[patchIndex] = trimmingCurvesCount;
+    }
+
+    axom::fmt::memory_buffer out;
+    axom::fmt::format_to(std::back_inserter(out), "Shape statistics:\n");
     axom::fmt::format_to(std::back_inserter(out),
-                         "\t Patch {}: {} trimming curves\n",
-                         entry.first,
-                         entry.second);
+                         " - Number of patches: {}\n",
+                         numPatches);
+    axom::fmt::format_to(std::back_inserter(out),
+                         " - Number of trimming curves: {}\n",
+                         numTrimmingCurves);
+    axom::fmt::format_to(std::back_inserter(out), "---- \n");
+    axom::fmt::format_to(std::back_inserter(out),
+                         " - Trimming curves per patch:\n");
+    for(const auto& entry : patchTrimmingCurves)
+    {
+      axom::fmt::format_to(std::back_inserter(out),
+                           "\t Patch {}: {} trimming curves\n",
+                           entry.first,
+                           entry.second);
+    }
+    SLIC_INFO(axom::fmt::to_string(out));
   }
-  SLIC_INFO(axom::fmt::to_string(out));
-}
 
-std::map<int, axom::Array<axom::primal::NURBSCurve<double, 2>>>
-convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
-{
-  using NCurve = axom::primal::NURBSCurve<double, 2>;
-  using PointType = axom::primal::Point<double, 2>;
-  using BBox = axom::primal::BoundingBox<double, 2>;
-
-  std::map<int, axom::Array<NCurve>> patchTrimmingCurves;
-  int patchIndex = 0;
-
-  std::map<GeomAbs_CurveType, std::string> curveTypeMap = {
-    {GeomAbs_Line, "Line"},
-    {GeomAbs_Circle, "Circle"},
-    {GeomAbs_Ellipse, "Ellipse"},
-    {GeomAbs_Hyperbola, "Hyperbola"},
-    {GeomAbs_Parabola, "Parabola"},
-    {GeomAbs_BezierCurve, "Bezier Curve"},
-    {GeomAbs_BSplineCurve, "BSpline Curve"},
-    {GeomAbs_OffsetCurve, "Offset Curve"},
-    {GeomAbs_OtherCurve, "Other Curve"}};
-
-  for(TopExp_Explorer faceExp(shape, TopAbs_FACE); faceExp.More();
-      faceExp.Next(), ++patchIndex)
+  PatchToTrimmingCurvesMap convertTrimmingCurvesToNurbs()
   {
-    // Get span of this patch in u and v directions
-    BBox patchBbox;
-    BBox expandedPatchBbox;
+    PatchToTrimmingCurvesMap patchTrimmingCurves;
+    int patchIndex = 0;
+
+    std::map<GeomAbs_CurveType, std::string> curveTypeMap = {
+      {GeomAbs_Line, "Line"},
+      {GeomAbs_Circle, "Circle"},
+      {GeomAbs_Ellipse, "Ellipse"},
+      {GeomAbs_Hyperbola, "Hyperbola"},
+      {GeomAbs_Parabola, "Parabola"},
+      {GeomAbs_BezierCurve, "Bezier Curve"},
+      {GeomAbs_BSplineCurve, "BSpline Curve"},
+      {GeomAbs_OffsetCurve, "Offset Curve"},
+      {GeomAbs_OtherCurve, "Other Curve"}};
+
+    for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
+        faceExp.Next(), ++patchIndex)
     {
       const TopoDS_Face& face = TopoDS::Face(faceExp.Current());
 
-      Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
-
-      Standard_Real u1, u2, v1, v2;
-      surface->Bounds(u1, u2, v1, v2);
-      patchBbox.addPoint(PointType {u1, v1});
-      patchBbox.addPoint(PointType {u2, v2});
-
-      expandedPatchBbox = patchBbox;
+      // Get span of this patch in u and v directions
+      BBox patchBbox = faceBoundingBox(face);
+      BBox expandedPatchBbox = patchBbox;
       expandedPatchBbox.scale(1. + 1e-3);
 
-      SLIC_INFO(
-        axom::fmt::format("[Patch {}]: U span [{}, {}], V span [{}, {}], BBox "
-                          "{}; expanded BBox {}",
-                          patchIndex,
-                          u1,
-                          u2,
-                          v1,
-                          v2,
-                          patchBbox,
-                          expandedPatchBbox));
-    }
+      SLIC_INFO_IF(
+        m_verbose,
+        axom::fmt::format(
+          "[Patch {}]: BBox in parametric space: {}; expanded BBox {}",
+          patchIndex,
+          patchBbox,
+          expandedPatchBbox));
 
-    axom::Array<axom::primal::NURBSCurve<double, 2>> curves;
-    int wireIndex = 0;
-    for(TopExp_Explorer wireExp(faceExp.Current(), TopAbs_WIRE); wireExp.More();
-        wireExp.Next(), ++wireIndex)
-    {
-      const TopoDS_Wire& wire = TopoDS::Wire(wireExp.Current());
-
-      int edgeIndex = 0;
-      for(TopExp_Explorer edgeExp(wire, TopAbs_EDGE); edgeExp.More();
-          edgeExp.Next(), ++edgeIndex)
+      NCurveArray curves;
+      int wireIndex = 0;
+      for(TopExp_Explorer wireExp(faceExp.Current(), TopAbs_WIRE); wireExp.More();
+          wireExp.Next(), ++wireIndex)
       {
-        const TopoDS_Edge& edge = TopoDS::Edge(edgeExp.Current());
+        const TopoDS_Wire& wire = TopoDS::Wire(wireExp.Current());
 
-        TopAbs_Orientation orientation = edge.Orientation();
-        const bool isReversed = orientation == TopAbs_REVERSED;
-
-        BRepAdaptor_Curve curveAdaptor(edge);
-        GeomAbs_CurveType curveType = curveAdaptor.GetType();
-
-        std::string curveTypeStr = curveTypeMap[curveType];
-        SLIC_INFO(
-          axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] Processing "
-                            "edge with curve type: {}",
-                            patchIndex,
-                            wireIndex,
-                            edgeIndex,
-                            curves.size(),
-                            curveTypeStr));
-
-        if(true)  // curveType == GeomAbs_BSplineCurve || curveType == GeomAbs_BezierCurve)
+        int edgeIndex = 0;
+        for(TopExp_Explorer edgeExp(wire, TopAbs_EDGE); edgeExp.More();
+            edgeExp.Next(), ++edgeIndex)
         {
-          Standard_Real first, last;
+          const TopoDS_Edge& edge = TopoDS::Edge(edgeExp.Current());
 
+          TopAbs_Orientation orientation = edge.Orientation();
+          const bool isReversed = orientation == TopAbs_REVERSED;
+
+          BRepAdaptor_Curve curveAdaptor(edge);
+          GeomAbs_CurveType curveType = curveAdaptor.GetType();
+
+          std::string curveTypeStr = curveTypeMap[curveType];
+          SLIC_INFO_IF(
+            m_verbose,
+            axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] Processing "
+                              "edge with curve type: {}",
+                              patchIndex,
+                              wireIndex,
+                              edgeIndex,
+                              curves.size(),
+                              curveTypeStr));
+
+          Standard_Real first, last;
           Handle(Geom2d_Curve) parametricCurve =
             BRep_Tool::CurveOnSurface(edge,
                                       TopoDS::Face(faceExp.Current()),
@@ -223,111 +560,54 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
 
           if(!parametricCurve.IsNull() && !bsplineCurve.IsNull())
           {
-            // Extract the control points in parametric space
-            TColgp_Array1OfPnt2d paraPoints(1, bsplineCurve->NbPoles());
-            bsplineCurve->Poles(paraPoints);
+            CurveProcessor curveProcessor(bsplineCurve);
+            const int curveDegree = bsplineCurve->Degree();
 
-            axom::Array<PointType> controlPoints;
-            for(Standard_Integer i = paraPoints.Lower(); i <= paraPoints.Upper();
-                ++i)
-            {
-              gp_Pnt2d paraPt = paraPoints(i);
-              auto pt = PointType {paraPt.X(), paraPt.Y()};
-              SLIC_DEBUG_IF(
-                !expandedPatchBbox.contains(pt),
-                axom::fmt::format(
-                  "Distance of {} to {} is {}",
-                  pt,
-                  patchBbox,
-                  sqrt(axom::primal::squared_distance(pt, patchBbox))));
-              controlPoints.emplace_back(pt);
-            }
+            curveProcessor.convertPeriodicToClamped();
+            SLIC_ASSERT(!curveProcessor.getCurve()->IsPeriodic());
 
-            SLIC_INFO(axom::fmt::format(
-              "[Patch {} Wire {} Edge {} Curve {}] Control Points: [{}]",
-              patchIndex,
-              wireIndex,
-              edgeIndex,
-              curves.size(),
-              axom::fmt::join(controlPoints, ", ")));
+            auto controlPoints =
+              curveProcessor.extractControlPoints(patchBbox, expandedPatchBbox);
+            SLIC_INFO_IF(
+              m_verbose,
+              axom::fmt::format(
+                "[Patch {} Wire {} Edge {} Curve {}] Control Points: [{}]",
+                patchIndex,
+                wireIndex,
+                edgeIndex,
+                curves.size(),
+                axom::fmt::join(controlPoints, ", ")));
 
-            // Extract the weights for the control points
-            // TODO: Use IsRational to check this; only extract when rational
-            TColStd_Array1OfReal weights(1, bsplineCurve->NbPoles());
-            bsplineCurve->Weights(weights);
+            // Check if the B-spline curve is rational
+            // and extract the weights for the control points
+            const bool isRational = bsplineCurve->IsRational();
+            axom::Array<double> weightsVector = curveProcessor.extractWeights();
 
-            bool isRational = false;
-            axom::Array<double> weightsVector(weights.Length());
-            for(int i = 1; i <= weights.Length(); ++i)
-            {
-              weightsVector[i - 1] = weights(i);
-              if(!isRational && i > 2 && weightsVector[i - 1] != weightsVector[0])
-              {
-                isRational = true;
-              }
-            }
-            SLIC_INFO(
+            SLIC_INFO_IF(
+              m_verbose && isRational,
               axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] Weights: "
-                                "[{}]; spline {} rational",
+                                "[{}]",
                                 patchIndex,
                                 wireIndex,
                                 edgeIndex,
                                 curves.size(),
-                                axom::fmt::join(weightsVector, ", "),
-                                isRational ? "is" : "is not"));
+                                axom::fmt::join(weightsVector, ", ")));
 
             // Extract the knots and their multiplicities
-            // TODO: Use IsPeriodic to check if the curve is closed
-            //   this will likely handle the cases that are not clamped.
-            TColStd_Array1OfReal knots(1, bsplineCurve->NbKnots());
-            bsplineCurve->Knots(knots);
+            axom::Array<double> knotVector = curveProcessor.extractKnots();
+            SLIC_INFO_IF(
+              m_verbose,
+              axom::fmt::format(
+                "[Patch {} Wire {} Edge {} Curve {}] Degree: {}, Knots: [{}]",
+                patchIndex,
+                wireIndex,
+                edgeIndex,
+                curves.size(),
+                curveDegree,
+                axom::fmt::join(knotVector, ", ")));
 
-            TColStd_Array1OfInteger multiplicities(1, bsplineCurve->NbKnots());
-            bsplineCurve->Multiplicities(multiplicities);
-
-            SLIC_ASSERT(knots.Length() == multiplicities.Length());
-            const int curveDegree = bsplineCurve->Degree();
-            const bool isClamped = (multiplicities.First() == curveDegree + 1) &&
-              (multiplicities.Last() == curveDegree + 1);
-
-            axom::Array<double> knotVector;
-            axom::Array<double> debug_multipliciesVector;  // delete me!
-            for(int i = 1; i <= knots.Length(); ++i)
-            {
-              debug_multipliciesVector.push_back(multiplicities(i));
-              for(int j = 0; j < multiplicities(i); ++j)
-              {
-                knotVector.push_back(knots(i));
-              }
-            }
-            SLIC_INFO(axom::fmt::format(
-              "[Patch {} Wire {} Edge {} Curve {}] Knots: [{}]",
-              patchIndex,
-              wireIndex,
-              edgeIndex,
-              curves.size(),
-              axom::fmt::join(knotVector, ", ")));
-
-            SLIC_INFO(axom::fmt::format(
-              "[Patch {} Wire {} Edge {} Curve {}] Degree: {}",
-              patchIndex,
-              wireIndex,
-              edgeIndex,
-              curves.size(),
-              curveDegree));
-
-            SLIC_INFO(axom::fmt::format(
-              "[Patch {} Wire {} Edge {} Curve {}] knot multiplicities: {}, "
-              "degree: {}, is clamped: {}",
-              patchIndex,
-              wireIndex,
-              edgeIndex,
-              curves.size(),
-              axom::fmt::join(debug_multipliciesVector, ", "),
-              curveDegree,
-              isClamped));
-
-            if(!isClamped)
+            // Note: This should never trigger since we've enforced this above
+            if(!curveProcessor.isClamped())
             {
               SLIC_WARNING(
                 axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] "
@@ -337,66 +617,91 @@ convertTrimmingCurvesToNurbs(const TopoDS_Shape& shape)
                                   wireIndex,
                                   edgeIndex,
                                   curves.size()));
-              SLIC_INFO("---");
+              SLIC_INFO_IF(m_verbose, "---");
               continue;
             }
             else
             {
-              SLIC_INFO("---");
+              SLIC_INFO_IF(m_verbose, "---");
             }
 
-            if(isRational)
+            // Generate a NURBSCurve and add it to the list
+            isRational ? curves.emplace_back(
+                           NCurve {controlPoints, weightsVector, knotVector})
+                       : curves.emplace_back(NCurve {controlPoints, knotVector});
+
+            // Ensure consistency of the curves w.r.t. the patch
+            if(isReversed)
             {
-              NCurve nurbs {controlPoints, weightsVector, knotVector};
-              if(isReversed)
-              {
-                nurbs.reverseOrientation();
-              }
-              SLIC_ASSERT(nurbs.isValidNURBS());
-              SLIC_ASSERT(nurbs.getDegree() == curveDegree);
-
-              curves.emplace_back(nurbs);
+              curves.back().reverseOrientation();
             }
-            else
-            {
-              NCurve nurbs {controlPoints, knotVector};
-              if(isReversed)
-              {
-                nurbs.reverseOrientation();
-              }
-              SLIC_ASSERT(nurbs.isValidNURBS());
-              SLIC_ASSERT(nurbs.getDegree() == curveDegree);
+            SLIC_ASSERT(curves.back().isValidNURBS());
+            SLIC_ASSERT(curves.back().getDegree() == curveDegree);
 
-              curves.emplace_back(nurbs);
-            }
             AXOM_UNUSED_VAR(curveDegree);
           }
         }
       }
+
+      patchTrimmingCurves[patchIndex] = curves;
     }
 
-    patchTrimmingCurves[patchIndex] = curves;
+    return patchTrimmingCurves;
   }
 
-  return patchTrimmingCurves;
-}
-
-TopoDS_Shape convertToNURBS(const TopoDS_Shape& shape)
-{
-  BRepBuilderAPI_NurbsConvert converter(shape);
-  TopoDS_Shape nurbsShape = converter.Shape();
-
-  if(nurbsShape.IsNull())
+private:
+  TopoDS_Shape loadStepFile(const std::string& filename)
   {
-    std::cerr << "Error: Conversion to NURBS failed." << std::endl;
-  }
-  else
-  {
-    std::cout << "Successfully converted to NURBS." << std::endl;
+    STEPControl_Reader reader;
+
+    IFSelect_ReturnStatus status = reader.ReadFile(filename.c_str());
+    if(status != IFSelect_RetDone)
+    {
+      m_loadStatus = LoadStatus::FAILED_TO_READ;
+      std::cerr << "Error: Cannot read the file." << std::endl;
+      return TopoDS_Shape();
+    }
+
+    Standard_Integer numRoots = reader.NbRootsForTransfer();
+    reader.TransferRoots();
+    TopoDS_Shape shape = reader.OneShape();
+    if(shape.IsNull())
+    {
+      m_loadStatus = LoadStatus::FAILED_NO_SHAPES;
+      std::cerr << "Error: No shape found in the file." << std::endl;
+      return TopoDS_Shape();
+    }
+
+    // convert to NURBS
+    // TODO: Check if this also converts trimming curves
+    BRepBuilderAPI_NurbsConvert converter(shape);
+    TopoDS_Shape nurbsShape = converter.Shape();
+
+    if(nurbsShape.IsNull())
+    {
+      m_loadStatus = LoadStatus::FAILED_TO_CONVERT;
+      std::cerr << "Error: Conversion to NURBS failed." << std::endl;
+      return TopoDS_Shape();
+    }
+
+    m_loadStatus = LoadStatus::SUCEESS;
+    SLIC_INFO_IF(
+      m_verbose,
+      axom::fmt::format("Successfully read the STEP file with {} roots",
+                        numRoots));
+
+    // Initialize m_faceMap with faces from nurbsShape
+    TopExp::MapShapes(nurbsShape, TopAbs_FACE, m_faceMap);
+
+    return nurbsShape;
   }
 
-  return nurbsShape;
-}
+private:
+  TopoDS_Shape m_shape;
+  bool m_verbose {false};
+  LoadStatus m_loadStatus {LoadStatus::UNINITIALIZED};
+  TopTools_IndexedMapOfShape m_faceMap;
+};
 
 std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve)
 {
@@ -414,7 +719,7 @@ std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve
 
   if(curve.isRational() || degree > 3)
   {
-    const int numSamples = 10;
+    const int numSamples = 100;
     const double tMin = knotVector[0];
     const double tMax = knotVector[knotVector.getNumKnots() - 1];
 
@@ -859,23 +1164,23 @@ int main(int argc, char** argv)
   std::string filename;
   app.add_option("-f,--file", filename, "Input file")->required();
 
+  bool verbosity {false};
+  app.add_flag("-v,--verbose", verbosity, "Enable verbose output");
+
   CLI11_PARSE(app, argc, argv);
 
   std::cout << "Processing file: " << filename << std::endl;
 
-  TopoDS_Shape shape = processStepFile(filename);
-  if(shape.IsNull())
+  StepFileProcessor stepProcessor(filename, verbosity);
+  if(!stepProcessor.isLoaded())
   {
     std::cerr << "Error: The shape is invalid or empty." << std::endl;
     return 1;
   }
 
-  // convert to NURBS and print some stats
-  auto nurbs_shape = convertToNURBS(shape);
-  printShapeStats(nurbs_shape);
+  stepProcessor.printShapeStats();
 
-  const auto nurbsCurvesMap = convertTrimmingCurvesToNurbs(nurbs_shape);
-
+  const auto nurbsCurvesMap = stepProcessor.convertTrimmingCurvesToNurbs();
   for(const auto& entry : nurbsCurvesMap)
   {
     std::cout << "Patch " << entry.first << " has " << entry.second.size()
@@ -885,6 +1190,7 @@ int main(int argc, char** argv)
   std::string cwd = axom::utilities::filesystem::getCWD();
   std::cout << "Current working directory: " << cwd << std::endl;
 
+  auto& nurbs_shape = stepProcessor.getShape();
   for(const auto& entry : nurbsCurvesMap)
   {
     generateSVGForPatch(nurbs_shape, entry.first, nurbsCurvesMap);
