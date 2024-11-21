@@ -17,6 +17,8 @@
 #include "axom/primal/geometry/NURBSPatch.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
+#include "axom/core/numerics/matvecops.hpp"
+
 namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
@@ -609,19 +611,25 @@ TEST(primal_nurbspatch, surface_evaluate)
 
   // Loop over the parameter space of the surface,
   //  and check that `evalaute` matches the results of the two isocurve methods
-  for(double u = 0; u <= 1; u += 0.1)
+
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
+
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1; v += 0.1)
+    for(auto v : v_pts)
     {
       auto pt = nPatch.evaluate(u, v);
       auto pt_u = nPatch.isocurve_u(u).evaluate(v);
       auto pt_v = nPatch.isocurve_v(v).evaluate(u);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(pt[i], pt_u[i], 1e-10);
-        EXPECT_NEAR(pt[i], pt_v[i], 1e-10);
-        EXPECT_NEAR(pt_u[i], pt_v[i], 1e-10);
+        EXPECT_NEAR(pt[N], pt_u[N], 1e-10);
+        EXPECT_NEAR(pt[N], pt_v[N], 1e-10);
+        EXPECT_NEAR(pt_u[N], pt_v[N], 1e-10);
       }
     }
   }
@@ -664,9 +672,14 @@ TEST(primal_nurbspatch, first_second_derivatives)
 
   // Loop over the parameter space of the surface,
   //  and check that `evalauteDerivatives` matches the results of the two isocurve methods
-  for(double u = 0; u <= 1; u += 0.1)
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
+
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1; v += 0.1)
+    for(auto v : v_pts)
     {
       axom::Array<VectorType, 2> ders;
       nPatch.evaluateDerivatives(u, v, 2, ders);
@@ -677,13 +690,13 @@ TEST(primal_nurbspatch, first_second_derivatives)
       auto pt_uu = nPatch.isocurve_v(v).dtdt(u);
       auto pt_vv = nPatch.isocurve_u(u).dtdt(v);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(pt[i], ders[0][0][i], 1e-10);
-        EXPECT_NEAR(pt_u[i], ders[1][0][i], 1e-10);
-        EXPECT_NEAR(pt_v[i], ders[0][1][i], 1e-10);
-        EXPECT_NEAR(pt_uu[i], ders[2][0][i], 1e-10);
-        EXPECT_NEAR(pt_vv[i], ders[0][2][i], 1e-10);
+        EXPECT_NEAR(pt[N], ders[0][0][N], 1e-10);
+        EXPECT_NEAR(pt_u[N], ders[1][0][N], 1e-10);
+        EXPECT_NEAR(pt_v[N], ders[0][1][N], 1e-10);
+        EXPECT_NEAR(pt_uu[N], ders[2][0][N], 1e-10);
+        EXPECT_NEAR(pt_vv[N], ders[0][2][N], 1e-10);
       }
     }
   }
@@ -741,16 +754,21 @@ TEST(primal_nurbspatch, knot_insertion)
   nPatchExtraKnots.insertKnot_v(0.6, 2);
   nPatchExtraKnots.insertKnot_v(0.8, 3);
 
-  for(double u = 0; u <= 1; u += 0.1)
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
+
+  for(auto u: u_pts)
   {
-    for(double v = 0; v <= 1; v += 0.1)
+    for(auto v : v_pts)
     {
       auto pt1 = nPatch.evaluate(u, v);
       auto pt2 = nPatchExtraKnots.evaluate(u, v);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+        EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
       }
     }
   }
@@ -792,32 +810,36 @@ TEST(primal_nurbspatch, patch_split)
 
   NURBSPatchType subpatch1, subpatch2;
 
-  double split_vals[3] = {0.3, 0.5, 0.7};
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
 
+  double split_vals[3] = {0.3, 0.5, 0.7};
   for(double val : split_vals)
   {
     nPatch.split_u(val, subpatch1, subpatch2);
 
-    for(double u = 0; u <= 1; u += 0.1)
+    for(auto u : u_pts)
     {
-      for(double v = 0; v <= 1; v += 0.1)
+      for(auto v : v_pts)
       {
         auto pt1 = nPatch.evaluate(u, v);
 
         if(u <= val)
         {
           auto pt2 = subpatch1.evaluate(u, v);
-          for(int i = 0; i < DIM; ++i)
+          for(int N = 0; N < DIM; ++N)
           {
-            EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+            EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
           }
         }
         else
         {
           auto pt2 = subpatch2.evaluate(u, v);
-          for(int i = 0; i < DIM; ++i)
+          for(int N = 0; N < DIM; ++N)
           {
-            EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+            EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
           }
         }
       }
@@ -825,26 +847,26 @@ TEST(primal_nurbspatch, patch_split)
 
     nPatch.split_v(val, subpatch1, subpatch2);
 
-    for(double u = 0; u <= 1; u += 0.1)
+    for(auto u : u_pts)
     {
-      for(double v = 0; v <= 1; v += 0.1)
+      for(auto v : v_pts)
       {
         auto pt1 = nPatch.evaluate(u, v);
 
         if(v <= val)
         {
           auto pt2 = subpatch1.evaluate(u, v);
-          for(int i = 0; i < DIM; ++i)
+          for(int N = 0; N < DIM; ++N)
           {
-            EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+            EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
           }
         }
         else
         {
           auto pt2 = subpatch2.evaluate(u, v);
-          for(int i = 0; i < DIM; ++i)
+          for(int N = 0; N < DIM; ++N)
           {
-            EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+            EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
           }
         }
       }
@@ -900,6 +922,9 @@ TEST(primal_nurbspatch, bezier_extraction)
 
   EXPECT_EQ(bezier_list.size(), 16);
 
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+
   double u_ranges[5] = {0, 0.33, 0.66, 0.77, 1};
   double v_ranges[5] = {0, 0.25, 0.5, 0.75, 1};
 
@@ -911,18 +936,21 @@ TEST(primal_nurbspatch, bezier_extraction)
       auto& bPatch = bezier_list[i * 4 + j];
 
       // Loop over the parameter space of each Bezier patch
-      for(double u = u_ranges[i]; u < u_ranges[i + 1]; u += 0.05)
+      axom::numerics::linspace(u_ranges[i], u_ranges[i + 1], u_pts, npts);
+      axom::numerics::linspace(v_ranges[j], v_ranges[j + 1], v_pts, npts);
+
+      for(auto u : u_pts)
       {
-        for(double v = v_ranges[j]; v < v_ranges[j + 1]; v += 0.05)
+        for(auto v : v_pts)
         {
           auto pt1 = nPatch.evaluate(u, v);
           auto pt2 =
             bPatch.evaluate((u - u_ranges[i]) / (u_ranges[i + 1] - u_ranges[i]),
                             (v - v_ranges[j]) / (v_ranges[j + 1] - v_ranges[j]));
 
-          for(int k = 0; k < DIM; ++k)
+          for(int N = 0; N < DIM; ++N)
           {
-            EXPECT_NEAR(pt1[k], pt2[k], 1e-10);
+            EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
           }
         }
       }
@@ -951,19 +979,23 @@ TEST(primal_nurbspatch, evaluation_degenerate)
   NURBSCurveType nCurve(data, degree + 1, degree);
   NURBSPatchType nPatch(data, degree + 1, 1, degree, 0);
 
-  for(double t = 0; t <= 1; t += 0.1)
+  constexpr int npts = 11;
+  double t_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, t_pts, npts);
+
+  for(auto t : t_pts)
   {
-    for(int i = 0; i < DIM; ++i)
+    for(int N = 0; N < DIM; ++N)
     {
-      EXPECT_NEAR(nCurve.evaluate(t)[i], nPatch.evaluate(t, 0)[i], 1e-10);
-      EXPECT_NEAR(nCurve.evaluate(t)[i], nPatch.evaluate(t, 0.5)[i], 1e-10);
-      EXPECT_NEAR(nCurve.evaluate(t)[i], nPatch.evaluate(t, 1.0)[i], 1e-10);
+      EXPECT_NEAR(nCurve.evaluate(t)[N], nPatch.evaluate(t, 0)[N], 1e-10);
+      EXPECT_NEAR(nCurve.evaluate(t)[N], nPatch.evaluate(t, 0.5)[N], 1e-10);
+      EXPECT_NEAR(nCurve.evaluate(t)[N], nPatch.evaluate(t, 1.0)[N], 1e-10);
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch, split_degenerate)
+TEST(primal_nurbspatch, extract_degenerate)
 {
   const int DIM = 3;
   using CoordType = double;
@@ -998,34 +1030,39 @@ TEST(primal_nurbspatch, split_degenerate)
   EXPECT_EQ(bezier_list_u.size(),
             npts_u * nPatch_u.getKnots_v().getNumKnotSpans());
 
-  for(double u = 0; u <= 1; u += 0.1)
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
+
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1; v += 0.1)
+    for(auto v: v_pts)
     {
       auto pt1 = nPatch_u.evaluate(u, v);
 
       if(u < 1.0 / 3.0)
       {
         auto pt2 = bezier_list_u[0].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(u < 2.0 / 3.0)
       {
         auto pt2 = bezier_list_u[1].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else
       {
         auto pt2 = bezier_list_u[2].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
     }
@@ -1038,34 +1075,34 @@ TEST(primal_nurbspatch, split_degenerate)
   EXPECT_EQ(bezier_list_v.size(),
             npts_v * nPatch_v.getKnots_u().getNumKnotSpans());
 
-  for(double u = 0; u <= 1; u += 0.1)
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1; v += 0.1)
+    for(auto v : v_pts)
     {
       auto pt1 = nPatch_v.evaluate(u, v);
 
       if(v < 1.0 / 3.0)
       {
         auto pt2 = bezier_list_v[0].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(v < 2.0 / 3.0)
       {
         auto pt2 = bezier_list_v[1].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else
       {
         auto pt2 = bezier_list_v[2].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
     }
@@ -1077,82 +1114,82 @@ TEST(primal_nurbspatch, split_degenerate)
 
   EXPECT_EQ(bezier_list_uv.size(), npts_u * npts_v);
 
-  for(double u = 0; u <= 1; u += 0.1)
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1; v += 0.1)
+    for(auto v : v_pts)
     {
       auto pt1 = nPatch_uv.evaluate(u, v);
 
       if(u < 1.0 / 3.0 && v < 1.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[0].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(u < 1.0 / 3.0 && 1.0 / 3.0 < v && v < 2.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[1].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(u < 1.0 / 3.0 && v > 2.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[2].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(1.0 / 3.0 < u && u < 2.0 / 3.0 && v < 1.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[3].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(1.0 / 3.0 < u && u < 2.0 / 3.0 && 1.0 / 3.0 < v && v < 2.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[4].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(1.0 / 3.0 < u && u < 2.0 / 3.0 && v > 2.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[5].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(u > 2.0 / 3.0 && v < 1.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[6].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else if(u > 2.0 / 3.0 && 1.0 / 3.0 < v && v < 2.0 / 3.0)
       {
         auto pt2 = bezier_list_uv[7].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
       else
       {
         auto pt2 = bezier_list_uv[8].evaluate(u, v);
-        for(int i = 0; i < DIM; ++i)
+        for(int N = 0; N < DIM; ++N)
         {
-          EXPECT_NEAR(pt1[i], pt2[i], 1e-10);
+          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
         }
       }
     }
@@ -1194,64 +1231,70 @@ TEST(primal_nurbspatch, reverse_orientation)
 
   // Reverse along the u-axis
   reversed.reverseOrientation(0);
-  for(double u = 0; u <= 1.0; u += 0.1)
+
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
+
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1.0; v += 0.1)
+    for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(1 - u, v);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+        EXPECT_NEAR(o_pt[N], r_pt[N], 1e-10);
       }
     }
   }
 
   // Reverse along the u-axis again, should return to original
   reversed.reverseOrientation(0);
-  for(double u = 0; u <= 1.0; u += 0.1)
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1.0; v += 0.1)
+    for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(u, v);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+        EXPECT_NEAR(o_pt[N], r_pt[N], 1e-10);
       }
     }
   }
 
   // Reverse along the v-axis
   reversed.reverseOrientation(1);
-  for(double u = 0; u <= 1.0; u += 0.1)
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1.0; v += 0.1)
+    for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(u, 1 - v);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+        EXPECT_NEAR(o_pt[N], r_pt[N], 1e-10);
       }
     }
   }
 
   // Reverse along the u-axis again
   reversed.reverseOrientation(0);
-  for(double u = 0; u <= 1.0; u += 0.1)
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1.0; v += 0.1)
+    for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType r_pt = reversed.evaluate(1 - u, 1 - v);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(o_pt[i], r_pt[i], 1e-10);
+        EXPECT_NEAR(o_pt[N], r_pt[N], 1e-10);
       }
     }
   }
@@ -1293,16 +1336,21 @@ TEST(primal_nurbspatch, swap_axes)
   // Swap the u and v axes
   swapped.swapAxes();
 
-  for(double u = 0; u <= 1.0; u += 0.1)
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
+
+  for(auto u : u_pts)
   {
-    for(double v = 0; v <= 1.0; v += 0.1)
+    for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
       PointType s_pt = swapped.evaluate(v, u);
 
-      for(int i = 0; i < DIM; ++i)
+      for(int N = 0; N < DIM; ++N)
       {
-        EXPECT_NEAR(o_pt[i], s_pt[i], 1e-10);
+        EXPECT_NEAR(o_pt[N], s_pt[N], 1e-10);
       }
     }
   }
