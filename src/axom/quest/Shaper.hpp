@@ -102,6 +102,14 @@ public:
 
   //@}
 
+  /*!
+    @brief Set path of shape input file.
+
+    The path is used to resolve relative paths that may have been
+    specified in the file.
+  */
+  void setFilePath(const std::string& filePath);
+
   mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh.get(); }
 
   bool isVerbose() const { return m_verboseOutput; }
@@ -200,6 +208,9 @@ protected:
 
   const klee::ShapeSet& m_shapeSet;
 
+  //! \brief Prefix path for shape file names with relative path.
+  std::string m_prefixPath;
+
 #if defined(AXOM_USE_MFEM)
   // For mesh represented as MFEMSidreDataCollection
   sidre::MFEMSidreDataCollection* m_dc {nullptr};
@@ -217,6 +228,7 @@ protected:
   conduit::Node m_bpNodeInt;
 #endif
 
+  //! @brief Number of cells in computational mesh (m_dc or m_bpGrp).
   axom::IndexType m_cellCount;
 
   std::shared_ptr<mint::Mesh> m_surfaceMesh;

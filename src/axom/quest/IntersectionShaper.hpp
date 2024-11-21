@@ -665,6 +665,10 @@ public:
                          int shape_count)
 
   {
+    // No need for shape, because it has been converted into m_tets or m_octs,
+    // which is what the parameter shapes is.
+    AXOM_UNUSED_VAR(shape);
+
     const int host_allocator =
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
     const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
@@ -704,6 +708,8 @@ public:
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
 
     // Does m_hex_bbs have to be a member?  I's only used here.  BTNG.
+    // Or if it's saved, it needs not be recomputed if the computational
+    // mesh doesn't change.
     m_hex_bbs =
       axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
     axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
@@ -1319,8 +1325,13 @@ public:
   //@}
 
 public:
-  // Prepares the shaping query, based on the policy member set
-  // (default is sequential)
+  /*!
+    \brief Prepares the shaping query, based on the policy member set
+    (default is sequential)
+
+    \internal This method populates m_tets or m_octs from the given \c
+    shape.  These arrays are used in runShapeQuery.
+  */
   void prepareShapeQuery(klee::Dimensions shapeDimension,
                          const klee::Shape& shape) override
   {
@@ -2428,8 +2439,12 @@ private:
   double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
   std::string m_free_mat_name;
 
+  //! @brief Volumes of cells in the computational mesh.
   axom::Array<double> m_hex_volumes;
+
+  //! @brief Overlap volumes of cells in the computational mesh and the last shape.
   axom::Array<double> m_overlap_volumes;
+
   double m_vertexWeldThreshold {1.e-10};
   // Guard these to prevent warnings.
   int m_octcount {0};

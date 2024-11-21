@@ -54,11 +54,11 @@ public:
     @param parentGroup Group under which to put the discrete mesh
       and support blueprint-tets shapes.
       If null, don't use sidre and don't support blueprint-tets.
-    @param prefixPath Path prefix for shape files specified
+    @param prefixPath Path prefix for shape from a file specified
       with a relative path.
 
     Refinement type is set to DiscreteShape::RefinementUniformSegments
-    and percent erro is set to 0.  See setPercentError() and
+    and percent error is set to 0.  See setPercentError() and
     setRefinementType().
   */
   DiscreteShape(const axom::klee::Shape& shape,
@@ -70,10 +70,8 @@ public:
   //@{
   //! @name Functions to get and set shaping parameters
 
-  void setPrefixPath(const std::string& prefixPath)
-  {
-    m_prefixPath = prefixPath;
-  }
+  //! @brief Set prefix for shape files specified as relative path.
+  void setPrefixPath(const std::string& prefixPath);
 
   /*!
     @brief Set the refinement type.

@@ -43,6 +43,8 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* d
   m_comm = m_dc->GetComm();
   #endif
   m_cellCount = m_dc->GetMesh()->GetNE();
+
+  setFilePath(shapeSet.getPath());
 }
 #endif
 
@@ -60,6 +62,7 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
 {
   SLIC_ASSERT(m_bpTopo != sidre::InvalidName);
 
+  // This may take too long if there are repeated construction.
   m_bpGrp->createNativeLayout(m_bpNodeInt);
 
 #if defined(AXOM_DEBUG)
@@ -70,6 +73,8 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
 
   m_cellCount = conduit::blueprint::mesh::topology::length(
     m_bpNodeInt.fetch_existing("topologies").fetch_existing(m_bpTopo));
+
+  setFilePath(shapeSet.getPath());
 }
 
 Shaper::Shaper(const klee::ShapeSet& shapeSet,
@@ -108,10 +113,24 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
 
   m_cellCount = conduit::blueprint::mesh::topology::length(
     bpNode->fetch_existing("topologies").fetch_existing(m_bpTopo));
+
+  setFilePath(shapeSet.getPath());
 }
 
 Shaper::~Shaper()
 {
+}
+
+void Shaper::setFilePath(const std::string& filePath)
+{
+  if (filePath.empty())
+  {
+    m_prefixPath.clear();
+  }
+  else
+  {
+    utilities::filesystem::getDirName(m_prefixPath, filePath);
+  }
 }
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)
@@ -197,7 +216,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
                                     shape.getGeometry().getFormat()));
 
   // Code for discretizing shapes has been factored into DiscreteShape class.
-  DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_shapeSet.getPath());
+  DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_prefixPath);
   discreteShape.setVertexWeldThreshold(m_vertexWeldThreshold);
   discreteShape.setRefinementType(m_refinementType);
   if(percentError > 0)

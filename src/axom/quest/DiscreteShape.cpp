@@ -751,20 +751,21 @@ void DiscreteShape::setPercentError(double percent)
     clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
 }
 
+void DiscreteShape::setPrefixPath(const std::string& prefixPath)
+{
+  SLIC_ERROR_IF(!prefixPath.empty() && !axom::utilities::filesystem::pathExists(prefixPath),
+                "Path '" + prefixPath + "' does not exist.");
+  m_prefixPath = prefixPath;
+}
+
 std::string DiscreteShape::resolvePath() const
 {
   const std::string& geomPath = m_shape.getGeometry().getPath();
-  if(geomPath[0] == '/')
+  if(geomPath[0] == '/' || m_prefixPath.empty())
   {
     return geomPath;
   }
-  if(m_prefixPath.empty())
-  {
-    throw std::logic_error("Relative geometry path requires a parent path.");
-  }
-  std::string dir;
-  utilities::filesystem::getDirName(dir, m_prefixPath);
-  return utilities::filesystem::joinPath(dir, geomPath);
+  return utilities::filesystem::joinPath(m_prefixPath, geomPath);
 }
 
 void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)
