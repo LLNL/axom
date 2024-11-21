@@ -48,8 +48,11 @@ std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& nPatch);
  *
  * A NURBS patch has degrees `p` and `q` with knot vectors of length 
  * `r+1` and `s+1` respectively. There is a control net of (n + 1) * (m + 1) points
- * with r+1 = n+p+2 and s+1 = m+q+2. Optionally has weights for rational patches.
- * The curve must be c0 continuous and is parametrized from u=0 to u=1 and v=0 to v=1.
+ * with r+1 = n+p+2 and s+1 = m+q+2. 
+ * Optionally has an equal number of weights for rational patches.
+ * 
+ * The patch must be open (clamped on all boundaries) 
+ *   and continuous (unless p = 0 or q = 0)
  * 
  * Nonrational NURBS patches are identified by an empty weights array.
  */
@@ -893,6 +896,7 @@ public:
    * 
    * \warning This method does NOT maintain the patch shape,
    *  i.e. is not performing knot insertion/removal.
+   *  Will replace existing knot vectots with uniform ones.
    */
   void setNumControlPoints(int npts_u, int npts_v)
   {
@@ -1147,14 +1151,14 @@ public:
     return !(lhs == rhs);
   }
 
-  /// Returns a copy of the Bezier patch's control points
+  /// Returns a copy of the NURBS patch's control points
   CoordsMat getControlPoints() const { return m_controlPoints; }
 
-  /// Returns a copy of the Bezier patch's weights
+  /// Returns a copy of the NURBS patch's weights
   WeightsMat getWeights() const { return m_weights; }
 
   /*!
-   * \brief Reverses the order of one direction of the Bezier patch's control points and weights
+   * \brief Reverses the order of one direction of the NURBS patch's control points and weights
    *
    * \param [in] axis orientation of patch. 0 to reverse in u, 1 for reverse in v
    */
@@ -1274,14 +1278,13 @@ public:
   }
 
   /*!
-   * \brief Evaluates a slice Bezier patch for a fixed parameter value of \a u or \a v
+   * \brief Returns a NURBS patch isocurve for a fixed parameter value of \a u or \a v
    *
-   * \param [in] u parameter value at which to evaluate the first axis
-   * \param [in] v parameter value at which to evaluate the second axis
+   * \param [in] uv parameter value at which to construct the isocurve
    * \param [in] axis orientation of curve. 0 for fixed u, 1 for fixed v
-   * \return p the value of the Bezier patch at (u, v)
+   * \return c The isocurve C(v) = S(u, v) for fixed u or C(u) = S(u, v) for fixed v
    *
-   * \note We typically evaluate the patch at \a u or \a v between 0 and 1
+   * \pre Requires \a uv be in the span of the relevant knot vector
    */
   NURBSCurveType isocurve(T uv, int axis) const
   {
@@ -1302,9 +1305,14 @@ public:
    *
    * \param [in] u Parameter value fixed in the isocurve
    * \return c The isocurve C(v) = S(u, v) for fixed u
+   * 
+   * \pre Requires \a u be in the span of the knot vector
    */
   NURBSCurveType isocurve_u(T u) const
   {
+    SLIC_ASSERT(u >= m_knotvec_u[0] &&
+                u <= m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
+    
     using axom::utilities::lerp;
 
     bool isRationalPatch = isRational();
@@ -1359,9 +1367,14 @@ public:
    *
    * \param [in] v Parameter value fixed in the isocurve
    * \return c The isocurve C(u) = S(u, v) for fixed v
+   * 
+   * \pre Requires \a v be in the span of the knot vector
    */
   NURBSCurveType isocurve_v(T v) const
   {
+    SLIC_ASSERT(v >= m_knotvec_v[0] &&
+                v <= m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+    
     using axom::utilities::lerp;
 
     bool isRationalPatch = isRational();
@@ -2623,7 +2636,7 @@ public:
   }
 
   /*!
-     * \brief Simple formatted print of a Bezier Patch instance
+     * \brief Simple formatted print of a NURBS Patch instance
      *
      * \param os The output stream to write to
      * \return A reference to the modified ostream
@@ -2730,7 +2743,7 @@ private:
 };
 
 //------------------------------------------------------------------------------
-/// Free functions related to BezierPatch
+/// Free functions related to NURBSPatch
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& nPatch)
