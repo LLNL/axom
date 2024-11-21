@@ -66,6 +66,18 @@ std::string joinPath(const std::string& fileDir,
  */
 int makeDirsForPath(const std::string& path);
 
+
+/*!
+ * \brief Add a prefix to a path if it is relative.
+ *
+ * \param [in] path string representing an absolute or relative path
+ * \param [in] prefix string representing a directory path
+ *
+ * \return \c prefix + \c path (with delimiter) if the path is
+ * relative or \c prefix is empty, or just \c path otherwise.
+ */
+std::string prefixRelativePath(const std::string& path, const std::string& prefix);
+
 /*!
  * \brief Get directory name from a path that contains a file name
  *

@@ -107,6 +107,16 @@ int makeDirsForPath(const std::string& path)
 }
 
 //-----------------------------------------------------------------------------
+std::string prefixRelativePath(const std::string& path, const std::string& prefix)
+{
+  if(path[0] == '/' || prefix.empty())
+  {
+    return path;
+  }
+  return utilities::filesystem::joinPath(prefix, path);
+}
+
+//-----------------------------------------------------------------------------
 void getDirName(std::string& dir, const std::string& path)
 {
   char separator = '/';

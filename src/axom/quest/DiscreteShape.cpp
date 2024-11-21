@@ -157,7 +157,8 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   // We handled all the non-file formats.  The rest are file formats.
   const std::string& file_format = geometryFormat;
 
-  std::string shapePath = resolvePath();
+  std::string shapePath = axom::utilities::filesystem::prefixRelativePath(
+    m_shape.getGeometry().getPath(), m_prefixPath);
   SLIC_INFO("Reading file: " << shapePath << "...");
 
   // Initialize revolved volume.
@@ -756,16 +757,6 @@ void DiscreteShape::setPrefixPath(const std::string& prefixPath)
   SLIC_ERROR_IF(!prefixPath.empty() && !axom::utilities::filesystem::pathExists(prefixPath),
                 "Path '" + prefixPath + "' does not exist.");
   m_prefixPath = prefixPath;
-}
-
-std::string DiscreteShape::resolvePath() const
-{
-  const std::string& geomPath = m_shape.getGeometry().getPath();
-  if(geomPath[0] == '/' || m_prefixPath.empty())
-  {
-    return geomPath;
-  }
-  return utilities::filesystem::joinPath(m_prefixPath, geomPath);
 }
 
 void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)

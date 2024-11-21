@@ -167,9 +167,6 @@ private:
   void applyTransforms();
   numerics::Matrix<double> getTransforms() const;
 
-  //! @brief Returns the full geometry path.
-  std::string resolvePath() const;
-
   /*!
     @brief Set the parent group for this object to store data.
   */
