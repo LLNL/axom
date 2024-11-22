@@ -1739,6 +1739,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
 
   det = std::sqrt(det);
   double u1, u2;
+
   if(c == 0)
   {
     // If c == 0, there can only be one intersection
@@ -1749,8 +1750,19 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     }
     else // If b == 0 too, then the line is either coplanar with all v isocurves     
     {    //  or coplanar with the entire patch
-      
+      if( Vector3::dot_product(q00, qn) != 0 )
+      {
+        return false;  // Line does not intersect with patch
+      }      
+      else
+      {
+        // This case is exceptionally rare for well-posed models, so we 
+        //  tackle it relatively inefficiently
 
+        // Project the 3D shapes onto the plane of the patch
+        
+        
+      }
     }
   }
   else
