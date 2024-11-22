@@ -19,10 +19,13 @@
   #include "axom/slic.hpp"
   #include "axom/slam.hpp"
   #include "axom/primal.hpp"
-  #include "axom/mint.hpp"
-  #include "axom/spin.hpp"
+  #include "axom/sidre/core/Group.hpp"
+  #include "axom/sidre/core/View.hpp"
+  #include "axom/mint/mesh/UnstructuredMesh.hpp"
+  #include "axom/mint/utils/vtk_utils.hpp"
   #include "axom/klee.hpp"
   #include "axom/quest/Shaper.hpp"
+  #include "axom/quest/Discretize.hpp"
   #include "axom/spin/BVH.hpp"
   #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
   #include "axom/quest/interface/internal/QuestHelpers.hpp"
@@ -33,6 +36,12 @@
   #endif
 
   #include "axom/fmt.hpp"
+
+  #if defined(AXOM_USE_CONDUIT)
+    #include "conduit_node.hpp"
+    #include "conduit_blueprint_mesh.hpp"
+    #include "conduit_blueprint_mcarray.hpp"
+  #endif
 
 // clang-format off
   using seq_exec = axom::SEQ_EXEC;
