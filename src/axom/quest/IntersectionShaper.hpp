@@ -712,24 +712,31 @@ public:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    // Does m_hexes have to be a member?  It can be passed into populateHexesFromMesh.  BTNG.
-    populateHexesFromMesh<ExecSpace>();
-    axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
+    if (m_hexes.empty())
+    {
+      // m_hexes depend only on mesh so should not change once computed.
+      populateHexesFromMesh<ExecSpace>();
+    }
+    axom::ArrayView<const HexahedronType> hexes_device_view = m_hexes.view();
 
-    // Does m_hex_bbs have to be a member?  I's only used here.  BTNG.
-    // Or if it's saved, it needs not be recomputed if the computational
-    // mesh doesn't change.
-    m_hex_bbs =
-      axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
-    axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
+    if (m_hex_bbs.empty())
+    {
+      // Does m_hex_bbs have to be a member?  I's only used here.  BTNG.
+      // Or if it's saved, it needs not be recomputed if the computational
+      // mesh doesn't change.
+      m_hex_bbs =
+        axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
 
-    // Get bounding boxes for hexahedral elements
-    axom::for_all<ExecSpace>(
-      m_cellCount,
-      AXOM_LAMBDA(axom::IndexType i) {
-        hex_bbs_device_view[i] =
-          primal::compute_bounding_box<double, 3>(hexes_device_view[i]);
-      });  // end of loop to initialize hexahedral elements and bounding boxes
+
+      // Get bounding boxes for hexahedral elements
+      axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
+      axom::for_all<ExecSpace>(
+        m_cellCount,
+        AXOM_LAMBDA(axom::IndexType i) {
+          hex_bbs_device_view[i] =
+            primal::compute_bounding_box<double, 3>(hexes_device_view[i]);
+        });  // end of loop to initialize hexahedral elements and bounding boxes
+    }
 
     // Set shape components to zero if within threshold
     snapShapeVerticesToZero<ExecSpace, ShapeType>(shapes,
@@ -740,6 +747,8 @@ public:
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Finding shape candidates for each hexahedral element "));
+
+    axom::ArrayView<const BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
 
     axom::Array<IndexType> offsets(m_cellCount, m_cellCount, device_allocator);
     axom::Array<IndexType> counts(m_cellCount, m_cellCount, device_allocator);
@@ -776,12 +785,21 @@ public:
     auto shape_candidates_device_view = shape_candidates_device.view();
 
     // Tetrahedrons from hexes (24 for each hex)
-    axom::Array<TetrahedronType> tets_from_hexes_device(
-      m_cellCount * NUM_TETS_PER_HEX,
-      m_cellCount * NUM_TETS_PER_HEX,
-      device_allocator);
+    bool doInitializeTetsFromHexes = false;
+    if (m_tets_from_hexes_device.empty())
+    {
+      m_tets_from_hexes_device = axom::Array<TetrahedronType>(
+        m_cellCount * NUM_TETS_PER_HEX,
+        m_cellCount * NUM_TETS_PER_HEX,
+        device_allocator);
+      doInitializeTetsFromHexes = true;
+    }
+    else
+    {
+      SLIC_ASSERT( m_tets_from_hexes_device.size() == m_cellCount * NUM_TETS_PER_HEX );
+    }
     axom::ArrayView<TetrahedronType> tets_from_hexes_device_view =
-      tets_from_hexes_device.view();
+      m_tets_from_hexes_device.view();
 
     // Index into 'tets'
     axom::Array<IndexType> tet_indices_device(
@@ -797,25 +815,28 @@ public:
       axom::Array<IndexType>(newTotalCandidates_host, device_allocator);
     auto newTotalCandidates_device_view = newTotalCandidates_device.view();
 
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      " Decomposing each hexahedron element into 24 tetrahedrons "));
-
-    using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
-
+    if (doInitializeTetsFromHexes)
     {
-      AXOM_ANNOTATE_SCOPE("init_tets");
-      axom::for_all<ExecSpace>(
-        m_cellCount,
-        AXOM_LAMBDA(axom::IndexType i) {
-          TetHexArray cur_tets;
-          hexes_device_view[i].triangulate(cur_tets);
+      SLIC_INFO(axom::fmt::format(
+                  "{:-^80}",
+                  " Decomposing each hexahedron element into 24 tetrahedrons "));
 
-          for(int j = 0; j < NUM_TETS_PER_HEX; j++)
-          {
-            tets_from_hexes_device_view[i * NUM_TETS_PER_HEX + j] = cur_tets[j];
-          }
-        });
+      using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
+
+      {
+        AXOM_ANNOTATE_SCOPE("init_tets");
+        axom::for_all<ExecSpace>(
+          m_cellCount,
+          AXOM_LAMBDA(axom::IndexType i) {
+            TetHexArray cur_tets;
+            hexes_device_view[i].triangulate(cur_tets);
+
+            for(int j = 0; j < NUM_TETS_PER_HEX; j++)
+            {
+              tets_from_hexes_device_view[i * NUM_TETS_PER_HEX + j] = cur_tets[j];
+            }
+          });
+      }
     }
 
     SLIC_INFO(
@@ -2193,7 +2214,7 @@ public:
 
     auto vertCoords_device_view = vertCoords.view();
 
-    // Does m_hexes have to be a member?  It can be a function argument.  BTNG.
+    SLIC_ASSERT(m_hexes.empty()); // No need to repeat this work.
     m_hexes = axom::Array<HexahedronType>(m_cellCount, m_cellCount, allocId);
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
     constexpr double ZERO_THRESHOLD = 1.e-10;
@@ -2459,6 +2480,7 @@ private:
   axom::Array<BoundingBoxType> m_aabbs;
   axom::Array<HexahedronType> m_hexes;
   axom::Array<BoundingBoxType> m_hex_bbs;
+  axom::Array<TetrahedronType> m_tets_from_hexes_device;
 
   // Views of volume-fraction data owned by grid.
   std::vector<axom::ArrayView<double>> m_vf_grid_functions;
