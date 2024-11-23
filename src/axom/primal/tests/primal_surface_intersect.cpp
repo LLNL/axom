@@ -181,7 +181,7 @@ TEST(primal_surface_inter, bilinear_intersect)
   ray_direction = VectorType({1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
 
-  checkIntersections(ray, bilinear_patch, {0.5}, {0.0}, {1.0}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {0.5}, {0.5}, {2.0}, eps, eps_test);
 
   // Ray with no intersections on line with infinitely many intersections
   ray_origin = PointType({2.0, 0.0, 1.5});
@@ -195,7 +195,7 @@ TEST(primal_surface_inter, bilinear_intersect)
   ray_direction = VectorType({1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
 
-  checkIntersections(ray, bilinear_patch, {0.5}, {0.7}, {0.0}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {0.5}, {0.85}, {0.3}, eps, eps_test);
 }
 
 //------------------------------------------------------------------------------
@@ -233,6 +233,23 @@ TEST(primal_surface_inter, difficult_garp_case)
   ray_origin = PointType({0.0, 1.0, 1.75});
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  bilinear_patch(0, 0) = PointType({-1.0, 1.0, 1.0});
+  bilinear_patch(1, 0) = PointType({-1.0, -1.0, 2.0});
+  bilinear_patch(1, 1) = PointType({1.0, -1.0, 1.0});
+  bilinear_patch(0, 1) = PointType({1.0, 1.0, 2.0});
+
+  // Double roots in the quadratic
+
+  ray_origin = PointType({2.0, 0.0, 1.5});
+  ray_direction = VectorType({-1.0, 0.0, 0.0});
+  ray = RayType(ray_origin, ray_direction);
+  checkIntersections(ray, bilinear_patch, {0.5}, {0.5}, {2.0}, eps, eps_test);
+
+  ray_origin = PointType({0.0, 2.0, 1.5});
+  ray_direction = VectorType({0.0, -1.0, 0.0});
+  ray = RayType(ray_origin, ray_direction);
+  checkIntersections(ray, bilinear_patch, {0.5}, {0.5}, {2.0}, eps, eps_test);
 }
 
 //------------------------------------------------------------------------------

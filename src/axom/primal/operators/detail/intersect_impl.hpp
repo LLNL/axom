@@ -1731,69 +1731,198 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
   double c = Vector3::dot_product(qn, line.direction());
   double b = Vector3::scalar_triple_product(q10, line.direction(), e11) - a - c;
 
-  double det = b * b - 4 * a * c;
-  if(det < 0)
+  // Decide what to do based on the coefficients
+  if(b != 0.0 || c != 0.0)
   {
-    return false;
-  }
+    double u1, u2;
 
-  det = std::sqrt(det);
-  double u1, u2;
-
-  if(c == 0)
-  {
-    // If c == 0, there can only be one intersection
-    if(b != 0)
+    // Decide what to do based on the discriminant
+    double det = b * b - 4 * a * c;
+    if(det < 0)  // No solutions
+    {
+      return false;
+    }
+    else if(c == 0)  // Quadratic is a line
     {
       u1 = -a / b;
       u2 = -1;
     }
-    else // If b == 0 too, then the line is either coplanar with all v isocurves     
-    {    //  or coplanar with the entire patch
-      if( Vector3::dot_product(q00, qn) != 0 )
-      {
-        return false;  // Line does not intersect with patch
-      }      
-      else
-      {
-        // This case is exceptionally rare for well-posed models, so we 
-        //  tackle it relatively inefficiently
+    else if(det == 0)  // One repeated solution
+    {
+      u1 = -b / (2 * c);
+      u2 = -1;
+    }
+    else
+    {
+      u1 = 0.5 * (-b - std::copysign(std::sqrt(det), b));
+      u2 = a / u1;
+      u1 /= c;
+    }
 
-        // Project the 3D shapes onto the plane of the patch
-        
-        
+    // Find the point on the isocurve that is closest to the ray
+    for(auto u0 : {u1, u2})
+    {
+      if(u0 < 0 || u0 > 1) continue;
+
+      Vector3 pa = (1 - u0) * q00 + u0 * q10;
+      Vector3 pb = (1 - u0) * e00 + u0 * e11;  // actually stores pb - pa
+      Vector3 n = Vector3::cross_product(line.direction(), pb);
+      det = Vector3::dot_product(n, n);
+
+      if(det != 0)
+      {
+        n = Vector3::cross_product(n, pa);
+        double t0 = Vector3::dot_product(n, pb) / det;
+        double v0 = Vector3::dot_product(n, line.direction()) / det;
+        if(0.0 <= v0 && v0 <= 1.0)
+        {
+          if(t0 >= 0 || !isRay)
+          {
+            t.push_back(t0);
+            u.push_back(u0);
+            v.push_back(v0);
+          }
+        }
+      }
+      else  // Ray is parallel to the line segment pa + v * (pb - pa)
+      {
+        // Determine if the line is colinear to the segment
+        double cross = Vector3::cross_product(pa, line.direction()).norm();
+        if(cross == 0)
+        {
+          // Parameters of intersection are non-unique,
+          //  so take the center of the segment the intersection
+          //  (this avoids any inclusion issues at the boundary)
+          double t1 = Vector3::dot_product(pa, line.direction());
+          double t2 = Vector3::dot_product(pa + pb, line.direction());
+          if(t1 * t2 < 0)
+          {
+            // Means the origin is inside the segment
+            t.push_back(0.5 * ((isRay ? 0.0 : t1) + t2));
+            u.push_back(u0);
+            v.push_back(isRay ? (t1 - 0.5 * t2) / (t1 - t2) : 0.5);
+            return true;
+          }
+          else if(t1 >= 0 || !isRay)
+          {
+            // The origin is outside the segment, but the ray intersects
+            //  (the line always intersects in this case)
+            t.push_back(0.5 * (t1 + t2));
+            u.push_back(u0);
+            v.push_back(0.5);
+            return true;
+          }
+        }
       }
     }
   }
   else
   {
-    u1 = 0.5 * (-b - std::copysign(det, b));
-    u2 = a / u1;
-    u1 /= c;
-  }
+    // Switch to finding B(u, v0) isocurves instead
 
-  if(0.0 <= u1 && u1 <= 1.0)
-  {
-    Vector3 pa = (1 - u1) * q00 + u1 * q10;
-    Vector3 pb = (1 - u1) * e00 + u1 * e11;  // actually stores pb - pa
-    Vector3 n = Vector3::cross_product(line.direction(), pb);
-    det = Vector3::dot_product(n, n);
+    // Recalculate the quadratic coefficients
+    Vector3 e01 = q11 - q01;
+    Vector3 qm = Vector3::cross_product(e00, -e11);
+    q01.array() -= line.origin().array();
 
-    if(det != 0)
+    a = Vector3::scalar_triple_product(q00, line.direction(), e10);
+    c = Vector3::dot_product(qm, line.direction());
+    b = Vector3::scalar_triple_product(q01, line.direction(), e01) - a - c;
+
+    // If these are also all zero, weep bitterly
+    if(b == 0 && c == 0)
     {
-      n = Vector3::cross_product(n, pa);
-      double t1 = Vector3::dot_product(n, pb);
-      double v1 = Vector3::dot_product(n, line.direction());
-      if(0 <= v1 && v1 <= det)
+      std::cout << "WEEPING BITTERLY" << std::endl;
+      return false;
+    }
+
+    double v1, v2;
+
+    // Decide what to do based on the discriminant
+    double det = b * b - 4 * a * c;
+    if(det < 0)  // No solutions
+    {
+      return false;
+    }
+    else if(c == 0)  // Quadratic is a line
+    {
+      v1 = -a / b;
+      v2 = -1;
+    }
+    else if(det == 0)  // One repeated solution
+    {
+      v1 = -b / (2 * c);
+      v2 = -1;
+    }
+    else
+    {
+      v1 = 0.5 * (-b - std::copysign(std::sqrt(det), b));
+      v2 = a / v1;
+      v1 /= c;
+    }
+
+    // Find the point on the isocurve that is closest to the ray
+    for(auto v0 : {v1, v2})
+    {
+      if(v0 < 0 || v0 > 1) continue;
+
+      Vector3 pa = (1 - v0) * q00 + v0 * q01;
+      Vector3 pb = (1 - v0) * e10 + v0 * e01;  // actually stores pb - pa
+      Vector3 n = Vector3::cross_product(line.direction(), pb);
+      det = Vector3::dot_product(n, n);
+
+      if(det != 0)
       {
-        if(t1 >= 0 || !isRay)
+        n = Vector3::cross_product(n, pa);
+        double t0 = Vector3::dot_product(n, pb) / det;
+        double u0 = Vector3::dot_product(n, line.direction()) / det;
+        if(0.0 <= u0 && u0 <= 1.0)
         {
-          t.push_back(t1 / det);
-          u.push_back(u1);
-          v.push_back(v1 / det);
+          if(t0 >= 0 || !isRay)
+          {
+            t.push_back(t0);
+            u.push_back(u0);
+            v.push_back(v0);
+          }
+        }
+      }
+      else  // Ray is parallel to the line segment pa + u * (pb - pa)
+      {
+        // Determine if the line is colinear to the segment
+        double cross = Vector3::cross_product(pa, line.direction()).norm();
+        if(cross == 0)
+        {
+          // Parameters of intersection are non-unique,
+          //  so take the center of the segment the intersection
+          //  (this avoids any inclusion issues at the boundary)
+          double t1 = Vector3::dot_product(pa, line.direction());
+          double t2 = Vector3::dot_product(pa + pb, line.direction());
+          if(t1 * t2 < 0)
+          {
+            // Means the origin is inside the segment
+            t.push_back(0.5 * ((isRay ? 0.0 : t1) + t2));
+            u.push_back(isRay ? (t1 - 0.5 * t2) / (t1 - t2) : 0.5);
+            v.push_back(v0);
+            return true;
+          }
+          else if(t1 >= 0 || !isRay)
+          {
+            // The origin is outside the segment, but the ray intersects
+            //  (the line always intersects in this case)
+            t.push_back(0.5 * (t1 + t2));
+            u.push_back(0.5);
+            v.push_back(v0);
+            return true;
+          }
         }
       }
     }
+  }
+
+  return !t.empty();
+}
+
+/*
     else  // Ray is parallel to the line segment pa + v * (pb - pa)
     {
       // Determine if the line is colinear to the segment
@@ -1831,39 +1960,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
         }
       }
     }
-  }
-
-  if(0.0 <= u2 && u2 <= 1.0)
-  {
-    Vector3 pa = (1 - u2) * q00 + u2 * q10;
-    Vector3 pb = (1 - u2) * e00 + u2 * e11;  // actually stores pb - pa
-    Vector3 n = Vector3::cross_product(line.direction(), pb);
-    det = Vector3::dot_product(n, n);
-
-    if(det != 0)
-    {
-      n = Vector3::cross_product(n, pa);
-      double t2 = Vector3::dot_product(n, pb) / det;
-      double v2 = Vector3::dot_product(n, line.direction());
-      if(0 <= v2 && v2 <= det && t2 >= 0)
-      {
-        if(t2 >= 0 || !isRay)
-        {
-          t.push_back(t2);
-          u.push_back(u2);
-          v.push_back(v2 / det);
-        }
-      }
-    }
-    else  // Ray is parallel to the line segment pa + v * (pb - pa)
-    {
-      // If the line is colinear to the segment, it
-      //  will have been handled in the u1 case, as u1 == u2
-    }
-  }
-
-  return !t.empty();
-}
+*/
 
 }  // end namespace detail
 }  // end namespace primal
