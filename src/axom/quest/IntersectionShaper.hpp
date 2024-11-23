@@ -850,22 +850,16 @@ public:
     // or clip(tet,tet) for Pro/E meshes
     m_overlap_volumes =
       axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
+    m_overlap_volumes.fill(0.0);
 
     // Hex volume is the volume of the hexahedron element
     m_hex_volumes =
       axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
+    m_hex_volumes.fill(0.0);
 
     axom::ArrayView<double> overlap_volumes_device_view =
       m_overlap_volumes.view();
     axom::ArrayView<double> hex_volumes_device_view = m_hex_volumes.view();
-
-    // Set initial values to 0
-    axom::for_all<ExecSpace>(
-      m_cellCount,
-      AXOM_LAMBDA(axom::IndexType i) {
-        overlap_volumes_device_view[i] = 0;
-        hex_volumes_device_view[i] = 0;
-      });
 
     SLIC_INFO(
       axom::fmt::format("{:-^80}", " Calculating hexahedron element volume "));
