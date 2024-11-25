@@ -288,7 +288,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
             blt_list_append(TO _policies ELEMENTS "hip"  IF AXOM_ENABLE_HIP)
         endif()
 
-        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "plane")
+        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "all" "plane")
 
         foreach(_policy ${_policies})
             foreach(_testshape ${_testshapes})
@@ -300,7 +300,8 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                            --testShape ${_testshape}
                            --refinements 2
                            --scale 0.75 0.75 0.75
-                           inline_mesh --min -3 -3 -3 --max 3 3 3 --res 20 20 20 -d 3
+                           --dir 0.2 0.4 0.8
+                           inline_mesh --min -2 -2 -2 --max 2 2 2 --res 30 30 30 -d 3
                 NUM_MPI_TASKS ${_nranks})
             endforeach()
         endforeach()
