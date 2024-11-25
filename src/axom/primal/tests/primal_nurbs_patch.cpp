@@ -1004,9 +1004,6 @@ TEST(primal_nurbspatch, extract_degenerate)
 
   SLIC_INFO("Testing Bezier extraction on degenerate surface (order 0)");
 
-  const int degree_u = 2;
-  const int degree_v = 2;
-
   const int npts_u = 3;
   const int npts_v = 3;
 
@@ -1023,86 +1020,99 @@ TEST(primal_nurbspatch, extract_degenerate)
 
   CoordType weights[9] = {1.0, 2.0, 3.0, 2.0, 3.0, 4.0, 3.0, 4.0, 5.0};
 
-  // Degenerate in u, full in v
-  NURBSPatchType nPatch_u(controlPoints, weights, npts_u, npts_v, 0, degree_v);
-  auto bezier_list_u = nPatch_u.extractBezier();
-
-  EXPECT_EQ(bezier_list_u.size(),
-            npts_u * nPatch_u.getKnots_v().getNumKnotSpans());
-
   constexpr int npts = 11;
   double u_pts[npts], v_pts[npts];
-  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
-  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
 
-  for(auto u : u_pts)
+  double u_ranges[5];
+  double v_ranges[5];
+
+  for(int degree_v = 1; degree_v <= 2; ++degree_v)
   {
-    for(auto v : v_pts)
-    {
-      auto pt1 = nPatch_u.evaluate(u, v);
+    // Degenerate in u, full in v (degrees 1, 2)
+    NURBSPatchType nPatch_u(controlPoints, weights, npts_u, npts_v, 0, degree_v);
+    auto bezier_list_u = nPatch_u.extractBezier();
 
-      if(u < 1.0 / 3.0)
+    const auto u_spans = nPatch_u.getKnots_u().getNumKnotSpans();
+    const auto v_spans = nPatch_u.getKnots_v().getNumKnotSpans();
+
+    EXPECT_EQ(bezier_list_u.size(), npts_u * v_spans);
+
+    axom::numerics::linspace(0.0, 1.0, u_ranges, u_spans + 1);
+    axom::numerics::linspace(0.0, 1.0, v_ranges, v_spans + 1);
+
+    // bezier_list is ordered lexicographically by v, then u
+    for(int i = 0; i < u_spans; ++i)
+    {
+      for(int j = 0; j < v_spans; ++j)
       {
-        auto pt2 = bezier_list_u[0].evaluate(u, v);
-        for(int N = 0; N < DIM; ++N)
+        auto& bPatch = bezier_list_u[i * (v_spans) + j];
+
+        // Loop over the parameter space of each Bezier patch
+        axom::numerics::linspace(u_ranges[i], u_ranges[i + 1], u_pts, npts);
+        axom::numerics::linspace(v_ranges[j], v_ranges[j + 1], v_pts, npts);
+
+        // Order 0 degree curves are discontinuous, so don't check
+        //  the boundaries in parameter space
+        for(int ui = 1; ui < npts - 1; ++ui)
         {
-          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
-        }
-      }
-      else if(u < 2.0 / 3.0)
-      {
-        auto pt2 = bezier_list_u[1].evaluate(u, v);
-        for(int N = 0; N < DIM; ++N)
-        {
-          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
-        }
-      }
-      else
-      {
-        auto pt2 = bezier_list_u[2].evaluate(u, v);
-        for(int N = 0; N < DIM; ++N)
-        {
-          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
+          for(int vi = 1; vi < npts - 1; ++vi)
+          {
+            auto pt1 = nPatch_u.evaluate(u_pts[ui], v_pts[vi]);
+            auto pt2 = bPatch.evaluate(
+              (u_pts[ui] - u_ranges[i]) / (u_ranges[i + 1] - u_ranges[i]),
+              (v_pts[vi] - v_ranges[j]) / (v_ranges[j + 1] - v_ranges[j]));
+
+            for(int N = 0; N < DIM; ++N)
+            {
+              EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
+            }
+          }
         }
       }
     }
   }
 
-  // Degenerate in v, full in u
-  NURBSPatchType nPatch_v(controlPoints, npts_u, npts_v, degree_u, 0);
-  auto bezier_list_v = nPatch_v.extractBezier();
-
-  EXPECT_EQ(bezier_list_v.size(),
-            npts_v * nPatch_v.getKnots_u().getNumKnotSpans());
-
-  for(auto u : u_pts)
+  for(int degree_u = 1; degree_u <= 2; ++degree_u)
   {
-    for(auto v : v_pts)
-    {
-      auto pt1 = nPatch_v.evaluate(u, v);
+    // Degenerate in v, full in u (degree 1, 2)
+    NURBSPatchType nPatch_v(controlPoints, weights, npts_u, npts_v, degree_u, 0);
+    auto bezier_list_v = nPatch_v.extractBezier();
 
-      if(v < 1.0 / 3.0)
+    const auto u_spans = nPatch_v.getKnots_u().getNumKnotSpans();
+    const auto v_spans = nPatch_v.getKnots_v().getNumKnotSpans();
+
+    EXPECT_EQ(bezier_list_v.size(), npts_v * u_spans);
+
+    axom::numerics::linspace(0.0, 1.0, u_ranges, u_spans + 1);
+    axom::numerics::linspace(0.0, 1.0, v_ranges, v_spans + 1);
+
+    // bezier_list is ordered lexicographically by v, then u
+    for(int i = 0; i < u_spans; ++i)
+    {
+      for(int j = 0; j < v_spans; ++j)
       {
-        auto pt2 = bezier_list_v[0].evaluate(u, v);
-        for(int N = 0; N < DIM; ++N)
+        auto& bPatch = bezier_list_v[i * (v_spans) + j];
+
+        // Loop over the parameter space of each Bezier patch
+        axom::numerics::linspace(u_ranges[i], u_ranges[i + 1], u_pts, npts);
+        axom::numerics::linspace(v_ranges[j], v_ranges[j + 1], v_pts, npts);
+
+        // Order 0 degree curves are discontinuous, so don't check
+        //  the boundaries in parameter space
+        for(int ui = 1; ui < npts - 1; ++ui)
         {
-          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
-        }
-      }
-      else if(v < 2.0 / 3.0)
-      {
-        auto pt2 = bezier_list_v[1].evaluate(u, v);
-        for(int N = 0; N < DIM; ++N)
-        {
-          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
-        }
-      }
-      else
-      {
-        auto pt2 = bezier_list_v[2].evaluate(u, v);
-        for(int N = 0; N < DIM; ++N)
-        {
-          EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
+          for(int vi = 1; vi < npts - 1; ++vi)
+          {
+            auto pt1 = nPatch_v.evaluate(u_pts[ui], v_pts[vi]);
+            auto pt2 = bPatch.evaluate(
+              (u_pts[ui] - u_ranges[i]) / (u_ranges[i + 1] - u_ranges[i]),
+              (v_pts[vi] - v_ranges[j]) / (v_ranges[j + 1] - v_ranges[j]));
+
+            for(int N = 0; N < DIM; ++N)
+            {
+              EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
+            }
+          }
         }
       }
     }
@@ -1113,6 +1123,9 @@ TEST(primal_nurbspatch, extract_degenerate)
   auto bezier_list_uv = nPatch_uv.extractBezier();
 
   EXPECT_EQ(bezier_list_uv.size(), npts_u * npts_v);
+
+  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
+  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
 
   for(auto u : u_pts)
   {

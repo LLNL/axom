@@ -421,7 +421,7 @@ inline bool matrix_multiply(const Matrix<T>& A, const Matrix<T>& B, Matrix<T>& C
       }  // END for all internal
 
     }  // END for all columns
-  }    // END for all rows
+  }  // END for all rows
 
   return true;
 }
@@ -481,7 +481,7 @@ inline bool matrix_transpose(const Matrix<T>& A, Matrix<T>& M)
     {
       M(j, i) = A(i, j);
     }  // END for all columns in A
-  }    // END for all rows in A
+  }  // END for all rows in A
 
   return true;
 }
@@ -508,7 +508,7 @@ inline T matrix_norm(const Matrix<T>& A, MatrixNorm normType)
   default:
     assert("pre: unsupported norm type!" && false);
     norm = -1.0;  // set norm to a negative number to indicate an error
-  }               // END switch
+  }  // END switch
 
   return norm;
 }
@@ -533,11 +533,11 @@ inline bool linspace(const T& x0, const T& x1, T* v, int N)
 
   const T h = (x1 - x0) / static_cast<T>(N - 1);
 
-  for(int i = 0; i < N-1; ++i)
+  for(int i = 0; i < N - 1; ++i)
   {
     v[i] = x0 + i * h;
   }
-  v[N-i] = x1;
+  v[N - 1] = x1;
 
   return true;
 }
