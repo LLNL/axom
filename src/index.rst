@@ -56,6 +56,7 @@ are identified.
    * Primal: Computational geometry primitives
    * Quest: Querying on surface tool
    * Sidre: Simulation data repository
+   * Sina: Simulation insight and analysis
    * Slam: Set-theoretic lightweight API for meshes
    * Slic: Simple Logging Interface Code
    * Spin: Spatial index structures for managing and accelerating spatial searches
@@ -102,6 +103,9 @@ User guides and source code documentation are always linked on this site.
    * - Sidre
      - :doc:`User Guide <axom/sidre/docs/sphinx/index>`
      - `Source documentation <doxygen/html/sidretop.html>`__
+   * - Sina
+     - :doc:`User Guide <axom/sina/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/sinatop.html>`__
    * - Slam
      - :doc:`User Guide <axom/slam/docs/sphinx/index>`
      - `Source documentation <doxygen/html/slamtop.html>`__
@@ -212,6 +216,7 @@ LLNL-CODE-741217
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
    Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
    Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Sina (Write data in a common format) <axom/sina/docs/sphinx/index>
    Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
    Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
    Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
