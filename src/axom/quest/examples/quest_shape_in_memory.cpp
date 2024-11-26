@@ -246,7 +246,10 @@ public:
       ->check(axom::CLI::PositiveNumber);
 
     app.add_option("--dir", direction)
-      ->description("Direction of axis of rotation (cone/cyl/VOR (x,y[,z])), or rotated x-axis (hex, tet, tetmesh, and sphere), or positive normal direction (plane).")
+      ->description(
+        "Direction of axis of rotation (cone/cyl/VOR (x,y[,z])), or rotated "
+        "x-axis (hex, tet, tetmesh, and sphere), or positive normal direction "
+        "(plane).")
       ->expected(2, 3);
 
     app.add_option("--radius2", radius2)
@@ -325,7 +328,6 @@ public:
 };  // struct Input
 Input params;
 
-
 // Start property for all 3D shapes.
 axom::klee::TransformableGeometryProperties startProp {
   axom::klee::Dimensions::Three,
@@ -371,7 +373,8 @@ void addRotateOperator(axom::klee::CompositeOperator& compositeOp)
     axom::numerics::cross_product(x.data(), a.data(), u.data());
     double angle = asin(u.norm()) * 180 / M_PI;
 
-    auto rotateOp = std::make_shared<axom::klee::Rotation>(angle, center, u, startProp);
+    auto rotateOp =
+      std::make_shared<axom::klee::Rotation>(angle, center, u, startProp);
     compositeOp.addOperator(rotateOp);
   }
 }
@@ -536,7 +539,8 @@ axom::klee::ShapeSet create2DShapeSet(sidre::DataStore& ds)
 
 axom::klee::Shape createShape_Sphere()
 {
-  Point3D center = params.center.empty() ? Point3D{0, 0, 0} : Point3D{params.center.data()};
+  Point3D center =
+    params.center.empty() ? Point3D {0, 0, 0} : Point3D {params.center.data()};
   double radius = params.radius < 0 ? 0.8 : params.radius;
   axom::primal::Sphere<double, 3> sphere {center, radius};
 
@@ -592,7 +596,7 @@ axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
   auto compositeOp = std::make_shared<axom::klee::CompositeOperator>(startProp);
   addScaleOperator(*compositeOp);
   addRotateOperator(*compositeOp);
-  addTranslateOperator(*compositeOp, -1 ,1, 1);
+  addTranslateOperator(*compositeOp, -1, 1, 1);
 
   axom::klee::Geometry tetMeshGeometry(prop,
                                        tetMesh.getSidreGroup(),
@@ -603,10 +607,11 @@ axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
   return tetShape;
 }
 
-axom::klee::Geometry createGeometry_Vor(axom::primal::Point<double, 3>& vorBase,
-                                        axom::primal::Vector<double, 3>& vorDirection,
-                                        axom::Array<double, 2>& discreteFunction,
-                                        std::shared_ptr<axom::klee::CompositeOperator>& compositeOp)
+axom::klee::Geometry createGeometry_Vor(
+  axom::primal::Point<double, 3>& vorBase,
+  axom::primal::Vector<double, 3>& vorDirection,
+  axom::Array<double, 2>& discreteFunction,
+  std::shared_ptr<axom::klee::CompositeOperator>& compositeOp)
 {
   axom::klee::TransformableGeometryProperties prop {
     axom::klee::Dimensions::Three,
@@ -626,11 +631,14 @@ axom::klee::Geometry createGeometry_Vor(axom::primal::Point<double, 3>& vorBase,
 
 axom::klee::Shape createShape_Vor()
 {
-  Point3D vorBase = params.center.empty() ? Point3D{0.0, 0.0, 0.0} : Point3D{params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection = params.direction.empty() ? primal::Vector3D{0.1, 0.2, 0.4} : primal::Vector3D{params.direction.data()};
+  Point3D vorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
+                                          : Point3D {params.center.data()};
+  axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
+    ? primal::Vector3D {0.1, 0.2, 0.4}
+    : primal::Vector3D {params.direction.data()};
   axom::Array<double, 2> discreteFunction({3, 2}, axom::ArrayStrideOrder::ROW);
   double zLen = params.length < 0 ? 0.7 : params.length;
-  double zShift = -zLen/2;
+  double zShift = -zLen / 2;
   double r = params.radius < 0 ? 0.75 : params.radius;
   discreteFunction[0][0] = zShift + 0.0;
   discreteFunction[0][1] = 1.0 * r;
@@ -653,14 +661,17 @@ axom::klee::Shape createShape_Vor()
 
 axom::klee::Shape createShape_Cylinder()
 {
-  Point3D vorBase = params.center.empty() ? Point3D{0.0, 0.0, 0.0} : Point3D{params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection = params.direction.empty() ? primal::Vector3D{0.1, 0.2, 0.4} : primal::Vector3D{params.direction.data()};
+  Point3D vorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
+                                          : Point3D {params.center.data()};
+  axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
+    ? primal::Vector3D {0.1, 0.2, 0.4}
+    : primal::Vector3D {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double radius = params.radius < 0 ? 0.5 : params.radius;
   double height = params.length < 0 ? 0.8 : params.length;
-  discreteFunction[0][0] = -height/2;
+  discreteFunction[0][0] = -height / 2;
   discreteFunction[0][1] = radius;
-  discreteFunction[1][0] = height/2;
+  discreteFunction[1][0] = height / 2;
   discreteFunction[1][1] = radius;
 
   auto compositeOp = std::make_shared<axom::klee::CompositeOperator>(startProp);
@@ -677,15 +688,18 @@ axom::klee::Shape createShape_Cylinder()
 
 axom::klee::Shape createShape_Cone()
 {
-  Point3D vorBase = params.center.empty() ? Point3D{0.0, 0.0, 0.0} : Point3D{params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection = params.direction.empty() ? primal::Vector3D{0.1, 0.2, 0.4} : primal::Vector3D{params.direction.data()};
+  Point3D vorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
+                                          : Point3D {params.center.data()};
+  axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
+    ? primal::Vector3D {0.1, 0.2, 0.4}
+    : primal::Vector3D {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double baseRadius = params.radius < 0 ? 0.5 : params.radius;
   double topRadius = params.radius2 < 0 ? 0.1 : params.radius2;
   double height = params.length < 0 ? 0.8 : params.length;
-  discreteFunction[0][0] = -height/2;
+  discreteFunction[0][0] = -height / 2;
   discreteFunction[0][1] = baseRadius;
-  discreteFunction[1][0] = height/2;
+  discreteFunction[1][0] = height / 2;
   discreteFunction[1][1] = topRadius;
 
   auto compositeOp = std::make_shared<axom::klee::CompositeOperator>(startProp);
@@ -780,7 +794,9 @@ axom::klee::Shape createShape_Plane()
   Point3D center {0.5 *
                   (primal::NumericArray<double, 3>(params.boxMins.data()) +
                    primal::NumericArray<double, 3>(params.boxMaxs.data()))};
-  primal::Vector<double, 3> normal = params.direction.empty() ? primal::Vector3D{1.0, 0.0, 0.0} : primal::Vector3D{params.direction.data()}.unitVector();
+  primal::Vector<double, 3> normal = params.direction.empty()
+    ? primal::Vector3D {1.0, 0.0, 0.0}
+    : primal::Vector3D {params.direction.data()}.unitVector();
   const primal::Plane<double, 3> plane {normal, center, true};
 
   axom::klee::Geometry planeGeometry(prop, plane, scaleOp);
