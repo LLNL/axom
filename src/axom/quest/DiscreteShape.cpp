@@ -377,8 +377,22 @@ void DiscreteShape::createPlaneRepresentation()
 
   const auto& plane = geometry.getPlane();
   // Generate a big bounding hex on the positive side of the plane.
+  /*
+    TODO: Use a specialized plane representation.  Plane is very
+    simple, but representing it as huge tets has 2 problems.
+    1. The shaper runs slow because the huge tets contains huge
+       numbers of cells, disbling attempts at divide-and-conquer
+       with the BVH.
+
+    2. When the tets are orders of magnitude larger then the
+       computational mesh, I've seen weird overlap computation
+       errors that affect certain resolutions and don't follow
+       any trends.  I think it's due to round-off, but I've not
+       verified.
+  */
   axom::primal::Hexahedron<double, 3> boundingHex;
-  const double len = 1e6;  // Big enough to contain anticipated mesh.
+  const double len = 1e2;  // Big enough to contain anticipated mesh,
+                           // but too big invites weird round-off errors.
   // We should compute based on the mesh.
   // clang-format off
   boundingHex[0] = Point3D{0.0, -len, -len};
