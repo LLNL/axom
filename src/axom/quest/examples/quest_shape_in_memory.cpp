@@ -541,7 +541,7 @@ axom::klee::Shape createShape_Sphere()
 {
   Point3D center =
     params.center.empty() ? Point3D {0, 0, 0} : Point3D {params.center.data()};
-  double radius = params.radius < 0 ? 0.8 : params.radius;
+  double radius = params.radius < 0 ? 0.6 : params.radius;
   axom::primal::Sphere<double, 3> sphere {center, radius};
 
   axom::klee::TransformableGeometryProperties prop {
@@ -576,15 +576,18 @@ axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
 
   double lll = params.length < 0 ? 0.7 : params.length;
 
-  // Insert tet at origin.
+  // Insert tets around origin.
   tetMesh.appendNode(-lll, -lll, -lll);
   tetMesh.appendNode(+lll, -lll, -lll);
   tetMesh.appendNode(-lll, +lll, -lll);
   tetMesh.appendNode(-lll, -lll, +lll);
-  tetMesh.appendNode(lll, lll, 0.0);
+  tetMesh.appendNode(+lll, +lll, +lll);
+  tetMesh.appendNode(-lll, +lll, +lll);
+  tetMesh.appendNode(+lll, +lll, -lll);
+  tetMesh.appendNode(+lll, -lll, +lll);
   axom::IndexType conn0[4] = {0, 1, 2, 3};
   tetMesh.appendCell(conn0);
-  axom::IndexType conn1[4] = {4, 1, 2, 3};
+  axom::IndexType conn1[4] = {4, 5, 6, 7};
   tetMesh.appendCell(conn1);
 
   SLIC_ASSERT(axom::mint::blueprint::isValidRootGroup(meshGroup));
@@ -636,16 +639,25 @@ axom::klee::Shape createShape_Vor()
   axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
-  axom::Array<double, 2> discreteFunction({3, 2}, axom::ArrayStrideOrder::ROW);
-  double zLen = params.length < 0 ? 0.7 : params.length;
+  const int numIntervals = 5;
+  axom::Array<double, 2> discreteFunction({numIntervals + 1, 2},
+                                          axom::ArrayStrideOrder::ROW);
+  double zLen = params.length < 0 ? 1.6 : params.length;
   double zShift = -zLen / 2;
-  double r = params.radius < 0 ? 0.75 : params.radius;
-  discreteFunction[0][0] = zShift + 0.0;
-  discreteFunction[0][1] = 1.0 * r;
-  discreteFunction[1][0] = zShift + 0.5 * zLen;
-  discreteFunction[1][1] = 0.8 * r;
-  discreteFunction[2][0] = zShift + zLen;
-  discreteFunction[2][1] = 1.0 * r;
+  double maxR = params.radius < 0 ? 0.75 : params.radius;
+  double dz = zLen / numIntervals;
+  discreteFunction[0][0] = 0 * dz + zShift;
+  discreteFunction[0][1] = 0.0 * maxR;
+  discreteFunction[1][0] = 1 * dz + zShift;
+  discreteFunction[1][1] = 0.8 * maxR;
+  discreteFunction[2][0] = 2 * dz + zShift;
+  discreteFunction[2][1] = 0.4 * maxR;
+  discreteFunction[3][0] = 3 * dz + zShift;
+  discreteFunction[3][1] = 0.5 * maxR;
+  discreteFunction[4][0] = 4 * dz + zShift;
+  discreteFunction[4][1] = 1.0 * maxR;
+  discreteFunction[5][0] = 5 * dz + zShift;
+  discreteFunction[5][1] = 0.0;
 
   auto compositeOp = std::make_shared<axom::klee::CompositeOperator>(startProp);
   addScaleOperator(*compositeOp);
@@ -668,7 +680,7 @@ axom::klee::Shape createShape_Cylinder()
     : primal::Vector3D {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double radius = params.radius < 0 ? 0.5 : params.radius;
-  double height = params.length < 0 ? 0.8 : params.length;
+  double height = params.length < 0 ? 1.2 : params.length;
   discreteFunction[0][0] = -height / 2;
   discreteFunction[0][1] = radius;
   discreteFunction[1][0] = height / 2;
@@ -694,9 +706,9 @@ axom::klee::Shape createShape_Cone()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
-  double baseRadius = params.radius < 0 ? 0.5 : params.radius;
+  double baseRadius = params.radius < 0 ? 0.7 : params.radius;
   double topRadius = params.radius2 < 0 ? 0.1 : params.radius2;
-  double height = params.length < 0 ? 0.8 : params.length;
+  double height = params.length < 0 ? 1.3 : params.length;
   discreteFunction[0][0] = -height / 2;
   discreteFunction[0][1] = baseRadius;
   discreteFunction[1][0] = height / 2;
