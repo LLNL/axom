@@ -1024,12 +1024,12 @@ public:
     // consider the free material something it needs to write as a matset.
     const std::string fieldName(materialNameToFieldName(m_free_mat_name));
 
-    bool newData = !hasData(fieldName);
+    bool makeNewData = !hasData(fieldName);
 
     axom::ArrayView<double> cfgf = getScalarCellData(fieldName);
     SLIC_ASSERT(!cfgf.empty());
 
-    if(newData)
+    if(makeNewData)
     {
       AXOM_ANNOTATE_SCOPE("compute_free");
 
@@ -1539,11 +1539,11 @@ public:
     // Get or create the volume fraction field for this shape's material
     auto materialVolFracName = materialNameToFieldName(materialName);
 
-    bool newData = !hasData(materialVolFracName);
+    bool makeNewData = !hasData(materialVolFracName);
 
     auto matVolFrac = getScalarCellData(materialVolFracName);
     SLIC_ASSERT(!matVolFrac.empty());
-    if(newData)
+    if(makeNewData)
     {
         // Zero out the volume fractions (on host).
   #ifdef AXOM_USE_UMPIRE
@@ -2095,6 +2095,7 @@ private:
       rval = axom::ArrayView<double>(gridFunc->GetData(), gridFunc->Size());
     }
   #endif
+
   #if defined(AXOM_USE_CONDUIT)
     if(m_bpGrp != nullptr)
     {
@@ -2173,10 +2174,11 @@ private:
             valuesViewInMatsets->rename(matlName);
           }
         }
-        rval =
-          axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
-                                  m_cellCount);
       }
+
+      rval =
+        axom::ArrayView<double>(static_cast<double*>(valuesView->getVoidPtr()),
+                                m_cellCount);
     }
   #endif
     return rval;

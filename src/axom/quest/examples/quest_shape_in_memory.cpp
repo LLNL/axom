@@ -74,9 +74,6 @@ public:
   // Shape transformation parameters
   std::vector<double> scaleFactors;
 
-  // Mesh format: mfem or blueprint
-  std::string meshFormat = "mfem";
-
   // Inline mesh parameters
   std::vector<double> boxMins {-2, -2, -2};
   std::vector<double> boxMaxs {2, 2, 2};
@@ -479,6 +476,9 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
   meshGrp->createNativeLayout(meshNode);
   SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
 #endif
+
+  // State group is optional to blueprint, and we don't use it, but mint checks for it.
+  meshGrp->createGroup("state");
 
   return meshGrp;
 }
