@@ -1346,7 +1346,7 @@ public:
    * \brief Print given number of levels of Group sub-tree
    *        starting at this Group object to an output stream.
    */
-  void printTree(const int nlevels, std::ostream& os) const;
+  void printTree(const int nlevels, std::ostream& os = std::cout) const;
 
   //@}
 

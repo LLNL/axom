@@ -158,7 +158,8 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   const std::string& file_format = geometryFormat;
 
   std::string shapePath = axom::utilities::filesystem::prefixRelativePath(
-    m_shape.getGeometry().getPath(), m_prefixPath);
+    m_shape.getGeometry().getPath(),
+    m_prefixPath);
   SLIC_INFO("Reading file: " << shapePath << "...");
 
   // Initialize revolved volume.
@@ -768,8 +769,9 @@ void DiscreteShape::setPercentError(double percent)
 
 void DiscreteShape::setPrefixPath(const std::string& prefixPath)
 {
-  SLIC_ERROR_IF(!prefixPath.empty() && !axom::utilities::filesystem::pathExists(prefixPath),
-                "Path '" + prefixPath + "' does not exist.");
+  SLIC_ERROR_IF(
+    !prefixPath.empty() && !axom::utilities::filesystem::pathExists(prefixPath),
+    "Path '" + prefixPath + "' does not exist.");
   m_prefixPath = prefixPath;
 }
 

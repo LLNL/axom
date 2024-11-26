@@ -13,7 +13,6 @@
 #include "axom/quest/DiscreteShape.hpp"
 #include "axom/quest/util/mesh_helpers.hpp"
 #include "conduit_blueprint_mesh.hpp"
-#include "axom/core/WhereMacro.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -32,12 +31,12 @@ constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
   : m_shapeSet(shapeSet)
   , m_dc(dc)
-#if defined(AXOM_USE_CONDUIT)
+  #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)
   , m_bpTopo()
   , m_bpNodeExt(nullptr)
   , m_bpNodeInt()
-#endif
+  #endif
 {
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = m_dc->GetComm();
@@ -95,12 +94,15 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
   m_bpGrp->importConduitTreeExternal(*bpNode);
 
   // We want unstructured topo but can accomodate structured.
-  const std::string topoType =
-    bpNode->fetch_existing("topologies").fetch_existing(m_bpTopo).fetch_existing("type").as_string();
+  const std::string topoType = bpNode->fetch_existing("topologies")
+                                 .fetch_existing(m_bpTopo)
+                                 .fetch_existing("type")
+                                 .as_string();
   if(topoType == "structured")
   {
     axom::quest::util::convert_blueprint_structured_explicit_to_unstructured(
-      m_bpGrp, m_bpTopo);
+      m_bpGrp,
+      m_bpTopo);
   }
 
   m_bpGrp->createNativeLayout(m_bpNodeInt);
@@ -117,13 +119,11 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
   setFilePath(shapeSet.getPath());
 }
 
-Shaper::~Shaper()
-{
-}
+Shaper::~Shaper() { }
 
 void Shaper::setFilePath(const std::string& filePath)
 {
-  if (filePath.empty())
+  if(filePath.empty())
   {
     m_prefixPath.clear();
   }
@@ -238,13 +238,15 @@ bool Shaper::verifyInputMesh(std::string& whyBad) const
     rval = conduit::blueprint::mesh::verify(m_bpNodeInt, info);
     if(rval)
     {
-      std::string topoType = m_bpNodeInt.fetch("topologies")[m_bpTopo]["type"].as_string();
+      std::string topoType =
+        m_bpNodeInt.fetch("topologies")[m_bpTopo]["type"].as_string();
       rval = topoType == "unstructured";
       info[0].set_string("Topology is not unstructured.");
     }
     if(rval)
     {
-      std::string elemShape = m_bpNodeInt.fetch("topologies")[m_bpTopo]["elements"]["shape"].as_string();
+      std::string elemShape =
+        m_bpNodeInt.fetch("topologies")[m_bpTopo]["elements"]["shape"].as_string();
       rval = elemShape == "hex";
       info[0].set_string("Topology elements are not hex.");
     }

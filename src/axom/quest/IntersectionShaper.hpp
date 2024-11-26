@@ -712,21 +712,20 @@ public:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    if (m_hexes.empty())
+    if(m_hexes.empty())
     {
       // m_hexes depend only on mesh so should not change once computed.
       populateHexesFromMesh<ExecSpace>();
     }
     axom::ArrayView<const HexahedronType> hexes_device_view = m_hexes.view();
 
-    if (m_hex_bbs.empty())
+    if(m_hex_bbs.empty())
     {
       // Does m_hex_bbs have to be a member?  I's only used here.  BTNG.
       // Or if it's saved, it needs not be recomputed if the computational
       // mesh doesn't change.
       m_hex_bbs =
         axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
-
 
       // Get bounding boxes for hexahedral elements
       axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
@@ -786,17 +785,18 @@ public:
 
     // Tetrahedrons from hexes (24 for each hex)
     bool doInitializeTetsFromHexes = false;
-    if (m_tets_from_hexes_device.empty())
+    if(m_tets_from_hexes_device.empty())
     {
-      m_tets_from_hexes_device = axom::Array<TetrahedronType>(
-        m_cellCount * NUM_TETS_PER_HEX,
-        m_cellCount * NUM_TETS_PER_HEX,
-        device_allocator);
+      m_tets_from_hexes_device =
+        axom::Array<TetrahedronType>(m_cellCount * NUM_TETS_PER_HEX,
+                                     m_cellCount * NUM_TETS_PER_HEX,
+                                     device_allocator);
       doInitializeTetsFromHexes = true;
     }
     else
     {
-      SLIC_ASSERT( m_tets_from_hexes_device.size() == m_cellCount * NUM_TETS_PER_HEX );
+      SLIC_ASSERT(m_tets_from_hexes_device.size() ==
+                  m_cellCount * NUM_TETS_PER_HEX);
     }
     axom::ArrayView<TetrahedronType> tets_from_hexes_device_view =
       m_tets_from_hexes_device.view();
@@ -815,11 +815,11 @@ public:
       axom::Array<IndexType>(newTotalCandidates_host, device_allocator);
     auto newTotalCandidates_device_view = newTotalCandidates_device.view();
 
-    if (doInitializeTetsFromHexes)
+    if(doInitializeTetsFromHexes)
     {
       SLIC_INFO(axom::fmt::format(
-                  "{:-^80}",
-                  " Decomposing each hexahedron element into 24 tetrahedrons "));
+        "{:-^80}",
+        " Decomposing each hexahedron element into 24 tetrahedrons "));
 
       using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
 
@@ -1127,9 +1127,10 @@ public:
     // auto* shapeVolFrac = this->getDC()->GetField(shapeVolFracName);
     auto shapeVolFrac = getScalarCellData(shapeVolFracName);
     SLIC_ERROR_IF(shapeVolFrac.empty(),
-                  "Field '" + shapeVolFracName + "' must be pre-allocated"
-                  " in the Conduit Node computational mesh before using"
-                  " IntersectionShaper::applyReplacementRules." );
+                  "Field '" + shapeVolFracName +
+                    "' must be pre-allocated"
+                    " in the Conduit Node computational mesh before using"
+                    " IntersectionShaper::applyReplacementRules.");
 
     // Allocate some memory for the replacement rule data arrays.
     int execSpaceAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -2127,11 +2128,12 @@ private:
                           "For a computational mesh in a conduit::Node, all"
                           " output fields must be preallocated before shaping."
                           "  IntersectionShaper will NOT contravene the user's"
-                          " memory management.  The cell-centered field '"
-                          + fieldPath + "' is missing.  Please pre-allocate"
-                          " this output memory, or to have IntersectionShaper"
-                          " allocate it, pass in the mesh as a sidre::Group"
-                          " with your specific allocator id.");
+                          " memory management.  The cell-centered field '" +
+                            fieldPath +
+                            "' is missing.  Please pre-allocate"
+                            " this output memory, or to have IntersectionShaper"
+                            " allocate it, pass in the mesh as a sidre::Group"
+                            " with your specific allocator id.");
         }
         else
         {
@@ -2162,7 +2164,8 @@ private:
             axom::sidre::Group* volFracGrp = nullptr;
             if(m_bpGrp->hasGroup("matsets/material/volume_fractions"))
             {
-              volFracGrp = m_bpGrp->getGroup("matsets/material/volume_fractions");
+              volFracGrp =
+                m_bpGrp->getGroup("matsets/material/volume_fractions");
             }
             else
             {
@@ -2216,7 +2219,7 @@ public:
 
     auto vertCoords_device_view = vertCoords.view();
 
-    SLIC_ASSERT(m_hexes.empty()); // No need to repeat this work.
+    SLIC_ASSERT(m_hexes.empty());  // No need to repeat this work.
     m_hexes = axom::Array<HexahedronType>(m_cellCount, m_cellCount, allocId);
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
     constexpr double ZERO_THRESHOLD = 1.e-10;
