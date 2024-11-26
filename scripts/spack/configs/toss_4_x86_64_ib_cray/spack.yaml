@@ -161,9 +161,9 @@ spack:
       - spec: hip@5.7.1
         prefix: /opt/rocm-5.7.1/hip
       - spec: hip@6.1.2
-        prefix: /opt/rocm-6.1.2/hip
+        prefix: /opt/rocm-6.1.2
       - spec: hip@6.2.1
-        prefix: /opt/rocm-6.2.1/hip
+        prefix: /opt/rocm-6.2.1
 
     llvm-amdgpu:
       version: [5.2.3, 5.4.3, 5.6.0, 5.7.1, 6.1.2, 6.2.1]
