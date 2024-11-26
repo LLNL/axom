@@ -80,7 +80,13 @@ public:
   std::vector<double> boxMins {-2, -2, -2};
   std::vector<double> boxMaxs {2, 2, 2};
   std::vector<int> boxResolution {20, 20, 20};
-  int boxDim {-1};
+  int getBoxDim() const
+  {
+    auto d = boxResolution.size();
+    SLIC_ASSERT(boxMins.size() == d);
+    SLIC_ASSERT(boxMaxs.size() == d);
+    return int(d);
+  }
 
   // The shape to run.
   std::string testShape {"tetmesh"};
@@ -125,7 +131,7 @@ public:
   {
     mfem::Mesh* mesh = nullptr;
 
-    switch(boxDim)
+    switch(getBoxDim())
     {
     case 2:
     {
@@ -271,11 +277,6 @@ public:
       inline_mesh_subcommand->add_option("--res", boxResolution)
         ->description("Resolution of the box mesh (i,j[,k])")
         ->expected(2, 3)
-        ->required();
-
-      inline_mesh_subcommand->add_option("-d,--dimension", boxDim)
-        ->description("Dimension of the box mesh")
-        ->check(axom::CLI::PositiveNumber)
         ->required();
     }
 
@@ -779,7 +780,7 @@ axom::klee::Shape createShape_Plane()
   Point3D center {0.5 *
                   (primal::NumericArray<double, 3>(params.boxMins.data()) +
                    primal::NumericArray<double, 3>(params.boxMaxs.data()))};
-  primal::Vector<double, 3> normal {1.0, 0.0, 0.0};
+  primal::Vector<double, 3> normal = params.direction.empty() ? primal::Vector3D{1.0, 0.0, 0.0} : primal::Vector3D{params.direction.data()}.unitVector();
   const primal::Plane<double, 3> plane {normal, center, true};
 
   axom::klee::Geometry planeGeometry(prop, plane, scaleOp);
@@ -1005,7 +1006,8 @@ int main(int argc, char** argv)
   // Create simple ShapeSet for the example.
   //---------------------------------------------------------------------------
   axom::klee::ShapeSet shapeSet;
-  switch(params.boxDim)
+  SLIC_ERROR_IF(params.getBoxDim() != 3, "This example is only in 3D.");
+  switch(params.getBoxDim())
   {
   case 2:
     shapeSet = create2DShapeSet(ds);

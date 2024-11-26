@@ -301,7 +301,7 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                            --refinements 2
                            --scale 0.75 0.75 0.75
                            --dir 0.2 0.4 0.8
-                           inline_mesh --min -2 -2 -2 --max 2 2 2 --res 30 30 30 -d 3
+                           inline_mesh --min -2 -2 -2 --max 2 2 2 --res 30 30 30
                 NUM_MPI_TASKS ${_nranks})
             endforeach()
         endforeach()
