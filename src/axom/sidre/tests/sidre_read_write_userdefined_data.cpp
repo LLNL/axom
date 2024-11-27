@@ -11,6 +11,14 @@ using axom::sidre::Group;
 using axom::sidre::IndexType;
 using axom::sidre::View;
 
+// This test is meant to mock how Serac stores and loads Quadrature Data.
+// The data is stored in Axom Array's of material states and are a user defined
+// structure of POD types.
+//
+// There are two types of tests, one is where the data is managed by Sidre and
+// the other is where the data is external to sidre and is saved and loaded to
+// disk. The latter is what Serac is doing.
+
 //-----Mock Serac Structs------------------------------------------------------
 
 /**
