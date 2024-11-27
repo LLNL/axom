@@ -179,43 +179,49 @@ void fill(StateThree& state, double value)
 
 //---------------------
 
-struct StateTensor
+struct StateTensorSmall
 {
-  //tensor<double, 2, 2> t;
   tensor<double, 2> t;
   double x;
 };
 
 template <>
-bool check(const StateTensor& state, double value)
+bool check(const StateTensorSmall& state, double value)
 {
-  // SLIC_INFO(axom::fmt::format("check({}, {}, {}, {}), {}",
-  //                             state.t(0, 0),
-  //                             state.t(0, 1),
-  //                             state.t(1, 0),
-  //                             state.t(1, 1),
-  //                             state.x));
+  return (state.t(0) == value) && (state.t(1) == (value + 1)) && (state.x == (value + 4));
+}
 
-  // return (state.t(0, 0) == value) && (state.t(0, 1) == (value + 1)) &&
-  //   (state.t(1, 0) == (value + 2)) && (state.t(1, 1) == (value + 3)) &&
-  //   (state.x == (value + 4));
+template <>
+void fill(StateTensorSmall& state, double value)
+{
+  state.t(0) = value;
+  state.t(1) = value + 1;
+  state.x = value + 4;
+}
 
-  SLIC_INFO(
-    axom::fmt::format("check({}, {}), {}", state.t(0), state.t(1), state.x));
+//---------------------
 
-  return (state.t(0) == value) && (state.t(1) == (value + 1)) &&
+struct StateTensorLarge
+{
+  tensor<double, 2, 2> t;
+  double x;
+};
+
+template <>
+bool check(const StateTensorLarge& state, double value)
+{
+  return (state.t(0, 0) == value) && (state.t(0, 1) == (value + 1)) &&
+    (state.t(1, 0) == (value + 2)) && (state.t(1, 1) == (value + 3)) &&
     (state.x == (value + 4));
 }
 
 template <>
-void fill(StateTensor& state, double value)
+void fill(StateTensorLarge& state, double value)
 {
-  // state.t(0,0) = value;
-  // state.t(0,1) = value + 1;
-  // state.t(1,0) = value + 2;
-  // state.t(1,1) = value + 3;
-  state.t(0) = value;
-  state.t(1) = value + 1;
+  state.t(0,0) = value;
+  state.t(0,1) = value + 1;
+  state.t(1,0) = value + 2;
+  state.t(1,1) = value + 3;
   state.x = value + 4;
 }
 
@@ -276,28 +282,28 @@ void test_user_defined_data()
 
   // Create datastore
   DataStore ds;
-  Group* qd_group = ds.getRoot()->createGroup("quadraturedata");
+  Group* root = ds.getRoot();
 
   // get size
   auto num_states = static_cast<IndexType>(states.size());
-  auto state_size = static_cast<IndexType>(sizeof(states[0]));
+  auto state_size = static_cast<IndexType>(sizeof(*(states.begin())));
   auto total_size = num_states * state_size;
 
-  // write shape
-  qd_group->createViewScalar("num_states", num_states);
-  qd_group->createViewScalar("state_size", state_size);
-  qd_group->createViewScalar("total_size", total_size);
   SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
   SLIC_INFO(axom::fmt::format("State Size={}", state_size));
   SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
-  SLIC_INFO(axom::fmt::format("Double Size={}", sizeof(double)));
-  SLIC_INFO(axom::fmt::format("Total Size/Double Size={}",
-                              total_size / sizeof(double)));
+  SLIC_INFO(axom::fmt::format("Total Size/State Size={}",
+                              total_size / state_size));
+
+  // write shape
+  root->createViewScalar("num_states", num_states);
+  root->createViewScalar("state_size", state_size);
+  root->createViewScalar("total_size", total_size);
 
   // write data to datastore as bytes
-  View* data_view =
-    qd_group->createViewAndAllocate("states", axom::sidre::UINT8_ID, total_size);
-  std::uint8_t* sidre_state_data = data_view->getData();
+  View* states_view =
+    root->createViewAndAllocate("states", axom::sidre::UINT8_ID, total_size);
+  std::uint8_t* sidre_state_data = states_view->getData();
   memcpy(sidre_state_data, states.data(), static_cast<std::size_t>(total_size));
 
   // mess with data before overriding it back to original in sidre
@@ -320,40 +326,47 @@ void test_external_user_defined_data()
 
   // Create datastore
   DataStore ds;
-  Group* qd_group = ds.getRoot()->createGroup("quadraturedata");
+  Group* root = ds.getRoot();
 
   // get size
   auto num_states = static_cast<IndexType>(states.size());
-  auto state_size = static_cast<IndexType>(sizeof(states[0]));
+  auto state_size = static_cast<IndexType>(sizeof(*(states.begin())));
   auto total_size = num_states * state_size;
   auto num_uint8s = total_size / sizeof(std::uint8_t);
 
+  SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
+  SLIC_INFO(axom::fmt::format("State Size={}", state_size));
+  SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
+  SLIC_INFO(axom::fmt::format("Total Size/State Size={}",
+                              total_size / state_size));
+  SLIC_INFO(axom::fmt::format("Num of uint8={}", num_uint8s));
+
   // write shape
-  qd_group->createViewScalar("num_states", num_states);
-  qd_group->createViewScalar("state_size", state_size);
-  qd_group->createViewScalar("total_size", total_size);
+  root->createViewScalar("num_states", num_states);
+  root->createViewScalar("state_size", state_size);
+  root->createViewScalar("total_size", total_size);
 
   // Add states as an external buffer
-  View* states_view = qd_group->createView("states");
+  View* states_view = root->createView("states");
   states_view->setExternalDataPtr(axom::sidre::UINT8_ID,
                                   num_uint8s,
                                   states.data());
 
   // Save the array data in to a file
-  std::string filename = "sidre_external_quadraturedata";
-  qd_group->save(filename);
+  std::string filename = "sidre_external_states";
+  root->save(filename);
 
   // Create new array to fill with saved data
   axom::Array<T, DIM> saved_states(size, size);
   fill_array(saved_states, -1, false);
 
   // Load data into new array
-  Group* new_qd_group = ds.getRoot()->createGroup("new_quadraturedata");
-  new_qd_group->load(filename);
-  EXPECT_TRUE(new_qd_group->hasView("states"));
-  View* new_states_view = new_qd_group->getView("states");
+  Group* loaded_group = root->createGroup("loaded_data");
+  loaded_group->load(filename);
+  EXPECT_TRUE(loaded_group->hasView("states"));
+  View* new_states_view = loaded_group->getView("states");
   new_states_view->setExternalDataPtr(saved_states.data());
-  new_qd_group->loadExternalData(filename);
+  loaded_group->loadExternalData(filename);
 
   // Test data was read into the new location and overwrote the bad data
   check_array(saved_states);
@@ -363,40 +376,57 @@ void test_external_user_defined_data()
 
 TEST(sidre, OneD_double_readandwrite) { test_user_defined_data<double, 1>(); }
 
-// TEST(sidre, OneD_StateOne_readandwrite) { test_user_defined_data<StateOne, 1>(); }
+TEST(sidre, OneD_StateOne_readandwrite) { test_user_defined_data<StateOne, 1>(); }
 
-// TEST(sidre, OneD_StateTwo_readandwrite) { test_user_defined_data<StateTwo, 1>(); }
+TEST(sidre, OneD_StateTwo_readandwrite) { test_user_defined_data<StateTwo, 1>(); }
 
-// TEST(sidre, OneD_StateThree_readandwrite) { test_user_defined_data<StateThree, 1>(); }
+TEST(sidre, OneD_StateThree_readandwrite) { test_user_defined_data<StateThree, 1>(); }
 
-// TEST(sidre, OneD_StateTensor_readandwrite) { test_user_defined_data<StateTensor, 1>(); }
+TEST(sidre, OneD_StateTensorSmall_readandwrite) { test_user_defined_data<StateTensorSmall, 1>(); }
 
-// //-------------------------
+TEST(sidre, OneD_StateTensorLarge_readandwrite) { test_user_defined_data<StateTensorLarge, 1>(); }
 
-// TEST(sidre, TwoD_double_readandwrite) { test_user_defined_data<double, 2>(); }
+//-------------------------
 
-// TEST(sidre, TwoD_StateOne_readandwrite) { test_user_defined_data<StateOne, 2>(); }
+TEST(sidre, TwoD_double_readandwrite) { test_user_defined_data<double, 2>(); }
 
-// TEST(sidre, TwoD_StateTwo_readandwrite) { test_user_defined_data<StateTwo, 2>(); }
+TEST(sidre, TwoD_StateOne_readandwrite) { test_user_defined_data<StateOne, 2>(); }
 
-// TEST(sidre, TwoD_StateThree_readandwrite) { test_user_defined_data<StateThree, 2>(); }
+TEST(sidre, TwoD_StateTwo_readandwrite) { test_user_defined_data<StateTwo, 2>(); }
 
-TEST(sidre, TwoD_StateTensor_readandwrite)
-{
-  test_user_defined_data<StateTensor, 2>();
-}
+TEST(sidre, TwoD_StateThree_readandwrite) { test_user_defined_data<StateThree, 2>(); }
+
+TEST(sidre, TwoD_StateTensorSmall_readandwrite) { test_user_defined_data<StateTensorSmall, 2>(); }
+
+TEST(sidre, TwoD_StateTensorLarge_readandwrite) { test_user_defined_data<StateTensorLarge, 2>(); }
 
 //------------------------------------------------------------------------------
 
-// TEST(sidre, OneD_double_external_readandwrite) { test_external_user_defined_data<double, 1>(); }
+TEST(sidre, OneD_double_external_readandwrite) { test_external_user_defined_data<double, 1>(); }
 
-// TEST(sidre, OneD_StateOne_external_readandwrite) { test_external_user_defined_data<StateOne, 1>(); }
+TEST(sidre, OneD_StateOne_external_readandwrite) { test_external_user_defined_data<StateOne, 1>(); }
 
-// TEST(sidre, OneD_StateTwo_external_readandwrite) { test_external_user_defined_data<StateTwo, 1>(); }
+TEST(sidre, OneD_StateTwo_external_readandwrite) { test_external_user_defined_data<StateTwo, 1>(); }
 
-// TEST(sidre, OneD_StateThree_external_readandwrite) { test_external_user_defined_data<StateThree, 1>(); }
+TEST(sidre, OneD_StateThree_external_readandwrite) { test_external_user_defined_data<StateThree, 1>(); }
 
-// TEST(sidre, OneD_StateTensor_external_readandwrite) { test_external_user_defined_data<StateTensor, 1>(); }
+TEST(sidre, OneD_StateTensorSmall_external_readandwrite) { test_external_user_defined_data<StateTensorSmall, 1>(); }
+
+TEST(sidre, OneD_StateTensorLarge_external_readandwrite) { test_external_user_defined_data<StateTensorLarge, 1>(); }
+
+//-------------------------
+
+TEST(sidre, TwoD_double_external_readandwrite) { test_external_user_defined_data<double, 2>(); }
+
+TEST(sidre, TwoD_StateOne_external_readandwrite) { test_external_user_defined_data<StateOne, 2>(); }
+
+TEST(sidre, TwoD_StateTwo_external_readandwrite) { test_external_user_defined_data<StateTwo, 2>(); }
+
+TEST(sidre, TwoD_StateThree_external_readandwrite) { test_external_user_defined_data<StateThree, 2>(); }
+
+TEST(sidre, TwoD_StateTensorSmall_external_readandwrite) { test_external_user_defined_data<StateTensorSmall, 2>(); }
+
+TEST(sidre, TwoD_StateTensorLarge_external_readandwrite) { test_external_user_defined_data<StateTensorLarge, 2>(); }
 
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])
