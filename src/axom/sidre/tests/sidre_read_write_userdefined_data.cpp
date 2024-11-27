@@ -196,7 +196,8 @@ struct StateTensorSmall
 template <>
 bool check(const StateTensorSmall& state, double value)
 {
-  return (state.t(0) == value) && (state.t(1) == (value + 1)) && (state.x == (value + 4));
+  return (state.t(0) == value) && (state.t(1) == (value + 1)) &&
+    (state.x == (value + 4));
 }
 
 template <>
@@ -226,10 +227,10 @@ bool check(const StateTensorLarge& state, double value)
 template <>
 void fill(StateTensorLarge& state, double value)
 {
-  state.t(0,0) = value;
-  state.t(0,1) = value + 1;
-  state.t(1,0) = value + 2;
-  state.t(1,1) = value + 3;
+  state.t(0, 0) = value;
+  state.t(0, 1) = value + 1;
+  state.t(1, 0) = value + 2;
+  state.t(1, 1) = value + 3;
   state.x = value + 4;
 }
 
@@ -300,8 +301,8 @@ void test_user_defined_data()
   SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
   SLIC_INFO(axom::fmt::format("State Size={}", state_size));
   SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
-  SLIC_INFO(axom::fmt::format("Total Size/State Size={}",
-                              total_size / state_size));
+  SLIC_INFO(
+    axom::fmt::format("Total Size/State Size={}", total_size / state_size));
 
   // write shape
   root->createViewScalar("num_states", num_states);
@@ -345,8 +346,8 @@ void test_external_user_defined_data()
   SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
   SLIC_INFO(axom::fmt::format("State Size={}", state_size));
   SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
-  SLIC_INFO(axom::fmt::format("Total Size/State Size={}",
-                              total_size / state_size));
+  SLIC_INFO(
+    axom::fmt::format("Total Size/State Size={}", total_size / state_size));
   SLIC_INFO(axom::fmt::format("Num of uint8={}", num_uint8s));
 
   // write shape
@@ -384,57 +385,123 @@ void test_external_user_defined_data()
 
 TEST(sidre, OneD_double_readandwrite) { test_user_defined_data<double, 1>(); }
 
-TEST(sidre, OneD_StateOne_readandwrite) { test_user_defined_data<StateOne, 1>(); }
+TEST(sidre, OneD_StateOne_readandwrite)
+{
+  test_user_defined_data<StateOne, 1>();
+}
 
-TEST(sidre, OneD_StateTwo_readandwrite) { test_user_defined_data<StateTwo, 1>(); }
+TEST(sidre, OneD_StateTwo_readandwrite)
+{
+  test_user_defined_data<StateTwo, 1>();
+}
 
-TEST(sidre, OneD_StateThree_readandwrite) { test_user_defined_data<StateThree, 1>(); }
+TEST(sidre, OneD_StateThree_readandwrite)
+{
+  test_user_defined_data<StateThree, 1>();
+}
 
-TEST(sidre, OneD_StateTensorSmall_readandwrite) { test_user_defined_data<StateTensorSmall, 1>(); }
+TEST(sidre, OneD_StateTensorSmall_readandwrite)
+{
+  test_user_defined_data<StateTensorSmall, 1>();
+}
 
-TEST(sidre, OneD_StateTensorLarge_readandwrite) { test_user_defined_data<StateTensorLarge, 1>(); }
+TEST(sidre, OneD_StateTensorLarge_readandwrite)
+{
+  test_user_defined_data<StateTensorLarge, 1>();
+}
 
 //-------------------------
 
 TEST(sidre, TwoD_double_readandwrite) { test_user_defined_data<double, 2>(); }
 
-TEST(sidre, TwoD_StateOne_readandwrite) { test_user_defined_data<StateOne, 2>(); }
+TEST(sidre, TwoD_StateOne_readandwrite)
+{
+  test_user_defined_data<StateOne, 2>();
+}
 
-TEST(sidre, TwoD_StateTwo_readandwrite) { test_user_defined_data<StateTwo, 2>(); }
+TEST(sidre, TwoD_StateTwo_readandwrite)
+{
+  test_user_defined_data<StateTwo, 2>();
+}
 
-TEST(sidre, TwoD_StateThree_readandwrite) { test_user_defined_data<StateThree, 2>(); }
+TEST(sidre, TwoD_StateThree_readandwrite)
+{
+  test_user_defined_data<StateThree, 2>();
+}
 
-TEST(sidre, TwoD_StateTensorSmall_readandwrite) { test_user_defined_data<StateTensorSmall, 2>(); }
+TEST(sidre, TwoD_StateTensorSmall_readandwrite)
+{
+  test_user_defined_data<StateTensorSmall, 2>();
+}
 
-TEST(sidre, TwoD_StateTensorLarge_readandwrite) { test_user_defined_data<StateTensorLarge, 2>(); }
+TEST(sidre, TwoD_StateTensorLarge_readandwrite)
+{
+  test_user_defined_data<StateTensorLarge, 2>();
+}
 
 //------------------------------------------------------------------------------
 
-TEST(sidre, OneD_double_external_readandwrite) { test_external_user_defined_data<double, 1>(); }
+TEST(sidre, OneD_double_external_readandwrite)
+{
+  test_external_user_defined_data<double, 1>();
+}
 
-TEST(sidre, OneD_StateOne_external_readandwrite) { test_external_user_defined_data<StateOne, 1>(); }
+TEST(sidre, OneD_StateOne_external_readandwrite)
+{
+  test_external_user_defined_data<StateOne, 1>();
+}
 
-TEST(sidre, OneD_StateTwo_external_readandwrite) { test_external_user_defined_data<StateTwo, 1>(); }
+TEST(sidre, OneD_StateTwo_external_readandwrite)
+{
+  test_external_user_defined_data<StateTwo, 1>();
+}
 
-TEST(sidre, OneD_StateThree_external_readandwrite) { test_external_user_defined_data<StateThree, 1>(); }
+TEST(sidre, OneD_StateThree_external_readandwrite)
+{
+  test_external_user_defined_data<StateThree, 1>();
+}
 
-TEST(sidre, OneD_StateTensorSmall_external_readandwrite) { test_external_user_defined_data<StateTensorSmall, 1>(); }
+TEST(sidre, OneD_StateTensorSmall_external_readandwrite)
+{
+  test_external_user_defined_data<StateTensorSmall, 1>();
+}
 
-TEST(sidre, OneD_StateTensorLarge_external_readandwrite) { test_external_user_defined_data<StateTensorLarge, 1>(); }
+TEST(sidre, OneD_StateTensorLarge_external_readandwrite)
+{
+  test_external_user_defined_data<StateTensorLarge, 1>();
+}
 
 //-------------------------
 
-TEST(sidre, TwoD_double_external_readandwrite) { test_external_user_defined_data<double, 2>(); }
+TEST(sidre, TwoD_double_external_readandwrite)
+{
+  test_external_user_defined_data<double, 2>();
+}
 
-TEST(sidre, TwoD_StateOne_external_readandwrite) { test_external_user_defined_data<StateOne, 2>(); }
+TEST(sidre, TwoD_StateOne_external_readandwrite)
+{
+  test_external_user_defined_data<StateOne, 2>();
+}
 
-TEST(sidre, TwoD_StateTwo_external_readandwrite) { test_external_user_defined_data<StateTwo, 2>(); }
+TEST(sidre, TwoD_StateTwo_external_readandwrite)
+{
+  test_external_user_defined_data<StateTwo, 2>();
+}
 
-TEST(sidre, TwoD_StateThree_external_readandwrite) { test_external_user_defined_data<StateThree, 2>(); }
+TEST(sidre, TwoD_StateThree_external_readandwrite)
+{
+  test_external_user_defined_data<StateThree, 2>();
+}
 
-TEST(sidre, TwoD_StateTensorSmall_external_readandwrite) { test_external_user_defined_data<StateTensorSmall, 2>(); }
+TEST(sidre, TwoD_StateTensorSmall_external_readandwrite)
+{
+  test_external_user_defined_data<StateTensorSmall, 2>();
+}
 
-TEST(sidre, TwoD_StateTensorLarge_external_readandwrite) { test_external_user_defined_data<StateTensorLarge, 2>(); }
+TEST(sidre, TwoD_StateTensorLarge_external_readandwrite)
+{
+  test_external_user_defined_data<StateTensorLarge, 2>();
+}
 
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])
