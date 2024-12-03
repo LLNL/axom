@@ -1732,57 +1732,64 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
 
   // Solve a quadratic to find the parameters u0 of the B(u0, v) isocurves
   //  that are closest to the line
-  double a = Vector3::scalar_triple_product(q00, line.direction(), e00);
-  double c = Vector3::dot_product(qn, line.direction());
-  double b = Vector3::scalar_triple_product(q10, line.direction(), e11) - a - c;
+  double au = Vector3::scalar_triple_product(q00, line.direction(), e00);
+  double cu = Vector3::dot_product(qn, line.direction());
+  double bu =
+    Vector3::scalar_triple_product(q10, line.direction(), e11) - au - cu;
+
+  // Rescale the coefficients to avoid (some) numerical issues
+  double su = std::max(std::fabs(au), std::max(fabs(bu), fabs(cu)));
+  au /= su;
+  bu /= su;
+  cu /= su;
 
   // Decide what to do based on the coefficients
-  if(!axom::utilities::isNearlyEqual(b, 0.0, EPS) ||
-     !axom::utilities::isNearlyEqual(c, 0.0, EPS))
+  if(!axom::utilities::isNearlyEqual(su, 0.0, primal::PRIMAL_TINY))
   {
     double u1, u2;
 
     // Decide what to do based on the discriminant
-    double det = b * b - 4 * a * c;
+    double det = bu * bu - 4 * au * cu;
     if(det < 0)  // No solutions
     {
       return false;
     }
-    else if(axom::utilities::isNearlyEqual(c, 0.0, EPS))  // Quadratic is a line
+    else if(axom::utilities::isNearlyEqual(cu, 0.0, EPS))  // Quadratic is a line
     {
-      u1 = -a / b;
+      u1 = -au / bu;
       u2 = -1;
     }
     else if(axom::utilities::isNearlyEqual(det, 0.0, EPS))  // One repeated solution
     {
-      u1 = -b / (2 * c);
+      u1 = -bu / (2 * cu);
       u2 = -1;
     }
     else
     {
-      u1 = 0.5 * (-b - std::copysign(std::sqrt(det), b));
-      u2 = a / u1;
-      u1 /= c;
+      u1 = 0.5 * (-bu - std::copysign(std::sqrt(det), bu));
+      u2 = au / u1;
+      u1 /= cu;
     }
 
     // Find the point on the isocurve that is closest to the ray
     for(auto u0 : {u1, u2})
     {
-      if(u0 < 0.0 || u0 >= 1.0) continue;
+      if(u0 < -EPS || u0 >= 1.0 + EPS) continue;
 
       Vector3 pa = (1 - u0) * q00 + u0 * q10;
       Vector3 pb = (1 - u0) * e00 + u0 * e11;  // actually stores pb - pa
       Vector3 n = Vector3::cross_product(line.direction(), pb);
       det = Vector3::dot_product(n, n);
 
-      if(!axom::utilities::isNearlyEqual(det, 0.0, EPS))
+      // Need a separate tolerance for this for the case of small patches
+      if(!axom::utilities::isNearlyEqual(det, 0.0, primal::PRIMAL_TINY))
       {
         n = Vector3::cross_product(n, pa);
         double t0 = Vector3::dot_product(n, pb) / det;
         double v0 = Vector3::dot_product(n, line.direction()) / det;
-        if(0.0 <= v0 && v0 < 1.0)
+        if(-EPS <= v0 && v0 <= 1.0 + EPS)
         {
-          if(t0 >= 0.0 || !isRay)
+          if(t0 >= -EPS || !isRay)
           {
             t.push_back(t0);
             u.push_back(u0);
@@ -1825,19 +1832,23 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
   else
   {
     // Switch to finding B(u, v0) isocurves instead
-
-    // Recalculate the quadratic coefficients
     Vector3 e01 = q11 - q01;
     Vector3 qm = Vector3::cross_product(e00, -e11);
     q01.array() -= line.origin().array();
 
-    a = Vector3::scalar_triple_product(q00, line.direction(), e10);
-    c = Vector3::dot_product(qm, line.direction());
-    b = Vector3::scalar_triple_product(q01, line.direction(), e01) - a - c;
+    // Find the analogous coefficients for B(u, v0) isocurves
+    double av = Vector3::scalar_triple_product(q00, line.direction(), e10);
+    double cv = Vector3::dot_product(qm, line.direction());
+    double bv =
+      Vector3::scalar_triple_product(q01, line.direction(), e01) - av - cv;
+
+    double sv = std::max(std::fabs(av), std::max(fabs(bv), fabs(cv)));
+    av /= sv;
+    bv /= sv;
+    cv /= sv;
 
     // If these are also all zero, then the ray is coplanar to a polygonal patch
-    if(axom::utilities::isNearlyEqual(b, 0.0, EPS) &&
-         axom::utilities::isNearlyEqual(c, 0.0, EPS))
+    if(axom::utilities::isNearlyEqual(sv, 0.0, primal::PRIMAL_TINY))
     {
       // This case indicates the ray is tangent to the surface,
       //  which we don't count as an intersection
@@ -1847,46 +1858,48 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     double v1, v2;
 
     // Decide what to do based on the discriminant
-    double det = b * b - 4 * a * c;
+    double det = bv * bv - 4 * av * cv;
     if(det < 0)  // No solutions
     {
       return false;
     }
-    else if(axom::utilities::isNearlyEqual(c, 0.0, EPS))  // Quadratic is a line
+    else if(axom::utilities::isNearlyEqual(cv, 0.0, EPS))  // Quadratic is a line
     {
-      v1 = -a / b;
+      v1 = -av / bv;
       v2 = -1;
     }
     else if(axom::utilities::isNearlyEqual(det, 0.0, EPS))  // One repeated solution
     {
-      v1 = -b / (2 * c);
+      v1 = -bv / (2 * cv);
       v2 = -1;
     }
     else
     {
-      v1 = 0.5 * (-b - std::copysign(std::sqrt(det), b));
-      v2 = a / v1;
-      v1 /= c;
+      v1 = 0.5 * (-bv - std::copysign(std::sqrt(det), bv));
+      v2 = av / v1;
+      v1 /= cv;
     }
 
     // Find the point on the isocurve that is closest to the ray
     for(auto v0 : {v1, v2})
     {
-      if(v0 < 0.0 || v0 > 1.0) continue;
+      if(v0 < -EPS || v0 >= 1.0 + EPS) continue;
 
       Vector3 pa = (1.0 - v0) * q00 + v0 * q01;
       Vector3 pb = (1.0 - v0) * e10 + v0 * e01;  // actually stores pb - pa
       Vector3 n = Vector3::cross_product(line.direction(), pb);
       det = Vector3::dot_product(n, n);
 
-      if(!axom::utilities::isNearlyEqual(det, 0.0, EPS))
+      // Need a separate tolerance for this for the case of small patches
+      if(!axom::utilities::isNearlyEqual(det, 0.0, primal::PRIMAL_TINY))
       {
         n = Vector3::cross_product(n, pa);
         double t0 = Vector3::dot_product(n, pb) / det;
         double u0 = Vector3::dot_product(n, line.direction()) / det;
-        if(0.0 <= u0 && u0 <= 1.0)
+
+        if(-EPS <= u0 && u0 <= 1.0 + EPS)
         {
-          if(t0 >= 0.0 || !isRay)
+          if(t0 >= -EPS || !isRay)
           {
             t.push_back(t0);
             u.push_back(u0);

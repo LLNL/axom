@@ -663,8 +663,10 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * \param [out] u The u parameter(s) of intersection point(s).
  * \param [out] v The v parameter(s) of intersection point(s).
  * \param [out] t The t parameter(s) of intersection point(s).
- * \param [in] EPS The tolerance for intersection.
- *
+ * \param [in] tol The tolerance for intersection (for physical distances).
+ * \param [in] EPS The tolerance for intersection (for parameter distances).
+ * \param [in] isHalfOpen True if the patch is parameterized in [0,1)^2.
+ * 
  * For bilinear patches, implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
  * For higher order patches, intersections are found through recursive subdivison
  *  until the subpatch is approximated by a bilinear patch.
@@ -679,13 +681,18 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
                                 axom::Array<T>& u,
                                 axom::Array<T>& v,
                                 double tol = 1e-8,
-                                double EPS = 1e-8)
+                                double EPS = 1e-8,
+                                bool isHalfOpen = false)
 {
   const int order_u = patch.getOrder_u();
   const int order_v = patch.getOrder_v();
 
   // for efficiency, linearity check actually uses a squared tolerance
   const double sq_tol = tol * tol;
+
+  // Store the candidate intersections
+  axom::Array<T> tc, uc, vc;
+  bool foundIntersection = false;
 
   if(order_u < 1 || order_v < 1)
   {
@@ -695,16 +702,17 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
   else if(order_u == 1 && order_v == 1)
   {
     primal::Line<T, 3> line(ray.origin(), ray.direction());
-    return detail::intersect_line_bilinear_patch(line,
-                                                 patch(0, 0),
-                                                 patch(order_u, 0),
-                                                 patch(order_u, order_v),
-                                                 patch(0, order_v),
-                                                 t,
-                                                 u,
-                                                 v,
-                                                 EPS,
-                                                 true);
+    foundIntersection =
+      detail::intersect_line_bilinear_patch(line,
+                                            patch(0, 0),
+                                            patch(order_u, 0),
+                                            patch(order_u, order_v),
+                                            patch(0, order_v),
+                                            tc,
+                                            uc,
+                                            vc,
+                                            EPS,
+                                            true);
   }
   else
   {
@@ -713,22 +721,40 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
     double u_offset = 0., v_offset = 0.;
     double u_scale = 1., v_scale = 1.;
 
-    return detail::intersect_line_patch(line,
-                                        patch,
-                                        t,
-                                        u,
-                                        v,
-                                        sq_tol,
-                                        0.0,
-                                        order_u,
-                                        order_v,
-                                        u_offset,
-                                        u_scale,
-                                        v_offset,
-                                        v_scale,
-                                        EPS,
-                                        true);
+    foundIntersection = detail::intersect_line_patch(line,
+                                                     patch,
+                                                     tc,
+                                                     uc,
+                                                     vc,
+                                                     order_u,
+                                                     order_v,
+                                                     u_offset,
+                                                     u_scale,
+                                                     v_offset,
+                                                     v_scale,
+                                                     sq_tol,
+                                                     EPS,
+                                                     true);
   }
+
+  {
+    t = tc;
+    u = uc;
+    v = vc;
+   
+    return foundIntersection;
+  }
+  // else
+  // {
+  //   for(int i = 0; i < tc.size(); ++i)
+  //   {
+  //     const T t0 = tc[i];
+  //     const T u0 = uc[i];
+  //     const T v0 = vc[i];
+
+  //     if(u0 >)
+  //   }
+  // }
 }
 
 }  // namespace primal
