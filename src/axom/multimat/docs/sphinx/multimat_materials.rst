@@ -15,13 +15,18 @@ contains one or more materials.
 Cell Material Relation
 #######################
 
-The distribution of materials over the mesh is determined using the Cell-Material Relation (CMR).
+The distribution of materials over the mesh is determined using the **Cell-Material Relation** (CMR).
 If a mesh has *N* cells and *M* materials then each cell can have *M* possible values
 if it contains all of the possible materials. There is a total of N*M values if each
 cell contains all materials. There are multiple ways to specify the CMR to MultiMat,
 defining how materials are distributed over the mesh. The easiest method for defining
 the CMR is to provide a bool vector containing true/false values for whether the cell/material
 combination is valid.
+
+.. figure:: figures/relation.png
+   :figwidth: 800px
+
+   Diagram showing mixed-material mesh with CELL_DOM and MAT_DOM ways of defining the Cell-Material Relation.
 
 The following code shows how to initialize a MultiMat object with 9 cells and 3 materials
 and then builds the CMR by populating a bool vector and finally setting the CMR into the
@@ -38,6 +43,7 @@ the current material.
 
     const int nmats = 3;
     const int ncells = 9;
+    // Create the MultiMat object
     axom::multimat::MultiMat mm;
     mm.setNumberOfMaterials(nmats);
     mm.setNumberOfCells(ncells);
@@ -63,11 +69,6 @@ the current material.
     mm.setCellMatRel(relation, axom::multimat::DataLayout::CELL_DOM);
 
 
-.. figure:: figures/relation.png
-   :figwidth: 800px
-
-   Diagram showing mixed-material mesh with CELL_DOM and MAT_DOM ways of defining the Cell-Material Relation.
-
 
 .. FUTURE: We could have a "Dynamic Mode" section that shows how to build up or
 ..         alter the CMR using convertToDynamic/addEntry/removeEntry methods.
@@ -86,6 +87,11 @@ fractions in a cell must be 1 to account for all of the cell. Volume fractions m
 valid cell/material combination provided for in the CMR and they must be specified in the same order as
 data in the CMR.
 
+.. figure:: figures/volume_fractions.png
+   :figwidth: 600px
+
+   Diagram showing mixed-material mesh with volume fractions shown in CELL_DOM table.
+
 Volume fractions are a field and fields have an added concept of sparsity. Fields
 can provide data for every possible cell/material combination; this is called a dense field.
 Dense fields are easy to understand since they have values for every cell/material pair but they
@@ -94,7 +100,7 @@ not exist. For volume fractions, sparse data compresses out all of the zeroes an
 contains non-zero values.
 
 Volume fraction data are provided to MultiMat wrapped in an ``axom::ArrayView`` object, which provides
-the default values for the volume fractions. The ArrayView is passed to MultiMat using the ``setVolfracField``
+the default values for the volume fractions. The ArrayView is passed to MultiMat using the ``setVolfracField()``
 method. The following example shows how to pass a dense volume fraction field to MultiMat - note
 the zeroes where the material is not present. After adding volume fractions, the MultiMat object is
 fully constructed and can be used to store field data.
@@ -114,10 +120,4 @@ fully constructed and can be used to store field data.
     mm.setVolfracField(vfView,
                        axom::multimat::DataLayout::CELL_DOM,
                        axom::multimat::SparsityLayout::DENSE);
-
-.. figure:: figures/volume_fractions.png
-   :figwidth: 600px
-
-   Diagram showing mixed-material mesh with volume fractions shown in CELL_DOM table.
-
 

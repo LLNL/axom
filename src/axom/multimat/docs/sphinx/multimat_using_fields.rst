@@ -7,50 +7,290 @@
 Using Fields
 ******************************************************
 
-#######################
-Volume Fractions
-#######################
+Aside from imposing a material decomposition on meshes, MultiMat supports defining
+fields on the mesh and that material decomposition. Fields store useful simulation
+quantities. This section describes how to create fields and access their data.
 
 #######################
 Adding a Field
 #######################
 
-#######################
+Fields are added to a MultiMat object using the ``addField()`` method. The method
+accepts arguments that indicate the mapping, layout and sparsity for the supplied
+data, which are given using an ``axom::ArrayView``. The data given in the view are
+copied into new memory managed by MultiMat.
+
+The field mapping argument indicate the space where the data live: the cells in the mesh,
+the materials in the mesh, or the cells/material regions defined over the mesh. The
+data layout argument indicates how the data are organized with respect to cells and
+materials. For data that have 1 value per cell, pass ``PER_CELL``. For data that have
+1 value for material (ignoring how many cells use the material), pass ``PER_MAT``. For
+data that have a unique value per material within a cell, pass ``PER_CELL_MAT``.
+
+For ``PER_CELL_MAT`` data, pass ``CELL_DOM`` if all of the material values for a cell are
+sequential neighbors in memory. For data that is arranged such that all cells for
+the first material are given before the values for the next material are given,
+pass ``MAT_DOM``.
+
+The sparsity layout indicates whether the data array contains the maximum number of
+values (numMaterials * numCells for ``DENSE`` fields) or whether it instead contains
+only the subset of elements where materials are defined for a cell. This is the
+number of occupied elements, which determines array length for ``SPARSE`` fields.
+
+.. code-block:: cpp
+
+  constexpr int nComponents = 1;
+  double data[] = {0.,
+                   1.,
+                   2.,
+                   // more values ...
+                  };
+  axom::ArrayView<double> dataAV(data, sizeof(data) / sizeof(double));
+  mm.addField("x2",
+              axom::multimat::FieldMapping::PER_CELL,
+              axom::multimat::DataLayout::CELL_DOM,
+              axom::multimat::SparsityLayout::SPARSE,
+              dataAV,
+              nComponents);
+
+
+^^^^^^^^^^^^^^^^^^^^^^^
 Multi-Component Data
-#######################
+^^^^^^^^^^^^^^^^^^^^^^^
+
+MultiMat can store fields with multiple components (vector data) by passing a non-unity
+stride in the last argument when adding the field. Multi-component data are arranged
+in memory as a contiguous block where the components of the first element exist
+sequentially in memory, followed immediately by the components for the next element,
+and so on.
+
+.. code-block:: cpp
+
+    constexpr int nComponents = 2;
+    double data[] = {0., 1., // cell 0 x,y components
+                     1., 1., // cell 1 x,y components
+                     2., 4., // cell 2 x,y components
+                     // more values ...
+                    };
+    axom::ArrayView<double> dataAV(data, sizeof(data) / sizeof(double));
+    mm.addField("myField",
+                axom::multimat::FieldMapping::PER_CELL,
+                axom::multimat::DataLayout::CELL_DOM,
+                axom::multimat::SparsityLayout::SPARSE,
+                dataAV,
+                nComponents);
+
 
 #######################
 External Field Data
 #######################
 
+MultiMat normally allocates its own memory for fields, however fields that point to
+externally-allocated memory can also be added using the ``addExternalField()`` method.
+This method has the same arguments as the ``addField()`` method, except that the
+the supplied view is used as the field's actual data instead of being used to initialize
+additional storage. The ``addExternalField()`` method is useful when MultiMat is
+managing fields allocated and initialized externally, such as through Sidre, Conduit,
+MFEM, etc.
+
 #######################
 Removing a Field
 #######################
+
+Removing a field is done by calling the ``removeField()`` method on the MultiMat object
+and passing the name of the field to be removed. MultiMat will remove the field from
+its inventory and deallocate memory, as needed. For external fields, deallocating the
+field's bulk data is the responsibility of the caller.
+
+.. code-block:: cpp
+
+     mm.removeField("myField");
+
+###############
+Introspection
+###############
+
+The MultiMat object provides methods that permit the host code to determine the number
+of fields, their names, and their properties. The ``getNumberOfFields()`` method returns
+the number of fields. The ``getFieldName()`` method takes a field index and returns the
+name of the field. The ``getFieldIdx()`` method returns the field index for a given field
+name, allowing the caller to check for the existence of fields.
+
+.. code-block:: cpp
+
+    // Print the field names in the MultiMat object mm.
+    for(int i = 0; i < mm.getNumberOfFields(); i++)
+    {
+      // Get field properties
+      auto name = mm.getFieldName(i);
+      auto mapping = mm.getFieldMapping(i);
+      auto layout = mm.getFieldDataLayout(i);
+      auto sparsity = mm.getFieldSparsityLayout(i);
+      auto dataType = mm.getFieldDataType(i);
+
+      std::cout << name << ":\n"
+                << "\tmapping: " << mm.getFieldMappingAsString(i)
+                << "\tlayout: " << mm.getFieldDataLayoutAsString(i)
+                << "\tsparsity: " << mm.getFieldSparsityLayoutAsString(i)
+                << "\n";
+    }
+    std::cout << "Volfrac index: " << mm.getFieldIdx("Volfrac") << std::endl;
 
 #######################
 Accessing Field Data
 #######################
 
+Accessing fields and their data is best done when the field's properties are known. The
+field mapping determines the mesh subset where the field is defined. Fields with either
+``PER_CELL`` or ``PER_MAT`` mappings are defined along one dimension of the numMaterials * numCells
+grid so they are "1D" fields. Fields with ``PER_CELL_MAT`` field mapping are defined using
+both axes of the numMaterials * numCells grid so they are "2D" fields.
+
+MultiMat provides separate field access functions for 1D/2D fields. In addition,
+there are specific 2D methods to access fields according to whether their data
+are dense or sparse. Each of these templated methods returns an object that is
+specific to the field's stored data and layout, allowing for more assumptions to
+be made, resulting in potentially higher performance.
+
+* get1dField()
+* get2dField()
+* getDense2dField()
+* getSparse2dField()
 
 ^^^^^^^^^^^^^^
 Indexing Sets
 ^^^^^^^^^^^^^^
-getIndexingSetOfCell
-getIndexingSetOfMat
+
+The data layout for a 2D field determines how it should be traversed. The
+MultiMat object provides methods that access the Cell-Material Relation and return
+indexing sets that are useful for specific materials or cells. For example, if data
+use a CELL_DOM layout then all of the material values for a cell are contiguous in
+memory, even though a given cell might not use all possible materials. To write loops
+over sparse data that focus on only the valid cell-material combinations from the
+CMR, the ``getIndexingSetOfCell()`` and ``getIndexingSetOfMat()`` methods can be called.
+
+.. code-block:: cpp
+
+   // CELL_DOM data (iterate over cells then materials)
+   auto f = mm.getSparse2dField("myField");
+   for(int i = 0; i < mm.getNumberOfCells(); i++)
+   {
+     std::cout << "Field values for materials in cell " << i << ": ";
+     for(const auto &idx : mm.getIndexingSetOfCell(i))
+       std::cout << f[idx] << ", ";
+     std::cout << "\n";
+   }
 
 ^^^^^^^^^^
 1D Fields
 ^^^^^^^^^^
 
+1D Fields are those with a field mapping of ``PER_CELL`` or ``PER_MAT``. 1D fields can be
+retrieved from MultiMat using the ``get1dField()`` method, which returns an object
+that can access the field data. The ``get1dField()`` method takes a template argument
+for the type of data stored in the field so if double-precision data are stored in
+MultiMat's field then ``get1dField<double>()`` should be called to access the field
+data.
+
+.. code-block:: cpp
+
+    // Sum all values in the field.
+    double sum = 0.;
+    auto f = mm.get1dField<double>("Cell Array");
+    for(int i = 0; i < mm.getNumberOfCells(); i++)
+    {
+      sum += f[i];
+    }
+
+1D fields can store multi-component values as well, which adds a small amount of
+complexity. The field provides a ``numComp()`` method that returns the number of
+components in the field. A component for a given cell is retrieved using the 2-argument
+call () operator by passing the zone index and then the desired component index.
+
+.. code-block:: cpp
+
+    double sum = 0.;
+    auto f = mm.get1dField<double>("Cell Array");
+    for(int i = 0; i < mm.getNumberOfCells(); i++)
+    {
+      for(int comp = 0; comp < f.numComp(); comp++)
+      {
+        double val = f(i, comp);
+        sum += val;
+      }
+    }
+
 ^^^^^^^^^^
 2D Fields
 ^^^^^^^^^^
 
-^^^^^^^^^^^^^^^^^^^^^
-Multi-Component Data
-^^^^^^^^^^^^^^^^^^^^^
+2D fields are those with a ``PER_CELL_MAT`` field mapping. Since the fields can vary over
+materials and cells (in either order) and they can be dense or sparse, there are multiple
+ways to iterate over the field data.
+
+Fields can be iterated over using dense access, which for sparse fields might not
+include values for each cell/material pair. The field's ``findValue()`` function is useful
+in this case since it allows 2 indices to be passed in addition to a component index.
+The first index is the cell number for ``CELL_DOM`` fields, making the second index the
+material number. For ``MAT_DOM`` fields, the order is reversed. This approach to locating
+the data is general and can be used to traverse the data in the opposite order if desired.
+However, each call to ``findValue()`` includes a short search and the method can return
+``nullptr`` if no valid cell/material pair is located for the field.
+
+.. literalinclude:: ../../examples/traversal.cpp
+   :start-after: _multimat_using_fields_dense_start
+   :end-before: _multimat_using_fields_dense_end
+   :language: C++
+
+For algorithms where sparse data traversal is desired, there are multiple options. The
+MultiMat indexing sets can be used directly. Zones are iterated first in this example
+since the field has a ``CELL_DOM`` data layout. The set of materials for the current
+cell are queried and that index set is iterated to compute an index into the field
+data.
+
+.. literalinclude:: ../../examples/traversal.cpp
+   :start-after: _multimat_using_fields_indexset_start
+   :end-before: _multimat_using_fields_indexset_end
+   :language: C++
+
+MultiMat 2D fields provide iterators as a means for writing simpler code. The iterators
+can be used to write sparse data traversal without the added complexity of using index
+sets directly.
+
+.. literalinclude:: ../../examples/traversal.cpp
+   :start-after: _multimat_using_fields_iterator_start
+   :end-before: _multimat_using_fields_iterator_end
+   :language: C++
+
+Flat iterators can be used to traverse all of the data in a field. This is useful when
+computing values over the field but it is not cell or material information is not important.
+
+.. literalinclude:: ../../examples/traversal.cpp
+   :start-after: _multimat_using_fields_flatiter_start
+   :end-before: _multimat_using_fields_flatiter_end
+   :language: C++
 
 #############
 Conversions
 #############
 
+MultiMat can store fields with various data mappings, layouts, and sparsity values,
+which allows for great flexibility in how fields are represented in memory. MultiMat
+provides conversion routines that allow fields to be converted internally. Field
+conversion can be done for a variety of reasons. Perhaps fields are converted from
+sparse to dense to expose them to an external library that needs dense data. Or, perhaps
+dense fields are retrieved from I/O routines and then made sparse in MultiMat during
+simulation execution. Other times, depending on the needs of an algorithm, it can make
+sense to transpose the data, changing ``CELL_DOM`` to ``MAT_DOM`` or vice-versa. The following
+data conversion methods take a field index as an argument.
+
+Convert field sparsity:
+
+* convertFieldToSparse()
+* convertFieldToDense()
+
+Convert field data layout:
+
+* transposeField()
+* convertFieldToMatDom()
+* convertFieldToCellDom()

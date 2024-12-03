@@ -1739,15 +1739,36 @@ void MultiMat::convertFieldToCellDom(int field_idx)
   transposeField(field_idx);
 }
 
+std::string MultiMat::getFieldMappingAsString(int field_i) const
+{
+  if(m_fieldMappingVec[field_i] == FieldMapping::PER_CELL)
+  {
+    return "Per-Cell";
+  }
+  else if(m_fieldMappingVec[field_i] == FieldMapping::PER_MAT)
+  {
+    return "Per-Material";
+  }
+  else if(m_fieldMappingVec[field_i] == FieldMapping::PER_CELL_MAT)
+  {
+    return "Per-Cell-Material";
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
+  return "";
+}
+
 std::string MultiMat::getFieldDataLayoutAsString(int field_i) const
 {
   if(m_fieldDataLayoutVec[field_i] == DataLayout::CELL_DOM)
   {
-    return "Cell-Centric";
+    return "Cell-Dominant";
   }
   else if(m_fieldDataLayoutVec[field_i] == DataLayout::MAT_DOM)
   {
-    return "Material-Centric";
+    return "Material-Dominant";
   }
   else
   {
@@ -1765,6 +1786,35 @@ std::string MultiMat::getFieldSparsityLayoutAsString(int field_i) const
   else if(m_fieldSparsityLayoutVec[field_i] == SparsityLayout::DENSE)
   {
     return "Dense";
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
+  return "";
+}
+
+std::string MultiMat::getFieldDataTypeAsString(int field_i) const
+{
+  if(m_dataTypeVec[field_i] == DataTypeSupported::TypeUnknown)
+  {
+    return "Unknown";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeInt)
+  {
+    return "int";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeDouble)
+  {
+    return "double";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeFloat)
+  {
+    return "float";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeUnsignChar)
+  {
+    return "unsigned char";
   }
   else
   {

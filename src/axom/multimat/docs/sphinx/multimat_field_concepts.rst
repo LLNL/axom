@@ -25,6 +25,11 @@ fields. With MultiMat, fields can also be defined over the materials or over all
 of the cells/materials, allowing fields to have data values for each material in
 a zone.
 
+.. figure:: figures/mapping.png
+   :figwidth: 800px
+
+   Diagram showing field mapping concept.
+
 +--------------------+----------------------------------------------------------+
 | FieldMapping       | Meaning                                                  |
 +====================+==========================================================+
@@ -59,20 +64,20 @@ to memory before proceeding to the next cell. Data are *material dominant* (MAT_
 if the data for one material's zones is written before proceeding to the next material.
 The data layout for multimaterial data can be thought of as 2 nested for-loops where
 the outer loop is the dominant loop. For example, if iterating over materials and
-then cells, then the data are stored using *MAT_DOM* layout.
+then cells, then the data are stored using ``MAT_DOM`` layout.
 
 +--------------------+----------------------------------------------------------+
 | DataLayout         | Meaning                                                  |
 +====================+==========================================================+
 | CELL_DOM           | Data are stored for each zone and then for each material |
-|                    | like this (c=cell, m=material):                          |
+|                    | like this *(c=cell, m=material)*:                        |
 |                    |                                                          |
-|                    | {c0m0, c0m1, c0m2, ..., c1m0, c1m1, c1m2, ...}           |
+|                    | ``{c0m0, c0m1, c0m2, ..., c1m0, c1m1, c1m2, ...}``       |
 +--------------------+----------------------------------------------------------+
 | MAT_DOM            | Data are stored for each material and then for each cell |
-|                    | like this (c=cell, m=material):                          |
+|                    | like this *(c=cell, m=material)*:                        |
 |                    |                                                          |
-|                    | {m0c0, m0c1, m0c2, m0c3, ... , m1c0, m1c1, m1c2, ...}    |
+|                    | ``{m0c0, m0c1, m0c2, m0c3, ... , m1c0, m1c1, m1c2, ...}``|
 +--------------------+----------------------------------------------------------+
 
 #######################
@@ -80,20 +85,20 @@ Sparsity Layout
 #######################
 
 Sparsity concerns the shape of the data layout and primarily concerns data with
-*PER_CELL_MAT* mapping where each cell may contain multiple materials. When initializing
+``PER_CELL_MAT`` mapping where each cell may contain multiple materials. When initializing
 the MultiMat object, the Cell-Material Relation indicates how materials are distributed
 over the mesh. It is completely acceptable for materials to skip over certain zones,
 which makes sense if we think about materials as a way to divide up the mesh into
 various regions or parts. There are ncells*nmats pairs of data that could be entered
-for MultiMat fields. For *DENSE* fields, the field must contain ncells*nmats values,
+for MultiMat fields. For ``DENSE`` fields, the field must contain ncells*nmats values,
 with values present for cell/material pairs even where the material is not present.
 This is an easy way to specify the data but it wastes memory due to the extra values
 that do nothing other than keep the shape of the data array.
 
 For large meshes, compressing out unnecessary values can save a lot of memory. MultiMat
-lets fields be provided using a *SPARSE* layout that does not include any unnecessary
+lets fields be provided using a ``SPARSE`` layout that does not include any unnecessary
 values. Going back to the Cell-Material Relation (CMR) as a matrix of true/false values, one
-must only provide field values for SPARSE data where the CMR contains true values.
+must only provide field values for ``SPARSE`` data where the CMR contains true values.
 
 +--------------------+----------------------------------------------------------+
 | SparsityLayout     | Meaning                                                  |

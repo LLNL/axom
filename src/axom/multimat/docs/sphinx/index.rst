@@ -38,3 +38,4 @@ Doxygen generated API documentation can be found here: `API documentation <../..
    multimat_materials
    multimat_field_concepts
    multimat_using_fields
+   multimat_dynamic_mode
