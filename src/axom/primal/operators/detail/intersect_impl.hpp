@@ -1701,6 +1701,10 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
  *
  * Implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
  *
+ * \note A bilinear patch is parameterized in [0, 1) x [0, 1) 
+ * 
+ * \warning Always returns false if the line is coplanar to a planar polygon
+ * 
  * \return true iff the line intersects the bilinear patch, otherwise false.
  */
 AXOM_HOST_DEVICE
@@ -1709,9 +1713,10 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
                                           const Point3& p1,
                                           const Point3& p2,
                                           const Point3& p3,
+                                          axom::Array<double>& t,
                                           axom::Array<double>& u,
                                           axom::Array<double>& v,
-                                          axom::Array<double>& t,
+                                          double EPS = 1e-8,
                                           bool isRay = false)
 {
   Vector3 q00(p0), q10(p1), q11(p2), q01(p3);
@@ -1732,7 +1737,8 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
   double b = Vector3::scalar_triple_product(q10, line.direction(), e11) - a - c;
 
   // Decide what to do based on the coefficients
-  if(b != 0.0 || c != 0.0)
+  if(!axom::utilities::isNearlyEqual(b, 0.0, EPS) ||
+     !axom::utilities::isNearlyEqual(c, 0.0, EPS))
   {
     double u1, u2;
 
@@ -1742,12 +1748,12 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     {
       return false;
     }
-    else if(c == 0)  // Quadratic is a line
+    else if(axom::utilities::isNearlyEqual(c, 0.0, EPS))  // Quadratic is a line
     {
       u1 = -a / b;
       u2 = -1;
     }
-    else if(det == 0)  // One repeated solution
+    else if(axom::utilities::isNearlyEqual(det, 0.0, EPS))  // One repeated solution
     {
       u1 = -b / (2 * c);
       u2 = -1;
@@ -1762,21 +1768,21 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     // Find the point on the isocurve that is closest to the ray
     for(auto u0 : {u1, u2})
     {
-      if(u0 < 0 || u0 > 1) continue;
+      if(u0 < 0.0 || u0 >= 1.0) continue;
 
       Vector3 pa = (1 - u0) * q00 + u0 * q10;
       Vector3 pb = (1 - u0) * e00 + u0 * e11;  // actually stores pb - pa
       Vector3 n = Vector3::cross_product(line.direction(), pb);
       det = Vector3::dot_product(n, n);
 
-      if(det != 0)
+      if(!axom::utilities::isNearlyEqual(det, 0.0, EPS))
       {
         n = Vector3::cross_product(n, pa);
         double t0 = Vector3::dot_product(n, pb) / det;
         double v0 = Vector3::dot_product(n, line.direction()) / det;
-        if(0.0 <= v0 && v0 <= 1.0)
+        if(0.0 <= v0 && v0 < 1.0)
         {
-          if(t0 >= 0 || !isRay)
+          if(t0 >= 0.0 || !isRay)
           {
             t.push_back(t0);
             u.push_back(u0);
@@ -1788,7 +1794,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
       {
         // Determine if the line is colinear to the segment
         double cross = Vector3::cross_product(pa, line.direction()).norm();
-        if(cross == 0)
+        if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
         {
           // Parameters of intersection are non-unique,
           //  so take the center of the segment the intersection
@@ -1829,10 +1835,12 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     c = Vector3::dot_product(qm, line.direction());
     b = Vector3::scalar_triple_product(q01, line.direction(), e01) - a - c;
 
-    // If these are also all zero, weep bitterly
-    if(b == 0 && c == 0)
+    // If these are also all zero, then the ray is coplanar to a polygonal patch
+    if(axom::utilities::isNearlyEqual(b, 0.0, EPS) &&
+         axom::utilities::isNearlyEqual(c, 0.0, EPS))
     {
-      std::cout << "WEEPING BITTERLY" << std::endl;
+      // This case indicates the ray is tangent to the surface,
+      //  which we don't count as an intersection
       return false;
     }
 
@@ -1844,12 +1852,12 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     {
       return false;
     }
-    else if(c == 0)  // Quadratic is a line
+    else if(axom::utilities::isNearlyEqual(c, 0.0, EPS))  // Quadratic is a line
     {
       v1 = -a / b;
       v2 = -1;
     }
-    else if(det == 0)  // One repeated solution
+    else if(axom::utilities::isNearlyEqual(det, 0.0, EPS))  // One repeated solution
     {
       v1 = -b / (2 * c);
       v2 = -1;
@@ -1864,21 +1872,21 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     // Find the point on the isocurve that is closest to the ray
     for(auto v0 : {v1, v2})
     {
-      if(v0 < 0 || v0 > 1) continue;
+      if(v0 < 0.0 || v0 > 1.0) continue;
 
-      Vector3 pa = (1 - v0) * q00 + v0 * q01;
-      Vector3 pb = (1 - v0) * e10 + v0 * e01;  // actually stores pb - pa
+      Vector3 pa = (1.0 - v0) * q00 + v0 * q01;
+      Vector3 pb = (1.0 - v0) * e10 + v0 * e01;  // actually stores pb - pa
       Vector3 n = Vector3::cross_product(line.direction(), pb);
       det = Vector3::dot_product(n, n);
 
-      if(det != 0)
+      if(!axom::utilities::isNearlyEqual(det, 0.0, EPS))
       {
         n = Vector3::cross_product(n, pa);
         double t0 = Vector3::dot_product(n, pb) / det;
         double u0 = Vector3::dot_product(n, line.direction()) / det;
         if(0.0 <= u0 && u0 <= 1.0)
         {
-          if(t0 >= 0 || !isRay)
+          if(t0 >= 0.0 || !isRay)
           {
             t.push_back(t0);
             u.push_back(u0);
@@ -1890,7 +1898,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
       {
         // Determine if the line is colinear to the segment
         double cross = Vector3::cross_product(pa, line.direction()).norm();
-        if(cross == 0)
+        if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
         {
           // Parameters of intersection are non-unique,
           //  so take the center of the segment the intersection
@@ -1905,7 +1913,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
             v.push_back(v0);
             return true;
           }
-          else if(t1 >= 0 || !isRay)
+          else if(t1 >= 0.0 || !isRay)
           {
             // The origin is outside the segment, but the ray intersects
             //  (the line always intersects in this case)
@@ -1921,46 +1929,6 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
 
   return !t.empty();
 }
-
-/*
-    else  // Ray is parallel to the line segment pa + v * (pb - pa)
-    {
-      // Determine if the line is colinear to the segment
-      double cross = Vector3::cross_product(pa, line.direction()).norm();
-      if(cross == 0)
-      {
-        // Parameters of intersection are non-unique,
-        //  so take the smallest magnitude t parameter as the intersection
-        double t1 = Vector3::dot_product(pa, line.direction());
-        double t2 = Vector3::dot_product(pa + pb, line.direction());
-        if(t1 * t2 < 0)
-        {
-          // Means the origin is inside the segment
-          t.push_back(0.0);
-          u.push_back(u1);
-          v.push_back(t1 / (t1 - t2));
-          return true;
-        }
-        else if(t1 >= 0)
-        {
-          // The origin is outside the segment, but the ray intersects
-          t.push_back(t1);
-          u.push_back(u1);
-          v.push_back(0.0);
-          return true;
-        }
-        else if(!isRay)
-        {
-          // The origin is outside the segment and the ray doesn't intersect
-          auto isSmaller = std::abs(t1) < std::abs(t2);
-          t.push_back(isSmaller ? t1 : t2);
-          u.push_back(u1);
-          v.push_back(isSmaller ? 0.0 : 1.0);
-          return true;
-        }
-      }
-    }
-*/
 
 }  // end namespace detail
 }  // end namespace primal

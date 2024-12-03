@@ -35,6 +35,7 @@
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bounding_box_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
+#include "axom/primal/operators/detail/intersect_patch_impl.hpp"
 
 namespace axom
 {
@@ -643,18 +644,24 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * For bilinear patches, implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
  * For higher order patches, intersections are found through recursive subdivison
  *  until the subpatch is approximated by a bilinear patch.
+ * Assumes that the ray is not tangent to the patch
  *  
  * \return true iff the ray intersects the patch, otherwise false.
  */
 template <typename T>
 AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
                                 const BezierPatch<T, 3>& patch,
+                                axom::Array<T>& t,
                                 axom::Array<T>& u,
                                 axom::Array<T>& v,
-                                axom::Array<T>& t)
+                                double tol = 1e-8,
+                                double EPS = 1e-8)
 {
   const int order_u = patch.getOrder_u();
   const int order_v = patch.getOrder_v();
+
+  // for efficiency, linearity check actually uses a squared tolerance
+  const double sq_tol = tol * tol;
 
   if(order_u < 1 || order_v < 1)
   {
@@ -669,10 +676,34 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
                                                  patch(order_u, 0),
                                                  patch(order_u, order_v),
                                                  patch(0, order_v),
+                                                 t,
                                                  u,
                                                  v,
-                                                 t,
+                                                 EPS,
                                                  true);
+  }
+  else
+  {
+    primal::Line<T, 3> line(ray.origin(), ray.direction());
+
+    double u_offset = 0., v_offset = 0.;
+    double u_scale = 1., v_scale = 1.;
+
+    return detail::intersect_line_patch(line,
+                                        patch,
+                                        t,
+                                        u,
+                                        v,
+                                        sq_tol,
+                                        0.0,
+                                        order_u,
+                                        order_v,
+                                        u_offset,
+                                        u_scale,
+                                        v_offset,
+                                        v_scale,
+                                        EPS,
+                                        true);
   }
 }
 

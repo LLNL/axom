@@ -1,0 +1,228 @@
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+/*!
+ * \file intersect_patch_impl.hpp
+ *
+ * This file provides helper functions for testing the intersection
+ * of rays and Bezier patches
+ */
+
+#ifndef AXOM_PRIMAL_INTERSECT_PATCH_IMPL_HPP_
+#define AXOM_PRIMAL_INTERSECT_PATCH_IMPL_HPP_
+
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/BezierPatch.hpp"
+
+#include "axom/primal/operators/intersect.hpp"
+#include "axom/primal/operators/in_polygon.hpp"
+#include "axom/primal/operators/detail/intersect_impl.hpp"
+#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
+
+#include <vector>
+
+namespace axom
+{
+namespace primal
+{
+namespace detail
+{
+//---------------------------- FUNCTION DECLARATIONS ---------------------------
+
+template <typename T>
+bool intersect_line_patch(const Line<T, 3> &line,
+                          const BezierPatch<T, 3> &patch,
+                          axom::Array<T> &tp,
+                          axom::Array<T> &up,
+                          axom::Array<T> &vp,
+                          double sq_tol,
+                          double buffer,
+                          int order_u,
+                          int order_v,
+                          double u_offset,
+                          double u_scale,
+                          double v_offset,
+                          double v_scale,
+                          double EPS,
+                          bool isRay);
+
+//------------------------------ IMPLEMENTATIONS ------------------------------
+
+template <typename T>
+bool intersect_line_patch(const Line<T, 3> &line,
+                          const BezierPatch<T, 3> &patch,
+                          axom::Array<T> &tp,
+                          axom::Array<T> &up,
+                          axom::Array<T> &vp,
+                          double sq_tol,
+                          double buffer,
+                          int order_u,
+                          int order_v,
+                          double u_offset,
+                          double u_scale,
+                          double v_offset,
+                          double v_scale,
+                          double EPS,
+                          bool isRay)
+{
+  using BPatch = BezierPatch<T, 3>;
+
+  // Check bounding box to short-circuit the intersection
+  //  Need to expand the box a bit so that intersections near subdivision boundaries
+  //  are accurately recorded
+  Point<T, 3> ip;
+  if(true)//!intersect(line, patch.boundingBox().scale(1.5), ip))
+  {
+    return false;
+  }
+
+  bool foundIntersection = false;
+  if(true)  //patch.isBilinear(sq_tol))
+  {
+    // Store candidate intersection points
+    axom::Array<T> tc, uc, vc;
+
+    foundIntersection =
+      detail::intersect_line_bilinear_patch(line,
+                                            patch(0, 0),
+                                            patch(order_u, 0),
+                                            patch(order_u, order_v),
+                                            patch(0, order_v),
+                                            tc,
+                                            uc,
+                                            vc,
+                                            EPS,
+                                            isRay);
+
+    if(!foundIntersection)
+    {
+      return false;
+    }
+
+    // This tolerance is in parameter space, so is independent of the patch
+    // constexpr double EPS = 1e-5;
+
+    for(int i = 0; i < tc.size(); ++i)
+    {
+      const T t0 = tc[i];
+      const T u0 = uc[i];
+      const T v0 = vc[i];
+
+      if((u0 >= (u_offset == 0 ? -buffer / u_scale : 0) &&
+          u0 <= 1.0 + (u_offset + u_scale == 1.0 ? buffer / v_scale : 0)) &&
+         (v0 >= (v_offset == 0 ? -buffer / v_scale : 0) &&
+          v0 <= 1.0 + (v_offset + v_scale == 1.0 ? buffer / u_scale : 0)))
+      {
+        // Extra check to avoid adding the same point twice if it's on the boundary of a subpatch
+        if(!(u_offset != 0.0 && axom::utilities::isNearlyEqual(u0, 0.0, EPS)) &&
+           !(v_offset != 0.0 && axom::utilities::isNearlyEqual(v0, 0.0, EPS)))
+        {
+          if(t >= 0 || !isRay)
+          {
+            up.push_back(u_offset + u0 * u_scale);
+            vp.push_back(v_offset + v0 * v_scale);
+            tp.push_back(t0);
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    constexpr double splitVal = 0.5;
+    constexpr double scaleFac = 0.5;
+
+    BPatch p1(order_u, order_v), p2(order_u, order_v), p3(order_u, order_v),
+      p4(order_u, order_v);
+
+    patch.split(splitVal, splitVal, p1, p2, p3, p4);
+    u_scale *= scaleFac;
+    v_scale *= scaleFac;
+
+    // Note: we want to find all intersections, so don't short-circuit
+    if(intersect_line_patch(line,
+                            p1,
+                            tp,
+                            up,
+                            vp,
+                            sq_tol,
+                            buffer,
+                            order_u,
+                            order_v,
+                            u_offset,
+                            u_scale,
+                            v_offset,
+                            v_scale,
+                            EPS,
+                            isRay))
+    {
+      foundIntersection = true;
+    }
+    if(intersect_line_patch(line,
+                            p2,
+                            tp,
+                            up,
+                            vp,
+                            sq_tol,
+                            buffer,
+                            order_u,
+                            order_v,
+                            u_offset + u_scale,
+                            u_scale,
+                            v_offset,
+                            v_scale,
+                            EPS,
+                            isRay))
+    {
+      foundIntersection = true;
+    }
+    if(intersect_line_patch(line,
+                            p3,
+                            tp,
+                            up,
+                            vp,
+                            sq_tol,
+                            buffer,
+                            order_u,
+                            order_v,
+                            u_offset,
+                            u_scale,
+                            v_offset + v_scale,
+                            v_scale,
+                            EPS,
+                            isRay))
+    {
+      foundIntersection = true;
+    }
+    if(intersect_line_patch(line,
+                            p4,
+                            tp,
+                            up,
+                            vp,
+                            sq_tol,
+                            buffer,
+                            order_u,
+                            order_v,
+                            u_offset + u_scale,
+                            u_scale,
+                            v_offset + v_scale,
+                            v_scale,
+                            EPS,
+                            isRay))
+    {
+      foundIntersection = true;
+    }
+  }
+
+  return foundIntersection;
+}
+
+}  // end namespace detail
+}  // end namespace primal
+}  // end namespace axom
+
+#endif  // AXOM_PRIMAL_INTERSECT_PATCH_IMPL_HPP_
