@@ -326,6 +326,30 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
   return detail::intersect_ray(R, bb, ip);
 }
 
+/*!
+ * \brief Computes the intersection of the given line, L, with the Box, bb.
+ *
+ * \param [in] L the specified line (two-sided ray)
+ * \param [in] bb the user-supplied axis-aligned bounding box
+ *
+ * \param [out] ip the intersection point where L intersects bb.
+ *
+ * \return status true iff bb intersects with R, otherwise, false.
+ *
+ * \see primal::Line
+ * \see primal::Segment
+ * \see primal::BoundingBox
+ *
+ * \note Computes Ray Box intersection using the slab method from pg 180 of
+ *  Real Time Collision Detection by Christer Ericson.
+ */
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
+                                const BoundingBox<T, DIM>& bb,
+                                Point<T, DIM>& ip)
+{
+  return detail::intersect_line(L, bb, ip);
+}
 /// @}
 
 /// \name Segment-BoundingBox Intersection Routines

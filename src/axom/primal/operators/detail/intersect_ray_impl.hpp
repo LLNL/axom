@@ -323,6 +323,39 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
   return intersects;
 }
 
+template <typename T, int DIM>
+AXOM_HOST_DEVICE inline bool intersect_line(
+  const primal::Line<T, DIM>& L,
+  const primal::BoundingBox<T, DIM>& bb,
+  primal::Point<T, DIM>& ip,
+  T EPS = numerics::floating_point_limits<T>::epsilon())
+{
+  AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
+
+  T tmin = -axom::numerics::floating_point_limits<T>::max();
+  T tmax = axom::numerics::floating_point_limits<T>::max();
+
+  bool intersects = true;
+  for(int d = 0; d < DIM; ++d)
+  {
+    intersects = intersects &&
+      intersect_ray_bbox_test(L.origin()[d],
+                              L.direction()[d],
+                              bb.getMin()[d],
+                              bb.getMax()[d],
+                              tmin,
+                              tmax,
+                              EPS);
+  }
+
+  if(intersects)
+  {
+    ip = L.at(tmin);
+  }
+
+  return intersects;
+}
+
 }  // namespace detail
 }  // namespace primal
 }  // namespace axom
