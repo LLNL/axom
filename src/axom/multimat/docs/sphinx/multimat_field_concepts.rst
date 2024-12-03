@@ -10,20 +10,20 @@ Field Concepts
 Fields are data that are defined over a mesh, typically with one or more values
 per cell. Fields can be scalar, indicating 1-component per cell - or they can
 contain multiple components as with vector data (2+ components per cell). This
-section talks about important MultiMat field concepts that determine where field
-live on the mesh and how field data are organized in memory.
+section talks about important MultiMat field concepts that determine where fields
+live on the mesh and how their data are organized in memory.
 
 #######################
 Field Mapping
 #######################
 
-MultiMat is associated with a mesh divided into cells and the mesh has materials
-that may further subdivide cells in the mesh. MultiMat includes the concept of
-field mapping, which is where on the mesh the field data live. Fields can be
-defined over the cells, which is how most simulations think about cell-centered
-fields. With MultiMat, fields can also be defined over the materials or over all
-of the cells/materials, allowing fields to have data values for each material in
-a zone.
+MultiMat is associates materials with cells in a mesh, possibly subdividing cells.
+MultiMat includes the concept of field *mapping*, which is where on the mesh the
+field data live. Fields can be defined over the cells, which is how most simulations
+think about cell-centered fields. With MultiMat, fields can also be defined over
+the materials, allowing for compact storage of material-level data. Fields can
+also be defined over the cells/material pairs from the Cell-Material Relation (CMR),
+allowing fields to have data values for each material in a cell.
 
 .. figure:: figures/mapping.png
    :figwidth: 800px
@@ -56,20 +56,20 @@ Data Layout
 #######################
 
 Simulation codes contain a variety of algorithms that may have a preference for how
-data are arranged in memory to ensure good cache performance. MultiMat supports
-fields that may span ncells*nmats data values, though the data ordering can depend
-on the order of loops used to access the data. Data are said to be *cell dominant*
-(CELL_DOM) if they are stored such that each cell stores all of its material data
-to memory before proceeding to the next cell. Data are *material dominant* (MAT_DOM)
-if the data for one material's zones is written before proceeding to the next material.
-The data layout for multimaterial data can be thought of as 2 nested for-loops where
+data are arranged in memory to ensure good performance. MultiMat supports
+fields with a ``PER_CELL_MAT`` mapping and there are two ways to organize such data.
+Fields are said to be **Cell-Dominant** (``CELL_DOM``) if they are stored such that
+each cell stores all of its material data to memory before proceeding to data for
+the next cell. Fields are **Material-Dominant** (``MAT_DOM``) if the data for all
+cells that use the material is stored before proceeding to the next material.
+The data layout for multi-material data can be thought of as 2 nested for-loops where
 the outer loop is the dominant loop. For example, if iterating over materials and
-then cells, then the data are stored using ``MAT_DOM`` layout.
+then cells, the data are stored using ``MAT_DOM`` layout.
 
 +--------------------+----------------------------------------------------------+
 | DataLayout         | Meaning                                                  |
 +====================+==========================================================+
-| CELL_DOM           | Data are stored for each zone and then for each material |
+| CELL_DOM           | Data are stored for each cell and then for each material |
 |                    | like this *(c=cell, m=material)*:                        |
 |                    |                                                          |
 |                    | ``{c0m0, c0m1, c0m2, ..., c1m0, c1m1, c1m2, ...}``       |
@@ -84,31 +84,21 @@ then cells, then the data are stored using ``MAT_DOM`` layout.
 Sparsity Layout
 #######################
 
-Sparsity concerns the shape of the data layout and primarily concerns data with
-``PER_CELL_MAT`` mapping where each cell may contain multiple materials. When initializing
-the MultiMat object, the Cell-Material Relation indicates how materials are distributed
-over the mesh. It is completely acceptable for materials to skip over certain zones,
+Sparsity primarily concerns fields with ``PER_CELL_MAT`` mapping. When initializing
+the MultiMat object, the CMR indicates how materials are distributed
+over the mesh. It is completely acceptable for materials to skip over certain cells,
 which makes sense if we think about materials as a way to divide up the mesh into
 various regions or parts. There are ncells*nmats pairs of data that could be entered
 for MultiMat fields. For ``DENSE`` fields, the field must contain ncells*nmats values,
 with values present for cell/material pairs even where the material is not present.
 This is an easy way to specify the data but it wastes memory due to the extra values
-that do nothing other than keep the shape of the data array.
+that do nothing other than keep the rectangular shape of the data array.
 
 For large meshes, compressing out unnecessary values can save a lot of memory. MultiMat
-lets fields be provided using a ``SPARSE`` layout that does not include any unnecessary
-values. Going back to the Cell-Material Relation (CMR) as a matrix of true/false values, one
-must only provide field values for ``SPARSE`` data where the CMR contains true values.
+supports a ``SPARSE`` layout that does not include any unnecessary values. Going back
+to the CMR as a matrix of true/false values, one must only provide field values for
+``SPARSE`` data where the CMR contains true values.
 
-+--------------------+----------------------------------------------------------+
-| SparsityLayout     | Meaning                                                  |
-+====================+==========================================================+
-| DENSE              | Data are provided for all ncells*nmats pairs, even if    |
-|                    | there is no cell/material that is valid.                 |
-+--------------------+----------------------------------------------------------+
-| SPARSE             | Data are provided for only the cell/material pairs that  |
-|                    | are valid according to the Cell-Material Relation.       |
-+--------------------+----------------------------------------------------------+
 
 .. figure:: figures/sparsity.png
    :figwidth: 800px
@@ -117,3 +107,12 @@ must only provide field values for ``SPARSE`` data where the CMR contains true v
 
 
 
++--------------------+----------------------------------------------------------+
+| SparsityLayout     | Meaning                                                  |
++====================+==========================================================+
+| DENSE              | Data are provided for all ncells*nmats pairs, even if    |
+|                    | there is no cell/material that is valid.                 |
++--------------------+----------------------------------------------------------+
+| SPARSE             | Data are provided for only the cell/material pairs that  |
+|                    | are valid according to the CMR.                          |
++--------------------+----------------------------------------------------------+

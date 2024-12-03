@@ -7,21 +7,19 @@ Multimat User Guide
 ====================
 
 Axom's MultiMat component is a data management library for multimaterial field data
-within multiphysics simulation codes. Simulation codes use materials to add extra
-parts and details into the mesh without requiring those features to be modeled
-conformally by adding zones that are devoted to the part geometry. This method is
-often called "shaping" and is covered in Axom's Klee and Quest components. 
+within multiphysics simulation codes. Simulation codes use materials to overlay extra
+parts and details onto a mesh without requiring those features to be modeled
+conformally. Instead of using cells to model the part geometry, the geometry is
+instead represented using materials and volume fractions. The method for adding
+such details is often called *"shaping"* and it is covered in Axom's
+:doc:`Klee <../../../../axom/klee/docs/sphinx/index>` and :doc:`Quest <../../../../axom/quest/docs/sphinx/index>`
+components.
 
-Multimat can be used to designate a set of materials and how much of each material
-is present in each cell of a mesh. Cells can contain multiple materials, each with
-an associated volume fraction that indicates how much of a given cell is occupied
-by the material. 
-
-In addition to representing materials on a mesh, MultiMat can use its material knowledge
-to define fields on the mesh, and over material subsets of the mesh where multiple
-values are needed when a cell contains multiple materials. MultiMat supports flexible
-data mappings, layouts, and dense vs sparse field storage, allowing field data to
-occupy less memory than would be possible using dense field storage.
+In addition to representing materials on a mesh, MultiMat is used to define
+fields on the mesh, and over material subsets. This enables fields to contain multiple
+values where needed for mixed-material cells. MultiMat supports flexible data mappings,
+layouts, and dense vs sparse field storage, allowing field data to occupy less memory
+than would otherwise be necessary.
 
 
 
