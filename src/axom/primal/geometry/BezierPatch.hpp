@@ -1993,7 +1993,7 @@ public:
    * \param [in] sq_tol Threshold for absolute squared distances
    * \return True if patch is bilinear
    */
-  bool isBilinear(double tol = 1e-8) const
+  bool isBilinear(double sq_tol = 1e-8) const
   {
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
@@ -2005,10 +2005,19 @@ public:
 
     // Anonymous function to evaluate the bilinear patch defined by the corners
     auto bilinear_patch = [&](T u, T v) -> PointType {
-      return lerp(
-        lerp(m_controlPoints(0, 0), m_controlPoints(0, ord_v), v),
-        lerp(m_controlPoints(ord_u, 0), m_controlPoints(ord_u, ord_v), v),
-        u);
+      PointType val;
+      for(int N = 0; N < NDIMS; ++N)
+      {
+        val[N] = axom::utilities::lerp(
+          axom::utilities::lerp(m_controlPoints(0, 0)[N],
+                                m_controlPoints(0, ord_v)[N],
+                                v),
+          axom::utilities::lerp(m_controlPoints(ord_u, 0)[N],
+                                m_controlPoints(ord_u, ord_v)[N],
+                                v),
+          u);
+      }
+      return val;
     };
 
     for(int u = 0; u <= ord_u; ++u)
@@ -2017,14 +2026,14 @@ public:
       {
         // Don't need to check the corners
         if((u == 0 && v == 0) || (u == 0 && v == ord_v) ||
-          (u == ord_u && v == 0) || (u == ord_u && v == ord_v))
+           (u == ord_u && v == 0) || (u == ord_u && v == ord_v))
         {
           continue;
         }
 
         // Evaluate where the control point would be if the patch *was* bilinear
-        PointType bilinear_point = bilinear_patch(u / static_cast<T>(ord_u),
-                                                  v / static_cast<T>(ord_v));
+        PointType bilinear_point =
+          bilinear_patch(u / static_cast<T>(ord_u), v / static_cast<T>(ord_v));
 
         if(squared_distance(m_controlPoints(u, v), bilinear_point) > sq_tol)
         {
