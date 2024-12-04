@@ -108,24 +108,17 @@ bool intersect_line_patch(const Line<T, 3> &line,
       const T u0 = uc[i];
       const T v0 = vc[i];
 
-      // Use EPS to record points near the boundary of the patch
-      if((u0 >= (u_offset == 0 ? -EPS / u_scale : 0) &&
-          u0 <= 1.0 + (u_offset + u_scale == 1.0 ? EPS / v_scale : 0)) &&
-         (v0 >= (v_offset == 0 ? -EPS / v_scale : 0) &&
-          v0 <= 1.0 + (v_offset + v_scale == 1.0 ? EPS / u_scale : 0)))
+      // Use EPS to record points near the boundary of the bilinear approximation
+      if(u0 >= -EPS / u_scale && u0 <= 1.0 + EPS / u_scale &&
+         v0 >= -EPS / v_scale && v0 <= 1.0 + EPS / v_scale)
       {
-        // Extra check to avoid adding the same point twice if it's on the boundary of a subpatch
-        if(!(u_offset != 0.0 && axom::utilities::isNearlyEqual(u0, 0.0, EPS)) &&
-           !(v_offset != 0.0 && axom::utilities::isNearlyEqual(v0, 0.0, EPS)))
+        if(t0 >= -EPS || !isRay)
         {
-          if(t0 >= 0 || !isRay)
-          {
-            up.push_back(u_offset + u0 * u_scale);
-            vp.push_back(v_offset + v0 * v_scale);
-            tp.push_back(t0);
+          up.push_back(u_offset + u0 * u_scale);
+          vp.push_back(v_offset + v0 * v_scale);
+          tp.push_back(t0);
 
-            foundIntersection = true;
-          }
+          foundIntersection = true;
         }
       }
     }
