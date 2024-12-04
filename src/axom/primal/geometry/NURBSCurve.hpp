@@ -1164,6 +1164,9 @@ public:
   /// \brief Return a copy of the knot vector as an array
   axom::Array<T> getKnotsArray() const { return m_knotvec.getArray(); }
 
+  /// \brief Return an array of the unique knots in the knot vector
+  axom::Array<T> getUniqueKnots() const { return m_knotvec.getUniqueKnots(); }
+  
   /// \brief Reverses the order of the NURBS curve's control points and weights
   void reverseOrientation()
   {
