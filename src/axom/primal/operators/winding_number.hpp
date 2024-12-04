@@ -380,12 +380,10 @@ double winding_number(const Point<T, 2>& q,
                       double edge_tol = 1e-8,
                       double EPS = 1e-8)
 {
-  AXOM_UNUSED_VAR(EPS);
-
   double ret_val = 0.0;
   for(int i = 0; i < carray.size(); i++)
   {
-    ret_val += winding_number(q, carray[i], false, edge_tol);
+    ret_val += winding_number(q, carray[i], edge_tol, EPS);
   }
 
   return ret_val;
@@ -409,12 +407,10 @@ double winding_number(const Point<T, 2>& q,
                       double edge_tol = 1e-8,
                       double EPS = 1e-8)
 {
-  AXOM_UNUSED_VAR(EPS);
-
   double ret_val = 0.0;
   for(int i = 0; i < narray.size(); i++)
   {
-    ret_val += winding_number(q, narray[i], edge_tol);
+    ret_val += winding_number(q, narray[i], edge_tol, EPS);
   }
 
   return ret_val;
