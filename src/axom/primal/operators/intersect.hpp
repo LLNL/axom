@@ -538,8 +538,8 @@ bool intersect(const OrientedBoundingBox<T, 3>& b1,
 template <typename T>
 bool intersect(const BezierCurve<T, 2>& c1,
                const BezierCurve<T, 2>& c2,
-               std::vector<T>& sp,
-               std::vector<T>& tp,
+               axom::Array<T>& sp,
+               axom::Array<T>& tp,
                double tol = 1E-8)
 {
   const double offset = 0.;
@@ -561,12 +561,29 @@ bool intersect(const BezierCurve<T, 2>& c1,
                                          scale);
 }
 
+/*!
+ * \brief Function to find intersections between a ray and a Bezier curve
+ *
+ * \param [in] r The input ray
+ * \param [in] c The input curve
+ * \param [out] rp Parametric coordinates of intersections in \a r [0, inf)
+ * \param [out] cp Parametric coordinates of intersections in \a c [0, 1)
+ * Bezier curve is linear
+ * \param [in] tol Tolerance parameter for physical distances
+ * \param [in] EPS Tolerance parameter for parameter-space distances
+ * 
+ * \note A BezierCurve is parametrized in [0,1). This function assumes the all
+ *  intersections have multiplicity one, i.e. the function does not find tangencies.
+ * 
+ * \return True if the ray intersects the Bezier curve, False otherwise
+ */
 template <typename T>
 bool intersect(const Ray<T, 2>& r,
                const BezierCurve<T, 2>& c,
-               std::vector<T>& rp,
-               std::vector<T>& cp,
-               double tol = 1E-8)
+               axom::Array<T>& rp,
+               axom::Array<T>& cp,
+               double tol = 1E-8,
+               double EPS = 1E-8)
 {
   const double offset = 0.;
   const double scale = 1.;
@@ -574,9 +591,64 @@ bool intersect(const Ray<T, 2>& r,
   // for efficiency, linearity check actually uses a squared tolerance
   const double sq_tol = tol * tol;
 
-  return detail::intersect_ray_bezier(r, c, rp, cp, sq_tol, c.getOrder(), offset, scale);
+  return detail::intersect_ray_bezier(r, c, rp, cp, sq_tol, EPS, c.getOrder(), offset, scale);
 }
 
+/*!
+ * \brief Function to find intersections between a ray and a NURBS curve
+ *
+ * \param [in] r The input ray
+ * \param [in] n The input curve
+ * \param [out] rp Parametric coordinates of intersections in \a r [0, inf)
+ * \param [out] cp Parametric coordinates of intersections in the knot span of \a n
+ * \param [in] tol Tolerance parameter for physical distances
+ * \param [in] EPS Tolerance parameter for parameter-space distances
+ *
+ * \note Assumes the NURBS curve is parameterized on a half-open interval [a, b),
+ *  and assumes the all intersections have multiplicity one, i.e. the function does not find tangencies.
+ * 
+ * \return True if the ray intersects the NURBS curve, False otherwise
+ */
+template <typename T>
+bool intersect(const Ray<T, 2>& r,
+               const NURBSCurve<T, 2>& n,
+               axom::Array<T>& rp,
+               axom::Array<T>& np,
+               double tol = 1E-8,
+               double EPS = 1E-8)
+{
+  const double offset = 0.;
+  const double scale = 1.;
+
+  // Check a bounding box of the entire NURBS first
+  Point<T, 2> ip;
+  if(!intersect(r, n.boundingBox(), ip))
+  {
+    return false;
+  }
+
+  // Decompose the NURBS curve into Bezier segments
+  auto beziers = n.extractBezier();
+  const int deg = n.getDegree();
+  axom::Array<T> knot_vals = n.getUniqueKnots();
+    
+  // Check each Bezier segment, and scale the intersection parameters
+  //  back into the span of the original NURBS curve
+  for(int i = 0; i < beziers.size(); ++i)
+  {
+    axom::Array<T> rc, nc;
+    intersect( r, beziers[i], rc, nc, tol, EPS );
+
+    // Scale the intersection parameters back into the span of the NURBS curve
+    for(int j = 0; j < rc.size(); ++j)
+    {
+      rp.push_back( rc[j] );
+      np.push_back( knot_vals[i] + nc[j] * (knot_vals[i+1] - knot_vals[i]) );
+    }
+  }
+
+  return !rp.empty();
+}
 /// @}
 
 /// \name Plane Intersection Routines
@@ -737,24 +809,40 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
                                                      true);
   }
 
-  {
-    t = tc;
-    u = uc;
-    v = vc;
-   
-    return foundIntersection;
-  }
-  // else
-  // {
-  //   for(int i = 0; i < tc.size(); ++i)
-  //   {
-  //     const T t0 = tc[i];
-  //     const T u0 = uc[i];
-  //     const T v0 = vc[i];
+  // Remove duplicates from the (u, v) intersection points
+  //  (Note it's not possible for (u_1, v_1) == (u_2, v_2) and t_1 != t_2)
+  const double EPS_sq = EPS * EPS;
 
-  //     if(u0 >)
-  //   }
-  // }
+  // The number of reported intersection points will be small,
+  //  so we don't need to fully sort the list
+  for(int i = 0; i < tc.size(); ++i)
+  {
+    // Also remove any intersections on the half-interval boundaries
+    if(isHalfOpen && (uc[i] >= 1.0 - EPS || vc[i] >= 1.0 - EPS))
+    {
+      continue;
+    }
+
+    Point<T, 2> uv({uc[i], vc[i]});
+
+    bool foundDuplicate = false;
+    for(int j = i + 1; !foundDuplicate && j < tc.size(); ++j)
+    {
+      if(squared_distance(uv, Point<T, 2>({uc[j], vc[j]})) < EPS_sq)
+      {
+        foundDuplicate = true;
+      }
+    }
+
+    if(!foundDuplicate)
+    {
+      t.push_back(tc[i]);
+      u.push_back(uc[i]);
+      v.push_back(vc[i]);
+    }
+  }
+
+  return !t.empty();
 }
 
 }  // namespace primal

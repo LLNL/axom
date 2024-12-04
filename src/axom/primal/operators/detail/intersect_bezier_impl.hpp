@@ -60,8 +60,8 @@ namespace detail
 template <typename T>
 bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                              const BezierCurve<T, 2> &c2,
-                             std::vector<T> &sp,
-                             std::vector<T> &tp,
+                             axom::Array<T> &sp,
+                             axom::Array<T> &tp,
                              double sq_tol,
                              int order1,
                              int order2,
@@ -111,8 +111,8 @@ bool intersect_2d_linear(const Point<T, 2> &a,
  * \param [in] r The input ray
  * \param [out] cp Parametric coordinates of intersections in \a c [0, 1)
  * \param [out] rp Parametric coordinates of intersections in \a r [0, inf)
- * \param [in] sq_tol The squared tolerance parameter for determining if a
- * Bezier curve is linear
+ * \param [in] sq_tol The squared tolerance parameter for distances in physical space
+ * \param [in] EPS The tolerance parameter for distances in parameter space
  * \param [in] order The order of \a c
  * \param s_offset The offset in parameter space for \a c
  * \param s_scale The scale in parameter space for \a c
@@ -135,9 +135,10 @@ bool intersect_2d_linear(const Point<T, 2> &a,
 template <typename T>
 bool intersect_ray_bezier(const Ray<T, 2> &r,
                           const BezierCurve<T, 2> &c,
-                          std::vector<T> &rp,
-                          std::vector<T> &cp,
+                          axom::Array<T> &rp,
+                          axom::Array<T> &cp,
                           double sq_tol,
+                          double EPS,
                           int order,
                           double c_offset,
                           double c_scale);
@@ -146,8 +147,8 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
 template <typename T>
 bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                              const BezierCurve<T, 2> &c2,
-                             std::vector<T> &sp,
-                             std::vector<T> &tp,
+                             axom::Array<T> &sp,
+                             axom::Array<T> &tp,
                              double sq_tol,
                              int order1,
                              int order2,
@@ -266,9 +267,10 @@ bool intersect_2d_linear(const Point<T, 2> &a,
 template <typename T>
 bool intersect_ray_bezier(const Ray<T, 2> &r,
                           const BezierCurve<T, 2> &c,
-                          std::vector<T> &rp,
-                          std::vector<T> &cp,
+                          axom::Array<T> &rp,
+                          axom::Array<T> &cp,
                           double sq_tol,
+                          double EPS,
                           int order,
                           double c_offset,
                           double c_scale)
@@ -296,7 +298,7 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
 
     // Need to check intersection with zero tolerance
     //  to handle cases where `intersect` treats the ray as collinear
-    if(intersect(r, seg, r0, s0, 0.0) && s0 < 1.0)
+    if(intersect(r, seg, r0, s0, 0.0) && s0 < 1.0 - EPS)
     {
       rp.push_back(r0);
       cp.push_back(c_offset + c_scale * s0);
@@ -314,11 +316,11 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
     c_scale *= scaleFac;
 
     // Note: we want to find all intersections, so don't short-circuit
-    if(intersect_ray_bezier(r, c1, rp, cp, sq_tol, order, c_offset, c_scale))
+    if(intersect_ray_bezier(r, c1, rp, cp, sq_tol, EPS, order, c_offset, c_scale))
     {
       foundIntersection = true;
     }
-    if(intersect_ray_bezier(r, c2, rp, cp, sq_tol, order, c_offset + c_scale, c_scale))
+    if(intersect_ray_bezier(r, c2, rp, cp, sq_tol, EPS, order, c_offset + c_scale, c_scale))
     {
       foundIntersection = true;
     }
