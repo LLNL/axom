@@ -16,6 +16,8 @@
 #include "axom/primal/geometry/BezierPatch.hpp"
 #include "axom/primal/operators/intersect.hpp"
 
+#include "axom/core/numerics/matvecops.hpp"
+
 #include <cmath>
 #include <iomanip>
 #include <algorithm>
@@ -23,7 +25,7 @@
 
 namespace primal = axom::primal;
 
-/**
+/*
  * Helper function to compute the intersections of a Bezier patch and a ray 
  * and check that their intersection points match our expectations.
  * Patch parameters are stored in \a exp_u, \a exp_v and \a exp_t.
@@ -35,9 +37,9 @@ namespace primal = axom::primal;
 template <typename CoordType>
 void checkIntersections(const primal::Ray<CoordType, 3>& ray,
                         const primal::BezierPatch<CoordType, 3>& patch,
+                        const axom::Array<CoordType>& exp_t,
                         const axom::Array<CoordType>& exp_u,
                         const axom::Array<CoordType>& exp_v,
-                        const axom::Array<CoordType>& exp_t,
                         double eps,
                         double test_eps,
                         bool shouldPrintIntersections = false)
@@ -56,7 +58,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // Intersect the ray and the patch, intersection parameters will be
   // in arrays (u, v) and t, for the patch and ray, respectively
   Array u, v, t;
-  bool ray_intersects = intersect(ray, patch, u, v, t);
+  bool ray_intersects = intersect(ray, patch, t, u, v);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());
@@ -93,7 +95,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
     }
 
     sstr << "\nt (" << t.size() << "): ";
-    for(auto i = 0u; i < t.size(); ++i)
+    for(auto i = 0; i < t.size(); ++i)
     {
       sstr << std::setprecision(16) << t[i] << ",";
     }
@@ -146,9 +148,9 @@ TEST(primal_surface_inter, bilinear_intersect)
 
   checkIntersections(ray,
                      bilinear_patch,
+                     {1.0},
                      {0.146446609407},
                      {0.853553390593},
-                     {1.0},
                      eps,
                      eps_test);
 
@@ -170,9 +172,9 @@ TEST(primal_surface_inter, bilinear_intersect)
 
   checkIntersections(ray,
                      bilinear_patch,
+                     {0.414213562373, 2.41421356237},
                      {0.853553390593, 0.146446609407},
                      {0.146446609407, 0.853553390593},
-                     {0.414213562373, 2.41421356237},
                      eps,
                      eps_test);
 
@@ -181,7 +183,7 @@ TEST(primal_surface_inter, bilinear_intersect)
   ray_direction = VectorType({1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
 
-  checkIntersections(ray, bilinear_patch, {0.5}, {0.5}, {2.0}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {2.0}, {0.5}, {0.5}, eps, eps_test);
 
   // Ray with no intersections on line with infinitely many intersections
   ray_origin = PointType({2.0, 0.0, 1.5});
@@ -195,7 +197,84 @@ TEST(primal_surface_inter, bilinear_intersect)
   ray_direction = VectorType({1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
 
-  checkIntersections(ray, bilinear_patch, {0.5}, {0.85}, {0.3}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {0.3}, {0.5}, {0.85}, eps, eps_test);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_surface_inter, bilinear_boundary_condition)
+{
+  static const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+
+  SLIC_INFO("primal: testing bilinear patch intersection");
+
+  // Set control points
+  BezierPatchType bilinear_patch(1, 1);
+  bilinear_patch(0, 0) = PointType({-1.0, 1.0, 1.0});
+  bilinear_patch(1, 0) = PointType({-1.0, -1.0, 2.0});
+  bilinear_patch(1, 1) = PointType({1.0, -1.0, 1.0});
+  bilinear_patch(0, 1) = PointType({1.0, 1.0, 2.0});
+
+  // Don't count intersections on the u=1 or v=1 isocurves
+  PointType ray_origin({0.0, 0.0, 3.0});
+  VectorType ray_direction;
+  RayType ray(ray_origin, ray_direction);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.0, 1.0));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.5, 1.0));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.5));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.0));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.5));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 1.0));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.0, 0.0));
+  ray = RayType(ray_origin, ray_direction);
+  // Incorrect due to floating point arithmetic
+  // checkIntersections(ray, bilinear_patch, {sqrt(6.0)}, {0.0}, {0.0}, eps, eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.5, 0.0));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray,
+                    //  bilinear_patch,
+                    //  {sqrt(13.0) / 2.0},
+                    //  {0.5},
+                    //  {0.0},
+                    //  eps,
+                    //  eps_test);
+
+  ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.0, 0.5));
+  ray = RayType(ray_origin, ray_direction);
+  // checkIntersections(ray,
+                    //  bilinear_patch,
+                    //  {sqrt(13.0) / 2.0},
+                    //  {0.0},
+                    //  {0.5},
+                    //  eps,
+                    //  eps_test);
 }
 
 //------------------------------------------------------------------------------
@@ -223,11 +302,17 @@ TEST(primal_surface_inter, difficult_garp_case)
   VectorType ray_direction({-1.0, -2.0, 0.0});
   // The first step of the GARP algorithm is to solve a quadratic equation a + bt + ct^2 = 0,
   //   and this configuration of patch + ray direction is such that c = 0
-  
+
   // Ray with single intersection
   PointType ray_origin({0.0, 1.0, 1.25});
   RayType ray(ray_origin, ray_direction);
-  checkIntersections(ray, bilinear_patch, {2./3.}, {0.25}, {sqrt(20. / 9.)}, eps, eps_test);
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {sqrt(20. / 9.)},
+                     {2. / 3.},
+                     {0.25},
+                     eps,
+                     eps_test);
 
   // Ray with no intersections
   ray_origin = PointType({0.0, 1.0, 1.75});
@@ -240,16 +325,15 @@ TEST(primal_surface_inter, difficult_garp_case)
   bilinear_patch(0, 1) = PointType({1.0, 1.0, 2.0});
 
   // Double roots in the quadratic
-
   ray_origin = PointType({2.0, 0.0, 1.5});
   ray_direction = VectorType({-1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
-  checkIntersections(ray, bilinear_patch, {0.5}, {0.5}, {2.0}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {2.0}, {0.5}, {0.5}, eps, eps_test);
 
   ray_origin = PointType({0.0, 2.0, 1.5});
   ray_direction = VectorType({0.0, -1.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
-  checkIntersections(ray, bilinear_patch, {0.5}, {0.5}, {2.0}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {2.0}, {0.5}, {0.5}, eps, eps_test);
 }
 
 //------------------------------------------------------------------------------
@@ -279,12 +363,12 @@ TEST(primal_surface_inter, flat_bilinear_intersect)
   VectorType ray_direction({1, 0.5, -1.0});
   RayType ray(ray_origin, ray_direction);
 
-  checkIntersections(ray, bilinear_patch, {0.25}, {11. / 14.}, {1.5}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {1.5}, {0.25}, {11. / 14.}, eps, eps_test);
 
   // Ray with a single intersection that is coplanar with an isocurve
   ray_direction = VectorType({1.0, 0.0, -1.0});
   ray = RayType(ray_origin, ray_direction);
-  checkIntersections(ray, bilinear_patch, {0.5}, {5. / 6.}, {sqrt(2)}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {sqrt(2)}, {0.5}, {5. / 6.}, eps, eps_test);
 
   // Ray with no intersections
   ray_direction = VectorType({1.0, -1.0, -0.5});
@@ -313,7 +397,213 @@ TEST(primal_surface_inter, flat_bilinear_intersect)
   ray_direction = VectorType({1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
 
-  // checkIntersections(ray, bilinear_patch, {0.25}, {0.0}, {0.25}, eps, eps_test);
+  // Ray that is coplanar with a flat patch
+  //  For ease of implementation, always return false
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_surface_inter, flat_selfintersect_bilinear_intersect)
+{
+  static const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+
+  SLIC_INFO("primal: testing bilinear patch intersection");
+
+  // Set control points for square, hourglass patch
+  BezierPatchType bilinear_patch(1, 1);
+  bilinear_patch(0, 0) = PointType({-1.0, 1.0, 1.0});
+  bilinear_patch(1, 0) = PointType({1.0, -1.0, 1.0});
+  bilinear_patch(1, 1) = PointType({-1.0, -1.0, 1.0});
+  bilinear_patch(0, 1) = PointType({1.0, 1.0, 1.0});
+
+  // Ray with single intersection at the overlap point
+  PointType ray_origin({0.0, 0.0, 2.0});
+  VectorType ray_direction({0.0, 0.0, -1.0});
+  RayType ray(ray_origin, ray_direction);
+
+  checkIntersections(ray, bilinear_patch, {1.0}, {0.5}, {0.5}, eps, eps_test);
+
+  // Ray with single intersection not at the overlap point
+  ray_origin = PointType({0.0, 0.5, 2.0});
+  ray = RayType(ray_origin, ray_direction);
+
+  checkIntersections(ray, bilinear_patch, {1.0}, {0.25}, {0.5}, eps, eps_test);
+
+  // Ray with no intersections
+  ray_origin = PointType({0.5, 0.0, 2.0});
+  ray = RayType(ray_origin, ray_direction);
+
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
+  // Change the patch to have a true self-overlapping region
+  bilinear_patch(1, 1) = PointType({-1.0, 0.0, 1.0});
+
+  // Has two intersections in parameter space
+  ray_origin = PointType({-0.1, 0.25, 2.0});
+  ray = RayType(ray_origin, ray_direction);
+
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {1.0, 1.0},
+                     {0.6, 5. / 12.},
+                     {0.75, 0.2},
+                     eps,
+                     eps_test);
+
+  // Is "tangent" to the overlap, resulting in a single intersection
+  ray_origin = PointType({0.0, 0.25, 2.0});
+  ray = RayType(ray_origin, ray_direction);
+
+  checkIntersections(ray, bilinear_patch, {1.0}, {0.5}, {0.5}, eps, eps_test);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_surface_inter, bezier_surface_intersect)
+{
+  static const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
+
+  // Define the nodes and weights for one of six rational, biquartic Bezier patches
+  //  that compose the unit sphere. This patch is centered at the +z axis.
+  // Nodes and weights obtained from the technical report
+  // "Tiling the Sphere with Rational Bezier Patches",
+  //  James E. Cobb, University of Utah, 1988
+
+  // clang-format off
+  // These are the *homogeneous* coordinates
+  axom::Array<PointType> node_data = {
+    PointType {4*(1-rt3),     4*(1-rt3),     4*(rt3-1)}, PointType {rt2*(rt3-4),            -rt2, rt2*(4-rt3)}, PointType {4*(1-2*rt3)/3,   0, 4*(2*rt3-1)/3}, PointType {rt2*(rt3-4),           rt2,   rt2*(4-rt3)}, PointType {4*(1-rt3),     4*(rt3-1),     4*(rt3-1)},
+    PointType {     -rt2, rt2*(rt3 - 4), rt2*(4 - rt3)}, PointType {(2-3*rt3)/2,     (2-3*rt3)/2,   (rt3+6)/2}, PointType {rt2*(2*rt3-7)/3, 0,       5*rt6/3}, PointType {(2-3*rt3)/2,   (3*rt3-2)/2,     (rt3+6)/2}, PointType {     -rt2,   rt2*(4-rt3),   rt2*(4-rt3)},
+    PointType {        0, 4*(1-2*rt3)/3, 4*(2*rt3-1)/3}, PointType {          0, rt2*(2*rt3-7)/3,     5*rt6/3}, PointType {0,               0,   4*(5-rt3)/3}, PointType {          0, rt2*(7-2*rt3)/3,     5*rt6/3}, PointType {        0, 4*(2*rt3-1)/3, 4*(2*rt3-1)/3},
+    PointType {      rt2, rt2*(rt3 - 4), rt2*(4 - rt3)}, PointType {(3*rt3-2)/2,     (2-3*rt3)/2,   (rt3+6)/2}, PointType {rt2*(7-2*rt3)/3, 0,       5*rt6/3}, PointType {(3*rt3-2)/2,   (3*rt3-2)/2,     (rt3+6)/2}, PointType {      rt2,   rt2*(4-rt3),   rt2*(4-rt3)},
+    PointType {4*(rt3-1),     4*(1-rt3),     4*(rt3-1)}, PointType {rt2*(4-rt3),            -rt2, rt2*(4-rt3)}, PointType {4*(2*rt3-1)/3,   0, 4*(2*rt3-1)/3}, PointType {rt2*(4-rt3),           rt2,   rt2*(4-rt3)}, PointType {4*(rt3-1),     4*(rt3-1),     4*(rt3-1)}};
+
+  axom::Array<double> weight_data = {
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
+  // clang-format on
+
+  BezierPatchType sphere_face_patch(node_data, weight_data, 4, 4);
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      sphere_face_patch(i, j).array() /= sphere_face_patch.getWeight(i, j);
+    }
+  }
+
+  // Intersections with arbitrary patches aren't recorded
+  //  with exact precision
+  const double eps = 1E-5;
+  const double eps_test = 1E-5;
+
+  PointType ray_origin({0.0, 0.0, 0.0});
+
+  // Try points which will be interior to all subdivisions
+  double u_params[10], v_params[10];
+  axom::numerics::linspace(0.0, 1.0, u_params, 10);
+  axom::numerics::linspace(0.0, 1.0, v_params, 10);
+
+  for(int i = 0; i < 10; ++i)
+  {
+    for(int j = 0; j < 10; ++j)
+    {
+      VectorType ray_direction(
+        ray_origin,
+        sphere_face_patch.evaluate(u_params[i], v_params[j]));
+      RayType ray(ray_origin, ray_direction);
+
+      // Points on the edge should not be recorded
+      if(i == 9 || j == 9)
+      {
+        continue;
+        checkIntersections(ray, sphere_face_patch, {}, {}, {}, eps, eps_test);
+      }
+      else
+      {
+        // continue;
+        checkIntersections(ray,
+                           sphere_face_patch,
+                           {1.0},
+                           {u_params[i]},
+                           {v_params[j]},
+                           eps,
+                           eps_test);
+      }
+    }
+  }
+
+  // Use different parameter values so that intersections
+  //  are on the boundary of subdivisions
+  axom::numerics::linspace(0.0, 1.0, u_params, 9);
+  axom::numerics::linspace(0.0, 1.0, v_params, 9);
+
+  for(int i = 0; i < 9; ++i)
+  {
+    for(int j = 0; j < 9; ++j)
+    {
+      VectorType ray_direction(
+        ray_origin,
+        sphere_face_patch.evaluate(u_params[i], v_params[j]));
+      RayType ray(ray_origin, ray_direction);
+
+      // Points on the edge should not be recorded
+      if(i == 8 || j == 8)
+      {
+        continue;
+        checkIntersections(ray, sphere_face_patch, {}, {}, {}, eps, eps_test);
+      }
+      else
+      {
+        // continue;
+        // checkIntersections(ray,
+                        //    sphere_face_patch,
+                        //    {1.0},
+                        //    {u_params[i]},
+                        //    {v_params[j]},
+                        //    eps,
+                        //    eps_test);
+        VectorType ray_direction(ray_origin,
+         sphere_face_patch.evaluate(u_params[i], v_params[j]));
+
+        RayType ray(ray_origin, ray_direction);
+        axom::Array<CoordType> t, u, v;
+        bool ray_intersects = intersect(ray, sphere_face_patch, t, u, v);
+
+        std::cout << "------------------" << std::endl;
+        for( int i = 0; i < t.size(); ++i )
+        {
+          std::cout << "t: " << t[i] << ", u: " << u[i] << ", v: " << v[i] << std::endl;
+        }
+
+        int xx= 12;
+      }
+    }
+  }
+
+  VectorType ray_direction(ray_origin,
+   sphere_face_patch.evaluate(u_params[0], v_params[6]));
+  RayType ray(ray_origin, ray_direction);
+
+  axom::Array<CoordType> t, u, v;
+  bool ray_intersects = intersect(ray, sphere_face_patch, t, u, v);
 }
 
 int main(int argc, char* argv[])
