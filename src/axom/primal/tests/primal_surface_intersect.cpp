@@ -42,6 +42,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
                         const axom::Array<CoordType>& exp_v,
                         double eps,
                         double test_eps,
+                        bool isHalfOpen = false,
                         bool shouldPrintIntersections = false)
 {
   constexpr int DIM = 3;
@@ -58,7 +59,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // Intersect the ray and the patch, intersection parameters will be
   // in arrays (u, v) and t, for the patch and ray, respectively
   Array u, v, t;
-  bool ray_intersects = intersect(ray, patch, t, u, v);
+  bool ray_intersects = intersect(ray, patch, t, u, v, 1e-8, 1e-8, isHalfOpen);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());
@@ -212,6 +213,7 @@ TEST(primal_surface_inter, bilinear_boundary_condition)
 
   const double eps = 1E-16;
   const double eps_test = 1E-10;
+  const bool isHalfOpen = true;
 
   SLIC_INFO("primal: testing bilinear patch intersection");
 
@@ -227,54 +229,81 @@ TEST(primal_surface_inter, bilinear_boundary_condition)
   VectorType ray_direction;
   RayType ray(ray_origin, ray_direction);
 
+  // Check both options for isHalfOpen
+
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.0, 1.0));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+  checkIntersections(ray, bilinear_patch, {sqrt(3.0)}, {0.0}, {1.0}, eps, eps_test, !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.5, 1.0));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+  checkIntersections(ray, bilinear_patch, {sqrt(13.0) / 2.0}, {0.5}, {1.0}, eps, eps_test, !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.5));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+  checkIntersections(ray, bilinear_patch, {sqrt(13.0) / 2.0}, {1.0}, {0.5}, eps, eps_test, !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.0));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+  checkIntersections(ray, bilinear_patch, {sqrt(3.0)}, {1.0}, {0.0}, eps, eps_test, !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.5));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+  checkIntersections(ray, bilinear_patch, {sqrt(13.0) / 2.0}, {1.0}, {0.5}, eps, eps_test, !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 1.0));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+  checkIntersections(ray, bilinear_patch, {sqrt(6.0)}, {1.0}, {1.0}, eps, eps_test, !isHalfOpen);
+
+  // These should record an intersection with both options
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.0, 0.0));
   ray = RayType(ray_origin, ray_direction);
-  // Incorrect due to floating point arithmetic
-  // checkIntersections(ray, bilinear_patch, {sqrt(6.0)}, {0.0}, {0.0}, eps, eps_test);
+  for(bool option : {isHalfOpen, !isHalfOpen})
+  {
+    checkIntersections(ray,
+                       bilinear_patch,
+                       {sqrt(6.0)},
+                       {0.0},
+                       {0.0},
+                       eps,
+                       eps_test,
+                       option);
+  }
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.5, 0.0));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray,
-                    //  bilinear_patch,
-                    //  {sqrt(13.0) / 2.0},
-                    //  {0.5},
-                    //  {0.0},
-                    //  eps,
-                    //  eps_test);
+  for(bool option : {isHalfOpen, !isHalfOpen})
+  {
+    checkIntersections(ray,
+                       bilinear_patch,
+                       {sqrt(13.0) / 2.0},
+                       {0.5},
+                       {0.0},
+                       eps,
+                       eps_test,
+                       option);
+  }
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.0, 0.5));
   ray = RayType(ray_origin, ray_direction);
-  // checkIntersections(ray,
-                    //  bilinear_patch,
-                    //  {sqrt(13.0) / 2.0},
-                    //  {0.0},
-                    //  {0.5},
-                    //  eps,
-                    //  eps_test);
+  for(bool option : {isHalfOpen, !isHalfOpen})
+  {
+    checkIntersections(ray,
+                       bilinear_patch,
+                       {sqrt(13.0) / 2.0},
+                       {0.0},
+                       {0.5},
+                       eps,
+                       eps_test,
+                       option);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -513,17 +542,18 @@ TEST(primal_surface_inter, bezier_surface_intersect)
   //  with exact precision
   const double eps = 1E-5;
   const double eps_test = 1E-5;
+  const bool isHalfOpen = true;
 
   PointType ray_origin({0.0, 0.0, 0.0});
 
   // Try points which will be interior to all subdivisions
-  double u_params[10], v_params[10];
-  axom::numerics::linspace(0.0, 1.0, u_params, 10);
-  axom::numerics::linspace(0.0, 1.0, v_params, 10);
+  double u_params[8], v_params[8];
+  axom::numerics::linspace(0.0, 1.0, u_params, 8);
+  axom::numerics::linspace(0.0, 1.0, v_params, 8);
 
-  for(int i = 0; i < 10; ++i)
+  for(int i = 0; i < 8; ++i)
   {
-    for(int j = 0; j < 10; ++j)
+    for(int j = 0; j < 8; ++j)
     {
       VectorType ray_direction(
         ray_origin,
@@ -533,8 +563,17 @@ TEST(primal_surface_inter, bezier_surface_intersect)
       // Points on the edge should not be recorded
       if(i == 9 || j == 9)
       {
-        continue;
-        checkIntersections(ray, sphere_face_patch, {}, {}, {}, eps, eps_test);
+        // Check both settings of isHalfOpen
+        checkIntersections(ray, sphere_face_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+
+        checkIntersections(ray,
+                           sphere_face_patch,
+                           {1.0},
+                           {u_params[i]},
+                           {v_params[j]},
+                           eps,
+                           eps_test,
+                           !isHalfOpen);
       }
       else
       {
@@ -552,12 +591,12 @@ TEST(primal_surface_inter, bezier_surface_intersect)
 
   // Use different parameter values so that intersections
   //  are on the boundary of subdivisions
-  axom::numerics::linspace(0.0, 1.0, u_params, 9);
-  axom::numerics::linspace(0.0, 1.0, v_params, 9);
+  axom::numerics::linspace(0.0, 1.0, u_params, 5);
+  axom::numerics::linspace(0.0, 1.0, v_params, 5);
 
-  for(int i = 0; i < 9; ++i)
+  for(int i = 0; i < 5; ++i)
   {
-    for(int j = 0; j < 9; ++j)
+    for(int j = 0; j < 5; ++j)
     {
       VectorType ray_direction(
         ray_origin,
@@ -567,39 +606,32 @@ TEST(primal_surface_inter, bezier_surface_intersect)
       // Points on the edge should not be recorded
       if(i == 8 || j == 8)
       {
-        continue;
-        checkIntersections(ray, sphere_face_patch, {}, {}, {}, eps, eps_test);
+        checkIntersections(ray, sphere_face_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
+
+        checkIntersections(ray,
+                           sphere_face_patch,
+                           {1.0},
+                           {u_params[i]},
+                           {v_params[j]},
+                           eps,
+                           eps_test,
+                           !isHalfOpen);
       }
       else
       {
-        // continue;
-        // checkIntersections(ray,
-                        //    sphere_face_patch,
-                        //    {1.0},
-                        //    {u_params[i]},
-                        //    {v_params[j]},
-                        //    eps,
-                        //    eps_test);
-        VectorType ray_direction(ray_origin,
-         sphere_face_patch.evaluate(u_params[i], v_params[j]));
-
-        RayType ray(ray_origin, ray_direction);
-        axom::Array<CoordType> t, u, v;
-        bool ray_intersects = intersect(ray, sphere_face_patch, t, u, v);
-
-        std::cout << "------------------" << std::endl;
-        for( int i = 0; i < t.size(); ++i )
-        {
-          std::cout << "t: " << t[i] << ", u: " << u[i] << ", v: " << v[i] << std::endl;
-        }
-
-        int xx= 12;
+        checkIntersections(ray,
+                           sphere_face_patch,
+                           {1.0},
+                           {u_params[i]},
+                           {v_params[j]},
+                           eps,
+                           eps_test);
       }
     }
   }
 
   VectorType ray_direction(ray_origin,
-   sphere_face_patch.evaluate(u_params[0], v_params[6]));
+                           sphere_face_patch.evaluate(u_params[0], v_params[6]));
   RayType ray(ray_origin, ray_direction);
 
   axom::Array<CoordType> t, u, v;

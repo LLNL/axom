@@ -33,6 +33,38 @@ namespace detail
 {
 //---------------------------- FUNCTION DECLARATIONS ---------------------------
 
+/*!
+ * \brief Recursive function to find the intersections between a line and a Bezier patch
+ *
+ * \param [in] line The input line
+ * \param [in] patch The input patch
+ * \param [out] tp Parametric coordinates of intersections in \a line
+ * \param [out] up Parametric coordinates of intersections in \a patch
+ * \param [out] vp Parametric coordinates of intersections in \a patch
+ * \param [in] order_u The order of \a line in the u direction
+ * \param [in] order_v The order of \a line in the v direction
+ * \param [in] u_offset The offset in parameter space for \a patch in the u direction
+ * \param [in] u_scale The scale in parameter space for \a patch in the u direction
+ * \param [in] v_offset The offset in parameter space for \a patch in the v direction
+ * \param [in] v_scale The scale in parameter space for \a patch in the v direction
+ * \param [in] sq_tol Numerical tolerance for physical distances
+ * \param [in] EPS Numerical tolerance in parameter space
+ *
+ * A ray can only intersect a Bezier patch if it intersects its bounding box.
+ * The base case of the recursion is when we can approximate the patch as
+ * bilinear, where we directly find their intersections. Otherwise,
+ * check for intersections recursively after bisecting the patch in each direction.
+ *
+ * \note This detial function returns all found intersections within EPS of parameter space,
+ *  including identical intersections reported by each subdivision. 
+ * The calling `intersect` routine should remove duplicates and enforce half-open behavior. 
+ * 
+ * \note This function assumes that all intersections have multiplicity 
+ *  one, i.e. does not find tangencies. 
+ *
+ * \return True if the line intersects the patch, False otherwise
+ * \sa intersect_bezier
+ */
 template <typename T>
 bool intersect_line_patch(const Line<T, 3> &line,
                           const BezierPatch<T, 3> &patch,
