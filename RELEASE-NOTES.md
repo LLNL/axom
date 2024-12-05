@@ -35,6 +35,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
   to core.  The namespace prefix for these classes is now `axom::` instead of `axom::sidre`.  The internal usage of
   these types within Sidre Datastore and Group is unchanged.
+- `MFEMSidreDataCollection::LoadExternalData` now takes an optional `Group` parameter and will only load external data from the given `Group` or from the `MFEMSidreDataCollection` instead of the entire `DataStore`. This is instead of a file path that the class already knows.
 
 ###  Deprecated
 

@@ -953,18 +953,23 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   }
 }
 
-void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
+void MFEMSidreDataCollection::LoadExternalData(Group* grp)
 {
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if(m_comm != MPI_COMM_NULL)
   {
+    if(grp == nullptr)
+    {
+      grp = m_bp_grp;
+    }
+
     IOManager reader(m_comm);
-    reader.loadExternalData(m_bp_grp->getDataStore()->getRoot(), path);
+    reader.loadExternalData(grp, get_file_path(name));
   }
   else
   #endif
   {
-    m_bp_grp->loadExternalData(path);
+    m_bp_grp->loadExternalData(get_file_path(name));
   }
 }
 

@@ -476,8 +476,9 @@ public:
     Load(get_file_path(name), "sidre_hdf5");
   }
 
-  /// Load external data after registering externally owned fields.
-  void LoadExternalData(const std::string& path);
+  /// Load external data for the whole MFEMDataCollection unless a specific group is given.
+  /// @note This must happen after registering externally owned fields.
+  void LoadExternalData(Group* grp = nullptr);
 
   /** @brief Updates the DataCollection's cycle, time, and time-step variables
       with the values from the data store. */
