@@ -34,9 +34,9 @@ namespace primal = axom::primal;
  * Param \a shouldPrintIntersections is used for debugging and for generating
  * the initial array of expected intersections.
  */
-template <typename CoordType>
+template <typename CoordType, typename SurfaceType>
 void checkIntersections(const primal::Ray<CoordType, 3>& ray,
-                        const primal::BezierPatch<CoordType, 3>& patch,
+                        const SurfaceType& patch,
                         const axom::Array<CoordType>& exp_t,
                         const axom::Array<CoordType>& exp_u,
                         const axom::Array<CoordType>& exp_v,
@@ -234,32 +234,74 @@ TEST(primal_surface_inter, bilinear_boundary_condition)
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.0, 1.0));
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
-  checkIntersections(ray, bilinear_patch, {sqrt(3.0)}, {0.0}, {1.0}, eps, eps_test, !isHalfOpen);
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {sqrt(3.0)},
+                     {0.0},
+                     {1.0},
+                     eps,
+                     eps_test,
+                     !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(0.5, 1.0));
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
-  checkIntersections(ray, bilinear_patch, {sqrt(13.0) / 2.0}, {0.5}, {1.0}, eps, eps_test, !isHalfOpen);
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {sqrt(13.0) / 2.0},
+                     {0.5},
+                     {1.0},
+                     eps,
+                     eps_test,
+                     !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.5));
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
-  checkIntersections(ray, bilinear_patch, {sqrt(13.0) / 2.0}, {1.0}, {0.5}, eps, eps_test, !isHalfOpen);
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {sqrt(13.0) / 2.0},
+                     {1.0},
+                     {0.5},
+                     eps,
+                     eps_test,
+                     !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.0));
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
-  checkIntersections(ray, bilinear_patch, {sqrt(3.0)}, {1.0}, {0.0}, eps, eps_test, !isHalfOpen);
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {sqrt(3.0)},
+                     {1.0},
+                     {0.0},
+                     eps,
+                     eps_test,
+                     !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 0.5));
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
-  checkIntersections(ray, bilinear_patch, {sqrt(13.0) / 2.0}, {1.0}, {0.5}, eps, eps_test, !isHalfOpen);
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {sqrt(13.0) / 2.0},
+                     {1.0},
+                     {0.5},
+                     eps,
+                     eps_test,
+                     !isHalfOpen);
 
   ray_direction = VectorType(ray_origin, bilinear_patch.evaluate(1.0, 1.0));
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test, isHalfOpen);
-  checkIntersections(ray, bilinear_patch, {sqrt(6.0)}, {1.0}, {1.0}, eps, eps_test, !isHalfOpen);
+  checkIntersections(ray,
+                     bilinear_patch,
+                     {sqrt(6.0)},
+                     {1.0},
+                     {1.0},
+                     eps,
+                     eps_test,
+                     !isHalfOpen);
 
   // These should record an intersection with both options
 
@@ -539,7 +581,7 @@ TEST(primal_surface_inter, bezier_surface_intersect)
   }
 
   // Intersections with arbitrary patches aren't recorded
-  //  with exact precision
+  //  with as much precision as the base bilinear case
   const double eps = 1E-5;
   const double eps_test = 1E-5;
   const bool isHalfOpen = true;
@@ -636,6 +678,103 @@ TEST(primal_surface_inter, bezier_surface_intersect)
 
   axom::Array<CoordType> t, u, v;
   bool ray_intersects = intersect(ray, sphere_face_patch, t, u, v);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_surface_inter, NURBS_surface_intersect)
+{
+  static const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  // Represent the sphere with a single NURBS patch
+  axom::Array<CoordType> knotvec_u = {-2.0, -2.0, -2.0, -2.0, 1.0, 1.0, 1.0, 1.0};
+  axom::Array<CoordType> knotvec_v =
+    {0.0, 0.0, 0.0, 0.0, 1.5, 1.5, 1.5, 3.0, 3.0, 3.0, 3.0};
+
+  // clang-format off
+  axom::Array<PointType> node_data = {
+    PointType {0, 0,  1}, PointType {0, 0,  1}, PointType { 0, 0,  1}, PointType { 0, 0,  1}, PointType { 0,  0,  1}, PointType {0,  0,  1}, PointType {0, 0,  1},
+    PointType {2, 0,  1}, PointType {2, 4,  1}, PointType {-2, 4,  1}, PointType {-2, 0,  1}, PointType {-2, -4,  1}, PointType {2, -4,  1}, PointType {2, 0,  1},
+    PointType {2, 0, -1}, PointType {2, 4, -1}, PointType {-2, 4, -1}, PointType {-2, 0, -1}, PointType {-2, -4, -1}, PointType {2, -4, -1}, PointType {2, 0, -1},
+    PointType {0, 0, -1}, PointType {0, 0, -1}, PointType { 0, 0, -1}, PointType { 0, 0, -1}, PointType { 0,  0, -1}, PointType {0,  0, -1}, PointType {0, 0, -1}};
+
+  axom::Array<CoordType> weight_data = {
+    1.0, 1.0/3.0, 1.0/3.0, 1.0, 1.0/3.0, 1.0/3.0, 1.0,
+    1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0,
+    1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0,
+    1.0, 1.0/3.0, 1.0/3.0, 1.0, 1.0/3.0, 1.0/3.0, 1.0};
+  // clang-format on
+
+  NURBSPatchType sphere_patch(node_data, weight_data, 4, 7, knotvec_u, knotvec_v);
+
+  // Add extra knots to make the Bezier extraction more interesting
+  sphere_patch.insertKnot_u(0.0, 1);
+  sphere_patch.insertKnot_u(0.5, 2);
+  sphere_patch.insertKnot_v(2.0, 3);
+
+  // Test some parameter values that are at boundaries, knot values,
+  //  subdivision boundaries, and interior points to subdivisions.
+  // Also, skip the points on the u-edges of the patch,
+  //  as they're degenerate in physical space.
+  double params_u[6] = {-1.0, -0.9, 0.0, 0.3, 0.5, 0.75};
+  double params_v[8] = {0.0, 0.3, 1.0, 1.6, 2.0, 2.5, 2.7, 3.0};
+
+  // Intersections with arbitrary patches aren't recorded
+  //  with as much precision as the base bilinear case
+  const double eps = 1E-5;
+  const double eps_test = 1E-5;
+  const bool isHalfOpen = true;
+
+  PointType ray_origin({0.0, 0.0, 0.0});
+
+  for(int i = 0; i < 6; ++i)
+  {
+    for(int j = 0; j < 8; ++j)
+    {
+      VectorType ray_direction(ray_origin,
+                               sphere_patch.evaluate(params_u[i], params_v[j]));
+      RayType ray(ray_origin, ray_direction);
+
+      std::cout << i << "< " << j << std::endl;
+      // The sphere meets itself at the v-edges
+      if(j == 0 || j == 7)
+      {
+        // Once if the surface is half-open
+        checkIntersections(ray,
+                           sphere_patch,
+                           {1.0},
+                           {params_u[i]},
+                           {0.0},
+                           eps,
+                           eps_test,
+                           isHalfOpen);
+
+        // Twice if the surface is not half-open
+        checkIntersections(ray,
+                           sphere_patch,
+                           {1.0, 1.0},
+                           {params_u[i], params_u[i]},
+                           {0.0, 3.0},
+                           eps,
+                           eps_test,
+                           !isHalfOpen);
+      }
+      else
+      {
+        checkIntersections(ray,
+                           sphere_patch,
+                           {1.0},
+                           {params_u[i]},
+                           {params_v[j]},
+                           eps,
+                           eps_test);
+      }
+    }
+  }
 }
 
 int main(int argc, char* argv[])

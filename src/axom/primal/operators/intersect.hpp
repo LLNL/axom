@@ -30,6 +30,8 @@
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/BezierPatch.hpp"
+#include "axom/primal/geometry/NURBSCurve.hpp"
+#include "axom/primal/geometry/NURBSPatch.hpp"
 
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
@@ -591,7 +593,15 @@ bool intersect(const Ray<T, 2>& r,
   // for efficiency, linearity check actually uses a squared tolerance
   const double sq_tol = tol * tol;
 
-  return detail::intersect_ray_bezier(r, c, rp, cp, sq_tol, EPS, c.getOrder(), offset, scale);
+  return detail::intersect_ray_bezier(r,
+                                      c,
+                                      rp,
+                                      cp,
+                                      sq_tol,
+                                      EPS,
+                                      c.getOrder(),
+                                      offset,
+                                      scale);
 }
 
 /*!
@@ -617,9 +627,6 @@ bool intersect(const Ray<T, 2>& r,
                double tol = 1E-8,
                double EPS = 1E-8)
 {
-  const double offset = 0.;
-  const double scale = 1.;
-
   // Check a bounding box of the entire NURBS first
   Point<T, 2> ip;
   if(!intersect(r, n.boundingBox(), ip))
@@ -631,19 +638,19 @@ bool intersect(const Ray<T, 2>& r,
   auto beziers = n.extractBezier();
   const int deg = n.getDegree();
   axom::Array<T> knot_vals = n.getUniqueKnots();
-    
+
   // Check each Bezier segment, and scale the intersection parameters
   //  back into the span of the original NURBS curve
   for(int i = 0; i < beziers.size(); ++i)
   {
     axom::Array<T> rc, nc;
-    intersect( r, beziers[i], rc, nc, tol, EPS );
+    intersect(r, beziers[i], rc, nc, tol, EPS);
 
     // Scale the intersection parameters back into the span of the NURBS curve
     for(int j = 0; j < rc.size(); ++j)
     {
-      rp.push_back( rc[j] );
-      np.push_back( knot_vals[i] + nc[j] * (knot_vals[i+1] - knot_vals[i]) );
+      rp.push_back(rc[j]);
+      np.push_back(knot_vals[i] + nc[j] * (knot_vals[i + 1] - knot_vals[i]));
     }
   }
 
@@ -811,7 +818,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
 
   // Remove duplicates from the (u, v) intersection points
   //  (Note it's not possible for (u_1, v_1) == (u_2, v_2) and t_1 != t_2)
-  const double EPS_sq = EPS * EPS;
+  const double sq_EPS = EPS * EPS;
 
   // The number of reported intersection points will be small,
   //  so we don't need to fully sort the list
@@ -828,7 +835,101 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
     bool foundDuplicate = false;
     for(int j = i + 1; !foundDuplicate && j < tc.size(); ++j)
     {
-      if(squared_distance(uv, Point<T, 2>({uc[j], vc[j]})) < EPS_sq)
+      if(squared_distance(uv, Point<T, 2>({uc[j], vc[j]})) < sq_EPS)
+      {
+        foundDuplicate = true;
+      }
+    }
+
+    if(!foundDuplicate)
+    {
+      t.push_back(tc[i]);
+      u.push_back(uc[i]);
+      v.push_back(vc[i]);
+    }
+  }
+
+  return !t.empty();
+}
+
+template <typename T>
+AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
+                                const NURBSPatch<T, 3>& patch,
+                                axom::Array<T>& t,
+                                axom::Array<T>& u,
+                                axom::Array<T>& v,
+                                double tol = 1e-8,
+                                double EPS = 1e-8,
+                                bool isHalfOpen = false)
+{
+  // Check a bounding box of the entire NURBS first
+  Point<T, 3> ip;
+  if(!intersect(ray, patch.boundingBox(), ip))
+  {
+    return false;
+  }
+
+  // Decompose the NURBS patch into Bezier patches
+  auto beziers = patch.extractBezier();
+  const int deg_u = patch.getDegree_u();
+  const int deg_v = patch.getDegree_v();
+
+  const int num_knot_span_u = patch.getKnots_u().getNumKnotSpans();
+  const int num_knot_span_v = patch.getKnots_v().getNumKnotSpans();
+
+  axom::Array<T> knot_vals_u = patch.getUniqueKnots_u();
+  axom::Array<T> knot_vals_v = patch.getUniqueKnots_v();
+
+  // Store candidate intersections
+  axom::Array<T> tc, uc, vc;
+
+  // Check each Bezier patch, and scale the intersection parameters
+  //  back into the span of the original NURBS patch
+  for(int i = 0; i < num_knot_span_u; ++i)
+  {
+    for(int j = 0; j < num_knot_span_v; ++j)
+    {
+      auto& bezier = beziers[i * num_knot_span_v + j];
+
+      // Store candidate intersections from each Bezier patch
+      axom::Array<T> tcc, ucc, vcc;
+      intersect(ray, bezier, tcc, ucc, vcc, tol, EPS);
+
+      // Scale the intersection parameters back into the span of the NURBS patch
+      for(int k = 0; k < tcc.size(); ++k)
+      {
+        tc.push_back(tcc[k]);
+        uc.push_back(knot_vals_u[i] +
+                     ucc[k] * (knot_vals_u[i + 1] - knot_vals_u[i]));
+        vc.push_back(knot_vals_v[j] +
+                     vcc[k] * (knot_vals_v[j + 1] - knot_vals_v[j]));
+      }
+    }
+  }
+
+  // Do a second pass to remove duplicates from uc, vc
+  const double sq_EPS = EPS * EPS;
+
+  // The number of reported intersection points will be small,
+  //  so we don't need to fully sort the list
+
+  double max_u_knot = patch.getKnots_u()[patch.getKnots_u().getNumKnots() - 1];
+  double max_v_knot = patch.getKnots_v()[patch.getKnots_v().getNumKnots() - 1];
+
+  for(int i = 0; i < tc.size(); ++i)
+  {
+    // Also remove any intersections on the half-interval boundaries
+    if(isHalfOpen && (uc[i] >= max_u_knot - EPS || vc[i] >= max_v_knot - EPS))
+    {
+      continue;
+    }
+
+    Point<T, 2> uv({uc[i], vc[i]});
+
+    bool foundDuplicate = false;
+    for(int j = i + 1; !foundDuplicate && j < tc.size(); ++j)
+    {
+      if(squared_distance(uv, Point<T, 2>({uc[j], vc[j]})) < sq_EPS)
       {
         foundDuplicate = true;
       }

@@ -31,6 +31,7 @@ set( primal_headers
     geometry/OrientationResult.hpp
     geometry/NumericArray.hpp
     geometry/NURBSCurve.hpp
+    geometry/NURBSPatch.hpp
     geometry/Plane.hpp
     geometry/Point.hpp
     geometry/Polygon.hpp
