@@ -70,12 +70,6 @@ iterated first, followed by cells that use the current material.
     mm.setCellMatRel(relation, axom::multimat::DataLayout::CELL_DOM);
 
 
-
-.. FUTURE: We could have a "Dynamic Mode" section that shows how to build up or
-..         alter the CMR using convertToDynamic/addEntry/removeEntry methods.
-..         maybe that is an advanced topic.
-
-
 #######################
 Volume Fractions
 #######################
