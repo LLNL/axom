@@ -1257,7 +1257,7 @@ TEST(primal_bezierpatch, reverse_orientation)
 TEST(primal_bezierpatch, rational_evaluation_split)
 {
   // Test behavior with a spherical Bezier patch
-  SLIC_INFO("Testing Bezier patch evaluation wirh rational weights");
+  SLIC_INFO("Testing Bezier patch evaluation with rational weights");
 
   const int DIM = 3;
   using CoordType = double;
