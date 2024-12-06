@@ -227,19 +227,28 @@ public:
    * For knot vector {u_0, ..., u_n}, returns i such that u_i <= t < u_i+1
    *  if t == u_n, returns i such that u_i < t <= u_i+1 (i.e. i = n - degree - 1)
    * 
-   * \pre Assumes that the input t is within the knot vector
-   * 
    * Implementation adapted from Algorithm A2.1 on page 68 of "The NURBS Book"
+   * 
+   * \pre Assumes that the input t is in the span [u_0, u_n] (up to some tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    * 
    * \return The index of the knot span containing t
    */
   axom::IndexType findSpan(T t) const
   {
-    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+    SLIC_ASSERT(isValidParameter(t));
 
     const axom::IndexType nkts = m_knots.size();
 
-    if(t == m_knots[nkts - 1])
+    // Handle cases where t is outside the knot span within a tolerance
+    //  by implicitly clamping it to the nearest span
+    if(t <= m_knots[0])
+    {
+      return m_deg;
+    }
+
+    if(t >= m_knots[nkts - 1])
     {
       return nkts - m_deg - 2;
     }
@@ -266,19 +275,29 @@ public:
    * For knot vector {u_0, ..., u_n}, returns i such that u_i <= t < u_i+1
    *  if t == u_n, returns i such that u_i < t <= u_i+1 (i.e. i = n - degree - 1)
    * 
-   * \pre Assumes that the input t is within the knot vector
+   * \pre Assumes that the input t is within the knot vector (up to some tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, the returned multiplicity
+   *  will be equal to the degree + 1 (required for clamped curves)
    * 
    * \return The index of the knot span containing t
    */
   axom::IndexType findSpan(T t, int& multiplicity) const
   {
-    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+    SLIC_ASSERT(isValidParameter(t));
 
     const auto nkts = m_knots.size();
     const auto span = findSpan(t);
 
+    // Early exit for known multiplicities
+    if(t <= m_knots[0] || t >= m_knots[nkts - 1])
+    {
+      multiplicity = m_deg + 1;
+      return span;
+    }
+
     multiplicity = 0;
-    for(auto i = (t == m_knots[nkts - 1]) ? nkts - 1 : span; i >= 0; --i)
+    for(auto i = span; i >= 0; --i)
     {
       if(m_knots[i] == t)
       {
@@ -356,14 +375,14 @@ public:
    * \param [in] t The value of the knot to insert
    * \param [in] target_mutliplicity The number of times the knot will be present
    *
-   * \pre Assumes that the input t is within the knot vector
+   * \pre Assumes that the input t is within the knot vector (up to some tolerance)
    * 
    * \note If the knot is already present, it will be inserted
    *  up to the given multiplicity, or the maximum permitted by the degree
    */
   void insertKnot(T t, int target_multiplicity)
   {
-    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+    SLIC_ASSERT(isValidParameter(t));
 
     int multiplicity;
     auto span = findSpan(t, multiplicity);
@@ -426,8 +445,8 @@ public:
       k2.normalize();
     }
 
-    // SLIC_ASSERT(k1.isValid());
-    // SLIC_ASSERT(k2.isValid());
+    SLIC_ASSERT(k1.isValid());
+    SLIC_ASSERT(k2.isValid());
   }
 
   /*!
@@ -438,11 +457,11 @@ public:
    * \param [out] k2 The second knot vector
    * \param [in] normalize Whether to normalize the output knot vectors
    * 
-   * \pre Assumes that the input t is within the knot vector
+   * \pre Assumes that the input t is *interior* to the knot vector
    */
   void split(T t, KnotVector& k1, KnotVector& k2, bool normalize = false) const
   {
-    SLIC_ASSERT(t > m_knots[0] && t < m_knots[m_knots.size() - 1]);
+    SLIC_ASSERT(isValidInteriorParameter(t));
 
     int multiplicity;
     axom::IndexType span = findSpan(t, multiplicity);
@@ -459,7 +478,7 @@ public:
    * \param [in] span The span in which to evaluate the basis functions
    * \param [in] t The parameter value
    * 
-   * \pre Assumes that the input t is within the knot vector and that the span is valid
+   * \pre Assumes that the input t is within the correct span
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
    * 
    * \return An array of the `m_deg + 1` non-zero basis functions evaluated at t
@@ -498,13 +517,13 @@ public:
    * 
    * \param [in] t The parameter value
    * 
-   * \pre Assumes that the input t is within the knot vector
+   * \pre Assumes that the input t is within the knot vector (up to a tolerance)
    * 
    * \return An array of the `m_deg + 1` non-zero basis functions evaluated at t
    */
   axom::Array<T> calculateBasisFunctions(T t) const
   {
-    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+    SLIC_ASSERT(isValidParameter(t));
     return calculateBasisFunctionsBySpan(findSpan(t), t);
   }
 
@@ -517,7 +536,7 @@ public:
    * 
    * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
    *
-   * \pre Assumes that the input t is within the knot vector and that the span is valid
+   * \pre Assumes that the input t is within the provided knot span
    * 
    * \return An array of the `n + 1` derivatives evaluated at t
    */
@@ -623,13 +642,13 @@ public:
    * \param [in] t The parameter value
    * \param [in] n The number of derivatives to compute
    * 
-   * \pre Assumes that the input t is within the knot vector
+   * \pre Assumes that the input t is within the knot vector (up to a tolerance)
    * 
    * \return An array of the `n + 1` derivatives evaluated at t
    */
   axom::Array<axom::Array<T>> derivativeBasisFunctions(T t, int n) const
   {
-    SLIC_ASSERT(t >= m_knots[0] && t <= m_knots[m_knots.size() - 1]);
+    SLIC_ASSERT(isValidParameter(t));
     return derivativeBasisFunctionsBySpan(findSpan(t), t, n);
   }
 
@@ -763,6 +782,19 @@ public:
   friend inline bool operator!=(const KnotVector<T>& lhs, const KnotVector<T>& rhs)
   {
     return !(lhs == rhs);
+  }
+
+  /// \brief Checks if given parameter is in knot span (to a tolerance)
+  bool isValidParameter(T t, T EPS = 1e-5) const
+  {
+    return t >= m_knotvec[0] - EPS &&
+      t <= m_knotvec[m_knotvec.getNumKnots() - 1] + EPS;
+  }
+
+  /// \brief Checks if given parameter is *interior* to knot span (to a tolerance)
+  bool isValidInteriorParameter(T t) const
+  {
+    return t > m_knotvec[0] && t < m_knotvec[m_knotvec.getNumKnots() - 1];
   }
 
   /*!

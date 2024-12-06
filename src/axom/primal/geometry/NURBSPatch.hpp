@@ -729,14 +729,21 @@ public:
    * 
    * Adapted from Algorithm A3.5 on page 103 of "The NURBS Book"
    * 
-   * \pre Requires \a u, v in the span of each knot vector
+   * \pre Requires \a u, v in the span of each knot vector (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   PointType evaluate(T u, T v) const
   {
-    SLIC_ASSERT(u >= m_knotvec_u[0] &&
-                u <= m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
-    SLIC_ASSERT(v >= m_knotvec_v[0] &&
-                v <= m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_u.isValidParameter(u));
+    SLIC_ASSERT(m_knotvec_v.isValidParameter(v));
+
+    u = axom::utilities::clampVal(u,
+                                  m_knotvec_u[0],
+                                  m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
+    v = axom::utilities::clampVal(v,
+                                  m_knotvec_v[0],
+                                  m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
 
     const auto span_u = m_knotvec_u.findSpan(u);
     const auto span_v = m_knotvec_v.findSpan(v);
@@ -1306,12 +1313,16 @@ public:
    * \param [in] u Parameter value fixed in the isocurve
    * \return c The isocurve C(v) = S(u, v) for fixed u
    * 
-   * \pre Requires \a u be in the span of the knot vector
+   * \pre Requires \a u be in the span of the knot vector (up to a small tolerance)
+   * 
+   * \note If u is outside the knot span up this tolerance, it is clamped to the span
    */
   NURBSCurveType isocurve_u(T u) const
   {
-    SLIC_ASSERT(u >= m_knotvec_u[0] &&
-                u <= m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_u.isValidParameter(u));
+    u = axom::utilities::clampVal(u,
+                                  m_knotvec_u[0],
+                                  m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
 
     using axom::utilities::lerp;
 
@@ -1368,12 +1379,16 @@ public:
    * \param [in] v Parameter value fixed in the isocurve
    * \return c The isocurve C(u) = S(u, v) for fixed v
    * 
-   * \pre Requires \a v be in the span of the knot vector
+   * \pre Requires \a v be in the span of the knot vector (up to a small tolerance)
+   * 
+   * \note If v is outside the knot span up this tolerance, it is clamped to the span
    */
   NURBSCurveType isocurve_v(T v) const
   {
-    SLIC_ASSERT(v >= m_knotvec_v[0] &&
-                v <= m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_v.isValidParameter(v));
+    v = axom::utilities::clampVal(v,
+                                  m_knotvec_v[0],
+                                  m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
 
     using axom::utilities::lerp;
 
@@ -1438,14 +1453,21 @@ public:
    * Implementation adapted from Algorithm A3.6 on p. 111 of "The NURBS Book".
    * Rational derivatives from Algorithm A4.4 on p. 137 of "The NURBS Book".
    * 
-   * \pre Requires \a u, v be in the span of the knots
+   * \pre Requires \a u, v be in the span of the knots (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   void evaluateDerivatives(T u, T v, int d, axom::Array<VectorType, 2>& ders) const
   {
-    SLIC_ASSERT(u >= m_knotvec_u[0] &&
-                u <= m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
-    SLIC_ASSERT(v >= m_knotvec_v[0] &&
-                v <= m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_u.isValidParameter(u));
+    SLIC_ASSERT(m_knotvec_v.isValidParameter(v));
+
+    u = axom::utilities::clampVal(u,
+                                  m_knotvec_u[0],
+                                  m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
+    v = axom::utilities::clampVal(v,
+                                  m_knotvec_v[0],
+                                  m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
 
     const int deg_u = getDegree_u();
     const int du = std::min(d, deg_u);
@@ -1591,7 +1613,9 @@ public:
    * \param [out] Dv The vector value of S_v(u, v)
    * \param [out] DuDv The vector value of S_uv(u, v) == S_vu(u, v)
    *
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   void evaluateLinearDerivatives(T u,
                                  T v,
@@ -1621,7 +1645,9 @@ public:
    * \param [out] DvDv The vector value of S_vv(u, v)
    * \param [out] DuDv The vector value of S_uu(u, v)
    *
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   void evaluateSecondDerivatives(T u,
                                  T v,
@@ -1649,7 +1675,9 @@ public:
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
    *
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   VectorType du(T u, T v) const
   {
@@ -1665,7 +1693,9 @@ public:
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
    *
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   VectorType dv(T u, T v) const
   {
@@ -1681,7 +1711,9 @@ public:
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
    * 
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   VectorType dudu(T u, T v) const
   {
@@ -1697,7 +1729,9 @@ public:
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
    * 
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   VectorType dvdv(T u, T v) const
   {
@@ -1713,7 +1747,9 @@ public:
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
    * 
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   VectorType dudv(T u, T v) const
   {
@@ -1729,7 +1765,9 @@ public:
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
    * 
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   VectorType dvdu(T u, T v) const { return dudv(u, v); }
 
@@ -1739,7 +1777,9 @@ public:
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
    * 
-   * \pre We require evaluation of the patch at \a u and \a v between 0 and 1
+   * \pre We require evaluation of the patch at \a u and \a v (up to a small tolerance)
+   * 
+   * \note If u/v is outside the knot span up this tolerance, it is clamped to the span
    */
   VectorType normal(T u, T v) const
   {
@@ -1762,14 +1802,19 @@ public:
    * \note If the knot is already present, it will be inserted
    *  up to the given multiplicity, or the maximum permitted by the degree
    * 
-   * \pre Requires \a u in the span of the knots
+   * \pre Requires \a u in the span of the knots (up to a small tolerance)
+   * 
+   * \note If u is outside the knot span up this tolerance, it is clamped to the span
    * 
    * \return The (maximum) index of the new knot
    */
   axom::IndexType insertKnot_u(T u, int target_multiplicity = 1)
   {
-    SLIC_ASSERT(u >= m_knotvec_u[0] &&
-                u <= m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_u.isValidParameter(u));
+    u = axom::utilities::clampVal(u,
+                                  m_knotvec_u[0],
+                                  m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
+
     SLIC_ASSERT(target_multiplicity > 0);
 
     const bool isRationalPatch = isRational();
@@ -1923,14 +1968,19 @@ public:
    * \note If the knot is already present, it will be inserted
    *  up to the given multiplicity, or the maximum permitted by the degree
    * 
-   * \pre Requires \a v in the span of the knots
+   * \pre Requires \a v in the span of the knots (up to a small tolerance)
+   * 
+   * \note If v is outside the knot span up this tolerance, it is clamped to the span
    * 
    * \return The (maximum) index of the new knot
    */
   axom::IndexType insertKnot_v(T v, int target_multiplicity = 1)
   {
-    SLIC_ASSERT(v >= m_knotvec_v[0] &&
-                v <= m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_v.isValidParameter(v));
+    v = axom::utilities::clampVal(v,
+                                  m_knotvec_v[0],
+                                  m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+
     SLIC_ASSERT(target_multiplicity > 0);
 
     const bool isRationalPatch = isRational();
@@ -2094,7 +2144,7 @@ public:
     *   |         |          |
     *   ---------------------- u = 1
     *
-    * \pre Parameter \a u and \a v must be in the knot span
+    * \pre Parameter \a u and \a v must be *strictly interior* to the knot span
     */
   void split(T u,
              T v,
@@ -2103,10 +2153,8 @@ public:
              NURBSPatch& p3,
              NURBSPatch& p4) const
   {
-    SLIC_ASSERT(u > m_knotvec_u[0] &&
-                u < m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
-    SLIC_ASSERT(v > m_knotvec_v[0] &&
-                v < m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
+    SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
 
     // Bisect the patch along the u direction
     split_u(u, p1, p2);
@@ -2124,8 +2172,7 @@ public:
    */
   void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
-    SLIC_ASSERT(u > m_knotvec_u[0] &&
-                u < m_knotvec_u[m_knotvec_u.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
 
     const bool isRationalPatch = isRational();
 
@@ -2195,8 +2242,7 @@ public:
    */
   void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
-    SLIC_ASSERT(v > m_knotvec_v[0] &&
-                v < m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
 
     const bool isRationalPatch = isRational();
 
@@ -2734,6 +2780,26 @@ public:
     }
 
     return true;
+  }
+
+  /// \brief Function to check if the u parameter is within the knot span
+  bool isValidParameter_u(T u, T EPS = 1e-8) const
+  {
+    return u >= m_knotvec_u[0] - EPS &&
+      u <= m_knotvec_u[m_knotvec_u.getNumKnots() - 1] + EPS;
+  }
+
+  /// \brief Function to check if the v parameter is within the knot span
+  bool isValidParameter_v(T v, T EPS = 1e-8) const
+  {
+    return v >= m_knotvec_v[0] - EPS &&
+      v <= m_knotvec_v[m_knotvec_v.getNumKnots() - 1] + EPS;
+  }
+
+  /// \brief Checks if given u parameter is *interior* to the knot span
+  bool isValidInteriorParameter(T t) const
+  {
+    return m_knotvec_u.isValidInteriorParameter(t);
   }
 
 private:

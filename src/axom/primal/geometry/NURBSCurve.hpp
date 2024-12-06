@@ -407,11 +407,16 @@ public:
    * 
    * Adapted from Algorithm A4.1 on page 124 of "The NURBS Book"
    * 
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the span of the knots (up to a small tolerance).
+   *
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    */
   PointType evaluate(T t) const
   {
-    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec.isValidParameter(t));
+    t = axom::utilities::clampValue(t,
+                                    m_knotvec[0],
+                                    m_knotvec[m_knotvec.getNumKnots() - 1]);
 
     const auto span = m_knotvec.findSpan(t);
     const auto N_evals = m_knotvec.calculateBasisFunctionsBySpan(span, t);
@@ -465,7 +470,9 @@ public:
    * \param [in] t The parameter value at which to evaluate
    * \return p The vector of NURBS curve's derivative at t
    * 
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the span of the knots (up to a small tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    */
   VectorType dt(T t) const
   {
@@ -482,7 +489,9 @@ public:
    * \param [in] t The parameter value at which to evaluate
    * \return p The vector of NURBS curve's 2nd derivative at t
    * 
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the span of the knots (up to a small tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    */
   VectorType dtdt(T t) const
   {
@@ -500,7 +509,9 @@ public:
    * \param [out] eval The point on the curve at t
    * \param [out] Dt The first derivative of the curve at t
    * 
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the span of the knots (up to a small tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    */
   void evaluate_first_derivative(T t, PointType& eval, VectorType& Dt) const
   {
@@ -518,7 +529,9 @@ public:
    * \param [out] Dt The first derivative of the curve at t
    * \param [out] DtDt The second derivative of the curve at t
    * 
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the span of the knots (up to a small tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    */
   void evaluate_second_derivative(T t,
                                   PointType& eval,
@@ -543,14 +556,19 @@ public:
    * Implementation adapted from Algorithm A3.2 on p. 93 of "The NURBS Book".
    * Rational derivatives from Algorithm A4.2 on p. 127 of "The NURBS Book".
    * 
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the span of the knots (up to a small tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    */
   void evaluateDerivatives(T t,
                            int d,
                            PointType& eval,
                            axom::Array<VectorType>& ders) const
   {
-    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec.isValidParameter(t));
+    t = axom::utilities::clampValue(t,
+                                    m_knotvec[0],
+                                    m_knotvec[m_knotvec.getNumKnots() - 1]);
 
     const int p = m_knotvec.getDegree();
     ders.resize(d);
@@ -648,13 +666,19 @@ public:
    * \note If the knot is already present, it will be inserted
    *  up to the given multiplicity, or the maximum permitted by the degree
    * 
-   * \pre Requires \a t in the span of the knots
+   * \pre Requires \a t in the span of the knots (up to a small tolerance)
+   * 
+   * \note If t is outside the knot span up to this tolerance, it is clamped to the span
    * 
    * \return The (maximum) index of the new knot
    */
   axom::IndexType insertKnot(T t, int target_multiplicity = 1)
   {
-    SLIC_ASSERT(t >= m_knotvec[0] && t <= m_knotvec[m_knotvec.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec.isValidParameter(t));
+    t = axom::utilities::clampValue(t,
+                                    m_knotvec[0],
+                                    m_knotvec[m_knotvec.getNumKnots() - 1]);
+
     SLIC_ASSERT(target_multiplicity > 0);
 
     const bool isRational = this->isRational();
@@ -772,7 +796,7 @@ public:
   /*!
    * \brief Splits a NURBS curve into two curves at a given parameter value
    *
-   * \param [in] t parameter value between 0 and 1 at which to evaluate
+   * \param [in] t parameter value at which to evaluate
    * \param [out] n1 First output NURBS curve
    * \param [out] n2 Second output NURBS curve
    * \param [in] normalize Whether to normalize the output curves
@@ -780,14 +804,14 @@ public:
    * If t is at the knot u_0 or u_max, will return the original curve and
    *  a degenerate curve with the first or last control point
    *
-   * \pre Requires \a t in the *interior* of the span of the knots
+   * \pre Requires \a t in the *strict interior* of the span of the knots
    */
   void split(T t,
              NURBSCurve<T, NDIMS>& n1,
              NURBSCurve<T, NDIMS>& n2,
              bool normalize = false) const
   {
-    SLIC_ASSERT(t > m_knotvec[0] && t < m_knotvec[m_knotvec.getNumKnots() - 1]);
+    SLIC_ASSERT(m_knotvec.isValidInteriorParameter(t));
 
     const bool isCurveRational = this->isRational();
     const int p = getDegree();
