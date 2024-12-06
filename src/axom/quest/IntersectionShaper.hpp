@@ -674,6 +674,7 @@ public:
                          int shape_count)
 
   {
+    AXOM_ANNOTATE_SCOPE("IntersectionShaper::runShapeQueryImpl");
     // No need for shape, because it has been converted into m_tets or m_octs,
     // which is what the parameter shapes is.
     AXOM_UNUSED_VAR(shape);
@@ -689,7 +690,7 @@ public:
                                 " Inserting shapes' bounding boxes into BVH "));
 
     // Generate the BVH tree over the shapes
-    // Access-aligned bounding boxes
+    // Axis-aligned bounding boxes
     // Does m_aabbs need to be a member?  It's only used here.  BTNG.
     m_aabbs =
       axom::Array<BoundingBoxType>(shape_count, shape_count, device_allocator);
@@ -784,6 +785,10 @@ public:
     auto shape_candidates_device_view = shape_candidates_device.view();
 
     // Tetrahedrons from hexes (24 for each hex)
+    // TODO: Why break hexes into tets if we can hex-tet clip (clip_impl.hpp:502).
+    // Possibly because ShapeType can also be oct, and we don't do hex-oct clip.
+    // At least not yet.  We could break the oct into 6 tets and do 6 hex-tet clips.
+    // Isn't that better than breaking the hex into 24 tets and doing 24 oct-tet clips?
     bool doInitializeTetsFromHexes = false;
     if(m_tets_from_hexes_device.empty())
     {
@@ -901,13 +906,13 @@ public:
     constexpr bool tryFixOrientation = true;
 
     {
+      AXOM_ANNOTATE_SCOPE("IntersectionShaper::clipLoop");
       // Copy calculated total back to host
       axom::Array<IndexType> newTotalCandidates_calc_host =
         axom::Array<IndexType>(newTotalCandidates_device, host_allocator);
 
-      AXOM_ANNOTATE_SCOPE("tet_shape_volume");
       axom::for_all<ExecSpace>(
-        newTotalCandidates_calc_host[0],
+        newTotalCandidates_calc_host[0], // Number of candidates found.
         AXOM_LAMBDA(axom::IndexType i) {
           const int index = hex_indices_device_view[i];
           const int shapeIndex = shape_candidates_device_view[i];
@@ -1478,6 +1483,58 @@ public:
   axom::ArrayView<const double> getHexVolumes() const
   {
     return m_hex_volumes.view();
+  }
+
+  double sumOverlapVolumes(bool global = true) const
+  {
+    double overlapVol = 0.0;
+    switch(m_execPolicy)
+    {
+  #if defined(AXOM_USE_OPENMP)
+    case RuntimePolicy::omp:
+      overlapVol = sumArray<omp_exec>(m_overlap_volumes.data(),
+                                      m_overlap_volumes.size());
+      break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+    case RuntimePolicy::cuda:
+      overlapVol = sumArray<cuda_exec>(m_overlap_volumes.data(),
+                                      m_overlap_volumes.size());
+      break;
+  #endif  // AXOM_USE_CUDA
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+    case RuntimePolicy::hip:
+      overlapVol = sumArray<hip_exec>(m_overlap_volumes.data(),
+                                      m_overlap_volumes.size());
+      break;
+  #endif  // AXOM_USE_HIP
+    case RuntimePolicy::seq:
+    default:
+      overlapVol = sumArray<seq_exec>(m_overlap_volumes.data(),
+                                      m_overlap_volumes.size());
+      break;
+    }
+
+    if (global)
+    {
+      overlapVol = this->allReduceSum(overlapVol);
+    }
+    return overlapVol;
+  }
+
+  template<typename ExecSpace, typename Summable>
+  Summable sumArray(const Summable* a, axom::IndexType count) const
+  {
+    using LoopPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
+    using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
+    RAJA::ReduceSum<ReducePolicy, Summable> vsum{0};
+    RAJA::forall<LoopPolicy>(
+      RAJA::RangeSegment(0, count),
+      AXOM_LAMBDA(RAJA::Index_type i) {
+        vsum += a[i];
+      });
+    Summable sum = static_cast<Summable>(vsum.get());
+    return sum;
   }
 
   void adjustVolumeFractions() override
@@ -2471,7 +2528,7 @@ private:
   //! @brief Volumes of cells in the computational mesh.
   axom::Array<double> m_hex_volumes;
 
-  //! @brief Overlap volumes of cells in the computational mesh and the last shape.
+  //! @brief Overlap volumes of cells in the computational mesh for the last shape.
   axom::Array<double> m_overlap_volumes;
 
   double m_vertexWeldThreshold {1.e-10};

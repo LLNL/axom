@@ -256,7 +256,7 @@ public:
       ->check(axom::CLI::PositiveNumber);
 
     app.add_option("--length", length)
-      ->description("Length of cone/cyl/VOR shape")
+      ->description("Length of cone/cyl/VOR shape, avg length of hex.")
       ->check(axom::CLI::PositiveNumber);
 
     app.add_option("--dir", direction)
@@ -804,7 +804,7 @@ axom::klee::Shape createShape_Hex()
 
   SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
 
-  const double md = params.length < 0 ? 0.6 : params.length;
+  const double md = params.length < 0 ? 0.6 : params.length/2;
   const double lg = 1.2 * md;
   const double sm = 0.8 * md;
   const Point3D p {-lg, -md, -sm};
