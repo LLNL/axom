@@ -414,9 +414,9 @@ public:
   PointType evaluate(T t) const
   {
     SLIC_ASSERT(m_knotvec.isValidParameter(t));
-    t = axom::utilities::clampValue(t,
-                                    m_knotvec[0],
-                                    m_knotvec[m_knotvec.getNumKnots() - 1]);
+    t = axom::utilities::clampVal(t,
+                                  m_knotvec[0],
+                                  m_knotvec[m_knotvec.getNumKnots() - 1]);
 
     const auto span = m_knotvec.findSpan(t);
     const auto N_evals = m_knotvec.calculateBasisFunctionsBySpan(span, t);
@@ -566,9 +566,9 @@ public:
                            axom::Array<VectorType>& ders) const
   {
     SLIC_ASSERT(m_knotvec.isValidParameter(t));
-    t = axom::utilities::clampValue(t,
-                                    m_knotvec[0],
-                                    m_knotvec[m_knotvec.getNumKnots() - 1]);
+    t = axom::utilities::clampVal(t,
+                                  m_knotvec[0],
+                                  m_knotvec[m_knotvec.getNumKnots() - 1]);
 
     const int p = m_knotvec.getDegree();
     ders.resize(d);
@@ -675,9 +675,9 @@ public:
   axom::IndexType insertKnot(T t, int target_multiplicity = 1)
   {
     SLIC_ASSERT(m_knotvec.isValidParameter(t));
-    t = axom::utilities::clampValue(t,
-                                    m_knotvec[0],
-                                    m_knotvec[m_knotvec.getNumKnots() - 1]);
+    t = axom::utilities::clampVal(t,
+                                  m_knotvec[0],
+                                  m_knotvec[m_knotvec.getNumKnots() - 1]);
 
     SLIC_ASSERT(target_multiplicity > 0);
 

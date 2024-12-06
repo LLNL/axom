@@ -787,14 +787,13 @@ public:
   /// \brief Checks if given parameter is in knot span (to a tolerance)
   bool isValidParameter(T t, T EPS = 1e-5) const
   {
-    return t >= m_knotvec[0] - EPS &&
-      t <= m_knotvec[m_knotvec.getNumKnots() - 1] + EPS;
+    return t >= m_knots[0] - EPS && t <= m_knots[m_knots.size() - 1] + EPS;
   }
 
   /// \brief Checks if given parameter is *interior* to knot span (to a tolerance)
   bool isValidInteriorParameter(T t) const
   {
-    return t > m_knotvec[0] && t < m_knotvec[m_knotvec.getNumKnots() - 1];
+    return t > m_knots[0] && t < m_knots[m_knots.size() - 1];
   }
 
   /*!
