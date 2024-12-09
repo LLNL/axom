@@ -955,10 +955,8 @@ TEST(primal_bezier_inter, ray_nurbs_intersections)
   axom::numerics::linspace(-1.0, 2.0, params, 10);
 
   PointType ray_origin({0.0, 0.0});
-  for(int i = 6; i < 7; ++i)  // Skip the last parameter, which is equal to i=0
+  for(int i = 0; i < 9; ++i)  // Skip the last parameter, which is equal to i=0
   {
-    std::cout << "Testing with parameter " << i << " " << params[i] << std::endl;
-
     VectorType ray_direction(ray_origin, circle.evaluate(params[i]));
     RayType ray(ray_origin, ray_direction);
 
