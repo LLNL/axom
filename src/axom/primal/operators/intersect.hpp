@@ -636,7 +636,6 @@ bool intersect(const Ray<T, 2>& r,
 
   // Decompose the NURBS curve into Bezier segments
   auto beziers = n.extractBezier();
-  const int deg = n.getDegree();
   axom::Array<T> knot_vals = n.getKnots().getUniqueKnots();
 
   // Check each Bezier segment, and scale the intersection parameters
@@ -774,7 +773,6 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
 
   // Store the candidate intersections
   axom::Array<T> tc, uc, vc;
-  bool foundIntersection = false;
 
   if(order_u < 1 || order_v < 1)
   {
@@ -784,17 +782,16 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
   else if(order_u == 1 && order_v == 1)
   {
     primal::Line<T, 3> line(ray.origin(), ray.direction());
-    foundIntersection =
-      detail::intersect_line_bilinear_patch(line,
-                                            patch(0, 0),
-                                            patch(order_u, 0),
-                                            patch(order_u, order_v),
-                                            patch(0, order_v),
-                                            tc,
-                                            uc,
-                                            vc,
-                                            EPS,
-                                            true);
+    detail::intersect_line_bilinear_patch(line,
+                                          patch(0, 0),
+                                          patch(order_u, 0),
+                                          patch(order_u, order_v),
+                                          patch(0, order_v),
+                                          tc,
+                                          uc,
+                                          vc,
+                                          EPS,
+                                          true);
   }
   else
   {
@@ -803,20 +800,20 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
     double u_offset = 0., v_offset = 0.;
     double u_scale = 1., v_scale = 1.;
 
-    foundIntersection = detail::intersect_line_patch(line,
-                                                     patch,
-                                                     tc,
-                                                     uc,
-                                                     vc,
-                                                     order_u,
-                                                     order_v,
-                                                     u_offset,
-                                                     u_scale,
-                                                     v_offset,
-                                                     v_scale,
-                                                     sq_tol,
-                                                     EPS,
-                                                     true);
+    detail::intersect_line_patch(line,
+                                 patch,
+                                 tc,
+                                 uc,
+                                 vc,
+                                 order_u,
+                                 order_v,
+                                 u_offset,
+                                 u_scale,
+                                 v_offset,
+                                 v_scale,
+                                 sq_tol,
+                                 EPS,
+                                 true);
   }
 
   // Remove duplicates from the (u, v) intersection points
@@ -874,8 +871,6 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
 
   // Decompose the NURBS patch into Bezier patches
   auto beziers = patch.extractBezier();
-  const int deg_u = patch.getDegree_u();
-  const int deg_v = patch.getDegree_v();
 
   axom::Array<T> knot_vals_u = patch.getKnots_u().getUniqueKnots();
   axom::Array<T> knot_vals_v = patch.getKnots_v().getUniqueKnots();
