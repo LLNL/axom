@@ -15,13 +15,12 @@ Cell Material Relation
 #######################
 
 The distribution of materials over the mesh is determined using the **Cell-Material Relation** *(CMR)*.
-If a mesh has *N* cells and *M* materials then each cell can have *M* possible values
-if it contains all of the possible materials. There is a total of N*M values if each
-cell contains all materials. There are multiple ways to specify the CMR to MultiMat. A
-static material decomposition is described here, though the CMR can also be built
-:doc:`dynamically <multimat_dynamic_mode>`. The easiest method for defining the CMR is
-to provide a bool vector containing true/false values for whether a cell/material
-combination is valid.
+If a mesh has *N* cells and *M* materials, each cell can have up to *M* possible values.
+This means the mesh will hold N*M values if each cell contains all materials.
+There are multiple ways to specify the CMR to MultiMat. A static material decomposition
+ is described here, though the CMR can also be built :doc:`dynamically <multimat_dynamic_mode>`.
+The easiest method for defining the CMR is to provide a bool vector containing
+true/false values for whether a cell/material combination is valid.
 
 .. figure:: figures/relation.png
    :figwidth: 800px

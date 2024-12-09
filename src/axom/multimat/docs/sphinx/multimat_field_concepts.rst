@@ -75,7 +75,7 @@ then cells, the data are stored using ``MAT_DOM`` layout.
 |                    | ``{c0m0, c0m1, c0m2, ..., c1m0, c1m1, c1m2, ...}``       |
 +--------------------+----------------------------------------------------------+
 | MAT_DOM            | Data are stored for each material and then for each cell |
-|                    | like this *(c=cell, m=material)*:                        |
+|                    | like this *(m=material, c=cell)*:                        |
 |                    |                                                          |
 |                    | ``{m0c0, m0c1, m0c2, m0c3, ... , m1c0, m1c1, m1c2, ...}``|
 +--------------------+----------------------------------------------------------+
@@ -90,14 +90,14 @@ over the mesh. It is completely acceptable for materials to skip over certain ce
 which makes sense if we think about materials as a way to divide up the mesh into
 various regions or parts. There are ncells*nmats pairs of data that could be entered
 for MultiMat fields. For ``DENSE`` fields, the field must contain ncells*nmats values,
-with values present for cell/material pairs even where the material is not present.
-This is an easy way to specify the data but it wastes memory due to the extra values
-that do nothing other than keep the rectangular shape of the data array.
+with values present for cell/material pairs whether materials are present or not.
+This is an easy way to specify the data but it wastes memory by including extra
+values whose only purpose is to keep the rectangular shape of the data array.
 
 For large meshes, compressing out unnecessary values can save a lot of memory. MultiMat
-supports a ``SPARSE`` layout that does not include any unnecessary values. Going back
-to the CMR as a matrix of true/false values, one must only provide field values for
-``SPARSE`` data where the CMR contains true values.
+supports a ``SPARSE`` layout that does not include any unnecessary values. If we
+regard the CMR as a matrix of true/false values, a user must only provide field values
+ for ``SPARSE`` data where the CMR contains true values.
 
 
 .. figure:: figures/sparsity.png

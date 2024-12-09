@@ -24,7 +24,7 @@ method. This method changes some internal representations (including field
 organization) to better support dynamic modifications of the CMR. For example,
 when changing to dynamic mode, ``SPARSE`` fields are converted to ``DENSE``
 so further changes do not require field data to be reallocated/reorganized
-again. The CMR is modfified using calls to the ``addEntry()`` and ``removeEntry()``
+again. The CMR is modified using calls to the ``addEntry()`` and ``removeEntry()``
 methods.
 
 .. code-block:: cpp
