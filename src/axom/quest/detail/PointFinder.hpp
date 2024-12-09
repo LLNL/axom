@@ -221,9 +221,10 @@ public:
       AXOM_LAMBDA(IndexType i) {
         int startIdx = offsetsPtr[i];
         int currCount = 0;
+        const SpacePoint& pt = pts[i];
         auto onCandidate = [&](int candidateIdx) -> bool {
           // Check that point is in bounding box of candidate element
-          if(cellBBoxes[candidateIdx].contains(pts[i]))
+          if(cellBBoxes[candidateIdx].contains(pt))
           {
             candidatesPtr[startIdx] = candidateIdx;
             currCount++;
@@ -289,11 +290,11 @@ public:
       npts,
       AXOM_HOST_LAMBDA(IndexType i) {
         outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
-        SpacePoint pt = ptsHostPtr[i];
+        const SpacePoint& pt = ptsHostPtr[i];
         SpacePoint isopar;
         for(int icell = 0; icell < countsHostPtr[i]; icell++)
         {
-          int cellIdx = candidatesHostPtr[icell + offsetsHostPtr[i]];
+          const int cellIdx = candidatesHostPtr[icell + offsetsHostPtr[i]];
           // if isopar is in the proper range
           if(m_meshWrapper->locatePointInCell(cellIdx, pt.data(), isopar.data()))
           {
@@ -321,11 +322,11 @@ public:
 #else   // AXOM_USE_RAJA
     for(int i = 0; i < npts; i++)
     {
-      SpacePoint pt = pts[i];
+      const SpacePoint& pt = pts[i];
       SpacePoint isopar;
       outCellIds[i] = PointInCellTraits<mesh_tag>::NO_CELL;
       gridQuery.visitCandidates(pt, [&](int candidateIdx) -> bool {
-        if(m_cellBBoxes[candidateIdx].contains(pts[i]))
+        if(m_cellBBoxes[candidateIdx].contains(pt))
         {
           if(m_meshWrapper->locatePointInCell(candidateIdx,
                                               pt.data(),
@@ -349,6 +350,11 @@ public:
   const SpatialBoundingBox& cellBoundingBox(IndexType cellIdx) const
   {
     return m_cellBBoxes[cellIdx];
+  }
+
+  std::vector<IndexType> getCandidates(SpacePoint const& pt) const
+  {
+    return m_grid.getCandidatesAsArray(pt);
   }
 
 private:

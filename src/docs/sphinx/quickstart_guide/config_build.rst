@@ -79,6 +79,7 @@ The following table lists:
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
   `MFEM`_          Optional: Primal, Quest, Sidre       MFEM_DIR
+  `OPENCASCADE`_   Optional: <none>                     OPENCASCADE_DIR
   `RAJA`_          Optional: Mint, Spin, Quest          RAJA_DIR
   `SCR`_           Optional: Sidre                      SCR_DIR
   `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR
@@ -91,6 +92,7 @@ The following table lists:
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
 .. _Lua: https://www.lua.org/
 .. _MFEM: https://mfem.org/
+.. _OPENCASCADE: https://dev.opencascade.org/
 .. _RAJA: https://raja.readthedocs.io/en/main/
 .. _SCR: https://computing.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 .. _Umpire: https://umpire.readthedocs.io/en/latest/

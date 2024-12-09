@@ -161,6 +161,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
                                double& revolvedVolume)
 {
   using axom::utilities::string::endsWith;
+  AXOM_UNUSED_VAR(percentError);  // only currently used with C2C
 
   internal::ScopedLogLevelChanger logLevelChanger(
     this->isVerbose() ? slic::message::Debug : slic::message::Warning);
