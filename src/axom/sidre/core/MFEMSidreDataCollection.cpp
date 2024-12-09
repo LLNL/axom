@@ -953,14 +953,17 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   }
 }
 
-void MFEMSidreDataCollection::LoadExternalData(const std::string& filename, const std::string& group_name)
+void MFEMSidreDataCollection::LoadExternalData(const std::string& filename,
+                                               const std::string& group_name)
 {
   // Use the user-provided group name or the DataCollection's base group
   Group* grp = m_bp_grp;
   if(!group_name.empty())
   {
     SLIC_ERROR_IF(!m_bp_grp->hasGroup(group_name),
-                  axom::fmt::format("MFEMSidreDataCollection does not have a Sidre Group '{}'", group_name));
+                  axom::fmt::format(
+                    "MFEMSidreDataCollection does not have a Sidre Group '{}'",
+                    group_name));
     grp = m_bp_grp->getGroup(group_name);
   }
 

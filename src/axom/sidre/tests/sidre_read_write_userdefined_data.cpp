@@ -9,6 +9,9 @@
 using axom::sidre::DataStore;
 using axom::sidre::Group;
 using axom::sidre::IndexType;
+#ifdef AXOM_USE_MFEM
+using axom::sidre::MFEMSidreDataCollection;
+#endif
 using axom::sidre::View;
 
 // This test is meant to mock how Serac stores and loads Quadrature Data.
@@ -112,6 +115,7 @@ void fill(T&, double)
 template <>
 bool check(const double& state, double value)
 {
+  SLIC_INFO(axom::fmt::format("{} == {}", state, value));
   return state == value;
 }
 
@@ -365,21 +369,130 @@ void test_external_user_defined_data()
   std::string filename = "sidre_external_states";
   root->save(filename);
 
-  // Create new array to fill with saved data
-  axom::Array<T, DIM> saved_states(size, size);
-  fill_array(saved_states, -1, false);
-
   // Load data into new array
   Group* loaded_group = root->createGroup("loaded_data");
   loaded_group->load(filename);
+
+  // Verify size correctness
+  EXPECT_TRUE(loaded_group->hasView("num_states"));
+  auto loaded_num_states =
+    loaded_group->getView("num_states")->getData<axom::IndexType>();
+  EXPECT_TRUE(num_states == loaded_num_states);
+
+  EXPECT_TRUE(loaded_group->hasView("state_size"));
+  auto loaded_state_size =
+    loaded_group->getView("state_size")->getData<axom::IndexType>();
+  EXPECT_TRUE(state_size == loaded_state_size);
+
+  EXPECT_TRUE(loaded_group->hasView("total_size"));
+  auto loaded_total_size =
+    loaded_group->getView("total_size")->getData<axom::IndexType>();
+  EXPECT_TRUE(total_size == loaded_total_size);
+
+  // Create new array to fill with loaded data
+  axom::Array<T, DIM> loaded_states(size, size);
+  fill_array(loaded_states, -1, false);
+
+  // Load external data
   EXPECT_TRUE(loaded_group->hasView("states"));
-  View* new_states_view = loaded_group->getView("states");
-  new_states_view->setExternalDataPtr(saved_states.data());
+  View* loaded_states_view = loaded_group->getView("states");
+  loaded_states_view->setExternalDataPtr(loaded_states.data());
   loaded_group->loadExternalData(filename);
 
   // Test data was read into the new location and overwrote the bad data
-  check_array(saved_states);
+  check_array(loaded_states);
 }
+
+#ifdef AXOM_USE_MFEM
+
+template <typename T, int DIM>
+void test_MFEMSidreDataCollection_user_defined_data()
+{
+  std::string test_name =
+    ::testing::UnitTest::GetInstance()->current_test_info()->name();
+
+  // populate data
+  constexpr IndexType size = 10;
+  axom::Array<T, DIM> states(size, size);
+  fill_array(states, 0, true);
+
+  // Create MFEMSidreDataCollection
+  auto* mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian1D(10));
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(test_name, mesh, owns_mesh_data);
+  Group* bp_group = sdc_writer.GetBPGroup();
+
+  // get size
+  auto num_states = static_cast<IndexType>(states.size());
+  auto state_size = static_cast<IndexType>(sizeof(*(states.begin())));
+  auto total_size = num_states * state_size;
+  auto num_uint8s = total_size / sizeof(std::uint8_t);
+
+  SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
+  SLIC_INFO(axom::fmt::format("State Size={}", state_size));
+  SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
+  SLIC_INFO(
+    axom::fmt::format("Total Size/State Size={}", total_size / state_size));
+  SLIC_INFO(axom::fmt::format("Num of uint8={}", num_uint8s));
+
+  // write shape
+  bp_group->createViewScalar("num_states", num_states);
+  bp_group->createViewScalar("state_size", state_size);
+  bp_group->createViewScalar("total_size", total_size);
+
+  // Add states as an external buffer
+  View* states_view = bp_group->createView("states");
+  states_view->setExternalDataPtr(axom::sidre::UINT8_ID,
+                                  num_uint8s,
+                                  states.data());
+
+  // Save the array data in to a file
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+  #endif
+  sdc_writer.SetCycle(0);
+  sdc_writer.Save();
+
+  // Load data into new Data Collection
+  MFEMSidreDataCollection sdc_reader(test_name);
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+  #endif
+  sdc_reader.Load();
+
+  Group* loaded_bp_group = sdc_reader.GetBPGroup();
+
+  // Verify size correctness
+  EXPECT_TRUE(loaded_bp_group->hasView("num_states"));
+  auto loaded_num_states =
+    loaded_bp_group->getView("num_states")->getData<axom::IndexType>();
+  EXPECT_TRUE(num_states == loaded_num_states);
+
+  EXPECT_TRUE(loaded_bp_group->hasView("state_size"));
+  auto loaded_state_size =
+    loaded_bp_group->getView("state_size")->getData<axom::IndexType>();
+  EXPECT_TRUE(state_size == loaded_state_size);
+
+  EXPECT_TRUE(loaded_bp_group->hasView("total_size"));
+  auto loaded_total_size =
+    loaded_bp_group->getView("total_size")->getData<axom::IndexType>();
+  EXPECT_TRUE(total_size == loaded_total_size);
+
+  // Create new array to fill with loaded data
+  axom::Array<T, DIM> loaded_states(size, size);
+  fill_array(loaded_states, -1, false);
+
+  // Load external data
+  EXPECT_TRUE(loaded_bp_group->hasView("states"));
+  View* loaded_states_view = loaded_bp_group->getView("states");
+  loaded_states_view->setExternalDataPtr(loaded_states.data());
+  sdc_reader.LoadExternalData();
+
+  // Test data was read into the new location and overwrote the bad data
+  check_array(loaded_states);
+}
+
+#endif  // AXOM_USE_MFEM
 
 //------------------------------------------------------------------------------
 
@@ -503,6 +616,74 @@ TEST(sidre, TwoD_StateTensorLarge_external_readandwrite)
   test_external_user_defined_data<StateTensorLarge, 2>();
 }
 
+//-------------------------
+
+#ifdef AXOM_USE_MFEM
+
+TEST(sidre, OneD_double_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<double, 1>();
+}
+/*
+TEST(sidre, OneD_StateOne_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateOne, 1>();
+}
+
+TEST(sidre, OneD_StateTwo_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateTwo, 1>();
+}
+
+TEST(sidre, OneD_StateThree_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateThree, 1>();
+}
+
+TEST(sidre, OneD_StateTensorSmall_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateTensorSmall, 1>();
+}
+
+TEST(sidre, OneD_StateTensorLarge_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateTensorLarge, 1>();
+}
+
+//-------------------------
+
+TEST(sidre, TwoD_double_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<double, 2>();
+}
+
+TEST(sidre, TwoD_StateOne_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateOne, 2>();
+}
+
+TEST(sidre, TwoD_StateTwo_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateTwo, 2>();
+}
+
+TEST(sidre, TwoD_StateThree_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateThree, 2>();
+}
+
+TEST(sidre, TwoD_StateTensorSmall_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateTensorSmall, 2>();
+}
+
+TEST(sidre, TwoD_StateTensorLarge_MFEMSidreDataCollection_readandwrite)
+{
+  test_MFEMSidreDataCollection_user_defined_data<StateTensorLarge, 2>();
+}
+*/
+#endif  // AXOM_USE_MFEM
+
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
@@ -511,7 +692,15 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
   axom::slic::SimpleLogger logger;
 
+#ifdef AXOM_USE_MPI
+  MPI_Init(&argc, &argv);
+#endif
+
   result = RUN_ALL_TESTS();
+
+#ifdef AXOM_USE_MPI
+  MPI_Finalize();
+#endif
 
   return result;
 }
