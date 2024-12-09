@@ -497,7 +497,7 @@ TEST(primal_rationalbezier, rational_intersection)
   Bezier bottom_arc(bot_nodes, weights, 2);
   Bezier top_arc(top_nodes, weights, 2);
 
-  std::vector<double> sp, tp;
+  axom::Array<double> sp, tp;
   EXPECT_TRUE(intersect(bottom_arc, top_arc, sp, tp));
 
   EXPECT_NEAR(bottom_arc.evaluate(sp[0])[0], top_arc.evaluate(tp[0])[0], abs_tol);
