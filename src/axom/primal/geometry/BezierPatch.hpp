@@ -1903,11 +1903,11 @@ public:
 
     // Find three points that produce a nonzero normal
     Vector3D plane_normal = VectorType::cross_product(v1, v2);
-    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, EPS))
     {
       plane_normal = VectorType::cross_product(v1, v3);
     }
-    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, EPS))
     {
       plane_normal = VectorType::cross_product(v2, v3);
     }

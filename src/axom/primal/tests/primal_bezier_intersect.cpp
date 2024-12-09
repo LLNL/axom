@@ -955,12 +955,12 @@ TEST(primal_bezier_inter, ray_nurbs_intersections)
   axom::numerics::linspace(-1.0, 2.0, params, 10);
 
   PointType ray_origin({0.0, 0.0});
-  for(int i = 0; i < 9; ++i) // Skip the last parameter, which is equal to i=0
+  for(int i = 0; i < 9; ++i)  // Skip the last parameter, which is equal to i=0
   {
-    VectorType ray_direction( ray_origin, circle.evaluate(params[i]) );
+    VectorType ray_direction(ray_origin, circle.evaluate(params[i]));
     RayType ray(ray_origin, ray_direction);
 
-    checkIntersectionsRay( ray, circle, {1.0}, {params[i]}, eps, eps_test );
+    checkIntersectionsRay(ray, circle, {1.0}, {params[i]}, eps, eps_test);
   }
 }
 
