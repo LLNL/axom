@@ -202,7 +202,7 @@ TEST(primal_surface_inter, bilinear_intersect)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_surface_inter, bilinear_boundary_condition)
+TEST(primal_surface_inter, bilinear_boundary_treatment)
 {
   static const int DIM = 3;
   using CoordType = double;
@@ -405,6 +405,28 @@ TEST(primal_surface_inter, difficult_garp_case)
   ray_direction = VectorType({0.0, -1.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {2.0}, {0.5}, {0.5}, eps, eps_test);
+
+  // Give patch a degeneracy at the point of intersection
+  //  at which there are infinitely many parameters of intersection
+  bilinear_patch(1, 1) = PointType({-1.0, -1.0, 2.0});
+
+  ray_origin = PointType({-2.0, 0.0, 2.0});
+  ray_direction = VectorType({1.0, -1.0, 0.0});
+  ray = RayType(ray_origin, ray_direction);
+
+  // Current behavior is to return a single point of intersection,
+  //  as in the above cases with infinitely many intersections
+  checkIntersections(ray, bilinear_patch, {sqrt(2)}, {1.0}, {0.5}, eps, eps_test);
+
+  // Set ray origin to the point of degeneracy
+  ray_origin = PointType({-1.0, -1.0, 2.0});
+  ray = RayType(ray_origin, ray_direction);
+  checkIntersections(ray, bilinear_patch, {0.0}, {1.0}, {0.5}, eps, eps_test);
+
+  // Set ray origin past the point of degeneracy (no intersections)
+  ray_origin = PointType({0.0, -2.0, 2.0});
+  ray = RayType(ray_origin, ray_direction);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
 }
 
 //------------------------------------------------------------------------------
@@ -671,13 +693,6 @@ TEST(primal_surface_inter, bezier_surface_intersect)
       }
     }
   }
-
-  VectorType ray_direction(ray_origin,
-                           sphere_face_patch.evaluate(u_params[0], v_params[6]));
-  RayType ray(ray_origin, ray_direction);
-
-  axom::Array<CoordType> t, u, v;
-  bool ray_intersects = intersect(ray, sphere_face_patch, t, u, v);
 }
 
 //------------------------------------------------------------------------------
@@ -703,10 +718,10 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
     PointType {0, 0, -1}, PointType {0, 0, -1}, PointType { 0, 0, -1}, PointType { 0, 0, -1}, PointType { 0,  0, -1}, PointType {0,  0, -1}, PointType {0, 0, -1}};
 
   axom::Array<CoordType> weight_data = {
-    1.0, 1.0/3.0, 1.0/3.0, 1.0, 1.0/3.0, 1.0/3.0, 1.0,
+        1.0, 1.0/3.0, 1.0/3.0,     1.0, 1.0/3.0, 1.0/3.0,     1.0,
     1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0,
     1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0, 1.0/9.0, 1.0/9.0, 1.0/3.0,
-    1.0, 1.0/3.0, 1.0/3.0, 1.0, 1.0/3.0, 1.0/3.0, 1.0};
+        1.0, 1.0/3.0, 1.0/3.0,     1.0, 1.0/3.0, 1.0/3.0,     1.0};
   // clang-format on
 
   NURBSPatchType sphere_patch(node_data, weight_data, 4, 7, knotvec_u, knotvec_v);
@@ -739,7 +754,6 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
                                sphere_patch.evaluate(params_u[i], params_v[j]));
       RayType ray(ray_origin, ray_direction);
 
-      std::cout << i << "< " << j << std::endl;
       // The sphere meets itself at the v-edges
       if(j == 0 || j == 7)
       {
