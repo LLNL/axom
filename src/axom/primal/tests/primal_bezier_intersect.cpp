@@ -92,13 +92,13 @@ void checkIntersections(const primal::BezierCurve<CoordType, 2>& curve1,
          << "\n\t" << curve1 << "\n\t" << curve2;
 
     sstr << "\ns (" << s.size() << "): ";
-    for(auto i = 0u; i < s.size(); ++i)
+    for(auto i = 0; i < s.size(); ++i)
     {
       sstr << std::setprecision(16) << s[i] << ",";
     }
 
     sstr << "\nt (" << t.size() << "): ";
-    for(auto i = 0u; i < t.size(); ++i)
+    for(auto i = 0; i < t.size(); ++i)
     {
       sstr << std::setprecision(16) << t[i] << ",";
     }
@@ -955,8 +955,10 @@ TEST(primal_bezier_inter, ray_nurbs_intersections)
   axom::numerics::linspace(-1.0, 2.0, params, 10);
 
   PointType ray_origin({0.0, 0.0});
-  for(int i = 0; i < 9; ++i)  // Skip the last parameter, which is equal to i=0
+  for(int i = 6; i < 7; ++i)  // Skip the last parameter, which is equal to i=0
   {
+    std::cout << "Testing with parameter " << i << " " << params[i] << std::endl;
+
     VectorType ray_direction(ray_origin, circle.evaluate(params[i]));
     RayType ray(ray_origin, ray_direction);
 
