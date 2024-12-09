@@ -637,7 +637,7 @@ bool intersect(const Ray<T, 2>& r,
   // Decompose the NURBS curve into Bezier segments
   auto beziers = n.extractBezier();
   const int deg = n.getDegree();
-  axom::Array<T> knot_vals = n.getUniqueKnots();
+  axom::Array<T> knot_vals = n.getKnots().getUniqueKnots();
 
   // Check each Bezier segment, and scale the intersection parameters
   //  back into the span of the original NURBS curve
@@ -749,7 +749,10 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * For bilinear patches, implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
  * For higher order patches, intersections are found through recursive subdivison
  *  until the subpatch is approximated by a bilinear patch.
- * Assumes that the ray is not tangent to the patch
+ * Assumes that the ray is not tangent to the patch, and that the intersection
+ *  is not at a point of degeneracy for which there are *infinitely* many intersections.
+ * For such intersections, the method will hang as it tries records an arbitrarily high
+ *  number of intersections with distinct parameter values
  *  
  * \return true iff the ray intersects the patch, otherwise false.
  */
@@ -874,11 +877,11 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
   const int deg_u = patch.getDegree_u();
   const int deg_v = patch.getDegree_v();
 
-  const int num_knot_span_u = patch.getKnots_u().getNumKnotSpans();
-  const int num_knot_span_v = patch.getKnots_v().getNumKnotSpans();
+  axom::Array<T> knot_vals_u = patch.getKnots_u().getUniqueKnots();
+  axom::Array<T> knot_vals_v = patch.getKnots_v().getUniqueKnots();
 
-  axom::Array<T> knot_vals_u = patch.getUniqueKnots_u();
-  axom::Array<T> knot_vals_v = patch.getUniqueKnots_v();
+  const auto num_knot_span_u = knot_vals_u.size() - 1;
+  const auto num_knot_span_v = knot_vals_v.size() - 1;
 
   // Store candidate intersections
   axom::Array<T> tc, uc, vc;

@@ -1709,17 +1709,17 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
  */
 AXOM_HOST_DEVICE
 inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
-                                          const Point3& p0,
-                                          const Point3& p1,
-                                          const Point3& p2,
-                                          const Point3& p3,
+                                          const Point3& p00,
+                                          const Point3& p10,
+                                          const Point3& p11,
+                                          const Point3& p01,
                                           axom::Array<double>& t,
                                           axom::Array<double>& u,
                                           axom::Array<double>& v,
                                           double EPS = 1e-8,
                                           bool isRay = false)
 {
-  Vector3 q00(p0), q10(p1), q11(p2), q01(p3);
+  Vector3 q00(p00), q10(p10), q11(p11), q01(p01);
 
   Vector3 e10 = q10 - q00;
   Vector3 e11 = q11 - q10;
