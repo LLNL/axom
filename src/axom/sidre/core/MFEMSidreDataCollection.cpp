@@ -953,23 +953,40 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   }
 }
 
-void MFEMSidreDataCollection::LoadExternalData(Group* grp)
+void MFEMSidreDataCollection::LoadExternalData(const std::string& filename, const std::string& group_name)
 {
+  // Use the user-provided group name or the DataCollection's base group
+  Group* grp = m_bp_grp;
+  if(!group_name.empty())
+  {
+    SLIC_ERROR_IF(!m_bp_grp->hasGroup(group_name),
+                  axom::fmt::format("MFEMSidreDataCollection does not have a Sidre Group '{}'", group_name));
+    grp = m_bp_grp->getGroup(group_name);
+  }
+
+  // Use the user-provided file name or the DataCollection's file name
+  std::string path = name;
+  if(!filename.empty())
+  {
+    path = filename;
+  }
+  path = get_file_path(path);
+
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if(m_comm != MPI_COMM_NULL)
   {
-    if(grp == nullptr)
-    {
-      grp = m_bp_grp;
-    }
+    // The conduit abstraction appears to automatically handle the ".root"
+    // suffix, but the IOManager does not, so it gets added here
+    using axom::utilities::string::endsWith;
+    std::string suffixedPath = endsWith(path, ".root") ? path : path + ".root";
 
     IOManager reader(m_comm);
-    reader.loadExternalData(grp, get_file_path(name));
+    reader.loadExternalData(grp, suffixedPath);
   }
   else
   #endif
   {
-    m_bp_grp->loadExternalData(get_file_path(name));
+    grp->loadExternalData(path);
   }
 }
 
