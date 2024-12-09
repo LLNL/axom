@@ -23,7 +23,7 @@ The easiest method for defining the CMR is to provide a bool vector containing
 true/false values for whether a cell/material combination is valid.
 
 .. figure:: figures/relation.png
-   :figwidth: 800px
+   :figwidth: 700px
 
    Diagram showing mixed-material mesh with CELL_DOM and MAT_DOM ways of defining the Cell-Material Relation.
 

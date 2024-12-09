@@ -26,7 +26,7 @@ also be defined over the cells/material pairs from the Cell-Material Relation (C
 allowing fields to have data values for each material in a cell.
 
 .. figure:: figures/mapping.png
-   :figwidth: 800px
+   :figwidth: 700px
 
    Diagram showing field mapping concept.
 
@@ -101,7 +101,7 @@ regard the CMR as a matrix of true/false values, a user must only provide field 
 
 
 .. figure:: figures/sparsity.png
-   :figwidth: 800px
+   :figwidth: 700px
 
    Mixed-material volume fraction field with both DENSE and SPARSE representations.
 
