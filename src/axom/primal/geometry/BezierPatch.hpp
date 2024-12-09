@@ -1987,8 +1987,10 @@ public:
   /*!
    * \brief Predicate to check if the Bezier patch is approximately bilinear
    *
-   * This function checks if the non-corner control points of the patch form a grid
-   *  with respect to the corner control points, up to a tolerance `sq_tol`
+   * This function checks if the patch is (nearly) bilinear in terms of its shape
+   *  and it's parameterization. A necessary (but possibly not sufficient) condition
+   *  for this is that the control points are coincident with the surface of the
+   *  bilinear patch defined by its corners evaluated at uniform parameter values.   *  
    *
    * \param [in] sq_tol Threshold for absolute squared distances
    * \return True if patch is bilinear
