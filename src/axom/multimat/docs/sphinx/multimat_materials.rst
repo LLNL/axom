@@ -18,7 +18,7 @@ The distribution of materials over the mesh is determined using the **Cell-Mater
 If a mesh has *N* cells and *M* materials, each cell can have up to *M* possible values.
 This means the mesh will hold N*M values if each cell contains all materials.
 There are multiple ways to specify the CMR to MultiMat. A static material decomposition
- is described here, though the CMR can also be built :doc:`dynamically <multimat_dynamic_mode>`.
+is described here, though the CMR can also be built :doc:`dynamically <multimat_dynamic_mode>`.
 The easiest method for defining the CMR is to provide a bool vector containing
 true/false values for whether a cell/material combination is valid.
 
