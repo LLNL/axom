@@ -26,7 +26,6 @@ data layout argument indicates how the data are organized with respect to cells 
 materials. For data that have 1 value per cell, pass ``PER_CELL``. For data that have
 1 value per material *(ignoring how many cells use the material)*, pass ``PER_MAT``. For
 data that have a unique value per material within a cell, pass ``PER_CELL_MAT``.
-
 For ``PER_CELL_MAT`` data, it is important to know the data layout. Pass ``CELL_DOM``
 if all of the material values for a cell are sequential neighbors in memory; otherwise
 pass ``MAT_DOM``.

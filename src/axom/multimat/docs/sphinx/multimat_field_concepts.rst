@@ -97,7 +97,7 @@ values whose only purpose is to keep the rectangular shape of the data array.
 For large meshes, compressing out unnecessary values can save a lot of memory. MultiMat
 supports a ``SPARSE`` layout that does not include any unnecessary values. If we
 regard the CMR as a matrix of true/false values, a user must only provide field values
- for ``SPARSE`` data where the CMR contains true values.
+for ``SPARSE`` data where the CMR contains true values.
 
 
 .. figure:: figures/sparsity.png
