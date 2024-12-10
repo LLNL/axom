@@ -182,7 +182,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test TOP (+z)
@@ -207,7 +207,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test LEFT (-y)
@@ -232,7 +232,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test RIGHT (+y)
@@ -257,7 +257,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test BACK (-x)
@@ -282,7 +282,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test FRONT (+x)
@@ -307,7 +307,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // Test a bunch of rays emitted from the box center
@@ -408,7 +408,8 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
     SegmentType(PointType({2, 4.1}), PointType({1, 2.1})),
     SegmentType(PointType({1, 2.1}), PointType({0, 0.1})),
     SegmentType(PointType({1, 2.1}), PointType({-1, -1.9})),
-    SegmentType(PointType({0, 0.1}), PointType({-1, -1.9}))};
+    SegmentType(PointType({0, 0.1}), PointType({-1, -1.9})),
+    SegmentType(PointType({1, 2.1}), PointType({1, 2.1}))};
 
   for(auto& seg : intersecting_segs)
   {

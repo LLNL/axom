@@ -193,12 +193,17 @@ TEST(primal_surface_inter, bilinear_intersect)
 
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
 
-  // Ray with infinitely many intersections, but the origin is on the patch
+  // Rays with infinitely many intersections, but the origin is on the patch
   ray_origin = PointType({0.4, 0.0, 1.5});
   ray_direction = VectorType({1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
 
   checkIntersections(ray, bilinear_patch, {0.3}, {0.5}, {0.85}, eps, eps_test);
+
+  ray_direction = VectorType({-1.0, 0.0, 0.0});
+  ray = RayType(ray_origin, ray_direction);
+
+  checkIntersections(ray, bilinear_patch, {0.7}, {0.5}, {0.35}, eps, eps_test);
 }
 
 //------------------------------------------------------------------------------
