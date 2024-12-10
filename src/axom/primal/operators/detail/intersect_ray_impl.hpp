@@ -31,7 +31,7 @@ namespace detail
  * \a ray_param returns the parametric coordinate of the intersection point along \a R
  * and \a seg_param returns the parametric coordinate of the intersection point along \a S.
  * If the intersection point is nonunique, \a seg_param and \a ray_param return only
- * a single point of intersection
+ * a single point of intersection at the center of the region.
  * \return status true iff R intersects with S, otherwise, false.
  */
 template <typename T>
@@ -68,14 +68,44 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
     if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
     {
       // Check orientation of segment relative to ray
-      const double t0 = col[0] * ray_dir[0] + col[1] * ray_dir[1];
-      const double t1 = t0 + seg_dir.dot(ray_dir);
+      const double t1 = col[0] * ray_dir[0] + col[1] * ray_dir[1];
+      const double t2 = t1 + seg_dir.dot(ray_dir);
 
-      // Assign (nonunique) parameters
-      ray_param = (t1 > t0) ? t1 : t0;
-      seg_param = (t1 > t0) ? 1.0 : 0.0;
+      if(std::min(t1, t2) > 0.0)
+      {
+        // The origin is outside the segment,
+        //  but the ray intersects
+        ray_param = 0.5 * (t1 + t2);
+        seg_param = 0.5;
+      }
+      else if(t1 * t2 <= 0)
+      {
+        // Means the origin is inside the segment
 
-      return ((ray_param >= tlow) && (seg_param >= tlow) && (seg_param <= thigh));
+        // Switch based on orientation of segment
+        if(t1 == t2)
+        {
+          ray_param = 0.5 * t1;
+          seg_param = 0.5;
+        }
+        else if(t1 < t2)
+        {
+          ray_param = 0.5 * t2;
+          seg_param = (t1 - 0.5 * t2) / (t1 - t2);
+        }
+        else
+        {
+          ray_param = 0.5 * t1;
+          seg_param = -0.5 * t1 / (t2 - t1);
+        }
+      }
+      else
+      {
+        // No intersection
+        return false;
+      }
+
+      return (ray_param >= tlow);
     }
     else
     {  // Not collinear, no intersection

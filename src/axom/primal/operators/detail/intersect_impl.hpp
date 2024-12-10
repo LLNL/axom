@@ -1806,24 +1806,46 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
           // Parameters of intersection are non-unique,
           //  so take the center of the segment the intersection
           //  (this avoids any inclusion issues at the boundary)
-          double t1 = Vector3::dot_product(pa, line.direction());
-          double t2 = Vector3::dot_product(pa + pb, line.direction());
-          if(t1 * t2 < 0)
+          const double t1 = Vector3::dot_product(pa, line.direction());
+          const double t2 = Vector3::dot_product(pa + pb, line.direction());
+
+          if(!isRay || std::min(t1, t2) > 0.0)
           {
-            // Means the origin is inside the segment
-            t.push_back(0.5 * ((isRay ? 0.0 : t1) + t2));
+            // Always an intersection in this case
+            t.push_back(0.5 * (t1 + t2));
+            v.push_back(0.5);
             u.push_back(u0);
-            v.push_back(isRay ? (t1 - 0.5 * t2) / (t1 - t2) : 0.5);
+
             return true;
           }
-          else if(t1 >= 0 || !isRay)
+          else if(t1 * t2 <= 0)
           {
-            // The origin is outside the segment, but the ray intersects
-            //  (the line always intersects in this case)
-            t.push_back(0.5 * (t1 + t2));
+            // Means the origin is inside the segment
+
+            // Switch based on orientation of segment
+            if(t1 == t2)
+            {
+              t.push_back(0.5 * t1);
+              v.push_back(0.5);
+            }
+            else if(t1 < t2)
+            {
+              t.push_back(0.5 * t2);
+              v.push_back((t1 - 0.5 * t2) / (t1 - t2));
+            }
+            else
+            {
+              t.push_back(0.5 * t1);
+              v.push_back(-0.5 * t1 / (t2 - t1));
+            }
             u.push_back(u0);
-            v.push_back(0.5);
+
             return true;
+          }
+          else
+          {
+            // No intersection
+            return false;
           }
         }
       }
@@ -1916,24 +1938,46 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
           // Parameters of intersection are non-unique,
           //  so take the center of the segment the intersection
           //  (this avoids any inclusion issues at the boundary)
-          double t1 = Vector3::dot_product(pa, line.direction());
-          double t2 = Vector3::dot_product(pa + pb, line.direction());
-          if(t1 * t2 < 0)
+          const double t1 = Vector3::dot_product(pa, line.direction());
+          const double t2 = Vector3::dot_product(pa + pb, line.direction());
+
+          if(!isRay || std::min(t1, t2) > 0.0)
           {
-            // Means the origin is inside the segment
-            t.push_back(0.5 * ((isRay ? 0.0 : t1) + t2));
-            u.push_back(isRay ? (t1 - 0.5 * t2) / (t1 - t2) : 0.5);
-            v.push_back(v0);
-            return true;
-          }
-          else if(t1 >= 0.0 || !isRay)
-          {
-            // The origin is outside the segment, but the ray intersects
-            //  (the line always intersects in this case)
+            // Always an intersection in this case
             t.push_back(0.5 * (t1 + t2));
             u.push_back(0.5);
             v.push_back(v0);
+
             return true;
+          }
+          else if(t1 * t2 <= 0)
+          {
+            // Means the origin is inside the segment
+
+            // Switch based on orientation of segment
+            if(t1 == t2)
+            {
+              t.push_back(0.5 * t1);
+              v.push_back(0.5);
+            }
+            else if(t1 < t2)
+            {
+              t.push_back(0.5 * t2);
+              u.push_back((t1 - 0.5 * t2) / (t1 - t2));
+            }
+            else
+            {
+              t.push_back(0.5 * t1);
+              u.push_back(-0.5 * t1 / (t2 - t1));
+            }
+            v.push_back(v0);
+
+            return true;
+          }
+          else
+          {
+            // No intersection
+            return false;
           }
         }
       }
