@@ -294,7 +294,6 @@ if((CONDUIT_FOUND OR
         endif()
 
         set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "all" "plane")
-
         foreach(_policy ${_policies})
             foreach(_testshape ${_testshapes})
               set(_testname "quest_shape_in_memory_${_policy}_${_testshape}")
@@ -306,8 +305,31 @@ if((CONDUIT_FOUND OR
                            --refinements 2
                            --scale 0.75 0.75 0.75
                            --dir 0.2 0.4 0.8
+                           --meshType bpSidre
                            inline_mesh --min -2 -2 -2 --max 2 2 2 --res 30 30 30
                 NUM_MPI_TASKS ${_nranks})
+            endforeach()
+        endforeach()
+
+        # Test Conduit and MFEM mesh types with a subset of shapes (so it doesn't take too long)
+        set(_testshapes "tetmesh" "sphere" "cyl")
+        set(_testMeshTypes "bpConduit" "mfem")
+        foreach(_policy ${_policies})
+            foreach(_testMeshType ${_testMeshTypes})
+              foreach(_testshape ${_testshapes})
+                set(_testname "quest_shape_in_memory_${_policy}_${_testMeshType}_${_testshape}")
+                axom_add_test(
+                  NAME ${_testname}
+                  COMMAND quest_shape_in_memory_ex
+                             --policy ${_policy}
+                             --testShape ${_testshape}
+                             --refinements 2
+                             --scale 0.75 0.75 0.75
+                             --dir 0.2 0.4 0.8
+                             --meshType ${_testMeshType}
+                             inline_mesh --min -2 -2 -2 --max 2 2 2 --res 8 8 8
+                  NUM_MPI_TASKS ${_nranks})
+              endforeach()
             endforeach()
         endforeach()
     endif()

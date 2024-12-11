@@ -30,6 +30,7 @@
   #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
   #include "axom/quest/interface/internal/QuestHelpers.hpp"
   #include "axom/fmt.hpp"
+  #include "axom/core/WhereMacro.hpp"
 
   #ifdef AXOM_USE_MFEM
     #include "mfem.hpp"
@@ -354,7 +355,11 @@ public:
                      const std::string& topo = "")
     : Shaper(shapeSet, bpNode, topo)
     , m_free_mat_name("free")
-  { }
+  {
+    // We cannot always create Conduit Nodes, so catch missing nodes early if possible.
+    SLIC_ERROR_IF(!bpNode->has_child("fields"),
+                  "Input blueprint mesh lacks the 'fields' Node.");
+  }
   #endif
 
   //@{
@@ -874,11 +879,13 @@ public:
 
     // Overlap volume is the volume of clip(oct,tet) for c2c
     // or clip(tet,tet) for Pro/E meshes
+    // TODO: don't reallocate.  m_cellCount shouldn't change.
     m_overlap_volumes =
       axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
     m_overlap_volumes.fill(0.0);
 
     // Hex volume is the volume of the hexahedron element
+    // TODO: Make reallocate and recompute explicit (with a resetMesh or something).
     m_hex_volumes =
       axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
     m_hex_volumes.fill(0.0);
@@ -1030,7 +1037,6 @@ public:
     const std::string fieldName(materialNameToFieldName(m_free_mat_name));
 
     bool makeNewData = !hasData(fieldName);
-
     axom::ArrayView<double> cfgf = getScalarCellData(fieldName);
     SLIC_ASSERT(!cfgf.empty());
 
@@ -1562,6 +1568,8 @@ public:
     if(m_bpGrp)
     {
       auto fieldsGrp = m_bpGrp->getGroup("fields");
+      SLIC_ERROR_IF(fieldsGrp == nullptr,
+                    "Input blueprint mesh lacks the 'fields' Group/Node.");
       for(auto& group : fieldsGrp->groups())
       {
         std::string materialName = fieldNameToMaterialName(group.getName());
@@ -1598,7 +1606,6 @@ public:
     auto materialVolFracName = materialNameToFieldName(materialName);
 
     bool makeNewData = !hasData(materialVolFracName);
-
     auto matVolFrac = getScalarCellData(materialVolFracName);
     SLIC_ASSERT(!matVolFrac.empty());
     if(makeNewData)
@@ -2157,7 +2164,7 @@ private:
   #if defined(AXOM_USE_CONDUIT)
     if(m_bpGrp != nullptr)
     {
-      std::string fieldPath = axom::fmt::format("fields/{}", fieldName);
+      std::string fieldPath = "fields/" + fieldName;
       auto dtype = conduit::DataType::float64(m_cellCount);
       axom::sidre::View* valuesView = nullptr;
       if(m_bpGrp->hasGroup(fieldPath))
@@ -2189,8 +2196,9 @@ private:
                             fieldPath +
                             "' is missing.  Please pre-allocate"
                             " this output memory, or to have IntersectionShaper"
-                            " allocate it, pass in the mesh as a sidre::Group"
-                            " with your specific allocator id.");
+                            " allocate it, construct the IntersectionShaper"
+                            " with the mesh as a sidre::Group  with your"
+                            " specific allocator id.");
         }
         else
         {
