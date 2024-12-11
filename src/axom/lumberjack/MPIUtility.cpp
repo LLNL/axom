@@ -49,16 +49,49 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm)
   return charArray;
 }
 
+const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, const int tag)
+{
+  const int mpiTag = (tag == false) ? LJ_TAG : tag;
+  char* charArray = nullptr;
+  int messageSize = -1;
+  MPI_Status mpiStatus;
+
+  // Get size and source of MPI message
+  int mpiFlag = true;
+  MPI_Iprobe(MPI_ANY_SOURCE, tag, comm, &mpiFlag, &mpiStatus);
+
+  if (mpiFlag == true) {
+    MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
+
+    // Setup where to receive the char array
+    charArray = new char[messageSize + 1];
+    charArray[messageSize] = '\0';
+
+    // Receive packed Message
+    MPI_Recv(charArray,
+            messageSize,
+            MPI_CHAR,
+            mpiStatus.MPI_SOURCE,
+            mpiTag,
+            comm,
+            &mpiStatus);
+  }
+
+  return charArray;
+}
+
 void mpiNonBlockingSendMessages(MPI_Comm comm,
                                 int destinationRank,
-                                const char* packedMessagesToBeSent)
+                                const char* packedMessagesToBeSent,
+                                const int tag)
 {
+  const int mpiTag = (tag == false) ? LJ_TAG : tag;
   MPI_Request mpiRequest;
   MPI_Isend(const_cast<char*>(packedMessagesToBeSent),
             strlen(packedMessagesToBeSent),
             MPI_CHAR,
             destinationRank,
-            LJ_TAG,
+            mpiTag,
             comm,
             &mpiRequest);
   MPI_Request_free(&mpiRequest);

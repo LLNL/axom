@@ -32,6 +32,16 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
 
 /*!
  *****************************************************************************
+ * \brief Receives any Message sent to this rank, if there are any messages 
+ *  that are sent. Returns null if no messages are sent.
+ *
+ * \param [in] comm The MPI Communicator.
+ *****************************************************************************
+ */
+const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, const int tag = 0);
+
+/*!
+ *****************************************************************************
  * \brief Sends all Message sent to the given rank.
  *
  * Clears and deletes all Message classes when done.
@@ -40,11 +50,14 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
  * \param [in] destinationRank Where the Message classes is being sent.
  * \param [in,out] packedMessagesToBeSent All of the Message classes to be sent
  *  packed together.
+ * \param [in] tag The MPI tag to use for communication.  When set to zero, 
+ *  MPI communication uses default LJ_Tag.
  *****************************************************************************
  */
 void mpiNonBlockingSendMessages(MPI_Comm comm,
                                 int destinationRank,
-                                const char* packedMessagesToBeSent);
+                                const char* packedMessagesToBeSent,
+                                const int tag = 0);
 }  // end namespace lumberjack
 }  // end namespace axom
 
