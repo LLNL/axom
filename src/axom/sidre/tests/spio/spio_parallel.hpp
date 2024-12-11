@@ -514,7 +514,6 @@ TEST(spio_parallel, external_piecemeal_writeread)
     SPIO_TEST_SUCCESS = 0,
     HIERARCHY_ERROR = 1 << 0,
     EXT_ARRAY_ERROR = 1 << 1,
-    EXT_UNDESC_ERROR = 1 << 2
   };
   int result = SPIO_TEST_SUCCESS;
 
