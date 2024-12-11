@@ -359,7 +359,150 @@ TEST(spio_parallel, external_writeread)
   View* view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
-  reader.loadExternalData(root2, "out_spio_external_write_read.root");
+  reader.loadExternalData(root2, file_name + ROOT_EXT);
+
+  enum SpioTestResult
+  {
+    SPIO_TEST_SUCCESS = 0,
+    HIERARCHY_ERROR = 1 << 0,
+    EXT_ARRAY_ERROR = 1 << 1,
+    EXT_UNDESC_ERROR = 1 << 2
+  };
+  int result = SPIO_TEST_SUCCESS;
+
+  /*
+   * Verify that the contents of ds2 match those written from ds.
+   */
+  EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
+  if(!ds2->getRoot()->isEquivalentTo(root1))
+  {
+    result |= HIERARCHY_ERROR;
+  }
+  SLIC_WARNING_IF(result & HIERARCHY_ERROR, "Tree layouts don't match");
+
+  EXPECT_EQ(view1->getNumElements(), nvals);
+  if(view1->getNumElements() != nvals)
+  {
+    result |= EXT_ARRAY_ERROR;
+  }
+  else
+  {
+    for(int i = 0; i < nvals; ++i)
+    {
+      EXPECT_EQ(orig_vals1[i], restored_vals1[i]);
+      if(orig_vals1[i] != restored_vals1[i])
+      {
+        result |= EXT_ARRAY_ERROR;
+        break;
+      }
+    }
+  }
+  SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
+                  "External_array was not correctly loaded");
+
+  /*
+   * external_undescribed was not written to disk (since it is undescribed)
+   * make sure it was not read in.
+   */
+  for(int i = 0; i < nvals; ++i)
+  {
+    EXPECT_EQ(-1, restored_vals2[i]);
+    if(-1 != restored_vals2[i])
+    {
+      result |= EXT_UNDESC_ERROR;
+      break;
+    }
+  }
+  SLIC_WARNING_IF(result & EXT_UNDESC_ERROR,
+                  "External_undescribed data was modified.");
+
+  delete ds1;
+  delete ds2;
+}
+
+//------------------------------------------------------------------------------
+TEST(spio_parallel, external_piecemeal_writeread)
+{
+  if(PROTOCOL != "sidre_hdf5")
+  {
+    SUCCEED() << "Loading external data in spio only currently supported "
+              << " for 'sidre_hdf5' protocol";
+    return;
+  }
+
+  int my_rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+
+  int num_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  const int num_output = numOutputFiles(num_ranks);
+
+  const int nvals = 10;
+  int orig_vals1[nvals], orig_vals2[nvals];
+  for(int i = 0; i < 10; i++)
+  {
+    orig_vals1[i] = (i + 10) * (404 - my_rank - i);
+    orig_vals2[i] = (i + 10) * (404 - my_rank - i) + 20;
+  }
+
+  /*
+   * Create a DataStore and give it a small hierarchy of groups and views.
+   *
+   * The views are filled with repeatable nonsense data that will vary based
+   * on rank.
+   */
+  DataStore* ds1 = new DataStore();
+
+  Group* root1 = ds1->getRoot();
+
+  Group* flds1 = root1->createGroup("fields1");
+  Group* flds2 = root1->createGroup("fields2");
+
+  flds1->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
+  flds2->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals2);
+
+  /*
+   * Contents of the DataStore written to files with IOManager.
+   */
+  const int num_files = num_output;
+  IOManager writer(MPI_COMM_WORLD);
+
+  const std::string file_name = "out_spio_external_piecemeal_write_read";
+
+  writer.write(root1, num_files, file_name, PROTOCOL);
+
+  /*
+   * Create another DataStore than holds nothing but the root group.
+   */
+  DataStore* ds2 = new DataStore();
+  Group* root2 = ds2->getRoot();
+
+  /*
+   * Read from the files that were written above.
+   */
+  IOManager reader(MPI_COMM_WORLD);
+
+  reader.read(root2, file_name + ROOT_EXT);
+
+  int restored_vals1[nvals], restored_vals2[nvals];
+  for(int i = 0; i < nvals; ++i)
+  {
+    restored_vals1[i] = -1;
+    restored_vals2[i] = -1;
+  }
+
+  View* view1 = root2->getView("fields1/external_array");
+  view1->setExternalDataPtr(restored_vals1);
+
+  View* view2 = root2->getView("fields2/external_array");
+  view2->setExternalDataPtr(restored_vals2);
+
+  // load external arrays one at a time
+  EXPECT_TRUE(root2->hasGroup("fields1"));
+  reader.loadExternalData(root2->getGroup("fields1"), file_name + ROOT_EXT);
+  EXPECT_TRUE(root2->hasGroup("fields2"));
+  reader.loadExternalData(root2->getGroup("fields2"), file_name + ROOT_EXT);
 
   enum SpioTestResult
   {
@@ -726,6 +869,8 @@ TEST(spio_parallel, parallel_increase_procs)
     MPI_Comm_split(MPI_COMM_WORLD, my_rank, 0, &split_comm);
   }
 
+  const std::string file_name = "out_spio_parallel_increase_procs";
+
   DataStore* ds = new DataStore();
   if(my_rank <= top_output_rank)
   {
@@ -748,8 +893,6 @@ TEST(spio_parallel, parallel_increase_procs)
     int num_files = 1;
     axom::sidre::IOManager writer(split_comm);
 
-    const std::string file_name = "out_spio_parallel_increase_procs";
-
     writer.write(root, num_files, file_name, PROTOCOL);
   }
 
@@ -763,8 +906,7 @@ TEST(spio_parallel, parallel_increase_procs)
 
   IOManager reader(MPI_COMM_WORLD);
 
-  const std::string root_name = "out_spio_parallel_increase_procs.root";
-  reader.read(ds2->getRoot(), root_name);
+  reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
   /*
    * Verify that the contents of ds2 on rank 0 match those written from ds.
@@ -890,8 +1032,7 @@ TEST(spio_parallel, parallel_decrease_procs)
   {
     IOManager reader(split_comm);
 
-    const std::string root_name = "out_spio_parallel_decrease_procs.root";
-    reader.read(ds2->getRoot(), root_name);
+    reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
     Group* ds2_root = ds2->getRoot();
 
@@ -1021,7 +1162,7 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // Add the bp index to the root file
   writer.writeBlueprintIndexToRootFile(&ds,
                                        "mesh",
-                                       "out_spio_blueprint_example.root",
+                                       file_name + ROOT_EXT,
                                        "mesh");
 
 #endif  // AXOM_USE_HDF5
