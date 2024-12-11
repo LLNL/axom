@@ -298,7 +298,10 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
 
     // Need to check intersection with zero tolerance
     //  to handle cases where `intersect` treats the ray as collinear
-    if(intersect(r, seg, r0, s0, primal::PRIMAL_TINY) && s0 > 0.0 - EPS &&
+    bool intersects = intersect(r, seg, r0, s0, 0.0); 
+    SLIC_INFO( c );
+    SLIC_INFO( "\tintersects: " << intersects << " " << r0 << " " << s0 );
+    if(intersects && s0 > 0.0 - EPS &&
        s0 < 1.0 - EPS)
     {
       rp.push_back(r0);

@@ -56,16 +56,19 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
   const double denom =
     numerics::determinant(ray_dir[0], -seg_dir[0], ray_dir[1], -seg_dir[1]);
 
-  // If denom is (nearly) zero (within tolerance EPS), the ray and segment are parallel
+  // If denom is (nearly) zero (within a numerical tolerance), the ray and segment are parallel
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
   {
     // Check if ray and segment are collinear
-    const auto col = S.source().array() - R.origin().array();
+    const primal::Vector<T, 2> col(R.origin(), S.source());
+    const double col_norm = col.norm();
 
     const double cross =
       numerics::determinant(col[0], ray_dir[0], col[1], ray_dir[1]);
 
-    if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
+    // Normalize the cross product by the norm of col
+    if(axom::utilities::isNearlyEqual(col_norm, 0.0, primal::PRIMAL_TINY) ||
+       axom::utilities::isNearlyEqual(cross / col_norm, 0.0, EPS))
     {
       // Check orientation of segment relative to ray
       const double t1 = col[0] * ray_dir[0] + col[1] * ray_dir[1];
@@ -105,7 +108,7 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
         return false;
       }
 
-      return (ray_param >= tlow);
+      return ((ray_param >= tlow) && (seg_param >= tlow) && (seg_param <= thigh));
     }
     else
     {  // Not collinear, no intersection
