@@ -498,7 +498,12 @@ TEST(spio_parallel, external_piecemeal_writeread)
   View* view2 = root2->getView("fields2/external_array");
   view2->setExternalDataPtr(restored_vals2);
 
-  // load external arrays one at a time
+  // Swap these two sections to show error
+
+  // Section 1: (Works) Load all external arrays
+  //reader.loadExternalData(root2, file_name + ROOT_EXT);
+
+  // Section 2: (Doesn't work) Load external arrays one at a time
   EXPECT_TRUE(root2->hasGroup("fields1"));
   reader.loadExternalData(root2->getGroup("fields1"), file_name + ROOT_EXT);
   EXPECT_TRUE(root2->hasGroup("fields2"));
@@ -541,23 +546,27 @@ TEST(spio_parallel, external_piecemeal_writeread)
     }
   }
   SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
-                  "External_array was not correctly loaded");
+                  "External_array1 was not correctly loaded");
 
-  /*
-   * external_undescribed was not written to disk (since it is undescribed)
-   * make sure it was not read in.
-   */
-  for(int i = 0; i < nvals; ++i)
+  EXPECT_EQ(view2->getNumElements(), nvals);
+  if(view2->getNumElements() != nvals)
   {
-    EXPECT_EQ(-1, restored_vals2[i]);
-    if(-1 != restored_vals2[i])
+    result |= EXT_ARRAY_ERROR;
+  }
+  else
+  {
+    for(int i = 0; i < nvals; ++i)
     {
-      result |= EXT_UNDESC_ERROR;
-      break;
+      EXPECT_EQ(orig_vals2[i], restored_vals2[i]);
+      if(orig_vals2[i] != restored_vals2[i])
+      {
+        result |= EXT_ARRAY_ERROR;
+        break;
+      }
     }
   }
-  SLIC_WARNING_IF(result & EXT_UNDESC_ERROR,
-                  "External_undescribed data was modified.");
+  SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
+                  "External_array2 was not correctly loaded");
 
   delete ds1;
   delete ds2;
