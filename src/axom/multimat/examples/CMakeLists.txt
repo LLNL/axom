@@ -26,7 +26,6 @@ endif()
 foreach(example_source ${multimat_example_sources})
     get_filename_component(example_name ${example_source} NAME_WE)
     set(deps "multimat;${multimat_${example_name}_depends}")
-    message(STATUS "***** ${example_name} depends: ${deps}")
     axom_add_executable(
         NAME        multimat_${example_name}_ex
         HEADERS     ${multimat_example_headers}
