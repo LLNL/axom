@@ -20,7 +20,6 @@ set(multimat_example_sources
 
 if(CONDUIT_FOUND)
     set(multimat_basic_depends conduit::conduit)
-    message(STATUS "multimat_basic_depends=${multimat_basic_depends}")
 endif()
 
 foreach(example_source ${multimat_example_sources})
