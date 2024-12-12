@@ -638,7 +638,7 @@ TEST(lumberjack_Message, packMessagesIndividually)
     EXPECT_EQ(packedMessage, answer);
 
     // cleanup
-    delete packedMessage;
+    delete[] packedMessage;
     delete m;
     messages.clear();
   }

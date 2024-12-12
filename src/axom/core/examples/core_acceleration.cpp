@@ -83,6 +83,8 @@ void demoMemoryManageBasic()
   {
     std::cout << i << " Current value: " << dynamic_memory_array[i] << std::endl;
   }
+
+  axom::deallocate(dynamic_memory_array);
   // _membasic_end
 }
 
@@ -202,6 +204,6 @@ void demoAxomExecution()
 int main(int AXOM_UNUSED_PARAM(argc), char **AXOM_UNUSED_PARAM(argv))
 {
   demoMemoryManageBasic();
-  demoAxomExecution();
+  // demoAxomExecution();
   return 0;
 }
