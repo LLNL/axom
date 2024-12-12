@@ -27,23 +27,7 @@ so further changes do not require field data to be reallocated/reorganized
 again. The CMR is modified using calls to the ``addEntry()`` and ``removeEntry()``
 methods.
 
-.. code-block:: cpp
-
-    constexpr int nmats = 3;
-    constexpr int ncells = 9;
-
-    axom::multimat::MultiMat mm;
-
-    // Multimat initialization omitted
-
-    // Switch to dynamic mode
-    mm.convertToDynamic();
-
-    // Add material 2 in zone 3 that was not there before.
-    mm.addEntry(3, 2);
-
-    // Remove material 1 in zone 5
-    mm.removeEntry(5, 1);
-
-    // Volume fraction updates omitted (iterate Volfrac field, set new values)
-
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_dynamic_mode_begin
+   :end-before: _multimat_dynamic_mode_end
+   :language: C++

@@ -1328,6 +1328,12 @@ BSet MultiMat::getCompatibleBivarSet(int fieldIdx) const
   return *ptr;
 }
 
+// Output operators.
+std::ostream& operator<<(std::ostream& os, FieldMapping mapping);
+std::ostream& operator<<(std::ostream& os, DataLayout layout);
+std::ostream& operator<<(std::ostream& os, SparsityLayout sparsity);
+std::ostream& operator<<(std::ostream& os, DataTypeSupported type);
+
 }  //end namespace multimat
 }  //end namespace axom
 

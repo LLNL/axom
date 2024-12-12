@@ -38,36 +38,10 @@ a mask for which cell/material combinations are valid. Data can also be transpos
 into a **Material-Dominant** data layout (``MAT_DOM``) in which the materials are
 iterated first, followed by cells that use the current material.
 
-.. code-block:: cpp
-
-    constexpr int nmats = 3;
-    constexpr int ncells = 9;
-
-    // Create the MultiMat object
-    axom::multimat::MultiMat mm;
-    mm.setNumberOfMaterials(nmats);
-    mm.setNumberOfCells(ncells);
-
-    // Cell-Dominant data layout
-    int rel[9][3] = {{1,1,0},
-                     {1,1,1},
-                     {0,1,1},
-                     {1,1,1},
-                     {0,1,1},
-                     {0,0,1},
-                     {0,1,1},
-                     {0,0,1},
-                     {0,0,1}};
-    std::vector<bool> relation(ncells * nmats, false);
-    for(int c = 0; c < ncells; c++)
-    {
-      for(int m = 0; m < nmats; m++)
-      {
-        relation[c * nmats + m] = rel[c][m] > 0;
-      }
-    }
-    mm.setCellMatRel(relation, axom::multimat::DataLayout::CELL_DOM);
-
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_materials_cmr_begin
+   :end-before: _multimat_materials_cmr_end
+   :language: C++
 
 #######################
 Volume Fractions
@@ -101,19 +75,8 @@ pass a dense volume fraction field to MultiMat. Note the zeroes where the materi
 not present. After adding volume fractions, the MultiMat object is fully constructed
 and it can be used to store field data.
 
-.. code-block:: cpp
-
-    double volfracs[9][3] = {{0.9,  0.1,  0.},
-                             {0.22, 0.5,  0.28},
-                             {0.,   0.3,  0.7},
-                             {0.25, 0.5,  0.25},
-                             {0.,   0.05, 0.95},
-                             {0.,   0.,   1.},
-                             {0.,   0.4,  0.6},
-                             {0.,   0.,   1.},
-                             {0.,   0.,   1.}};
-    axom::ArrayView<double> vfView(&volfracs[0][0], ncells * nmats);
-    mm.setVolfracField(vfView,
-                       axom::multimat::DataLayout::CELL_DOM,
-                       axom::multimat::SparsityLayout::DENSE);
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_materials_volfracs_begin
+   :end-before: _multimat_materials_volfracs_end
+   :language: C++
 

@@ -35,22 +35,10 @@ values (numMaterials * numCells for ``DENSE`` fields) or whether it instead cont
 only the subset of elements where materials are defined. The length of ``SPARSE``
 fields is determined by the number of true values in the Cell-Mesh Relation (CMR).
 
-.. code-block:: cpp
-
-  constexpr int nComponents = 1;
-  double data[] = {0.,
-                   1.,
-                   2.,
-                   // more values ...
-                  };
-  axom::ArrayView<double> dataAV(data, sizeof(data) / sizeof(double));
-  mm.addField("x2",
-              axom::multimat::FieldMapping::PER_CELL,
-              axom::multimat::DataLayout::CELL_DOM,
-              axom::multimat::SparsityLayout::SPARSE,
-              dataAV,
-              nComponents);
-
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_using_fields_addfields_begin
+   :end-before: _multimat_using_fields_addfields_end
+   :language: C++
 
 ^^^^^^^^^^^^^^^^^^^^^^^
 Multi-Component Data
@@ -62,21 +50,10 @@ in memory as a contiguous block where the components of the first element (cell 
 exist sequentially in memory, followed immediately by the components for the next element,
 and so on.
 
-.. code-block:: cpp
-
-    constexpr int nComponents = 2;
-    double data[] = {0., 1., // cell 0 x,y components
-                     1., 1., // cell 1 x,y components
-                     2., 4., // cell 2 x,y components
-                     // more values ...
-                    };
-    axom::ArrayView<double> dataAV(data, sizeof(data) / sizeof(double));
-    mm.addField("myField",
-                axom::multimat::FieldMapping::PER_CELL,
-                axom::multimat::DataLayout::CELL_DOM,
-                axom::multimat::SparsityLayout::SPARSE,
-                dataAV,
-                nComponents);
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_using_fields_multicomponent_begin
+   :end-before: _multimat_using_fields_multicomponent_end
+   :language: C++
 
 ^^^^^^^^^^^
 Allocators
@@ -126,25 +103,10 @@ the number of fields. The ``getFieldName()`` method takes a field index and retu
 name of the field. The ``getFieldIdx()`` method returns the field index for a given field
 name.
 
-.. code-block:: cpp
-
-    // Print the field names in the MultiMat object mm.
-    for(int i = 0; i < mm.getNumberOfFields(); i++)
-    {
-      // Get field properties
-      auto name = mm.getFieldName(i);
-      auto mapping = mm.getFieldMapping(i);
-      auto layout = mm.getFieldDataLayout(i);
-      auto sparsity = mm.getFieldSparsityLayout(i);
-      auto dataType = mm.getFieldDataType(i);
-
-      std::cout << name << ":\n"
-                << "\tmapping: " << mm.getFieldMappingAsString(i)
-                << "\tlayout: " << mm.getFieldDataLayoutAsString(i)
-                << "\tsparsity: " << mm.getFieldSparsityLayoutAsString(i)
-                << "\n";
-    }
-    std::cout << "Volfrac index: " << mm.getFieldIdx("Volfrac") << std::endl;
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_using_fields_introspection_begin
+   :end-before: _multimat_using_fields_introspection_end
+   :language: C++
 
 #######################
 Accessing Field Data
@@ -179,17 +141,10 @@ memory, even though a given cell might not use all possible materials. To write 
 over sparse data that focus on only the valid cell-material pairs from the
 CMR, the ``getIndexingSetOfCell()`` and ``getIndexingSetOfMat()`` methods can be called.
 
-.. code-block:: cpp
-
-   // CELL_DOM data (iterate over cells then materials)
-   auto f = mm.getSparse2dField("myField");
-   for(int i = 0; i < mm.getNumberOfCells(); i++)
-   {
-     std::cout << "Field values for materials in cell " << i << ": ";
-     for(const auto &idx : mm.getIndexingSetOfCell(i))
-       std::cout << f[idx] << ", ";
-     std::cout << "\n";
-   }
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_using_fields_index_sets_begin
+   :end-before: _multimat_using_fields_index_sets_end
+   :language: C++
 
 ^^^^^^^^^^
 1D Fields
@@ -201,33 +156,20 @@ that can access the field data. The ``get1dField()`` method takes a template arg
 for the type of data stored in the field so if double-precision data are stored in
 MultiMat then ``get1dField<double>()`` should be called to access the field.
 
-.. code-block:: cpp
-
-    // Sum all values in the field.
-    double sum = 0.;
-    auto f = mm.get1dField<double>("Cell Array");
-    for(int i = 0; i < mm.getNumberOfCells(); i++)
-    {
-      sum += f[i];
-    }
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_using_fields_1d_start
+   :end-before: _multimat_using_fields_1d_end
+   :language: C++
 
 1D fields can store multi-component values as well, which adds a small amount of
 complexity. The field provides a ``numComp()`` method that returns the number of
 components. A component for a given cell is retrieved using the 2-argument
 call ``operator()`` by passing the cell index and then the desired component index.
 
-.. code-block:: cpp
-
-    double sum = 0.;
-    auto f = mm.get1dField<double>("Cell Array");
-    for(int i = 0; i < mm.getNumberOfCells(); i++)
-    {
-      for(int comp = 0; comp < f.numComp(); comp++)
-      {
-        double val = f(i, comp);
-        sum += val;
-      }
-    }
+.. literalinclude:: ../../examples/basic.cpp
+   :start-after: _multimat_using_fields_multi_component_start
+   :end-before: _multimat_using_fields_multi_component_end
+   :language: C++
 
 ^^^^^^^^^^
 2D Fields
