@@ -2000,76 +2000,84 @@ namespace axom
 {
 namespace multimat
 {
-std::ostream& operator<<(std::ostream& os, FieldMapping mapping) {
-    switch (mapping) {
-        case FieldMapping::PER_CELL:
-            os << "PER_CELL";
-            break;
-        case FieldMapping::PER_MAT:
-            os << "PER_MAT";
-            break;
-        case FieldMapping::PER_CELL_MAT:
-            os << "PER_CELL_MAT";
-            break;
-        default:
-            os << "Unknown";
-            break;
-    }
-    return os;
+std::ostream& operator<<(std::ostream& os, FieldMapping mapping)
+{
+  switch(mapping)
+  {
+  case FieldMapping::PER_CELL:
+    os << "PER_CELL";
+    break;
+  case FieldMapping::PER_MAT:
+    os << "PER_MAT";
+    break;
+  case FieldMapping::PER_CELL_MAT:
+    os << "PER_CELL_MAT";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
 }
 
-std::ostream& operator<<(std::ostream& os, DataLayout layout) {
-    switch (layout) {
-        case DataLayout::CELL_DOM:
-            os << "CELL_DOM";
-            break;
-        case DataLayout::MAT_DOM:
-            os << "MAT_DOM";
-            break;
-        default:
-            os << "Unknown";
-            break;
-    }
-    return os;
+std::ostream& operator<<(std::ostream& os, DataLayout layout)
+{
+  switch(layout)
+  {
+  case DataLayout::CELL_DOM:
+    os << "CELL_DOM";
+    break;
+  case DataLayout::MAT_DOM:
+    os << "MAT_DOM";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
 }
 
-std::ostream& operator<<(std::ostream& os, SparsityLayout sparsity) {
-    switch (sparsity) {
-        case SparsityLayout::DENSE:
-            os << "DENSE";
-            break;
-        case SparsityLayout::SPARSE:
-            os << "SPARSE";
-            break;
-        default:
-            os << "Unknown";
-            break;
-    }
-    return os;
+std::ostream& operator<<(std::ostream& os, SparsityLayout sparsity)
+{
+  switch(sparsity)
+  {
+  case SparsityLayout::DENSE:
+    os << "DENSE";
+    break;
+  case SparsityLayout::SPARSE:
+    os << "SPARSE";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
 }
 
-std::ostream& operator<<(std::ostream& os, DataTypeSupported type) {
-    switch (type) {
-        case DataTypeSupported::TypeUnknown:
-            os << "TypeUnknown";
-            break;
-        case DataTypeSupported::TypeInt:
-            os << "TypeInt";
-            break;
-        case DataTypeSupported::TypeDouble:
-            os << "TypeDouble";
-            break;
-        case DataTypeSupported::TypeFloat:
-            os << "TypeFloat";
-            break;
-        case DataTypeSupported::TypeUnsignChar:
-            os << "TypeUnsignChar";
-            break;
-        default:
-            os << "Unknown";
-            break;
-    }
-    return os;
+std::ostream& operator<<(std::ostream& os, DataTypeSupported type)
+{
+  switch(type)
+  {
+  case DataTypeSupported::TypeUnknown:
+    os << "TypeUnknown";
+    break;
+  case DataTypeSupported::TypeInt:
+    os << "TypeInt";
+    break;
+  case DataTypeSupported::TypeDouble:
+    os << "TypeDouble";
+    break;
+  case DataTypeSupported::TypeFloat:
+    os << "TypeFloat";
+    break;
+  case DataTypeSupported::TypeUnsignChar:
+    os << "TypeUnsignChar";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
 }
-} // end namespace multimat
-} // end namespace axom
+}  // end namespace multimat
+}  // end namespace axom

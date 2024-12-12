@@ -10,8 +10,8 @@
 #include "axom/slic.hpp"
 
 #ifdef AXOM_USE_CONDUIT
-#include "conduit.hpp"
-#include "conduit_relay.hpp"
+  #include "conduit.hpp"
+  #include "conduit_relay.hpp"
 #endif
 
 #include <iostream>
@@ -134,10 +134,8 @@ void introspection(axom::multimat::MultiMat &mm)
     auto dataType = mm.getFieldDataType(i);
 
     std::cout << name << ":"
-              << "\n\tmapping: " << mapping
-              << "\n\tlayout: " << layout
-              << "\n\tsparsity: " << sparsity
-              << "\n\tdataType: " << dataType
+              << "\n\tmapping: " << mapping << "\n\tlayout: " << layout
+              << "\n\tsparsity: " << sparsity << "\n\tdataType: " << dataType
               << "\n";
   }
   std::cout << "Volfrac index: " << mm.getFieldIdx("Volfrac") << std::endl;
@@ -155,7 +153,8 @@ void using_fields_index_sets(axom::multimat::MultiMat &mm)
   for(int i = 0; i < mm.getNumberOfCells(); i++)
   {
     std::cout << "\tcell " << i << " values: ";
-    for(const auto &idx : mm.getIndexingSetOfCell(i, axom::multimat::SparsityLayout::SPARSE))
+    for(const auto &idx :
+        mm.getIndexingSetOfCell(i, axom::multimat::SparsityLayout::SPARSE))
       std::cout << f[idx] << ", ";
     std::cout << "\n";
   }
@@ -221,8 +220,7 @@ void dynamic_mode(axom::multimat::MultiMat &mm)
  * \param mm The MultiMat object that contains the materials and fields.
  * \param mesh The node that contains the Blueprint mesh.
  */
-void
-multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
+void multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
 {
   // Multimat to matset.
   const auto VF = mm.get2dField<double>("Volfrac");
@@ -288,7 +286,11 @@ multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
         SLIC_ASSERT(f.numComp() <= 3);
         for(int c = 0; c < f.numComp(); c++)
         {
-          n_f["values/" + compNames[c]].set_external(dptr, mm.getNumberOfCells(), 0, f.numComp() * sizeof(double));
+          n_f["values/" + compNames[c]].set_external(
+            dptr,
+            mm.getNumberOfCells(),
+            0,
+            f.numComp() * sizeof(double));
           dptr++;
         }
       }
@@ -326,7 +328,7 @@ multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
           double avg = 0.;
           for(auto &m : matsInCell)
           {
-            double* valptr = f.findValue(c, m);
+            double *valptr = f.findValue(c, m);
             if(valptr != nullptr)
             {
               matset_values.push_back(*valptr);
@@ -351,7 +353,7 @@ multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
           {
             for(int comp = 0; comp < f.numComp(); comp++)
             {
-              double* valptr = f.findValue(c, m, comp);
+              double *valptr = f.findValue(c, m, comp);
               if(valptr != nullptr)
               {
                 matset_values[comp].push_back(*valptr);
@@ -361,7 +363,8 @@ multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
           }
           for(int comp = 0; comp < f.numComp(); comp++)
           {
-            values[comp].push_back(avg[comp] / double(std::max(matsInCell.size(), 1)));
+            values[comp].push_back(avg[comp] /
+                                   double(std::max(matsInCell.size(), 1)));
           }
         }
 
