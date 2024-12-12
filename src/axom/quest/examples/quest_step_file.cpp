@@ -45,12 +45,29 @@
 #include "opencascade/TopExp.hxx"
 #include "opencascade/TopTools_IndexedMapOfShape.hxx"
 #include "opencascade/Geom2dAPI_ExtremaCurveCurve.hxx"
+#include "opencascade/BRepAdaptor_Surface.hxx"
+#include "opencascade/Geom_BSplineSurface.hxx"
+#include "opencascade/BRepBndLib.hxx"
+#include "opencascade/Bnd_Box.hxx"
+#include "opencascade/BRepAdaptor_Surface.hxx"
 
 #include <iostream>
+
+struct PatchData
+{
+  int patchIndex {-1};
+  axom::Array<double> uKnots;
+  axom::Array<double> vKnots;
+  axom::primal::BoundingBox<double, 2> parametricBBox;
+  axom::primal::BoundingBox<double, 3> physicalBBox;
+  axom::Array<axom::primal::NURBSCurve<double, 2>> trimmingCurves;
+};
 
 class StepFileProcessor
 {
 public:
+  using PatchDataMap = std::map<int, PatchData>;
+
   enum class LoadStatus
   {
     UNINITIALIZED = 0,
@@ -64,14 +81,17 @@ public:
   static constexpr int CurveDim = 2;
   using NCurve = axom::primal::NURBSCurve<double, CurveDim>;
   using PointType = axom::primal::Point<double, CurveDim>;
-  using BBox = axom::primal::BoundingBox<double, CurveDim>;
+  using PointType2D = axom::primal::Point<double, 2>;
+  using PointType3D = axom::primal::Point<double, 3>;
+  using BBox2D = axom::primal::BoundingBox<double, 2>;
+  using BBox3D = axom::primal::BoundingBox<double, 3>;
   using NCurveArray = axom::Array<NCurve>;
   using PatchToTrimmingCurvesMap = std::map<int, NCurveArray>;
 
 private:
-  BBox faceBoundingBox(const TopoDS_Face& face) const
+  BBox2D faceBoundingBox(const TopoDS_Face& face) const
   {
-    BBox bbox;
+    BBox2D bbox;
 
     Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
 
@@ -83,6 +103,71 @@ private:
 
     return bbox;
   }
+
+  class PatchProcessor
+  {
+  public:
+    PatchProcessor(const TopoDS_Face& face) : m_face(face)
+    {
+      extractKnotVectors();
+      extractBoundingBoxes();
+    }
+
+    const axom::Array<double>& getUKnots() const { return m_uKnots; }
+    const axom::Array<double>& getVKnots() const { return m_vKnots; }
+    const BBox2D& getParametricBBox() const { return m_parametricBBox; }
+    const BBox3D& getPhysicalBBox() const { return m_physicalBBox; }
+
+  private:
+    void extractKnotVectors()
+    {
+      Handle(Geom_Surface) surface = BRep_Tool::Surface(m_face);
+      if(surface->IsKind(STANDARD_TYPE(Geom_BSplineSurface)))
+      {
+        Handle(Geom_BSplineSurface) bsplineSurface =
+          Handle(Geom_BSplineSurface)::DownCast(surface);
+        TColStd_Array1OfReal uKnots(1, bsplineSurface->NbUKnots());
+        TColStd_Array1OfReal vKnots(1, bsplineSurface->NbVKnots());
+        bsplineSurface->UKnots(uKnots);
+        bsplineSurface->VKnots(vKnots);
+
+        m_uKnots.resize(uKnots.Length());
+        m_vKnots.resize(vKnots.Length());
+        for(int i = 1; i <= uKnots.Length(); ++i)
+        {
+          m_uKnots[i - 1] = uKnots(i);
+        }
+        for(int i = 1; i <= vKnots.Length(); ++i)
+        {
+          m_vKnots[i - 1] = vKnots(i);
+        }
+      }
+    }
+
+    void extractBoundingBoxes()
+    {
+      Handle(Geom_Surface) surface = BRep_Tool::Surface(m_face);
+      Standard_Real u1, u2, v1, v2;
+      surface->Bounds(u1, u2, v1, v2);
+      m_parametricBBox.addPoint(PointType2D {u1, v1});
+      m_parametricBBox.addPoint(PointType2D {u2, v2});
+
+      BRepAdaptor_Surface surfaceAdaptor(m_face);
+      Bnd_Box bndBox;
+      BRepBndLib::Add(m_face, bndBox);
+      Standard_Real xMin, yMin, zMin, xMax, yMax, zMax;
+      bndBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
+      m_physicalBBox.addPoint(PointType3D {xMin, yMin, zMin});
+      m_physicalBBox.addPoint(PointType3D {xMax, yMax, zMax});
+    }
+
+  private:
+    TopoDS_Face m_face;
+    axom::Array<double> m_uKnots;
+    axom::Array<double> m_vKnots;
+    BBox2D m_parametricBBox;
+    BBox3D m_physicalBBox;
+  };
 
   /// Helper class in support of extracting necessary information from trimming curves
   class CurveProcessor
@@ -340,8 +425,8 @@ private:
 
     // note: bounding boxes are used as debug checks that control points
     // lie within the parameter space of the parent patch
-    axom::Array<PointType> extractControlPoints(const BBox& bbox,
-                                                const BBox& expandedBBox) const
+    axom::Array<PointType> extractControlPoints(const BBox2D& bbox,
+                                                const BBox2D& expandedBBox) const
     {
       axom::Array<PointType> controlPoints;
       TColgp_Array1OfPnt2d paraPoints(1, m_curve->NbPoles());
@@ -350,7 +435,7 @@ private:
       for(Standard_Integer i = paraPoints.Lower(); i <= paraPoints.Upper(); ++i)
       {
         gp_Pnt2d paraPt = paraPoints(i);
-        auto pt = PointType {paraPt.X(), paraPt.Y()};
+        auto pt = PointType2D {paraPt.X(), paraPt.Y()};
         SLIC_DEBUG_IF(
           !expandedBBox.contains(pt),
           axom::fmt::format("Distance of {} to {} is {}",
@@ -417,8 +502,8 @@ private:
 public:
   StepFileProcessor() = delete;
 
-  StepFileProcessor(const std::string& filename, bool verboseOutput = false)
-    : m_verbose(verboseOutput)
+  StepFileProcessor(const std::string& filename, bool verbose = false)
+    : m_verbose(verbose)
   {
     m_shape = loadStepFile(filename);
   }
@@ -485,9 +570,28 @@ public:
     SLIC_INFO(axom::fmt::to_string(out));
   }
 
-  PatchToTrimmingCurvesMap convertTrimmingCurvesToNurbs()
+  void extractPatches()
   {
-    PatchToTrimmingCurvesMap patchTrimmingCurves;
+    int patchIndex = 0;
+
+    for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
+        faceExp.Next(), ++patchIndex)
+    {
+      const TopoDS_Face& face = TopoDS::Face(faceExp.Current());
+
+      PatchProcessor patchProcessor(face);
+
+      PatchData& patchData = m_patchData[patchIndex];
+      patchData.patchIndex = patchIndex;
+      patchData.uKnots = patchProcessor.getUKnots();
+      patchData.vKnots = patchProcessor.getVKnots();
+      patchData.parametricBBox = patchProcessor.getParametricBBox();
+      patchData.physicalBBox = patchProcessor.getPhysicalBBox();
+    }
+  }
+
+  void extractTrimmingCurves()
+  {
     int patchIndex = 0;
 
     std::map<GeomAbs_CurveType, std::string> curveTypeMap = {
@@ -506,9 +610,11 @@ public:
     {
       const TopoDS_Face& face = TopoDS::Face(faceExp.Current());
 
+      PatchData& patchData = m_patchData[patchIndex];
+
       // Get span of this patch in u and v directions
-      BBox patchBbox = faceBoundingBox(face);
-      BBox expandedPatchBbox = patchBbox;
+      BBox2D patchBbox = faceBoundingBox(face);
+      auto expandedPatchBbox = patchBbox;
       expandedPatchBbox.scale(1. + 1e-3);
 
       SLIC_INFO_IF(
@@ -643,11 +749,11 @@ public:
         }
       }
 
-      patchTrimmingCurves[patchIndex] = curves;
+      patchData.trimmingCurves = curves;
     }
-
-    return patchTrimmingCurves;
   }
+
+  const PatchDataMap& getPatchDataMap() const { return m_patchData; }
 
 private:
   TopoDS_Shape loadStepFile(const std::string& filename)
@@ -701,6 +807,8 @@ private:
   bool m_verbose {false};
   LoadStatus m_loadStatus {LoadStatus::UNINITIALIZED};
   TopTools_IndexedMapOfShape m_faceMap;
+
+  PatchDataMap m_patchData;
 };
 
 std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve)
@@ -822,48 +930,17 @@ std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve
   return axom::fmt::to_string(svgPath);
 }
 
-void generateSVGForPatch(
-  const TopoDS_Shape& shape,
-  int patchIndex,
-  const std::map<int, axom::Array<axom::primal::NURBSCurve<double, 2>>>& nurbsCurvesMap)
+void generateSVGForPatch(int patchIndex, const PatchData& patchData)
 {
   using PointType = axom::primal::Point<double, 2>;
 
-  auto it = nurbsCurvesMap.find(patchIndex);
-  if(it == nurbsCurvesMap.end())
-  {
-    std::cerr << "Error: Patch index " << patchIndex
-              << " not found in the NURBS curves map." << std::endl;
-    return;
-  }
-
-  // Get the bounding box of this patch in parameter space
-  TopExp_Explorer faceExp(shape, TopAbs_FACE);
-  for(int i = 0; i < patchIndex && faceExp.More(); ++i)
-  {
-    faceExp.Next();
-  }
-  if(!faceExp.More())
-  {
-    std::cerr << "Error: Patch index " << patchIndex << " is out of range."
-              << std::endl;
-    return;
-  }
-  TopoDS_Face face = TopoDS::Face(faceExp.Current());
-  Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
-
-  Standard_Real uMin, uMax, vMin, vMax;
-  surface->Bounds(uMin, uMax, vMin, vMax);
-
-  axom::primal::BoundingBox<double, 2> parametricBBox;
-  parametricBBox.addPoint(PointType {uMin, vMin});
-  parametricBBox.addPoint(PointType {uMax, vMax});
+  const auto& parametricBBox = patchData.parametricBBox;
 
   SLIC_INFO(axom::fmt::format("Parametric BBox for patch {}: {}",
                               patchIndex,
                               parametricBBox));
 
-  const auto& curves = it->second;
+  const auto& curves = patchData.trimmingCurves;
   axom::fmt::memory_buffer svgContent;
 
   // Create a new bounding box by scaling and translating the parametricBBox by a factor of two, keeping the center the same
@@ -1180,22 +1257,25 @@ int main(int argc, char** argv)
 
   stepProcessor.printShapeStats();
 
-  const auto nurbsCurvesMap = stepProcessor.convertTrimmingCurvesToNurbs();
-  for(const auto& entry : nurbsCurvesMap)
+  stepProcessor.extractPatches();
+  stepProcessor.extractTrimmingCurves();
+
+  for(const auto& entry : stepProcessor.getPatchDataMap())
   {
-    std::cout << "Patch " << entry.first << " has " << entry.second.size()
-              << " NURBS curves." << std::endl;
+    std::cout << "Patch " << entry.first << " has "
+              << entry.second.trimmingCurves.size() << " NURBS curves."
+              << std::endl;
   }
 
   std::string cwd = axom::utilities::filesystem::getCWD();
   std::cout << "Current working directory: " << cwd << std::endl;
 
-  auto& nurbs_shape = stepProcessor.getShape();
-  for(const auto& entry : nurbsCurvesMap)
+  for(const auto& entry : stepProcessor.getPatchDataMap())
   {
-    generateSVGForPatch(nurbs_shape, entry.first, nurbsCurvesMap);
+    generateSVGForPatch(entry.first, entry.second);
   }
 
+  auto& nurbs_shape = stepProcessor.getShape();
   Standard_Real deflection = 0.1;
   Standard_Real angle = 0.5;
   BRepMesh_IncrementalMesh mesh(nurbs_shape, deflection, Standard_False, angle);
@@ -1205,7 +1285,7 @@ int main(int argc, char** argv)
     throw std::runtime_error("Mesh generation failed.");
   }
 
-  for(const auto& entry : nurbsCurvesMap)
+  for(const auto& entry : stepProcessor.getPatchDataMap())
   {
     triangulateTrimmedPatchAndWriteSTL(nurbs_shape, entry.first);
     triangulateUntrimmedPatchAndWriteSTL(nurbs_shape, entry.first);
