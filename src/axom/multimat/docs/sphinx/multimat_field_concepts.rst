@@ -30,26 +30,26 @@ allowing fields to have data values for each material in a cell.
 
    Diagram showing field mapping concept.
 
-+--------------------+----------------------------------------------------------+
-| FieldMapping       | Meaning                                                  |
-+====================+==========================================================+
-| PER_CELL           | The field contains up to ncells*ncomponents values (for  |
-|                    | dense storage) and there are ncomponents values per cell.|
-|                    | For scalars *ncomponents* is 1 so the field length is    |
-|                    | ncells.                                                  |
-+--------------------+----------------------------------------------------------+
-| PER_MAT            | The field contains nmats*ncomponents values and there    |
-|                    | are ncomponents values per material. This mapping allows |
-|                    | fields to be defined over the entire material region and |
-|                    | any cell that uses the material inherits the per-material|
-|                    | field value, allowing for very compact storage of        |
-|                    | material-level properties.                               |
-+--------------------+----------------------------------------------------------+
-| PER_CELL_MAT       | The field contains up to ncells*nmats*ncomponents (for   |
-|                    | dense storage). This mapping allows materials within a   |
-|                    | cell to have their own unique values, which makes them   |
-|                    | useful for tracking data at a sub-cell level.            |
-+--------------------+----------------------------------------------------------+
++--------------------+-----------------------------------------------------------+
+| FieldMapping       | Meaning                                                   |
++====================+===========================================================+
+| PER_CELL           | The field contains up to ncells * ncomponents values (for |
+|                    | dense storage) and there are ncomponents values per cell. |
+|                    | For scalars *ncomponents* is 1 so the field length is     |
+|                    | ncells.                                                   |
++--------------------+-----------------------------------------------------------+
+| PER_MAT            | The field contains nmats * ncomponents values and there   |
+|                    | are ncomponents values per material. This mapping allows  |
+|                    | fields to be defined over the entire material region and  |
+|                    | any cell that uses the material inherits the per-material |
+|                    | field value, allowing for very compact storage of         |
+|                    | material-level properties.                                |
++--------------------+-----------------------------------------------------------+
+| PER_CELL_MAT       | The field contains up to ncells * nmats * ncomponents (for|
+|                    | dense storage). This mapping allows materials within a    |
+|                    | cell to have their own unique values, which makes them    |
+|                    | useful for tracking data at a sub-cell level.             |
++--------------------+-----------------------------------------------------------+
 
 #######################
 Data Layout
@@ -88,8 +88,8 @@ Sparsity primarily concerns fields with ``PER_CELL_MAT`` mapping. When initializ
 the MultiMat object, the CMR indicates how materials are distributed
 over the mesh. It is completely acceptable for materials to skip over certain cells,
 which makes sense if we think about materials as a way to divide up the mesh into
-various regions or parts. There are ncells*nmats pairs of data that could be entered
-for MultiMat fields. For ``DENSE`` fields, the field must contain ncells*nmats values,
+various regions or parts. There are ncells * nmats pairs of data that could be entered
+for MultiMat fields. For ``DENSE`` fields, the field must contain ncells * nmats values,
 with values present for cell/material pairs whether materials are present or not.
 This is an easy way to specify the data but it wastes memory by including extra
 values whose only purpose is to keep the rectangular shape of the data array.
@@ -110,7 +110,7 @@ for ``SPARSE`` data where the CMR contains true values.
 +--------------------+----------------------------------------------------------+
 | SparsityLayout     | Meaning                                                  |
 +====================+==========================================================+
-| DENSE              | Data are provided for all ncells*nmats pairs, even if    |
+| DENSE              | Data are provided for all ncells * nmats pairs, even if  |
 |                    | there is no cell/material that is valid.                 |
 +--------------------+----------------------------------------------------------+
 | SPARSE             | Data are provided for only the cell/material pairs that  |

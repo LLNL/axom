@@ -155,7 +155,9 @@ void using_fields_index_sets(axom::multimat::MultiMat &mm)
     std::cout << "\tcell " << i << " values: ";
     for(const auto &idx :
         mm.getIndexingSetOfCell(i, axom::multimat::SparsityLayout::SPARSE))
+    {
       std::cout << f[idx] << ", ";
+    }
     std::cout << "\n";
   }
   //_multimat_using_fields_index_sets_end
@@ -178,7 +180,7 @@ void using_fields_1d(axom::multimat::MultiMat &mm)
 
 void using_fields_multi_component(axom::multimat::MultiMat &mm)
 {
-  // _multimat_using_fields_multi_component_start
+  // _multimat_using_fields_1dmc_start
   double sum = 0.;
   auto f = mm.get1dField<double>("perCellMC");
   for(int i = 0; i < mm.getNumberOfCells(); i++)
@@ -188,7 +190,7 @@ void using_fields_multi_component(axom::multimat::MultiMat &mm)
       sum += f(i, comp);
     }
   }
-  // _multimat_using_fields_multi_component_end
+  // _multimat_using_fields_1dmc_end
 
   SLIC_INFO(axom::fmt::format("sum={}", sum));
 }

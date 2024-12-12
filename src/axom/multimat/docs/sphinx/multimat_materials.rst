@@ -47,14 +47,13 @@ iterated first, followed by cells that use the current material.
 Volume Fractions
 #######################
 
-The CMR determines how materials are allocated to each cell but it does not determine
-how much of each material is present in the cell. Volume fractions determine how much of each material
-exists in each cell and is given as a percentage. If a cell contains materials A and B
+The CMR determines which materials are present in each cell; volume fractions determine
+how much material is in each cell. If a cell contains materials A and B
 at 20% and 80%, respectively, then the volume fractions for those materials in the
-cell are: *0.2* and *0.8*. Note that the sum of volume fractions in a cell must equal 1
-to account for all of the cell. Volume fractions must be provided for every valid
-cell/material pair in the CMR and they must be specified using the same data layout
-as data in the CMR.
+cell are: *0.2* and *0.8*. Note that the sum of volume fractions in a cell should equal 1
+to account for all of the cell, though this is not enforced unless the ``isValid()``
+method is called. Volume fractions must be provided for every valid cell/material pair
+in the CMR and they must be specified using the same data layout as data in the CMR.
 
 .. figure:: figures/volume_fractions.png
    :figwidth: 600px
@@ -63,10 +62,10 @@ as data in the CMR.
 
 Volume fractions are stored in MultiMat as a field and fields have an added concept
 of sparsity. Fields can provide data for every possible cell/material pair; this is
-called a dense field. Dense fields are easy to understand since they have values for
-every cell/material pair and they take more memory since zeroes must be provided even
-for invalid cell/material pairs. Fields can also be sparse, which eliminates the zeroes
-where a material does not exist.
+called a dense field. Dense fields are easy to understand: they have values for
+every cell/material pair, even for materials that are not actually present. Fields
+can also be sparse, saving memory by eliminating the zeroes where a material does not
+exist.
 
 Volume fraction data are provided to MultiMat wrapped in an ``axom::ArrayView`` object,
 which provides the default values for the volume fractions. The *ArrayView* is passed

@@ -26,7 +26,7 @@ than would otherwise be necessary.
 API Documentation
 -----------------
 
-Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/coretop.html>`_
+Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/multimattop.html>`_
 
 
 .. toctree::

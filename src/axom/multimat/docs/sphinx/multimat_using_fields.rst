@@ -167,8 +167,8 @@ components. A component for a given cell is retrieved using the 2-argument
 call ``operator()`` by passing the cell index and then the desired component index.
 
 .. literalinclude:: ../../examples/basic.cpp
-   :start-after: _multimat_using_fields_multi_component_start
-   :end-before: _multimat_using_fields_multi_component_end
+   :start-after: _multimat_using_fields_1dmc_start
+   :end-before: _multimat_using_fields_1dmc_end
    :language: C++
 
 ^^^^^^^^^^
@@ -194,10 +194,10 @@ is located for the field.
    :end-before: _multimat_using_fields_dense_end
    :language: C++
 
-For algorithms where sparse data traversal is desired, there are multiple options. The
-MultiMat indexing sets can be used directly. Cells are iterated first in this example
-since the field has a ``CELL_DOM`` data layout. The materials for the current
-cell are queried are used to to compute an index into the field data.
+For algorithms where sparse data traversal is desired, the MultiMat indexing sets
+can be used directly as an alternative to dense traversal patterns. Cells are iterated
+first in this example since the field has a ``CELL_DOM`` data layout. The materials for
+the current cell are queried are used to to compute an index into the field data.
 
 .. literalinclude:: ../../examples/traversal.cpp
    :start-after: _multimat_using_fields_indexset_start
