@@ -313,7 +313,8 @@ if((CONDUIT_FOUND OR
 
         # Test Conduit and MFEM mesh types with a subset of shapes (so it doesn't take too long)
         set(_testshapes "tetmesh" "sphere" "cyl")
-        set(_testMeshTypes "bpConduit" "mfem")
+        set(_testMeshTypes "bpConduit")
+        blt_list_append(TO _testMeshTypes ELEMENTS "mfem" IF MFEM_FOUND)
         foreach(_policy ${_policies})
             foreach(_testMeshType ${_testMeshTypes})
               foreach(_testshape ${_testshapes})
