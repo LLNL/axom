@@ -38,7 +38,7 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
  * \param [in] comm The MPI Communicator.
  *****************************************************************************
  */
-const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, const int tag = 0);
+const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag = 0);
 
 /*!
  *****************************************************************************
@@ -57,7 +57,7 @@ const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, const int tag = 0);
 void mpiNonBlockingSendMessages(MPI_Comm comm,
                                 int destinationRank,
                                 const char* packedMessagesToBeSent,
-                                const int tag = 0);
+                                int tag = 0);
 }  // end namespace lumberjack
 }  // end namespace axom
 

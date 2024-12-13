@@ -6,21 +6,21 @@
 /*!
  ******************************************************************************
  *
- * \file NonBlockingRootCommunicator.cpp
+ * \file NonCollectiveRootCommunicator.cpp
  *
- * \brief Implementation of the NonBlockingRootCommunicator class.
+ * \brief Implementation of the NonCollectiveRootCommunicator class.
  *
  ******************************************************************************
  */
 
-#include "axom/lumberjack/NonBlockingRootCommunicator.hpp"
+#include "axom/lumberjack/NonCollectiveRootCommunicator.hpp"
 #include "axom/lumberjack/MPIUtility.hpp"
 
 namespace axom
 {
 namespace lumberjack
 {
-void NonBlockingRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
+void NonCollectiveRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
 {
   m_mpiComm = comm;
   MPI_Comm_rank(m_mpiComm, &m_mpiCommRank);
@@ -28,17 +28,17 @@ void NonBlockingRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
   m_ranksLimit = ranksLimit;
 }
 
-void NonBlockingRootCommunicator::finalize() { }
+void NonCollectiveRootCommunicator::finalize() { }
 
-int NonBlockingRootCommunicator::rank() { return m_mpiCommRank; }
+int NonCollectiveRootCommunicator::rank() { return m_mpiCommRank; }
 
-void NonBlockingRootCommunicator::ranksLimit(int value) { m_ranksLimit = value; }
+void NonCollectiveRootCommunicator::ranksLimit(int value) { m_ranksLimit = value; }
 
-int NonBlockingRootCommunicator::ranksLimit() { return m_ranksLimit; }
+int NonCollectiveRootCommunicator::ranksLimit() { return m_ranksLimit; }
 
-int NonBlockingRootCommunicator::numPushesToFlush() { return 1; }
+int NonCollectiveRootCommunicator::numPushesToFlush() { return 1; }
 
-void NonBlockingRootCommunicator::push(const char* packedMessagesToBeSent,
+void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
                             std::vector<const char*>& receivedPackedMessages)
 {
   constexpr int mpiTag = 32767; 
@@ -78,7 +78,7 @@ void NonBlockingRootCommunicator::push(const char* packedMessagesToBeSent,
   }
 }
 
-bool NonBlockingRootCommunicator::isOutputNode()
+bool NonCollectiveRootCommunicator::isOutputNode()
 {
   if(m_mpiCommRank == 0)
   {

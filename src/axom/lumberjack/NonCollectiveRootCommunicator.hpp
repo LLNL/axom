@@ -5,15 +5,15 @@
 
 /*!
  *******************************************************************************
- * \file NonBlockingRootCommunicator.hpp
+ * \file NonCollectiveRootCommunicator.hpp
  *
  * \brief This file contains the class definition of the 
- *  NonBlockingRootCommunicator.
+ *  NonCollectiveRootCommunicator.
  *******************************************************************************
  */
 
-#ifndef NONBLOCKINGROOTCOMMUNICATOR_HPP
-#define NONBLOCKINGROOTCOMMUNICATOR_HPP
+#ifndef NONCOLLECTIVEROOTCOMMUNICATOR_HPP
+#define NONCOLLECTIVEROOTCOMMUNICATOR_HPP
 
 #include "axom/lumberjack/Lumberjack.hpp"
 #include "axom/lumberjack/Communicator.hpp"
@@ -24,13 +24,13 @@ namespace lumberjack
 {
 /*!
  *******************************************************************************
- * \class NonBlockingRootCommunicator
+ * \class NonCollectiveRootCommunicator
  *
  * \brief Based off of RootCommunicator. This communicator pushes
     messages from any rank to root non-collectively, if any messages are sent.
  *******************************************************************************
  */
-class NonBlockingRootCommunicator : public axom::lumberjack::Communicator
+class NonCollectiveRootCommunicator : public axom::lumberjack::Communicator
 {
 public:
   /*!
