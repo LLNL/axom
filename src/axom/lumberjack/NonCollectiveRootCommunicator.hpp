@@ -122,11 +122,19 @@ public:
    */
   bool isOutputNode();
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the MPI tag used for this communicator.
+   *****************************************************************************
+   */
+  int mpiTag() const;
+
 private:
   MPI_Comm m_mpiComm;
   int m_mpiCommRank;
   int m_mpiCommSize;
   int m_ranksLimit;
+  int m_mpiTag;
 };
 
 }  // end namespace lumberjack

@@ -22,10 +22,13 @@ namespace lumberjack
 {
 void NonCollectiveRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
 {
+  static int mpiTag = 32767;
   m_mpiComm = comm;
   MPI_Comm_rank(m_mpiComm, &m_mpiCommRank);
   MPI_Comm_size(m_mpiComm, &m_mpiCommSize);
   m_ranksLimit = ranksLimit;
+  m_mpiTag = mpiTag;
+  ++mpiTag;
 }
 
 void NonCollectiveRootCommunicator::finalize() { }
@@ -41,14 +44,13 @@ int NonCollectiveRootCommunicator::numPushesToFlush() { return 1; }
 void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
                             std::vector<const char*>& receivedPackedMessages)
 {
-  constexpr int mpiTag = 32767; 
   if(m_mpiCommRank == 0)
   {
     const char* currPackedMessages = nullptr;
     bool receive_messages = true;
     while(receive_messages)
     {
-      currPackedMessages = mpiNonBlockingReceiveMessages(m_mpiComm, mpiTag);
+      currPackedMessages = mpiNonBlockingReceiveMessages(m_mpiComm, m_mpiTag);
 
       if(isPackedMessagesEmpty(currPackedMessages))
       {
@@ -75,7 +77,7 @@ void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
   {
     if(isPackedMessagesEmpty(packedMessagesToBeSent) == false)
     {
-      mpiNonBlockingSendMessages(m_mpiComm, 0, packedMessagesToBeSent, mpiTag);
+      mpiNonBlockingSendMessages(m_mpiComm, 0, packedMessagesToBeSent, m_mpiTag);
     }
   }
 }
@@ -88,6 +90,8 @@ bool NonCollectiveRootCommunicator::isOutputNode()
   }
   return false;
 }
+
+int NonCollectiveRootCommunicator::mpiTag() const { return m_mpiTag; }
 
 }  // end namespace lumberjack
 }  // end namespace axom
