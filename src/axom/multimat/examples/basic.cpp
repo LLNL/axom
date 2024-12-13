@@ -337,7 +337,7 @@ void multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
               avg += *valptr;
             }
           }
-          values.push_back(avg / double(std::max(matsInCell.size(), 1)));
+          values.push_back(avg / std::max(double(matsInCell.size()), 1.));
         }
 
         n_f["matset"] = "matset";
@@ -366,7 +366,7 @@ void multimat_to_blueprint(axom::multimat::MultiMat &mm, conduit::Node &mesh)
           for(int comp = 0; comp < f.numComp(); comp++)
           {
             values[comp].push_back(avg[comp] /
-                                   double(std::max(matsInCell.size(), 1)));
+                                   std::max(double(matsInCell.size()), 1.));
           }
         }
 
