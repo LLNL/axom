@@ -821,7 +821,7 @@ std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve
 
   axom::fmt::memory_buffer svgPath;
   axom::fmt::format_to(std::back_inserter(svgPath),
-                       "<path class=\"{} degree-{}\" d=\"",
+                       "  <path class='{} degree-{}' d='",
                        isRational ? "rational" : "non-rational",
                        degree);
 
@@ -925,15 +925,14 @@ std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve
     }
   }
 
-  axom::fmt::format_to(std::back_inserter(svgPath), "\"  />");
+  // add the closing tags for the path
+  axom::fmt::format_to(std::back_inserter(svgPath), "' />");
 
   return axom::fmt::to_string(svgPath);
 }
 
 void generateSVGForPatch(int patchIndex, const PatchData& patchData)
 {
-  using PointType = axom::primal::Point<double, 2>;
-
   const auto& parametricBBox = patchData.parametricBBox;
 
   SLIC_INFO(axom::fmt::format("Parametric BBox for patch {}: {}",
@@ -943,60 +942,90 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   const auto& curves = patchData.trimmingCurves;
   axom::fmt::memory_buffer svgContent;
 
-  // Create a new bounding box by scaling and translating the parametricBBox by a factor of two, keeping the center the same
-  PointType center = parametricBBox.getCentroid();
-  PointType min = parametricBBox.getMin();
-  PointType max = parametricBBox.getMax();
-
-  PointType newMin = center + 2.0 * (min - center);
-  PointType newMax = center + 2.0 * (max - center);
-
-  axom::primal::BoundingBox<double, 2> scaledParametricBBox;
-  scaledParametricBBox.addPoint(newMin);
-  scaledParametricBBox.addPoint(newMax);
+  // Create a new bounding box by scaling and translating the parametricBBox
+  auto scaledParametricBBox = parametricBBox;
+  scaledParametricBBox.scale(1.25);
 
   SLIC_INFO(
     axom::fmt::format("Scaled and translated parametric BBox for patch {}: {}",
                       patchIndex,
                       scaledParametricBBox));
+
   axom::fmt::format_to(
     std::back_inserter(svgContent),
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" "
-    "version=\"1.1\" viewBox=\"{} {} {} {}\">\n",
+    "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' \n"
+    "     viewBox='{} {} {} {}' >\n",
     scaledParametricBBox.getMin()[0],
     scaledParametricBBox.getMin()[1],
-    scaledParametricBBox.getMax()[0] - scaledParametricBBox.getMin()[0],
-    scaledParametricBBox.getMax()[1] - scaledParametricBBox.getMin()[1]);
+    scaledParametricBBox.range()[0],
+    scaledParametricBBox.range()[1]);
 
   axom::fmt::format_to(std::back_inserter(svgContent), R"raw(
   <style>
-    path {{ fill:none; stroke:black; stroke-width:.1; marker-end:url(#arrow);paint-order:fill stroke markers;stroke-linejoin:round;stroke-linecap:round; }}
-    rect {{ fill: white; stroke: gray; stroke-width: 0.1; }}
+    path {{ fill:none; stroke:black; stroke-width:.03; marker-end:url(#arrow); paint-order:fill stroke markers; stroke-linejoin:round; stroke-linecap:round; }}
+    rect {{ fill: white; stroke: gray; stroke-width: 0.05; }}
+    .u-line {{ fill: none; stroke: gray; stroke-width: 0.01; }}
+    .v-line {{ fill: none; stroke: gray; stroke-width: 0.01; }}
   </style>
   )raw");
   // add a marker for the arrow's head to indicate the orientation
   axom::fmt::format_to(std::back_inserter(svgContent), R"raw(
   <defs>
-    <marker id="arrow" style="overflow:visible" orient="auto-start-reverse"
-        refX="0" refY="0"
-        markerWidth="3.3239999" markerHeight="3.8427744"
-        viewBox="0 0 5.3244081 6.1553851">
+    <marker id='arrow' style='overflow:visible' orient='auto-start-reverse'
+        refX='0' refY='0'
+        markerWidth='3.3239999' markerHeight='3.8427744'
+        viewBox='0 0 5.3244081 6.1553851'>
       <path
-          transform="scale(0.5)"
-          style="fill:context-stroke;fill-rule:evenodd;stroke:none"
-          d="M 5.77,0 -2.88,5 V -5 Z" />
+          transform='scale(0.8)'
+          style='fill:context-stroke;fill-rule:evenodd;stroke:none'
+          d='M 5.77,0 L -2.88,4.5 L -1.44,0, L -2.88,-4.5 Z' />
     </marker>
   </defs>
   )raw");
 
+  // add a rectangle for the parametric bounding box and a comment for bbox in physical space
   axom::fmt::format_to(
     std::back_inserter(svgContent),
-    "<rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" />\n",
-    parametricBBox.getMin()[0],
-    parametricBBox.getMin()[1],
-    parametricBBox.getMax()[0] - parametricBBox.getMin()[0],
-    parametricBBox.getMax()[1] - parametricBBox.getMin()[1]);
+    "  <!-- Bounding box of element in parametric space as svg rect; \n"
+    "       BBox in physical space: {} -->\n",
+    patchData.physicalBBox);
 
+  axom::fmt::format_to(std::back_inserter(svgContent),
+                       "  <rect x='{}' y='{}' width='{}' height='{}' />\n",
+                       parametricBBox.getMin()[0],
+                       parametricBBox.getMin()[1],
+                       parametricBBox.range()[0],
+                       parametricBBox.range()[1]);
+
+  // add lines for the u- and v- knots
+  axom::fmt::format_to(std::back_inserter(svgContent),
+                       "  <!-- Lines for u- and v- knots -->\n");
+  for(const auto& u : patchData.uKnots)
+  {
+    axom::fmt::format_to(
+      std::back_inserter(svgContent),
+      "  <line class='u-line' x1='{}' y1='{}' x2='{}' y2='{}' />\n",
+      u,
+      parametricBBox.getMin()[1],
+      u,
+      parametricBBox.getMax()[1]);
+  }
+
+  for(const auto& v : patchData.vKnots)
+  {
+    axom::fmt::format_to(
+      std::back_inserter(svgContent),
+      "  <line class='v-line' x1='{}' y1='{}' x2='{}' y2='{}' />\n",
+      parametricBBox.getMin()[0],
+      v,
+      parametricBBox.getMax()[0],
+      v);
+  }
+
+  // add a path for each trimming curve
+  // add lines for the u- and v- knots
+  axom::fmt::format_to(std::back_inserter(svgContent),
+                       "  <!-- Paths for patch trimming curves -->\n");
   for(const auto& curve : curves)
   {
     std::string pathData = nurbsCurveToSVGPath(curve);
