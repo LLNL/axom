@@ -215,7 +215,7 @@ void convert_blueprint_structured_explicit_to_unstructured(
      back to meshGrp memory space.
   */
   coordsetGrp = meshGrp->getGroup("coordsets")->getGroup(coordsetName);
-  int coordsetAllocId = coordsetGrp->getDefaultAllocatorID();
+  int coordsetAllocId = axom::getAllocatorIDFromPointer(coordsetGrp->getView("values/x")->getVoidPtr());
   MemorySpace memSpace = detail::getAllocatorSpace(coordsetAllocId);
   sidre::Group* stashGrp = nullptr;
   sidre::Group* stashedValuesGrp = nullptr;
