@@ -420,8 +420,8 @@ topologies:
 int main(int argc, char *argv[])
 {
   axom::slic::SimpleLogger logger(axom::slic::message::Info);
-#ifdef AXOM_USE_CONDUIT
   axom::CLI::App app;
+#ifdef AXOM_USE_CONDUIT
   bool output = false;
   app.add_flag("--output", output)
     ->description("Whether to write a Blueprint mesh of the MultiMat data.");
