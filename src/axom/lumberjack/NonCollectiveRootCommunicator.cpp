@@ -55,7 +55,9 @@ void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
         if (currPackedMessages == nullptr )
         {
           receive_messages = false;
-        } else {
+        }
+        else
+        {
           delete [] currPackedMessages;
         }
 
