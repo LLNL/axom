@@ -1447,58 +1447,50 @@ int main(int argc, char** argv)
   //---------------------------------------------------------------------------
   axom::klee::ShapeSet shapeSet;
   SLIC_ERROR_IF(params.getBoxDim() != 3, "This example is only in 3D.");
-  switch(params.getBoxDim())
+  if(params.testShape == "tetmesh")
   {
-  case 2:
-    shapeSet = create2DShapeSet(ds);
-    break;
-  case 3:
-    if(params.testShape == "tetmesh")
-    {
-      shapeSet = createShapeSet(createShape_TetMesh(ds));
-    }
-    else if(params.testShape == "tet")
-    {
-      shapeSet = createShapeSet(createShape_Tet());
-    }
-    else if(params.testShape == "hex")
-    {
-      shapeSet = createShapeSet(createShape_Hex());
-    }
-    else if(params.testShape == "sphere")
-    {
-      shapeSet = createShapeSet(createShape_Sphere());
-    }
-    else if(params.testShape == "cyl")
-    {
-      shapeSet = createShapeSet(createShape_Cylinder());
-    }
-    else if(params.testShape == "cone")
-    {
-      shapeSet = createShapeSet(createShape_Cone());
-    }
-    else if(params.testShape == "vor")
-    {
-      shapeSet = createShapeSet(createShape_Vor());
-    }
-    else if(params.testShape == "plane")
-    {
-      shapeSet = createShapeSet(createShape_Plane());
-    }
-    else if(params.testShape == "all")
-    {
-      std::vector<axom::klee::Shape> shapesVec;
-      shapesVec.push_back(createShape_TetMesh(ds));
-      shapesVec.push_back(createShape_Tet());
-      shapesVec.push_back(createShape_Hex());
-      shapesVec.push_back(createShape_Sphere());
-      shapesVec.push_back(createShape_Vor());
-      shapesVec.push_back(createShape_Cylinder());
-      shapesVec.push_back(createShape_Cone());
-      shapeSet.setShapes(shapesVec);
-      shapeSet.setDimensions(axom::klee::Dimensions::Three);
-    }
-    break;
+    shapeSet = createShapeSet(createShape_TetMesh(ds));
+  }
+  else if(params.testShape == "tet")
+  {
+    shapeSet = createShapeSet(createShape_Tet());
+  }
+  else if(params.testShape == "hex")
+  {
+    shapeSet = createShapeSet(createShape_Hex());
+  }
+  else if(params.testShape == "sphere")
+  {
+    shapeSet = createShapeSet(createShape_Sphere());
+  }
+  else if(params.testShape == "cyl")
+  {
+    shapeSet = createShapeSet(createShape_Cylinder());
+  }
+  else if(params.testShape == "cone")
+  {
+    shapeSet = createShapeSet(createShape_Cone());
+  }
+  else if(params.testShape == "vor")
+  {
+    shapeSet = createShapeSet(createShape_Vor());
+  }
+  else if(params.testShape == "plane")
+  {
+    shapeSet = createShapeSet(createShape_Plane());
+  }
+  else if(params.testShape == "all")
+  {
+    std::vector<axom::klee::Shape> shapesVec;
+    shapesVec.push_back(createShape_TetMesh(ds));
+    shapesVec.push_back(createShape_Tet());
+    shapesVec.push_back(createShape_Hex());
+    shapesVec.push_back(createShape_Sphere());
+    shapesVec.push_back(createShape_Vor());
+    shapesVec.push_back(createShape_Cylinder());
+    shapesVec.push_back(createShape_Cone());
+    shapeSet.setShapes(shapesVec);
+    shapeSet.setDimensions(axom::klee::Dimensions::Three);
   }
 
   // Save the discrete shapes for viz and testing.
@@ -1526,13 +1518,6 @@ int main(int argc, char** argv)
       conduit::relay::io::blueprint::save_mesh(tmpNode, shapeFileName, "hdf5");
     }
   }
-
-  // Apply error checking
-#ifndef AXOM_USE_C2C
-  SLIC_ERROR_IF(shapeDim == klee::Dimensions::Two,
-                "Shaping with contour files requires an Axom configured with "
-                "the C2C library");
-#endif
 
 #if defined(AXOM_USE_MFEM)
   if(params.useMfem())
@@ -1917,7 +1902,9 @@ int main(int argc, char** argv)
 #endif
   }
 
+#if defined(AXOM_USE_MFEM)
   shapingDC.reset();
+#endif
   shaper.reset();
 
   //---------------------------------------------------------------------------
