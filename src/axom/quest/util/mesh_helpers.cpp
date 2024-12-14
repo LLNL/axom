@@ -204,7 +204,7 @@ void convert_blueprint_structured_explicit_to_unstructured(
   const std::string& topoName)
 {
   const std::string& coordsetName =
-    meshGrp->getView(axom::fmt::format("topologies/{}/coordset", topoName))
+    meshGrp->getView("topologies/" + topoName + "/coordset")
       ->getString();
 
   sidre::Group* coordsetGrp = nullptr;
@@ -215,8 +215,8 @@ void convert_blueprint_structured_explicit_to_unstructured(
      back to meshGrp memory space.
   */
   coordsetGrp = meshGrp->getGroup("coordsets")->getGroup(coordsetName);
-  int coordsetAllocId = axom::getAllocatorIDFromPointer(coordsetGrp->getView("values/x")->getVoidPtr());
-  MemorySpace memSpace = detail::getAllocatorSpace(coordsetAllocId);
+  int newDataAllocId = axom::getAllocatorIDFromPointer(coordsetGrp->getView("values/x")->getVoidPtr());
+  MemorySpace memSpace = detail::getAllocatorSpace(newDataAllocId);
   sidre::Group* stashGrp = nullptr;
   sidre::Group* stashedValuesGrp = nullptr;
   if(memSpace == MemorySpace::Device)
@@ -233,7 +233,7 @@ void convert_blueprint_structured_explicit_to_unstructured(
   conduit::Node curMesh;
   meshGrp->createNativeLayout(curMesh);
   const conduit::Node& curTopo =
-    curMesh.fetch_existing(axom::fmt::format("topologies/{}", topoName));
+    curMesh.fetch_existing("topologies/" + topoName);
   SLIC_ASSERT(
     conduit::blueprint::mesh::topology::structured::verify(curTopo, info));
 
@@ -247,13 +247,13 @@ void convert_blueprint_structured_explicit_to_unstructured(
   // Copy unstructured back into meshGrp.
   meshGrp->getGroup("topologies")->destroyGroup(topoName);
   auto* topoGrp = meshGrp->getGroup("topologies")->createGroup(topoName);
+  topoGrp->setDefaultAllocator(newDataAllocId);
   topoGrp->importConduitTree(newTopo);
   topoGrp->getView("coordset")->setString(coordsetName);
 
   meshGrp->getGroup("coordsets")->destroyGroup(coordsetName);
   coordsetGrp = meshGrp->getGroup("coordsets")->createGroup(coordsetName);
-  SLIC_ASSERT(coordsetGrp->getDefaultAllocatorID() ==
-              meshGrp->getDefaultAllocatorID());
+  coordsetGrp->setDefaultAllocator(newDataAllocId);
   coordsetGrp->importConduitTree(newCoords);
 
   const bool addExtraDataForMint = true;

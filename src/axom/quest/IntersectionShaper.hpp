@@ -30,7 +30,6 @@
   #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
   #include "axom/quest/interface/internal/QuestHelpers.hpp"
   #include "axom/fmt.hpp"
-  #include "axom/core/WhereMacro.hpp"
 
   #ifdef AXOM_USE_MFEM
     #include "mfem.hpp"
@@ -355,11 +354,7 @@ public:
                      const std::string& topo = "")
     : Shaper(shapeSet, bpNode, topo)
     , m_free_mat_name("free")
-  {
-    // We cannot always create Conduit Nodes, so catch missing nodes early if possible.
-    SLIC_ERROR_IF(!bpNode->has_child("fields"),
-                  "Input blueprint mesh lacks the 'fields' Node.");
-  }
+  { }
   #endif
 
   //@{
@@ -2357,20 +2352,19 @@ public:
       topoNode.fetch_existing("coordset").as_string();
 
     // Assume unstructured and hexahedral
-    SLIC_ASSERT(topoNode["type"].as_string() == "unstructured");
-    SLIC_ASSERT(topoNode["elements/shape"].as_string() == "hex");
+    SLIC_ERROR_IF(topoNode["type"].as_string() != "unstructured",
+                  "topology type must be 'unstructured'");
+    SLIC_ERROR_IF(topoNode["elements/shape"].as_string() != "hex",
+                  "element shape must be 'hex'");
 
     const auto& connNode = topoNode["elements/connectivity"];
-    SLIC_ASSERT_MSG(connNode.dtype().is_int32(),
-                    "IntersectionShaper internal error: missing logic to "
-                    "handle multiple types.");
+    SLIC_ERROR_IF(!connNode.dtype().is_int32(),
+                  "IntersectionShaper internal error: missing logic to "
+                  "handle multiple types.");
     const std::int32_t* connPtr = connNode.as_int32_ptr();
     axom::ArrayView<const std::int32_t, 2> conn(connPtr,
                                                 m_cellCount,
                                                 NUM_VERTS_PER_HEX);
-    SLIC_ASSERT_MSG(
-      XS::usesAllocId(conn.getAllocatorID()),
-      std::string(XS::name()) + " cannot use the connectivity allocator id");
 
     const conduit::Node& coordNode = m_bpNodeInt["coordsets"][coordsetName];
     const conduit::Node& coordValues = coordNode.fetch_existing("values");
@@ -2388,6 +2382,15 @@ public:
       axom::ArrayView<const double>(coordValues["z"].as_double_ptr(),
                                     {vertexCount},
                                     stride)};
+
+    SLIC_ERROR_IF(
+      !XS::usesAllocId(axom::getAllocatorIDFromPointer(conn.data())),
+      std::string(XS::name()) + axom::fmt::format(" execution space cannot use the connectivity allocator id {}",
+                                                  axom::getAllocatorIDFromPointer(conn.data())));
+    SLIC_ERROR_IF(
+      !XS::usesAllocId(axom::getAllocatorIDFromPointer(coordArrays[0].data())),
+      std::string(XS::name()) + axom::fmt::format(" execution space cannot use the coordset allocator id {}",
+                                                  axom::getAllocatorIDFromPointer(coordArrays[0].data())));
 
     vertCoords =
       axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
