@@ -36,6 +36,8 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
  *  that are sent. Returns null if no messages are sent.
  *
  * \param [in] comm The MPI Communicator.
+ * \param [in] tag The MPI tag to use for communication.  When set to zero, 
+ *  MPI communication uses default LJ_Tag. 
  *****************************************************************************
  */
 const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag = 0);
