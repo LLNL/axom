@@ -55,7 +55,7 @@ namespace detail
  * bilinear, where we directly find their intersections. Otherwise,
  * check for intersections recursively after bisecting the patch in each direction.
  *
- * \note This detial function returns all found intersections within EPS of parameter space,
+ * \note This detail function returns all found intersections within EPS of parameter space,
  *  including identical intersections reported by each subdivision. 
  * The calling `intersect` routine should remove duplicates and enforce half-open behavior. 
  * 
