@@ -10,14 +10,14 @@ Field Concepts
 Fields are data that are defined over a mesh, typically with one or more values
 per cell. Fields can be scalar, indicating 1-component per cell - or they can
 contain multiple components as with vector data (2+ components per cell). This
-section talks about important MultiMat field concepts that determine where fields
+section discusses important MultiMat field concepts that determine where fields
 live on the mesh and how their data are organized in memory.
 
 #######################
 Field Mapping
 #######################
 
-MultiMat is associates materials with cells in a mesh, possibly subdividing cells.
+MultiMat associates materials with cells in a mesh, possibly subdividing cells.
 MultiMat includes the concept of field *mapping*, which is where on the mesh the
 field data live. Fields can be defined over the cells, which is how most simulations
 think about cell-centered fields. With MultiMat, fields can also be defined over
