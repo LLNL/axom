@@ -354,11 +354,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
 
   const T EPS = numerics::floating_point_limits<T>::epsilon();
 
-  return detail::intersect_ray(Ray<T, DIM>(L.origin(), L.direction()),
-                               bb,
-                               tmin,
-                               tmax,
-                               EPS);
+  return detail::intersect_ray(R, bb, tmin, tmax, EPS);
 }
 
 /*!
@@ -714,7 +710,8 @@ bool intersect(const Ray<T, 2>& r,
     for(int j = 0; j < rc.size(); ++j)
     {
       rp.push_back(rc[j]);
-      np.push_back(knot_vals[i] + nc[j] * (knot_vals[i + 1] - knot_vals[i]));
+      np.push_back(axom::utilities::lerp(knot_vals[i], knot_vals[i + 1], nc[j]));
+      // knot_vals[i] + nc[j] * (knot_vals[i + 1] - knot_vals[i]));
     }
   }
 
@@ -966,10 +963,10 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
       for(int k = 0; k < tcc.size(); ++k)
       {
         tc.push_back(tcc[k]);
-        uc.push_back(knot_vals_u[i] +
-                     ucc[k] * (knot_vals_u[i + 1] - knot_vals_u[i]));
-        vc.push_back(knot_vals_v[j] +
-                     vcc[k] * (knot_vals_v[j + 1] - knot_vals_v[j]));
+        uc.push_back(
+          axom::utilities::lerp(knot_vals_u[i], knot_vals_u[i + 1], ucc[k]));
+        vc.push_back(
+          axom::utilities::lerp(knot_vals_v[j], knot_vals_v[j + 1], vcc[k]));
       }
     }
   }

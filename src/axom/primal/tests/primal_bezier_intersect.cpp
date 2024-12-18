@@ -297,7 +297,7 @@ TEST(primal_bezier_inter, no_intersections_bezier)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_bezier_inter, cubic_quadratic_bezier)
+TEST(primal_bezier_inter, cubic_bezier)
 {
   static const int DIM = 2;
   using CoordType = double;
@@ -754,7 +754,7 @@ TEST(primal_bezier_inter, ray_linear_bezier_interp_params)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_bezier_inter, ray_cubic_quadratic_bezier)
+TEST(primal_bezier_inter, ray_cubic_bezier)
 {
   static const int DIM = 2;
   using CoordType = double;
