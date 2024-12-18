@@ -123,7 +123,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, bilinear_intersect)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
@@ -157,12 +157,6 @@ TEST(primal_surface_inter, bilinear_intersect)
 
   // Ray with no intersections
   ray_direction = VectorType({1.0, -1.0, 0.0});
-  ray = RayType(ray_origin, ray_direction);
-  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
-
-  // Ray with no intersections, but in a way that is difficult for
-  //  the standard GARP implementation
-  ray_direction = VectorType({1.0, 0.0, 0.0});
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
 
@@ -209,7 +203,7 @@ TEST(primal_surface_inter, bilinear_intersect)
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, bilinear_boundary_treatment)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
@@ -356,7 +350,7 @@ TEST(primal_surface_inter, bilinear_boundary_treatment)
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, difficult_garp_case)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
@@ -411,6 +405,11 @@ TEST(primal_surface_inter, difficult_garp_case)
   ray = RayType(ray_origin, ray_direction);
   checkIntersections(ray, bilinear_patch, {2.0}, {0.5}, {0.5}, eps, eps_test);
 
+  ray_origin = PointType({0.0, 0.0, 1.75});
+  ray_direction = VectorType({1.0, 0.0, 0.0});
+  ray = RayType(ray_origin, ray_direction);
+  checkIntersections(ray, bilinear_patch, {}, {}, {}, eps, eps_test);
+
   // Give patch a degeneracy at the point of intersection
   //  at which there are infinitely many parameters of intersection
   bilinear_patch(1, 1) = PointType({-1.0, -1.0, 2.0});
@@ -437,7 +436,7 @@ TEST(primal_surface_inter, difficult_garp_case)
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, flat_bilinear_intersect)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
@@ -503,7 +502,7 @@ TEST(primal_surface_inter, flat_bilinear_intersect)
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, flat_selfintersect_bilinear_intersect)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
@@ -566,7 +565,7 @@ TEST(primal_surface_inter, flat_selfintersect_bilinear_intersect)
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, bezier_surface_intersect)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
@@ -703,7 +702,7 @@ TEST(primal_surface_inter, bezier_surface_intersect)
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, NURBS_surface_intersect)
 {
-  static const int DIM = 3;
+  constexpr int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
