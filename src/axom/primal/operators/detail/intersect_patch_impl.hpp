@@ -105,7 +105,7 @@ bool intersect_line_patch(const Line<T, 3> &line,
   //  Need to expand the box a bit so that intersections near subdivision boundaries
   //  are accurately recorded
   Point<T, 3> ip;
-  if(!intersect(line, patch.boundingBox().scale(1.5), ip))
+  if(!intersect(line, patch.boundingBox().expand(sq_tol), ip))
   {
     return false;
   }
@@ -116,23 +116,18 @@ bool intersect_line_patch(const Line<T, 3> &line,
     // Store candidate intersection points
     axom::Array<T> tc, uc, vc;
 
-    foundIntersection =
-      detail::intersect_line_bilinear_patch(line,
-                                            patch(0, 0),
-                                            patch(order_u, 0),
-                                            patch(order_u, order_v),
-                                            patch(0, order_v),
-                                            tc,
-                                            uc,
-                                            vc,
-                                            EPS,
-                                            isRay);
+    detail::intersect_line_bilinear_patch(line,
+                                          patch(0, 0),
+                                          patch(order_u, 0),
+                                          patch(order_u, order_v),
+                                          patch(0, order_v),
+                                          tc,
+                                          uc,
+                                          vc,
+                                          EPS,
+                                          isRay);
 
-    if(!foundIntersection)
-    {
-      return false;
-    }
-
+    // Check intersections based on subdivision-scaled tolerances
     foundIntersection = false;
     for(int i = 0; i < tc.size(); ++i)
     {

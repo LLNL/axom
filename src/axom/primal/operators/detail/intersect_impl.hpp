@@ -1689,21 +1689,25 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
 }
 
 /*! \brief Determines if a line intersects a bilinear patch.
+ * \param [in] line The line to intersect with the bilinear patch.
  * \param [in] p0 The first corner of the bilinear patch.
  * \param [in] p1 The second corner in ccw order.
  * \param [in] p2 The third corner.
  * \param [in] p3 The fourth corner.
- * \param [in] line The line to intersect with the bilinear patch.
- * \param [out] u The u parameter(s) of the intersection point.
- * \param [out] v The v parameter(s) of the intersection point.
- * \param [out] t The t parameter(s) of the intersection point.
+ * \param [out] t The t parameter(s) of the intersection point wrt the ray.
+ * \param [out] u The u parameter(s) of the intersection point wrt the patch.
+ * \param [out] v The v parameter(s) of the intersection point wrt the patch.
+ * \param [in] EPS The parameter space tolerance for intersection.
  * \param [in] isRay If true, only return intersections with t >= 0.
  *
  * Implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
  *
- * \note A bilinear patch is parameterized in [0, 1) x [0, 1) 
+ * \note A bilinear patch is parameterized in [0 - EPS, 1 + EPS]^2 
  * 
- * \warning Always returns false if the line is coplanar to a planar polygon
+ * \note There can be either 0, 1, 2 discrete intersections, or a continuous segment
+ *  of intersections, in which case the method returns the ceneter of this segment as one point.
+ * 
+ * \note Always returns false if the line is coplanar to a planar polygon
  * 
  * \return true iff the line intersects the bilinear patch, otherwise false.
  */
@@ -1719,16 +1723,13 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
                                           double EPS = 1e-8,
                                           bool isRay = false)
 {
-  Vector3 q00(p00), q10(p10), q11(p11), q01(p01);
+  Vector3 e10(p00, p10);
+  Vector3 e11(p10, p11);
+  Vector3 e00(p00, p01);
 
-  Vector3 e10 = q10 - q00;
-  Vector3 e11 = q11 - q10;
-  Vector3 e00 = q01 - q00;
+  Vector3 qn = Vector3::cross_product(e10, Vector3(p11, p01));
 
-  Vector3 qn = Vector3::cross_product(e10, q01 - q11);
-
-  q00.array() -= line.origin().array();
-  q10.array() -= line.origin().array();
+  Vector3 q00(line.origin(), p00), q10(line.origin(), p10);
 
   // Solve a quadratic to find the parameters u0 of the B(u0, v) isocurves
   //  that are closest to the line
@@ -1774,7 +1775,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     // Find the point on the isocurve that is closest to the ray
     for(auto u0 : {u1, u2})
     {
-      if(u0 < -EPS || u0 >= 1.0 + EPS) continue;
+      if(u0 < -EPS || u0 > 1.0 + EPS) continue;
 
       Vector3 pa = (1 - u0) * q00 + u0 * q10;
       Vector3 pb = (1 - u0) * e00 + u0 * e11;  // actually stores pb - pa
@@ -1854,9 +1855,9 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
   else
   {
     // Switch to finding B(u, v0) isocurves instead
-    Vector3 e01 = q11 - q01;
+    Vector3 e01(p01, p11);
     Vector3 qm = Vector3::cross_product(e00, -e11);
-    q01.array() -= line.origin().array();
+    Vector3 q01(line.origin(), p01);
 
     // Find the analogous coefficients for B(u, v0) isocurves
     double av = Vector3::scalar_triple_product(q00, line.direction(), e10);
@@ -1905,7 +1906,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     // Find the point on the isocurve that is closest to the ray
     for(auto v0 : {v1, v2})
     {
-      if(v0 < -EPS || v0 >= 1.0 + EPS) continue;
+      if(v0 < -EPS || v0 > 1.0 + EPS) continue;
 
       Vector3 pa = (1.0 - v0) * q00 + v0 * q01;
       Vector3 pb = (1.0 - v0) * e10 + v0 * e01;  // actually stores pb - pa
