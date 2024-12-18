@@ -51,46 +51,13 @@
 struct PatchData
 {
   int patchIndex {-1};
-  bool isPeriodic_u {false};
-  bool isPeriodic_v {false};
+  bool wasOriginallyPeriodic_u {false};
+  bool wasOriginallyPeriodic_v {false};
   axom::primal::NURBSPatch<double, 3> nurbsPatch;
   axom::primal::BoundingBox<double, 2> parametricBBox;
   axom::primal::BoundingBox<double, 3> physicalBBox;
   axom::Array<axom::primal::NURBSCurve<double, 2>> trimmingCurves;
 };
-
-// namespace axom
-// {
-// namespace fmt
-// {
-//   template <typename T, int DIM>
-//   struct formatter<axom::Array<T, DIM>>
-//   {
-//     template <typename ParseContext>
-//     constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-
-//     template <typename FormatContext>
-//     auto format(const axom::Array<T, DIM>& arr, FormatContext& ctx)
-//     {
-//       auto out = ctx.out();
-//       axom::fmt::format_to(out, "[");
-//       for(int i = 0; i < arr.shape()[0]; ++i)
-//       {
-//         if(i > 0) axom::fmt::format_to(out, ", ");
-//         axom::fmt::format_to(out, "[");
-//         for(int j = 0; j < arr.shape()[1]; ++j)
-//         {
-//           if(j > 0) axom::fmt::format_to(out, ", ");
-//           axom::fmt::format_to(out, "{}", arr(i, j));
-//         }
-//         axom::fmt::format_to(out, "]");
-//       }
-//       axom::fmt::format_to(out, "]");
-//       return out;
-//     }
-//   };
-// } // namespace fmt
-// } // namespace axom
 
 class StepFileProcessor
 {
@@ -138,80 +105,117 @@ private:
   class PatchProcessor
   {
   public:
-    PatchProcessor(const Handle(Geom_BSplineSurface) & surface)
+    PatchProcessor() = delete;
+
+    PatchProcessor(const Handle(Geom_BSplineSurface) & surface,
+                   bool verbose = false)
       : m_surface(surface)
+      , m_verbose(verbose)
     {
-      convertPeriodicToClamped();
-      extractKnotVectors();
-      extractBoundingBoxes();
+      m_inputSurfaceWasPeriodic_u = m_surface->IsUPeriodic();
+      m_inputSurfaceWasPeriodic_v = m_surface->IsVPeriodic();
+
+      ensureClamped();
     }
 
-    NPatch getPatch() const { return m_patch; }
+    /// Returns a representation of the surface as an axom::primal::NURBSPatch
+    NPatch nurbsPatch() const
+    {
+      // Check if the surface is periodic in u or v
+      const bool isUPeriodic = m_surface->IsUPeriodic();
+      const bool isVPeriodic = m_surface->IsVPeriodic();
+      SLIC_ERROR_IF(isUPeriodic || isVPeriodic,
+                    "Axom's NURBSPatch only supports non-periodic patches");
 
-    const BBox2D& getParametricBBox() const { return m_parametricBBox; }
-    const BBox3D& getPhysicalBBox() const { return m_physicalBBox; }
+      // Extract weights, if the surface is rational
+      const bool isRational =
+        m_surface->IsURational() || m_surface->IsVRational();
 
-    void convertPeriodicToClamped()
+      // Create the NURBSPatch from control points, weights, and knots
+      return isRational
+        ? NPatch(extractControlPoints(),
+                 isRational ? extractWeights() : axom::Array<double, 2>(),
+                 extractCombinedKnots_u(),
+                 extractCombinedKnots_v())
+        : NPatch(extractControlPoints(),
+                 extractCombinedKnots_u(),
+                 extractCombinedKnots_v());
+    }
+
+    bool patchWasOriginallyPeriodic_u() const
+    {
+      return m_inputSurfaceWasPeriodic_u;
+    }
+    bool patchWasOriginallyPeriodic_v() const
+    {
+      return m_inputSurfaceWasPeriodic_v;
+    }
+
+    /// evaluates the surface at parametric coordinates (u,v)
+    axom::primal::Point<double, 3> evaluateSurface(double u, double v) const
+    {
+      gp_Pnt point;
+      m_surface->D0(u, v, point);
+      return PointType3D {point.X(), point.Y(), point.Z()};
+    }
+
+    // converts the surface from periodic knots to clamped knots, when necessary
+    void ensureClamped()
     {
       const bool isUPeriodic = m_surface->IsUPeriodic();
       const bool isVPeriodic = m_surface->IsVPeriodic();
+      if(!isUPeriodic && !isVPeriodic)
+      {
+        return;  // nothing to do, return
+      }
 
       const bool isRational =
         m_surface->IsURational() || m_surface->IsVRational();
 
-      const bool extra_logging = true;
-      ;
-
       auto printCornerValues = [this]() {
-        {
-          const auto knots_u = this->uknotValuesAsAxomArray();
-          const auto knots_v = this->vknotValuesAsAxomArray();
+        const auto knots_u = this->extractKnotValues_u();
+        const auto knots_v = this->extractKnotValues_v();
 
-          SLIC_INFO(axom::fmt::format("  --> u knots: {}", knots_u));
-          SLIC_INFO(axom::fmt::format("  --> u mults: {}",
-                                      this->uknotMultsAsAxomArray()));
-          SLIC_INFO(axom::fmt::format("  --> v knots: {}", knots_v));
-          SLIC_INFO(axom::fmt::format("  --> v mults: {}",
-                                      this->vknotMultsAsAxomArray()));
+        SLIC_INFO(axom::fmt::format("  --> u knots: {}", knots_u));
+        SLIC_INFO(axom::fmt::format("  --> u mults: {}",
+                                    this->extractKnotMultiplicities_u()));
+        SLIC_INFO(axom::fmt::format("  --> v knots: {}", knots_v));
+        SLIC_INFO(axom::fmt::format("  --> v mults: {}",
+                                    this->extractKnotMultiplicities_v()));
 
-          // Evaluate the modified surface at its four extreme u and v values
-          SLIC_INFO(axom::fmt::format(
-            "  --> Original surface evaluated at ({} {}): {}",
-            knots_u.front(),
-            knots_v.front(),
-            evaluateSurface(knots_u.front(), knots_v.front())));
-          SLIC_INFO(axom::fmt::format(
-            "  --> Original surface evaluated at ({} {}): {}",
-            knots_u.front(),
-            knots_v.back(),
-            evaluateSurface(knots_u.front(), knots_v.back())));
-          SLIC_INFO(axom::fmt::format(
-            "  --> Original surface evaluated at ({} {}): {}",
-            knots_u.back(),
-            knots_u.front(),
-            evaluateSurface(knots_u.back(), knots_v.front())));
-          SLIC_INFO(
-            axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
-                              knots_u.back(),
-                              knots_v.back(),
-                              evaluateSurface(knots_u.back(), knots_v.back())));
-        }
+        // Evaluate the modified surface at its four extreme u and v values
+        SLIC_INFO(
+          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
+                            knots_u.front(),
+                            knots_v.front(),
+                            evaluateSurface(knots_u.front(), knots_v.front())));
+        SLIC_INFO(
+          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
+                            knots_u.front(),
+                            knots_v.back(),
+                            evaluateSurface(knots_u.front(), knots_v.back())));
+        SLIC_INFO(
+          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
+                            knots_u.back(),
+                            knots_u.front(),
+                            evaluateSurface(knots_u.back(), knots_v.front())));
+        SLIC_INFO(
+          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
+                            knots_u.back(),
+                            knots_v.back(),
+                            evaluateSurface(knots_u.back(), knots_v.back())));
+
         axom::slic::flushStreams();
       };
 
-      if(!isUPeriodic && !isVPeriodic)
-      {
-        return;
-      }
-
       const int uDegree = m_surface->UDegree();
       const int vDegree = m_surface->VDegree();
-      SLIC_INFO(axom::fmt::format("  --> U degree: {}", uDegree));
-      SLIC_INFO(axom::fmt::format("  --> V degree: {}", vDegree));
+      SLIC_INFO_IF(m_verbose, axom::fmt::format("  --> U degree: {}", uDegree));
+      SLIC_INFO_IF(m_verbose, axom::fmt::format("  --> V degree: {}", vDegree));
 
       if(isUPeriodic)
       {
-        if(extra_logging)
+        if(m_verbose)
         {
           printCornerValues();
         }
@@ -220,11 +224,11 @@ private:
 
         // Modify knots and mults to ensure proper clamping
         // We remove the first and last knot and increase the multiplicity of the second and second-to-last knots
-        auto mod_knots_u = uknotValuesAsAxomArray();
-        auto mod_mults_u = uknotMultsAsAxomArray();
-
+        auto mod_knots_u = extractKnotValues_u();
+        auto mod_mults_u = extractKnotMultiplicities_u();
         SLIC_ASSERT(mod_knots_u.size() >= 4);
         SLIC_ASSERT(mod_mults_u.size() == mod_knots_u.size());
+
         const int last_idx = mod_knots_u.size() - 1;
         mod_mults_u[1] += mod_mults_u[0];
         mod_mults_u[last_idx - 1] += mod_mults_u[last_idx];
@@ -241,8 +245,8 @@ private:
             isRational ? extractWeights() : axom::Array<double, 2>(),
             mod_knots_u,
             mod_mults_u,
-            vknotValuesAsAxomArray(),
-            vknotMultsAsAxomArray(),
+            extractKnotValues_v(),
+            extractKnotMultiplicities_v(),
             false,
             isVPeriodic,
             uDegree,
@@ -254,7 +258,7 @@ private:
           throw;
         }
 
-        if(extra_logging)
+        if(m_verbose)
         {
           printCornerValues();
         }
@@ -262,7 +266,7 @@ private:
 
       if(isVPeriodic)
       {
-        if(extra_logging)
+        if(m_verbose)
         {
           printCornerValues();
         }
@@ -271,11 +275,11 @@ private:
 
         // Modify knots and mults to ensure proper clamping
         // We remove the first and last knot and increase the multiplicity of the second and second-to-last knots
-        auto mod_knots_v = vknotValuesAsAxomArray();
-        auto mod_mults_v = vknotMultsAsAxomArray();
-
+        auto mod_knots_v = extractKnotValues_v();
+        auto mod_mults_v = extractKnotMultiplicities_v();
         SLIC_ASSERT(mod_knots_v.size() >= 4);
         SLIC_ASSERT(mod_mults_v.size() == mod_knots_v.size());
+
         const int last_idx = mod_knots_v.size() - 1;
         mod_mults_v[1] += mod_mults_v[0];
         mod_mults_v[last_idx - 1] += mod_mults_v[last_idx];
@@ -290,8 +294,8 @@ private:
           m_surface = createBSplineSurfaceFromAxomArrays(
             extractControlPoints(),
             isRational ? extractWeights() : axom::Array<double, 2>(),
-            uknotValuesAsAxomArray(),
-            uknotMultsAsAxomArray(),
+            extractKnotValues_u(),
+            extractKnotMultiplicities_u(),
             mod_knots_v,
             mod_mults_v,
             false,
@@ -305,14 +309,47 @@ private:
           throw;
         }
 
-        if(extra_logging)
+        if(m_verbose)
         {
           printCornerValues();
         }
       }
     }
 
+    void printSurfaceStats() const
+    {
+      const bool isUPeriodic = m_surface->IsUPeriodic();
+      const bool isVPeriodic = m_surface->IsVPeriodic();
+
+      SLIC_INFO(axom::fmt::format("Patch is periodic in u: {}", isUPeriodic));
+      SLIC_INFO(axom::fmt::format("Patch is periodic in v: {}", isVPeriodic));
+
+      const auto patch_control_points = extractControlPoints();
+      SLIC_INFO(axom::fmt::format("Patch control points ({} x {}): {}",
+                                  patch_control_points.shape()[0],
+                                  patch_control_points.shape()[1],
+                                  patch_control_points));
+
+      const bool isRational =
+        m_surface->IsURational() || m_surface->IsVRational();
+
+      const auto patch_weights =
+        isRational ? extractWeights() : axom::Array<double, 2>();
+      if(isRational)
+      {
+        SLIC_INFO(axom::fmt::format("Patch weights ({} x {}): {}",
+                                    patch_weights.shape()[0],
+                                    patch_weights.shape()[1],
+                                    patch_weights));
+      }
+      else
+      {
+        SLIC_INFO("Patch is polynomial (uniform weights)");
+      }
+    }
+
   private:
+    /// generates a new BSpline surface from data in axom::Arrays
     Handle(Geom_BSplineSurface) createBSplineSurfaceFromAxomArrays(
       const axom::Array<PointType3D, 2>& controlPoints,
       const axom::Array<double, 2>& weights,  // will be empty if surface is non-rational
@@ -359,7 +396,7 @@ private:
 
       // Create and return the BSpline surface
       Handle(Geom_BSplineSurface) bsplineSurface;
-      if(weights.size() > 0)
+      if(!weights.empty())
       {
         TColStd_Array2OfReal occWeights(1,
                                         controlPoints.shape()[0],
@@ -399,79 +436,8 @@ private:
       return bsplineSurface;
     }
 
-    axom::primal::Point<double, 3> evaluateSurface(double u, double v) const
-    {
-      gp_Pnt point;
-      m_surface->D0(u, v, point);
-      return PointType3D {point.X(), point.Y(), point.Z()};
-    }
-
-    axom::Array<double> uknotValuesAsAxomArray() const
-    {
-      const int num_knots = m_surface->NbUKnots();
-      axom::Array<double> uKnotsArray(0, num_knots);
-
-      TColStd_Array1OfReal uKnots(1, num_knots);
-      m_surface->UKnots(uKnots);
-
-      for(int i = uKnots.Lower(); i <= uKnots.Upper(); ++i)
-      {
-        uKnotsArray.push_back(uKnots(i));
-      }
-
-      return uKnotsArray;
-    }
-
-    axom::Array<int> uknotMultsAsAxomArray() const
-    {
-      const int num_knots = m_surface->NbUKnots();
-      axom::Array<int> uMultsArray(0, num_knots);
-
-      TColStd_Array1OfInteger uMults(1, num_knots);
-      m_surface->UMultiplicities(uMults);
-
-      for(int i = uMults.Lower(); i <= uMults.Upper(); ++i)
-      {
-        uMultsArray.push_back(uMults(i));
-      }
-
-      return uMultsArray;
-    }
-
-    axom::Array<double> vknotValuesAsAxomArray() const
-    {
-      const int num_knots = m_surface->NbVKnots();
-      axom::Array<double> vKnotsArray(0, num_knots);
-
-      TColStd_Array1OfReal vKnots(1, num_knots);
-      m_surface->VKnots(vKnots);
-
-      for(int i = vKnots.Lower(); i <= vKnots.Upper(); ++i)
-      {
-        vKnotsArray.push_back(vKnots(i));
-      }
-
-      return vKnotsArray;
-    }
-
-    axom::Array<int> vknotMultsAsAxomArray() const
-    {
-      const int num_knots = m_surface->NbVKnots();
-      axom::Array<int> vMultsArray(0, num_knots);
-
-      TColStd_Array1OfInteger vMults(1, num_knots);
-      m_surface->VMultiplicities(vMults);
-
-      for(int i = vMults.Lower(); i <= vMults.Upper(); ++i)
-      {
-        vMultsArray.push_back(vMults(i));
-      }
-
-      return vMultsArray;
-    }
-
-    // extracts control points (poles) from m_face as 2D axom::Array
-    axom::Array<PointType3D, 2> extractControlPoints()
+    /// extracts control points (poles) from the patch as a 2D axom::Array
+    axom::Array<PointType3D, 2> extractControlPoints() const
     {
       axom::Array<PointType3D, 2> patch_control_points;
 
@@ -494,7 +460,9 @@ private:
       return patch_control_points;
     }
 
-    axom::Array<double, 2> extractWeights()
+    /// extracts weights from the patch as a 2D axom::Array,
+    /// each weight corresponds to a control point
+    axom::Array<double, 2> extractWeights() const
     {
       axom::Array<double, 2> patch_weights;
 
@@ -518,193 +486,118 @@ private:
       return patch_weights;
     }
 
-    axom::Array<double> extractUKnots()
+    /// extracts the u knot vector from the patch, accounting for multiplicities
+    axom::Array<double> extractCombinedKnots_u() const
     {
-      axom::Array<double> patch_u_knots;
+      const auto vals = extractKnotValues_u();
+      const auto mults = extractKnotMultiplicities_u();
+      const int total_knots = std::accumulate(mults.begin(), mults.end(), 0);
 
-      TColStd_Array1OfReal uKnots(1, m_surface->NbUKnots());
-      TColStd_Array1OfInteger uMults(1, m_surface->NbUKnots());
+      axom::Array<double> knots_u(0, total_knots);
+      for(int i = 0; i < vals.size(); ++i)
+      {
+        knots_u.insert(knots_u.end(), mults[i], vals[i]);
+      }
+      SLIC_ASSERT(knots_u.size() == total_knots);
+
+      return knots_u;
+    }
+
+    /// extracts the v knot vector from the patch, accounting for multiplicities
+    axom::Array<double> extractCombinedKnots_v() const
+    {
+      const auto vals = extractKnotValues_v();
+      const auto mults = extractKnotMultiplicities_v();
+      const int total_knots = std::accumulate(mults.begin(), mults.end(), 0);
+
+      axom::Array<double> knots_v(0, total_knots);
+      for(int i = 0; i < vals.size(); ++i)
+      {
+        knots_v.insert(knots_v.end(), mults[i], vals[i]);
+      }
+      SLIC_ASSERT(knots_v.size() == total_knots);
+
+      return knots_v;
+    }
+
+    /// converts u knot values to axom Array w/o accounting for multiplicity
+    /// /sa extractKnotMultiplicities_u
+    axom::Array<double> extractKnotValues_u() const
+    {
+      const int num_knots = m_surface->NbUKnots();
+      axom::Array<double> uKnotsArray(0, num_knots);
+
+      TColStd_Array1OfReal uKnots(1, num_knots);
       m_surface->UKnots(uKnots);
+
+      for(int i = uKnots.Lower(); i <= uKnots.Upper(); ++i)
+      {
+        uKnotsArray.push_back(uKnots(i));
+      }
+
+      return uKnotsArray;
+    }
+
+    /// converts u knot multiplicities to axom Array
+    /// /sa extractKnotValues_u
+    axom::Array<int> extractKnotMultiplicities_u() const
+    {
+      const int num_knots = m_surface->NbUKnots();
+      axom::Array<int> uMultsArray(0, num_knots);
+
+      TColStd_Array1OfInteger uMults(1, num_knots);
       m_surface->UMultiplicities(uMults);
 
-      // Debugging code -- DELETE when no longer needed
+      for(int i = uMults.Lower(); i <= uMults.Upper(); ++i)
       {
-        axom::Array<double> local_u_knots, local_u_mults;
-
-        local_u_knots.resize(uKnots.Length());
-        for(int i = 1; i <= uKnots.Length(); ++i)
-        {
-          local_u_knots[i - 1] = uKnots(i);
-        }
-        local_u_mults.resize(uMults.Length());
-        for(int i = 1; i <= uMults.Length(); ++i)
-        {
-          local_u_mults[i - 1] = uMults(i);
-        }
-
-        SLIC_INFO(axom::fmt::format(" -- Local u knots: {}", local_u_knots));
-        SLIC_INFO(
-          axom::fmt::format(" -- Local u multiplicities: {}", local_u_mults));
-      }
-      // END Debugging code
-
-      for(int i = 1; i <= uKnots.Length(); ++i)
-      {
-        for(int j = 0; j < uMults(i); ++j)
-        {
-          patch_u_knots.push_back(uKnots(i));
-        }
+        uMultsArray.push_back(uMults(i));
       }
 
-      return patch_u_knots;
+      return uMultsArray;
     }
 
-    axom::Array<double> extractVKnots()
+    /// converts v knot values to axom Array w/o accounting for multiplicity
+    /// /sa extractKnotMultiplicities_v
+    axom::Array<double> extractKnotValues_v() const
     {
-      axom::Array<double> patch_v_knots;
+      const int num_knots = m_surface->NbVKnots();
+      axom::Array<double> vKnotsArray(0, num_knots);
 
-      TColStd_Array1OfReal vKnots(1, m_surface->NbVKnots());
-      TColStd_Array1OfInteger vMults(1, m_surface->NbVKnots());
+      TColStd_Array1OfReal vKnots(1, num_knots);
       m_surface->VKnots(vKnots);
+
+      for(int i = vKnots.Lower(); i <= vKnots.Upper(); ++i)
+      {
+        vKnotsArray.push_back(vKnots(i));
+      }
+
+      return vKnotsArray;
+    }
+
+    /// converts v knot multiplicities to axom Array
+    /// /sa extractKnotValues_v
+    axom::Array<int> extractKnotMultiplicities_v() const
+    {
+      const int num_knots = m_surface->NbVKnots();
+      axom::Array<int> vMultsArray(0, num_knots);
+
+      TColStd_Array1OfInteger vMults(1, num_knots);
       m_surface->VMultiplicities(vMults);
 
-      // Debugging code -- DELETE when no longer needed
+      for(int i = vMults.Lower(); i <= vMults.Upper(); ++i)
       {
-        axom::Array<double> local_v_knots, local_v_mults;
-
-        local_v_knots.resize(vKnots.Length());
-        for(int i = 1; i <= vKnots.Length(); ++i)
-        {
-          local_v_knots[i - 1] = vKnots(i);
-        }
-        local_v_mults.resize(vMults.Length());
-        for(int i = 1; i <= vMults.Length(); ++i)
-        {
-          local_v_mults[i - 1] = vMults(i);
-        }
-        SLIC_INFO(axom::fmt::format(" -- Local v knots: {}", local_v_knots));
-        SLIC_INFO(
-          axom::fmt::format(" -- Local v multiplicities: {}", local_v_mults));
-      }
-      // END Debugging code
-
-      for(int i = 1; i <= vKnots.Length(); ++i)
-      {
-        for(int j = 0; j < vMults(i); ++j)
-        {
-          patch_v_knots.push_back(vKnots(i));
-        }
+        vMultsArray.push_back(vMults(i));
       }
 
-      return patch_v_knots;
-    }
-
-    void extractKnotVectors()
-    {
-      // Extract u- and v- orders
-      SLIC_INFO(axom::fmt::format("---"));
-      SLIC_INFO(axom::fmt::format("Patch u deg: {}", m_surface->UDegree()));
-      SLIC_INFO(axom::fmt::format("Patch v deg: {}", m_surface->VDegree()));
-
-      // Check if the surface is periodic in u or v
-      // WARNING:  Code does not currently periodic patches
-      const bool isUPeriodic = m_surface->IsUPeriodic();
-      const bool isVPeriodic = m_surface->IsVPeriodic();
-      SLIC_INFO(axom::fmt::format("Patch is periodic in u: {}", isUPeriodic));
-      SLIC_INFO(axom::fmt::format("Patch is periodic in v: {}", isVPeriodic));
-
-      // Extract array of control points
-      auto patch_control_points = extractControlPoints();
-
-      SLIC_INFO(axom::fmt::format("Patch control points ({} x {}): {}",
-                                  patch_control_points.shape()[0],
-                                  patch_control_points.shape()[1],
-                                  patch_control_points));
-
-      // Extract weights, if the surface is rational
-      axom::Array<double, 2> patch_weights;
-      const bool isRational =
-        m_surface->IsURational() || m_surface->IsVRational();
-      if(isRational)
-      {
-        patch_weights = extractWeights();
-        SLIC_INFO(axom::fmt::format("Patch weights ({} x {}): {}",
-                                    patch_weights.shape()[0],
-                                    patch_weights.shape()[1],
-                                    patch_weights));
-      }
-
-      // extract u- and v- knots
-      auto patch_u_knots = extractUKnots();
-      auto patch_v_knots = extractVKnots();
-
-      SLIC_INFO(axom::fmt::format("Patch u knots: {}", patch_u_knots));
-      SLIC_INFO(axom::fmt::format("Patch v knots: {}", patch_v_knots));
-
-      if(isUPeriodic || isVPeriodic)
-      {
-        return;
-      }
-
-      // Create the NURBSPatch from control points, weights, and knots
-      m_patch = isRational
-        ? NPatch(patch_control_points, patch_weights, patch_u_knots, patch_v_knots)
-        : NPatch(patch_control_points, patch_u_knots, patch_v_knots);
-
-      SLIC_INFO(axom::fmt::format("NURBS Patch: {}", m_patch));
-    }
-
-    void extractBoundingBoxes()
-    {
-      if(m_patch.isValidNURBS())
-      {
-        // Handle(Geom_Surface) surface = BRep_Tool::Surface(m_surface);
-        // Standard_Real u1, u2, v1, v2;
-        // surface->Bounds(u1, u2, v1, v2);
-        // m_parametricBBox.addPoint(PointType2D {u1, v1});
-        // m_parametricBBox.addPoint(PointType2D {u2, v2});
-        const auto u_arr = m_patch.getKnotsArray_u();
-        const auto v_arr = m_patch.getKnotsArray_v();
-
-        m_parametricBBox.clear();
-        for(auto u : u_arr)
-        {
-          m_parametricBBox.addPoint(PointType2D {u, v_arr.front()});
-        }
-        for(auto v : v_arr)
-        {
-          m_parametricBBox.addPoint(PointType2D {u_arr.front(), v});
-        }
-        // for(auto u: u_arr)
-        // {
-        //   for(auto v: v_arr)
-        //   {
-        //     m_parametricBBox.addPoint(PointType2D {u, v});
-        //   }
-        // }
-
-        m_physicalBBox = m_patch.boundingBox();
-
-        // BRepAdaptor_Surface surfaceAdaptor(m_surface);
-        // Bnd_Box bndBox;
-        // BRepBndLib::Add(m_surface, bndBox);
-        // Standard_Real xMin, yMin, zMin, xMax, yMax, zMax;
-        // bndBox.Get(xMin, yMin, zMin, xMax, yMax, zMax);
-        // m_physicalBBox.addPoint(PointType3D {xMin, yMin, zMin});
-        // m_physicalBBox.addPoint(PointType3D {xMax, yMax, zMax});
-      }
-      else
-      {
-        SLIC_WARNING("NURBS patch was not valid!");
-      }
+      return vMultsArray;
     }
 
   private:
     Handle(Geom_BSplineSurface) m_surface;
 
-    NPatch m_patch;
-    BBox2D m_parametricBBox;
-    BBox3D m_physicalBBox;
+    bool m_verbose {false};
+    bool m_inputSurfaceWasPeriodic_u {false};
+    bool m_inputSurfaceWasPeriodic_v {false};
   };
 
   /// Helper class in support of extracting necessary information from trimming curves
@@ -1103,12 +996,19 @@ public:
 
         PatchProcessor patchProcessor(bsplineSurface);
 
+        SLIC_INFO(axom::fmt::format("---"));
         SLIC_INFO("*** Processing patch " << patchIndex);
+        SLIC_INFO(axom::fmt::format("---"));
+
         PatchData& patchData = m_patchData[patchIndex];
         patchData.patchIndex = patchIndex;
-        patchData.nurbsPatch = patchProcessor.getPatch();
-        patchData.parametricBBox = patchProcessor.getParametricBBox();
-        patchData.physicalBBox = patchProcessor.getPhysicalBBox();
+        patchData.nurbsPatch = patchProcessor.nurbsPatch();
+        patchData.wasOriginallyPeriodic_u =
+          patchProcessor.patchWasOriginallyPeriodic_u();
+        patchData.wasOriginallyPeriodic_v =
+          patchProcessor.patchWasOriginallyPeriodic_v();
+        patchData.parametricBBox = faceBoundingBox(face);
+        patchData.physicalBBox = patchData.nurbsPatch.boundingBox();
       }
     }
   }
