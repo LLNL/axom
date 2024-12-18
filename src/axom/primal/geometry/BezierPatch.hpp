@@ -1869,7 +1869,7 @@ public:
    *
    * \param [in] sq_tol Threshold for sum of squared distances
    * \param [in] EPS Threshold for nearness to zero
-   * \return True if c1 is near-planar
+   * \return True if c1 is planar up to tolerance \a sq_tol
    */
   bool isPlanar(double sq_tol = 1E-8, double EPS = 1e-8) const
   {
@@ -1933,11 +1933,11 @@ public:
    * \brief Predicate to check if the patch can be approximated by a polygon
    *
    * This function checks if a BezierPatch lies in a plane
-   *  and that the edged are linear up to tolerance `sq_tol`
+   *  and that the edges are linear up to tolerance `sq_tol`
    *
    * \param [in] tol Threshold for sum of squared distances
    * \param [in] EPS Threshold for nearness to zero
-   * \return True if c1 is near-planar-polygonal
+   * \return True if c1 is planar-polygonal up to tolerance \a sq_tol
    */
   bool isPolygonal(double sq_tol = 1E-8, double EPS = 1e-8) const
   {
@@ -1993,7 +1993,7 @@ public:
    *  bilinear patch defined by its corners evaluated at uniform parameter values.   *  
    *
    * \param [in] sq_tol Threshold for absolute squared distances
-   * \return True if patch is bilinear
+   * \return True if patch is bilinear up to tolerance \a sq_tol
    */
   bool isBilinear(double sq_tol = 1e-8) const
   {
