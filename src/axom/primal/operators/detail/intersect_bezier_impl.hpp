@@ -114,8 +114,8 @@ bool intersect_2d_linear(const Point<T, 2> &a,
  * \param [in] sq_tol The squared tolerance parameter for distances in physical space
  * \param [in] EPS The tolerance parameter for distances in parameter space
  * \param [in] order The order of \a c
- * \param s_offset The offset in parameter space for \a c
- * \param s_scale The scale in parameter space for \a c
+ * \param c_offset The offset in parameter space for \a c
+ * \param c_scale The scale in parameter space for \a c
  *
  * A ray can only intersect a Bezier curve if it intersects its bounding box
  * The base case of the recursion is when we can approximate the curves with
@@ -299,10 +299,6 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
     // Need to check intersection with zero tolerance
     //  to handle cases where `intersect` treats the ray as collinear
     intersect(r, seg, r0, s0, 0.0);
-    SLIC_INFO(c);
-    SLIC_INFO("\tintersects: "
-              << (r0 > 0.0 - EPS && s0 > 0.0 - EPS && s0 < 1.0 - EPS) << " "
-              << r0 << " " << s0);
     if(r0 > 0.0 - EPS && s0 > 0.0 - EPS && s0 < 1.0 - EPS)
     {
       rp.push_back(r0);
