@@ -104,8 +104,7 @@ bool intersect_line_patch(const Line<T, 3> &line,
   // Check bounding box to short-circuit the intersection
   //  Need to expand the box a bit so that intersections near subdivision boundaries
   //  are accurately recorded
-  Point<T, 3> ip;
-  if(!intersect(line, patch.boundingBox().expand(sq_tol), ip))
+  if(!intersect(line, patch.boundingBox().expand(sq_tol)))
   {
     return false;
   }

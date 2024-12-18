@@ -309,7 +309,7 @@ bool intersect(const Ray<T, 2>& R,
  * \param [in] R the specified ray
  * \param [in] bb the user-supplied axis-aligned bounding box
  *
- * \param [out] ip the intersection point where R intersects bb.
+ * \param [out] ip the intersection point with minimum parameter value where R intersects bb.
  *
  * \return status true iff bb intersects with R, otherwise, false.
  *
@@ -329,12 +329,45 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
 }
 
 /*!
+ * \brief Computes the intersection of the given ray, R, with the Box, bb.
+ *
+ * \param [in] R the specified ray
+ * \param [in] bb the user-supplied axis-aligned bounding box
+ *
+ * \return status true iff bb intersects with R, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ * \see primal::BoundingBox
+ *
+ * \note Computes Ray Box intersection using the slab method from pg 180 of
+ *  Real Time Collision Detection by Christer Ericson.
+ */
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
+                                const BoundingBox<T, DIM>& bb)
+{
+  AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
+
+  T tmin = axom::numerics::floating_point_limits<T>::min();
+  T tmax = axom::numerics::floating_point_limits<T>::max();
+
+  const T EPS = numerics::floating_point_limits<T>::epsilon();
+
+  return detail::intersect_ray(Ray<T, DIM>(L.origin(), L.direction()),
+                               bb,
+                               tmin,
+                               tmax,
+                               EPS);
+}
+
+/*!
  * \brief Computes the intersection of the given line, L, with the Box, bb.
  *
  * \param [in] L the specified line (two-sided ray)
  * \param [in] bb the user-supplied axis-aligned bounding box
  *
- * \param [out] ip the intersection point where L intersects bb.
+ * \param [out] ip the intersection point with minimum parameter value where L intersects bb.
  *
  * \return status true iff bb intersects with R, otherwise, false.
  *
@@ -351,6 +384,38 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
                                 Point<T, DIM>& ip)
 {
   return detail::intersect_line(L, bb, ip);
+}
+
+/*!
+ * \brief Computes the intersection of the given line, L, with the Box, bb.
+ *
+ * \param [in] L the specified line (two-sided ray)
+ * \param [in] bb the user-supplied axis-aligned bounding box
+ *
+ * \return status true iff bb intersects with R, otherwise, false.
+ *
+ * \see primal::Line
+ * \see primal::BoundingBox
+ *
+ * \note Computes Ray Box intersection using the slab method from pg 180 of
+ *  Real Time Collision Detection by Christer Ericson.
+ */
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
+                                const BoundingBox<T, DIM>& bb)
+{
+  AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
+
+  T tmin = -axom::numerics::floating_point_limits<T>::max();
+  T tmax = axom::numerics::floating_point_limits<T>::max();
+
+  const T EPS = numerics::floating_point_limits<T>::epsilon();
+
+  return detail::intersect_ray(Ray<T, DIM>(L.origin(), L.direction()),
+                               bb,
+                               tmin,
+                               tmax,
+                               EPS);
 }
 /// @}
 
@@ -822,6 +887,10 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
 
   // The number of reported intersection points will be small,
   //  so we don't need to fully sort the list
+  SLIC_WARNING_IF(tc.size() > 10,
+                  "Large number of intersections detected, eliminating "
+                  "duplicates may be slow");
+
   for(int i = 0; i < tc.size(); ++i)
   {
     // Also remove any intersections on the half-interval boundaries

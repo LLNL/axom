@@ -279,12 +279,11 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
 
   // Check bounding box to short-circuit the intersection
   T r0, s0;
-  Point<T, 2> ip;
   constexpr T factor = 1e-8;
 
   // Need to expand the bounding box, since this ray-bb intersection routine
   //  only parameterizes the ray on (0, inf)
-  if(!intersect(r, c.boundingBox().expand(factor), ip))
+  if(!intersect(r, c.boundingBox().expand(factor)))
   {
     return false;
   }
