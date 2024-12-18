@@ -41,6 +41,7 @@ to use Open CASCADE's file I/O capabilities in support of Quest applications.
 
 ###  Fixed
 - Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
+- Minor bugfix to `primal::intersect(segment, ray)` to better handle cases when segment and ray overlap.
 This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
 as well as support for 32-bit `Word`s in Slam's `BitSet` class.
 
