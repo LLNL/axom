@@ -64,7 +64,6 @@ void removeSlashes(const conduit::Node& originalNode, conduit::Node& modifiedNod
         it.next();
         std::string key = it.name();
         std::string modifiedKey = key;
-        //modifiedKey.erase(std::remove(modifiedKey.begin(), modifiedKey.end(), '/'), modifiedKey.end());
 
         std::string toReplace = "/";
 
@@ -295,41 +294,32 @@ void saveDocument(Document const &document, std::string const &fileName, Protoco
 
   std::string tmpFileName = fileName + SAVE_TMP_FILE_EXTENSION;
 
-  try
+  if (protocol == Protocol::JSON)
   {
-      if (protocol == Protocol::JSON)
-      {
-          protocol_warn(".json", fileName);
-          auto asJson = document.toJson();
-          std::ofstream fout {tmpFileName};
-          fout.exceptions(std::ostream::failbit | std::ostream::badbit);
-          fout << asJson;
-          fout.close();
-      }
-      else if (protocol == Protocol::HDF5)
-      {
-          protocol_warn(".hdf5", fileName);
-          document.toHDF5(tmpFileName);
-      }
-      else
-      {
-          throw std::invalid_argument("Invalid format choice. Please enter 'json' or 'hdf5'.");
-      }
+      protocol_warn(".json", fileName);
+      auto asJson = document.toJson();
+      std::ofstream fout {tmpFileName};
+      fout.exceptions(std::ostream::failbit | std::ostream::badbit);
+      fout << asJson;
+      fout.close();
+  }
+  else if (protocol == Protocol::HDF5)
+  {
+      protocol_warn(".hdf5", fileName);
+      document.toHDF5(tmpFileName);
+  }
+  else
+  {
+      throw std::invalid_argument("Invalid format choice. Please enter 'json' or 'hdf5'.");
+  }
 
-      if (rename(tmpFileName.c_str(), fileName.c_str()) != 0)
-      {
-          std::string message {"Could not save to '"};
-          message += fileName;
-          message += "'";
-          throw std::ios::failure {message};
-      }
-    }
-    catch (const std::exception &e)
-    {
-        std::cerr << "An error occurred: " << e.what() << "\n";
-        std::remove(tmpFileName.c_str());
-        throw;
-    }
+  if (rename(tmpFileName.c_str(), fileName.c_str()) != 0)
+  {
+      std::string message {"Could not save to '"};
+      message += fileName;
+      message += "'";
+      throw std::ios::failure {message};
+  }
 }
 
 Document loadDocument(std::string const &path, Protocol protocol)
