@@ -204,6 +204,6 @@ void demoAxomExecution()
 int main(int AXOM_UNUSED_PARAM(argc), char **AXOM_UNUSED_PARAM(argv))
 {
   demoMemoryManageBasic();
-  // demoAxomExecution();
+  demoAxomExecution();
   return 0;
 }

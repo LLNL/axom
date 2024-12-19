@@ -738,6 +738,7 @@ TEST(C_sidre_group, save_restore_simple)
   //  SIDRE_Group_save(root, "C_out_sidre_group_save_restore_simple","conduit");
 
   SIDRE_DataStore_print(ds);
+  SIDRE_DataStore_delete(ds);
 
   // Doesn't work yet.
 #if 0

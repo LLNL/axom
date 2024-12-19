@@ -1161,6 +1161,13 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
       for(IndexType i = 0; i < domain_to_file->getNumElements(); ++i)
       {
         domain_ids_array[i] = i;
+
+        // Skip if no rank is assigned
+        if(domain_rank_map[i] < 0)
+        {
+          continue;
+        }
+
         domain_file_map[i] = rank_file_map[domain_rank_map[i]];
       }
 
