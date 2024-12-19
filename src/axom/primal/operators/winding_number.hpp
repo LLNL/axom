@@ -1006,7 +1006,7 @@ std::pair<double, double> winding_number_casting_split(
   numerics::Matrix<T> rotator;
 
   OrientedBoundingBox<T, 3> oBox(bPatch.orientedBoundingBox().expand(edge_tol));
-  if(!oBox.contains(query))  // Only do casting for debugging
+  if(!oBox.contains(query))  // Only do casting while debugging
   {
     /* The following steps rotate the patch until the OBB is /not/ 
        directly above or below the query point */
@@ -1049,8 +1049,8 @@ std::pair<double, double> winding_number_casting_split(
       bool retry_cast = false;
 
       // Pick a random cast direction
-      double theta = axom::utilities::random_real(0.0, 2 * M_PI);
-      double u = axom::utilities::random_real(-1.0, 1.0);
+      double theta = 1.0; //axom::utilities::random_real(0.0, 2 * M_PI);
+      double u = 1.0; //axom::utilities::random_real(-1.0, 1.0);
       singularity_direction = Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
                                             cos(theta) * sqrt(1 - u * u),
                                             u};
@@ -1058,9 +1058,9 @@ std::pair<double, double> winding_number_casting_split(
       constexpr double buffer = 1e-3;
 
       // Compute intersections with the patch
-      std::vector<T> up, vp, tp;
+      axom::Array<T> up, vp, tp;
       Line<T, 3> singularity_axis(query, singularity_direction);
-      intersect(bPatch, singularity_axis, up, vp, tp, edge_tol, buffer);
+      intersect(singularity_axis, bPatch, tp, up, vp, buffer);
 
       // If the line doesn't intersect the surface, then we can dodge it
       if(up.size() == 0)
@@ -1101,10 +1101,9 @@ std::pair<double, double> winding_number_casting_split(
           else if(!badIntersection && !queryOnSurface && !intersectionOnBoundary)
           {
             // Account for the jump condition analytically
-            wn_split.second +=
-              std::copysign(0.5, surf_orientation);
+            wn_split.second += std::copysign(0.5, surf_orientation);
           }
-          else if(queryOnSurface && intersectionOnBoundary)
+          else // Brute force the rest of the split
           {
             BezierPatch<T, 3> coincident_patch(bPatch);
             BezierPatch<T, 3> subpatches[4];
@@ -1135,12 +1134,6 @@ std::pair<double, double> winding_number_casting_split(
             wn_split.first +=
               detail::surface_winding_number(query, coincident_patch, 10, quad_tol);
             return wn_split;
-          }
-          else
-          {
-            //  Uncommon, but requires a new ray to be cast
-            retry_cast = true;
-            break;
           }
         }
       }
