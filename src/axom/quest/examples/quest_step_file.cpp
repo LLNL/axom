@@ -93,7 +93,6 @@ private:
 
     Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
 
-    // TODO: Do we need to handle closed and/or periodicity for U or V?
     Standard_Real u1, u2, v1, v2;
     surface->Bounds(u1, u2, v1, v2);
     bbox.addPoint(PointType {u1, v1});
@@ -118,6 +117,8 @@ private:
       ensureClamped();
     }
 
+    const Handle(Geom_BSplineSurface) & getSurface() const { return m_surface; }
+
     /// Returns a representation of the surface as an axom::primal::NURBSPatch
     NPatch nurbsPatch() const
     {
@@ -132,14 +133,13 @@ private:
         m_surface->IsURational() || m_surface->IsVRational();
 
       // Create the NURBSPatch from control points, weights, and knots
-      return isRational
-        ? NPatch(extractControlPoints(),
-                 isRational ? extractWeights() : axom::Array<double, 2>(),
-                 extractCombinedKnots_u(),
-                 extractCombinedKnots_v())
-        : NPatch(extractControlPoints(),
-                 extractCombinedKnots_u(),
-                 extractCombinedKnots_v());
+      return isRational ? NPatch(extractControlPoints(),
+                                 extractWeights(),
+                                 extractCombinedKnots_u(),
+                                 extractCombinedKnots_v())
+                        : NPatch(extractControlPoints(),
+                                 extractCombinedKnots_u(),
+                                 extractCombinedKnots_v());
     }
 
     bool patchWasOriginallyPeriodic_u() const
@@ -604,206 +604,232 @@ private:
   class CurveProcessor
   {
   public:
+    CurveProcessor() = delete;
+
     CurveProcessor(const Handle(Geom2d_BSplineCurve) & curve) : m_curve(curve)
-    { }
+    {
+      ensureClamped();
+    }
 
     const Handle(Geom2d_BSplineCurve) & getCurve() const { return m_curve; }
 
-    // note: should only be called after extractKnots()
+    NCurve nurbsCurve() const
+    {
+      const bool isPeriodic = m_curve->IsPeriodic();
+      SLIC_ERROR_IF(isPeriodic,
+                    "Axom's NURBSCurve only supports non-periodic curves");
+
+      return m_curve->IsRational()
+        ? NCurve(extractControlPoints(), extractWeights(), extractCombinedKnots())
+        : NCurve(extractControlPoints(), extractCombinedKnots());
+    }
+
     bool isClamped() const { return m_isClamped; }
 
-    void convertPeriodicToClamped()
+    /// converts the curve from periodic knots to clamped knots, when necessary
+    void ensureClamped()
     {
       if(!m_curve->IsPeriodic())
       {
         return;
       }
 
-      // Copy original poles, knots, and multiplicities
-      auto orig_poles = extractControlPoints();
-      auto orig_knots = knotValuesAsAxomArray();
-      auto orig_mults = knotMultiplicitiesAsAxomArray();
-      int orig_knots_total = 0;
-      for(int m : orig_mults)
-      {
-        orig_knots_total += m;
-      }
+      const int degree = m_curve->Degree();
 
-      // Get the value of the curve at the first and last knot
-      const PointType orig_first = evaluateCurve(orig_knots.front());
-      const PointType orig_last = evaluateCurve(orig_knots.back());
+      const bool isRational = m_curve->IsRational();
 
       // Set the curve to not periodic; this can change the poles, knots and multiplicities
       m_curve->SetNotPeriodic();
 
-      // Copy new poles, knots, and multiplicities
-      auto new_poles = extractControlPoints();
-      auto new_knots = knotValuesAsAxomArray();
-      auto new_mults = knotMultiplicitiesAsAxomArray();
-      int new_knots_total = 0;
-      for(int m : new_mults)
+      // Modify knots and mults to ensure proper clamping
+      // We remove the first and last knot and increase the multiplicity of the second and second-to-last knots
+      auto mod_knots = extractKnotValues();
+      auto mod_mults = extractKnotMultiplicities();
+      SLIC_ASSERT(mod_knots.size() >= 4);
+      SLIC_ASSERT(mod_mults.size() == mod_knots.size());
+
+      const int last_idx = mod_knots.size() - 1;
+      mod_mults[1] += mod_mults[0];
+      mod_mults[last_idx - 1] += mod_mults[last_idx];
+      mod_knots.erase(mod_knots.end() - 1);
+      mod_knots.erase(mod_knots.begin());
+      mod_mults.erase(mod_mults.end() - 1);
+      mod_mults.erase(mod_mults.begin());
+
+      try
       {
-        new_knots_total += m;
+        // Create a new BSpline surface from the modified knots and control points
+        m_curve = createBSplineCurveFromAxomArrays(
+          extractControlPoints(),
+          isRational ? extractWeights() : axom::Array<double>(),
+          mod_knots,
+          mod_mults,
+          degree);
+      }
+      catch(const Standard_Failure& e)
+      {
+        std::cerr << "Error: " << e.GetMessageString() << std::endl;
+        throw;
+      }
+    }
+
+  private:
+    /// generates a new BSpline surface from data in axom::Arrays
+    Handle(Geom2d_BSplineCurve) createBSplineCurveFromAxomArrays(
+      const axom::Array<PointType>& controlPoints,
+      const axom::Array<double>& weights,  // will be empty if curve is non-rational
+      const axom::Array<double>& knots,
+      const axom::Array<int>& mults,
+      int degree)
+    {
+      // Convert control points to OpenCascade array
+      TColgp_Array1OfPnt2d occPoles(1, controlPoints.size());
+      for(int i = 0; i < controlPoints.size(); ++i)
+      {
+        occPoles.SetValue(i + 1,
+                          gp_Pnt2d(controlPoints[i][0], controlPoints[i][1]));
       }
 
-      // Create axom arrays for updated knots, multiplicities, and poles
-      auto updated_poles = new_poles;
-      auto updated_knots = orig_knots;
-      // note: updated_mults removes the outer layer and increments the next layer w.r.t. new_mults
-      axom::Array<int> updated_mults(new_mults.size() - 2);
-      for(int i = 0; i < updated_mults.size(); ++i)
+      // Convert knots and mults to OpenCascade arrays
+      TColStd_Array1OfReal occKnots(1, knots.size());
+      TColStd_Array1OfInteger occMults(1, mults.size());
+      for(int i = 0; i < knots.size(); ++i)
       {
-        updated_mults[i] = new_mults[i + 1];
-      }
-      updated_mults.front() += new_mults.front();
-      updated_mults.back() += new_mults.back();
-      SLIC_ASSERT(updated_mults.size() == updated_knots.size());
-
-      // Copy updated multiplicities, knots, and poles into OpenCascade arrays
-      TColStd_Array1OfReal updatedKnots(1, updated_knots.size());
-      for(int i = 1; i <= updated_knots.size(); ++i)
-      {
-        updatedKnots.SetValue(i, updated_knots[i - 1]);
+        occKnots.SetValue(i + 1, knots[i]);
+        occMults.SetValue(i + 1, mults[i]);
       }
 
-      TColStd_Array1OfInteger updatedMultiplicities(1, updated_mults.size());
-      for(int i = 1; i <= updated_mults.size(); ++i)
-      {
-        updatedMultiplicities.SetValue(i, updated_mults[i - 1]);
-      }
-
-      TColgp_Array1OfPnt2d updatedPoles(1, updated_poles.size());
-      for(int i = 1; i <= updated_poles.size(); ++i)
-      {
-        updatedPoles.SetValue(
-          i,
-          gp_Pnt2d(updated_poles[i - 1][0], updated_poles[i - 1][1]));
-      }
-
-      SLIC_INFO(
-        axom::fmt::format("\nOrig knots ({}): [{}]"
-                          "\nNew knots ({}): [{}]",
-                          orig_knots.size(),
-                          axom::fmt::join(orig_knots, ", "),
-                          new_knots.size(),
-                          axom::fmt::join(new_knots, ", ")));
-
-      SLIC_INFO(
-        axom::fmt::format("\nOrig multiplicities ({}): [{}]"
-                          "\nNew multiplicities ({}): [{}]"
-                          "\nUpdated multiplicities ({}): [{}]",
-                          orig_mults.size(),
-                          axom::fmt::join(orig_mults, ", "),
-                          new_mults.size(),
-                          axom::fmt::join(new_mults, ", "),
-                          updated_mults.size(),
-                          axom::fmt::join(updated_mults, ", ")));
-
-      SLIC_INFO(
-        axom::fmt::format("\nOrig poles ({}): [{}]"
-                          "\nNew poles ({}): [{}]"
-                          "\nUpdated poles ({}): [{}]",
-                          orig_poles.size(),
-                          axom::fmt::join(orig_poles, ", "),
-                          new_poles.size(),
-                          axom::fmt::join(new_poles, ", "),
-                          updated_poles.size(),
-                          axom::fmt::join(updated_poles, ", ")));
-
-      const int degree = m_curve->Degree();
-      SLIC_INFO(
-        axom::fmt::format("Degree (d): {}"
-                          "\nOrig curve total knots (m): {} and poles (n): {}"
-                          "\nNew curve total knots (m): {} and poles (n): {}",
-                          degree,
-                          orig_knots_total,
-                          orig_poles.size(),
-                          new_knots_total,
-                          new_poles.size()));
-
-      // Save the points as axom PointType
-      const PointType new_first = evaluateCurve(new_knots.front());
-      const PointType new_last = evaluateCurve(new_knots.back());
-
-      axom::slic::flushStreams();
+      Handle(Geom2d_BSplineCurve) clamped_curve;
 
       // Copy updated weights into OpenCascade array
-      TColStd_Array1OfReal updatedWeights(1, updated_poles.size());
-      //if (m_curve->IsRational())
+      if(!weights.empty())
       {
-        m_curve->Weights(updatedWeights);
-      }
-
-      // try
-      // {
-      Handle(Geom2d_BSplineCurve) clamped_curve =
-        new Geom2d_BSplineCurve(updatedPoles,
-                                updatedWeights,
-                                updatedKnots,
-                                updatedMultiplicities,
-                                degree);
-
-      // Save the points as axom PointType
-      const PointType updated_first = evaluateCurve(updated_knots.front());
-      const PointType updated_last = evaluateCurve(updated_knots.back());
-
-      SLIC_INFO(axom::fmt::format(
-        "Original, new, and updated curve at first knot: {} -> {} -> {}",
-        orig_first,
-        new_first,
-        updated_first));
-      SLIC_INFO(axom::fmt::format(
-        "Original, new, and updated curve at last knot: {} -> {} -> {}",
-        orig_last,
-        new_last,
-        updated_last));
-
-      // } catch (Standard_Failure& e) {
-      //     std::cerr << "***  Error: " << e.GetMessageString() << std::endl;
-      //     std::cout << "**** Error: " << e.GetMessageString() << std::endl;
-      //     throw std::runtime_error(e.GetMessageString());
-      // }
-
-      // Use Geom2dAPI_ExtremaCurveCurve to find the extrema between the original and clamped curves
-      {
-        using RangeType = axom::primal::BoundingBox<double, 1>;
-        using RangePoint = axom::primal::Point<double, 1>;
-
-        Geom2dAPI_ExtremaCurveCurve extrema(m_curve,
-                                            clamped_curve,
-                                            m_curve->FirstParameter(),
-                                            m_curve->LastParameter(),
-                                            clamped_curve->FirstParameter(),
-                                            clamped_curve->LastParameter());
-
-        RangeType range;
-        for(int i = 1; i <= extrema.NbExtrema(); ++i)
+        TColStd_Array1OfReal occWeights(1, weights.size());
+        for(int i = 0; i < weights.size(); ++i)
         {
-          Standard_Real U1, U2;
-          extrema.Parameters(i, U1, U2);
-          gp_Pnt2d P1 = m_curve->Value(U1);
-          gp_Pnt2d P2 = clamped_curve->Value(U2);
-          SLIC_INFO(
-            axom::fmt::format("Extrema {}: Distance = {}"
-                              ";\n\t Location on original curve = ({}, {}), "
-                              ";\n\t Location on clamped curve = ({}, {})",
-                              i,
-                              extrema.Distance(i),
-                              P1.X(),
-                              P1.Y(),
-                              P2.X(),
-                              P2.Y()));
-          range.addPoint(RangePoint {extrema.Distance(i)});
+          occWeights.SetValue(i + 1, weights[i]);
         }
 
-        SLIC_INFO(axom::fmt::format(
-          "Distance between original and clamped curve using extrema: {}",
-          range));
+        clamped_curve =
+          new Geom2d_BSplineCurve(occPoles, occWeights, occKnots, occMults, degree);
       }
-      // Swap clamped_curve and m_curve
-      m_curve = clamped_curve;
-      m_isClamped = true;
+      else
+      {
+        clamped_curve =
+          new Geom2d_BSplineCurve(occPoles, occKnots, occMults, degree);
+      }
+
+      return clamped_curve;
     }
+
+    // SLIC_INFO(
+    //   axom::fmt::format("\nOrig knots ({}): [{}]"
+    //                     "\nNew knots ({}): [{}]",
+    //                     orig_knots.size(),
+    //                     axom::fmt::join(orig_knots, ", "),
+    //                     new_knots.size(),
+    //                     axom::fmt::join(new_knots, ", ")));
+
+    // SLIC_INFO(
+    //   axom::fmt::format("\nOrig multiplicities ({}): [{}]"
+    //                     "\nNew multiplicities ({}): [{}]"
+    //                     "\nUpdated multiplicities ({}): [{}]",
+    //                     orig_mults.size(),
+    //                     axom::fmt::join(orig_mults, ", "),
+    //                     new_mults.size(),
+    //                     axom::fmt::join(new_mults, ", "),
+    //                     updated_mults.size(),
+    //                     axom::fmt::join(updated_mults, ", ")));
+
+    // SLIC_INFO(
+    //   axom::fmt::format("\nOrig poles ({}): [{}]"
+    //                     "\nNew poles ({}): [{}]"
+    //                     "\nUpdated poles ({}): [{}]",
+    //                     orig_poles.size(),
+    //                     axom::fmt::join(orig_poles, ", "),
+    //                     new_poles.size(),
+    //                     axom::fmt::join(new_poles, ", "),
+    //                     updated_poles.size(),
+    //                     axom::fmt::join(updated_poles, ", ")));
+
+    // const int degree = m_curve->Degree();
+    // SLIC_INFO(
+    //   axom::fmt::format("Degree (d): {}"
+    //                     "\nOrig curve total knots (m): {} and poles (n): {}"
+    //                     "\nNew curve total knots (m): {} and poles (n): {}",
+    //                     degree,
+    //                     orig_knots_total,
+    //                     orig_poles.size(),
+    //                     new_knots_total,
+    //                     new_poles.size()));
+
+    // // Save the points as axom PointType
+    // const PointType new_first = evaluateCurve(new_knots.front());
+    // const PointType new_last = evaluateCurve(new_knots.back());
+
+    // axom::slic::flushStreams();
+
+    // // Save the points as axom PointType
+    // const PointType updated_first = evaluateCurve(updated_knots.front());
+    // const PointType updated_last = evaluateCurve(updated_knots.back());
+
+    // SLIC_INFO(axom::fmt::format(
+    //   "Original, new, and updated curve at first knot: {} -> {} -> {}",
+    //   orig_first,
+    //   new_first,
+    //   updated_first));
+    // SLIC_INFO(axom::fmt::format(
+    //   "Original, new, and updated curve at last knot: {} -> {} -> {}",
+    //   orig_last,
+    //   new_last,
+    //   updated_last));
+
+    // } catch (Standard_Failure& e) {
+    //     std::cerr << "***  Error: " << e.GetMessageString() << std::endl;
+    //     std::cout << "**** Error: " << e.GetMessageString() << std::endl;
+    //     throw std::runtime_error(e.GetMessageString());
+    // }
+
+    //   // Use Geom2dAPI_ExtremaCurveCurve to find the extrema between the original and clamped curves
+    //   {
+    //     using RangeType = axom::primal::BoundingBox<double, 1>;
+    //     using RangePoint = axom::primal::Point<double, 1>;
+
+    //     Geom2dAPI_ExtremaCurveCurve extrema(m_curve,
+    //                                         clamped_curve,
+    //                                         m_curve->FirstParameter(),
+    //                                         m_curve->LastParameter(),
+    //                                         clamped_curve->FirstParameter(),
+    //                                         clamped_curve->LastParameter());
+
+    //     RangeType range;
+    //     for(int i = 1; i <= extrema.NbExtrema(); ++i)
+    //     {
+    //       Standard_Real U1, U2;
+    //       extrema.Parameters(i, U1, U2);
+    //       gp_Pnt2d P1 = m_curve->Value(U1);
+    //       gp_Pnt2d P2 = clamped_curve->Value(U2);
+    //       SLIC_INFO(
+    //         axom::fmt::format("Extrema {}: Distance = {}"
+    //                           ";\n\t Location on original curve = ({}, {}), "
+    //                           ";\n\t Location on clamped curve = ({}, {})",
+    //                           i,
+    //                           extrema.Distance(i),
+    //                           P1.X(),
+    //                           P1.Y(),
+    //                           P2.X(),
+    //                           P2.Y()));
+    //       range.addPoint(RangePoint {extrema.Distance(i)});
+    //     }
+
+    //     SLIC_INFO(axom::fmt::format(
+    //       "Distance between original and clamped curve using extrema: {}",
+    //       range));
+    //   }
+    //   // Swap clamped_curve and m_curve
+    //   m_curve = clamped_curve;
+    //   m_isClamped = true;
+    // }
 
     // note: bounding boxes are used as debug checks that control points
     // lie within the parameter space of the parent patch
@@ -839,29 +865,18 @@ private:
       return weights;
     }
 
-    axom::Array<double> extractKnots()
+    axom::Array<double> extractCombinedKnots() const
     {
-      axom::Array<double> knots;
+      const auto vals = extractKnotValues();
+      const auto mults = extractKnotMultiplicities();
+      const int total_knots = std::accumulate(mults.begin(), mults.end(), 0);
 
-      TColStd_Array1OfReal curveKnots(1, m_curve->NbKnots());
-      m_curve->Knots(curveKnots);
-
-      TColStd_Array1OfInteger multiplicities(1, m_curve->NbKnots());
-      m_curve->Multiplicities(multiplicities);
-
-      SLIC_ASSERT(curveKnots.Length() == multiplicities.Length());
-
-      const int curveDegree = m_curve->Degree();
-      m_isClamped = (multiplicities.First() == curveDegree + 1) &&
-        (multiplicities.Last() == curveDegree + 1);
-
-      for(int i = 1; i <= curveKnots.Length(); ++i)
+      axom::Array<double> knots(0, total_knots);
+      for(int i = 0; i < vals.size(); ++i)
       {
-        for(int j = 0; j < multiplicities(i); ++j)
-        {
-          knots.push_back(curveKnots(i));
-        }
+        knots.insert(knots.end(), mults[i], vals[i]);
       }
+      SLIC_ASSERT(knots.size() == total_knots);
 
       return knots;
     }
@@ -873,7 +888,9 @@ private:
       return PointType {knot_point.X(), knot_point.Y()};
     }
 
-    axom::Array<double> knotValuesAsAxomArray() const
+    /// converts knot values to axom Array w/o accounting for multiplicity
+    /// /sa extractKnotMultiplicities
+    axom::Array<double> extractKnotValues() const
     {
       const int num_knots = m_curve->NbKnots();
       axom::Array<double> knots(0, num_knots);
@@ -888,7 +905,9 @@ private:
       return knots;
     }
 
-    axom::Array<int> knotMultiplicitiesAsAxomArray() const
+    /// converts knot multiplicities to axom Array
+    /// /sa extractKnotValues
+    axom::Array<int> extractKnotMultiplicities() const
     {
       const int num_knots = m_curve->NbKnots();
       axom::Array<int> mults(0, num_knots);
@@ -1031,12 +1050,11 @@ public:
     for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
         faceExp.Next(), ++patchIndex)
     {
-      const TopoDS_Face& face = TopoDS::Face(faceExp.Current());
-
       PatchData& patchData = m_patchData[patchIndex];
+      NCurveArray& curves = patchData.trimmingCurves;
 
       // Get span of this patch in u and v directions
-      BBox2D patchBbox = faceBoundingBox(face);
+      BBox2D patchBbox = patchData.parametricBBox;
       auto expandedPatchBbox = patchBbox;
       expandedPatchBbox.scale(1. + 1e-3);
 
@@ -1048,7 +1066,6 @@ public:
           patchBbox,
           expandedPatchBbox));
 
-      NCurveArray curves;
       int wireIndex = 0;
       for(TopExp_Explorer wireExp(faceExp.Current(), TopAbs_WIRE); wireExp.More();
           wireExp.Next(), ++wireIndex)
@@ -1090,88 +1107,27 @@ public:
           if(!parametricCurve.IsNull() && !bsplineCurve.IsNull())
           {
             CurveProcessor curveProcessor(bsplineCurve);
-            const int curveDegree = bsplineCurve->Degree();
+            curves.emplace_back(curveProcessor.nurbsCurve());
 
-            curveProcessor.convertPeriodicToClamped();
-            SLIC_ASSERT(!curveProcessor.getCurve()->IsPeriodic());
-
-            auto controlPoints = curveProcessor.extractControlPoints();
-            SLIC_INFO_IF(
-              m_verbose,
-              axom::fmt::format(
-                "[Patch {} Wire {} Edge {} Curve {}] Control Points: [{}]",
-                patchIndex,
-                wireIndex,
-                edgeIndex,
-                curves.size(),
-                axom::fmt::join(controlPoints, ", ")));
-
-            // Check if the B-spline curve is rational
-            // and extract the weights for the control points
-            const bool isRational = bsplineCurve->IsRational();
-            axom::Array<double> weightsVector = curveProcessor.extractWeights();
-
-            SLIC_INFO_IF(
-              m_verbose && isRational,
-              axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] Weights: "
-                                "[{}]",
-                                patchIndex,
-                                wireIndex,
-                                edgeIndex,
-                                curves.size(),
-                                axom::fmt::join(weightsVector, ", ")));
-
-            // Extract the knots and their multiplicities
-            axom::Array<double> knotVector = curveProcessor.extractKnots();
-            SLIC_INFO_IF(
-              m_verbose,
-              axom::fmt::format(
-                "[Patch {} Wire {} Edge {} Curve {}] Degree: {}, Knots: [{}]",
-                patchIndex,
-                wireIndex,
-                edgeIndex,
-                curves.size(),
-                curveDegree,
-                axom::fmt::join(knotVector, ", ")));
-
-            // Note: This should never trigger since we've enforced this above
-            if(!curveProcessor.isClamped())
-            {
-              SLIC_WARNING(
-                axom::fmt::format("[Patch {} Wire {} Edge {} Curve {}] "
-                                  "skipping curve -- Axom only currently "
-                                  "supports clamped trimming curves",
-                                  patchIndex,
-                                  wireIndex,
-                                  edgeIndex,
-                                  curves.size()));
-              SLIC_INFO_IF(m_verbose, "---");
-              continue;
-            }
-            else
-            {
-              SLIC_INFO_IF(m_verbose, "---");
-            }
-
-            // Generate a NURBSCurve and add it to the list
-            isRational ? curves.emplace_back(
-                           NCurve {controlPoints, weightsVector, knotVector})
-                       : curves.emplace_back(NCurve {controlPoints, knotVector});
-
-            // Ensure consistency of the curves w.r.t. the patch
-            if(isReversed)
+            if(isReversed)  // Ensure consistency of curve w.r.t. patch
             {
               curves.back().reverseOrientation();
             }
             SLIC_ASSERT(curves.back().isValidNURBS());
-            SLIC_ASSERT(curves.back().getDegree() == curveDegree);
+            SLIC_ASSERT(curves.back().getDegree() == bsplineCurve->Degree());
 
-            AXOM_UNUSED_VAR(curveDegree);
+            SLIC_INFO_IF(
+              m_verbose,
+              axom::fmt::format(
+                "[Patch {} Wire {} Edge {} Curve {}] Added curve: {}",
+                patchIndex,
+                wireIndex,
+                edgeIndex,
+                curves.size(),
+                curves.back()));
           }
         }
       }
-
-      patchData.trimmingCurves = curves;
     }
   }
 
@@ -1549,7 +1505,7 @@ void triangulateTrimmedPatchAndWriteSTL(const TopoDS_Shape& shape, int patchInde
     gp_Vec v1(p1, p2);
     gp_Vec v2(p1, p3);
     gp_Vec normal = v1.Crossed(v2);
-    normal.Normalize();
+    //normal.Normalize(); // note: this can throw an error
 
     axom::fmt::format_to(std::back_inserter(stlContent),
                          "facet normal {} {} {}\n",
@@ -1665,7 +1621,7 @@ void triangulateUntrimmedPatchAndWriteSTL(const TopoDS_Shape& shape,
     gp_Vec v1(p1, p2);
     gp_Vec v2(p1, p3);
     gp_Vec normal = v1.Crossed(v2);
-    normal.Normalize();
+    //normal.Normalize(); // note: this can throw an error
 
     axom::fmt::format_to(std::back_inserter(stlContent),
                          "facet normal {} {} {}\n",
