@@ -43,6 +43,9 @@ const std::string supported_types[] = {
    "HDF5"
 };
 
+/**
+ * \brief The string used to replace '/' in parent node names when saving to HDF5.
+ */
 const std::string slashSubstitute = "__SINA_SLASHREPLACE__"; 
 
 /**
