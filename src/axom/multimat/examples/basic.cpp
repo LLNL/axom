@@ -76,7 +76,7 @@ void addfields(axom::multimat::MultiMat &mm)
                   1.,   // cell 5
     0.3,   0.4,   0.3,  // cell 6
                   1.,   // cell 7
-                  1.,   // cell 8
+                  1.    // cell 8
   };
   axom::ArrayView<double> perCellMatSparseAV(perCellMatSparse,
                                              sizeof(perCellMatSparse) / sizeof(double));
@@ -105,7 +105,7 @@ void multicomponent(axom::multimat::MultiMat &mm)
                    5., 25., // cell 5 x,y components
                    6., 36., // cell 6 x,y components
                    7., 49., // cell 7 x,y components
-                   8., 64., // cell 8 x,y components
+                   8., 64.  // cell 8 x,y components
                   };
   axom::ArrayView<double> dataAV(data, sizeof(data) / sizeof(double));
   mm.addField("perCellMC",
