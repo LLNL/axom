@@ -165,10 +165,9 @@ with the optional argument Protocol set to JSON or set as nothing, and to load f
 an HDF5 set the Protocol to HDF5.
 
 Note that due to HDF5's handling of '/' as indicators for nested structures,
-parent nodes will have '/' changed to the following string when saved with
-as an HDF5 with saveDocument(). loadDocument() will restore them to normal:
-
-.. doxygenvariable:: axom::sina::slashSubstitute
+parent nodes will have '/' changed to the ``slashSubstitute`` variable located in 
+``axom/sina/core/Document.hpp`` as an HDF5 with saveDocument(). loadDocument() 
+will restore them to normal:
 
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
