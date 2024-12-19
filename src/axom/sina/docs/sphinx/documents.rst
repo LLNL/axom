@@ -106,6 +106,27 @@ of the ``Document`` that way:
         std::cout << myDocument.toJson() << std::endl;
     }
 
+
+------------------------------
+Generating Documents From HDF5
+------------------------------
+
+In addition to assembling ``Document`` instances from existing JSON files, it
+is possible to generate ``Document`` objects from existing HDF5 files using
+conduit.
+
+Sina's ``saveDocument()`` and ``loadDocument()`` functions support HDF5 assembly if we provide it
+the optional Protocol variable set to HDF5:
+
+.. code:: cpp
+
+    #include "axom/sina.hpp"
+
+    int main (void) {
+        axom::sina::Document myDocument = axom::sina::loadDocument("MySinaData.hdf5", axom::sina::Protocol::HDF5);
+    }
+
+
 ---------------------------------------------------------
 Obtaining Records & Relationships from Existing Documents
 ---------------------------------------------------------

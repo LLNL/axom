@@ -53,7 +53,7 @@ Adding Data
 
 Once we have a Record, we can add different types of data to it. Any Datum
 object that is added will end up in the "data" section of the record in
-the JSON file.
+the file.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
@@ -146,9 +146,12 @@ users will be able to search for "temperature" (value = 450),
 Input and Output
 ----------------
 
-Once you have a document, it is easy to save it to a file. After executing
-the below, your will output a file named "my_output.json" which you can ingest
-into a Sina datastore.
+Once you have a document, it is easy to save it to a file. To save to a JSON, we
+run the saveDocument() with the optional argument Protocol set to JSON or set as
+nothing. Alternatively, if you wish to save the document to an HDF5 file, you must set 
+saveDocument()'s optional Protocol parameter to HDF5. After executing the below, you 
+will output a file named "my_output.json" and a file named "my_output.hdf5", both of
+which you can ingest into a Sina datastore.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
@@ -157,7 +160,20 @@ into a Sina datastore.
 
 If needed, you can also load a document from a file. This can be useful,
 for example, if you wrote a document when writing a restart and you want to
-continue from where you left off.
+continue from where you left off.  To load from a JSON file simply run loadDocument()
+with the optional argument Protocol set to JSON or set as nothing, and to load from
+an HDF5 set the Protocol to HDF5.
+
+Note that due to HDF5's handling of '/' as indicators for nested structures,
+our saveDocument() function will string-replace '/' in parent nodes to 
+'__SINA_SLASHREPLACE__' in the resulting HDF5 file, while our loadDocument()
+function will string-replace them back to normal.
+
+Additionally, Sina is also equipped to handle missing, broken, or incorrect file 
+extensions.  In such an event (for example: saving a JSON file as Example, Example.jso, 
+or Example.hdf5), Sina will replace incorrect file extensions and append to missing or 
+broken ones while outputting a WARNING message to let you know of said occurance.
+
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
