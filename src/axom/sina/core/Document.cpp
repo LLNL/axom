@@ -45,21 +45,15 @@ void protocol_warn(std::string protocol, std::string const &name) {
   if (pos != std::string::npos) {
         std::string found = name.substr(pos+1);
 
-        if (("." + found) != protocol) {
-          for (const std::string& file_type : supported_types) {
-            std::string lower_case_type = file_type; 
-            std::transform(lower_case_type.begin(), lower_case_type.end(), lower_case_type.begin(), [](unsigned char c) { return std::tolower(c); });
-
-            if ((lower_case_type != protocol) && (lower_case_type == found)) {
-              std::cout << "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: " << found << "; EXPECTED: " << protocol << "), DID YOU MEAN TO INCLUDE ONE OF " << protocol << "'s SUPPORTED TYPES? ||";
-            }
-          }
-          std::cout << "|| WARNING: BROKEN FILE EXTENSION FOUND, SINA WILL BE APPENDING THE " << protocol << " FILE EXTENSION ||";
+        if (("." + found) != protocol && protocol == ".json") {
+          std::cout << ".json extension not found, did you mean to save to this format?";
+        } else if (("." + found) != protocol && protocol == ".hdf5") {
+          std::cout << ".hdf5 extension not found, did you use one of its other supported types? (h5, hdf, ...)";
         } else {
           return;
         }
   } else {
-    std::cout << "|| WARNING: NO FILE EXTENSION FOUND, DID YOU MEAN TO INCLUDE ONE OF " << protocol << "'s SUPPORTED TYPES?";
+    std::cout << "No file extension found, did you mean to use one of " << protocol << "'s supported types?";
   }
 }
 
@@ -73,13 +67,12 @@ void removeSlashes(const conduit::Node& originalNode, conduit::Node& modifiedNod
         //modifiedKey.erase(std::remove(modifiedKey.begin(), modifiedKey.end(), '/'), modifiedKey.end());
 
         std::string toReplace = "/";
-        std::string replacement = "__SINA_SLASHREPLACE__";
 
         size_t pos = 0;
         // Find and replace all occurrences of "/"
         while ((pos = modifiedKey.find(toReplace, pos)) != std::string::npos) {
-          modifiedKey.replace(pos, toReplace.length(), replacement);
-          pos += replacement.length(); // Move past the replaced substring
+          modifiedKey.replace(pos, toReplace.length(), slashSubstitute);
+          pos += slashSubstitute.length(); // Move past the replaced substring
         }
 
         modifiedNode[modifiedKey] = it.node();
@@ -129,13 +122,12 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             it.next();
             std::string key = it.name();
             std::string restoredKey = key;
-            std::string toReplace = "__SINA_SLASHREPLACE__";
             std::string replacement = "/";
 
             size_t pos = 0;
             // Find and replace all occurrences of "__SLASH__"
 
-            while ((pos = restoredKey.find(toReplace, pos)) != std::string::npos) {
+            while ((pos = restoredKey.find(slashSubstitute, pos)) != std::string::npos) {
                 restoredKey.replace(pos, toReplace.length(), replacement);
                 pos += replacement.length();
             }
@@ -293,6 +285,14 @@ std::string Document::toJson(conduit::index_t indent,
 
 void saveDocument(Document const &document, std::string const &fileName, Protocol protocol)
 {
+  // It is a common use case for users to want to overwrite their files as
+  // the simulation progresses. However, this operation should be atomic so
+  // that if a write fails, the old file is left intact. For this reason,
+  // we write to a temporary file first and then move the file. The temporary
+  // file is in the same directory to ensure that it is part of the same
+  // file system as the destination file so that the move operation is
+  // atomic.
+
   std::string tmpFileName = fileName + SAVE_TMP_FILE_EXTENSION;
 
   try

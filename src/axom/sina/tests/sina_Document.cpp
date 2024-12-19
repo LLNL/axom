@@ -38,6 +38,34 @@ char const EXPECTED_RECORDS_KEY[] = "records";
 char const EXPECTED_RELATIONSHIPS_KEY[] = "relationships";
 
 
+// Large JSONs Used For JSON and HDF5 Save Tests
+std::string data_json =
+  "{\"records\": [{\"type\": \"run\", \"application\":\"test\", \"id\": "
+  "\"test_1\",\"data\":{\"int\": {\"value\": 500,\"units\": \"miles\"}, "
+  "\"str/ings\": {\"value\":[\"z\", \"o\", \"o\"]}}, "
+  "\"files\":{\"test/test.png\":{}}}]}";
+
+std::string long_json =
+  "{\"records\": [{\"type\": \"foo\",\"id\": "
+  "\"test_1\",\"user_defined\":{\"name\":\"bob\"},\"files\":{\"foo/"
+  "bar.png\":{\"mimetype\":\"image\"}},\"data\":{\"scalar\": {\"value\": "
+  "500,\"units\": \"miles\"}}},{\"type\":\"bar\",\"id\": "
+  "\"test_2\",\"data\": {\"scalar_list\": {\"value\": [1, 2, 3]}, "
+  "\"string_list\": {\"value\": [\"a\",\"wonderful\",\"world\"], "
+  "\"tags\":[\"observation\"]}}},{\"type\": "
+  "\"run\",\"application\":\"sina_test\",\"id\": "
+  "\"test_3\",\"data\":{\"scalar\": {\"value\": 12.3, \"units\": \"g/s\", "
+  "\"tags\": [\"hi\"]}, \"scalar_list\": {\"value\": [1,2,3.0,4]}}}, "
+  "{\"type\": \"bar\",\"id\": \"test_4\",\"data\":{\"string\": {\"value\": "
+  "\"yarr\"}, \"string_list\": {\"value\": [\"y\",\"a\",\"r\"]}}, "
+  "\"files\":{\"test/test.png\":{}}, "
+  "\"user_defined\":{\"hello\":\"there\"}}],\"relationships\": "
+  "[{\"predicate\": \"completes\",\"subject\": \"test_2\",\"object\": "
+  "\"test_1\"},{\"subject\": \"test_3\", \"predicate\": \"overrides\", "
+  "\"object\": \"test_4\"}]}";
+
+
+// Tests
 TEST(Document, create_fromNode_empty)
 {
   conduit::Node documentAsNode;
@@ -218,11 +246,6 @@ TEST(Document, create_fromJson_full)
 
 TEST(Document, create_fromJson_value_check)
 {
-  std::string data_json =
-    "{\"records\": [{\"type\": \"run\", \"application\":\"test\", \"id\": "
-    "\"test_1\",\"data\":{\"int\": {\"value\": 500,\"units\": \"miles\"}, "
-    "\"str/ings\": {\"value\":[\"z\", \"o\", \"o\"]}}, "
-    "\"files\":{\"test/test.png\":{}}}]}";
   axom::sina::Document myDocument =
     Document(data_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(0, myDocument.getRelationships().size());
@@ -386,24 +409,6 @@ TEST(Document, create_fromJson_roundtrip_hdf5)
 
 TEST(Document, create_fromJson_full_json)
 {
-  std::string long_json =
-    "{\"records\": [{\"type\": \"foo\",\"id\": "
-    "\"test_1\",\"user_defined\":{\"name\":\"bob\"},\"files\":{\"foo/"
-    "bar.png\":{\"mimetype\":\"image\"}},\"data\":{\"scalar\": {\"value\": "
-    "500,\"units\": \"miles\"}}},{\"type\":\"bar\",\"id\": "
-    "\"test_2\",\"data\": {\"scalar_list\": {\"value\": [1, 2, 3]}, "
-    "\"string_list\": {\"value\": [\"a\",\"wonderful\",\"world\"], "
-    "\"tags\":[\"observation\"]}}},{\"type\": "
-    "\"run\",\"application\":\"sina_test\",\"id\": "
-    "\"test_3\",\"data\":{\"scalar\": {\"value\": 12.3, \"units\": \"g/s\", "
-    "\"tags\": [\"hi\"]}, \"scalar_list\": {\"value\": [1,2,3.0,4]}}}, "
-    "{\"type\": \"bar\",\"id\": \"test_4\",\"data\":{\"string\": {\"value\": "
-    "\"yarr\"}, \"string_list\": {\"value\": [\"y\",\"a\",\"r\"]}}, "
-    "\"files\":{\"test/test.png\":{}}, "
-    "\"user_defined\":{\"hello\":\"there\"}}],\"relationships\": "
-    "[{\"predicate\": \"completes\",\"subject\": \"test_2\",\"object\": "
-    "\"test_1\"},{\"subject\": \"test_3\", \"predicate\": \"overrides\", "
-    "\"object\": \"test_4\"}]}";
   axom::sina::Document myDocument =
     Document(long_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(2, myDocument.getRelationships().size());
@@ -413,24 +418,6 @@ TEST(Document, create_fromJson_full_json)
 
 TEST(Document, create_fromJson_full_hdf5)
 {
-  std::string long_json =
-    "{\"records\": [{\"type\": \"foo\",\"id\": "
-    "\"test_1\",\"user_defined\":{\"name\":\"bob\"},\"files\":{\"foo/"
-    "bar.png\":{\"mimetype\":\"image\"}},\"data\":{\"scalar\": {\"value\": "
-    "500,\"units\": \"miles\"}}},{\"type\":\"bar\",\"id\": "
-    "\"test_2\",\"data\": {\"scalar_list\": {\"value\": [1, 2, 3]}, "
-    "\"string_list\": {\"value\": [\"a\",\"wonderful\",\"world\"], "
-    "\"tags\":[\"observation\"]}}},{\"type\": "
-    "\"run\",\"application\":\"sina_test\",\"id\": "
-    "\"test_3\",\"data\":{\"scalar\": {\"value\": 12.3, \"units\": \"g/s\", "
-    "\"tags\": [\"hi\"]}, \"scalar_list\": {\"value\": [1,2,3.0,4]}}}, "
-    "{\"type\": \"bar\",\"id\": \"test_4\",\"data\":{\"string\": {\"value\": "
-    "\"yarr\"}, \"string_list\": {\"value\": [\"y\",\"a\",\"r\"]}}, "
-    "\"files\":{\"test/test.png\":{}}, "
-    "\"user_defined\":{\"hello\":\"there\"}}],\"relationships\": "
-    "[{\"predicate\": \"completes\",\"subject\": \"test_2\",\"object\": "
-    "\"test_1\"},{\"subject\": \"test_3\", \"predicate\": \"overrides\", "
-    "\"object\": \"test_4\"}]}";
   axom::sina::Document myDocument =
     Document(long_json, createRecordLoaderWithAllKnownTypes());
   saveDocument(myDocument, "long_json.hdf5", Protocol::HDF5);
@@ -442,11 +429,6 @@ TEST(Document, create_fromJson_full_hdf5)
 
 TEST(Document, create_fromJson_value_check_json)
 {
-  std::string data_json =
-    "{\"records\": [{\"type\": \"run\", \"application\":\"test\", \"id\": "
-    "\"test_1\",\"data\":{\"int\": {\"value\": 500,\"units\": \"miles\"}, "
-    "\"str/ings\": {\"value\":[\"z\", \"o\", \"o\"]}}, "
-    "\"files\":{\"test/test.png\":{}}}]}";
   axom::sina::Document myDocument =
     Document(data_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(0, myDocument.getRelationships().size());
@@ -462,11 +444,6 @@ TEST(Document, create_fromJson_value_check_json)
 
 TEST(Document, create_fromJson_value_check_hdf5)
 {
-  std::string data_json =
-    "{\"records\": [{\"type\": \"run\", \"application\":\"test\", \"id\": "
-    "\"test_1\",\"data\":{\"int\": {\"value\": 500,\"units\": \"miles\"}, "
-    "\"str/ings\": {\"value\":[\"z\", \"o\", \"o\"]}}, "
-    "\"files\":{\"test/test.png\":{}}}]}";
   axom::sina::Document myDocument =
     Document(data_json, createRecordLoaderWithAllKnownTypes());
   std::vector<std::string> expected_string_vals = {"z", "o", "o"};

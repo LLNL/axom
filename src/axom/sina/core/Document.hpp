@@ -43,6 +43,8 @@ const std::string supported_types[] = {
    "HDF5"
 };
 
+const std::string slashSubstitute = "__SINA_SLASHREPLACE__"; 
+
 /**
  * \brief An object representing the top-level object of a Sina JSON file
  *
