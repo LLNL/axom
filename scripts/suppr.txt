@@ -1,0 +1,5 @@
+# Supression file for LeakSanitizer
+# To use the suppression file when running unit test:
+# LSAN_OPTIONS=suppressions=/absolute/path/to/suppr.txt ctest 
+leak:libpsm2
+leak:libmpi
