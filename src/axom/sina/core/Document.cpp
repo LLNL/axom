@@ -127,7 +127,7 @@ void restoreSlashes(const conduit::Node& modifiedNode, conduit::Node& restoredNo
             // Find and replace all occurrences of "__SLASH__"
 
             while ((pos = restoredKey.find(slashSubstitute, pos)) != std::string::npos) {
-                restoredKey.replace(pos, toReplace.length(), replacement);
+                restoredKey.replace(pos, slashSubstitute.length(), replacement);
                 pos += replacement.length();
             }
 
@@ -187,13 +187,13 @@ conduit::Node Document::toNode() const
 void Document::createFromNode(conduit::Node const &asNode,
                               RecordLoader const &recordLoader)
 {
-  if(asNode.has_child(RECORDS_KEY))
+  if (asNode.has_child(RECORDS_KEY))
   {
-    conduit::Node record_nodes = asNode[RECORDS_KEY];
-    if(record_nodes.dtype().is_list())
+    const conduit::Node &record_nodes = asNode[RECORDS_KEY];
+    if (record_nodes.dtype().is_list())
     {
       auto recordIter = record_nodes.children();
-      while(recordIter.has_next())
+      while (recordIter.has_next())
       {
         auto record = recordIter.next();
         add(recordLoader.load(record));
@@ -209,26 +209,39 @@ void Document::createFromNode(conduit::Node const &asNode,
   }
 
   if (asNode.has_child(RELATIONSHIPS_KEY))
-    {
-        conduit::Node relationship_nodes = asNode[RELATIONSHIPS_KEY];
-        if (relationship_nodes.number_of_children() == 0)
-        {
-            relationship_nodes.set(conduit::DataType::list());
-        }
-        else if (!relationship_nodes.dtype().is_list())
-        {
-            std::ostringstream message;
-            message << "The '" << RELATIONSHIPS_KEY << "' element of a document must be an array";
-            throw std::invalid_argument(message.str());
-        }
+  {
+    const conduit::Node &relationships_node = asNode[RELATIONSHIPS_KEY];
 
-        auto relationshipsIter = relationship_nodes.children();
+    if (!relationships_node.dtype().is_list())
+    {
+      if (relationships_node.number_of_children() == 0)
+      {
+        // Create a temporary mutable node for transformation
+        conduit::Node temp_node(conduit::DataType::list());
+        auto relationshipsIter = temp_node.children();
         while (relationshipsIter.has_next())
         {
-            auto &relationship = relationshipsIter.next();
-            add(Relationship{relationship});
+          auto &relationship = relationshipsIter.next();
+          add(Relationship{relationship});
         }
+      }
+      else
+      {
+        std::ostringstream message;
+        message << "The '" << RELATIONSHIPS_KEY << "' element of a document must be an array";
+        throw std::invalid_argument(message.str());
+      }
     }
+    else
+    {
+      auto relationshipsIter = relationships_node.children();
+      while (relationshipsIter.has_next())
+      {
+        auto &relationship = relationshipsIter.next();
+        add(Relationship{relationship});
+      }
+    }
+  }
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -254,9 +267,7 @@ void Document::toHDF5(const std::string &filename) const
         conduit::Node recordNode = record->toNode();
         conduit::Node modifiedRecordNode;
 
-        removeSlashes(recordNode, modifiedRecordNode);
-
-        recordsNode.append() = modifiedRecordNode; 
+        removeSlashes(recordNode, recordsNode.append());
     }
 
     // Process relationships
@@ -265,8 +276,7 @@ void Document::toHDF5(const std::string &filename) const
         conduit::Node relationshipNode = relationship.toNode();
         conduit::Node modifiedRelationshipsNode;
 
-        removeSlashes(relationshipNode, modifiedRelationshipsNode);
-        relationshipsNode.append() = modifiedRelationshipsNode;
+        removeSlashes(relationshipNode, relationshipsNode.append());   
     }
 
     conduit::relay::io::save(node, filename, "hdf5");
