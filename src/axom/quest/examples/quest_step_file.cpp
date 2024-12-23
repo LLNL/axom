@@ -59,6 +59,13 @@ struct PatchData
   axom::Array<axom::primal::NURBSCurve<double, 2>> trimmingCurves;
 };
 
+/**
+ * Class to read in STEP files representing trimmed NURBS meshes using OpenCASCADE 
+ * and convert the patches and trimming curves to axom's NURBSPatch and NURBSCurves.
+ * 
+ * Since axom's primitives do not support periodic knots, we must convert the OpenCASCADE
+ * analogues to the open/clamped representation, where appropriate
+ */
 class StepFileProcessor
 {
 public:
@@ -87,6 +94,7 @@ public:
   using PatchToTrimmingCurvesMap = std::map<int, NCurveArray>;
 
 private:
+  /// Returns a bounding box convering the patch's knot spans in 2D parametric space
   BBox2D faceBoundingBox(const TopoDS_Face& face) const
   {
     BBox2D bbox;
@@ -101,6 +109,8 @@ private:
     return bbox;
   }
 
+  /// Helper class to convert faces to valid NURBSPatch instances
+  /// The constructor converts the surface to a clamped (non-periodic) representation, if necessary
   class PatchProcessor
   {
   public:
@@ -151,15 +161,96 @@ private:
       return m_inputSurfaceWasPeriodic_v;
     }
 
-    /// evaluates the surface at parametric coordinates (u,v)
-    axom::primal::Point<double, 3> evaluateSurface(double u, double v) const
+    /**
+     * Utility function to compare the represented curve to \a otherSurface
+     * at \a numSamples uniformly sampled points in parameter space
+     * Returns true when the sum of distances is less than the provided tolerance
+     */
+    bool compareToSurface(Handle(Geom_BSplineSurface) otherSurface,
+                          int numSamples,
+                          double sq_tol = 1e-8) const
     {
-      gp_Pnt point;
-      m_surface->D0(u, v, point);
-      return PointType3D {point.X(), point.Y(), point.Z()};
+      if(numSamples <= 1)
+      {
+        return true;
+      }
+
+      auto knot_vals_u = extractKnotValues_u();
+      auto knot_vals_v = extractKnotValues_v();
+
+      axom::Array<double> params_u(numSamples);
+      axom::Array<double> params_v(numSamples);
+
+      auto evaluateSurface = [](auto surface, double u, double v) {
+        gp_Pnt point;
+        surface->D0(u, v, point);
+        return PointType3D {point.X(), point.Y(), point.Z()};
+      };
+
+      double squared_sum = 0.;
+      for(auto u : params_u)
+      {
+        for(auto v : params_v)
+        {
+          auto my_val = evaluateSurface(m_surface, u, v);
+          auto other_val = evaluateSurface(otherSurface, u, v);
+
+          const double sq_dist =
+            axom::primal::squared_distance(my_val, other_val);
+          squared_sum += sq_dist;
+          SLIC_WARNING_IF(
+            m_verbose && sq_dist > sq_tol,
+            axom::fmt::format("Distance between surfaces at evaluated param "
+                              "({},{}) exceeded tolerance {}.\n"
+                              "Point on my surface {}; Point on other surface "
+                              "{}; Squared distance {}  (running sum {})",
+                              u,
+                              v,
+                              sq_tol,
+                              my_val,
+                              other_val,
+                              sq_dist,
+                              squared_sum));
+        }
+      }
+
+      return squared_sum <= sq_tol;
     }
 
-    // converts the surface from periodic knots to clamped knots, when necessary
+    void printSurfaceStats() const
+    {
+      const bool isUPeriodic = m_surface->IsUPeriodic();
+      const bool isVPeriodic = m_surface->IsVPeriodic();
+
+      SLIC_INFO(axom::fmt::format("Patch is periodic in u: {}", isUPeriodic));
+      SLIC_INFO(axom::fmt::format("Patch is periodic in v: {}", isVPeriodic));
+
+      const auto patch_control_points = extractControlPoints();
+      SLIC_INFO(axom::fmt::format("Patch control points ({} x {}): {}",
+                                  patch_control_points.shape()[0],
+                                  patch_control_points.shape()[1],
+                                  patch_control_points));
+
+      const bool isRational =
+        m_surface->IsURational() || m_surface->IsVRational();
+
+      const auto patch_weights =
+        isRational ? extractWeights() : axom::Array<double, 2>();
+      if(isRational)
+      {
+        SLIC_INFO(axom::fmt::format("Patch weights ({} x {}): {}",
+                                    patch_weights.shape()[0],
+                                    patch_weights.shape()[1],
+                                    patch_weights));
+      }
+      else
+      {
+        SLIC_INFO("Patch is polynomial (uniform weights)");
+      }
+    }
+
+  private:
+    /// converts the surface from periodic knots to clamped knots, when necessary
     void ensureClamped()
     {
       const bool isUPeriodic = m_surface->IsUPeriodic();
@@ -172,42 +263,6 @@ private:
       const bool isRational =
         m_surface->IsURational() || m_surface->IsVRational();
 
-      auto printCornerValues = [this]() {
-        const auto knots_u = this->extractKnotValues_u();
-        const auto knots_v = this->extractKnotValues_v();
-
-        SLIC_INFO(axom::fmt::format("  --> u knots: {}", knots_u));
-        SLIC_INFO(axom::fmt::format("  --> u mults: {}",
-                                    this->extractKnotMultiplicities_u()));
-        SLIC_INFO(axom::fmt::format("  --> v knots: {}", knots_v));
-        SLIC_INFO(axom::fmt::format("  --> v mults: {}",
-                                    this->extractKnotMultiplicities_v()));
-
-        // Evaluate the modified surface at its four extreme u and v values
-        SLIC_INFO(
-          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
-                            knots_u.front(),
-                            knots_v.front(),
-                            evaluateSurface(knots_u.front(), knots_v.front())));
-        SLIC_INFO(
-          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
-                            knots_u.front(),
-                            knots_v.back(),
-                            evaluateSurface(knots_u.front(), knots_v.back())));
-        SLIC_INFO(
-          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
-                            knots_u.back(),
-                            knots_u.front(),
-                            evaluateSurface(knots_u.back(), knots_v.front())));
-        SLIC_INFO(
-          axom::fmt::format("  --> Original surface evaluated at ({} {}): {}",
-                            knots_u.back(),
-                            knots_v.back(),
-                            evaluateSurface(knots_u.back(), knots_v.back())));
-
-        axom::slic::flushStreams();
-      };
-
       const int uDegree = m_surface->UDegree();
       const int vDegree = m_surface->VDegree();
       SLIC_INFO_IF(m_verbose, axom::fmt::format("  --> U degree: {}", uDegree));
@@ -215,11 +270,6 @@ private:
 
       if(isUPeriodic)
       {
-        if(m_verbose)
-        {
-          printCornerValues();
-        }
-
         m_surface->SetUNotPeriodic();
 
         // Modify knots and mults to ensure proper clamping
@@ -257,20 +307,10 @@ private:
           std::cerr << "Error: " << e.GetMessageString() << std::endl;
           throw;
         }
-
-        if(m_verbose)
-        {
-          printCornerValues();
-        }
       }
 
       if(isVPeriodic)
       {
-        if(m_verbose)
-        {
-          printCornerValues();
-        }
-
         m_surface->SetVNotPeriodic();
 
         // Modify knots and mults to ensure proper clamping
@@ -308,47 +348,9 @@ private:
           std::cerr << "Error: " << e.GetMessageString() << std::endl;
           throw;
         }
-
-        if(m_verbose)
-        {
-          printCornerValues();
-        }
       }
     }
 
-    void printSurfaceStats() const
-    {
-      const bool isUPeriodic = m_surface->IsUPeriodic();
-      const bool isVPeriodic = m_surface->IsVPeriodic();
-
-      SLIC_INFO(axom::fmt::format("Patch is periodic in u: {}", isUPeriodic));
-      SLIC_INFO(axom::fmt::format("Patch is periodic in v: {}", isVPeriodic));
-
-      const auto patch_control_points = extractControlPoints();
-      SLIC_INFO(axom::fmt::format("Patch control points ({} x {}): {}",
-                                  patch_control_points.shape()[0],
-                                  patch_control_points.shape()[1],
-                                  patch_control_points));
-
-      const bool isRational =
-        m_surface->IsURational() || m_surface->IsVRational();
-
-      const auto patch_weights =
-        isRational ? extractWeights() : axom::Array<double, 2>();
-      if(isRational)
-      {
-        SLIC_INFO(axom::fmt::format("Patch weights ({} x {}): {}",
-                                    patch_weights.shape()[0],
-                                    patch_weights.shape()[1],
-                                    patch_weights));
-      }
-      else
-      {
-        SLIC_INFO("Patch is polynomial (uniform weights)");
-      }
-    }
-
-  private:
     /// generates a new BSpline surface from data in axom::Arrays
     Handle(Geom_BSplineSurface) createBSplineSurfaceFromAxomArrays(
       const axom::Array<PointType3D, 2>& controlPoints,
@@ -601,12 +603,15 @@ private:
   };
 
   /// Helper class in support of extracting necessary information from trimming curves
+  /// The constructor converts the curve to a clamped (non-periodic) representation, if necessary
   class CurveProcessor
   {
   public:
     CurveProcessor() = delete;
 
-    CurveProcessor(const Handle(Geom2d_BSplineCurve) & curve) : m_curve(curve)
+    CurveProcessor(const Handle(Geom2d_BSplineCurve) & curve, bool verbose = false)
+      : m_curve(curve)
+      , m_verbose(verbose)
     {
       ensureClamped();
     }
@@ -624,8 +629,55 @@ private:
         : NCurve(extractControlPoints(), extractCombinedKnots());
     }
 
-    bool isClamped() const { return m_isClamped; }
+    /// Function to check that the current curve is reasonably close to another curve
+    bool compareToCurve(Handle(Geom2d_BSplineCurve) & otherCurve,
+                        int numSamples,
+                        double sq_tol = 1e-8) const
+    {
+      if(numSamples <= 1)
+      {
+        return true;
+      }
 
+      auto knot_vals = extractKnotValues();
+
+      axom::Array<double> params(numSamples);
+      axom::numerics::linspace(knot_vals.front(),
+                               knot_vals.back(),
+                               params.data(),
+                               numSamples);
+
+      auto evaluateCurve = [](auto curve, double t) {
+        const gp_Pnt2d knot_point = curve->Value(t);
+        return PointType {knot_point.X(), knot_point.Y()};
+      };
+
+      double squared_sum = 0.;
+      for(auto val : params)
+      {
+        auto my_val = evaluateCurve(m_curve, val);
+        auto other_val = evaluateCurve(otherCurve, val);
+
+        const double sq_dist = axom::primal::squared_distance(my_val, other_val);
+        squared_sum += sq_dist;
+        SLIC_WARNING_IF(
+          m_verbose && sq_dist > sq_tol,
+          axom::fmt::format("Distance between curves at evaluated param {} "
+                            "exceeded tolerance {}.\n"
+                            "Point on my curve {}; Point on other curve {}; "
+                            "Squared distance {}  (running sum {})",
+                            val,
+                            sq_tol,
+                            my_val,
+                            other_val,
+                            sq_dist,
+                            squared_sum));
+      }
+
+      return squared_sum <= sq_tol;
+    }
+
+  private:
     /// converts the curve from periodic knots to clamped knots, when necessary
     void ensureClamped()
     {
@@ -673,7 +725,6 @@ private:
       }
     }
 
-  private:
     /// generates a new BSpline surface from data in axom::Arrays
     Handle(Geom2d_BSplineCurve) createBSplineCurveFromAxomArrays(
       const axom::Array<PointType>& controlPoints,
@@ -721,115 +772,6 @@ private:
 
       return clamped_curve;
     }
-
-    // SLIC_INFO(
-    //   axom::fmt::format("\nOrig knots ({}): [{}]"
-    //                     "\nNew knots ({}): [{}]",
-    //                     orig_knots.size(),
-    //                     axom::fmt::join(orig_knots, ", "),
-    //                     new_knots.size(),
-    //                     axom::fmt::join(new_knots, ", ")));
-
-    // SLIC_INFO(
-    //   axom::fmt::format("\nOrig multiplicities ({}): [{}]"
-    //                     "\nNew multiplicities ({}): [{}]"
-    //                     "\nUpdated multiplicities ({}): [{}]",
-    //                     orig_mults.size(),
-    //                     axom::fmt::join(orig_mults, ", "),
-    //                     new_mults.size(),
-    //                     axom::fmt::join(new_mults, ", "),
-    //                     updated_mults.size(),
-    //                     axom::fmt::join(updated_mults, ", ")));
-
-    // SLIC_INFO(
-    //   axom::fmt::format("\nOrig poles ({}): [{}]"
-    //                     "\nNew poles ({}): [{}]"
-    //                     "\nUpdated poles ({}): [{}]",
-    //                     orig_poles.size(),
-    //                     axom::fmt::join(orig_poles, ", "),
-    //                     new_poles.size(),
-    //                     axom::fmt::join(new_poles, ", "),
-    //                     updated_poles.size(),
-    //                     axom::fmt::join(updated_poles, ", ")));
-
-    // const int degree = m_curve->Degree();
-    // SLIC_INFO(
-    //   axom::fmt::format("Degree (d): {}"
-    //                     "\nOrig curve total knots (m): {} and poles (n): {}"
-    //                     "\nNew curve total knots (m): {} and poles (n): {}",
-    //                     degree,
-    //                     orig_knots_total,
-    //                     orig_poles.size(),
-    //                     new_knots_total,
-    //                     new_poles.size()));
-
-    // // Save the points as axom PointType
-    // const PointType new_first = evaluateCurve(new_knots.front());
-    // const PointType new_last = evaluateCurve(new_knots.back());
-
-    // axom::slic::flushStreams();
-
-    // // Save the points as axom PointType
-    // const PointType updated_first = evaluateCurve(updated_knots.front());
-    // const PointType updated_last = evaluateCurve(updated_knots.back());
-
-    // SLIC_INFO(axom::fmt::format(
-    //   "Original, new, and updated curve at first knot: {} -> {} -> {}",
-    //   orig_first,
-    //   new_first,
-    //   updated_first));
-    // SLIC_INFO(axom::fmt::format(
-    //   "Original, new, and updated curve at last knot: {} -> {} -> {}",
-    //   orig_last,
-    //   new_last,
-    //   updated_last));
-
-    // } catch (Standard_Failure& e) {
-    //     std::cerr << "***  Error: " << e.GetMessageString() << std::endl;
-    //     std::cout << "**** Error: " << e.GetMessageString() << std::endl;
-    //     throw std::runtime_error(e.GetMessageString());
-    // }
-
-    //   // Use Geom2dAPI_ExtremaCurveCurve to find the extrema between the original and clamped curves
-    //   {
-    //     using RangeType = axom::primal::BoundingBox<double, 1>;
-    //     using RangePoint = axom::primal::Point<double, 1>;
-
-    //     Geom2dAPI_ExtremaCurveCurve extrema(m_curve,
-    //                                         clamped_curve,
-    //                                         m_curve->FirstParameter(),
-    //                                         m_curve->LastParameter(),
-    //                                         clamped_curve->FirstParameter(),
-    //                                         clamped_curve->LastParameter());
-
-    //     RangeType range;
-    //     for(int i = 1; i <= extrema.NbExtrema(); ++i)
-    //     {
-    //       Standard_Real U1, U2;
-    //       extrema.Parameters(i, U1, U2);
-    //       gp_Pnt2d P1 = m_curve->Value(U1);
-    //       gp_Pnt2d P2 = clamped_curve->Value(U2);
-    //       SLIC_INFO(
-    //         axom::fmt::format("Extrema {}: Distance = {}"
-    //                           ";\n\t Location on original curve = ({}, {}), "
-    //                           ";\n\t Location on clamped curve = ({}, {})",
-    //                           i,
-    //                           extrema.Distance(i),
-    //                           P1.X(),
-    //                           P1.Y(),
-    //                           P2.X(),
-    //                           P2.Y()));
-    //       range.addPoint(RangePoint {extrema.Distance(i)});
-    //     }
-
-    //     SLIC_INFO(axom::fmt::format(
-    //       "Distance between original and clamped curve using extrema: {}",
-    //       range));
-    //   }
-    //   // Swap clamped_curve and m_curve
-    //   m_curve = clamped_curve;
-    //   m_isClamped = true;
-    // }
 
     // note: bounding boxes are used as debug checks that control points
     // lie within the parameter space of the parent patch
@@ -881,13 +823,6 @@ private:
       return knots;
     }
 
-  private:
-    PointType evaluateCurve(double knot_value) const
-    {
-      const gp_Pnt2d knot_point = m_curve->Value(knot_value);
-      return PointType {knot_point.X(), knot_point.Y()};
-    }
-
     /// converts knot values to axom Array w/o accounting for multiplicity
     /// /sa extractKnotMultiplicities
     axom::Array<double> extractKnotValues() const
@@ -924,7 +859,7 @@ private:
 
   private:
     Handle(Geom2d_BSplineCurve) m_curve;
-    bool m_isClamped {false};
+    bool m_verbose {false};
   };
 
 public:
@@ -998,6 +933,7 @@ public:
     SLIC_INFO(axom::fmt::to_string(out));
   }
 
+  /// Extracts data from the faces of the mesh and converts each patch to a NURBSPatch
   void extractPatches()
   {
     int patchIndex = 0;
@@ -1028,10 +964,25 @@ public:
           patchProcessor.patchWasOriginallyPeriodic_v();
         patchData.parametricBBox = faceBoundingBox(face);
         patchData.physicalBBox = patchData.nurbsPatch.boundingBox();
+
+        if(patchData.wasOriginallyPeriodic_u || patchData.wasOriginallyPeriodic_v)
+        {
+          Handle(Geom_BSplineSurface) origSurface =
+            Handle(Geom_BSplineSurface)::DownCast(surface);
+          const bool withinThreshold =
+            patchProcessor.compareToSurface(origSurface, 25);
+
+          SLIC_WARNING_IF(!withinThreshold,
+                          axom::fmt::format("[Patch {}] Patch geometry was not "
+                                            "within threshold after clamping.",
+                                            patchIndex,
+                                            patchData.nurbsPatch));
+        }
       }
     }
   }
 
+  /// Extracts data from the trimming curves of each patch and converts the curves to a NURBSCurve representation
   void extractTrimmingCurves()
   {
     int patchIndex = 0;
@@ -1106,7 +1057,9 @@ public:
 
           if(!parametricCurve.IsNull() && !bsplineCurve.IsNull())
           {
-            CurveProcessor curveProcessor(bsplineCurve);
+            const bool originalCurvePeriodic = bsplineCurve->IsPeriodic();
+
+            CurveProcessor curveProcessor(bsplineCurve, m_verbose);
             curves.emplace_back(curveProcessor.nurbsCurve());
 
             if(isReversed)  // Ensure consistency of curve w.r.t. patch
@@ -1125,6 +1078,25 @@ public:
                 edgeIndex,
                 curves.size(),
                 curves.back()));
+
+            // Check to ensure that curve did not change geometrically after making non-periodic
+            if(originalCurvePeriodic)
+            {
+              Handle(Geom2d_BSplineCurve) origCurve =
+                Geom2dConvert::CurveToBSplineCurve(parametricCurve);
+              const bool withinThreshold =
+                curveProcessor.compareToCurve(origCurve, 25);
+              SLIC_WARNING_IF(
+                !withinThreshold,
+                axom::fmt::format(
+                  "[Patch {} Wire {} Edge {} Curve {}] Trimming curve was not "
+                  "within threshold after clamping.",
+                  patchIndex,
+                  wireIndex,
+                  edgeIndex,
+                  curves.size(),
+                  curves.back()));
+            }
           }
         }
       }
@@ -1189,6 +1161,13 @@ private:
   PatchDataMap m_patchData;
 };
 
+/**
+ * Utility function to represent a NURBSCurve as an SVG path
+ *
+ * Since SVG only represents polynomial Bezier splines up to order 3,
+ * this function distretizes rational curves and linear curves with order above three
+ * to a polyline representation
+ */
 std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve)
 {
   using PointType = axom::primal::Point<double, 2>;
@@ -1309,6 +1288,13 @@ std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve
   return axom::fmt::to_string(svgPath);
 }
 
+/**
+ * Utility function to generate an SVG file over the parametric space of a trimmed NURBS patch
+ *
+ * Uses a <rect> for the bounding box in parameter space; 
+ * adds a <line> for each knot vector in u- and v-
+ * and a <path> for each oriented trimming curve
+ */
 void generateSVGForPatch(int patchIndex, const PatchData& patchData)
 {
   const auto& parametricBBox = patchData.parametricBBox;
@@ -1329,15 +1315,20 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
                       patchIndex,
                       scaledParametricBBox));
 
+  // add the SVG header
   axom::fmt::format_to(
     std::back_inserter(svgContent),
     "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' \n"
+    "     width='{}in' height='{}in' \n"
     "     viewBox='{} {} {} {}' >\n",
+    scaledParametricBBox.range()[0],
+    scaledParametricBBox.range()[1],
     scaledParametricBBox.getMin()[0],
     scaledParametricBBox.getMin()[1],
     scaledParametricBBox.range()[0],
     scaledParametricBBox.range()[1]);
 
+  // add some CSS styles
   axom::fmt::format_to(std::back_inserter(svgContent), R"raw(
   <style>
     path {{ fill:none; stroke:black; stroke-width:.03; marker-end:url(#arrow); paint-order:fill stroke markers; stroke-linejoin:round; stroke-linecap:round; }}
@@ -1346,6 +1337,7 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
     .v-line {{ fill: none; stroke: gray; stroke-width: 0.01; }}
   </style>
   )raw");
+
   // add a marker for the arrow's head to indicate the orientation
   axom::fmt::format_to(std::back_inserter(svgContent), R"raw(
   <defs>
@@ -1361,11 +1353,12 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   </defs>
   )raw");
 
-  // add a rectangle for the parametric bounding box and a comment for bbox in physical space
+  // add a rectangle for the parametric bounding box and a comment for its bounding boxes
   axom::fmt::format_to(
     std::back_inserter(svgContent),
-    "  <!-- Bounding box of element in parametric space as svg rect; \n"
+    "  <!-- Bounding box of element in parametric space: {}; \n"
     "       BBox in physical space: {} -->\n",
+    patchData.parametricBBox,
     patchData.physicalBBox);
 
   axom::fmt::format_to(std::back_inserter(svgContent),
@@ -1374,6 +1367,10 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
                        parametricBBox.getMin()[1],
                        parametricBBox.range()[0],
                        parametricBBox.range()[1]);
+
+  // add lines for the u- and v- knots
+  axom::fmt::format_to(std::back_inserter(svgContent),
+                       "  <!-- Lines for u- and v- knots -->\n");
 
   auto unique_knots_and_multiplicities =
     [](const axom::Array<double>& knots_vector) {
@@ -1401,9 +1398,6 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
       return uniqueCounts;
     };
 
-  // add lines for the u- and v- knots
-  axom::fmt::format_to(std::back_inserter(svgContent),
-                       "  <!-- Lines for u- and v- knots -->\n");
   for(const auto& u :
       unique_knots_and_multiplicities(patchData.nurbsPatch.getKnotsArray_u()))
   {
@@ -1440,6 +1434,7 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
     axom::fmt::format_to(std::back_inserter(svgContent), "{}\n", pathData);
   }
 
+  // close the image and write to disk
   axom::fmt::format_to(std::back_inserter(svgContent), "</svg>");
 
   std::string svgFilename = axom::fmt::format("patch_{}.svg", patchIndex);
@@ -1457,6 +1452,8 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   }
 }
 
+/// Utility function to triangulate a trimmed patch and write it to disk as as STL mesh
+/// Uses OpenCASCADE functionality to triangulate the patch
 void triangulateTrimmedPatchAndWriteSTL(const TopoDS_Shape& shape, int patchIndex)
 {
   // Get the patch (face) associated with patchIndex
@@ -1512,7 +1509,8 @@ void triangulateTrimmedPatchAndWriteSTL(const TopoDS_Shape& shape, int patchInde
                          normal.X(),
                          normal.Y(),
                          normal.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent), "  outer loop\n");
+    axom::fmt::format_to(std::back_inserter(stlContent),  //
+                         "  outer loop\n");
     axom::fmt::format_to(std::back_inserter(stlContent),
                          "    vertex {} {} {}\n",
                          p1.X(),
@@ -1528,8 +1526,10 @@ void triangulateTrimmedPatchAndWriteSTL(const TopoDS_Shape& shape, int patchInde
                          p3.X(),
                          p3.Y(),
                          p3.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent), "  endloop\n");
-    axom::fmt::format_to(std::back_inserter(stlContent), "endfacet\n");
+    axom::fmt::format_to(std::back_inserter(stlContent),  //
+                         "  endloop\n");
+    axom::fmt::format_to(std::back_inserter(stlContent),  //
+                         "endfacet\n");
   }
 
   axom::fmt::format_to(std::back_inserter(stlContent),
@@ -1628,7 +1628,8 @@ void triangulateUntrimmedPatchAndWriteSTL(const TopoDS_Shape& shape,
                          normal.X(),
                          normal.Y(),
                          normal.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent), "  outer loop\n");
+    axom::fmt::format_to(std::back_inserter(stlContent),  //
+                         "  outer loop\n");
     axom::fmt::format_to(std::back_inserter(stlContent),
                          "    vertex {} {} {}\n",
                          p1.X(),
@@ -1644,8 +1645,10 @@ void triangulateUntrimmedPatchAndWriteSTL(const TopoDS_Shape& shape,
                          p3.X(),
                          p3.Y(),
                          p3.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent), "  endloop\n");
-    axom::fmt::format_to(std::back_inserter(stlContent), "endfacet\n");
+    axom::fmt::format_to(std::back_inserter(stlContent),  //
+                         "  endloop\n");
+    axom::fmt::format_to(std::back_inserter(stlContent),  //
+                         "endfacet\n");
   }
 
   axom::fmt::format_to(std::back_inserter(stlContent),
