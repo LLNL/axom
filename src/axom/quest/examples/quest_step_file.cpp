@@ -64,7 +64,7 @@ struct PatchData
  * and convert the patches and trimming curves to axom's NURBSPatch and NURBSCurves.
  * 
  * Since axom's primitives do not support periodic knots, we must convert the OpenCASCADE
- * analogues to the open/clamped representation, where appropriate
+ * analogues to the open/clamped representation, where appropriate.
  */
 class StepFileProcessor
 {
@@ -1356,8 +1356,10 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   // add a rectangle for the parametric bounding box and a comment for its bounding boxes
   axom::fmt::format_to(
     std::back_inserter(svgContent),
-    "  <!-- Bounding box of element in parametric space: {}; \n"
+    "  <!-- Bounding box of ({},{})-degree patch in parametric space: {}; \n"
     "       BBox in physical space: {} -->\n",
+    patchData.nurbsPatch.getDegree_u(),
+    patchData.nurbsPatch.getDegree_v(),
     patchData.parametricBBox,
     patchData.physicalBBox);
 
@@ -1452,58 +1454,179 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   }
 }
 
-/// Utility function to triangulate a trimmed patch and write it to disk as as STL mesh
-/// Uses OpenCASCADE functionality to triangulate the patch
-void triangulateTrimmedPatchAndWriteSTL(const TopoDS_Shape& shape, int patchIndex)
+class PatchTriangulator
 {
-  // Get the patch (face) associated with patchIndex
-  TopExp_Explorer faceExp(shape, TopAbs_FACE);
-  for(int i = 0; i < patchIndex && faceExp.More(); ++i)
-  {
-    faceExp.Next();
-  }
-  if(!faceExp.More())
-  {
-    SLIC_WARNING(
-      axom::fmt::format("Error: Patch index {} is out of range.", patchIndex));
-    return;
-  }
-  TopoDS_Face face = TopoDS::Face(faceExp.Current());
+public:
+  PatchTriangulator() = delete;
 
-  // Create a triangulation of this patch and write its triangles in the STL format
-  TopLoc_Location loc;
-  Handle(Poly_Triangulation) triangulation = BRep_Tool::Triangulation(face, loc);
-
-  if(triangulation.IsNull())
+  PatchTriangulator(const TopoDS_Shape& shape,
+                    double deflection,
+                    double angularDeflection)
+    : m_shape(shape)
+    , m_deflection(deflection)
+    , m_angularDeflection(angularDeflection)
   {
-    SLIC_WARNING(
-      axom::fmt::format("Error: STL could not be generated for patch {}",
-                        patchIndex));
-    return;
+    BRepMesh_IncrementalMesh mesh(m_shape,
+                                  m_deflection,
+                                  Standard_False,
+                                  m_angularDeflection);
+    if(!mesh.IsDone())
+    {
+      throw std::runtime_error("Mesh generation failed.");
+    }
   }
 
-  axom::fmt::memory_buffer stlContent;
-  axom::fmt::format_to(std::back_inserter(stlContent),
-                       "solid patch_{}\n",
-                       patchIndex);
-
-  const int numTriangles = triangulation->NbTriangles();
-
-  for(int i = 1; i <= numTriangles; ++i)
+  /// Utility function to triangulate a trimmed patch and write it to disk as as STL mesh
+  /// Uses OpenCASCADE functionality to triangulate the patch
+  void triangulateTrimmedPatches()
   {
-    Poly_Triangle triangle = triangulation->Triangle(i);
-    int n1, n2, n3;
-    triangle.Get(n1, n2, n3);
+    int patchIndex = 0;
+    for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
+        faceExp.Next(), ++patchIndex)
+    {
+      TopoDS_Face face = TopoDS::Face(faceExp.Current());
 
-    gp_Pnt p1 = triangulation->Node(n1);
-    gp_Pnt p2 = triangulation->Node(n2);
-    gp_Pnt p3 = triangulation->Node(n3);
+      // Create a triangulation of this patch and write its triangles in the STL format
+      TopLoc_Location loc;
+      Handle(Poly_Triangulation) triangulation =
+        BRep_Tool::Triangulation(face, loc);
 
+      if(triangulation.IsNull())
+      {
+        SLIC_WARNING(
+          axom::fmt::format("Error: STL could not be generated for patch {}",
+                            patchIndex));
+        break;
+      }
+
+      axom::fmt::memory_buffer stlContent;
+      axom::fmt::format_to(std::back_inserter(stlContent),
+                           "solid patch_{}\n",
+                           patchIndex);
+
+      const int numTriangles = triangulation->NbTriangles();
+      for(int i = 1; i <= numTriangles; ++i)
+      {
+        Poly_Triangle triangle = triangulation->Triangle(i);
+        int n1, n2, n3;
+        triangle.Get(n1, n2, n3);
+        axom::fmt::format_to(std::back_inserter(stlContent),
+                             triangleAsSTLString(triangulation->Node(n1),
+                                                 triangulation->Node(n2),
+                                                 triangulation->Node(n3)));
+      }
+
+      axom::fmt::format_to(std::back_inserter(stlContent),
+                           "endsolid patch_{}\n",
+                           patchIndex);
+
+      // write the STL file
+      std::string stlFilename = axom::fmt::format("patch_{}.stl", patchIndex);
+      {
+        std::ofstream stlFile(stlFilename);
+        if(!stlFile.is_open())
+        {
+          std::cerr << "Error: Unable to open file " << stlFilename
+                    << " for writing." << std::endl;
+          break;
+        }
+        stlFile << axom::fmt::to_string(stlContent);
+      }
+      std::cout << "STL file generated: " << stlFilename << std::endl;
+    }
+  }
+
+  void triangulateUntrimmedPatches()
+  {
+    int patchIndex = 0;
+    for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
+        faceExp.Next(), ++patchIndex)
+    {
+      TopoDS_Face face = TopoDS::Face(faceExp.Current());
+
+      // Get the underlying surface of the face
+      Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
+
+      // Optionally, you can create a rectangular trimmed surface if needed
+      // Here, we assume the surface is already suitable for creating a new face
+      Standard_Real u1, u2, v1, v2;
+      surface->Bounds(u1, u2, v1, v2);
+      Handle(Geom_RectangularTrimmedSurface) untrimmedSurface =
+        new Geom_RectangularTrimmedSurface(surface, u1, u2, v1, v2);
+
+      // Create a new face from the untrimmed surface
+      TopoDS_Face newFace =
+        BRepBuilderAPI_MakeFace(untrimmedSurface, Precision::Confusion());
+
+      // Mesh the new face
+      BRepMesh_IncrementalMesh mesh(newFace,
+                                    m_deflection,
+                                    Standard_False,
+                                    m_angularDeflection);
+
+      // Now you can access the triangulation of the new face
+      TopLoc_Location loc;
+      Handle(Poly_Triangulation) triangulation =
+        BRep_Tool::Triangulation(newFace, loc);
+
+      if(triangulation.IsNull())
+      {
+        SLIC_WARNING(
+          axom::fmt::format("Error: STL could not be generated for patch {}",
+                            patchIndex));
+        break;
+      }
+
+      axom::fmt::memory_buffer stlContent;
+      axom::fmt::format_to(std::back_inserter(stlContent),
+                           "solid patch_{}\n",
+                           patchIndex);
+
+      const int numTriangles = triangulation->NbTriangles();
+      for(int i = 1; i <= numTriangles; ++i)
+      {
+        Poly_Triangle triangle = triangulation->Triangle(i);
+        int n1, n2, n3;
+        triangle.Get(n1, n2, n3);
+
+        axom::fmt::format_to(std::back_inserter(stlContent),
+                             triangleAsSTLString(triangulation->Node(n1),
+                                                 triangulation->Node(n2),
+                                                 triangulation->Node(n3)));
+      }
+
+      axom::fmt::format_to(std::back_inserter(stlContent),
+                           "endsolid patch_{}\n",
+                           patchIndex);
+
+      // write the STL file
+      std::string stlFilename =
+        axom::fmt::format("patch_untrimmed_{}.stl", patchIndex);
+      {
+        std::ofstream stlFile(stlFilename);
+        if(!stlFile.is_open())
+        {
+          std::cerr << "Error: Unable to open file " << stlFilename
+                    << " for writing." << std::endl;
+          break;
+        }
+        stlFile << axom::fmt::to_string(stlContent);
+        stlFile.close();
+      }
+      std::cout << "STL file generated: " << stlFilename << std::endl;
+    }
+  }
+
+private:
+  // Format the triangle (represented as three points) as an STL triangle
+  std::string triangleAsSTLString(gp_Pnt p1, gp_Pnt p2, gp_Pnt p3)
+  {
     gp_Vec v1(p1, p2);
     gp_Vec v2(p1, p3);
     gp_Vec normal = v1.Crossed(v2);
     //normal.Normalize(); // note: this can throw an error
 
+    axom::fmt::memory_buffer stlContent;
     axom::fmt::format_to(std::back_inserter(stlContent),
                          "facet normal {} {} {}\n",
                          normal.X(),
@@ -1530,147 +1653,15 @@ void triangulateTrimmedPatchAndWriteSTL(const TopoDS_Shape& shape, int patchInde
                          "  endloop\n");
     axom::fmt::format_to(std::back_inserter(stlContent),  //
                          "endfacet\n");
+
+    return axom::fmt::to_string(stlContent);
   }
 
-  axom::fmt::format_to(std::back_inserter(stlContent),
-                       "endsolid patch_{}\n",
-                       patchIndex);
-
-  // write the STL file
-  std::string stlFilename = axom::fmt::format("patch_{}.stl", patchIndex);
-  {
-    std::ofstream stlFile(stlFilename);
-    if(!stlFile.is_open())
-    {
-      std::cerr << "Error: Unable to open file " << stlFilename
-                << " for writing." << std::endl;
-      return;
-    }
-    stlFile << axom::fmt::to_string(stlContent);
-    stlFile.close();
-  }
-  std::cout << "STL file generated: " << stlFilename << std::endl;
-}
-
-void triangulateUntrimmedPatchAndWriteSTL(const TopoDS_Shape& shape,
-                                          int patchIndex)
-{
-  // Get the patch (face) associated with patchIndex
-  TopExp_Explorer faceExp(shape, TopAbs_FACE);
-  for(int i = 0; i < patchIndex && faceExp.More(); ++i)
-  {
-    faceExp.Next();
-  }
-  if(!faceExp.More())
-  {
-    SLIC_WARNING(
-      axom::fmt::format("Error: Patch index {} is out of range.", patchIndex));
-    return;
-  }
-  TopoDS_Face face = TopoDS::Face(faceExp.Current());
-
-  // Get the underlying surface of the face
-  Handle(Geom_Surface) surface = BRep_Tool::Surface(face);
-
-  // Optionally, you can create a rectangular trimmed surface if needed
-  // Here, we assume the surface is already suitable for creating a new face
-  Standard_Real u1, u2, v1, v2;
-  surface->Bounds(u1, u2, v1, v2);
-  Handle(Geom_RectangularTrimmedSurface) untrimmedSurface =
-    new Geom_RectangularTrimmedSurface(surface, u1, u2, v1, v2);
-
-  // Create a new face from the untrimmed surface
-  TopoDS_Face newFace =
-    BRepBuilderAPI_MakeFace(untrimmedSurface, Precision::Confusion());
-
-  // Mesh the new face
-  Standard_Real deflection = 0.1;
-  Standard_Real angle = 0.5;
-  BRepMesh_IncrementalMesh mesh(newFace, deflection, Standard_False, angle);
-
-  // Now you can access the triangulation of the new face
-  TopLoc_Location loc;
-  Handle(Poly_Triangulation) triangulation =
-    BRep_Tool::Triangulation(newFace, loc);
-
-  if(triangulation.IsNull())
-  {
-    SLIC_WARNING(
-      axom::fmt::format("Error: STL could not be generated for patch {}",
-                        patchIndex));
-    return;
-  }
-
-  axom::fmt::memory_buffer stlContent;
-  axom::fmt::format_to(std::back_inserter(stlContent),
-                       "solid patch_{}\n",
-                       patchIndex);
-
-  const int numTriangles = triangulation->NbTriangles();
-
-  for(int i = 1; i <= numTriangles; ++i)
-  {
-    Poly_Triangle triangle = triangulation->Triangle(i);
-    int n1, n2, n3;
-    triangle.Get(n1, n2, n3);
-
-    gp_Pnt p1 = triangulation->Node(n1);
-    gp_Pnt p2 = triangulation->Node(n2);
-    gp_Pnt p3 = triangulation->Node(n3);
-
-    gp_Vec v1(p1, p2);
-    gp_Vec v2(p1, p3);
-    gp_Vec normal = v1.Crossed(v2);
-    //normal.Normalize(); // note: this can throw an error
-
-    axom::fmt::format_to(std::back_inserter(stlContent),
-                         "facet normal {} {} {}\n",
-                         normal.X(),
-                         normal.Y(),
-                         normal.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent),  //
-                         "  outer loop\n");
-    axom::fmt::format_to(std::back_inserter(stlContent),
-                         "    vertex {} {} {}\n",
-                         p1.X(),
-                         p1.Y(),
-                         p1.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent),
-                         "    vertex {} {} {}\n",
-                         p2.X(),
-                         p2.Y(),
-                         p2.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent),
-                         "    vertex {} {} {}\n",
-                         p3.X(),
-                         p3.Y(),
-                         p3.Z());
-    axom::fmt::format_to(std::back_inserter(stlContent),  //
-                         "  endloop\n");
-    axom::fmt::format_to(std::back_inserter(stlContent),  //
-                         "endfacet\n");
-  }
-
-  axom::fmt::format_to(std::back_inserter(stlContent),
-                       "endsolid patch_{}\n",
-                       patchIndex);
-
-  // write the STL file
-  std::string stlFilename =
-    axom::fmt::format("patch_untrimmed_{}.stl", patchIndex);
-  {
-    std::ofstream stlFile(stlFilename);
-    if(!stlFile.is_open())
-    {
-      std::cerr << "Error: Unable to open file " << stlFilename
-                << " for writing." << std::endl;
-      return;
-    }
-    stlFile << axom::fmt::to_string(stlContent);
-    stlFile.close();
-  }
-  std::cout << "STL file generated: " << stlFilename << std::endl;
-}
+private:
+  TopoDS_Shape m_shape;
+  double m_deflection;
+  double m_angularDeflection;
+};
 
 int main(int argc, char** argv)
 {
@@ -1682,7 +1673,21 @@ int main(int argc, char** argv)
   app.add_option("-f,--file", filename, "Input file")->required();
 
   bool verbosity {false};
-  app.add_flag("-v,--verbose", verbosity, "Enable verbose output");
+  app.add_flag("-v,--verbose", verbosity)
+    ->description("Enable verbose output")
+    ->capture_default_str();
+
+  double deflection {.1};
+  app.add_option("--deflection", deflection)
+    ->description(
+      "Max distance between actual geometry and triangulated geometry")
+    ->capture_default_str();
+
+  double angular_deflection {0.5};
+  app.add_option("--angular_deflection", angular_deflection)
+    ->description(
+      "Angular deflection between adjacent normals when triangulating surfaces")
+    ->capture_default_str();
 
   CLI11_PARSE(app, argc, argv);
 
@@ -1716,20 +1721,9 @@ int main(int argc, char** argv)
   }
 
   auto& nurbs_shape = stepProcessor.getShape();
-  Standard_Real deflection = 0.1;
-  Standard_Real angle = 0.5;
-  BRepMesh_IncrementalMesh mesh(nurbs_shape, deflection, Standard_False, angle);
-
-  if(!mesh.IsDone())
-  {
-    throw std::runtime_error("Mesh generation failed.");
-  }
-
-  for(const auto& entry : stepProcessor.getPatchDataMap())
-  {
-    triangulateTrimmedPatchAndWriteSTL(nurbs_shape, entry.first);
-    triangulateUntrimmedPatchAndWriteSTL(nurbs_shape, entry.first);
-  }
+  PatchTriangulator patchTriangulator(nurbs_shape, deflection, angular_deflection);
+  patchTriangulator.triangulateTrimmedPatches();
+  patchTriangulator.triangulateUntrimmedPatches();
 
   return 0;
 }
