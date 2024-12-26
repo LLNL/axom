@@ -7,6 +7,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
+#include "axom/mint.hpp"
 
 #include "axom/CLI11.hpp"
 #include "axom/fmt.hpp"
@@ -1617,6 +1618,67 @@ public:
     }
   }
 
+  void triangulateFullMesh()
+  {
+    // Create an unstructured mesh with 3D vertices and triangular cells
+    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(
+      3,
+      axom::mint::TRIANGLE);
+
+    std::vector<int> patch_id;
+
+    int patchIndex = 0;
+    for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
+        faceExp.Next(), ++patchIndex)
+    {
+      TopoDS_Face face = TopoDS::Face(faceExp.Current());
+
+      // Create a triangulation of this patch
+      TopLoc_Location loc;
+      Handle(Poly_Triangulation) triangulation =
+        BRep_Tool::Triangulation(face, loc);
+
+      if(triangulation.IsNull())
+      {
+        SLIC_WARNING(axom::fmt::format(
+          "Error: Triangulation could not be generated for patch {}",
+          patchIndex));
+        continue;
+      }
+
+      const int numTriangles = triangulation->NbTriangles();
+      for(int i = 1; i <= numTriangles; ++i)
+      {
+        Poly_Triangle triangle = triangulation->Triangle(i);
+        int n1, n2, n3;
+        triangle.Get(n1, n2, n3);
+
+        gp_Pnt p1 = triangulation->Node(n1);
+        gp_Pnt p2 = triangulation->Node(n2);
+        gp_Pnt p3 = triangulation->Node(n3);
+
+        axom::IndexType v1 = mesh.appendNode(p1.X(), p1.Y(), p1.Z());
+        axom::IndexType v2 = mesh.appendNode(p2.X(), p2.Y(), p2.Z());
+        axom::IndexType v3 = mesh.appendNode(p3.X(), p3.Y(), p3.Z());
+
+        axom::IndexType cell[3] = {v1, v2, v3};
+        mesh.appendCell(cell);
+        patch_id.push_back(patchIndex);
+      }
+    }
+
+    // Add a field to store the patch index for each cell
+    auto* patchIndexField =
+      mesh.createField<int>("patch_index", axom::mint::CELL_CENTERED);
+
+    for(axom::IndexType i = 0; i < mesh.getNumberOfCells(); ++i)
+    {
+      patchIndexField[i] = patch_id[i];
+    }
+
+    axom::mint::write_vtk(&mesh, "triangulated_mesh.vtk");
+  }
+
 private:
   // Format the triangle (represented as three points) as an STL triangle
   std::string triangleAsSTLString(gp_Pnt p1, gp_Pnt p2, gp_Pnt p3)
@@ -1723,6 +1785,7 @@ int main(int argc, char** argv)
   auto& nurbs_shape = stepProcessor.getShape();
   PatchTriangulator patchTriangulator(nurbs_shape, deflection, angular_deflection);
   patchTriangulator.triangulateTrimmedPatches();
+  patchTriangulator.triangulateFullMesh();
   patchTriangulator.triangulateUntrimmedPatches();
 
   return 0;
