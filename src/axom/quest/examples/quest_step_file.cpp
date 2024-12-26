@@ -58,14 +58,15 @@ struct PatchData
   axom::primal::BoundingBox<double, 2> parametricBBox;
   axom::primal::BoundingBox<double, 3> physicalBBox;
   axom::Array<axom::primal::NURBSCurve<double, 2>> trimmingCurves;
+  axom::Array<bool> trimmingCurves_originallyPeriodic;
 };
 
 /**
  * Class to read in STEP files representing trimmed NURBS meshes using OpenCASCADE 
- * and convert the patches and trimming curves to axom's NURBSPatch and NURBSCurves.
+ * and convert the patches and trimming curves to axom's NURBSPatch and NURBSCurve primitives.
  * 
- * Since axom's primitives do not support periodic knots, we must convert the OpenCASCADE
- * analogues to the open/clamped representation, where appropriate.
+ * Implementation note: Since axom's primitives do not support periodic knots, 
+ * we must convert the OpenCASCADE analogues to the open/clamped representation, when necessary.
  */
 class StepFileProcessor
 {
@@ -110,7 +111,7 @@ private:
     return bbox;
   }
 
-  /// Helper class to convert faces to valid NURBSPatch instances
+  /// Helper class to convert faces of CAD mesh to valid NURBSPatch instances
   /// The constructor converts the surface to a clamped (non-periodic) representation, if necessary
   class PatchProcessor
   {
@@ -163,7 +164,7 @@ private:
     }
 
     /**
-     * Utility function to compare the represented curve to \a otherSurface
+     * Utility function to compare the represented surface to \a otherSurface
      * at \a numSamples uniformly sampled points in parameter space
      * Returns true when the sum of distances is less than the provided tolerance
      */
@@ -177,10 +178,18 @@ private:
       }
 
       auto knot_vals_u = extractKnotValues_u();
-      auto knot_vals_v = extractKnotValues_v();
-
       axom::Array<double> params_u(numSamples);
+      axom::numerics::linspace(knot_vals_u.front(),
+                               knot_vals_u.back(),
+                               params_u.data(),
+                               numSamples);
+
+      auto knot_vals_v = extractKnotValues_v();
       axom::Array<double> params_v(numSamples);
+      axom::numerics::linspace(knot_vals_v.front(),
+                               knot_vals_v.back(),
+                               params_v.data(),
+                               numSamples);
 
       auto evaluateSurface = [](auto surface, double u, double v) {
         gp_Pnt point;
@@ -235,10 +244,9 @@ private:
       const bool isRational =
         m_surface->IsURational() || m_surface->IsVRational();
 
-      const auto patch_weights =
-        isRational ? extractWeights() : axom::Array<double, 2>();
       if(isRational)
       {
+        const auto patch_weights = extractWeights();
         SLIC_INFO(axom::fmt::format("Patch weights ({} x {}): {}",
                                     patch_weights.shape()[0],
                                     patch_weights.shape()[1],
@@ -614,11 +622,12 @@ private:
       : m_curve(curve)
       , m_verbose(verbose)
     {
+      m_inputSurfaceWasPeriodic = m_curve->IsPeriodic();
+
       ensureClamped();
     }
 
-    const Handle(Geom2d_BSplineCurve) & getCurve() const { return m_curve; }
-
+    /// Returns a representation of the trimming curve as an axom::primal::NURBSCurve
     NCurve nurbsCurve() const
     {
       const bool isPeriodic = m_curve->IsPeriodic();
@@ -630,7 +639,16 @@ private:
         : NCurve(extractControlPoints(), extractCombinedKnots());
     }
 
-    /// Function to check that the current curve is reasonably close to another curve
+    bool curveWasOriginallyPeriodic() const
+    {
+      return m_inputSurfaceWasPeriodic;
+    }
+
+    /**
+     * Utility function to compare the represented curve to \a otherCurve
+     * at \a numSamples uniformly sampled points in parameter space
+     * Returns true when the sum of distances is less than the provided tolerance
+     */
     bool compareToCurve(Handle(Geom2d_BSplineCurve) & otherCurve,
                         int numSamples,
                         double sq_tol = 1e-8) const
@@ -861,6 +879,7 @@ private:
   private:
     Handle(Geom2d_BSplineCurve) m_curve;
     bool m_verbose {false};
+    bool m_inputSurfaceWasPeriodic {false};
   };
 
 public:
@@ -874,63 +893,243 @@ public:
 
   void setVerbosity(bool verbose) { m_verbose = verbose; }
 
-  const TopoDS_Shape& getShape() const { return m_shape; }
-
   bool isLoaded() const { return m_loadStatus == LoadStatus::SUCEESS; }
 
-  void printShapeStats() const
+  const TopoDS_Shape& getShape() const { return m_shape; }
+
+  int getNumberOfPatches() const { return m_patchData.size(); }
+
+  void printMeshInfo() const
   {
-    if(m_shape.IsNull())
+    // Helper struct for simple stats over a collection of integers
+    struct AccumStatistics
     {
-      std::cerr << "Error: The shape is invalid or empty." << std::endl;
-      return;
-    }
+      int min;
+      int max;
+      double mean;
+      double stddev;
+    };
 
-    int numPatches = 0;
-    int numTrimmingCurves = 0;
+    // Lambda to generate AccumStatistics for a list of integers
+    auto computeStatistics = [](const std::vector<int>& data) -> AccumStatistics {
+      AccumStatistics stats;
+      stats.min = *std::min_element(data.begin(), data.end());
+      stats.max = *std::max_element(data.begin(), data.end());
 
-    for(TopExp_Explorer exp(m_shape, TopAbs_FACE); exp.More(); exp.Next())
-    {
-      numPatches++;
-    }
-
-    for(TopExp_Explorer exp(m_shape, TopAbs_EDGE); exp.More(); exp.Next())
-    {
-      numTrimmingCurves++;
-    }
-    std::map<int, int> patchTrimmingCurves;
-    int patchIndex = 0;
-
-    for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
-        faceExp.Next(), ++patchIndex)
-    {
-      int trimmingCurvesCount = 0;
-      for(TopExp_Explorer edgeExp(faceExp.Current(), TopAbs_EDGE); edgeExp.More();
-          edgeExp.Next())
-      {
-        trimmingCurvesCount++;
-      }
-      patchTrimmingCurves[patchIndex] = trimmingCurvesCount;
-    }
+      const double sum = std::accumulate(data.begin(), data.end(), 0.0);
+      const double sumSquared =
+        std::accumulate(data.begin(), data.end(), 0.0, [](double a, double b) {
+          return a + b * b;
+        });
+      stats.mean = sum / data.size();
+      stats.stddev =
+        std::sqrt(sumSquared / data.size() - stats.mean * stats.mean);
+      return stats;
+    };
 
     axom::fmt::memory_buffer out;
-    axom::fmt::format_to(std::back_inserter(out), "Shape statistics:\n");
+
     axom::fmt::format_to(std::back_inserter(out),
-                         " - Number of patches: {}\n",
-                         numPatches);
-    axom::fmt::format_to(std::back_inserter(out),
-                         " - Number of trimming curves: {}\n",
-                         numTrimmingCurves);
-    axom::fmt::format_to(std::back_inserter(out), "---- \n");
-    axom::fmt::format_to(std::back_inserter(out),
-                         " - Trimming curves per patch:\n");
-    for(const auto& entry : patchTrimmingCurves)
+                         "Details about loaded mesh:\n");
+
+    // summarize the number of patches and trimming curves
     {
-      axom::fmt::format_to(std::back_inserter(out),
-                           "\t Patch {}: {} trimming curves\n",
-                           entry.first,
-                           entry.second);
+      int totalTrimmingCurves = 0;
+      for(const auto& kv : m_patchData)
+      {
+        totalTrimmingCurves += kv.second.trimmingCurves.size();
+      }
+
+      axom::fmt::format_to(
+        std::back_inserter(out),
+        " - Mesh has {} patches with a total of {} trimming curves\n",
+        m_patchData.size(),
+        totalTrimmingCurves);
     }
+
+    // compute a histogram of the patch degrees w/ some additional info
+    {
+      struct counts
+      {
+        int total {0};
+        int rational {0};
+        int periodic_u {0};
+        int periodic_v {0};
+      };
+
+      std::map<std::pair<int, int>, counts> patchDegrees;
+      for(const auto& kv : m_patchData)
+      {
+        const auto& patch = kv.second.nurbsPatch;
+        auto& c =
+          patchDegrees[std::make_pair(patch.getDegree_u(), patch.getDegree_v())];
+        c.total++;
+        if(patch.isRational())
+        {
+          c.rational++;
+        }
+        if(kv.second.wasOriginallyPeriodic_u)
+        {
+          c.periodic_u++;
+        }
+        if(kv.second.wasOriginallyPeriodic_v)
+        {
+          c.periodic_v++;
+        }
+      }
+
+      axom::fmt::format_to(std::back_inserter(out),
+                           " - Patch degree histogram:\n");
+      for(const auto& entry : patchDegrees)
+      {
+        axom::fmt::format_to(
+          std::back_inserter(out),
+          "   - Degree (u={}, v={}): {} patches ({} rational{}{})\n",
+          entry.first.first,   // degree u
+          entry.first.second,  // degree v
+          entry.second.total,
+          entry.second.rational,
+          entry.second.periodic_u > 0
+            ? axom::fmt::format("; {} originally periodic in u",
+                                entry.second.periodic_u)
+            : "",
+          entry.second.periodic_v > 0
+            ? axom::fmt::format("; {} originally periodic in v",
+                                entry.second.periodic_v)
+            : "");
+      }
+    }
+
+    // Compute statistics on the number of spans per path
+    {
+      std::vector<int> uSpansPerPatch;
+      std::vector<int> vSpansPerPatch;
+      for(const auto& kv : m_patchData)
+      {
+        const auto& patch = kv.second.nurbsPatch;
+        uSpansPerPatch.push_back(patch.getKnots_u().getNumKnotSpans());
+        vSpansPerPatch.push_back(patch.getKnots_v().getNumKnotSpans());
+      }
+
+      AccumStatistics uSpansStats = computeStatistics(uSpansPerPatch);
+      AccumStatistics vSpansStats = computeStatistics(vSpansPerPatch);
+
+      axom::fmt::format_to(std::back_inserter(out),
+                           " - Number of u-spans per patch:  min: {}, max: {}, "
+                           "mean: {:.2f} (stdev: {:.2f})\n",
+                           uSpansStats.min,
+                           uSpansStats.max,
+                           uSpansStats.mean,
+                           uSpansStats.stddev);
+
+      axom::fmt::format_to(std::back_inserter(out),
+                           " - Number of v-spans per patch:  min: {}, max: {}, "
+                           "mean: {:.2f} (stdev: {:.2f})\n",
+                           vSpansStats.min,
+                           vSpansStats.max,
+                           vSpansStats.mean,
+                           vSpansStats.stddev);
+    }
+
+    // Compute statistics on the number of trimming curves per patch
+    {
+      std::vector<int> trimmingCurvesPerPatch;
+      for(const auto& kv : m_patchData)
+      {
+        trimmingCurvesPerPatch.push_back(kv.second.trimmingCurves.size());
+      }
+
+      AccumStatistics trimmingCurvesStats =
+        computeStatistics(trimmingCurvesPerPatch);
+
+      axom::fmt::format_to(std::back_inserter(out),
+                           " - Number of trimming curves per patch:  min: {}, "
+                           "max: {}, mean: {:.2f} (stdev: {:.2f})\n",
+                           trimmingCurvesStats.min,
+                           trimmingCurvesStats.max,
+                           trimmingCurvesStats.mean,
+                           trimmingCurvesStats.stddev);
+    }
+    // Compute statistics on the degrees of the trimming curves in the mesh
+    {
+      struct counts
+      {
+        int total {0};
+        int rational {0};
+        int periodic {0};
+      };
+
+      std::map<int, counts> curveDegreeCounts;
+      std::vector<int> curveDegreeList;
+      for(const auto& kv : m_patchData)
+      {
+        const auto& curves = kv.second.trimmingCurves;
+        for(axom::IndexType i = 0; i < curves.size(); i++)
+        {
+          const int degree = curves[i].getDegree();
+          auto& c = curveDegreeCounts[degree];
+          c.total++;
+          if(curves[i].isRational())
+          {
+            c.rational++;
+          }
+          if(kv.second.trimmingCurves_originallyPeriodic[i])
+          {
+            c.periodic++;
+          }
+
+          curveDegreeList.push_back(degree);
+        }
+      }
+
+      AccumStatistics curveDegreeStats = computeStatistics(curveDegreeList);
+
+      // Output the results for curve orders
+      axom::fmt::format_to(std::back_inserter(out),
+                           " - Mesh trimming curve degree histogram:\n");
+      for(const auto& entry : curveDegreeCounts)
+      {
+        axom::fmt::format_to(std::back_inserter(out),
+                             "   - Degree {}: {} curves ({} rational{})\n",
+                             entry.first,  // degree
+                             entry.second.total,
+                             entry.second.rational,
+                             entry.second.periodic > 0
+                               ? axom::fmt::format("; {} originally periodic",
+                                                   entry.second.periodic)
+                               : "");
+      }
+
+      axom::fmt::format_to(
+        std::back_inserter(out),
+        "   - Average trimming curve order: {:.2f} (stdev: {:.2f})\n",
+        curveDegreeStats.mean,
+        curveDegreeStats.stddev);
+    }
+
+    // Compute statistics on the number of spans in the trimming curves
+    {
+      std::vector<int> spansPerCurve;
+      for(const auto& kv : m_patchData)
+      {
+        const auto& curves = kv.second.trimmingCurves;
+        for(const auto& curve : curves)
+        {
+          spansPerCurve.push_back(curve.getKnots().getNumKnotSpans());
+        }
+      }
+
+      AccumStatistics spansStats = computeStatistics(spansPerCurve);
+
+      axom::fmt::format_to(std::back_inserter(out),
+                           " - Number of spans per trimming curve:  min: {}, "
+                           "max: {}, mean: {:.2f} (stdev: {:.2f})\n",
+                           spansStats.min,
+                           spansStats.max,
+                           spansStats.mean,
+                           spansStats.stddev);
+    }
+
     SLIC_INFO(axom::fmt::to_string(out));
   }
 
@@ -938,7 +1137,6 @@ public:
   void extractPatches()
   {
     int patchIndex = 0;
-
     for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
         faceExp.Next(), ++patchIndex)
     {
@@ -952,9 +1150,9 @@ public:
 
         PatchProcessor patchProcessor(bsplineSurface);
 
-        SLIC_INFO(axom::fmt::format("---"));
-        SLIC_INFO("*** Processing patch " << patchIndex);
-        SLIC_INFO(axom::fmt::format("---"));
+        SLIC_INFO_IF(m_verbose, axom::fmt::format("---"));
+        SLIC_INFO_IF(m_verbose, "*** Processing patch " << patchIndex);
+        SLIC_INFO_IF(m_verbose, axom::fmt::format("---"));
 
         PatchData& patchData = m_patchData[patchIndex];
         patchData.patchIndex = patchIndex;
@@ -1062,6 +1260,8 @@ public:
 
             CurveProcessor curveProcessor(bsplineCurve, m_verbose);
             curves.emplace_back(curveProcessor.nurbsCurve());
+            patchData.trimmingCurves_originallyPeriodic.push_back(
+              curveProcessor.curveWasOriginallyPeriodic());
 
             if(isReversed)  // Ensure consistency of curve w.r.t. patch
             {
@@ -1296,13 +1496,16 @@ std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve
  * adds a <line> for each knot vector in u- and v-
  * and a <path> for each oriented trimming curve
  */
-void generateSVGForPatch(int patchIndex, const PatchData& patchData)
+void generateSVGForPatch(int patchIndex,
+                         const PatchData& patchData,
+                         bool verboseOutput)
 {
   const auto& parametricBBox = patchData.parametricBBox;
 
-  SLIC_INFO(axom::fmt::format("Parametric BBox for patch {}: {}",
-                              patchIndex,
-                              parametricBBox));
+  SLIC_INFO_IF(verboseOutput,
+               axom::fmt::format("Parametric BBox for patch {}: {}",
+                                 patchIndex,
+                                 parametricBBox));
 
   const auto& curves = patchData.trimmingCurves;
   axom::fmt::memory_buffer svgContent;
@@ -1311,7 +1514,8 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   auto scaledParametricBBox = parametricBBox;
   scaledParametricBBox.scale(1.25);
 
-  SLIC_INFO(
+  SLIC_INFO_IF(
+    verboseOutput,
     axom::fmt::format("Scaled and translated parametric BBox for patch {}: {}",
                       patchIndex,
                       scaledParametricBBox));
@@ -1446,7 +1650,7 @@ void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   {
     svgFile << axom::fmt::to_string(svgContent);
     svgFile.close();
-    std::cout << "SVG file generated: " << svgFilename << std::endl;
+    SLIC_INFO_IF(verboseOutput, "SVG file generated: " << svgFilename);
   }
   else
   {
@@ -1462,10 +1666,12 @@ public:
 
   PatchTriangulator(const TopoDS_Shape& shape,
                     double deflection,
-                    double angularDeflection)
+                    double angularDeflection,
+                    bool verbose)
     : m_shape(shape)
     , m_deflection(deflection)
     , m_angularDeflection(angularDeflection)
+    , m_verbose(verbose)
   {
     BRepMesh_IncrementalMesh mesh(m_shape,
                                   m_deflection,
@@ -1533,7 +1739,7 @@ public:
         }
         stlFile << axom::fmt::to_string(stlContent);
       }
-      std::cout << "STL file generated: " << stlFilename << std::endl;
+      SLIC_INFO_IF(m_verbose, "STL file generated: " << stlFilename);
     }
   }
 
@@ -1614,7 +1820,7 @@ public:
         stlFile << axom::fmt::to_string(stlContent);
         stlFile.close();
       }
-      std::cout << "STL file generated: " << stlFilename << std::endl;
+      SLIC_INFO_IF(m_verbose, "STL file generated: " << stlFilename);
     }
   }
 
@@ -1676,7 +1882,10 @@ public:
       patchIndexField[i] = patch_id[i];
     }
 
-    axom::mint::write_vtk(&mesh, "triangulated_mesh.vtk");
+    const std::string filename = "triangulated_mesh.vtk";
+    axom::mint::write_vtk(&mesh, filename);
+    SLIC_INFO_IF(m_verbose,
+                 "VTK triangle mesh of entire model generated: " << filename);
   }
 
 private:
@@ -1723,12 +1932,14 @@ private:
   TopoDS_Shape m_shape;
   double m_deflection;
   double m_angularDeflection;
+  bool m_verbose {false};
 };
 
 int main(int argc, char** argv)
 {
   axom::slic::SimpleLogger logger(axom::slic::message::Info);
 
+  // Set up and parse command line options
   axom::CLI::App app {"Quest Step File Example"};
 
   std::string filename;
@@ -1753,8 +1964,11 @@ int main(int argc, char** argv)
 
   CLI11_PARSE(app, argc, argv);
 
-  std::cout << "Processing file: " << filename << std::endl;
-
+  // Load and process file
+  SLIC_INFO("Processing file: " << filename);
+  SLIC_INFO_IF(
+    verbosity,
+    "Current working directory: " << axom::utilities::filesystem::getCWD());
   StepFileProcessor stepProcessor(filename, verbosity);
   if(!stepProcessor.isLoaded())
   {
@@ -1762,28 +1976,21 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  stepProcessor.printShapeStats();
-
   stepProcessor.extractPatches();
   stepProcessor.extractTrimmingCurves();
+  stepProcessor.printMeshInfo();
 
+  // Generate outputs
   for(const auto& entry : stepProcessor.getPatchDataMap())
   {
-    std::cout << "Patch " << entry.first << " has "
-              << entry.second.trimmingCurves.size() << " NURBS curves."
-              << std::endl;
-  }
-
-  std::string cwd = axom::utilities::filesystem::getCWD();
-  std::cout << "Current working directory: " << cwd << std::endl;
-
-  for(const auto& entry : stepProcessor.getPatchDataMap())
-  {
-    generateSVGForPatch(entry.first, entry.second);
+    generateSVGForPatch(entry.first, entry.second, verbosity);
   }
 
   auto& nurbs_shape = stepProcessor.getShape();
-  PatchTriangulator patchTriangulator(nurbs_shape, deflection, angular_deflection);
+  PatchTriangulator patchTriangulator(nurbs_shape,
+                                      deflection,
+                                      angular_deflection,
+                                      verbosity);
   patchTriangulator.triangulateTrimmedPatches();
   patchTriangulator.triangulateFullMesh();
   patchTriangulator.triangulateUntrimmedPatches();
