@@ -2488,3 +2488,53 @@ TEST(core_array, regression_array_move)
     EXPECT_EQ(44, pr5.second.capacity());
   }
 }
+
+class AllocatingDefaultInit
+{
+public:
+  AllocatingDefaultInit() { m_value.resize(32); }
+
+private:
+  axom::Array<int> m_value;
+};
+
+TEST(core_array, array_ctors_leak)
+{
+  using Array = axom::Array<AllocatingDefaultInit>;
+
+  // Initialize test array
+  constexpr int SZ1 = 20;
+  Array data(SZ1);
+
+  // axom::Array copy constructor
+  {
+    Array arr_copy {data};
+
+    EXPECT_EQ(SZ1, arr_copy.size());
+  }
+
+  // axom::Array copy assignment operator
+  {
+    Array arr_copy {SZ1 + 10};
+    arr_copy = data;
+
+    EXPECT_EQ(SZ1, arr_copy.size());
+  }
+
+  // axom::Array move constructor
+  {
+    Array tmp_move_from {data};
+    Array arr_move {std::move(tmp_move_from)};
+
+    EXPECT_EQ(SZ1, arr_move.size());
+  }
+
+  // axom::Array move assignment operator
+  {
+    Array tmp_move_from {data};
+    Array arr_move {SZ1 + 10};
+    arr_move = std::move(tmp_move_from);
+
+    EXPECT_EQ(SZ1, arr_move.size());
+  }
+}
