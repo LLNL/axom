@@ -1127,6 +1127,7 @@ AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
   : ArrayBase<T, DIM, Array<T, DIM, SPACE>>(
       static_cast<const ArrayBase<T, DIM, Array<T, DIM, SPACE>>&>(other))
   , m_allocator_id(other.m_allocator_id)
+  , m_executeOnGPU(axom::isDeviceAllocator(m_allocator_id))
 {
 #if defined(AXOM_DEVICE_CODE)
   #if defined(AXOM_DEBUG)
@@ -1139,7 +1140,7 @@ AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
   assert(false);
   #endif
 #else
-  initialize(other.size(), other.capacity());
+  this->setCapacity(other.capacity());
   // Use fill_range to ensure that copy constructors are invoked for each
   // element.
   MemorySpace srcSpace = SPACE;
@@ -1149,9 +1150,10 @@ AXOM_HOST_DEVICE Array<T, DIM, SPACE>::Array(const Array& other)
   }
   OpHelper {m_allocator_id, m_executeOnGPU}.fill_range(m_data,
                                                        0,
-                                                       m_num_elements,
+                                                       other.size(),
                                                        other.data(),
                                                        srcSpace);
+  this->updateNumElements(other.size());
 #endif
 }
 
