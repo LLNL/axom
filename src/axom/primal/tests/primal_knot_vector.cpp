@@ -298,6 +298,19 @@ TEST(primal_knotvector, insert_knot)
   EXPECT_EQ(20, kvector.getNumKnots());
   EXPECT_EQ(7, kvector.getNumKnotSpans());
 
+  // Already inserted knots shouldn't be removed
+  kvector.insertKnot(0.5, 1);
+  EXPECT_EQ(20, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
+  kvector.insertKnot(0.5, 2);
+  EXPECT_EQ(20, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
+  kvector.insertKnot(0.5, 3);
+  EXPECT_EQ(20, kvector.getNumKnots());
+  EXPECT_EQ(7, kvector.getNumKnotSpans());
+
   // Insert knots into the vector a given number of times
   kvector = primal::KnotVector<double>(knots, degree);
 

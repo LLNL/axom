@@ -161,9 +161,9 @@ spack:
       - spec: hip@5.7.1
         prefix: /opt/rocm-5.7.1/hip
       - spec: hip@6.1.2
-        prefix: /opt/rocm-6.1.2/hip
+        prefix: /opt/rocm-6.1.2
       - spec: hip@6.2.1
-        prefix: /opt/rocm-6.2.1/hip
+        prefix: /opt/rocm-6.2.1
 
     llvm-amdgpu:
       version: [5.2.3, 5.4.3, 5.6.0, 5.7.1, 6.1.2, 6.2.1]
@@ -420,6 +420,34 @@ spack:
       - spec: unzip@6.0
         prefix: /usr
 
+    # External dependencies for opencascade
+    # libx* versions found via `strings /path/to/libx*.so
+    mesa:
+      buildable: False
+      externals:
+      - spec: mesa@23.1.4  # found via: glxinfo | grep -i version
+        prefix: /
+    libxi:
+      buildable: False
+      externals:
+      - spec: libxi@1.7.10
+        prefix: /
+    libxt:
+      buildable: False
+      externals:
+      - spec: libxt@1.1.5
+        prefix: /
+    libxext:
+      buildable: False
+      externals:
+      - spec: libxext@1.3.4
+        prefix: /
+    libxmu:
+      buildable: False
+      externals:
+      - spec: libxmu@1.1.3
+        prefix: /
+
     # External dependencies for SCR
     lsf:
       buildable: False
@@ -478,6 +506,8 @@ spack:
       variants: ~shared
 
     # Lock in versions of Devtools
+    # Devtools are built on rzvernal for compatibility with both
+    # rzvernal and rzadams.
     cmake:
       version: [3.24.2]
       buildable: false
@@ -490,3 +520,32 @@ spack:
       externals:
       - spec: py-shroud@0.13.0
         prefix: /collab/usr/gapps/shroud/public/toss_4_x86_64_ib_cray/shroud-0.13.0
+    cppcheck:
+      version: [2.9]
+      buildable: false
+      externals:
+      - spec: cppcheck@2.9
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/cppcheck-2.9
+    doxygen:
+      version: [1.11.0]
+      buildable: false
+      externals:
+      - spec: doxygen@1.11.0
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/doxygen-1.11.0
+    llvm:
+      version: [14.0.0]
+      buildable: false
+      externals:
+      - spec: llvm@14.0.0+clang+python
+        prefix: /usr/tce/packages/rocmcc/rocmcc-5.2.3-magic/llvm
+    py-sphinx:
+      version: [8.0.2]
+      buildable: false
+      externals:
+      - spec: py-sphinx@8.0.2
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/python-3.12.5
+    python:
+      buildable: false
+      externals:
+      - spec: python@3.12.5
+        prefix: /collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/latest/python-3.12.5
