@@ -161,9 +161,9 @@ spack:
       - spec: hip@5.7.1
         prefix: /opt/rocm-5.7.1/hip
       - spec: hip@6.1.2
-        prefix: /opt/rocm-6.1.2/hip
+        prefix: /opt/rocm-6.1.2
       - spec: hip@6.2.1
-        prefix: /opt/rocm-6.2.1/hip
+        prefix: /opt/rocm-6.2.1
 
     llvm-amdgpu:
       version: [5.2.3, 5.4.3, 5.6.0, 5.7.1, 6.1.2, 6.2.1]
@@ -419,6 +419,34 @@ spack:
       externals:
       - spec: unzip@6.0
         prefix: /usr
+
+    # External dependencies for opencascade
+    # libx* versions found via `strings /path/to/libx*.so
+    mesa:
+      buildable: False
+      externals:
+      - spec: mesa@23.1.4  # found via: glxinfo | grep -i version
+        prefix: /
+    libxi:
+      buildable: False
+      externals:
+      - spec: libxi@1.7.10
+        prefix: /
+    libxt:
+      buildable: False
+      externals:
+      - spec: libxt@1.1.5
+        prefix: /
+    libxext:
+      buildable: False
+      externals:
+      - spec: libxext@1.3.4
+        prefix: /
+    libxmu:
+      buildable: False
+      externals:
+      - spec: libxmu@1.1.3
+        prefix: /
 
     # External dependencies for SCR
     lsf:

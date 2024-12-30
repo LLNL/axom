@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/raja
-    REF v2024.07.0
-    SHA512 7337d21dad05682c87145d23d09ae1c4cf627c21386e65a96f55beb0969cb2ef3cfaa38d5eaf5322ba04724707c6d993509b4ea6c2b679db6a3c4e5ac1d9b441
+    REF 85c58eb7d25ac5a7ff1c6a3cc6bb74bf8351e36e # HEAD of bugfix/dayton8/win32 branch; a bit past v2024.07.0
+    SHA512 263346ff91c17f48fa40efdd6826331e1fecb995fef289bf997500d058c57e4dc706512baa8fc5dfc912c54939b973c56c8677a4705e261a2740c55851446341
     HEAD_REF develop
 )
 

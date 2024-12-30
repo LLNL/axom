@@ -26,7 +26,7 @@ if (ENABLE_BENCHMARKS)
 
         blt_add_benchmark( 
             NAME        ${test_name} 
-            COMMAND     ${test_name}
+            COMMAND     ${test_name} --benchmark_min_time=0.0001s
             )
     endforeach()
 endif()

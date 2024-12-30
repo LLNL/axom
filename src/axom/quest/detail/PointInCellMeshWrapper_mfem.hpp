@@ -324,12 +324,12 @@ public:
     // Set up the inverse element transformation
     InvTransform invTrans(&tr);
 
+    SLIC_DEBUG_IF(m_printLevel >= 0, "Checking element " << eltIdx);
+
     invTrans.SetPrintLevel(m_printLevel);
     invTrans.SetInitialGuessType(m_initGuessType);
     invTrans.SetInitGuessRelOrder(m_grid_order);
     invTrans.SetSolverType(m_solverType);
-
-    SLIC_DEBUG_IF(m_printLevel >= 0, "Checking element " << eltIdx);
 
     // Status codes: {0 -> successful; 1 -> outside elt; 2-> did not converge}
     int err = invTrans.Transform(ptSpace, ipRef);

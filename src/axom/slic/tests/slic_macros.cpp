@@ -323,6 +323,7 @@ TEST(slic_macros, test_debug_macros)
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
+  AXOM_UNUSED_VAR(expected_line_number);
 #endif
 
   // is root, but conditional is false -> no message

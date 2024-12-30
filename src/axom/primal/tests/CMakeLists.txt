@@ -24,6 +24,7 @@ set( primal_tests
     primal_knot_vector.cpp
     primal_numeric_array.cpp
     primal_nurbs_curve.cpp
+    primal_nurbs_patch.cpp
     primal_orientation.cpp
     primal_orientedboundingbox.cpp
     primal_plane.cpp
