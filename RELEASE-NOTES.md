@@ -43,6 +43,7 @@ to use Open CASCADE's file I/O capabilities in support of Quest applications.
 - Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
 This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
 as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+- Fixes a memory leak in `axom::Array` copy constructor.
 
 ## [Version 0.10.1] - Release date 2024-10-22
 
