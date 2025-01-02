@@ -18,7 +18,7 @@ AddressSanitizer
 
 AddressSanitizer (aka Asan) is memory error detection tool that is a part of LLVM.  It
 very fast and easy to use but doesn't seem as robust as Valgrind.  It requires compile
-and link flags which are enabled via the CMake option ENABLE_ASAN.  Anything in our CMake
+and link flags which are enabled via the CMake option ``AXOM_ENABLE_ASAN``.  Anything in our CMake
 system will get those flags after that is enabled but our third-party libraries (like MFEM)
 will not. After that just run your built executable and Asan will output a log to the screen
 after your program is done running.  Asan's behavior can be modified with a set of
@@ -26,14 +26,14 @@ after your program is done running.  Asan's behavior can be modified with a set 
 
 .. note::
     Asan only works with the Clang and GCC compiler chains.  Our build system will throw
-    and error if you try to build with anything else while ENABLE_ASAN is ON.
+    and error if you try to build with anything else while AXOM_ENABLE_ASAN is ON.
 
 Here is a recommended workflow:
 
 .. code-block:: bash
 
-    ./config-build.py -hc host-configs/rzgenie-toss_3_x86_64_ib-gcc@8.1.0.cmake -DENABLE_ASAN=ON
-    cd build-rzgenie-toss_3_x86_64_ib-gcc@8.1.0-debug
+    ./config-build.py -hc host-configs/rzwhippet-toss_4_x86_64_ib-clang@14.0.6.cmake -DAXOM_ENABLE_ASAN=ON
+    cd build-rzwhippet-toss_4_x86_64_ib-clang@14.0.6-debug
     srun -N1 --exclusive --mpi-bind=off make -j
     LSAN_OPTIONS=suppressions=../suppressions.asan ASAN_OPTIONS=log_path=asan.out:log_exe_name=true srun -n2 <path to test>
 
@@ -78,7 +78,7 @@ Here is a recommended workflow:
     srun -N1 --exclusive --mpi-bind=off make -j
     srun -n2 valgrind --tool=memcheck --log-file=valgrind.out --leak-check=yes --show-leak-kinds=all --num-callers=20 --suppressions=../suppressions.valgrind <path to test>
 
-This will will produce a file called ``valgrind.out`` in the current directory with a valgrind report.
+This will produce a file called ``valgrind.out`` in the current directory with a valgrind report.
 
 Here is an explanation of the given options:
 
