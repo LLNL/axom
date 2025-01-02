@@ -478,13 +478,7 @@ TEST(spio_parallel, external_piecemeal_writeread)
   DataStore* ds2 = new DataStore();
   Group* root2 = ds2->getRoot();
 
-  /*
-   * Read from the files that were written above.
-   */
-  IOManager reader(MPI_COMM_WORLD);
-
-  reader.read(root2, file_name + ROOT_EXT);
-
+  // pollute values so we know they are changed
   int restored_vals1[nvals], restored_vals2[nvals];
   for(int i = 0; i < nvals; ++i)
   {
@@ -492,11 +486,18 @@ TEST(spio_parallel, external_piecemeal_writeread)
     restored_vals2[i] = -1;
   }
 
+  /*
+   * Read from the files that were written above.
+   */
+  IOManager reader(MPI_COMM_WORLD);
+
+  reader.read(root2, file_name + ROOT_EXT);
+
+  reader.read(root2->getGroup("fields1"), file_name + ROOT_EXT);
+  EXPECT_TRUE(root2->hasGroup("fields1"));
   View* view1 = root2->getView("fields1/external_array");
   view1->setExternalDataPtr(restored_vals1);
-
-  View* view2 = root2->getView("fields2/external_array");
-  view2->setExternalDataPtr(restored_vals2);
+  reader.loadExternalData(root2->getGroup("fields1"), file_name + ROOT_EXT);
 
   // Swap these two sections to show error
 
@@ -504,9 +505,12 @@ TEST(spio_parallel, external_piecemeal_writeread)
   //reader.loadExternalData(root2, file_name + ROOT_EXT);
 
   // Section 2: (Doesn't work) Load external arrays one at a time
-  EXPECT_TRUE(root2->hasGroup("fields1"));
-  reader.loadExternalData(root2->getGroup("fields1"), file_name + ROOT_EXT);
+
+
+  reader.read(root2->getGroup("fields2"), file_name + ROOT_EXT);
   EXPECT_TRUE(root2->hasGroup("fields2"));
+  View* view2 = root2->getView("fields2/external_array");
+  view2->setExternalDataPtr(restored_vals2);
   reader.loadExternalData(root2->getGroup("fields2"), file_name + ROOT_EXT);
 
   enum SpioTestResult
