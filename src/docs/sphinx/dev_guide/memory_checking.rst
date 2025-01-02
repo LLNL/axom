@@ -26,7 +26,7 @@ after your program is done running.  Asan's behavior can be modified with a set 
 
 .. note::
     Asan only works with the Clang and GCC compiler chains.  Our build system will throw
-    an error if you try to build with anything else while AXOM_ENABLE_ASAN is ON.
+    an error if you try to build with anything else while ``AXOM_ENABLE_ASAN`` is ``ON``.
 
 Here is a recommended workflow:
 
@@ -41,11 +41,11 @@ This will output files in the current directory for each process that follow the
 ``asan.out.<exe name>.<pid>``.  It also sets your return code to a non-zero value if there
 were any non-suppressed memory errors.
 
-LSAN_OPTIONS and ASAN_OPTIONS are delimited by ':'.
+``LSAN_OPTIONS`` and ``ASAN_OPTIONS`` are delimited by ':'.
 
-Here is an explanation of the given options (all should be added to ASAN_OPTIONS unless noted):
+Here is an explanation of the given options (all should be added to ``ASAN_OPTIONS`` unless noted):
 
-  * ``suppressions``: Location of memory leak suppression file (LSAN_OPTIONS)
+  * ``suppressions``: Location of memory leak suppression file (``LSAN_OPTIONS``)
   * ``log_path``: Logs to the given file instead of to the screen. This is very helpful
     to avoid intermingled lines on the screen from every process
   * ``log_exe_name``: Adds executable name to log_path
@@ -55,7 +55,7 @@ Helpful options:
   * ``fast_unwind_on_malloc=0``: This improves Asan's stack tracing ability but also greatly slows
     down the run
   * ``exitcode=0``: This stops Asan from returning a a non-zero exit code from your executable
-    (defaults to 23) (LSAN_OPTIONS)
+    (defaults to 23) (``LSAN_OPTIONS``)
 
 
 Valgrind
