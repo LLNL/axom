@@ -567,7 +567,8 @@ int main(int argc, char** argv)
     break;
   case ShapingMethod::Intersection:
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    shaper = new quest::IntersectionShaper(params.shapeSet, &shapingDC);
+    shaper =
+      new quest::IntersectionShaper(params.policy, params.shapeSet, &shapingDC);
 #else
     SLIC_ERROR(
       "IntersectionShaper requires Axom to be configured with Umpire.");
@@ -614,7 +615,6 @@ int main(int argc, char** argv)
   if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
   {
     intersectionShaper->setLevel(params.refinementLevel);
-    intersectionShaper->setExecPolicy(params.policy);
 
     if(!params.backgroundMaterial.empty())
     {

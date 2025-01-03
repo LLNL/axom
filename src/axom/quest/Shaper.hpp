@@ -25,6 +25,7 @@
 #include "axom/klee.hpp"
 #include "axom/mint.hpp"
 #include "axom/quest/DiscreteShape.hpp"
+#include "axom/core/execution/runtime_policy.hpp"
 
 #if defined(AXOM_USE_MFEM)
   #include "mfem.hpp"
@@ -48,18 +49,23 @@ namespace quest
 class Shaper
 {
 public:
+  using RuntimePolicy = axom::runtime_policy::Policy;
+
 #if defined(AXOM_USE_MFEM)
   /*!
     @brief Construct Shaper to operate on an MFEM mesh.
   */
-  Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc);
+  Shaper(RuntimePolicy execPolicy,
+         const klee::ShapeSet& shapeSet,
+         sidre::MFEMSidreDataCollection* dc);
 #endif
 
   /*!
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a sidre Group.
   */
-  Shaper(const klee::ShapeSet& shapeSet,
+  Shaper(RuntimePolicy execPolicy,
+         const klee::ShapeSet& shapeSet,
          sidre::Group* bpMesh,
          const std::string& topo = "");
 
@@ -72,7 +78,8 @@ public:
     all arrays pre-allocated in a space accessible by the runtime
     policy.  Any needed-but-missing space would lead to an exception.
   */
-  Shaper(const klee::ShapeSet& shapeSet,
+  Shaper(RuntimePolicy execPolicy,
+         const klee::ShapeSet& shapeSet,
          conduit::Node* bpNode,
          const std::string& topo = "");
 
@@ -204,6 +211,7 @@ protected:
   int getRank() const;
 
 protected:
+  RuntimePolicy m_execPolicy;
   sidre::DataStore m_dataStore;
 
   const klee::ShapeSet& m_shapeSet;

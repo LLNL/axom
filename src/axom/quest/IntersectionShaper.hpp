@@ -325,9 +325,10 @@ public:
   /*!
     @brief Construct Shaper to operate on an MFEM mesh.
   */
-  IntersectionShaper(const klee::ShapeSet& shapeSet,
+  IntersectionShaper(RuntimePolicy runtimePolicy,
+                     const klee::ShapeSet& shapeSet,
                      sidre::MFEMSidreDataCollection* dc)
-    : Shaper(shapeSet, dc)
+    : Shaper(runtimePolicy, shapeSet, dc)
   {
     m_free_mat_name = "free";
   }
@@ -338,10 +339,11 @@ public:
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a sidre Group.
   */
-  IntersectionShaper(const klee::ShapeSet& shapeSet,
+  IntersectionShaper(RuntimePolicy runtimePolicy,
+                     const klee::ShapeSet& shapeSet,
                      sidre::Group* bpGrp,
                      const std::string& topo = "")
-    : Shaper(shapeSet, bpGrp, topo)
+    : Shaper(runtimePolicy, shapeSet, bpGrp, topo)
     , m_free_mat_name("free")
   { }
 
@@ -349,10 +351,11 @@ public:
     @brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a Conduit Node.
   */
-  IntersectionShaper(const klee::ShapeSet& shapeSet,
+  IntersectionShaper(RuntimePolicy runtimePolicy,
+                     const klee::ShapeSet& shapeSet,
                      conduit::Node* bpNode,
                      const std::string& topo = "")
-    : Shaper(shapeSet, bpNode, topo)
+    : Shaper(runtimePolicy, shapeSet, bpNode, topo)
     , m_free_mat_name("free")
   { }
   #endif
@@ -361,8 +364,6 @@ public:
   //!  @name Functions to get and set shaping parameters related to intersection; supplements parameters in base class
 
   void setLevel(int level) { m_level = level; }
-
-  void setExecPolicy(RuntimePolicy policy) { m_execPolicy = policy; }
 
   /*!
    * \brief Set the name of the material used to account for free volume fractions.
@@ -914,7 +915,7 @@ public:
         axom::Array<IndexType>(newTotalCandidates_device, host_allocator);
 
       axom::for_all<ExecSpace>(
-        newTotalCandidates_calc_host[0], // Number of candidates found.
+        newTotalCandidates_calc_host[0],  // Number of candidates found.
         AXOM_LAMBDA(axom::IndexType i) {
           const int index = hex_indices_device_view[i];
           const int shapeIndex = shape_candidates_device_view[i];
@@ -1493,47 +1494,45 @@ public:
     {
   #if defined(AXOM_USE_OPENMP)
     case RuntimePolicy::omp:
-      overlapVol = sumArray<omp_exec>(m_overlap_volumes.data(),
-                                      m_overlap_volumes.size());
+      overlapVol =
+        sumArray<omp_exec>(m_overlap_volumes.data(), m_overlap_volumes.size());
       break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::cuda:
-      overlapVol = sumArray<cuda_exec>(m_overlap_volumes.data(),
-                                      m_overlap_volumes.size());
+      overlapVol =
+        sumArray<cuda_exec>(m_overlap_volumes.data(), m_overlap_volumes.size());
       break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::hip:
-      overlapVol = sumArray<hip_exec>(m_overlap_volumes.data(),
-                                      m_overlap_volumes.size());
+      overlapVol =
+        sumArray<hip_exec>(m_overlap_volumes.data(), m_overlap_volumes.size());
       break;
   #endif  // AXOM_USE_HIP
     case RuntimePolicy::seq:
     default:
-      overlapVol = sumArray<seq_exec>(m_overlap_volumes.data(),
-                                      m_overlap_volumes.size());
+      overlapVol =
+        sumArray<seq_exec>(m_overlap_volumes.data(), m_overlap_volumes.size());
       break;
     }
 
-    if (global)
+    if(global)
     {
       overlapVol = this->allReduceSum(overlapVol);
     }
     return overlapVol;
   }
 
-  template<typename ExecSpace, typename Summable>
+  template <typename ExecSpace, typename Summable>
   Summable sumArray(const Summable* a, axom::IndexType count) const
   {
     using LoopPolicy = typename axom::execution_space<ExecSpace>::loop_policy;
     using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
-    RAJA::ReduceSum<ReducePolicy, Summable> vsum{0};
+    RAJA::ReduceSum<ReducePolicy, Summable> vsum {0};
     RAJA::forall<LoopPolicy>(
       RAJA::RangeSegment(0, count),
-      AXOM_LAMBDA(RAJA::Index_type i) {
-        vsum += a[i];
-      });
+      AXOM_LAMBDA(RAJA::Index_type i) { vsum += a[i]; });
     Summable sum = static_cast<Summable>(vsum.get());
     return sum;
   }
@@ -2385,12 +2384,16 @@ public:
 
     SLIC_ERROR_IF(
       !XS::usesAllocId(axom::getAllocatorIDFromPointer(conn.data())),
-      std::string(XS::name()) + axom::fmt::format(" execution space cannot use the connectivity allocator id {}",
-                                                  axom::getAllocatorIDFromPointer(conn.data())));
+      std::string(XS::name()) +
+        axom::fmt::format(
+          " execution space cannot use the connectivity allocator id {}",
+          axom::getAllocatorIDFromPointer(conn.data())));
     SLIC_ERROR_IF(
       !XS::usesAllocId(axom::getAllocatorIDFromPointer(coordArrays[0].data())),
-      std::string(XS::name()) + axom::fmt::format(" execution space cannot use the coordset allocator id {}",
-                                                  axom::getAllocatorIDFromPointer(coordArrays[0].data())));
+      std::string(XS::name()) +
+        axom::fmt::format(
+          " execution space cannot use the coordset allocator id {}",
+          axom::getAllocatorIDFromPointer(coordArrays[0].data())));
 
     vertCoords =
       axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
@@ -2506,7 +2509,6 @@ private:
   }
 
 private:
-  RuntimePolicy m_execPolicy {RuntimePolicy::seq};
   int m_level {DEFAULT_CIRCLE_REFINEMENT_LEVEL};
   double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
   std::string m_free_mat_name;

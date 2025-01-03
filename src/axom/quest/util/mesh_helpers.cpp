@@ -195,70 +195,134 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh(
                                      topologyName,
                                      coordsetName,
                                      runtimePolicy);
-  convert_blueprint_structured_explicit_to_unstructured(meshGrp, topologyName);
+  convert_blueprint_structured_explicit_to_unstructured(meshGrp,
+                                                        topologyName,
+                                                        runtimePolicy);
   return meshGrp;
 }
 
 void convert_blueprint_structured_explicit_to_unstructured(
   axom::sidre::Group* meshGrp,
-  const std::string& topoName)
+  const std::string& topoName,
+  axom::runtime_policy::Policy runtimePolicy)
 {
-  const std::string& coordsetName =
-    meshGrp->getView("topologies/" + topoName + "/coordset")
-      ->getString();
-
-  sidre::Group* coordsetGrp = nullptr;
-    #if defined(AXOM_USE_UMPIRE)
-  /* If using device memory, temporarily copy coords to host
-     so we can use conduit's blueprint::mesh utilities.
-     When we re-import the newCoords, we will get the data
-     back to meshGrp memory space.
-  */
-  coordsetGrp = meshGrp->getGroup("coordsets")->getGroup(coordsetName);
-  int newDataAllocId = axom::getAllocatorIDFromPointer(coordsetGrp->getView("values/x")->getVoidPtr());
-  MemorySpace memSpace = detail::getAllocatorSpace(newDataAllocId);
-  sidre::Group* stashGrp = nullptr;
-  sidre::Group* stashedValuesGrp = nullptr;
-  if(memSpace == MemorySpace::Device)
+  if(runtimePolicy == axom::runtime_policy::Policy::seq)
   {
-    int hostAllocId = execution_space<axom::SEQ_EXEC>::allocatorID();
-    stashGrp = meshGrp->createGroup("tempStash");
-    stashedValuesGrp = stashGrp->moveGroup(coordsetGrp->getGroup("values"));
-    coordsetGrp->deepCopyGroup(stashedValuesGrp, hostAllocId);
+    convert_blueprint_structured_explicit_to_unstructured_impl<axom::SEQ_EXEC>(
+      meshGrp,
+      topoName);
+  }
+    #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  if(runtimePolicy == axom::runtime_policy::Policy::omp)
+  {
+    convert_blueprint_structured_explicit_to_unstructured_impl<axom::OMP_EXEC>(
+      meshGrp,
+      topoName);
   }
     #endif
+    #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+  if(runtimePolicy == axom::runtime_policy::Policy::cuda)
+  {
+    convert_blueprint_structured_explicit_to_unstructured_impl<axom::CUDA_EXEC<256>>(
+      meshGrp,
+      topoName);
+  }
+    #endif
+    #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+  if(runtimePolicy == axom::runtime_policy::Policy::hip)
+  {
+    convert_blueprint_structured_explicit_to_unstructured_impl<axom::HIP_EXEC<256>>(
+      meshGrp,
+      topoName);
+  }
+    #endif
+}
 
-  // Convert mesh to conduit::Node to use conduit's blueprint support.
-  conduit::Node info;
-  conduit::Node curMesh;
-  meshGrp->createNativeLayout(curMesh);
-  const conduit::Node& curTopo =
-    curMesh.fetch_existing("topologies/" + topoName);
-  SLIC_ASSERT(
-    conduit::blueprint::mesh::topology::structured::verify(curTopo, info));
+template <typename ExecSpace>
+void convert_blueprint_structured_explicit_to_unstructured_impl(
+  axom::sidre::Group* meshGrp,
+  const std::string& topoName)
+{
+  AXOM_ANNOTATE_SCOPE("convert_to_unstructured");
+  constexpr int DIM = 3;
 
-  // Use conduit to convert to unstructured.
-  conduit::Node newTopo;
-  conduit::Node newCoords;
-  conduit::blueprint::mesh::topology::structured::to_unstructured(curTopo,
-                                                                  newTopo,
-                                                                  newCoords);
+  const std::string& coordsetName =
+    meshGrp->getView("topologies/" + topoName + "/coordset")->getString();
 
-  // Copy unstructured back into meshGrp.
-  meshGrp->getGroup("topologies")->destroyGroup(topoName);
-  auto* topoGrp = meshGrp->getGroup("topologies")->createGroup(topoName);
-  topoGrp->setDefaultAllocator(newDataAllocId);
-  topoGrp->importConduitTree(newTopo);
-  topoGrp->getView("coordset")->setString(coordsetName);
+  sidre::Group* coordsetGrp =
+    meshGrp->getGroup("coordsets")->getGroup(coordsetName);
+  int newDataAllocId = axom::getAllocatorIDFromPointer(
+    coordsetGrp->getView("values/x")->getVoidPtr());
 
-  meshGrp->getGroup("coordsets")->destroyGroup(coordsetName);
-  coordsetGrp = meshGrp->getGroup("coordsets")->createGroup(coordsetName);
-  coordsetGrp->setDefaultAllocator(newDataAllocId);
-  coordsetGrp->importConduitTree(newCoords);
+  axom::sidre::Group* topoGrp =
+    meshGrp->getGroup("topologies")->getGroup(topoName);
+  axom::sidre::View* topoTypeView = topoGrp->getView("type");
+  SLIC_ASSERT(std::string(topoTypeView->getString()) == "structured");
+  topoTypeView->setString("unstructured");
+  topoGrp->createView("elements/shape")->setString("hex");
+
+  axom::sidre::Group* topoElemGrp = topoGrp->getGroup("elements");
+  axom::sidre::Group* topoDimsGrp = topoElemGrp->getGroup("dims");
+
+  // Assuming no ghost, but we should eventually support ghosts.
+  SLIC_ASSERT(!topoGrp->hasGroup("elements/offsets"));
+  SLIC_ASSERT(!topoGrp->hasGroup("elements/strides"));
+
+  const axom::StackArray<axom::IndexType, DIM> cShape {
+    topoDimsGrp->getView("i")->getData(),
+    topoDimsGrp->getView("j")->getData(),
+    topoDimsGrp->getView("k")->getData()};
+  const axom::StackArray<axom::IndexType, DIM> vShape {cShape[0] + 1,
+                                                       cShape[1] + 1,
+                                                       cShape[2] + 1};
+
+  const axom::IndexType cCount = cShape[0] * cShape[1] * cShape[2];
+
+  const axom::StackArray<axom::IndexType, 2> connShape {cCount, 8};
+  axom::sidre::View* connView = topoGrp->createViewWithShapeAndAllocate(
+    "elements/connectivity",
+    axom::sidre::detail::SidreTT<axom::IndexType>::id,
+    2,
+    connShape.begin(),
+    newDataAllocId);
+  axom::ArrayView<axom::IndexType, 2> connArrayView(
+    static_cast<axom::IndexType*>(connView->getVoidPtr()),
+    connShape);
+
+  axom::MDMapping<DIM> cIdMapping(cShape, axom::ArrayStrideOrder::COLUMN);
+  axom::MDMapping<DIM> vIdMapping(vShape, axom::ArrayStrideOrder::COLUMN);
+
+  const axom::StackArray<const axom::StackArray<axom::IndexType, DIM>, 8> cornerOffsets {
+    {{0, 0, 0},
+     {1, 0, 0},
+     {1, 1, 0},
+     {0, 1, 0},
+     {0, 0, 1},
+     {1, 0, 1},
+     {1, 1, 1},
+     {0, 1, 1}}};
+  axom::for_all<ExecSpace>(
+    cCount,
+    AXOM_LAMBDA(axom::IndexType iCell) {
+      axom::StackArray<axom::IndexType, DIM> cIdx =
+        cIdMapping.toMultiIndex(iCell);
+      for(int n = 0; n < 8; ++n)
+      {
+        const auto& cornerOffset = cornerOffsets[n];
+        axom::StackArray<axom::IndexType, DIM> vIdx;
+        for(int d = 0; d < DIM; ++d)
+        {
+          vIdx[d] = cIdx[d] + cornerOffset[d];
+        }
+        axom::IndexType iVert = vIdMapping.toFlatIndex(vIdx);
+        connArrayView(iCell, n) = iVert;
+      }
+    });
 
   const bool addExtraDataForMint = true;
   if(addExtraDataForMint)
   {
+    AXOM_ANNOTATE_BEGIN("add_extra");
     /*
       Constructing a mint mesh from meshGrp fails unless we add some
       extra data.  Blueprint doesn't require this extra data.  (The mesh
@@ -285,22 +349,29 @@ void convert_blueprint_structured_explicit_to_unstructured(
     auto* connView = elementsGrp->getView("connectivity");
     curDim = connView->getShape(2, curShape);
     constexpr axom::IndexType NUM_VERTS_PER_HEX = 8;
-    SLIC_ASSERT(curDim == 1);
-    SLIC_ASSERT(curShape[0] % NUM_VERTS_PER_HEX == 0);
-    axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX,
-                                    NUM_VERTS_PER_HEX};
-    connView->reshapeArray(2, connShape);
+    SLIC_ASSERT(curDim == 1 || curDim == 2);
+    if(curDim == 1)
+    {
+      SLIC_ASSERT(curShape[0] % NUM_VERTS_PER_HEX == 0);
+      axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX,
+                                      NUM_VERTS_PER_HEX};
+      connView->reshapeArray(2, connShape);
+    }
 
     // mint::Mesh requires connectivity strides, even though Blueprint doesn't.
     elementsGrp->createViewScalar("stride", NUM_VERTS_PER_HEX);
 
     // mint::Mesh requires field group, even though Blueprint doesn't.
     meshGrp->createGroup("fields");
+    AXOM_ANNOTATE_END("add_extra");
   }
 
     #if defined(AXOM_DEBUG)
+  AXOM_ANNOTATE_BEGIN("validate_post");
+  conduit::Node info;
   bool isValid = verifyBlueprintMesh(meshGrp, info);
   SLIC_ASSERT_MSG(isValid, "Internal error: Generated mesh is invalid.");
+  AXOM_ANNOTATE_END("validate_post");
     #endif
 
   return;

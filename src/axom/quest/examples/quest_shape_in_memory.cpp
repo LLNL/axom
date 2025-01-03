@@ -87,7 +87,7 @@ public:
   }
   int getBoxCellCount() const
   {
-    return boxResolution[0]*boxResolution[1]*boxResolution[2];
+    return boxResolution[0] * boxResolution[1] * boxResolution[2];
   }
 
   // The shape to run.
@@ -816,7 +816,7 @@ axom::klee::Shape createShape_Hex()
 
   SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
 
-  const double md = params.length < 0 ? 0.6 : params.length/2;
+  const double md = params.length < 0 ? 0.6 : params.length / 2;
   const double lg = 1.2 * md;
   const double sm = 0.8 * md;
   const Point3D p {-lg, -md, -sm};
@@ -1326,35 +1326,38 @@ axom::ArrayView<double> getFieldAsArrayView(const std::string& fieldName)
     std::string valuesPath = "fields/" + fieldName + "/values";
     axom::sidre::View* fieldValues = compMeshGrp->getView(valuesPath);
     double* fieldData = fieldValues->getArray();
-    fieldDataView = axom::ArrayView<double>(fieldData,
-                                            fieldValues->getNumElements());
+    fieldDataView =
+      axom::ArrayView<double>(fieldData, fieldValues->getNumElements());
   }
   if(params.useBlueprintConduit())
   {
     std::string valuesPath = "fields/" + fieldName + "/values";
     conduit::Node& fieldValues = compMeshNode->fetch_existing(valuesPath);
     double* fieldData = fieldValues.as_double_ptr();
-    fieldDataView = axom::ArrayView<double>(fieldData,
-                                            fieldValues.dtype().number_of_elements());
+    fieldDataView =
+      axom::ArrayView<double>(fieldData,
+                              fieldValues.dtype().number_of_elements());
   }
-#if defined (AXOM_USE_MFEM)
+#if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
     // auto* mfemMesh = shapingDC->GetMesh();
     mfem::GridFunction* gridFunc = shapingDC->GetField(fieldName);
-    fieldDataView = axom::ArrayView<double>(gridFunc->GetData(), gridFunc->Size());
+    fieldDataView =
+      axom::ArrayView<double>(gridFunc->GetData(), gridFunc->Size());
   }
 #endif
   return fieldDataView;
 }
 
-
 //!@brief Fill a sidre array View with a value.
 // No error checking.
-template<typename T> void fillSidreViewData(axom::sidre::View* view, const T& value)
+template <typename T>
+void fillSidreViewData(axom::sidre::View* view, const T& value)
 {
   double* valuesPtr = view->getData<T*>();
-  switch (params.policy) {
+  switch(params.policy)
+  {
 #if defined(AXOM_USE_CUDA)
   case RuntimePolicy::cuda:
     axom::for_all<axom::CUDA_EXEC<256>>(
@@ -1571,7 +1574,7 @@ int main(int argc, char** argv)
 
     createBoxMesh(compMeshGrp);
 
-    if (params.useBlueprintConduit())
+    if(params.useBlueprintConduit())
     {
       // Intersection requires conduit mesh to have array data pre-allocated.
       auto makeField = [&](const std::string& fieldName, double initValue) {
@@ -1583,14 +1586,18 @@ int main(int argc, char** argv)
         axom::sidre::View* valuesView = fieldGrp->createViewWithShapeAndAllocate(
           "values",
           axom::sidre::detail::SidreTT<double>::id,
-          2, shape);
+          2,
+          shape);
         fillSidreViewData(valuesView, initValue);
       };
       makeField("vol_frac_free", 1.0);
-      const auto &shapes = shapeSet.getShapes();
-      for( const auto& shape : shapes ) {
-        makeField("vol_frac_" + shape.getMaterial(), 0.0); // Used in volume fraction computation
-        makeField("shape_vol_frac_" + shape.getName(), 0.0); // Used in applyReplacementRules
+      const auto& shapes = shapeSet.getShapes();
+      for(const auto& shape : shapes)
+      {
+        makeField("vol_frac_" + shape.getMaterial(),
+                  0.0);  // Used in volume fraction computation
+        makeField("shape_vol_frac_" + shape.getName(),
+                  0.0);  // Used in applyReplacementRules
       }
     }
 
@@ -1611,21 +1618,26 @@ int main(int argc, char** argv)
   std::shared_ptr<quest::IntersectionShaper> shaper = nullptr;
   if(params.useBlueprintSidre())
   {
-    shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshGrp);
+    shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         shapeSet,
+                                                         compMeshGrp);
   }
   if(params.useBlueprintConduit())
   {
-    shaper = std::make_shared<quest::IntersectionShaper>(shapeSet, compMeshNode.get());
+    shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         shapeSet,
+                                                         compMeshNode.get());
   }
 #if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
-    shaper =
-      std::make_shared<quest::IntersectionShaper>(shapeSet, shapingDC.get());
+    shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         shapeSet,
+                                                         shapingDC.get());
   }
 #endif
   SLIC_ASSERT(shaper != nullptr);
-  shaper->setExecPolicy(params.policy);
+  // shaper->setExecPolicy(params.policy);
 
   // Set generic parameters for the base Shaper instance
   shaper->setVertexWeldThreshold(params.weldThresh);
@@ -1757,7 +1769,9 @@ int main(int argc, char** argv)
 
   int failCounts = 0;
 
-  std::vector<std::string> allVfNames(1, "free"); // All volume fraction names plus "free".
+  std::vector<std::string> allVfNames(
+    1,
+    "free");  // All volume fraction names plus "free".
   for(const auto& shape : shapeSet.getShapes())
   {
     allVfNames.push_back(shape.getMaterial());
@@ -1775,7 +1789,9 @@ int main(int argc, char** argv)
   {
     std::string fieldName = "vol_frac_" + vfName;
     axom::ArrayView<double> vfView = getFieldAsArrayView(fieldName);
-    axom::Array<double> vfHostArray(vfView, axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<double> vfHostArray(
+      vfView,
+      axom::execution_space<ExecSpace>::allocatorID());
     vfView = vfHostArray.view();
     axom::for_all<ExecSpace>(
       cellCount,
@@ -1804,7 +1820,9 @@ int main(int argc, char** argv)
   {
     std::string fieldName = "vol_frac_" + vfName;
     axom::ArrayView<double> vfView = getFieldAsArrayView(fieldName);
-    axom::Array<double> vfHostArray(vfView, axom::execution_space<ExecSpace>::allocatorID());
+    axom::Array<double> vfHostArray(
+      vfView,
+      axom::execution_space<ExecSpace>::allocatorID());
     vfView = vfHostArray.view();
     axom::for_all<ExecSpace>(
       cellCount,

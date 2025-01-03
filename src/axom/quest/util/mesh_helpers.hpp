@@ -93,6 +93,11 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh(
 
 /*!
   \brief Convert a structured explicit blueprint mesh to unstructured.
+  \param meshGrp Put the mesh in this Group
+  \param topologyName Name of the blueprint topoloyy to use.
+  \param runtimePolicy Runtime policy, see axom::runtime_policy.
+         Memory in \c meshGrp must be compatible with the
+         specified policy.
 
   All input mesh data are expected to have the allocator id of
   meshGrp->getDefaultAllocatorID().  On output, they will also have
@@ -100,6 +105,12 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh(
   transfers memory to and from another space.
 */
 void convert_blueprint_structured_explicit_to_unstructured(
+  axom::sidre::Group* meshGrp,
+  const std::string& topoName,
+  axom::runtime_policy::Policy runtimePolicy);
+
+template <typename ExecSpace>
+void convert_blueprint_structured_explicit_to_unstructured_impl(
   axom::sidre::Group* meshGrp,
   const std::string& topoName);
 

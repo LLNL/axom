@@ -324,9 +324,8 @@ void replacementRuleTest(const std::string &shapeFile,
   // the C2C reader.
   dc.SetComm(MPI_COMM_WORLD);
   #endif
-  quest::IntersectionShaper shaper(shapeSet, &dc);
+  quest::IntersectionShaper shaper(policy, shapeSet, &dc);
   shaper.setLevel(refinementLevel);
-  shaper.setExecPolicy(policy);
 
   // Borrowed from shaping_driver.
   const klee::Dimensions shapeDim = shapeSet.getDimensions();
@@ -460,11 +459,10 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
   // the C2C reader.
   dc.SetComm(MPI_COMM_WORLD);
   #endif
-  quest::IntersectionShaper shaper(shapeSet, &dc);
+  quest::IntersectionShaper shaper(policy, shapeSet, &dc);
   shaper.setLevel(refinementLevel);
   shaper.setPercentError(targetPercentError);
   shaper.setRefinementType(quest::DiscreteShape::RefinementDynamic);
-  shaper.setExecPolicy(policy);
 
   // Borrowed from shaping_driver (there should just be one shape)
   const klee::Dimensions shapeDim = shapeSet.getDimensions();

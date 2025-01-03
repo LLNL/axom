@@ -318,7 +318,7 @@ class SamplingShaper : public Shaper
 public:
   SamplingShaper(const klee::ShapeSet& shapeSet,
                  sidre::MFEMSidreDataCollection* dc)
-    : Shaper(shapeSet, dc)
+    : Shaper(Shaper::RuntimePolicy::seq, shapeSet, dc)
   { }
 
   ~SamplingShaper()

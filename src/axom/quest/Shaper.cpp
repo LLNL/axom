@@ -28,8 +28,11 @@ constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
 constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 
 #if defined(AXOM_USE_MFEM)
-Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
-  : m_shapeSet(shapeSet)
+Shaper::Shaper(RuntimePolicy execPolicy,
+               const klee::ShapeSet& shapeSet,
+               sidre::MFEMSidreDataCollection* dc)
+  : m_execPolicy(execPolicy)
+  , m_shapeSet(shapeSet)
   , m_dc(dc)
   #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)
@@ -47,10 +50,12 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* d
 }
 #endif
 
-Shaper::Shaper(const klee::ShapeSet& shapeSet,
+Shaper::Shaper(RuntimePolicy execPolicy,
+               const klee::ShapeSet& shapeSet,
                sidre::Group* bpGrp,
                const std::string& topo)
-  : m_shapeSet(shapeSet)
+  : m_execPolicy(execPolicy)
+  , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(bpGrp)
   , m_bpTopo(topo.empty() ? bpGrp->getGroup("topologies")->getGroupName(0) : topo)
@@ -76,10 +81,12 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
   setFilePath(shapeSet.getPath());
 }
 
-Shaper::Shaper(const klee::ShapeSet& shapeSet,
+Shaper::Shaper(RuntimePolicy execPolicy,
+               const klee::ShapeSet& shapeSet,
                conduit::Node* bpNode,
                const std::string& topo)
-  : m_shapeSet(shapeSet)
+  : m_execPolicy(execPolicy)
+  , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)
   , m_bpTopo(topo.empty() ? bpNode->fetch_existing("topologies").child(0).name()
@@ -89,6 +96,7 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
 #endif
   , m_comm(MPI_COMM_WORLD)
 {
+  AXOM_ANNOTATE_SCOPE("Shaper::Shaper_Node");
   m_bpGrp = m_ds.getRoot()->createGroup("internalGrp");
 
   m_bpGrp->importConduitTreeExternal(*bpNode);
@@ -100,9 +108,11 @@ Shaper::Shaper(const klee::ShapeSet& shapeSet,
                                  .as_string();
   if(topoType == "structured")
   {
+    AXOM_ANNOTATE_SCOPE("Shaper::convertStructured");
     axom::quest::util::convert_blueprint_structured_explicit_to_unstructured(
       m_bpGrp,
-      m_bpTopo);
+      m_bpTopo,
+      m_execPolicy);
   }
 
   m_bpGrp->createNativeLayout(m_bpNodeInt);
