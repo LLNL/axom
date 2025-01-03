@@ -347,8 +347,6 @@ private:
   axom::IndexType m_levelOfRefinement = 0;
 
   std::shared_ptr<const GeometryOperator> m_operator;
-
-  bool isBlueprintTetMesh(const axom::sidre::Group *meshGroup) const;
 };
 
 }  // namespace klee

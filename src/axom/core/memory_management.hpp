@@ -406,6 +406,7 @@ inline bool isDeviceAllocator(int allocator_id)
   return axom::detail::getAllocatorSpace(allocator_id) ==
     axom::MemorySpace::Device;
 #else
+  AXOM_UNUSED_VAR(allocator_id);
   return false;
 #endif
 }

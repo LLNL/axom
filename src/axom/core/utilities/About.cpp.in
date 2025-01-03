@@ -102,6 +102,10 @@ void about(std::ostream &oss)
     comps.push_back("sidre");
 #endif
 
+#ifdef AXOM_USE_SINA
+    comps.push_back("sina");
+#endif
+
 #ifdef AXOM_USE_SLAM
     comps.push_back("slam");
 #endif
@@ -172,6 +176,10 @@ void about(std::ostream &oss)
 
 #ifdef AXOM_USE_MFEM
     libs.push_back("mfem");
+#endif
+
+#ifdef AXOM_USE_OPENCASCADE
+    libs.push_back("opencascade");
 #endif
 
 #ifdef AXOM_USE_RAJA

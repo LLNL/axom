@@ -70,6 +70,7 @@
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_LUA
 #cmakedefine AXOM_USE_MFEM
+#cmakedefine AXOM_USE_OPENCASCADE
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SOL
@@ -102,6 +103,7 @@
 #cmakedefine AXOM_USE_PRIMAL
 #cmakedefine AXOM_USE_QUEST
 #cmakedefine AXOM_USE_SIDRE
+#cmakedefine AXOM_USE_SINA
 #cmakedefine AXOM_USE_SLAM
 #cmakedefine AXOM_USE_SLIC
 #cmakedefine AXOM_USE_SPIN

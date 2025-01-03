@@ -610,7 +610,7 @@ axom::klee::Shape createShape_Sphere()
 
   const axom::IndexType levelOfRefinement = params.refinementLevel;
   axom::klee::Geometry sphereGeometry(prop, sphere, levelOfRefinement, compositeOp);
-  axom::klee::Shape sphereShape("sphere", "AU", {}, {}, sphereGeometry);
+  axom::klee::Shape sphereShape("sphere", "SPHERE", {}, {}, sphereGeometry);
 
   return sphereShape;
 }

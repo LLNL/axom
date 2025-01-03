@@ -973,6 +973,7 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
+  AXOM_UNUSED_VAR(expected_line_number);
 #endif
 }
 

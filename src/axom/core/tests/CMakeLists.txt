@@ -190,3 +190,25 @@ foreach(_mode none report counts gputx)
                APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
 endforeach()
 
+#------------------------------------------------------------------------------
+# Benchmarks
+#------------------------------------------------------------------------------
+if (ENABLE_BENCHMARKS)
+
+  set(core_benchmarks
+      core_benchmark_array.cpp )
+
+  foreach(test ${core_benchmarks})
+    get_filename_component(test_name ${test} NAME_WE)
+
+    axom_add_executable(NAME       ${test_name}
+                        SOURCES    ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON fmt core slic gbenchmark cli11
+                        FOLDER     axom/core/benchmarks)
+
+    blt_add_benchmark(NAME    ${test_name}
+                      COMMAND ${test_name} --benchmark_min_time=0.0001s)
+  endforeach()
+endif()
+

@@ -112,6 +112,7 @@ struct InOutHelper
                                            revolvedVolume,
                                            comm);
 #else
+      AXOM_UNUSED_VAR(revolvedVolume);
       SLIC_WARNING(fmt::format(
         "Cannot read contour file: C2C not enabled in this configuration.",
         file));

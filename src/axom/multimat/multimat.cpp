@@ -1743,15 +1743,36 @@ void MultiMat::convertFieldToCellDom(int field_idx)
   transposeField(field_idx);
 }
 
+std::string MultiMat::getFieldMappingAsString(int field_i) const
+{
+  if(m_fieldMappingVec[field_i] == FieldMapping::PER_CELL)
+  {
+    return "Per-Cell";
+  }
+  else if(m_fieldMappingVec[field_i] == FieldMapping::PER_MAT)
+  {
+    return "Per-Material";
+  }
+  else if(m_fieldMappingVec[field_i] == FieldMapping::PER_CELL_MAT)
+  {
+    return "Per-Cell-Material";
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
+  return "";
+}
+
 std::string MultiMat::getFieldDataLayoutAsString(int field_i) const
 {
   if(m_fieldDataLayoutVec[field_i] == DataLayout::CELL_DOM)
   {
-    return "Cell-Centric";
+    return "Cell-Dominant";
   }
   else if(m_fieldDataLayoutVec[field_i] == DataLayout::MAT_DOM)
   {
-    return "Material-Centric";
+    return "Material-Dominant";
   }
   else
   {
@@ -1769,6 +1790,35 @@ std::string MultiMat::getFieldSparsityLayoutAsString(int field_i) const
   else if(m_fieldSparsityLayoutVec[field_i] == SparsityLayout::DENSE)
   {
     return "Dense";
+  }
+  else
+  {
+    SLIC_ASSERT(false);
+  }
+  return "";
+}
+
+std::string MultiMat::getFieldDataTypeAsString(int field_i) const
+{
+  if(m_dataTypeVec[field_i] == DataTypeSupported::TypeUnknown)
+  {
+    return "Unknown";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeInt)
+  {
+    return "int";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeDouble)
+  {
+    return "double";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeFloat)
+  {
+    return "float";
+  }
+  else if(m_dataTypeVec[field_i] == DataTypeSupported::TypeUnsignChar)
+  {
+    return "unsigned char";
   }
   else
   {
@@ -1949,3 +1999,89 @@ MultiMat::StaticVariableRelationType* MultiMat::getRel(int field_idx)
 
   return rel_ptr;
 }
+
+namespace axom
+{
+namespace multimat
+{
+std::ostream& operator<<(std::ostream& os, FieldMapping mapping)
+{
+  switch(mapping)
+  {
+  case FieldMapping::PER_CELL:
+    os << "PER_CELL";
+    break;
+  case FieldMapping::PER_MAT:
+    os << "PER_MAT";
+    break;
+  case FieldMapping::PER_CELL_MAT:
+    os << "PER_CELL_MAT";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, DataLayout layout)
+{
+  switch(layout)
+  {
+  case DataLayout::CELL_DOM:
+    os << "CELL_DOM";
+    break;
+  case DataLayout::MAT_DOM:
+    os << "MAT_DOM";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, SparsityLayout sparsity)
+{
+  switch(sparsity)
+  {
+  case SparsityLayout::DENSE:
+    os << "DENSE";
+    break;
+  case SparsityLayout::SPARSE:
+    os << "SPARSE";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, DataTypeSupported type)
+{
+  switch(type)
+  {
+  case DataTypeSupported::TypeUnknown:
+    os << "TypeUnknown";
+    break;
+  case DataTypeSupported::TypeInt:
+    os << "TypeInt";
+    break;
+  case DataTypeSupported::TypeDouble:
+    os << "TypeDouble";
+    break;
+  case DataTypeSupported::TypeFloat:
+    os << "TypeFloat";
+    break;
+  case DataTypeSupported::TypeUnsignChar:
+    os << "TypeUnsignChar";
+    break;
+  default:
+    os << "Unknown";
+    break;
+  }
+  return os;
+}
+}  // end namespace multimat
+}  // end namespace axom
