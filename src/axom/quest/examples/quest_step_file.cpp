@@ -17,6 +17,7 @@
 #include "opencascade/BRepBndLib.hxx"
 #include "opencascade/BRepBuilderAPI_MakeFace.hxx"
 #include "opencascade/BRepBuilderAPI_NurbsConvert.hxx"
+#include "opencascade/BRepBuilderAPI_Transform.hxx"
 #include "opencascade/BRepMesh_IncrementalMesh.hxx"
 #include "opencascade/BRepTools.hxx"
 #include "opencascade/BRep_Tool.hxx"
@@ -31,6 +32,7 @@
 #include "opencascade/Geom_Curve.hxx"
 #include "opencascade/Geom_RectangularTrimmedSurface.hxx"
 #include "opencascade/Geom_Surface.hxx"
+#include "opencascade/Interface_Static.hxx"
 #include "opencascade/Poly_Array1OfTriangle.hxx"
 #include "opencascade/Poly_Triangulation.hxx"
 #include "opencascade/Precision.hxx"
@@ -46,7 +48,18 @@
 #include "opencascade/TopoDS_Edge.hxx"
 #include "opencascade/TopoDS_Shape.hxx"
 #include "opencascade/TopoDS_Wire.hxx"
+#include "opencascade/XSControl_WorkSession.hxx"
+#include "opencascade/XSControl_TransferReader.hxx"
 
+#include "opencascade/STEPCAFControl_Reader.hxx"
+#include "opencascade/TDocStd_Application.hxx"
+#include "opencascade/TDocStd_Document.hxx"
+#include "opencascade/TCollection_ExtendedString.hxx"
+#include "opencascade/XCAFApp_Application.hxx"
+#include "opencascade/XCAFDoc_DocumentTool.hxx"
+#include "opencascade/XCAFDoc_ShapeTool.hxx"
+#include "opencascade/XCAFDoc_LengthUnit.hxx"
+#include "opencascade/TDF_LabelSequence.hxx"
 #include <iostream>
 
 struct PatchData
@@ -947,6 +960,25 @@ public:
         totalTrimmingCurves);
     }
 
+    // compute and print the bounding box of the mesh in physical space
+    {
+      BBox3D meshBBox;
+      for(const auto& kv : m_patchData)
+      {
+        meshBBox.addBox(kv.second.physicalBBox);
+        // axom::fmt::format_to(
+        //   std::back_inserter(out),
+        //   " - Bounding box of patch {} in physical space: {}\n",
+        //   kv.second.patchIndex,
+        //   kv.second.physicalBBox);
+      }
+
+      axom::fmt::format_to(
+        std::back_inserter(out),
+        " - Bounding box of the mesh in physical space: {}\n",
+        meshBBox);
+    }
+
     // compute a histogram of the patch degrees w/ some additional info
     {
       struct counts
@@ -1307,6 +1339,77 @@ public:
   const PatchDataMap& getPatchDataMap() const { return m_patchData; }
 
 private:
+  double getConversionFactor(const std::string& fileUnits,
+                             const std::string& defaultUnits = "mm")
+  {
+    // we'll convert all units to lower case
+    auto toLower = [](std::string str) {
+      std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+      return str;
+    };
+
+    // start with imperial units
+    std::map<std::string, std::string> unitCanonicalMap = {{"inch", "in"},
+                                                           {"inches", "in"},
+                                                           {"in", "in"},
+                                                           {"foot", "ft"},
+                                                           {"feet", "ft"},
+                                                           {"ft", "ft"},
+                                                           {"mile", "mi"},
+                                                           {"miles", "mi"},
+                                                           {"mi", "mi"}};
+
+    // now add the SI units w/ several suffixes
+    std::map<std::string, std::string> prefixes = {
+      {"am", "atto"},
+      {"fm", "femto"},
+      {"pm", "pico"},
+      {"nm", "nano"},
+      {"um", "micro"},
+      {"mm", "milli"},
+      {"cm", "centi"},
+      {"dm", "deci"},
+      {"m", ""},
+      {"dam", "deca"},
+      {"hm", "hecto"},
+      {"km", "kilo"},
+    };
+
+    for(const auto& kv : prefixes)
+    {
+      const std::string& canonical = kv.first;
+      const std::string& prefix = kv.second;
+      unitCanonicalMap[canonical] = canonical;
+      for(const std::string& suffix : {"meter", "meters", "metre", "metres"})
+      {
+        unitCanonicalMap[prefix + suffix] = canonical;
+      }
+    }
+
+    std::map<std::string, double> unitConversionMap = {{"am", 1e-15},
+                                                       {"fm", 1e-12},
+                                                       {"pm", 1e-9},
+                                                       {"nm", 1e-6},
+                                                       {"um", 1e-3},
+                                                       {"mm", 1.0},
+                                                       {"cm", 10.0},
+                                                       {"dm", 100.0},
+                                                       {"m", 1e3},
+                                                       {"dam", 1e4},
+                                                       {"hm", 1e5},
+                                                       {"km", 1e6},
+                                                       {"in", 25.4},
+                                                       {"ft", 304.8},
+                                                       {"mi", 1609344.0}};
+
+    const double fileUnitFactor =
+      unitConversionMap[unitCanonicalMap[toLower(fileUnits)]];
+    const double defaultUnitFactor =
+      unitConversionMap[unitCanonicalMap[toLower(defaultUnits)]];
+
+    return fileUnitFactor / defaultUnitFactor;
+  };
+
   TopoDS_Shape loadStepFile(const std::string& filename)
   {
     STEPControl_Reader reader;
@@ -1319,6 +1422,19 @@ private:
       return TopoDS_Shape();
     }
 
+    // adjust the units, as needed
+    TColStd_SequenceOfAsciiString anUnitLengthNames;
+    TColStd_SequenceOfAsciiString anUnitAngleNames;
+    TColStd_SequenceOfAsciiString anUnitSolidAngleNames;
+    reader.FileUnits(anUnitLengthNames, anUnitAngleNames, anUnitSolidAngleNames);
+    if(anUnitLengthNames.Size() > 0)
+    {
+      std::string fileUnits = anUnitLengthNames(1).ToCString();
+      std::string defaultUnit = Interface_Static::CVal("xstep.cascade.unit");
+      const double lengthUnit = getConversionFactor(fileUnits, defaultUnit);
+      reader.SetSystemLengthUnit(lengthUnit);
+    }
+
     Standard_Integer numRoots = reader.NbRootsForTransfer();
     reader.TransferRoots();
     TopoDS_Shape shape = reader.OneShape();
@@ -1329,8 +1445,7 @@ private:
       return TopoDS_Shape();
     }
 
-    // convert to NURBS
-    // TODO: Check if this also converts trimming curves
+    // Convert to NURBS
     BRepBuilderAPI_NurbsConvert converter(shape);
     TopoDS_Shape nurbsShape = converter.Shape();
 
