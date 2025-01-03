@@ -975,7 +975,8 @@ public:
 
       axom::fmt::format_to(
         std::back_inserter(out),
-        " - Bounding box of the mesh in physical space: {}\n",
+        " - Bounding box of the mesh in physical space (in {}): {}\n",
+        m_fileUnits,
         meshBBox);
     }
 
@@ -1338,9 +1339,10 @@ public:
 
   const PatchDataMap& getPatchDataMap() const { return m_patchData; }
 
+  std::string getFileUnits() const { return m_fileUnits; }
+
 private:
-  double getConversionFactor(const std::string& fileUnits,
-                             const std::string& defaultUnits = "mm")
+  std::string getCanonicalUnit(const std::string& unit) const
   {
     // we'll convert all units to lower case
     auto toLower = [](std::string str) {
@@ -1360,6 +1362,7 @@ private:
                                                            {"mi", "mi"}};
 
     // now add the SI units w/ several suffixes
+    // we're going to reverse this for the map to canonical units
     std::map<std::string, std::string> prefixes = {
       {"am", "atto"},
       {"fm", "femto"},
@@ -1386,6 +1389,12 @@ private:
       }
     }
 
+    return unitCanonicalMap[toLower(unit)];
+  }
+
+  double getConversionFactor(const std::string& fileUnits,
+                             const std::string& defaultUnits = "mm") const
+  {
     std::map<std::string, double> unitConversionMap = {{"am", 1e-15},
                                                        {"fm", 1e-12},
                                                        {"pm", 1e-9},
@@ -1402,10 +1411,9 @@ private:
                                                        {"ft", 304.8},
                                                        {"mi", 1609344.0}};
 
-    const double fileUnitFactor =
-      unitConversionMap[unitCanonicalMap[toLower(fileUnits)]];
+    const double fileUnitFactor = unitConversionMap[getCanonicalUnit(fileUnits)];
     const double defaultUnitFactor =
-      unitConversionMap[unitCanonicalMap[toLower(defaultUnits)]];
+      unitConversionMap[getCanonicalUnit(defaultUnits)];
 
     return fileUnitFactor / defaultUnitFactor;
   };
@@ -1429,9 +1437,9 @@ private:
     reader.FileUnits(anUnitLengthNames, anUnitAngleNames, anUnitSolidAngleNames);
     if(anUnitLengthNames.Size() > 0)
     {
-      std::string fileUnits = anUnitLengthNames(1).ToCString();
+      m_fileUnits = getCanonicalUnit(anUnitLengthNames(1).ToCString());
       std::string defaultUnit = Interface_Static::CVal("xstep.cascade.unit");
-      const double lengthUnit = getConversionFactor(fileUnits, defaultUnit);
+      const double lengthUnit = getConversionFactor(m_fileUnits, defaultUnit);
       reader.SetSystemLengthUnit(lengthUnit);
     }
 
@@ -1473,6 +1481,8 @@ private:
   bool m_verbose {false};
   LoadStatus m_loadStatus {LoadStatus::UNINITIALIZED};
   TopTools_IndexedMapOfShape m_faceMap;
+
+  std::string m_fileUnits {"mm"};
 
   PatchDataMap m_patchData;
 };
@@ -1613,6 +1623,7 @@ std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve
  */
 void generateSVGForPatch(int patchIndex,
                          const PatchData& patchData,
+                         const std::string& units,
                          bool verboseOutput)
 {
   const auto& parametricBBox = patchData.parametricBBox;
@@ -1639,14 +1650,13 @@ void generateSVGForPatch(int patchIndex,
   axom::fmt::format_to(
     std::back_inserter(svgContent),
     "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' \n"
-    "     width='{}in' height='{}in' \n"
-    "     viewBox='{} {} {} {}' >\n",
+    "     width='{0}{2}' height='{1}{2}' \n"
+    "     viewBox='{3} {4} {0} {1}' >\n",
     scaledParametricBBox.range()[0],
     scaledParametricBBox.range()[1],
+    units,
     scaledParametricBBox.getMin()[0],
-    scaledParametricBBox.getMin()[1],
-    scaledParametricBBox.range()[0],
-    scaledParametricBBox.range()[1]);
+    scaledParametricBBox.getMin()[1]);
 
   // add some CSS styles
   axom::fmt::format_to(std::back_inserter(svgContent), R"raw(
@@ -2095,10 +2105,12 @@ int main(int argc, char** argv)
   stepProcessor.extractTrimmingCurves();
   stepProcessor.printMeshInfo();
 
+  const auto units = stepProcessor.getFileUnits();
+
   // Generate outputs
   for(const auto& entry : stepProcessor.getPatchDataMap())
   {
-    generateSVGForPatch(entry.first, entry.second, verbosity);
+    generateSVGForPatch(entry.first, entry.second, units, verbosity);
   }
 
   auto& nurbs_shape = stepProcessor.getShape();
