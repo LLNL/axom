@@ -42,8 +42,7 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
   , m_topology(topology)
   , m_levelOfRefinement(0)
   , m_operator(std::move(operator_))
-{
-}
+{ }
 
 Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const axom::primal::Tetrahedron<double, 3>& tet,
