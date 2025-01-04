@@ -8,9 +8,11 @@
   #include <axom/sidre.hpp>
 #endif
 #include <axom/slic.hpp>
-#include <conduit/conduit_blueprint_mesh.hpp>
-#include <iostream>
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
+#if defined(AXOM_USE_CONDUIT)
+  #include <conduit/conduit_blueprint_mesh.hpp>
+#endif
+#include <iostream>
 
 namespace axom
 {
@@ -180,7 +182,6 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
   return meshGrp;
 }
 
-  #if defined(AXOM_USE_CONDUIT)
 axom::sidre::Group* make_unstructured_blueprint_box_mesh(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 3>& bbox,
@@ -212,30 +213,30 @@ void convert_blueprint_structured_explicit_to_unstructured(
       meshGrp,
       topoName);
   }
-    #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
   if(runtimePolicy == axom::runtime_policy::Policy::omp)
   {
     convert_blueprint_structured_explicit_to_unstructured_impl<axom::OMP_EXEC>(
       meshGrp,
       topoName);
   }
-    #endif
-    #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
   if(runtimePolicy == axom::runtime_policy::Policy::cuda)
   {
     convert_blueprint_structured_explicit_to_unstructured_impl<axom::CUDA_EXEC<256>>(
       meshGrp,
       topoName);
   }
-    #endif
-    #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
   if(runtimePolicy == axom::runtime_policy::Policy::hip)
   {
     convert_blueprint_structured_explicit_to_unstructured_impl<axom::HIP_EXEC<256>>(
       meshGrp,
       topoName);
   }
-    #endif
+  #endif
 }
 
 template <typename ExecSpace>
@@ -251,6 +252,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
 
   sidre::Group* coordsetGrp =
     meshGrp->getGroup("coordsets")->getGroup(coordsetName);
+  SLIC_ASSERT(std::string(coordsetGrp->getView("type")->getString()) ==
+              "explicit");
   int newDataAllocId = axom::getAllocatorIDFromPointer(
     coordsetGrp->getView("values/x")->getVoidPtr());
 
@@ -366,17 +369,18 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
     AXOM_ANNOTATE_END("add_extra");
   }
 
-    #if defined(AXOM_DEBUG)
+  #if defined(AXOM_DEBUG) && defined(AXOM_USE_CONDUIT)
   AXOM_ANNOTATE_BEGIN("validate_post");
   conduit::Node info;
   bool isValid = verifyBlueprintMesh(meshGrp, info);
   SLIC_ASSERT_MSG(isValid, "Internal error: Generated mesh is invalid.");
   AXOM_ANNOTATE_END("validate_post");
-    #endif
+  #endif
 
   return;
 }
 
+  #if defined(AXOM_USE_CONDUIT)
 bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info)
 {
   conduit::Node meshNode;

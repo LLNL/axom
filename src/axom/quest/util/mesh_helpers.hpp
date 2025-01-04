@@ -11,6 +11,9 @@
 #if defined(AXOM_USE_SIDRE)
   #include "axom/sidre.hpp"
 #endif
+#if defined(AXOM_USE_CONDUIT)
+  #include <conduit/conduit_node.hpp>
+#endif
 
 #ifdef AXOM_USE_MFEM
   #include "mfem.hpp"
