@@ -272,9 +272,9 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
   SLIC_ASSERT(!topoGrp->hasGroup("elements/strides"));
 
   const axom::StackArray<axom::IndexType, DIM> cShape {
-    topoDimsGrp->getView("i")->getData(),
-    topoDimsGrp->getView("j")->getData(),
-    topoDimsGrp->getView("k")->getData()};
+    axom::IndexType(topoDimsGrp->getView("i")->getNode().to_value()),
+    axom::IndexType(topoDimsGrp->getView("j")->getNode().to_value()),
+    axom::IndexType(topoDimsGrp->getView("k")->getNode().to_value())};
   const axom::StackArray<axom::IndexType, DIM> vShape {cShape[0] + 1,
                                                        cShape[1] + 1,
                                                        cShape[2] + 1};
@@ -456,9 +456,9 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
   SLIC_ASSERT(mapping == zView.mapping());
 
   // Mesh resolution
-  const axom::primal::NumericArray<int, 3> res {shape[0] - 1,
-                                                shape[1] - 1,
-                                                shape[2] - 1};
+  const axom::primal::NumericArray<axom::IndexType, 3> res {shape[0] - 1,
+                                                            shape[1] - 1,
+                                                            shape[2] - 1};
 
   // Mesh spacings.
   double dx = (domainBox.getMax()[0] - domainBox.getMin()[0]) / res[0];

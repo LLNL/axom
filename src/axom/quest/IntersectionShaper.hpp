@@ -2357,13 +2357,18 @@ public:
                   "element shape must be 'hex'");
 
     const auto& connNode = topoNode["elements/connectivity"];
-    SLIC_ERROR_IF(!connNode.dtype().is_int32(),
-                  "IntersectionShaper internal error: missing logic to "
-                  "handle multiple types.");
-    const std::int32_t* connPtr = connNode.as_int32_ptr();
-    axom::ArrayView<const std::int32_t, 2> conn(connPtr,
-                                                m_cellCount,
-                                                NUM_VERTS_PER_HEX);
+    SLIC_ERROR_IF(
+      !XS::usesAllocId(axom::getAllocatorIDFromPointer(connNode.data_ptr())),
+      std::string(XS::name()) +
+        axom::fmt::format(
+          " execution space cannot use the connectivity allocator id {}",
+          axom::getAllocatorIDFromPointer(connNode.data_ptr())));
+    SLIC_ERROR_IF(connNode.dtype().id() != conduitDataIdOfIndexType,
+                  "IntersectionShaper error: connectivity data type must be axom::IndexType.");
+    const auto* connPtr = static_cast<const axom::IndexType*>(connNode.data_ptr());
+    axom::ArrayView<const axom::IndexType, 2> conn(connPtr,
+                                                   m_cellCount,
+                                                   NUM_VERTS_PER_HEX);
 
     const conduit::Node& coordNode = m_bpNodeInt["coordsets"][coordsetName];
     const conduit::Node& coordValues = coordNode.fetch_existing("values");
@@ -2382,12 +2387,6 @@ public:
                                     {vertexCount},
                                     stride)};
 
-    SLIC_ERROR_IF(
-      !XS::usesAllocId(axom::getAllocatorIDFromPointer(conn.data())),
-      std::string(XS::name()) +
-        axom::fmt::format(
-          " execution space cannot use the connectivity allocator id {}",
-          axom::getAllocatorIDFromPointer(conn.data())));
     SLIC_ERROR_IF(
       !XS::usesAllocId(axom::getAllocatorIDFromPointer(coordArrays[0].data())),
       std::string(XS::name()) +

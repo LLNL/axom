@@ -1050,7 +1050,7 @@ axom::sidre::View* getElementVolumes(
                        ->getGroup(topoName)
                        ->getGroup("elements")
                        ->getView("connectivity");
-    SLIC_ASSERT(connData->getNode().dtype().is_int32());
+    SLIC_ASSERT(connData->getNode().dtype().id() == axom::conduitDataIdOfIndexType);
 
     conduit::Node coordNode;
     meshGrp->getGroup("coordsets")
@@ -1071,11 +1071,11 @@ axom::sidre::View* getElementVolumes(
                                     {vertexCount},
                                     stride)};
 
-    const std::int32_t* connPtr = connData->getArray();
+    const axom::IndexType* connPtr = connData->getArray();
     SLIC_ASSERT(connPtr != nullptr);
-    axom::ArrayView<const std::int32_t, 2> conn(connPtr,
-                                                cellCount,
-                                                NUM_VERTS_PER_HEX);
+    axom::ArrayView<const axom::IndexType, 2> conn(connPtr,
+                                                   cellCount,
+                                                   NUM_VERTS_PER_HEX);
     axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
                                     cellCount * NUM_VERTS_PER_HEX,
                                     XS::allocatorID());
