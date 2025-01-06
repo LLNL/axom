@@ -72,8 +72,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     # -----------------------------------------------------------------------
     variant("shared", default=True, description="Enable build of shared libraries")
 
-    variant("asan", default=False, description="Add asan and ubsan flags to host-config")
-
     variant("examples", default=True, description="Build examples")
     variant("tools", default=True, description="Build tools")
 
@@ -252,8 +250,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # Are we on a LLNL system then strip node number
             hostname = hostname.rstrip("1234567890")
         special_case = ""
-        if "+asan" in self.spec:
-            special_case += "_asan"
         if "+cuda" in self.spec:
             special_case += "_cuda"
         if "~fortran" in self.spec:
@@ -272,39 +268,22 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         spec = self.spec
         entries = super().initconfig_compiler_entries()
 
-        flags = ""
-        description = ""
-
         if "+fortran" in spec:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", True))
             if self.is_fortran_compiler("gfortran") and "clang" in self.compiler.cxx:
                 libdir = pjoin(os.path.dirname(os.path.dirname(self.compiler.cxx)), "lib")
-
+                flags = ""
                 for _libpath in [libdir, libdir + "64"]:
                     if os.path.exists(_libpath):
                         if spec.satisfies("^cuda"):
                             flags += " -Xlinker -rpath -Xlinker {0}".format(_libpath)
                         else:
                             flags += " -Wl,-rpath,{0}".format(_libpath)
-                description += "Adds a missing libstdc++ rpath"
+                description = "Adds a missing libstdc++ rpath"
+                if flags:
+                    entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags, description))
         else:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", False))
-
-        # Add sanitizer flags
-        if "+asan" in spec:
-            asan_description = " Address sanitizer flags for asan and ubsan"
-            asan_flags = " -fno-omit-frame-pointer -fsanitize=address,undefined"
-
-            description += asan_description
-            flags += asan_flags
-
-            entries.append(cmake_cache_string("BLT_CXX_FLAGS", asan_flags, asan_description))
-
-
-        if flags:
-            entries.append(cmake_cache_string("BLT_EXE_LINKER_FLAGS", flags, description))
-
-
 
         if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
