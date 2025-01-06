@@ -2364,8 +2364,10 @@ public:
           " execution space cannot use the connectivity allocator id {}",
           axom::getAllocatorIDFromPointer(connNode.data_ptr())));
     SLIC_ERROR_IF(connNode.dtype().id() != conduitDataIdOfIndexType,
-                  "IntersectionShaper error: connectivity data type must be axom::IndexType.");
-    const auto* connPtr = static_cast<const axom::IndexType*>(connNode.data_ptr());
+                  "IntersectionShaper error: connectivity data type must be "
+                  "axom::IndexType.");
+    const auto* connPtr =
+      static_cast<const axom::IndexType*>(connNode.data_ptr());
     axom::ArrayView<const axom::IndexType, 2> conn(connPtr,
                                                    m_cellCount,
                                                    NUM_VERTS_PER_HEX);

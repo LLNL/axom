@@ -16,7 +16,7 @@
 #include "axom/config.hpp"
 
 #if defined(AXOM_USE_CONDUIT)
-#include "conduit/conduit_data_type.hpp"
+  #include "conduit/conduit_data_type.hpp"
 #endif
 
 // C/C++ includes
@@ -66,14 +66,16 @@ using uint64 = std::uint64_t; /*!< 64-bit unsigned integer type   */
 
 #if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
 using IndexType = std::int64_t;
-#if defined(AXOM_USE_CONDUIT)
-static constexpr conduit::DataType::TypeID conduitDataIdOfIndexType = conduit::DataType::INT64_ID;
-#endif
+  #if defined(AXOM_USE_CONDUIT)
+static constexpr conduit::DataType::TypeID conduitDataIdOfIndexType =
+  conduit::DataType::INT64_ID;
+  #endif
 #else
 using IndexType = std::int32_t;
-#if defined(AXOM_USE_CONDUIT)
-static constexpr conduit::DataType::TypeID conduitDataIdOfIndexType = conduit::DataType::INT32_ID;
-#endif
+  #if defined(AXOM_USE_CONDUIT)
+static constexpr conduit::DataType::TypeID conduitDataIdOfIndexType =
+  conduit::DataType::INT32_ID;
+  #endif
 #endif
 
 static constexpr IndexType InvalidIndex = -1;
