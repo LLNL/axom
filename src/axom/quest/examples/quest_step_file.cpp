@@ -43,6 +43,18 @@
 #include "opencascade/TopoDS_Wire.hxx"
 #include <iostream>
 
+/**
+ * /file quest_step_file.cpp
+ * /brief Example that loads in a STEP file and converts the surface patches and curves to Axom's NURBS representations
+ *
+ * This example reads in STEP files representing trimmed NURBS meshes using OpenCASCADE, 
+ * converts the patches and trimming curves to Axom's NURBSPatch and NURBSCurve primitives, 
+ * and generates various outputs including SVG and STL files.
+ *
+ * /note This example requires Axom to be configured with OpenCASCADE enabled.
+ */
+
+/// Struct to hold data associated with each surface patch of the mesh
 struct PatchData
 {
   int patchIndex {-1};
@@ -56,11 +68,11 @@ struct PatchData
 };
 
 /**
- * Class to read in STEP files representing trimmed NURBS meshes using OpenCASCADE 
+ * Class to read in a STEP file representing trimmed NURBS meshes using OpenCASCADE 
  * and convert the patches and trimming curves to axom's NURBSPatch and NURBSCurve primitives.
  * 
  * Implementation note: Since axom's primitives do not support periodic knots, 
- * we must convert the OpenCASCADE analogues to the open/clamped representation, when necessary.
+ * we must convert the OpenCASCADE analogues to a open/clamped representation, when necessary.
  */
 class StepFileProcessor
 {
@@ -221,6 +233,7 @@ private:
       return squared_sum <= sq_tol;
     }
 
+    /// Logs some information about the patch
     void printSurfaceStats() const
     {
       const bool isUPeriodic = m_surface->IsUPeriodic();
@@ -605,7 +618,7 @@ private:
     bool m_inputSurfaceWasPeriodic_v {false};
   };
 
-  /// Helper class in support of extracting necessary information from trimming curves
+  /// Helper class to convert trimming curves to valid NURBSCurve instances
   /// The constructor converts the curve to a clamped (non-periodic) representation, if necessary
   class CurveProcessor
   {
@@ -893,6 +906,7 @@ public:
 
   int getNumberOfPatches() const { return m_patchData.size(); }
 
+  /// Logs some information about the loaded mesh
   void printMeshInfo() const
   {
     // Helper struct for simple stats over a collection of integers
@@ -1014,7 +1028,7 @@ public:
       }
     }
 
-    // Compute statistics on the number of spans per path
+    // Compute statistics on the number of spans per patch
     {
       std::vector<int> uSpansPerPatch;
       std::vector<int> vSpansPerPatch;
@@ -1323,6 +1337,7 @@ public:
   std::string getFileUnits() const { return m_fileUnits; }
 
 private:
+  /// Returns the canoninical representation of a unit string (e.g. "centimeter" -> "cm")
   std::string getCanonicalUnit(const std::string& unit) const
   {
     // we'll convert all units to lower case
@@ -1373,6 +1388,12 @@ private:
     return unitCanonicalMap[toLower(unit)];
   }
 
+  /**
+   *  Returns the conversion factor from an input unit to an output unit
+   * 
+   * \note Converts the units to their canonical form
+   * \sa getCanonicalUnit
+   */
   double getConversionFactor(const std::string& fileUnits,
                              const std::string& defaultUnits = "mm") const
   {
@@ -1399,6 +1420,8 @@ private:
     return fileUnitFactor / defaultUnitFactor;
   };
 
+  /// Loads the step file \a filename from disk
+  /// Uses the units from \a filename
   TopoDS_Shape loadStepFile(const std::string& filename)
   {
     STEPControl_Reader reader;
@@ -1765,6 +1788,16 @@ void generateSVGForPatch(int patchIndex,
   }
 }
 
+/**
+ * Class to assist with triangulating STEP files
+ * 
+ * This class uses OpenCASCADE's triangulation functionality to generate the triangle meshes
+ * Supported triangulations:
+ *  - triangulateTrimmedPatch: Separately triangulate each trimmed patch, and output as an STL file ('patch_NNN.stl')
+ *  - triangulateUntrimmedPatch: Separately triangulate each patch, ignoring the trimming curves, and output as an STL file ('patch_untrimmed_NNN.stl')
+ *  - triangulateFullMesh: Output a triangulation of the entire (trimmed) mesh as a VTK file ('triangulated_mesh.vtk').
+ *    The output mesh has a field 'patch_index' that associates each triangle with the index of its original patch in the input mesh
+ */
 class PatchTriangulator
 {
 public:
@@ -1789,8 +1822,7 @@ public:
     }
   }
 
-  /// Utility function to triangulate a trimmed patch and write it to disk as as STL mesh
-  /// Uses OpenCASCADE functionality to triangulate the patch
+  /// Utility function to triangulate each trimmed patch and write it to disk as as STL mesh
   void triangulateTrimmedPatches()
   {
     int patchIndex = 0;
@@ -1849,6 +1881,7 @@ public:
     }
   }
 
+  /// Utility function to triangulate each patch, ignoring the trimming curves, and write it to disk as as STL mesh
   void triangulateUntrimmedPatches()
   {
     int patchIndex = 0;
@@ -1930,6 +1963,8 @@ public:
     }
   }
 
+  /// Triangulates the entire mesh as a single VTK file
+  /// The association to the original patches is tracked via the patch_index field
   void triangulateFullMesh()
   {
     // Create an unstructured mesh with 3D vertices and triangular cells
