@@ -56,6 +56,14 @@ ruby-gcc_10_3_1-src:
     HOST_CONFIG: "ruby-toss_4_x86_64_ib-${COMPILER}.cmake"
   extends: .src_build_on_ruby
 
+asan-ruby-gcc_10_3_1-src:
+  variables:
+    COMPILER: "gcc@10.3.1"
+    HOST_CONFIG: "ruby-toss_4_x86_64_ib-${COMPILER}.cmake"
+    EXTRA_ENV: LSAN_OPTIONS=suppressions=${CI_PROJECT_DIR}/suppressions.asan
+    EXTRA_SPEC: "-DAXOM_ENABLE_ASAN=ON"
+  extends: .src_build_on_ruby
+
 # TODO: turn back on
 #ruby-gcc_10_3_1_no_fortran-src:
 #  variables:
