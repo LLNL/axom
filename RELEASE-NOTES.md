@@ -25,6 +25,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Adds optional dependency on [Open CASCADE](https://dev.opencascade.org). The initial intention is 
 to use Open CASCADE's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
+- Adds a Quest example that reads in a STEP file using Open CASCADE and processes its geometry
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination
@@ -32,7 +33,7 @@ to use Open CASCADE's file I/O capabilities in support of Quest applications.
   host memory.  This is consistent with the behavior of deep-copying data
   from Sidre.
 - ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
-  to core.  The namespace prefix for these classes is now axom:: insteand of axom::sidre.  The internal usage of
+  to core.  The namespace prefix for these classes is now `axom::` instead of `axom::sidre`.  The internal usage of
   these types within Sidre Datastore and Group is unchanged.
 
 ###  Deprecated
@@ -43,6 +44,7 @@ to use Open CASCADE's file I/O capabilities in support of Quest applications.
 - Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
 This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
 as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+- Fixes a memory leak in `axom::Array` copy constructor.
 
 ## [Version 0.10.1] - Release date 2024-10-22
 
@@ -73,7 +75,7 @@ as well as support for 32-bit `Word`s in Slam's `BitSet` class.
 - Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
   a polygon in-place.
 - Adds `StaticArray`, a wrapper for `StackArray` with a size member variable.
-- Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
+- Multidimensional `core::Array` supports column-major and arbitrary stride ordering,
   in addition to the default row-major ordering.
 - Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
   or static allocation.

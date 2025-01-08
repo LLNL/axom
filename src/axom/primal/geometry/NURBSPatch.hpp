@@ -29,6 +29,7 @@
 #include "axom/primal/operators/winding_number_2d.hpp"
 
 #include <ostream>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -364,7 +365,7 @@ public:
     , m_weights(weights)
   {
     auto pts_shape = pts.shape();
-    auto weights_shape = weights.shape();
+    // auto weights_shape = weights.shape();
 
     SLIC_ASSERT(pts_shape[0] >= deg_u + 1 && pts_shape[1] >= deg_v + 1);
     SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
@@ -3259,5 +3260,10 @@ std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& nPatch)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::NURBSPatch using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::NURBSPatch<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_NURBSPATCH_HPP_

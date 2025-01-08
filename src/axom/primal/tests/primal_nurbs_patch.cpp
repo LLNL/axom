@@ -710,7 +710,6 @@ TEST(primal_nurbspatch, knot_insertion)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using VectorType = primal::Vector<CoordType, DIM>;
   using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
 
   const int npts_u = 5;
@@ -883,7 +882,6 @@ TEST(primal_nurbspatch, bezier_extraction)
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
-  using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
 
   const int npts_u = 5;
   const int npts_v = 4;

@@ -189,6 +189,13 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
                   CLANG       "-fcolor-diagnostics"
                   )
 
+if(AXOM_ENABLE_ASAN)
+    message(STATUS "AddressSanitizer is ON (ENABLE_ASAN)")
+    foreach(_flagvar CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS)
+        string(APPEND ${_flagvar} " -fsanitize=address -fno-omit-frame-pointer")
+    endforeach()
+endif()
+
 if(${AXOM_ENABLE_EXPORTS})
   set(CMAKE_ENABLE_EXPORTS ON)
 endif()
