@@ -277,7 +277,7 @@ TEST(sidre_datastore, create_destroy_buffers_views)
 int psrand(int min, int max)
 {
   // Returns a pseudorandom int in [min, max].  Note the closed interval.
-  int range = max - min + 1;
+  long range = max - min + 1;
   return min + int(range * rand() / (RAND_MAX + 1.0));
 }
 
