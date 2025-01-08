@@ -196,6 +196,13 @@ if(AXOM_ENABLE_ASAN)
     endforeach()
 endif()
 
+if(AXOM_ENABLE_UBSAN)
+    message(STATUS "UndefinedBehaviorSanitizer is ON (ENABLE_UBSAN)")
+    foreach(_flagvar CMAKE_C_FLAGS CMAKE_CXX_FLAGS CMAKE_EXE_LINKER_FLAGS)
+        string(APPEND ${_flagvar} " -fsanitize=undefined -fno-sanitize-recover=all")
+    endforeach()
+endif()
+
 if(${AXOM_ENABLE_EXPORTS})
   set(CMAKE_ENABLE_EXPORTS ON)
 endif()
