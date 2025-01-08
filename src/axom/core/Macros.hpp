@@ -129,6 +129,18 @@
   #define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
 #endif
 
+/*
+ * \def AXOM_SUPPRESS_UBSAN
+ *
+ * \brief Macro used to silence UndefinedBehaviorSanitizer errors
+ *  when compiling and linking with -fsanitize=undefined
+ */
+#if __has_attribute(no_sanitize_undefined)
+  #define AXOM_SUPPRESS_UBSAN __attribute__((no_sanitize_undefined))
+#else
+  #define AXOM_SUPPRESS_UBSAN
+#endif
+
 /*!
  *
  * \def AXOM_UNUSED_PARAM(x)
