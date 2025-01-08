@@ -1504,10 +1504,15 @@ public:
   PatchParametricSpaceProcessor() { }
 
   void setOutputDirectory(const std::string& dir) { m_outputDirectory = dir; }
-
   void setUnits(const std::string& units) { m_units = units; }
-
   void setVerbosity(bool verbosityFlag) { m_verbose = verbosityFlag; }
+  void setNumFillZeros(int num)
+  {
+    if(num >= 0)
+    {
+      m_numFillZeros = num;
+    }
+  }
 
   void generateSVGForPatch(int patchIndex, const PatchData& patchData)
   {
@@ -1656,7 +1661,7 @@ public:
 
     std::string svgFilename = axom::utilities::filesystem::joinPath(
       m_outputDirectory,
-      axom::fmt::format("patch_{}.svg", patchIndex));
+      axom::fmt::format("patch_{:0{}}.svg", patchIndex, m_numFillZeros));
     std::ofstream svgFile(svgFilename);
     if(svgFile.is_open())
     {
@@ -1809,6 +1814,7 @@ private:
   std::string m_outputDirectory {"."};
   std::string m_units {"mm"};
   bool m_verbose {false};
+  int m_numFillZeros {0};
 };
 
 /**
@@ -1846,6 +1852,13 @@ public:
   }
 
   void setOutputDirectory(const std::string& dir) { m_outputDirectory = dir; }
+  void setNumFillZeros(int num)
+  {
+    if(num >= 0)
+    {
+      m_numFillZeros = num;
+    }
+  }
 
   /// Utility function to triangulate each trimmed patch and write it to disk as as STL mesh
   void triangulateTrimmedPatches()
@@ -1893,7 +1906,7 @@ public:
       // write the STL file
       std::string stlFilename = axom::utilities::filesystem::joinPath(
         m_outputDirectory,
-        axom::fmt::format("patch_{}.stl", patchIndex));
+        axom::fmt::format("patch_{:0{}}.stl", patchIndex, m_numFillZeros));
       {
         std::ofstream stlFile(stlFilename);
         if(!stlFile.is_open())
@@ -1975,7 +1988,9 @@ public:
       // write the STL file
       std::string stlFilename = axom::utilities::filesystem::joinPath(
         m_outputDirectory,
-        axom::fmt::format("patch_untrimmed_{}.stl", patchIndex));
+        axom::fmt::format("patch_untrimmed_{:0{}}.stl",
+                          patchIndex,
+                          m_numFillZeros));
       {
         std::ofstream stlFile(stlFilename);
         if(!stlFile.is_open())
@@ -2105,6 +2120,7 @@ private:
   double m_angularDeflection;
   bool m_verbose {false};
   std::string m_outputDirectory {"."};
+  int m_numFillZeros {0};
 };
 
 int main(int argc, char** argv)
@@ -2170,11 +2186,15 @@ int main(int argc, char** argv)
   stepProcessor.extractTrimmingCurves();
   stepProcessor.printMeshInfo();
 
+  const int numPatches = stepProcessor.getPatchDataMap().size();
+  const int numFillZeros = static_cast<int>(std::log10(numPatches)) + 1;
+
   // Generate outputs
   PatchParametricSpaceProcessor patchProcessor;
   patchProcessor.setUnits(stepProcessor.getFileUnits());
   patchProcessor.setVerbosity(verbosity);
   patchProcessor.setOutputDirectory(output_dir);
+  patchProcessor.setNumFillZeros(numFillZeros);
   SLIC_INFO(
     axom::fmt::format("Generating SVG meshes for patches and their trimming "
                       "curves in '{}' directory",
@@ -2190,6 +2210,7 @@ int main(int argc, char** argv)
                                       angular_deflection,
                                       verbosity);
   patchTriangulator.setOutputDirectory(output_dir);
+  patchTriangulator.setNumFillZeros(numFillZeros);
   SLIC_INFO(
     axom::fmt::format("Generating triangles meshes for trimmed and untrimmed "
                       "patches in '{}' directory",
