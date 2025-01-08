@@ -254,8 +254,6 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
     meshGrp->getGroup("coordsets")->getGroup(coordsetName);
   SLIC_ASSERT(std::string(coordsetGrp->getView("type")->getString()) ==
               "explicit");
-  int newDataAllocId = axom::getAllocatorIDFromPointer(
-    coordsetGrp->getView("values/x")->getVoidPtr());
 
   axom::sidre::Group* topoGrp =
     meshGrp->getGroup("topologies")->getGroup(topoName);
@@ -286,8 +284,7 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
     "elements/connectivity",
     axom::sidre::detail::SidreTT<axom::IndexType>::id,
     2,
-    connShape.begin(),
-    newDataAllocId);
+    connShape.begin());
   axom::ArrayView<axom::IndexType, 2> connArrayView(
     static_cast<axom::IndexType*>(connView->getVoidPtr()),
     connShape);
