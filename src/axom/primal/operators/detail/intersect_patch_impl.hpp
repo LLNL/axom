@@ -101,39 +101,38 @@ bool intersect_line_patch(const Line<T, 3> &line,
 {
   using BPatch = BezierPatch<T, 3>;
 
+  // Return a "failure" state if we start to record too many intersections
+  constexpr int max_intersections = 25;
+  if(tp.size() >= max_intersections)
+  {
+    return false;
+  }
+
   // Check bounding box to short-circuit the intersection
   //  Need to expand the box a bit so that intersections near subdivision boundaries
   //  are accurately recorded
   Point<T, 3> ip;
   if(!intersect(line, patch.boundingBox().scale(1.5), ip))
   {
-    return false;
+    return true;
   }
 
-  bool foundIntersection = false;
   if(patch.isBilinear(sq_tol))
   {
     // Store candidate intersection points
     axom::Array<T> tc, uc, vc;
 
-    foundIntersection =
-      detail::intersect_line_bilinear_patch(line,
-                                            patch(0, 0),
-                                            patch(order_u, 0),
-                                            patch(order_u, order_v),
-                                            patch(0, order_v),
-                                            tc,
-                                            uc,
-                                            vc,
-                                            EPS,
-                                            isRay);
+    detail::intersect_line_bilinear_patch(line,
+                                          patch(0, 0),
+                                          patch(order_u, 0),
+                                          patch(order_u, order_v),
+                                          patch(0, order_v),
+                                          tc,
+                                          uc,
+                                          vc,
+                                          EPS,
+                                          isRay);
 
-    if(!foundIntersection)
-    {
-      return false;
-    }
-
-    foundIntersection = false;
     for(int i = 0; i < tc.size(); ++i)
     {
       const T t0 = tc[i];
@@ -149,62 +148,7 @@ bool intersect_line_patch(const Line<T, 3> &line,
           up.push_back(u_offset + u0 * u_scale);
           vp.push_back(v_offset + v0 * v_scale);
           tp.push_back(t0);
-
-          foundIntersection = true;
         }
-      }
-    }
-  }
-  else if(p.isBilinear(1e-4))
-  {
-    std::vector<T> u, v, t;
-    foundIntersection =
-      detail::intersect_bilinear_patch_line(patch(0, 0),
-                                            patch(order_u, 0),
-                                            patch(order_u, order_v),
-                                            patch(0, order_v),
-                                            line,
-                                            u1,
-                                            v1,
-                                            t1,
-                                            u2,
-                                            v2,
-                                            t2);
-
-    if(!foundIntersection)
-    {
-      return false;
-    }
-    
-    constexpr double EPS = 1e-5;
-
-    if((u1 >= (u_offset == 0 ? -buffer / u_scale : 0) &&
-        u1 <= 1.0 + (u_offset + u_scale == 1.0 ? buffer / v_scale : 0)) &&
-       (v1 >= (v_offset == 0 ? -buffer / v_scale : 0) &&
-        v1 <= 1.0 + (v_offset + v_scale == 1.0 ? buffer / u_scale : 0)))
-    {
-      // Extra check to avoid adding the same point twice if it's on the boundary of a subpatch
-      if(!(u_offset != 0.0 && axom::utilities::isNearlyEqual(u1, 0.0, EPS)) &&
-         !(v_offset != 0.0 && axom::utilities::isNearlyEqual(v1, 0.0, EPS)))
-      {
-        up.push_back(u_offset + u1 * u_scale);
-        vp.push_back(v_offset + v1 * v_scale);
-        tp.push_back(t1);
-      }
-    }
-
-    if((u2 >= (u_offset == 0 ? -buffer / u_scale : 0) &&
-        u2 <= 1.0 + (u_offset + u_scale == 1.0 ? buffer / v_scale : 0)) &&
-       (v2 >= (v_offset == 0 ? -buffer / v_scale : 0) &&
-        v2 <= 1.0 + (v_offset + v_scale == 1.0 ? buffer / u_scale : 0)))
-    {
-      // Extra check to avoid adding the same point twice if it's on the boundary of a subpatch
-      if(!(u_offset != 0.0 && axom::utilities::isNearlyEqual(u2, 0.0, EPS)) &&
-         !(v_offset != 0.0 && axom::utilities::isNearlyEqual(v2, 0.0, EPS)))
-      {
-        up.push_back(u_offset + u2 * u_scale);
-        vp.push_back(v_offset + v2 * v_scale);
-        tp.push_back(t2);
       }
     }
   }
@@ -221,77 +165,68 @@ bool intersect_line_patch(const Line<T, 3> &line,
     v_scale *= scaleFac;
 
     // Note: we want to find all intersections, so don't short-circuit
-    if(intersect_line_patch(line,
-                            p1,
-                            tp,
-                            up,
-                            vp,
-                            order_u,
-                            order_v,
-                            u_offset,
-                            u_scale,
-                            v_offset,
-                            v_scale,
-                            sq_tol,
-                            EPS,
-                            isRay))
-    {
-      foundIntersection = true;
-    }
-    if(intersect_line_patch(line,
-                            p2,
-                            tp,
-                            up,
-                            vp,
-                            order_u,
-                            order_v,
-                            u_offset + u_scale,
-                            u_scale,
-                            v_offset,
-                            v_scale,
-                            sq_tol,
-                            EPS,
-                            isRay))
-    {
-      foundIntersection = true;
-    }
-    if(intersect_line_patch(line,
-                            p3,
-                            tp,
-                            up,
-                            vp,
-                            order_u,
-                            order_v,
-                            u_offset,
-                            u_scale,
-                            v_offset + v_scale,
-                            v_scale,
-                            sq_tol,
-                            EPS,
-                            isRay))
-    {
-      foundIntersection = true;
-    }
-    if(intersect_line_patch(line,
-                            p4,
-                            tp,
-                            up,
-                            vp,
-                            order_u,
-                            order_v,
-                            u_offset + u_scale,
-                            u_scale,
-                            v_offset + v_scale,
-                            v_scale,
-                            sq_tol,
-                            EPS,
-                            isRay))
-    {
-      foundIntersection = true;
-    }
+    intersect_line_patch(line,
+                         p1,
+                         tp,
+                         up,
+                         vp,
+                         order_u,
+                         order_v,
+                         u_offset,
+                         u_scale,
+                         v_offset,
+                         v_scale,
+                         sq_tol,
+                         EPS,
+                         isRay);
+
+    intersect_line_patch(line,
+                         p2,
+                         tp,
+                         up,
+                         vp,
+                         order_u,
+                         order_v,
+                         u_offset + u_scale,
+                         u_scale,
+                         v_offset,
+                         v_scale,
+                         sq_tol,
+                         EPS,
+                         isRay);
+
+    intersect_line_patch(line,
+                         p3,
+                         tp,
+                         up,
+                         vp,
+                         order_u,
+                         order_v,
+                         u_offset,
+                         u_scale,
+                         v_offset + v_scale,
+                         v_scale,
+                         sq_tol,
+                         EPS,
+                         isRay);
+
+    intersect_line_patch(line,
+                         p4,
+                         tp,
+                         up,
+                         vp,
+                         order_u,
+                         order_v,
+                         u_offset + u_scale,
+                         u_scale,
+                         v_offset + v_scale,
+                         v_scale,
+                         sq_tol,
+                         EPS,
+                         isRay);
   }
 
-  return foundIntersection;
+  return true;
 }
 
 }  // end namespace detail

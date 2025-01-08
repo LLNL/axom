@@ -26,6 +26,7 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include <vector>
+#include <math.h>
 #include <ostream>
 #include "axom/fmt.hpp"
 
@@ -397,6 +398,65 @@ public:
     , m_knotvec(knotVector)
   {
     SLIC_ASSERT(isValidNURBS());
+  }
+
+  void constructCircularArc(T theta_0, T theta_1, const PointType& center, T radius)
+  {
+    SLIC_ASSERT(NDIMS == 2);
+    SLIC_ASSERT(theta_0 < theta_1);
+    SLIC_ASSERT(theta_1 - theta_0 <= 2.0 * M_PI);
+
+    T pi23 = 2.0 * M_PI / 3.0;
+    int n_segments = std::ceil((theta_1 - theta_0) / pi23);
+
+    setParameters(1 + 2 * n_segments, 2);
+    makeRational();
+
+    // Define the first control point
+    m_controlPoints[0] = PointType({std::cos(theta_0), std::sin(theta_0)});
+    m_weights[0] = 1.0;
+
+    // Need to split up the curve if it spans more than 120 degrees, possibly twice
+    for(int idx = 0; idx < n_segments; ++idx)
+    {
+      T theta_start = theta_0 + pi23 * idx;
+      T theta_end = std::min(theta_start + pi23, theta_1);
+
+      m_controlPoints[1 + 2 * idx + 1] =
+        PointType({std::cos(theta_end), std::sin(theta_end)});
+
+      T weight_num = std::sin(theta_end - theta_start);
+      T weight_denom = 2.0 * std::sin((theta_end - theta_start) / 2.0);
+      m_weights[1 + 2 * idx + 0] = weight_num / weight_denom;
+      m_weights[1 + 2 * idx + 1] = 1.0;
+
+      m_controlPoints[1 + 2 * idx + 0] =
+        PointType({(m_controlPoints[1 + 2 * idx + 1][1] -
+                    m_controlPoints[1 + 2 * idx - 1][1]) /
+                     weight_num,
+                   (m_controlPoints[1 + 2 * idx - 1][0] -
+                    m_controlPoints[1 + 2 * idx + 1][0]) /
+                     weight_num});
+
+    //   std::cout << m_controlPoints << std::endl;
+    //   std::cout << m_weights << std::endl;
+    //   std::cout << std::endl;
+    }
+
+    // Scale all the control points to the right radius and center
+    for(int i = 0; i < getNumControlPoints(); ++i)
+    {
+      m_controlPoints[i].array() =
+        center.array() + radius * m_controlPoints[i].array();
+    }
+
+    for(int i = 0; i < n_segments - 1; ++i)
+    {
+      m_knotvec[3 + 2 * i + 0] = static_cast<T>(i + 1) / n_segments;
+      m_knotvec[3 + 2 * i + 1] = m_knotvec[3 + 2 * i + 0];
+    }
+
+    // std::cout << m_knotvec << std::endl;
   }
 
   /*!
@@ -1157,6 +1217,14 @@ public:
     SLIC_ASSERT(weight > 0);
 
     m_weights[idx] = weight;
+  }
+
+  void setWeights(const axom::Array<T>& weights)
+  {
+    SLIC_ASSERT(isRational());
+    SLIC_ASSERT(weights.size() == m_weights.size());
+
+    m_weights = weights;
   }
 
   /*!

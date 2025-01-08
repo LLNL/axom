@@ -1921,7 +1921,7 @@ public:
         const double signedDist =
           plane_normal.dot(m_controlPoints(p, q) - m_controlPoints(0, 0));
 
-        if(std::abs(signedDist) > tol)
+        if(std::abs(signedDist) > sq_tol)
         {
           return false;
         }

@@ -1369,6 +1369,87 @@ TEST(primal_nurbspatch, swap_axes)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(primal_nurbspatch, disk_subdivision)
+{
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
+
+  const int npts_u = 5;
+  const int npts_v = 4;
+
+  const int degree_u = 4;
+  const int degree_v = 3;
+
+  // clang-format off
+  PointType controlPoints[5 * 4] = {
+    PointType {0, 0, 0}, PointType {0, 4,  0}, PointType {0, 8, -3}, PointType {0, 12, 0},
+    PointType {2, 0, 6}, PointType {2, 4,  0}, PointType {2, 8,  0}, PointType {2, 12, 0},
+    PointType {4, 0, 0}, PointType {4, 4,  0}, PointType {4, 8,  3}, PointType {4, 12, 0},
+    PointType {6, 0, 0}, PointType {6, 4, -3}, PointType {6, 8,  0}, PointType {6, 12, 0},
+    PointType {8, 0, 0}, PointType {8, 4,  0}, PointType {8, 8,  0}, PointType {8, 12, 0}};
+  // clang-format on
+
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\trimming_"
+    "example\\";
+
+  NURBSPatchType original(controlPoints, npts_u, npts_v, degree_u, degree_v);
+
+  primal::NURBSCurve<CoordType, 2> c1(2, 1), c2(2, 1), c3(2, 1), c4(3, 2);
+
+  c1[0] = primal::Point<CoordType, 2> {0.5, 0.0};
+  c1[1] = primal::Point<CoordType, 2> {1.0, 0.0};
+  original.addTrimmingCurve(c1);
+
+  c2[0] = primal::Point<CoordType, 2> {1.0, 0.0};
+  c2[1] = primal::Point<CoordType, 2> {1.0, 1.0};
+  original.addTrimmingCurve(c2);
+
+  c3[0] = primal::Point<CoordType, 2> {1.0, 1.0};
+  c3[1] = primal::Point<CoordType, 2> {0.0, 1.0};
+  original.addTrimmingCurve(c3);
+
+  c4[0] = primal::Point<CoordType, 2> {0.0, 1.0};
+  c4[1] = primal::Point<CoordType, 2> {0.5, 1.0};
+  c4[2] = primal::Point<CoordType, 2> {0.5, 0.0};
+  original.addTrimmingCurve(c4);
+  original.printTrimmingCurves(prefix + "original.txt");
+
+  NURBSPatchType n1, n2;
+  original.diskSplit(0.5, 0.5, 0.2, n1, n2);
+
+  n1.printTrimmingCurves(prefix + "punctured_1.txt");
+  n2.printTrimmingCurves(prefix + "disk_1.txt");
+  
+  NURBSPatchType n11, n12;
+  n1.diskSplit(0.5, 0.3, 0.1, n11, n12);
+
+  n11.printTrimmingCurves(prefix + "punctured_2.txt");
+  n12.printTrimmingCurves(prefix + "disk_2.txt");
+
+  NURBSPatchType n21, n22;
+  n11.diskSplit(0.75, 0.25, 0.25, n21, n22);
+
+  n21.printTrimmingCurves(prefix + "punctured_3.txt");
+  n22.printTrimmingCurves(prefix + "disk_3.txt");
+
+  NURBSPatchType n31, n32;
+  n21.diskSplit(0.75, 0.75, 0.05, n31, n32);
+  
+  n31.printTrimmingCurves(prefix + "punctured_4.txt");
+  n32.printTrimmingCurves(prefix + "disk_4.txt");
+
+  NURBSPatchType n41, n42;
+  n31.diskSplit(0.25, 0.25, 0.05, n41, n42);
+
+  n41.printTrimmingCurves(prefix + "punctured_5.txt");
+  n42.printTrimmingCurves(prefix + "disk_5.txt");
+}
+
 int main(int argc, char* argv[])
 {
   int result = 0;

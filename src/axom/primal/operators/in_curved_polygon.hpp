@@ -22,7 +22,7 @@
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
 
-#include "axom/primal/operators/winding_number.hpp"
+#include "axom/primal/operators/winding_number_2d.hpp"
 
 namespace axom
 {

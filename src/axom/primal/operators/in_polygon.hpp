@@ -20,7 +20,7 @@
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
-#include "axom/primal/operators/winding_number.hpp"
+#include "axom/primal/operators/winding_number_2d.hpp"
 
 // C++ includes
 #include <cmath>

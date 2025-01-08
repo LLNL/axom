@@ -61,7 +61,8 @@ set( primal_headers
     operators/in_sphere.hpp
     operators/is_convex.hpp
     operators/split.hpp
-    operators/winding_number.hpp
+    operators/winding_number_2d.hpp
+    operators/winding_number_3d.hpp
 
     operators/printers.hpp
 
@@ -69,12 +70,14 @@ set( primal_headers
     operators/detail/compute_moments_impl.hpp
     operators/detail/fuzzy_comparators.hpp
     operators/detail/intersect_bezier_impl.hpp
+    operators/detail/intersect_bezier_sphere_impl.hpp
     operators/detail/intersect_patch_impl.hpp
     operators/detail/intersect_bounding_box_impl.hpp
     operators/detail/intersect_patch_impl.hpp
     operators/detail/intersect_impl.hpp
     operators/detail/intersect_ray_impl.hpp
-    operators/detail/winding_number_impl.hpp
+    operators/detail/winding_number_2d_impl.hpp
+    operators/detail/winding_number_3d_impl.hpp
      
     ## utils
     utils/ZipIndexable.hpp

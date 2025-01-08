@@ -462,7 +462,6 @@ bool intersect(const Sphere<T, DIM>& s1,
 {
   return s1.intersectsWith(s2, TOL);
 }
-
 /// @}
 
 /// \name Oriented Bounding Box Intersection Routines
@@ -760,16 +759,21 @@ AXOM_HOST_DEVICE bool intersect(const Point<T, 3>& p0,
 {
   const int order_u = patch.getOrder_u();
   const int order_v = patch.getOrder_v();
-  return detail::intersect_bilinear_patch_ray(patch(0, 0), patch(order_u, 0),
-                                              patch(order_u, order_v), patch(0, order_v),
-                                              ray, u, v, t);
+  return detail::intersect_bilinear_patch_ray(patch(0, 0),
+                                              patch(order_u, 0),
+                                              patch(order_u, order_v),
+                                              patch(0, order_v),
+                                              ray,
+                                              u,
+                                              v,
+                                              t);
 }
 
 /// @}
 
-/*! \brief Determines if a ray intersects a Bezier patch.
- * \param [in] patch The Bezier patch to intersect with the ray.
- * \param [in] ray The ray to intersect with the patch.
+/*! \brief Determines if a line intersects a Bezier patch.
+ * \param [in] patch The Bezier patch to intersect with the line.
+ * \param [in] line The line to intersect with the patch.
  * \param [out] u The u parameter(s) of intersection point(s).
  * \param [out] v The v parameter(s) of intersection point(s).
  * \param [out] t The t parameter(s) of intersection point(s).
@@ -780,15 +784,15 @@ AXOM_HOST_DEVICE bool intersect(const Point<T, 3>& p0,
  * For bilinear patches, implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
  * For higher order patches, intersections are found through recursive subdivison
  *  until the subpatch is approximated by a bilinear patch.
- * Assumes that the ray is not tangent to the patch, and that the intersection
+ * Assumes that the line is not tangent to the patch, and that the intersection
  *  is not at a point of degeneracy for which there are *infinitely* many intersections.
  * For such intersections, the method will hang as it tries records an arbitrarily high
  *  number of intersections with distinct parameter values
  *  
- * \return true iff the ray intersects the patch, otherwise false.
+ * \return true iff the line intersects the patch, otherwise false.
  */
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
+AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
                                 const BezierPatch<T, 3>& patch,
                                 axom::Array<T>& t,
                                 axom::Array<T>& u,
@@ -806,14 +810,15 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
   // Store the candidate intersections
   axom::Array<T> tc, uc, vc;
 
+  bool success = false;
+
   if(order_u < 1 || order_v < 1)
   {
     // Patch has no surface area, ergo no intersections
-    return false;
+    return true;
   }
   else if(order_u == 1 && order_v == 1)
   {
-    primal::Line<T, 3> line(ray.origin(), ray.direction());
     detail::intersect_line_bilinear_patch(line,
                                           patch(0, 0),
                                           patch(order_u, 0),
@@ -823,29 +828,29 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
                                           uc,
                                           vc,
                                           EPS,
-                                          true);
+                                          false);
   }
   else
   {
-    primal::Line<T, 3> line(ray.origin(), ray.direction());
+    // primal::Line<T, 3> line(ray.origin(), ray.direction());
 
     double u_offset = 0., v_offset = 0.;
     double u_scale = 1., v_scale = 1.;
 
-    detail::intersect_line_patch(line,
-                                 patch,
-                                 tc,
-                                 uc,
-                                 vc,
-                                 order_u,
-                                 order_v,
-                                 u_offset,
-                                 u_scale,
-                                 v_offset,
-                                 v_scale,
-                                 sq_tol,
-                                 EPS,
-                                 true);
+    success = detail::intersect_line_patch(line,
+                                           patch,
+                                           tc,
+                                           uc,
+                                           vc,
+                                           order_u,
+                                           order_v,
+                                           u_offset,
+                                           u_scale,
+                                           v_offset,
+                                           v_scale,
+                                           sq_tol,
+                                           EPS,
+                                           false);
   }
 
   // Remove duplicates from the (u, v) intersection points
@@ -858,6 +863,12 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
   {
     // Also remove any intersections on the half-interval boundaries
     if(isHalfOpen && (uc[i] >= 1.0 - EPS || vc[i] >= 1.0 - EPS))
+    {
+      continue;
+    }
+
+    // And remove any intersections that are not visible
+    if(!patch.isVisible(uc[i], vc[i]))
     {
       continue;
     }
@@ -881,24 +892,60 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
     }
   }
 
-  return !t.empty();
+  // If too many intersections are reported, it can be due to degeneracies in the patch.
+  //  To account for this, we filter out duplicates in the ray's parameter space
+  if(!success)
+  {
+    tc.clear();
+    uc.clear();
+    vc.clear();
+
+    // Remove duplicates from the (t) intersection points
+    //  (Note that while it's possible for S(u_2, v_2) == S(u_2, v_2) and for t_1 != t_2,
+    //  it's very unlikely for this to occur upwards of 25 times per patch)
+    for(int i = 0; i < t.size(); ++i)
+    {
+      bool foundDuplicate = false;
+      for(int j = i + 1; !foundDuplicate && j < t.size(); ++j)
+      {
+        if(squared_distance(line.at(t[i]), line.at(t[j])) < sq_EPS)
+        {
+          foundDuplicate = true;
+        }
+      }
+
+      if(!foundDuplicate)
+      {
+        tc.push_back(t[i]);
+        uc.push_back(u[i]);
+        vc.push_back(v[i]);
+      }
+    }
+
+    t = tc;
+    u = uc;
+    v = vc;
+  }
+
+  return sucess;
 }
 
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
+AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
                                 const NURBSPatch<T, 3>& patch,
                                 axom::Array<T>& t,
                                 axom::Array<T>& u,
                                 axom::Array<T>& v,
                                 double tol = 1e-8,
                                 double EPS = 1e-8,
-                                bool isHalfOpen = false)
+                                bool isHalfOpen = false,
+                                double buffer = 0.0)
 {
   // Check a bounding box of the entire NURBS first
   Point<T, 3> ip;
-  if(!intersect(ray, patch.boundingBox(), ip))
+  if(!intersect(line, patch.boundingBox(), ip))
   {
-    return false;
+    return true;
   }
 
   // Decompose the NURBS patch into Bezier patches
@@ -915,6 +962,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
 
   // Check each Bezier patch, and scale the intersection parameters
   //  back into the span of the original NURBS patch
+  bool success = false;
   for(int i = 0; i < num_knot_span_u; ++i)
   {
     for(int j = 0; j < num_knot_span_v; ++j)
@@ -923,7 +971,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
 
       // Store candidate intersections from each Bezier patch
       axom::Array<T> tcc, ucc, vcc;
-      intersect(ray, bezier, tcc, ucc, vcc, tol, EPS);
+      success = intersect(line, bezier, tcc, ucc, vcc, tol, EPS);
 
       // Scale the intersection parameters back into the span of the NURBS patch
       for(int k = 0; k < tcc.size(); ++k)
@@ -949,7 +997,8 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
   for(int i = 0; i < tc.size(); ++i)
   {
     // Also remove any intersections on the half-interval boundaries
-    if(isHalfOpen && (uc[i] >= max_u_knot - EPS || vc[i] >= max_v_knot - EPS))
+    if(isHalfOpen &&
+       (uc[i] >= max_u_knot - buffer || vc[i] >= max_v_knot - buffer))
     {
       continue;
     }
@@ -973,7 +1022,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
     }
   }
 
-  return !t.empty();
+  return success;
 }
 
 }  // namespace primal

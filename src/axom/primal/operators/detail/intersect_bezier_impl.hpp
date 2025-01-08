@@ -280,14 +280,7 @@ bool intersect_ray_bezier(const BezierCurve<T, 2> &c,
     {
       foundIntersection = true;
     }
-    if(intersect_ray_bezier(c2,
-                            r,
-                            cp,
-                            rp,
-                            sq_tol,
-                            order,
-                            c_offset + c_scale,
-                            c_scale))
+    if(intersect_ray_bezier(c2, r, cp, rp, sq_tol, order, c_offset + c_scale, c_scale))
     {
       foundIntersection = true;
     }
