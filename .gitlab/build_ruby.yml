@@ -56,12 +56,12 @@ ruby-gcc_10_3_1-src:
     HOST_CONFIG: "ruby-toss_4_x86_64_ib-${COMPILER}.cmake"
   extends: .src_build_on_ruby
 
-asan-ruby-gcc_10_3_1-src:
+ruby-sanitizers-gcc_10_3_1-src:
   variables:
     COMPILER: "gcc@10.3.1"
     HOST_CONFIG: "ruby-toss_4_x86_64_ib-${COMPILER}.cmake"
     LSAN_OPTIONS: suppressions=${CI_PROJECT_DIR}/suppressions.asan
-    EXTRA_CMAKE_OPTIONS: "-DAXOM_ENABLE_ASAN=ON"
+    EXTRA_CMAKE_OPTIONS: "-DAXOM_ENABLE_ASAN=ON -DAXOM_ENABLE_UBSAN=ON"
   extends: .src_build_on_ruby
 
 # TODO: turn back on
