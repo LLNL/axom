@@ -39,21 +39,25 @@ char const RELATIONSHIPS_KEY[] = "relationships";
 char const SAVE_TMP_FILE_EXTENSION[] = ".sina.tmp";
 }
 
-void protocol_warn(std::string protocol, std::string const &name) {
+void protocolWarn(std::string const protocol, std::string const &name) {
+  std::unordered_map<std::string, std::string> protocolMessages = {
+      {".json", ".json extension not found, did you mean to save to this format?"},
+      {".hdf5", ".hdf5 extension not found, did you use one of its other supported types? (h5, hdf, ...)"}
+  };
+
   size_t pos = name.rfind('.');
-
   if (pos != std::string::npos) {
-        std::string found = name.substr(pos+1);
-
-        if (("." + found) != protocol && protocol == ".json") {
-          std::cout << ".json extension not found, did you mean to save to this format?";
-        } else if (("." + found) != protocol && protocol == ".hdf5") {
-          std::cout << ".hdf5 extension not found, did you use one of its other supported types? (h5, hdf, ...)";
-        } else {
-          return;
-        }
+      std::string found = name.substr(pos);
+      
+      if (found != protocol) {
+          auto messageIt = protocolMessages.find(protocol);
+          if (messageIt != protocolMessages.end()) {
+              std::cout << messageIt->second << std::endl;
+          }
+      }
   } else {
-    std::cout << "No file extension found, did you mean to use one of " << protocol << "'s supported types?";
+      std::cout << "No file extension found, did you mean to use one of " 
+                << protocol << "'s supported types?" << std::endl;
   }
 }
 
@@ -184,64 +188,106 @@ conduit::Node Document::toNode() const
   return document;
 }
 
-void Document::createFromNode(conduit::Node const &asNode,
-                              RecordLoader const &recordLoader)
+// void Document::createFromNode(conduit::Node const &asNode,
+//                               RecordLoader const &recordLoader)
+// {
+//   if (asNode.has_child(RECORDS_KEY))
+//   {
+//     const conduit::Node &record_nodes = asNode[RECORDS_KEY];
+//     if (record_nodes.dtype().is_list())
+//     {
+//       auto recordIter = record_nodes.children();
+//       while (recordIter.has_next())
+//       {
+//         auto record = recordIter.next();
+//         add(recordLoader.load(record));
+//       }
+//     }
+//     else
+//     {
+//       std::ostringstream message;
+//       message << "The '" << RECORDS_KEY
+//               << "' element of a document must be an array";
+//       throw std::invalid_argument(message.str());
+//     }
+//   }
+
+//   if (asNode.has_child(RELATIONSHIPS_KEY))
+//   {
+//     const conduit::Node &relationships_node = asNode[RELATIONSHIPS_KEY];
+
+//     if (!relationships_node.dtype().is_list())
+//     {
+//       if (relationships_node.number_of_children() == 0)
+//       {
+//         // Create a temporary mutable node for transformation
+//         conduit::Node temp_node(conduit::DataType::list());
+//         auto relationshipsIter = temp_node.children();
+//         while (relationshipsIter.has_next())
+//         {
+//           auto &relationship = relationshipsIter.next();
+//           add(Relationship{relationship});
+//         }
+//       }
+//       else
+//       {
+//         std::ostringstream message;
+//         message << "The '" << RELATIONSHIPS_KEY << "' element of a document must be an array";
+//         throw std::invalid_argument(message.str());
+//       }
+//     }
+//     else
+//     {
+//       auto relationshipsIter = relationships_node.children();
+//       while (relationshipsIter.has_next())
+//       {
+//         auto &relationship = relationshipsIter.next();
+//         add(Relationship{relationship});
+//       }
+//     }
+//   }
+// }
+
+void Document::createFromNode(const conduit::Node &asNode, 
+                              const RecordLoader &recordLoader)
 {
-  if (asNode.has_child(RECORDS_KEY))
-  {
-    const conduit::Node &record_nodes = asNode[RECORDS_KEY];
-    if (record_nodes.dtype().is_list())
+    conduit::Node nodeCopy = asNode;
+    auto processChildNodes = [&](const char* key, 
+                                 std::function<void(conduit::Node&)> addFunc)
     {
-      auto recordIter = record_nodes.children();
-      while (recordIter.has_next())
-      {
-        auto record = recordIter.next();
-        add(recordLoader.load(record));
-      }
-    }
-    else
-    {
-      std::ostringstream message;
-      message << "The '" << RECORDS_KEY
-              << "' element of a document must be an array";
-      throw std::invalid_argument(message.str());
-    }
-  }
-
-  if (asNode.has_child(RELATIONSHIPS_KEY))
-  {
-    const conduit::Node &relationships_node = asNode[RELATIONSHIPS_KEY];
-
-    if (!relationships_node.dtype().is_list())
-    {
-      if (relationships_node.number_of_children() == 0)
-      {
-        // Create a temporary mutable node for transformation
-        conduit::Node temp_node(conduit::DataType::list());
-        auto relationshipsIter = temp_node.children();
-        while (relationshipsIter.has_next())
+        if (nodeCopy.has_child(key))
         {
-          auto &relationship = relationshipsIter.next();
-          add(Relationship{relationship});
+            conduit::Node &childNodes = nodeCopy[key];
+
+            if (childNodes.number_of_children() == 0)
+            {
+                childNodes.set(conduit::DataType::list());
+            }
+            if (!childNodes.dtype().is_list())
+            {
+                std::ostringstream message;
+                message << "The '" << key << "' element of a document must be an array";
+                throw std::invalid_argument(message.str());
+            }
+
+            auto childIter = childNodes.children();
+            while (childIter.has_next())
+            {
+                conduit::Node child = childIter.next();
+                addFunc(child);
+            }
         }
-      }
-      else
-      {
-        std::ostringstream message;
-        message << "The '" << RELATIONSHIPS_KEY << "' element of a document must be an array";
-        throw std::invalid_argument(message.str());
-      }
-    }
-    else
+    };
+
+    processChildNodes(RECORDS_KEY, [&](conduit::Node &record)
     {
-      auto relationshipsIter = relationships_node.children();
-      while (relationshipsIter.has_next())
-      {
-        auto &relationship = relationshipsIter.next();
+        add(recordLoader.load(record));
+    });
+
+    processChildNodes(RELATIONSHIPS_KEY, [&](conduit::Node &relationship)
+    {
         add(Relationship{relationship});
-      }
-    }
-  }
+    });
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -265,7 +311,6 @@ void Document::toHDF5(const std::string &filename) const
     for (const auto& record : getRecords())
     {
         conduit::Node recordNode = record->toNode();
-        conduit::Node modifiedRecordNode;
 
         removeSlashes(recordNode, recordsNode.append());
     }
@@ -274,7 +319,6 @@ void Document::toHDF5(const std::string &filename) const
     for (const auto& relationship : getRelationships())
     {
         conduit::Node relationshipNode = relationship.toNode();
-        conduit::Node modifiedRelationshipsNode;
 
         removeSlashes(relationshipNode, relationshipsNode.append());   
     }
@@ -304,22 +348,18 @@ void saveDocument(Document const &document, std::string const &fileName, Protoco
 
   std::string tmpFileName = fileName + SAVE_TMP_FILE_EXTENSION;
 
-  if (protocol == Protocol::JSON)
-  {
-      protocol_warn(".json", fileName);
+  if (protocol == Protocol::JSON) {
+      protocolWarn(".json", fileName);
       auto asJson = document.toJson();
       std::ofstream fout {tmpFileName};
       fout.exceptions(std::ostream::failbit | std::ostream::badbit);
       fout << asJson;
       fout.close();
   }
-  else if (protocol == Protocol::HDF5)
-  {
-      protocol_warn(".hdf5", fileName);
+  else if (protocol == Protocol::HDF5) {
+      protocolWarn(".hdf5", fileName);
       document.toHDF5(tmpFileName);
-  }
-  else
-  {
+  } else {
       throw std::invalid_argument("Invalid format choice. Please enter 'json' or 'hdf5'.");
   }
 
@@ -339,24 +379,25 @@ Document loadDocument(std::string const &path, Protocol protocol)
 
 Document loadDocument(std::string const &path, RecordLoader const &recordLoader, Protocol protocol)
 {
-    conduit::Node node;
+    conduit::Node node, modifiedNode;
+    std::ostringstream file_contents;
+    std::ifstream file_in {path};
     
     // Load the file depending on the protocol
-    if (protocol == Protocol::JSON) {
-        std::ifstream file_in {path};
-        std::ostringstream file_contents;
+    switch (protocol)
+    {
+      case Protocol::JSON:
         file_contents << file_in.rdbuf();
         file_in.close();
         node.parse(file_contents.str(), "json");
         return Document {node, recordLoader};
-    } else if (protocol == Protocol::HDF5) {
-        conduit::Node modifiedNode;
+      case Protocol::HDF5:
         conduit::relay::io::load(path, "hdf5", node);
         restoreSlashes(node, modifiedNode);
         return Document {modifiedNode, recordLoader};
+      default:
+        break;
     }
-
-    // Finally, use the node to create the Document object (existing logic)
 }
 
 }  // namespace sina

@@ -53,7 +53,7 @@ Adding Data
 
 Once we have a Record, we can add different types of data to it. Any Datum
 object that is added will end up in the "data" section of the record in
-the file.
+the output file.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp

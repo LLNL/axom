@@ -243,17 +243,6 @@ inline std::string getSinaFileFormatVersion()
 }
 
 /**
- * \brief Get the current file format version.
- *
- * \return A string representing the file format version.
- */
-inline std::string getSinaFileFormatVersion()
-{
-  return std::to_string(SINA_FILE_FORMAT_VERSION_MAJOR) + "." +
-    std::to_string(SINA_FILE_FORMAT_VERSION_MINOR);
-}
-
-/**
  * \brief Load a document from the given path. Only records which this library
  *        knows about will be able to be loaded.
  *
