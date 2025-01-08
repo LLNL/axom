@@ -69,9 +69,9 @@ struct PatchData
 
 /**
  * Class to read in a STEP file representing trimmed NURBS meshes using OpenCASCADE 
- * and convert the patches and trimming curves to axom's NURBSPatch and NURBSCurve primitives.
+ * and convert the patches and trimming curves to Axom's NURBSPatch and NURBSCurve primitives.
  * 
- * Implementation note: Since axom's primitives do not support periodic knots, 
+ * Implementation note: Since Axom's primitives do not support periodic knots, 
  * we must convert the OpenCASCADE analogues to a open/clamped representation, when necessary.
  */
 class StepFileProcessor
