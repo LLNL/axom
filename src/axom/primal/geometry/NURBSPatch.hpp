@@ -330,7 +330,7 @@ public:
    */
   NURBSPatch(const CoordsMat& pts, int deg_u, int deg_v) : m_controlPoints(pts)
   {
-    auto pts_shape = pts.shape();
+    const auto pts_shape = pts.shape();
 
     SLIC_ASSERT(pts_shape[0] >= deg_u + 1 && pts_shape[1] >= deg_v + 1);
     SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
@@ -358,11 +358,11 @@ public:
     : m_controlPoints(pts)
     , m_weights(weights)
   {
-    auto pts_shape = pts.shape();
-    // auto weights_shape = weights.shape();
+    const auto pts_shape = pts.shape();
 
-    SLIC_ASSERT(pts_shape[0] >= deg_u + 1 && pts_shape[1] >= deg_v + 1);
     SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
+    SLIC_ASSERT(pts_shape[0] >= deg_u + 1 && pts_shape[1] >= deg_v + 1);
+    SLIC_ASSERT(pts_shape == weights.shape());
 
     m_knotvec_u = KnotVectorType(pts_shape[0], deg_u);
     m_knotvec_v = KnotVectorType(pts_shape[1], deg_v);
