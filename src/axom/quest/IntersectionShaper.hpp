@@ -2389,13 +2389,6 @@ public:
                                     {vertexCount},
                                     stride)};
 
-    SLIC_ERROR_IF(
-      !XS::usesAllocId(axom::getAllocatorIDFromPointer(coordArrays[0].data())),
-      std::string(XS::name()) +
-        axom::fmt::format(
-          " execution space cannot use the coordset allocator id {}",
-          axom::getAllocatorIDFromPointer(coordArrays[0].data())));
-
     vertCoords =
       axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
                           m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
