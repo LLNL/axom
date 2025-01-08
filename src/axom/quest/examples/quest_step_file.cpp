@@ -1654,7 +1654,9 @@ public:
     // close the image and write to disk
     axom::fmt::format_to(std::back_inserter(svgContent), "</svg>");
 
-    std::string svgFilename = axom::fmt::format("patch_{}.svg", patchIndex);
+    std::string svgFilename = axom::utilities::filesystem::joinPath(
+      m_outputDirectory,
+      axom::fmt::format("patch_{}.svg", patchIndex));
     std::ofstream svgFile(svgFilename);
     if(svgFile.is_open())
     {
@@ -1843,6 +1845,8 @@ public:
     }
   }
 
+  void setOutputDirectory(const std::string& dir) { m_outputDirectory = dir; }
+
   /// Utility function to triangulate each trimmed patch and write it to disk as as STL mesh
   void triangulateTrimmedPatches()
   {
@@ -1887,7 +1891,9 @@ public:
                            patchIndex);
 
       // write the STL file
-      std::string stlFilename = axom::fmt::format("patch_{}.stl", patchIndex);
+      std::string stlFilename = axom::utilities::filesystem::joinPath(
+        m_outputDirectory,
+        axom::fmt::format("patch_{}.stl", patchIndex));
       {
         std::ofstream stlFile(stlFilename);
         if(!stlFile.is_open())
@@ -1967,8 +1973,9 @@ public:
                            patchIndex);
 
       // write the STL file
-      std::string stlFilename =
-        axom::fmt::format("patch_untrimmed_{}.stl", patchIndex);
+      std::string stlFilename = axom::utilities::filesystem::joinPath(
+        m_outputDirectory,
+        axom::fmt::format("patch_untrimmed_{}.stl", patchIndex));
       {
         std::ofstream stlFile(stlFilename);
         if(!stlFile.is_open())
@@ -2044,7 +2051,9 @@ public:
       patchIndexField[i] = patch_id[i];
     }
 
-    const std::string filename = "triangulated_mesh.vtk";
+    const std::string filename =
+      axom::utilities::filesystem::joinPath(m_outputDirectory,
+                                            "triangulated_mesh.vtk");
     axom::mint::write_vtk(&mesh, filename);
     SLIC_INFO_IF(m_verbose,
                  "VTK triangle mesh of entire model generated: " << filename);
@@ -2095,6 +2104,7 @@ private:
   double m_deflection;
   double m_angularDeflection;
   bool m_verbose {false};
+  std::string m_outputDirectory {"."};
 };
 
 int main(int argc, char** argv)
@@ -2124,7 +2134,25 @@ int main(int argc, char** argv)
       "Angular deflection between adjacent normals when triangulating surfaces")
     ->capture_default_str();
 
+  std::string output_dir = "step_output";
+  app.add_option("-o,--output_dir", output_dir)
+    ->description("Output directory for generated meshes")
+    ->capture_default_str()
+    ->check([](const std::string& dir) -> std::string {
+      if(dir.find_first_of("\\:*?\"<>|") != std::string::npos)
+      {
+        return std::string("Output directory contains invalid characters.");
+      }
+      return std::string();
+    });
+
   CLI11_PARSE(app, argc, argv);
+
+  // Ensure output directory exists
+  if(!axom::utilities::filesystem::pathExists(output_dir))
+  {
+    axom::utilities::filesystem::makeDirsForPath(output_dir);
+  }
 
   // Load and process file
   SLIC_INFO("Processing file: " << filename);
@@ -2146,7 +2174,11 @@ int main(int argc, char** argv)
   PatchParametricSpaceProcessor patchProcessor;
   patchProcessor.setUnits(stepProcessor.getFileUnits());
   patchProcessor.setVerbosity(verbosity);
-
+  patchProcessor.setOutputDirectory(output_dir);
+  SLIC_INFO(
+    axom::fmt::format("Generating SVG meshes for patches and their trimming "
+                      "curves in '{}' directory",
+                      output_dir));
   for(const auto& entry : stepProcessor.getPatchDataMap())
   {
     patchProcessor.generateSVGForPatch(entry.first, entry.second);
@@ -2157,6 +2189,11 @@ int main(int argc, char** argv)
                                       deflection,
                                       angular_deflection,
                                       verbosity);
+  patchTriangulator.setOutputDirectory(output_dir);
+  SLIC_INFO(
+    axom::fmt::format("Generating triangles meshes for trimmed and untrimmed "
+                      "patches in '{}' directory",
+                      output_dir));
   patchTriangulator.triangulateTrimmedPatches();
   patchTriangulator.triangulateFullMesh();
   patchTriangulator.triangulateUntrimmedPatches();
