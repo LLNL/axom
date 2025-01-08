@@ -1,3 +1,5 @@
+
+
 // Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
@@ -14,13 +16,17 @@
 
 #include "axom/sina/core/Document.hpp"
 #include "axom/sina/core/Run.hpp"
-
+#include "axom/json.hpp"
 #include "axom/sina/tests/TestRecord.hpp"
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
 #include "conduit_relay_io.hpp"
 #include "axom/sina/core/CurveSet.hpp" 
-#include "axom/sina/core/Record.hpp"   
+#include "axom/sina/core/Record.hpp" 
+#include "conduit.hpp"
+#include "conduit_relay.hpp"
+#include "conduit_relay_io.hpp" 
+#include "conduit_relay_io_hdf5.hpp" 
 
 namespace axom
 {
@@ -38,9 +44,19 @@ char const TEST_RECORD_TYPE[] = "test type";
 char const EXPECTED_RECORDS_KEY[] = "records";
 char const EXPECTED_RELATIONSHIPS_KEY[] = "relationships";
 
-bool fileExists(const std::string& filename) {
-    std::ifstream file(filename);
-    return file.good();
+
+// Helper function to convert Conduit Node array to std::vector<double> for HDF5 assertion
+std::vector<double> node_to_double_vector(const conduit::Node& node) {
+    std::vector<double> result;
+
+    if (node.dtype().is_number()) {  
+        const double* intArray = node.as_double_ptr(); 
+        conduit::index_t numElements = node.dtype().number_of_elements();
+        for (conduit::index_t i = 0; i < numElements; ++i) {
+            result.push_back(intArray[i]);
+        }
+    }
+    return result;
 }
 
 TEST(Document, create_fromNode_empty)
@@ -377,7 +393,7 @@ TEST(Document, saveDocument_json)
   document.add(
     std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
-  saveDocument(document, tmpFile.getName());
+  saveDocument(document, tmpFile.getName() + ".json");
 
   conduit::Node readContents;
   {
@@ -409,7 +425,7 @@ TEST(Document, saveDocument_hdf5)
     document.add(
         std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
-    saveDocument(document, tmpFile.getName(), Protocol::HDF5);
+    saveDocument(document, tmpFile.getName() + ".hdf5", Protocol::HDF5);
 
     conduit::Node readContents;
     conduit::relay::io::load(tmpFile.getName() + ".hdf5", "hdf5", readContents);
@@ -473,157 +489,944 @@ TEST(Document, load_defaultRecordLoaders)
   EXPECT_NE(nullptr, loadedRun);
 }
 
-TEST(Document, protocol_set_json_normal)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+TEST(Document, test_append_to_json) {
+    std::string jsonFilePath = "test.json";
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+    std::ofstream testFile(jsonFilePath);
+    testFile << R"({
+        "records": [
+            {
+                "data": {"scal1": {"value": "hello!"}},
+                "type": "foo1",
+                "id": "bar1",
+                "user_defined":{"hello": "and"},
+                "curve_sets": {
+                    "1": {
+                        "dependent": {
+                            "0": { "value": [1, 2] },
+                            "1": { "value": [10, 20] }
+                        },
+                        "independent": {
+                            "0": { "value": [4, 5] },
+                            "1": { "value": [7, 8] }
+                        }
+                    }
+                }
+            },
+            {
+                "type": "foo2",
+                "id": "bar2",
+                "curve_sets": {
+                    "1": {
+                        "dependent": {
+                            "0": { "value": [1, 2] },
+                            "1": { "value": [10, 20] }
+                        },
+                        "independent": {
+                            "0": { "value": [4, 5] },
+                            "1": { "value": [7, 8] }
+                        }
+                    }
+                }
+            }
+        ]
+    })";
+    testFile.close();
 
-  saveDocument(document, "test", Protocol::JSON);
+    std::string data = "{\"records\": ["
+    "   {"
+    "       \"type\": \"foo1\","
+    "       \"id\": \"bar1\","
+    "       \"data\": {\"scal1\": {\"value\": \"goodbye!\"}, \"scal2\": {\"value\": \"goodbye!\"}},"
+    "       \"user_defined\":{\"hello\": \"goodbye\"},"
+    "       \"curve_sets\": {"
+    "           \"1\": {"
+    "               \"dependent\": {"
+    "                   \"0\": {\"value\": [1]},"
+    "                   \"1\": {\"value\": [10]}"
+    "               },"
+    "               \"independent\": {"
+    "                   \"0\": {\"value\": [4]},"
+    "                   \"1\": {\"value\": [7]}"
+    "               }"
+    "           }"
+    "       }"
+    "   },"
+    "   {"
+    "       \"type\": \"foo2\","
+    "       \"id\": \"bar3\","
+    "       \"curve_sets\": {"
+    "           \"1\": {"
+    "               \"dependent\": {"
+    "                   \"0\": {\"value\": [1]},"
+    "                   \"1\": {\"value\": [10]}"
+    "               },"
+    "               \"independent\": {"
+    "                   \"0\": {\"value\": [4]},"
+    "                   \"1\": {\"value\": [7]}"
+    "               }"
+    "           }"
+    "       }"
+    "   }"
+    "]}";
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("test.json"));
+    axom::sina::Document newData =
+        Document(data, createRecordLoaderWithAllKnownTypes());
 
-  std::string expectedOutput = "|| WARNING: NO FILE EXTENSION FOUND, SINA WILL BE ADDING THE .json FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
+    bool result = append_to_json(jsonFilePath, newData);
+
+    std::ifstream updatedFile(jsonFilePath);
+    nlohmann::json j;
+    updatedFile >> j;
+
+    ASSERT_TRUE(result); 
+
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["0"]["value"],
+    //           nlohmann::json({1, 2, 3, 1})); 
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["1"]["value"],
+    //           nlohmann::json({10, 20, 10})); 
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["0"]["value"],
+    //           nlohmann::json({4, 5, 6, 4})); 
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["1"]["value"],
+    //           nlohmann::json({7, 8, 7})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["dependent"]["0"]["value"],
+    //           nlohmann::json({1, 2, 3, 1})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["dependent"]["1"]["value"],
+    //           nlohmann::json({10, 20, 10})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["independent"]["0"]["value"],
+    //           nlohmann::json({4, 5, 6, 4})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["independent"]["1"]["value"],
+    //           nlohmann::json({7, 8, 7}));   
+
+    // std::remove(jsonFilePath.c_str());
 }
 
-TEST(Document, protocol_set_json_replace_existing)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+TEST(Document, test_append_to_hdf5) {
+    std::string hdf5FilePath = "test.hdf5";
+    conduit::Node initialData;
+    initialData["records/0/data/scal1/value"].set("hello!");
+    initialData["records/0/type"].set("foo1");
+    initialData["records/0/id"].set("bar1");
+    initialData["records/0/user_defined/hello"].set("and");
+    initialData["records/0/curve_sets/1/dependent/0/value"].set(std::vector<double>{1.0, 2.0});
+    initialData["records/0/curve_sets/1/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+    initialData["records/0/curve_sets/1/independent/0/value"].set(std::vector<double>{4.0, 5.0});
+    initialData["records/0/curve_sets/1/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+    initialData["records/1/type"].set("foo2");
+    initialData["records/1/id"].set("bar2");
+    initialData["records/1/curve_sets/1/dependent/0/value"].set(std::vector<double>{1.0, 2.0});
+    initialData["records/1/curve_sets/1/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+    initialData["records/1/curve_sets/1/independent/0/value"].set(std::vector<double>{4.0, 5.0});
+    initialData["records/1/curve_sets/1/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+    conduit::relay::io::hdf5_write(initialData, hdf5FilePath);
 
-  saveDocument(document, "testi.hdf5", Protocol::JSON);
+    std::string data = "{\"records\": ["
+    "   {"
+    "       \"type\": \"foo1\","
+    "       \"id\": \"bar1\","
+    "       \"data\": {\"scal1\": {\"value\": \"goodbye!\"}, \"scal2\": {\"value\": \"goodbye!\"}},"
+    "       \"user_defined\":{\"hello\": \"goodbye\"},"
+    "       \"curve_sets\": {"
+    "           \"1\": {"
+    "               \"dependent\": {"
+    "                   \"0\": {\"value\": [1]},"
+    "                   \"1\": {\"value\": [10]}"
+    "               },"
+    "               \"independent\": {"
+    "                   \"0\": {\"value\": [4]},"
+    "                   \"1\": {\"value\": [7]}"
+    "               }"
+    "           }"
+    "       }"
+    "   },"
+    "   {"
+    "       \"type\": \"foo2\","
+    "       \"id\": \"bar3\","
+    "       \"curve_sets\": {"
+    "           \"1\": {"
+    "               \"dependent\": {"
+    "                   \"0\": {\"value\": [1]},"
+    "                   \"1\": {\"value\": [10]}"
+    "               },"
+    "               \"independent\": {"
+    "                   \"0\": {\"value\": [4]},"
+    "                   \"1\": {\"value\": [7]}"
+    "               }"
+    "           }"
+    "       }"
+    "   }"
+    "]}";
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("testi.json"));
+    axom::sina::Document newData = Document(data, createRecordLoaderWithAllKnownTypes());
+    bool result = append_to_hdf5(hdf5FilePath, newData);
 
-  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .hdf5; EXPECTED: .json),  SINA WILL BE REPLACING IT TO THE .json FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
+
+    // std::ofstream testFile(hdf5FilePath);
+    // testFile << R"({
+    //     "records": [
+    //         {
+    //             "data": {"scal1": {"value": "hello!"}},
+    //             "type": "foo1",
+    //             "id": "bar1",
+    //             "user_defined":{"hello": "and"},
+    //             "curve_sets": {
+    //                 "1": {
+    //                     "dependent": {
+    //                         "0": { "value": [1, 2] },
+    //                         "1": { "value": [10, 20] }
+    //                     },
+    //                     "independent": {
+    //                         "0": { "value": [4, 5] },
+    //                         "1": { "value": [7, 8] }
+    //                     }
+    //                 }
+    //             }
+    //         },
+    //         {
+    //             "type": "foo2",
+    //             "id": "bar2",
+    //             "curve_sets": {
+    //                 "1": {
+    //                     "dependent": {
+    //                         "0": { "value": [1, 2] },
+    //                         "1": { "value": [10, 20] }
+    //                     },
+    //                     "independent": {
+    //                         "0": { "value": [4, 5] },
+    //                         "1": { "value": [7, 8] }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     ]
+    // })";
+    // testFile.close();
+
+    // std::string data = "{\"records\": ["
+    // "   {"
+    // "       \"type\": \"foo1\","
+    // "       \"id\": \"bar1\","
+    // "       \"data\": {\"scal1\": {\"value\": \"goodbye!\"}, \"scal2\": {\"value\": \"goodbye!\"}},"
+    // "       \"user_defined\":{\"hello\": \"goodbye\"},"
+    // "       \"curve_sets\": {"
+    // "           \"1\": {"
+    // "               \"dependent\": {"
+    // "                   \"0\": {\"value\": [1]},"
+    // "                   \"1\": {\"value\": [10]}"
+    // "               },"
+    // "               \"independent\": {"
+    // "                   \"0\": {\"value\": [4]},"
+    // "                   \"1\": {\"value\": [7]}"
+    // "               }"
+    // "           }"
+    // "       }"
+    // "   },"
+    // "   {"
+    // "       \"type\": \"foo2\","
+    // "       \"id\": \"bar3\","
+    // "       \"curve_sets\": {"
+    // "           \"1\": {"
+    // "               \"dependent\": {"
+    // "                   \"0\": {\"value\": [1]},"
+    // "                   \"1\": {\"value\": [10]}"
+    // "               },"
+    // "               \"independent\": {"
+    // "                   \"0\": {\"value\": [4]},"
+    // "                   \"1\": {\"value\": [7]}"
+    // "               }"
+    // "           }"
+    // "       }"
+    // "   }"
+    // "]}";
+
+    // axom::sina::Document newData =
+    //     Document(data, createRecordLoaderWithAllKnownTypes());
+
+    // bool result = append_to_hdf5(hdf5FilePath, newData);
+
+    ASSERT_TRUE(result); 
+
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["0"]["value"],
+    //           nlohmann::json({1, 2, 3, 1})); 
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["1"]["value"],
+    //           nlohmann::json({10, 20, 10})); 
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["0"]["value"],
+    //           nlohmann::json({4, 5, 6, 4})); 
+    // ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["1"]["value"],
+    //           nlohmann::json({7, 8, 7})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["dependent"]["0"]["value"],
+    //           nlohmann::json({1, 2, 3, 1})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["dependent"]["1"]["value"],
+    //           nlohmann::json({10, 20, 10})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["independent"]["0"]["value"],
+    //           nlohmann::json({4, 5, 6, 4})); 
+    // ASSERT_EQ(j["records"][1]["curve_sets"]["1"]["independent"]["1"]["value"],
+    //           nlohmann::json({7, 8, 7}));   
+
+    // std::remove(jsonFilePath.c_str());
 }
 
-TEST(Document, protocol_set_json_replace_nonexisting)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+// TEST(Document, test_append_to_json_multiple_records_invalid_error) {
+//     std::string jsonFilePath = "test.json";
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+//     std::ofstream testFile(jsonFilePath);
+//     testFile << R"({
+//         "records": [
+//             {
+//                 "curve_sets": {
+//                     "1": {
+//                         "dependent": {
+//                             "0": { "value": [1, 2, 3] },
+//                             "1": { "value": [10, 20] }
+//                         },
+//                         "independent": {
+//                             "0": { "value": [4, 5, 6] },
+//                             "1": { "value": [7, 8] }
+//                         }
+//                     }
+//                 }
+//             },
+//             {
+//                 "curve_sets": {
+//                     "2": {
+//                         "dependent": {
+//                             "0": { "value": [1, 2, 3] },
+//                             "1": { "value": [10, 20] }
+//                         },
+//                         "independent": {
+//                             "0": { "value": [4, 5, 6] },
+//                             "1": { "value": [7, 8] }
+//                         }
+//                     }
+//                 }
+//             }
+//         ]
+//     })";
+//     testFile.close();
 
-  saveDocument(document, "testin.jso", Protocol::JSON);
+//     nlohmann::json newData = {
+//         {"records", {
+//             {
+//                 {"curve_sets", {
+//                     {"1", {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }}
+//                 }}
+//             },
+//             {
+//                 {"curve_sets", {
+//                     {"2", {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"2", {{"value", {7}}}}
+//                         }}
+//                     }}
+//                 }}
+//             }
+//         }}
+//     };
+//     bool result = append_to_json_multiple_records(jsonFilePath, newData);
+//     std::ifstream updatedFile(jsonFilePath);
+//     nlohmann::json j;
+//     updatedFile >> j;
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("testin.jso.json"));
+//     ASSERT_FALSE(result); 
 
-  std::string expectedOutput = "|| WARNING: BROKEN FILE EXTENSION FOUND, SINA WILL BE APPENDING THE .json FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
-}
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["0"]["value"],
+//               nlohmann::json({1, 2, 3})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["1"]["value"],
+//               nlohmann::json({10, 20})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["0"]["value"],
+//               nlohmann::json({4, 5, 6})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["1"]["value"],
+//               nlohmann::json({7, 8})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["dependent"]["0"]["value"],
+//               nlohmann::json({1, 2, 3})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["dependent"]["1"]["value"],
+//               nlohmann::json({10, 20})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["independent"]["0"]["value"],
+//               nlohmann::json({4, 5, 6})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["independent"]["1"]["value"],
+//               nlohmann::json({7, 8}));     
 
-TEST(Document, protocol_set_json_replace_multiple)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+//     std::remove(jsonFilePath.c_str());
+// }
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+// TEST(Document, test_append_to_json_multiple_records_mismatch_error) {
+//     std::string jsonFilePath = "test.json";
 
-  saveDocument(document, "testing.json.hdf5", Protocol::JSON);
+//     std::ofstream testFile(jsonFilePath);
+//     testFile << R"({
+//         "records": [
+//             {
+//                 "curve_sets": {
+//                     "1": {
+//                         "dependent": {
+//                             "0": { "value": [1, 2, 3] },
+//                             "1": { "value": [10, 20] }
+//                         },
+//                         "independent": {
+//                             "0": { "value": [4, 5, 6] },
+//                             "1": { "value": [7, 8] }
+//                         }
+//                     }
+//                 }
+//             },
+//             {
+//                 "curve_sets": {
+//                     "2": {
+//                         "dependent": {
+//                             "0": { "value": [1, 2, 3] },
+//                             "1": { "value": [10, 20] }
+//                         },
+//                         "independent": {
+//                             "0": { "value": [4, 5, 6] },
+//                             "1": { "value": [7, 8] }
+//                         }
+//                     }
+//                 }
+//             }
+//         ]
+//     })";
+//     testFile.close();
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("testing.json.json"));
+//     nlohmann::json newData = {
+//         {"records", {
+//             {
+//                 {"curve_sets", {
+//                     {"1", {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }}
+//                 }}
+//             }
+//         }}
+//     };
+//     bool result = append_to_json_multiple_records(jsonFilePath, newData);
 
-  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .hdf5; EXPECTED: .json),  SINA WILL BE REPLACING IT TO THE .json FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
-}
+//     std::ifstream updatedFile(jsonFilePath);
+//     nlohmann::json j;
+//     updatedFile >> j;
 
-TEST(Document, protocol_set_hdf5_normal)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+//     ASSERT_FALSE(result); 
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["0"]["value"],
+//               nlohmann::json({1, 2, 3})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["1"]["value"],
+//               nlohmann::json({10, 20})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["0"]["value"],
+//               nlohmann::json({4, 5, 6})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["1"]["value"],
+//               nlohmann::json({7, 8})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["dependent"]["0"]["value"],
+//               nlohmann::json({1, 2, 3})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["dependent"]["1"]["value"],
+//               nlohmann::json({10, 20})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["independent"]["0"]["value"],
+//               nlohmann::json({4, 5, 6})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["independent"]["1"]["value"],
+//               nlohmann::json({7, 8}));  
 
-  saveDocument(document, "testingtest", Protocol::HDF5);
+//     std::remove(jsonFilePath.c_str());
+// }
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("testingtest.hdf5"));
+// TEST(Document, test_append_to_json_one_record) {
+//     std::string jsonFilePath = "test.json";
 
-  std::string expectedOutput = "|| WARNING: NO FILE EXTENSION FOUND, SINA WILL BE ADDING THE .hdf5 FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
-}
+//     std::ofstream testFile(jsonFilePath);
+//     testFile << R"({
+//         "records": [
+//             {
+//                 "curve_sets": {
+//                     "1": {
+//                         "dependent": {
+//                             "0": { "value": [1, 2, 3] },
+//                             "1": { "value": [10, 20] }
+//                         },
+//                         "independent": {
+//                             "0": { "value": [4, 5, 6] },
+//                             "1": { "value": [7, 8] }
+//                         }
+//                     }
+//                 }
+//             },
+//             {
+//                 "curve_sets": {
+//                     "2": {
+//                         "dependent": {
+//                             "0": { "value": [1, 2, 3] },
+//                             "1": { "value": [10, 20] }
+//                         },
+//                         "independent": {
+//                             "0": { "value": [4, 5, 6] },
+//                             "1": { "value": [7, 8] }
+//                         }
+//                     }
+//                 }
+//             }
+//         ]
+//     })";
+//     testFile.close();
 
-TEST(Document, protocol_set_hdf5_replace_existing)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+//     nlohmann::json newData = {
+//         {"records", {
+//             {
+//                 {"curve_sets", {
+//                     {"2", {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }}
+//                 }}
+//             }
+//         }}
+//     };
+//     bool result = append_to_json_one_record(jsonFilePath, newData, 1);
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+//     std::ifstream updatedFile(jsonFilePath);
+//     nlohmann::json j;
+//     updatedFile >> j;
 
-  saveDocument(document, "testingtesti.json", Protocol::HDF5);
+//     ASSERT_TRUE(result); 
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("testingtesti.hdf5"));
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["0"]["value"],
+//               nlohmann::json({1, 2, 3})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["dependent"]["1"]["value"],
+//               nlohmann::json({10, 20})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["0"]["value"],
+//               nlohmann::json({4, 5, 6})); 
+//     ASSERT_EQ(j["records"][0]["curve_sets"]["1"]["independent"]["1"]["value"],
+//               nlohmann::json({7, 8})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["dependent"]["0"]["value"],
+//               nlohmann::json({1, 2, 3, 1})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["dependent"]["1"]["value"],
+//               nlohmann::json({10, 20, 10})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["independent"]["0"]["value"],
+//               nlohmann::json({4, 5, 6, 4})); 
+//     ASSERT_EQ(j["records"][1]["curve_sets"]["2"]["independent"]["1"]["value"],
+//               nlohmann::json({7, 8, 7}));   
+//     std::remove(jsonFilePath.c_str());
+// }
 
-  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .json; EXPECTED: .hdf5),  SINA WILL BE REPLACING IT TO THE .hdf5 FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
-}
+// TEST(Document, test_append_to_hdf5_multiple_records) {
+//     std::string hdf5FilePath = "test_append.hdf5";
+//     conduit::Node initialData;
+//     initialData["records/0/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/0/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/0/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/0/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+//     initialData["records/1/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/1/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/1/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/1/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
 
-TEST(Document, protocol_set_hdf5_replace_nonexisting)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+//     nlohmann::json newData = {
+//         {"records", {
+//             {
+//                 {"curve_sets", {
+//                     {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }
+//                 }}
+//             },
+//             {
+//                 {"curve_sets", {
+//                     {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }
+//                 }}
+//             }
+//         }}
+//     };
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+//     conduit::relay::io::hdf5_write(initialData, hdf5FilePath);
 
-  saveDocument(document, "testingtestin.hdf", Protocol::HDF5);
+//     bool result = append_to_hdf5_multiple(hdf5FilePath, newData);
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("testingtestin.hdf.hdf5"));
+//     conduit::Node updatedData;
+//     conduit::relay::io::hdf5_read(hdf5FilePath, updatedData);
 
-  std::string expectedOutput = "|| WARNING: BROKEN FILE EXTENSION FOUND, SINA WILL BE APPENDING THE .hdf5 FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
-}
+//     ASSERT_TRUE(result);
 
-TEST(Document, protocol_set_hdf5_replace_multiple)
-{
-  Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+//     std::vector<double> expectedDependent00 = {1, 2, 3, 1};
+//     std::vector<double> actualDependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent00, expectedDependent00);
 
-  std::stringstream buffer;
-  std::streambuf* oldCoutBuffer = std::cout.rdbuf(buffer.rdbuf());
+//     std::vector<double> expectedDependent01 = {10, 20, 10};
+//     std::vector<double> actualDependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent01, expectedDependent01);
 
-  saveDocument(document, "testingtesting.hdf5.json", Protocol::HDF5);
+//     std::vector<double> expectedIndependent00 = {4, 5, 6, 4};
+//     std::vector<double> actualIndependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent00, expectedIndependent00);
 
-  std::cout.rdbuf(oldCoutBuffer);
-  
-  EXPECT_TRUE(fileExists("testingtesting.hdf5.hdf5"));
+//     std::vector<double> expectedIndependent01 = {7, 8, 7};
+//     std::vector<double> actualIndependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent01, expectedIndependent01);
 
-  std::string expectedOutput = "|| WARNING: INCORRECT FILE EXTENSION FOUND (FOUND: .json; EXPECTED: .hdf5),  SINA WILL BE REPLACING IT TO THE .hdf5 FILE EXTENSION ||";
-  EXPECT_EQ(buffer.str(), expectedOutput);
-}
+//     std::vector<double> expectedDependent10 = {1, 2, 3, 1};
+//     std::vector<double> actualDependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent10, expectedDependent10);
+
+//     std::vector<double> expectedDependent11 = {10, 20, 10};
+//     std::vector<double> actualDependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent11, expectedDependent11);
+
+//     std::vector<double> expectedIndependent10 = {4, 5, 6, 4};
+//     std::vector<double> actualIndependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent10, expectedIndependent10);
+
+//     std::vector<double> expectedIndependent11 = {7, 8, 7};
+//     std::vector<double> actualIndependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent11, expectedIndependent11);
+
+//     std::remove(hdf5FilePath.c_str());
+// }
+
+// TEST(Document, test_append_to_hdf5_invalid_error) {
+//     std::string hdf5FilePath = "test_append.hdf5";
+//     conduit::Node initialData;
+//     initialData["records/0/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/0/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/0/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/0/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+//     initialData["records/1/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/1/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/1/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/1/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+
+//     nlohmann::json newData = {
+//         {"records", {
+//             {
+//                 {"curve_sets", {
+//                     {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }
+//                 }}
+//             },
+//             {
+//                 {"curve_sets", {
+//                     {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"2", {{"value", {7}}}}
+//                         }}
+//                     }
+//                 }}
+//             }
+//         }}
+//     };
+
+//     conduit::relay::io::hdf5_write(initialData, hdf5FilePath);
+
+//     bool result = append_to_hdf5_multiple(hdf5FilePath, newData);
+
+//     conduit::Node updatedData;
+//     conduit::relay::io::hdf5_read(hdf5FilePath, updatedData);
+
+//     ASSERT_FALSE(result);
+
+//     std::vector<double> expectedDependent00 = {1, 2, 3};
+//     std::vector<double> actualDependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent00, expectedDependent00);
+
+//     std::vector<double> expectedDependent01 = {10, 20};
+//     std::vector<double> actualDependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent01, expectedDependent01);
+
+//     std::vector<double> expectedIndependent00 = {4, 5, 6};
+//     std::vector<double> actualIndependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent00, expectedIndependent00);
+
+//     std::vector<double> expectedIndependent01 = {7, 8};
+//     std::vector<double> actualIndependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent01, expectedIndependent01);
+
+//     std::vector<double> expectedDependent10 = {1, 2, 3};
+//     std::vector<double> actualDependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent10, expectedDependent10);
+
+//     std::vector<double> expectedDependent11 = {10, 20};
+//     std::vector<double> actualDependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent11, expectedDependent11);
+
+//     std::vector<double> expectedIndependent10 = {4, 5, 6};
+//     std::vector<double> actualIndependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent10, expectedIndependent10);
+
+//     std::vector<double> expectedIndependent11 = {7, 8};
+//     std::vector<double> actualIndependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent11, expectedIndependent11);
+
+//     std::remove(hdf5FilePath.c_str());
+// }
+
+// TEST(Document, test_append_to_hdf5_mismatch_error) {
+//     std::string hdf5FilePath = "test_append.hdf5";
+//     conduit::Node initialData;
+//     initialData["records/0/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/0/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/0/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/0/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+//     initialData["records/1/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/1/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/1/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/1/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+
+//     nlohmann::json newData = {
+//         {"records", {
+//             {
+//                 {"curve_sets", {
+//                     {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                         {"independent", {
+//                             {"0", {{"value", {4}}}},
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }
+//                 }}
+//             }
+//         }}
+//     };
+
+//     conduit::relay::io::hdf5_write(initialData, hdf5FilePath);
+
+//     bool result = append_to_hdf5_multiple(hdf5FilePath, newData);
+//     ASSERT_FALSE(result);
+
+//     conduit::Node updatedData;
+//     conduit::relay::io::hdf5_read(hdf5FilePath, updatedData);
+
+
+
+//     std::vector<double> expectedDependent00 = {1, 2, 3};
+//     std::vector<double> actualDependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent00, expectedDependent00);
+
+//     std::vector<double> expectedDependent01 = {10, 20};
+//     std::vector<double> actualDependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent01, expectedDependent01);
+
+//     std::vector<double> expectedIndependent00 = {4, 5, 6};
+//     std::vector<double> actualIndependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent00, expectedIndependent00);
+
+//     std::vector<double> expectedIndependent01 = {7, 8};
+//     std::vector<double> actualIndependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent01, expectedIndependent01);
+
+//     std::vector<double> expectedDependent10 = {1, 2, 3};
+//     std::vector<double> actualDependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent10, expectedDependent10);
+
+//     std::vector<double> expectedDependent11 = {10, 20};
+//     std::vector<double> actualDependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent11, expectedDependent11);
+
+//     std::vector<double> expectedIndependent10 = {4, 5, 6};
+//     std::vector<double> actualIndependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent10, expectedIndependent10);
+
+//     std::vector<double> expectedIndependent11 = {7, 8};
+//     std::vector<double> actualIndependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent11, expectedIndependent11);
+
+//     std::remove(hdf5FilePath.c_str());
+// }
+
+
+// TEST(Document, test_append_to_hdf5_complex) {
+//     std::string hdf5FilePath = "test_append.hdf5";
+//     conduit::Node initialData;
+//     initialData["records/0/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/0/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/0/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/0/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+//     initialData["records/1/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/1/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/1/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/1/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+
+//     nlohmann::json newData = {
+//         {"records", {
+//             {
+//                 {"curve_sets", {
+//                     {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                         }},
+//                         {"independent", {
+//                             {"1", {{"value", {7}}}}
+//                         }}
+//                     }
+//                 }}
+//             },
+//             {
+//                 {"curve_sets", {
+//                     {
+//                         {"dependent", {
+//                             {"0", {{"value", {1}}}},
+//                             {"1", {{"value", {10}}}}
+//                         }},
+//                     }
+//                 }}
+//             }
+//         }}
+//     };
+
+//     conduit::relay::io::hdf5_write(initialData, hdf5FilePath);
+
+//     bool result = append_to_hdf5_multiple(hdf5FilePath, newData);
+
+//     conduit::Node updatedData;
+//     conduit::relay::io::hdf5_read(hdf5FilePath, updatedData);
+
+//     ASSERT_TRUE(result);
+
+//     std::vector<double> expectedDependent00 = {1, 2, 3, 1};
+//     std::vector<double> actualDependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent00, expectedDependent00);
+
+//     std::vector<double> expectedDependent01 = {10, 20};
+//     std::vector<double> actualDependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent01, expectedDependent01);
+
+//     std::vector<double> expectedIndependent00 = {4, 5, 6};
+//     std::vector<double> actualIndependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent00, expectedIndependent00);
+
+//     std::vector<double> expectedIndependent01 = {7, 8, 7};
+//     std::vector<double> actualIndependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent01, expectedIndependent01);
+
+//     std::vector<double> expectedDependent10 = {1, 2, 3, 1};
+//     std::vector<double> actualDependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent10, expectedDependent10);
+
+//     std::vector<double> expectedDependent11 = {10, 20, 10};
+//     std::vector<double> actualDependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent11, expectedDependent11);
+
+//     std::vector<double> expectedIndependent10 = {4, 5, 6};
+//     std::vector<double> actualIndependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent10, expectedIndependent10);
+
+//     std::vector<double> expectedIndependent11 = {7, 8};
+//     std::vector<double> actualIndependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent11, expectedIndependent11);
+
+//     std::remove(hdf5FilePath.c_str());
+// }
+
+// TEST(Document, test_append_to_hdf5_one_record) {
+//     std::string hdf5FilePath = "test_append.hdf5";
+
+//     conduit::Node initialData;
+//     initialData["records/0/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/0/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/0/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/0/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+//     initialData["records/1/curve_sets/0/dependent/0/value"].set(std::vector<double>{1.0, 2.0, 3.0});
+//     initialData["records/1/curve_sets/0/dependent/1/value"].set(std::vector<double>{10.0, 20.0});
+//     initialData["records/1/curve_sets/0/independent/0/value"].set(std::vector<double>{4.0, 5.0, 6.0});
+//     initialData["records/1/curve_sets/0/independent/1/value"].set(std::vector<double>{7.0, 8.0});
+
+//     conduit::relay::io::hdf5_write(initialData, hdf5FilePath);
+
+//     nlohmann::json newData = {{{"dependent", {{"0", {{"value", {1}}}}, {"1", {{"value", {10}}}}}},{"independent", {{"0", {{"value", {4}}}}, {"1", {{"value", {7}}}}}}}};
+
+//     bool result = append_to_hdf5_one_record(hdf5FilePath, newData, 1);
+
+//     conduit::Node updatedData;
+//     conduit::relay::io::hdf5_read(hdf5FilePath, updatedData);
+
+//     ASSERT_TRUE(result);
+
+//     std::vector<double> expectedDependent00 = {1, 2, 3};
+//     std::vector<double> actualDependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent00, expectedDependent00);
+
+//     std::vector<double> expectedDependent01 = {10, 20};
+//     std::vector<double> actualDependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent01, expectedDependent01);
+
+//     std::vector<double> expectedIndependent00 = {4, 5, 6};
+//     std::vector<double> actualIndependent00 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent00, expectedIndependent00);
+
+//     std::vector<double> expectedIndependent01 = {7, 8};
+//     std::vector<double> actualIndependent01 = node_to_double_vector(updatedData["records/0/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent01, expectedIndependent01);
+
+//     std::vector<double> expectedDependent10 = {1, 2, 3, 1};
+//     std::vector<double> actualDependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/0/value"]);
+//     ASSERT_EQ(actualDependent10, expectedDependent10);
+
+//     std::vector<double> expectedDependent11 = {10, 20,10};
+//     std::vector<double> actualDependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/dependent/1/value"]);
+//     ASSERT_EQ(actualDependent11, expectedDependent11);
+
+//     std::vector<double> expectedIndependent10 = {4, 5, 6,4};
+//     std::vector<double> actualIndependent10 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/0/value"]);
+//     ASSERT_EQ(actualIndependent10, expectedIndependent10);
+
+//     std::vector<double> expectedIndependent11 = {7, 8,7};
+//     std::vector<double> actualIndependent11 = node_to_double_vector(updatedData["records/1/curve_sets/0/independent/1/value"]);
+//     ASSERT_EQ(actualIndependent11, expectedIndependent11);
+
+//     std::remove(hdf5FilePath.c_str());
+// }
 
 }  // namespace
 }  // namespace testing

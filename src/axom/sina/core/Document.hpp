@@ -23,6 +23,7 @@
 
 #include "axom/sina/core/Record.hpp"
 #include "axom/sina/core/Relationship.hpp"
+#include "axom/json.hpp"
 
 namespace axom
 {
@@ -39,6 +40,8 @@ const std::string supported_types[] = {
    "JSON",
    "HDF5"
 };
+
+const std::string slashSubstitute = "__SINA_SLASHREPLACE__"; 
 
 /**
  * \brief An object representing the top-level object of a Sina JSON file
@@ -239,6 +242,29 @@ Document loadDocument(std::string const &path, Protocol protocol = Protocol::JSO
  */
 Document loadDocument(std::string const &path, RecordLoader const &recordLoader, Protocol protocol = Protocol::JSON);
 
+/**
+ * \brief Append data to the curve set values of a JSON File. Listed variants allow for appending to
+ *         one or multiple records, dependents/independents or both, and individual curve sets
+ *
+ * \param jsonFilePath the path to the JSON file
+ * \param newData a Sina Document containing the new data to append
+ * 
+ * \return true if appended successfully, false if the append fails
+ */
+bool append_to_json(const std::string& jsonFilePath, Document const &newData);
+
+/**
+ * \brief Append data to the curve set values of a HDF5 File. Listed variants allow for appending to
+ *         one or multiple records, dependents/independents or both, and individual curve sets
+ *
+ * \param jsonFilePath the path to the HDF5 file
+ * \param new_data a vector of the new data to append
+ * \param recordIndex the index of the record we wish to append to, should we only choose one
+ * \param cs_protocol 0 = append to all curves, 1 = only independents, 2 = only dependents
+ * 
+ * \return true if appended successfully, false if the append fails
+ */
+bool append_to_hdf5(const std::string& hdf5FilePath, Document const &newData);
 }  // namespace sina
 }  // namespace axom
 
