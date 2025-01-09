@@ -495,7 +495,7 @@ TEST(spio_parallel, external_piecemeal_writeread)
 
   // Swap these two sections to show lack of piecemeal loading
 
-  // Section 1: (Works) Load all external arrays
+  // Section 1: (Works) Load all external arrays at a single time
   EXPECT_TRUE(root2->hasGroup("fields1"));
   flds1 = root2->getGroup("fields1");
   EXPECT_TRUE(flds1->hasView("external_array"));
