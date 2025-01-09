@@ -800,9 +800,17 @@ public:
   }
 
   /// \brief Checks if given parameter is in knot span (to a tolerance)
-  bool isValidParameter(T t, T EPS = 1e-5) const
+  bool isValidParameter(T t, T EPS = 1e-2) const
   {
-    return t >= m_knots[0] - EPS && t <= m_knots[m_knots.size() - 1] + EPS;
+    if(t >= m_knots[0] - EPS && t <= m_knots[m_knots.size() - 1] + EPS)
+    {
+      return true;
+    }
+    else
+    {
+      SLIC_INFO( "Parameter " << t << " is outside the knot span [" << m_knots[0] << ", " << m_knots[m_knots.size() - 1] << "]");
+      return false;
+    }
   }
 
   /// \brief Checks if given parameter is *interior* to knot span (to a tolerance)
