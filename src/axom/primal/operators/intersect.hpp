@@ -824,11 +824,12 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
                                           patch(order_u, 0),
                                           patch(order_u, order_v),
                                           patch(0, order_v),
-                                          tc,
-                                          uc,
-                                          vc,
+                                          t,
+                                          u,
+                                          v,
                                           EPS,
                                           false);
+    return true;
   }
   else
   {
@@ -863,12 +864,6 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
   {
     // Also remove any intersections on the half-interval boundaries
     if(isHalfOpen && (uc[i] >= 1.0 - EPS || vc[i] >= 1.0 - EPS))
-    {
-      continue;
-    }
-
-    // And remove any intersections that are not visible
-    if(!patch.isVisible(uc[i], vc[i]))
     {
       continue;
     }
@@ -927,7 +922,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
     v = vc;
   }
 
-  return sucess;
+  return success;
 }
 
 template <typename T>
@@ -939,6 +934,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
                                 double tol = 1e-8,
                                 double EPS = 1e-8,
                                 bool isHalfOpen = false,
+                                bool isTrimmed = true,
                                 double buffer = 0.0)
 {
   // Check a bounding box of the entire NURBS first
@@ -999,6 +995,12 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
     // Also remove any intersections on the half-interval boundaries
     if(isHalfOpen &&
        (uc[i] >= max_u_knot - buffer || vc[i] >= max_v_knot - buffer))
+    {
+      continue;
+    }
+
+    // And remove any intersections that are not visible
+    if(isTrimmed && !patch.isVisible(uc[i], vc[i]))
     {
       continue;
     }
