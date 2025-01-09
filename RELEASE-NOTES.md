@@ -36,8 +36,8 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
   to core.  The namespace prefix for these classes is now `axom::` instead of `axom::sidre`.  The internal usage of
   these types within Sidre Datastore and Group is unchanged.
 - `MFEMSidreDataCollection::LoadExternalData` now takes two optional string parameters, one that is a
-  filename (defaults to the `name` member variable) and the other is a Group path relative to the base of
-  the Data Collection itself (defaults to the whole Data Collection).
+  filename (defaults to the `name` member variable) and the other is a `Group` path relative to the base of
+  the Data Collection itself (defaults to the root of the `DataStore`).
 
 ###  Deprecated
 
