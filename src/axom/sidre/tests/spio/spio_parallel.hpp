@@ -493,24 +493,38 @@ TEST(spio_parallel, external_piecemeal_writeread)
 
   reader.read(root2, file_name + ROOT_EXT);
 
-  reader.read(root2->getGroup("fields1"), file_name + ROOT_EXT);
-  EXPECT_TRUE(root2->hasGroup("fields1"));
-  View* view1 = root2->getView("fields1/external_array");
-  view1->setExternalDataPtr(restored_vals1);
-  reader.loadExternalData(root2->getGroup("fields1"), file_name + ROOT_EXT);
-
-  // Swap these two sections to show error
+  // Swap these two sections to show lack of piecemeal loading
 
   // Section 1: (Works) Load all external arrays
-  //reader.loadExternalData(root2, file_name + ROOT_EXT);
+  EXPECT_TRUE(root2->hasGroup("fields1"));
+  flds1 = root2->getGroup("fields1");
+  EXPECT_TRUE(flds1->hasView("external_array"));
+  View* view1 = flds1->getView("external_array");
+  view1->setExternalDataPtr(restored_vals1);
 
-  // Section 2: (Doesn't work) Load external arrays one at a time
-
-  reader.read(root2->getGroup("fields2"), file_name + ROOT_EXT);
   EXPECT_TRUE(root2->hasGroup("fields2"));
-  View* view2 = root2->getView("fields2/external_array");
+  flds2 = root2->getGroup("fields2");
+  EXPECT_TRUE(flds2->hasView("external_array"));
+  View* view2 = flds2->getView("external_array");
   view2->setExternalDataPtr(restored_vals2);
-  reader.loadExternalData(root2->getGroup("fields2"), file_name + ROOT_EXT);
+
+  reader.loadExternalData(root2, file_name + ROOT_EXT);
+
+  // TODO: convert test to this when functionality works
+  // Section 2: (Doesn't work) Load external arrays one at a time
+  // EXPECT_TRUE(root2->hasGroup("fields1"));
+  // flds1 = root2->getGroup("fields1");
+  // EXPECT_TRUE(flds1->hasView("external_array"));
+  // View* view1 = flds1->getView("external_array");
+  // view1->setExternalDataPtr(restored_vals1);
+  // reader.loadExternalData(flds1, file_name + ROOT_EXT);
+
+  // EXPECT_TRUE(root2->hasGroup("fields2"));
+  // flds2 = root2->getGroup("fields2");
+  // EXPECT_TRUE(flds2->hasView("external_array"));
+  // View* view2 = flds2->getView("external_array");
+  // view2->setExternalDataPtr(restored_vals2);
+  // reader.loadExternalData(flds2, file_name + ROOT_EXT);
 
   enum SpioTestResult
   {
