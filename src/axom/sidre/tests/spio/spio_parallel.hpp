@@ -506,7 +506,6 @@ TEST(spio_parallel, external_piecemeal_writeread)
 
   // Section 2: (Doesn't work) Load external arrays one at a time
 
-
   reader.read(root2->getGroup("fields2"), file_name + ROOT_EXT);
   EXPECT_TRUE(root2->hasGroup("fields2"));
   View* view2 = root2->getView("fields2/external_array");
