@@ -274,7 +274,8 @@ TEST(sidre_datacollection, dc_reload_externaldata)
   // Create external buffer and add it to DC
   axom::Array<int64_t> writer_data {1, 2, 3, 4};
   axom::sidre::Group* writer_bp_group = sdc_writer.GetBPGroup();
-  axom::sidre::View* writer_external_view = writer_bp_group->createView(view_name);
+  axom::sidre::View* writer_external_view =
+    writer_bp_group->createView(view_name);
   writer_external_view->setExternalDataPtr(axom::sidre::INT64_ID,
                                            writer_data.size(),
                                            writer_data.data());
