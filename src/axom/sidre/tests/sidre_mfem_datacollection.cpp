@@ -264,6 +264,8 @@ TEST(sidre_datacollection, dc_reload_externaldata)
   auto mesh = mfem::Mesh::MakeCartesian1D(10);
   const bool owns_mesh_data = true;
   MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh_data);
+  // After creation set owning to false so data doesn't get double free'd by reader and writer
+  sdc_writer.SetOwnData(false);
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_writer.SetComm(MPI_COMM_WORLD);
 #endif
