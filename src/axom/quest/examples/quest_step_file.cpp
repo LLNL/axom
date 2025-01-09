@@ -72,7 +72,7 @@ struct PatchData
  * and convert the patches and trimming curves to Axom's NURBSPatch and NURBSCurve primitives.
  * 
  * Implementation note: Since Axom's primitives do not support periodic knots, 
- * we must convert the OpenCASCADE analogues to a open/clamped representation, when necessary.
+ * we must convert the OpenCASCADE analogues to an open/clamped representation, when necessary.
  */
 class StepFileProcessor
 {
@@ -82,7 +82,7 @@ public:
   enum class LoadStatus
   {
     UNINITIALIZED = 0,
-    SUCEESS = 1 << 0,
+    SUCCESS = 1 << 0,
     FAILED_TO_READ = 1 << 1,
     FAILED_NO_SHAPES = 1 << 2,
     FAILED_TO_CONVERT = 1 << 3,
@@ -900,7 +900,7 @@ public:
 
   void setVerbosity(bool verbose) { m_verbose = verbose; }
 
-  bool isLoaded() const { return m_loadStatus == LoadStatus::SUCEESS; }
+  bool isLoaded() const { return m_loadStatus == LoadStatus::SUCCESS; }
 
   const TopoDS_Shape& getShape() const { return m_shape; }
 
@@ -961,11 +961,6 @@ public:
       for(const auto& kv : m_patchData)
       {
         meshBBox.addBox(kv.second.physicalBBox);
-        // axom::fmt::format_to(
-        //   std::back_inserter(out),
-        //   " - Bounding box of patch {} in physical space: {}\n",
-        //   kv.second.patchIndex,
-        //   kv.second.physicalBBox);
       }
 
       axom::fmt::format_to(
@@ -1337,7 +1332,7 @@ public:
   std::string getFileUnits() const { return m_fileUnits; }
 
 private:
-  /// Returns the canoninical representation of a unit string (e.g. "centimeter" -> "cm")
+  /// Returns the canonical representation of a unit string (e.g. "centimeter" -> "cm")
   std::string getCanonicalUnit(const std::string& unit) const
   {
     // we'll convert all units to lower case
@@ -1468,7 +1463,7 @@ private:
       return TopoDS_Shape();
     }
 
-    m_loadStatus = LoadStatus::SUCEESS;
+    m_loadStatus = LoadStatus::SUCCESS;
     SLIC_INFO_IF(
       m_verbose,
       axom::fmt::format("Successfully read the STEP file with {} roots",
@@ -1492,7 +1487,7 @@ private:
 };
 
 /**
- * Class that processes NURBS patches and generates to  an SVG file over the parametric space of a trimmed NURBS patch
+ * Class that generates SVG files over the parametric space of trimmed NURBS patches
  *
  * Uses a <rect> for the bounding box in parameter space; 
  * adds a <line> for each knot vector in u- and v-
@@ -1681,7 +1676,7 @@ private:
    * Utility function to represent a NURBSCurve as an SVG path
    *
    * Since SVG only represents polynomial Bezier splines up to order 3,
-   * this function distretizes rational curves and linear curves with order above three
+   * this function discretizes rational curves and linear curves with order above three
    * to a polyline representation
    */
   std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve)
