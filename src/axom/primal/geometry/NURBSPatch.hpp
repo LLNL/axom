@@ -1096,6 +1096,12 @@ public:
   /// Get number of trimming curves
   int getNumTrimmingCurves() const { return m_trimming_curves.size(); }
 
+  /// Get trimming curves
+  const TrimmingCurveVec& getTrimmingCurves() const { return m_trimming_curves; }
+
+  /// Get mutable trimming curves
+  TrimmingCurveVec& getTrimmingCurves() { return m_trimming_curves; }
+  
   /// Get a trimming curve by index
   const TrimmingCurveType& getTrimmingCurve(int idx) const
   {
