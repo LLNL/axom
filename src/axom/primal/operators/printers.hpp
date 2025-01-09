@@ -17,7 +17,6 @@
 
 // Axom includes
 #include "axom/config.hpp"
-#include "axom/primal.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/BezierPatch.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -893,9 +892,10 @@ inline void printLoadingBar(int progress, int total, int barWidth = 40)
   std::cout.flush();
 }
 
+template <typename T>
 void exportScalarFieldToVTK(const std::string& filename,
-                            std::function<double(Point3D)> scalarField,
-                            primal::BoundingBox<double, 3> bbox,
+                            std::function<T(Point3D)> scalarField,
+                            primal::BoundingBox<T, 3> bbox,
                             int xSteps,
                             int ySteps,
                             int zSteps)
@@ -908,6 +908,13 @@ void exportScalarFieldToVTK(const std::string& filename,
     return;
   }
 
+  T dx =
+    (xSteps > 1) ? (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1) : 0.0;
+  T dy =
+    (ySteps > 1) ? (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1) : 0.0;
+  T dz =
+    (zSteps > 1) ? (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1) : 0.0;
+
   // Write VTK header
   file << "# vtk DataFile Version 3.0\n";
   file << "Scalar field data\n";
@@ -916,9 +923,7 @@ void exportScalarFieldToVTK(const std::string& filename,
   file << "DIMENSIONS " << xSteps << " " << ySteps << " " << zSteps << "\n";
   file << "ORIGIN " << bbox.getMin()[0] << " " << bbox.getMin()[1] << " "
        << bbox.getMin()[2] << "\n";
-  file << "SPACING " << (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1)
-       << " " << (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1) << " "
-       << (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1) << "\n";
+  file << "SPACING " << dx << " " << dy << " " << dz << "\n";
   file << "POINT_DATA " << xSteps * ySteps * zSteps << "\n";
   file << "SCALARS scalars float\n";
   file << "LOOKUP_TABLE default\n";
@@ -932,16 +937,13 @@ void exportScalarFieldToVTK(const std::string& filename,
     {
       for(int i = 0; i < xSteps; ++i)
       {
-        double x = bbox.getMin()[0] +
-          i * (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1);
-        double y = bbox.getMin()[1] +
-          j * (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1);
-        double z = bbox.getMin()[2] +
-          k * (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1);
+        T x = bbox.getMin()[0] + i * dx;
+        T y = bbox.getMin()[1] + j * dy;
+        T z = bbox.getMin()[2] + k * dz;
 
         auto query = Point3D({x, y, z});
 
-        double scalarValue = scalarField(query);
+        T scalarValue = scalarField(query);
 
         // Print the query if scalarValue is nan
         if(scalarValue != scalarValue)
@@ -959,10 +961,11 @@ void exportScalarFieldToVTK(const std::string& filename,
   file.close();
 }
 
+template <typename T>
 void exportSplitScalarFieldToVTK(
   const std::string& filename,
   std::function<std::pair<double, double>(Point3D)> scalarField,
-  primal::BoundingBox<double, 3> bbox,
+  primal::BoundingBox<T, 3> bbox,
   int xSteps,
   int ySteps,
   int zSteps)
@@ -1050,8 +1053,9 @@ void exportSplitScalarFieldToVTK(
   file.close();
 }
 
+template <typename T>
 void exportSurfaceToSTL(const std::string& filename,
-                        const axom::Array<primal::BezierPatch<double, 3>>& patches,
+                        const axom::Array<primal::BezierPatch<T, 3>>& patches,
                         int uSteps = 17,
                         int vSteps = 17)
 {
@@ -1115,12 +1119,13 @@ void exportSurfaceToSTL(const std::string& filename,
   file.close();
 }
 
+template <typename T>
 void exportSurfaceToSTL(const std::string& filename,
-                        const primal::BezierPatch<double, 3>& patches,
+                        const primal::BezierPatch<T, 3>& patches,
                         int uSteps = 17,
                         int vSteps = 17)
 {
-  axom::Array<primal::BezierPatch<double, 3>> patchArray;
+  axom::Array<primal::BezierPatch<T, 3>> patchArray;
   patchArray.push_back(patches);
   exportSurfaceToSTL(filename, patchArray, uSteps, vSteps);
 }

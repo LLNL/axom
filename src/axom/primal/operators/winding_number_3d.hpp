@@ -28,6 +28,7 @@
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
 #include "axom/primal/operators/detail/winding_number_3d_impl.hpp"
+#include "axom/primal/operators/intersect.hpp"
 
 // C++ includes
 #include <cmath>
@@ -573,7 +574,7 @@ std::pair<double, double> winding_number_casting_split(
 
   // Fix the number of quadrature nodes arbitrarily, but high enough
   //  to "catch" near singularities for refinement
-  constexpr int quad_npts = 50;
+  constexpr int quad_npts = 15;
 
   // The first is the GWN from stokes, the second is the jump condition
   std::pair<double, double> wn_split = {0.0, 0.0};
@@ -637,10 +638,10 @@ std::pair<double, double> winding_number_casting_split(
   numerics::Matrix<T> rotator;
 
   NURBSPatch<T, 3> rotatedPatch = nPatch;
-  rotatedPatch.makeSimpleTrimmed();
+  if(!rotatedPatch.isTrimmed()) rotatedPatch.makeSimpleTrimmed();
 
-  BoundingBox<T, 3> bBox(nPatch.boundingBox().expand(edge_tol));
-  OrientedBoundingBox<T, 3> oBox(nPatch.orientedBoundingBox().expand(edge_tol));
+  BoundingBox<T, 3> bBox(nPatch.boundingBox().scale(1.05));
+  OrientedBoundingBox<T, 3> oBox(nPatch.orientedBoundingBox().scale(1.05));
 
   // Define vector fields whose curl gives us the winding number
   detail::DiscontinuityAxis field_direction;
@@ -701,7 +702,7 @@ std::pair<double, double> winding_number_casting_split(
   // Case 2: Cast a ray in the positive z-axis, record intersections
   else
   {
-    field_direction = detail::DiscontinuityAxis::z;
+    field_direction = detail::DiscontinuityAxis::rotated;
     Line<T, 3> discontinuity_axis(query, discontinuity_direction);
 
     T patch_knot_size = axom::utilities::max(
@@ -710,10 +711,12 @@ std::pair<double, double> winding_number_casting_split(
       rotatedPatch.getKnots_v()[rotatedPatch.getNumKnots_v() - 1] -
         rotatedPatch.getKnots_v()[0]);
 
-    // Compute intersections with the patch
+    // Tolerance for what counts as "close to a boundary" in parameter space
+    T disk_radius = 0.05 * patch_knot_size;
+
+    // Compute intersections with the *untrimmed and extrapolated* patch
     axom::Array<T> up, vp, tp;
-    const double buffer = 0.05 * patch_knot_size;
-    bool isHalfOpen = false;
+    bool isHalfOpen = false, isTrimmed = false;
     bool success = intersect(discontinuity_axis,
                              rotatedPatch,
                              tp,
@@ -722,7 +725,8 @@ std::pair<double, double> winding_number_casting_split(
                              edge_tol,
                              EPS,
                              isHalfOpen,
-                             buffer);
+                             isTrimmed,
+                             disk_radius);
 
     if(!success)
     {
@@ -748,11 +752,37 @@ std::pair<double, double> winding_number_casting_split(
       // Still unsure what to do in this case :(
       //  If the query isn't coincident with the query, then we just shoot and try again
       //  But if it is, we need to trim the *untrimmed* surface around the intersection
+
+      // For now, if *any* of the reported intersection points are coincident with the query,
+      //  just return a zero
+      for(int i = 0; i < up.size(); ++i)
+      {
+        Point<T, 3> intersection_point = rotatedPatch.evaluate(up[i], vp[i]);
+        if(squared_distance(query, intersection_point) <= edge_tol_sq)
+        {
+          wn_split.first = 0.0;
+          wn_split.second = 0.0;
+          return wn_split;
+        }
+      }
+
+      // Otherwise, we can cast again with a different direction
+      {
+        auto new_direction = random_orthogonal(discontinuity_direction);
+
+        return winding_number_casting_split(query,
+                                            rotatedPatch,
+                                            new_direction,
+                                            edge_tol,
+                                            quad_tol,
+                                            EPS);
+      }
     }
 
-    // Account for each discontinuity in the integrand on the surface
+    // Account for each discontinuity in the integrand on the *untrimmed and extrapolated* surface
 
     // If no intersection, then nothing to account for
+
     // Otherwise, account for each discontinuity analytically or through disk subdivision
     for(int i = 0; i < up.size(); ++i)
     {
@@ -772,24 +802,23 @@ std::pair<double, double> winding_number_casting_split(
 
       if(bad_intersection && !isOnSurface)
       {
-        // Can't handle this case in the current framework.
-        // Need to pick a different cast direction
+        // If a far away ray intersects the surface at a tangent/cusp,
+        //  can recast and try again
         auto new_direction = random_orthogonal(the_normal);
 
         return winding_number_casting_split(query,
-                                            disk_patch,
+                                            rotatedPatch,
                                             new_direction,
                                             edge_tol,
                                             quad_tol,
                                             EPS);
       }
 
-      T safe_radius = 0.05 * patch_knot_size;
       if(isOnSurface)
       {
         // If the query point is on the surface, we need to consider a smaller disk
         //  to ensure its winding number is known to be near-zero
-        safe_radius *= 0.1;
+        disk_radius *= 0.1;
       }
 
       // This method accomplishes 2 tasks:
@@ -799,12 +828,14 @@ std::pair<double, double> winding_number_casting_split(
       NURBSPatch<T, 3> disk_patch;
       rotatedPatch.diskSplit(up[i],
                              vp[i],
-                             safe_radius,
+                             disk_radius,
                              rotatedPatch,
                              disk_patch,
                              isDiskInside,
                              isDiskOutside,
-                             !isOnSurface ? ignoreInteriorDisk : false);
+                             ignoreInteriorDisk);
+      // Had this before, can't remember why?
+      //  !isOnSurface ? ignoreInteriorDisk : false);
 
       // std::string prefix =
       // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\trimming_"
@@ -849,15 +880,17 @@ std::pair<double, double> winding_number_casting_split(
     }
 
     // Rotate the patch so that the discontinuity direction is aligned with the z-axis
-    Vector<T, 3> axis = {singularity_direction[1], -singularity_direction[0], 0.0};
+    Vector<T, 3> axis = {discontinuity_direction[1],
+                         -discontinuity_direction[0],
+                         0.0};
 
     double ang =
-      acos(axom::utilities::clampVal(singularity_direction[2], -1.0, 1.0));
+      acos(axom::utilities::clampVal(discontinuity_direction[2], -1.0, 1.0));
 
     rotator = angleAxisRotMatrix(ang, axis);
   }
 
-  if(field_direction == primal::DiscontinuityAxis::rotated)
+  if(field_direction == detail::DiscontinuityAxis::rotated)
   {
     // The trimming curves for rotatedPatch have been changed as needed,
     //  but we need to rotate the control points

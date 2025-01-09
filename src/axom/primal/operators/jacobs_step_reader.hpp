@@ -1,16 +1,33 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2023, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*!
+ * \file printers.hpp
+ *
+ * \brief Consists of jacob's neat little debugging print statements
+ * 
+ * \note If you see this in a repo, it reflects a failure on jacob's part.
+ *       Reprimand him for his error.
+ */
+
+#ifndef PRIMAL_JACOBS_STEP_READER_HPP_
+#define PRIMAL_JACOBS_STEP_READER_HPP_
+
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/primal.hpp"
-#include "axom/mint.hpp"
-
 #include "axom/CLI11.hpp"
 #include "axom/fmt.hpp"
+
+#include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/geometry/NURBSCurve.hpp"
+#include "axom/primal/geometry/NURBSPatch.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
+
+#include "axom/mint.hpp"
+// #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 #include "opencascade/BRepAdaptor_Curve.hxx"
 #include "opencascade/BRepBuilderAPI_MakeFace.hxx"
@@ -43,27 +60,21 @@
 #include "opencascade/TopoDS_Wire.hxx"
 #include <iostream>
 
-/**
- * /file quest_step_file.cpp
- * /brief Example that loads in a STEP file and converts the surface patches and curves to Axom's NURBS representations
- *
- * This example reads in STEP files representing trimmed NURBS meshes using OpenCASCADE, 
- * converts the patches and trimming curves to Axom's NURBSPatch and NURBSCurve primitives, 
- * and generates various outputs including SVG and STL files.
- *
- * /note This example requires Axom to be configured with OpenCASCADE enabled.
- */
+namespace axom
+{
+namespace primal
+{
 
 /// Struct to hold data associated with each surface patch of the mesh
-struct PatchData
+template <typename T>
+struct my_PatchData
 {
   int patchIndex {-1};
   bool wasOriginallyPeriodic_u {false};
   bool wasOriginallyPeriodic_v {false};
-  axom::primal::NURBSPatch<double, 3> nurbsPatch;
-  axom::primal::BoundingBox<double, 2> parametricBBox;
-  axom::primal::BoundingBox<double, 3> physicalBBox;
-  // axom::Array<axom::primal::NURBSCurve<double, 2>> trimmingCurves;
+  axom::primal::NURBSPatch<T, 3> nurbsPatch;
+  axom::primal::BoundingBox<T, 2> parametricBBox;
+  axom::primal::BoundingBox<T, 3> physicalBBox;
   axom::Array<bool> trimmingCurves_originallyPeriodic;
 };
 
@@ -74,10 +85,11 @@ struct PatchData
  * Implementation note: Since axom's primitives do not support periodic knots, 
  * we must convert the OpenCASCADE analogues to a open/clamped representation, when necessary.
  */
-class StepFileProcessor
+template <typename T>
+class my_StepFileProcessor
 {
 public:
-  using PatchDataMap = std::map<int, PatchData>;
+  using PatchDataMap = std::map<int, my_PatchData<T>>;
 
   enum class LoadStatus
   {
@@ -91,15 +103,14 @@ public:
 
   static constexpr int CurveDim = 2;
   static constexpr int SpaceDim = 3;
-  using NCurve = axom::primal::NURBSCurve<double, CurveDim>;
-  using NPatch = axom::primal::NURBSPatch<double, SpaceDim>;
-  using PointType = axom::primal::Point<double, CurveDim>;
-  using PointType2D = axom::primal::Point<double, CurveDim>;
-  using PointType3D = axom::primal::Point<double, SpaceDim>;
-  using BBox2D = axom::primal::BoundingBox<double, CurveDim>;
-  using BBox3D = axom::primal::BoundingBox<double, SpaceDim>;
+  using NCurve = axom::primal::NURBSCurve<T, CurveDim>;
+  using NPatch = axom::primal::NURBSPatch<T, SpaceDim>;
+  using PointType = axom::primal::Point<T, CurveDim>;
+  using PointType2D = axom::primal::Point<T, CurveDim>;
+  using PointType3D = axom::primal::Point<T, SpaceDim>;
+  using BBox2D = axom::primal::BoundingBox<T, CurveDim>;
+  using BBox3D = axom::primal::BoundingBox<T, SpaceDim>;
   using NCurveArray = axom::Array<NCurve>;
-  // using PatchToTrimmingCurvesMap = std::map<int, NCurveArray>;
 
 private:
   /// Returns a bounding box convering the patch's knot spans in 2D parametric space
@@ -184,20 +195,20 @@ private:
       }
 
       auto knot_vals_u = extractKnotValues_u();
-      axom::Array<double> params_u(numSamples);
+      axom::Array<T> params_u(numSamples);
       axom::numerics::linspace(knot_vals_u.front(),
                                knot_vals_u.back(),
                                params_u.data(),
                                numSamples);
 
       auto knot_vals_v = extractKnotValues_v();
-      axom::Array<double> params_v(numSamples);
+      axom::Array<T> params_v(numSamples);
       axom::numerics::linspace(knot_vals_v.front(),
                                knot_vals_v.back(),
                                params_v.data(),
                                numSamples);
 
-      auto evaluateSurface = [](auto surface, double u, double v) {
+      auto evaluateSurface = [](auto surface, T u, T v) {
         gp_Pnt point;
         surface->D0(u, v, point);
         return PointType3D {point.X(), point.Y(), point.Z()};
@@ -308,7 +319,7 @@ private:
           // Create a new BSpline surface from the modified knots and control points
           m_surface = createBSplineSurfaceFromAxomArrays(
             extractControlPoints(),
-            isRational ? extractWeights() : axom::Array<double, 2>(),
+            isRational ? extractWeights() : axom::Array<T, 2>(),
             mod_knots_u,
             mod_mults_u,
             extractKnotValues_v(),
@@ -349,7 +360,7 @@ private:
           // Create a new BSpline surface from the modified knots and control points
           m_surface = createBSplineSurfaceFromAxomArrays(
             extractControlPoints(),
-            isRational ? extractWeights() : axom::Array<double, 2>(),
+            isRational ? extractWeights() : axom::Array<T, 2>(),
             extractKnotValues_u(),
             extractKnotMultiplicities_u(),
             mod_knots_v,
@@ -370,10 +381,10 @@ private:
     /// generates a new BSpline surface from data in axom::Arrays
     Handle(Geom_BSplineSurface) createBSplineSurfaceFromAxomArrays(
       const axom::Array<PointType3D, 2>& controlPoints,
-      const axom::Array<double, 2>& weights,  // will be empty if surface is non-rational
-      const axom::Array<double>& uKnots,
+      const axom::Array<T, 2>& weights,  // will be empty if surface is non-rational
+      const axom::Array<T>& uKnots,
       const axom::Array<int>& uMults,
-      const axom::Array<double>& vKnots,
+      const axom::Array<T>& vKnots,
       const axom::Array<int>& vMults,
       bool isUPeriodic,
       bool isVPeriodic,
@@ -480,9 +491,9 @@ private:
 
     /// extracts weights from the patch as a 2D axom::Array,
     /// each weight corresponds to a control point
-    axom::Array<double, 2> extractWeights() const
+    axom::Array<T, 2> extractWeights() const
     {
-      axom::Array<double, 2> patch_weights;
+      axom::Array<T, 2> patch_weights;
 
       TColStd_Array2OfReal weights(1,
                                    m_surface->NbUPoles(),
@@ -505,13 +516,13 @@ private:
     }
 
     /// extracts the u knot vector from the patch, accounting for multiplicities
-    axom::Array<double> extractCombinedKnots_u() const
+    axom::Array<T> extractCombinedKnots_u() const
     {
       const auto vals = extractKnotValues_u();
       const auto mults = extractKnotMultiplicities_u();
       const int total_knots = std::accumulate(mults.begin(), mults.end(), 0);
 
-      axom::Array<double> knots_u(0, total_knots);
+      axom::Array<T> knots_u(0, total_knots);
       for(int i = 0; i < vals.size(); ++i)
       {
         knots_u.insert(knots_u.end(), mults[i], vals[i]);
@@ -522,13 +533,13 @@ private:
     }
 
     /// extracts the v knot vector from the patch, accounting for multiplicities
-    axom::Array<double> extractCombinedKnots_v() const
+    axom::Array<T> extractCombinedKnots_v() const
     {
       const auto vals = extractKnotValues_v();
       const auto mults = extractKnotMultiplicities_v();
       const int total_knots = std::accumulate(mults.begin(), mults.end(), 0);
 
-      axom::Array<double> knots_v(0, total_knots);
+      axom::Array<T> knots_v(0, total_knots);
       for(int i = 0; i < vals.size(); ++i)
       {
         knots_v.insert(knots_v.end(), mults[i], vals[i]);
@@ -540,10 +551,10 @@ private:
 
     /// converts u knot values to axom Array w/o accounting for multiplicity
     /// /sa extractKnotMultiplicities_u
-    axom::Array<double> extractKnotValues_u() const
+    axom::Array<T> extractKnotValues_u() const
     {
       const int num_knots = m_surface->NbUKnots();
-      axom::Array<double> uKnotsArray(0, num_knots);
+      axom::Array<T> uKnotsArray(0, num_knots);
 
       TColStd_Array1OfReal uKnots(1, num_knots);
       m_surface->UKnots(uKnots);
@@ -576,10 +587,10 @@ private:
 
     /// converts v knot values to axom Array w/o accounting for multiplicity
     /// /sa extractKnotMultiplicities_v
-    axom::Array<double> extractKnotValues_v() const
+    axom::Array<T> extractKnotValues_v() const
     {
       const int num_knots = m_surface->NbVKnots();
-      axom::Array<double> vKnotsArray(0, num_knots);
+      axom::Array<T> vKnotsArray(0, num_knots);
 
       TColStd_Array1OfReal vKnots(1, num_knots);
       m_surface->VKnots(vKnots);
@@ -667,13 +678,13 @@ private:
 
       auto knot_vals = extractKnotValues();
 
-      axom::Array<double> params(numSamples);
+      axom::Array<T> params(numSamples);
       axom::numerics::linspace(knot_vals.front(),
                                knot_vals.back(),
                                params.data(),
                                numSamples);
 
-      auto evaluateCurve = [](auto curve, double t) {
+      auto evaluateCurve = [](auto curve, T t) {
         const gp_Pnt2d knot_point = curve->Value(t);
         return PointType {knot_point.X(), knot_point.Y()};
       };
@@ -739,7 +750,7 @@ private:
         // Create a new BSpline surface from the modified knots and control points
         m_curve = createBSplineCurveFromAxomArrays(
           extractControlPoints(),
-          isRational ? extractWeights() : axom::Array<double>(),
+          isRational ? extractWeights() : axom::Array<T>(),
           mod_knots,
           mod_mults,
           degree);
@@ -754,8 +765,8 @@ private:
     /// generates a new BSpline surface from data in axom::Arrays
     Handle(Geom2d_BSplineCurve) createBSplineCurveFromAxomArrays(
       const axom::Array<PointType>& controlPoints,
-      const axom::Array<double>& weights,  // will be empty if curve is non-rational
-      const axom::Array<double>& knots,
+      const axom::Array<T>& weights,  // will be empty if curve is non-rational
+      const axom::Array<T>& knots,
       const axom::Array<int>& mults,
       int degree)
     {
@@ -817,9 +828,9 @@ private:
       return controlPoints;
     }
 
-    axom::Array<double> extractWeights() const
+    axom::Array<T> extractWeights() const
     {
-      axom::Array<double> weights;
+      axom::Array<T> weights;
       if(m_curve->IsRational())
       {
         TColStd_Array1OfReal curveWeights(1, m_curve->NbPoles());
@@ -833,13 +844,13 @@ private:
       return weights;
     }
 
-    axom::Array<double> extractCombinedKnots() const
+    axom::Array<T> extractCombinedKnots() const
     {
       const auto vals = extractKnotValues();
       const auto mults = extractKnotMultiplicities();
       const int total_knots = std::accumulate(mults.begin(), mults.end(), 0);
 
-      axom::Array<double> knots(0, total_knots);
+      axom::Array<T> knots(0, total_knots);
       for(int i = 0; i < vals.size(); ++i)
       {
         knots.insert(knots.end(), mults[i], vals[i]);
@@ -851,10 +862,10 @@ private:
 
     /// converts knot values to axom Array w/o accounting for multiplicity
     /// /sa extractKnotMultiplicities
-    axom::Array<double> extractKnotValues() const
+    axom::Array<T> extractKnotValues() const
     {
       const int num_knots = m_curve->NbKnots();
-      axom::Array<double> knots(0, num_knots);
+      axom::Array<T> knots(0, num_knots);
 
       TColStd_Array1OfReal occ_knots(1, num_knots);
       m_curve->Knots(occ_knots);
@@ -890,9 +901,9 @@ private:
   };
 
 public:
-  StepFileProcessor() = delete;
+  my_StepFileProcessor() = delete;
 
-  StepFileProcessor(const std::string& filename, bool verbose = false)
+  my_StepFileProcessor(const std::string& filename, bool verbose = false)
     : m_verbose(verbose)
   {
     m_shape = loadStepFile(filename);
@@ -1064,7 +1075,8 @@ public:
       std::vector<int> trimmingCurvesPerPatch;
       for(const auto& kv : m_patchData)
       {
-        trimmingCurvesPerPatch.push_back(kv.second.nurbsPatch.getNumTrimmingCurves());
+        trimmingCurvesPerPatch.push_back(
+          kv.second.nurbsPatch.getNumTrimmingCurves());
       }
 
       AccumStatistics trimmingCurvesStats =
@@ -1182,7 +1194,7 @@ public:
         SLIC_INFO_IF(m_verbose, "*** Processing patch " << patchIndex);
         SLIC_INFO_IF(m_verbose, axom::fmt::format("---"));
 
-        PatchData& patchData = m_patchData[patchIndex];
+        my_PatchData<T>& patchData = m_patchData[patchIndex];
         patchData.patchIndex = patchIndex;
         patchData.nurbsPatch = patchProcessor.nurbsPatch();
         patchData.wasOriginallyPeriodic_u =
@@ -1228,7 +1240,7 @@ public:
     for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
         faceExp.Next(), ++patchIndex)
     {
-      PatchData& patchData = m_patchData[patchIndex];
+      my_PatchData<T>& patchData = m_patchData[patchIndex];
       NCurveArray& curves = patchData.nurbsPatch.getTrimmingCurves();
 
       // Get span of this patch in u and v directions
@@ -1498,10 +1510,11 @@ private:
  * adds a <line> for each knot vector in u- and v-
  * and a <path> for each oriented trimming curve
  */
-class PatchParametricSpaceProcessor
+template <typename T>
+class my_PatchParametricSpaceProcessor
 {
 public:
-  PatchParametricSpaceProcessor() { }
+  my_PatchParametricSpaceProcessor() { }
 
   void setOutputDirectory(const std::string& dir) { m_outputDirectory = dir; }
   void setUnits(const std::string& units) { m_units = units; }
@@ -1514,7 +1527,7 @@ public:
     }
   }
 
-  void generateSVGForPatch(int patchIndex, const PatchData& patchData)
+  void generateSVGForPatch(int patchIndex, const my_PatchData<T>& patchData)
   {
     const auto& parametricBBox = patchData.parametricBBox;
 
@@ -1594,31 +1607,30 @@ public:
     axom::fmt::format_to(std::back_inserter(svgContent),
                          "  <!-- Lines for u- and v- knots -->\n");
 
-    auto unique_knots_and_multiplicities =
-      [](const axom::Array<double>& knots_vector) {
-        axom::Array<std::pair<double, int>> uniqueCounts;
-        if(knots_vector.size() == 0) return uniqueCounts;
+    auto unique_knots_and_multiplicities = [](const axom::Array<T>& knots_vector) {
+      axom::Array<std::pair<T, int>> uniqueCounts;
+      if(knots_vector.size() == 0) return uniqueCounts;
 
-        double currentValue = knots_vector[0];
-        int count = 1;
+      T currentValue = knots_vector[0];
+      int count = 1;
 
-        for(int i = 1; i < knots_vector.size(); ++i)
+      for(int i = 1; i < knots_vector.size(); ++i)
+      {
+        if(knots_vector[i] == currentValue)
         {
-          if(knots_vector[i] == currentValue)
-          {
-            ++count;
-          }
-          else
-          {
-            uniqueCounts.emplace_back(currentValue, count);
-            currentValue = knots_vector[i];
-            count = 1;
-          }
+          ++count;
         }
-        uniqueCounts.emplace_back(currentValue, count);
+        else
+        {
+          uniqueCounts.emplace_back(currentValue, count);
+          currentValue = knots_vector[i];
+          count = 1;
+        }
+      }
+      uniqueCounts.emplace_back(currentValue, count);
 
-        return uniqueCounts;
-      };
+      return uniqueCounts;
+    };
 
     for(const auto& u :
         unique_knots_and_multiplicities(patchData.nurbsPatch.getKnotsArray_u()))
@@ -1684,9 +1696,9 @@ private:
    * this function distretizes rational curves and linear curves with order above three
    * to a polyline representation
    */
-  std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<double, 2>& curve)
+  std::string nurbsCurveToSVGPath(const axom::primal::NURBSCurve<T, 2>& curve)
   {
-    using PointType = axom::primal::Point<double, 2>;
+    using PointType = axom::primal::Point<T, 2>;
 
     const int degree = curve.getDegree();
     const auto& knotVector = curve.getKnots();
@@ -1701,13 +1713,13 @@ private:
     if(curve.isRational() || degree > 3)
     {
       const int numSamples = 100;
-      const double tMin = knotVector[0];
-      const double tMax = knotVector[knotVector.getNumKnots() - 1];
+      const T tMin = knotVector[0];
+      const T tMax = knotVector[knotVector.getNumKnots() - 1];
 
       for(int i = 0; i <= numSamples; ++i)
       {
-        const double t =
-          axom::utilities::lerp(tMin, tMax, static_cast<double>(i) / numSamples);
+        const T t =
+          axom::utilities::lerp(tMin, tMax, static_cast<T>(i) / numSamples);
 
         PointType pt = curve.evaluate(t);
         if(i == 0)
@@ -2123,47 +2135,13 @@ private:
   int m_numFillZeros {0};
 };
 
-int main(int argc, char** argv)
+template <typename T>
+axom::Array<NURBSPatch<T, 3>> get_patches_from_step(std::string step_filename,
+                                                    std::string output_dir,
+                                                    double deflection = 0.1,
+                                                    double angular_deflection = 0.5,
+                                                    bool verbosity = false)
 {
-  axom::slic::SimpleLogger logger(axom::slic::message::Info);
-
-  // Set up and parse command line options
-  axom::CLI::App app {"Quest Step File Example"};
-
-  std::string filename;
-  app.add_option("-f,--file", filename, "Input file")->required();
-
-  bool verbosity {false};
-  app.add_flag("-v,--verbose", verbosity)
-    ->description("Enable verbose output")
-    ->capture_default_str();
-
-  double deflection {.1};
-  app.add_option("--deflection", deflection)
-    ->description(
-      "Max distance between actual geometry and triangulated geometry")
-    ->capture_default_str();
-
-  double angular_deflection {0.5};
-  app.add_option("--angular_deflection", angular_deflection)
-    ->description(
-      "Angular deflection between adjacent normals when triangulating surfaces")
-    ->capture_default_str();
-
-  std::string output_dir = "step_output";
-  app.add_option("-o,--output_dir", output_dir)
-    ->description("Output directory for generated meshes")
-    ->capture_default_str()
-    ->check([](const std::string& dir) -> std::string {
-      if(dir.find_first_of("\\:*?\"<>|") != std::string::npos)
-      {
-        return std::string("Output directory contains invalid characters.");
-      }
-      return std::string();
-    });
-
-  CLI11_PARSE(app, argc, argv);
-
   // Ensure output directory exists
   if(!axom::utilities::filesystem::pathExists(output_dir))
   {
@@ -2171,11 +2149,11 @@ int main(int argc, char** argv)
   }
 
   // Load and process file
-  SLIC_INFO("Processing file: " << filename);
+  SLIC_INFO("Processing file: " << step_filename);
   SLIC_INFO_IF(
     verbosity,
     "Current working directory: " << axom::utilities::filesystem::getCWD());
-  StepFileProcessor stepProcessor(filename, verbosity);
+  my_StepFileProcessor stepProcessor(step_filename, verbosity);
   if(!stepProcessor.isLoaded())
   {
     std::cerr << "Error: The shape is invalid or empty." << std::endl;
@@ -2184,13 +2162,21 @@ int main(int argc, char** argv)
 
   stepProcessor.extractPatches();
   stepProcessor.extractTrimmingCurves();
+
+  // Add all the patches to the output array
+  axom::Array<NURBSPatch<T, 3>> patches;
+  for(const auto& entry : stepProcessor.getPatchDataMap())
+  {
+    patches.push_back(entry.second.nurbsPatch);
+  }
+
   stepProcessor.printMeshInfo();
 
   const int numPatches = stepProcessor.getPatchDataMap().size();
   const int numFillZeros = static_cast<int>(std::log10(numPatches)) + 1;
 
   // Generate outputs
-  PatchParametricSpaceProcessor patchProcessor;
+  my_PatchParametricSpaceProcessor patchProcessor;
   patchProcessor.setUnits(stepProcessor.getFileUnits());
   patchProcessor.setVerbosity(verbosity);
   patchProcessor.setOutputDirectory(output_dir);
@@ -2221,3 +2207,9 @@ int main(int argc, char** argv)
 
   return 0;
 }
+
+}  // namespace primal
+
+}  // namespace axom
+
+#endif

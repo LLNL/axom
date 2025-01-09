@@ -147,11 +147,11 @@ TEST(primal_3d_paper_figure_data, plotting_demo)
   };
 
   // clang-format off
-  exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_accurate, bbox, 50, 50, 50);
+  // exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_accurate, bbox, 50, 50, 50);
   // exportScalarFieldToVTK(data_dir + "/sphere_field_stokes.vtk", wn_stokes, bbox, 50, 50, 50);
   // clang-format on
 
-  exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
+  // exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
 }
 
 TEST(primal_3d_paper_figure_data, patch_subdivision_test)
@@ -296,7 +296,7 @@ TEST(primal_3d_paper_figure_data, super_cusp_example)
 
   std::cout << "Closure winding number: " << closure_wn << std::endl;
 
-  exportSurfaceToSTL(data_dir + "/super_neato_tent.stl", tent);
+  // exportSurfaceToSTL(data_dir + "/super_neato_tent.stl", tent);
 
   std::pair<double, double> wn;
   double wn_ref, wn_direct;
@@ -377,7 +377,7 @@ TEST(primal_3d_paper_figure_data, cusp_example)
   tent(3, 0)[2] =  0.0;  tent(3, 1)[2] = 1.0;  tent(3, 2)[2] =  1.0;  tent(3, 3)[2] = 0.0;
   // clang-format on
 
-  exportSurfaceToSTL(data_dir + "/neato_tent.stl", tent);
+  // exportSurfaceToSTL(data_dir + "/neato_tent.stl", tent);
 
   Point3D the_query = tent.evaluate(0.5, 0.5);
 
@@ -430,7 +430,7 @@ TEST(primal_3d_paper_figure_data, very_degenerate_example)
   flower(2, 3) = Point3D {-1.0, 1.0, 0.0};
   flower(3, 3) = Point3D {1.0, 1.0, 1.0};
 
-  exportSurfaceToSTL(data_dir + "/wacko_flower.stl", flower);
+  // exportSurfaceToSTL(data_dir + "/wacko_flower.stl", flower);
 
   std::cout << flower.evaluate(0.25, 0.85) << std::endl;
   std::cout << flower.du(0.5, 0.5) << std::endl;
@@ -486,7 +486,7 @@ TEST(primal_3d_paper_figure_data, edge_case_explorer)
   square(2, 3) = Point3D {1.0, 1.0, 1.0};
   square(3, 3) = Point3D {0.0, 1.0, 2.0};
 
-  exportSurfaceToSTL(data_dir + "/edge_case.stl", square);
+  // exportSurfaceToSTL(data_dir + "/edge_case.stl", square);
 
   Point3D the_query = {0.0, 0.0, 0.0};
 
@@ -582,12 +582,12 @@ TEST(primal_3d_paper_figure_data, full_patch_test)
     }
   }
 
-  exportSurfaceToSTL(data_dir + "/sphere_face0.stl", sphere_faces[0]);
-  exportSurfaceToSTL(data_dir + "/sphere_face1.stl", sphere_faces[1]);
-  exportSurfaceToSTL(data_dir + "/sphere_face2.stl", sphere_faces[2]);
-  exportSurfaceToSTL(data_dir + "/sphere_face3.stl", sphere_faces[3]);
-  exportSurfaceToSTL(data_dir + "/sphere_face4.stl", sphere_faces[4]);
-  exportSurfaceToSTL(data_dir + "/sphere_face5.stl", sphere_faces[5]);
+  // exportSurfaceToSTL(data_dir + "/sphere_face0.stl", sphere_faces[0]);
+  // exportSurfaceToSTL(data_dir + "/sphere_face1.stl", sphere_faces[1]);
+  // exportSurfaceToSTL(data_dir + "/sphere_face2.stl", sphere_faces[2]);
+  // exportSurfaceToSTL(data_dir + "/sphere_face3.stl", sphere_faces[3]);
+  // exportSurfaceToSTL(data_dir + "/sphere_face4.stl", sphere_faces[4]);
+  // exportSurfaceToSTL(data_dir + "/sphere_face5.stl", sphere_faces[5]);
 
   // Evaluate the winding number for random points in the box [-2.028, 2.028]^3
   for(int N = 0; N < 100; ++N)
@@ -793,10 +793,10 @@ TEST(primal_3d_paper_figure_data, rotating_patch)
 
   // clang-format off
   // exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_ground_truth, bbox, 100, 100, 100);
-  exportSplitScalarFieldToVTK(data_dir + "/sphere_field_casting_complete.vtk", wn_comparison, bbox, 100, 100, 100);
+  // exportSplitScalarFieldToVTK(data_dir + "/sphere_field_casting_complete.vtk", wn_comparison, bbox, 100, 100, 100);
   // clang-format on
 
-  exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
+  // exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches);
 }
 
 TEST(primal_3d_paper_figure_data, trimmed_sphere)
@@ -907,10 +907,10 @@ TEST(primal_3d_paper_figure_data, trimmed_sphere)
     return wn;
   };
 
-  exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches, 50, 50);
+  // exportSurfaceToSTL(data_dir + "/sphere_face.stl", patches, 50, 50);
 
   // clang-format off
-  exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_accurate, bbox, 300, 300, 300);
+  // exportScalarFieldToVTK(data_dir + "/sphere_field.vtk", wn_accurate, bbox, 300, 300, 300);
   // clang-format on
 }
 
@@ -1022,24 +1022,24 @@ TEST(primal_3d_paper_figure_data, vase_shape)
   {
     axom::Array<BPatch> single_patch;
     single_patch.push_back(patches[i]);
-    exportSurfaceToSTL(data_dir + "/vase_shape_" + std::to_string(i) + ".stl",
-                       single_patch,
-                       50,
-                       50);
+    // exportSurfaceToSTL(data_dir + "/vase_shape_" + std::to_string(i) + ".stl",
+                      //  single_patch,
+                      //  50,
+                      //  50);
   }
 
   for(int i = 0; i < trim_patches.size(); ++i)
   {
     axom::Array<BPatch> single_patch;
     single_patch.push_back(trim_patches[i]);
-    exportSurfaceToSTL(data_dir + "/trim_shape_" + std::to_string(i) + ".stl",
-                       single_patch,
-                       50,
-                       50);
+    // exportSurfaceToSTL(data_dir + "/trim_shape_" + std::to_string(i) + ".stl",
+                      //  single_patch,
+                      //  50,
+                      //  50);
   }
 
-  exportSurfaceToSTL(data_dir + "/vase_shape.stl", patches, 50, 50);
-  exportSurfaceToSTL(data_dir + "/trim_shape.stl", trim_patches, 50, 50);
+  // exportSurfaceToSTL(data_dir + "/vase_shape.stl", patches, 50, 50);
+  // exportSurfaceToSTL(data_dir + "/trim_shape.stl", trim_patches, 50, 50);
 
   // clang-format off
   //exportScalarFieldToVTK(data_dir + "/vase_field.vtk", vase_wn_accurate, bbox, 300, 300, 300);
@@ -1130,18 +1130,18 @@ TEST(primal_3d_paper_figure_data, two_teapots)
       return wn;
     };
 
-  exportScalarFieldToVTK(data_dir + "/teapot_half_field_high.vtk",
-                         half_teapot_wn,
-                         bbox,
-                         400,
-                         200,
-                         200);
-  exportScalarFieldToVTK(data_dir + "/teapot_mirror_field_high.vtk",
-                         mirror_teapot_wn,
-                         bbox,
-                         400,
-                         200,
-                         200);
+  // exportScalarFieldToVTK(data_dir + "/teapot_half_field_high.vtk",
+                        //  half_teapot_wn,
+                        //  bbox,
+                        //  400,
+                        //  200,
+                        //  200);
+  // exportScalarFieldToVTK(data_dir + "/teapot_mirror_field_high.vtk",
+                        //  mirror_teapot_wn,
+                        //  bbox,
+                        //  400,
+                        //  200,
+                        //  200);
 }
 
 int main(int argc, char* argv[])

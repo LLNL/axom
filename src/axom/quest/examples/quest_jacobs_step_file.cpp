@@ -43,6 +43,9 @@
 #include "opencascade/TopoDS_Wire.hxx"
 #include <iostream>
 
+bool USE_SUBSET = false;
+const int NUM_SUBSET = 3;
+int RELEVANT_INDICES[NUM_SUBSET] = {65, 145, 190};
 /**
  * /file quest_step_file.cpp
  * /brief Example that loads in a STEP file and converts the surface patches and curves to Axom's NURBS representations
@@ -1064,7 +1067,8 @@ public:
       std::vector<int> trimmingCurvesPerPatch;
       for(const auto& kv : m_patchData)
       {
-        trimmingCurvesPerPatch.push_back(kv.second.nurbsPatch.getNumTrimmingCurves());
+        trimmingCurvesPerPatch.push_back(
+          kv.second.nurbsPatch.getNumTrimmingCurves());
       }
 
       AccumStatistics trimmingCurvesStats =
@@ -1867,6 +1871,20 @@ public:
     for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
         faceExp.Next(), ++patchIndex)
     {
+      if(USE_SUBSET)
+      {
+        bool found = false;
+        for(int i = 0; i < NUM_SUBSET; i++)
+        {
+          if(patchIndex == RELEVANT_INDICES[i])
+          {
+            found = true;
+            break;
+          }
+        }
+        if(!found) continue;
+      }
+
       TopoDS_Face face = TopoDS::Face(faceExp.Current());
 
       // Create a triangulation of this patch and write its triangles in the STL format
@@ -1928,6 +1946,20 @@ public:
     for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
         faceExp.Next(), ++patchIndex)
     {
+      if(USE_SUBSET)
+      {
+        bool found = false;
+        for(int i = 0; i < NUM_SUBSET; i++)
+        {
+          if(patchIndex == RELEVANT_INDICES[i])
+          {
+            found = true;
+            break;
+          }
+        }
+        if(!found) continue;
+      }
+
       TopoDS_Face face = TopoDS::Face(faceExp.Current());
 
       // Get the underlying surface of the face
@@ -2021,6 +2053,20 @@ public:
     for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
         faceExp.Next(), ++patchIndex)
     {
+      if(USE_SUBSET)
+      {
+        bool found = false;
+        for(int i = 0; i < NUM_SUBSET; i++)
+        {
+          if(patchIndex == RELEVANT_INDICES[i])
+          {
+            found = true;
+            break;
+          }
+        }
+        if(!found) continue;
+      }
+
       TopoDS_Face face = TopoDS::Face(faceExp.Current());
 
       // Create a triangulation of this patch
@@ -2123,63 +2169,17 @@ private:
   int m_numFillZeros {0};
 };
 
-int main(int argc, char** argv)
+StepFileProcessor import_step_file(std::string prefix,
+                                   std::string filename,
+                                   double deflection = 0.1,
+                                   double angular_deflection = 0.5,
+                                   bool export_vtk = true)
 {
-  axom::slic::SimpleLogger logger(axom::slic::message::Info);
-
-  // Set up and parse command line options
-  axom::CLI::App app {"Quest Step File Example"};
-
-  std::string filename;
-  app.add_option("-f,--file", filename, "Input file")->required();
-
-  bool verbosity {false};
-  app.add_flag("-v,--verbose", verbosity)
-    ->description("Enable verbose output")
-    ->capture_default_str();
-
-  double deflection {.1};
-  app.add_option("--deflection", deflection)
-    ->description(
-      "Max distance between actual geometry and triangulated geometry")
-    ->capture_default_str();
-
-  double angular_deflection {0.5};
-  app.add_option("--angular_deflection", angular_deflection)
-    ->description(
-      "Angular deflection between adjacent normals when triangulating surfaces")
-    ->capture_default_str();
-
-  std::string output_dir = "step_output";
-  app.add_option("-o,--output_dir", output_dir)
-    ->description("Output directory for generated meshes")
-    ->capture_default_str()
-    ->check([](const std::string& dir) -> std::string {
-      if(dir.find_first_of("\\:*?\"<>|") != std::string::npos)
-      {
-        return std::string("Output directory contains invalid characters.");
-      }
-      return std::string();
-    });
-
-  CLI11_PARSE(app, argc, argv);
-
-  // Ensure output directory exists
-  if(!axom::utilities::filesystem::pathExists(output_dir))
-  {
-    axom::utilities::filesystem::makeDirsForPath(output_dir);
-  }
-
-  // Load and process file
-  SLIC_INFO("Processing file: " << filename);
-  SLIC_INFO_IF(
-    verbosity,
-    "Current working directory: " << axom::utilities::filesystem::getCWD());
-  StepFileProcessor stepProcessor(filename, verbosity);
+  StepFileProcessor stepProcessor(prefix + filename + ".step", false);
   if(!stepProcessor.isLoaded())
   {
     std::cerr << "Error: The shape is invalid or empty." << std::endl;
-    return 1;
+    return stepProcessor;
   }
 
   stepProcessor.extractPatches();
@@ -2190,9 +2190,17 @@ int main(int argc, char** argv)
   const int numFillZeros = static_cast<int>(std::log10(numPatches)) + 1;
 
   // Generate outputs
+  std::string output_dir = prefix + filename + "_output";
+
+  // Ensure output directory exists
+  if(!axom::utilities::filesystem::pathExists(output_dir))
+  {
+    axom::utilities::filesystem::makeDirsForPath(output_dir);
+  }
+
   PatchParametricSpaceProcessor patchProcessor;
   patchProcessor.setUnits(stepProcessor.getFileUnits());
-  patchProcessor.setVerbosity(verbosity);
+  patchProcessor.setVerbosity(false);
   patchProcessor.setOutputDirectory(output_dir);
   patchProcessor.setNumFillZeros(numFillZeros);
   SLIC_INFO(
@@ -2208,7 +2216,7 @@ int main(int argc, char** argv)
   PatchTriangulator patchTriangulator(nurbs_shape,
                                       deflection,
                                       angular_deflection,
-                                      verbosity);
+                                      false);
   patchTriangulator.setOutputDirectory(output_dir);
   patchTriangulator.setNumFillZeros(numFillZeros);
   SLIC_INFO(
@@ -2219,5 +2227,141 @@ int main(int argc, char** argv)
   patchTriangulator.triangulateFullMesh();
   patchTriangulator.triangulateUntrimmedPatches();
 
+  return stepProcessor;
+};
+
+void test_full_sliced_cylinder()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\sliced_cylinder_"
+    "example\\";
+  std::string filename = "sliced_cylinder";
+  auto stepProcessor = import_step_file(prefix, filename, 0.1, 0.1, true);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    // axom::primal::Point<double, 3> new_query {9.18372491006731, 1.22281293297701, 0.0};
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      wn += axom::primal::winding_number_casting(query,
+                                                 kv.second.nurbsPatch,
+                                                 edge_tol,
+                                                 quad_tol,
+                                                 EPS);
+    }
+    // std::cout << "Query: " << query << " -> " << wn << std::endl;
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  meshBBox.scale(1.1);
+  axom::primal::exportScalarFieldToVTK<double>(prefix + filename + "_field.vtk",
+                                               wn_field,
+                                               meshBBox,
+                                               100,
+                                               100,
+                                               100);
+}
+
+void test_slice_boxed_sphere()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\sliced_cylinder_"
+    "example\\";
+  std::string filename = "boxed_sphere";
+  auto stepProcessor = import_step_file(prefix, filename, 0.1, 0.1, true);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    axom::primal::Point<double, 3> new_query {-4.44089209850063e-16,
+                                              0.358593854652949,
+                                              0.494444444444481};
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      if(USE_SUBSET)
+      {
+        bool found = false;
+        for(int i = 0; i < NUM_SUBSET; i++)
+        {
+          if(kv.first == RELEVANT_INDICES[i])
+          {
+            found = true;
+            break;
+          }
+        }
+        if(!found) continue;
+      }
+
+      wn += axom::primal::winding_number_casting(query,
+                                                 kv.second.nurbsPatch,
+                                                 edge_tol,
+                                                 quad_tol,
+                                                 EPS);
+      // std::cout << "\t" << wn << std::endl;
+    }
+    // std::cout << "Query: " << query;
+    // std::cout << " -> " << wn << std::endl;
+    return wn;
+  };
+
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    if(USE_SUBSET)
+    {
+      bool found = false;
+      for(int i = 0; i < NUM_SUBSET; i++)
+      {
+        if(kv.first == RELEVANT_INDICES[i])
+        {
+          found = true;
+          break;
+        }
+      }
+      if(!found) continue;
+    }
+
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  meshBBox.scale(1.1);
+
+  // Make a new box that is a slice of the original box
+  auto mid_x = (meshBBox.getMin()[0] + meshBBox.getMax()[0]) / 2;
+  axom::primal::Point<double, 3> the_min = meshBBox.getMin();
+  the_min[0] = mid_x;
+
+  axom::primal::Point<double, 3> the_max = meshBBox.getMax();
+  the_max[0] = mid_x;
+
+  axom::primal::BoundingBox<double, 3> sliceBox(the_min, the_max);
+
+  axom::primal::exportScalarFieldToVTK<double>(prefix + filename + "_field.vtk",
+                                               wn_field,
+                                               sliceBox,
+                                               1,
+                                               100,
+                                               100);
+}
+
+int main()
+{
+  test_slice_boxed_sphere();
   return 0;
 }
