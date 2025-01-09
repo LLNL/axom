@@ -960,12 +960,14 @@ void MFEMSidreDataCollection::LoadExternalData(const std::string& filename,
   Group* grp = m_bp_grp->getDataStore()->getRoot();
   if(!group_name.empty())
   {
-    #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
     if(m_comm != MPI_COMM_NULL)
     {
-      SLIC_ERROR("Loading external data with a group name is not supported in parallel.");
+      SLIC_ERROR(
+        "Loading external data with a group name is not supported in "
+        "parallel.");
     }
-    #endif
+  #endif
 
     SLIC_ERROR_IF(!m_bp_grp->hasGroup(group_name),
                   axom::fmt::format(
