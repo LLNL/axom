@@ -22,10 +22,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ###  Added
 - `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
 - Sina C++ library is now a component of Axom
-- Adds optional dependency on [Open CASCADE](https://dev.opencascade.org). The initial intention is 
-to use Open CASCADE's file I/O capabilities in support of Quest applications.
+- Adds optional dependency on [Open Cascade](https://dev.opencascade.org). The initial intention is 
+to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
-- Adds a Quest example that reads in a STEP file using Open CASCADE and processes its geometry
+- Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination

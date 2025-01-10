@@ -47,11 +47,11 @@
  * /file quest_step_file.cpp
  * /brief Example that loads in a STEP file and converts the surface patches and curves to Axom's NURBS representations
  *
- * This example reads in STEP files representing trimmed NURBS meshes using OpenCASCADE, 
+ * This example reads in STEP files representing trimmed NURBS meshes using Open Cascade, 
  * converts the patches and trimming curves to Axom's NURBSPatch and NURBSCurve primitives, 
  * and generates various outputs including SVG and STL files.
  *
- * /note This example requires Axom to be configured with OpenCASCADE enabled.
+ * /note This example requires Axom to be configured with Open Cascade enabled.
  */
 
 /// Struct to hold data associated with each surface patch of the mesh
@@ -68,11 +68,11 @@ struct PatchData
 };
 
 /**
- * Class to read in a STEP file representing trimmed NURBS meshes using OpenCASCADE 
+ * Class to read in a STEP file representing trimmed NURBS meshes using Open Cascade 
  * and convert the patches and trimming curves to Axom's NURBSPatch and NURBSCurve primitives.
  * 
  * Implementation note: Since Axom's primitives do not support periodic knots, 
- * we must convert the OpenCASCADE analogues to an open/clamped representation, when necessary.
+ * we must convert the Open Cascade analogues to an open/clamped representation, when necessary.
  */
 class StepFileProcessor
 {
@@ -380,7 +380,7 @@ private:
       int uDegree,
       int vDegree)
     {
-      // Convert control points to OpenCascade array
+      // Convert control points to Open Cascade array
       TColgp_Array2OfPnt poles(1,
                                controlPoints.shape()[0],
                                1,
@@ -394,7 +394,7 @@ private:
         }
       }
 
-      // Convert uKnots and uMults to OpenCascade arrays
+      // Convert uKnots and uMults to Open Cascade arrays
       TColStd_Array1OfReal occUKnots(1, uKnots.size());
       TColStd_Array1OfInteger occUMults(1, uMults.size());
       for(int i = 0; i < uKnots.size(); ++i)
@@ -403,7 +403,7 @@ private:
         occUMults.SetValue(i + 1, uMults[i]);
       }
 
-      // Convert vKnots and vMults to OpenCascade arrays
+      // Convert vKnots and vMults to Open Cascade arrays
       TColStd_Array1OfReal occVKnots(1, vKnots.size());
       TColStd_Array1OfInteger occVMults(1, vMults.size());
       for(int i = 0; i < vKnots.size(); ++i)
@@ -759,7 +759,7 @@ private:
       const axom::Array<int>& mults,
       int degree)
     {
-      // Convert control points to OpenCascade array
+      // Convert control points to Open Cascade array
       TColgp_Array1OfPnt2d occPoles(1, controlPoints.size());
       for(int i = 0; i < controlPoints.size(); ++i)
       {
@@ -767,7 +767,7 @@ private:
                           gp_Pnt2d(controlPoints[i][0], controlPoints[i][1]));
       }
 
-      // Convert knots and mults to OpenCascade arrays
+      // Convert knots and mults to Open Cascade arrays
       TColStd_Array1OfReal occKnots(1, knots.size());
       TColStd_Array1OfInteger occMults(1, mults.size());
       for(int i = 0; i < knots.size(); ++i)
@@ -778,7 +778,7 @@ private:
 
       Handle(Geom2d_BSplineCurve) clamped_curve;
 
-      // Copy updated weights into OpenCascade array
+      // Copy updated weights into Open Cascade array
       if(!weights.empty())
       {
         TColStd_Array1OfReal occWeights(1, weights.size());
@@ -1073,6 +1073,7 @@ public:
                            trimmingCurvesStats.mean,
                            trimmingCurvesStats.stddev);
     }
+
     // Compute statistics on the degrees of the trimming curves in the mesh
     {
       struct counts
@@ -1815,7 +1816,7 @@ private:
 /**
  * Class to assist with triangulating STEP files
  * 
- * This class uses OpenCASCADE's triangulation functionality to generate the triangle meshes
+ * This class uses Open Cascade's triangulation functionality to generate the triangle meshes
  * Supported triangulations:
  *  - triangulateTrimmedPatch: Separately triangulate each trimmed patch, and output as an STL file ('patch_NNN.stl')
  *  - triangulateUntrimmedPatch: Separately triangulate each patch, ignoring the trimming curves, and output as an STL file ('patch_untrimmed_NNN.stl')
