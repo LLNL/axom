@@ -63,6 +63,8 @@ struct PatchData
   axom::primal::NURBSPatch<double, 3> nurbsPatch;
   axom::primal::BoundingBox<double, 2> parametricBBox;
   axom::primal::BoundingBox<double, 3> physicalBBox;
+
+  // These trimming curves are stored in each NURBSPatch object
   // axom::Array<axom::primal::NURBSCurve<double, 2>> trimmingCurves;
   axom::Array<bool> trimmingCurves_originallyPeriodic;
 };
@@ -1064,7 +1066,8 @@ public:
       std::vector<int> trimmingCurvesPerPatch;
       for(const auto& kv : m_patchData)
       {
-        trimmingCurvesPerPatch.push_back(kv.second.nurbsPatch.getNumTrimmingCurves());
+        trimmingCurvesPerPatch.push_back(
+          kv.second.nurbsPatch.getNumTrimmingCurves());
       }
 
       AccumStatistics trimmingCurvesStats =
@@ -1864,6 +1867,7 @@ public:
   void triangulateTrimmedPatches()
   {
     int patchIndex = 0;
+    // Take out this for loop
     for(TopExp_Explorer faceExp(m_shape, TopAbs_FACE); faceExp.More();
         faceExp.Next(), ++patchIndex)
     {
@@ -2161,8 +2165,21 @@ int main(int argc, char** argv)
       }
       return std::string();
     });
+  std::string annotationMode {"none"};
+
+// #ifdef AXOM_USE_CALIPER
+//   app.add_option("--caliper", annotationMode)
+//     ->description(
+//       "caliper annotation mode. Valid options include 'none' and 'report'. "
+//       "Use 'help' to see full list.")
+//     ->capture_default_str()
+//     ->check(axom::utilities::ValidCaliperMode);
+// #endif
 
   CLI11_PARSE(app, argc, argv);
+
+  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(
+    annotationMode);
 
   // Ensure output directory exists
   if(!axom::utilities::filesystem::pathExists(output_dir))

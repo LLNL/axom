@@ -47,9 +47,11 @@ bool USE_SUBSET = false;
 const int NUM_SUBSET = 3;
 int RELEVANT_INDICES[NUM_SUBSET] = {65, 145, 190};
 /**
- * /file quest_step_file.cpp
+ * /file quest_jacob_step_file.cpp
  * /brief Example that loads in a STEP file and converts the surface patches and curves to Axom's NURBS representations
  *
+ * This specific version contains some of Jacob's visualization and experiment code.
+ *  If you find this file in a real PR, please berate Jacob.
  * This example reads in STEP files representing trimmed NURBS meshes using OpenCASCADE, 
  * converts the patches and trimming curves to Axom's NURBSPatch and NURBSCurve primitives, 
  * and generates various outputs including SVG and STL files.
@@ -1105,10 +1107,10 @@ public:
           {
             c.rational++;
           }
-          if(kv.second.trimmingCurves_originallyPeriodic[i])
-          {
-            c.periodic++;
-          }
+        //   if(kv.second.trimmingCurves_originallyPeriodic[i])
+        //   {
+        //     c.periodic++;
+        //   }
 
           curveDegreeList.push_back(degree);
         }
@@ -1337,6 +1339,7 @@ public:
   }
 
   const PatchDataMap& getPatchDataMap() const { return m_patchData; }
+  PatchDataMap& getMutablePatchDataMap() { return m_patchData; }
 
   std::string getFileUnits() const { return m_fileUnits; }
 
@@ -2230,6 +2233,151 @@ StepFileProcessor import_step_file(std::string prefix,
   return stepProcessor;
 };
 
+StepFileProcessor import_holy_step_file(std::string prefix,
+                                        std::string filename,
+                                        double deflection = 0.1,
+                                        double angular_deflection = 0.5,
+                                        bool export_vtk = true)
+{
+  StepFileProcessor stepProcessor(prefix + filename + ".step", false);
+  if(!stepProcessor.isLoaded())
+  {
+    std::cerr << "Error: The shape is invalid or empty." << std::endl;
+    return stepProcessor;
+  }
+
+  stepProcessor.extractPatches();
+  stepProcessor.extractTrimmingCurves();
+
+  // Use the diskSplit method to add 3 random holes to each patch.
+  //  The radius of each hole is 0.2, 0.3, and 0.4 of the maximum length of the
+  //  parameter space bounding box
+  for(auto& kv : stepProcessor.getMutablePatchDataMap())
+  {
+    auto& patchData = kv.second;
+    auto& nurbsPatch = patchData.nurbsPatch;
+
+    const auto& parametricBBox = patchData.parametricBBox;
+    const double max_length =
+      std::max(parametricBBox.range()[0], parametricBBox.range()[1]);
+
+    const double radii[] = {0.02, 0.03, 0.04};
+    axom::primal::Point<double, 2> centers[3];
+
+    for(int i = 0; i < 3; i++)
+    {
+      double u = axom::utilities::random_real(parametricBBox.getMin()[0],
+                                              parametricBBox.getMax()[0]);
+      double v = axom::utilities::random_real(parametricBBox.getMin()[1],
+                                              parametricBBox.getMax()[1]);
+      centers[i] = {u, v};
+    }
+
+    std::cout << kv.first << std::endl;
+    axom::primal::NURBSPatch<double, 3> dummy_patch;
+    nurbsPatch.printTrimmingCurves("C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_example\\original.txt");
+    for(int i = 0; i < 3; ++i)
+    {
+      nurbsPatch.diskSplit(centers[i][0],
+                           centers[i][1],
+                           radii[i] * max_length,
+                           nurbsPatch,
+                           dummy_patch);
+    }  
+    nurbsPatch.printTrimmingCurves("C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_example\\remaining_curves.txt");
+    std::cout << kv.first << std::endl;
+
+  }
+
+  stepProcessor.printMeshInfo();
+
+  const int numPatches = stepProcessor.getPatchDataMap().size();
+  const int numFillZeros = static_cast<int>(std::log10(numPatches)) + 1;
+
+  // Generate outputs
+  std::string output_dir = prefix + filename + "_output";
+
+  // Ensure output directory exists
+  if(!axom::utilities::filesystem::pathExists(output_dir))
+  {
+    axom::utilities::filesystem::makeDirsForPath(output_dir);
+  }
+
+  PatchParametricSpaceProcessor patchProcessor;
+  patchProcessor.setUnits(stepProcessor.getFileUnits());
+  patchProcessor.setVerbosity(false);
+  patchProcessor.setOutputDirectory(output_dir);
+  patchProcessor.setNumFillZeros(numFillZeros);
+  SLIC_INFO(
+    axom::fmt::format("Generating SVG meshes for patches and their trimming "
+                      "curves in '{}' directory",
+                      output_dir));
+  for(const auto& entry : stepProcessor.getPatchDataMap())
+  {
+    patchProcessor.generateSVGForPatch(entry.first, entry.second);
+  }
+
+  auto& nurbs_shape = stepProcessor.getShape();
+  PatchTriangulator patchTriangulator(nurbs_shape,
+                                      deflection,
+                                      angular_deflection,
+                                      false);
+  patchTriangulator.setOutputDirectory(output_dir);
+  patchTriangulator.setNumFillZeros(numFillZeros);
+  SLIC_INFO(
+    axom::fmt::format("Generating triangles meshes for trimmed and untrimmed "
+                      "patches in '{}' directory",
+                      output_dir));
+  patchTriangulator.triangulateTrimmedPatches();
+  patchTriangulator.triangulateFullMesh();
+  patchTriangulator.triangulateUntrimmedPatches();
+
+  return stepProcessor;
+};
+
+void test_holy_sliced_cylinder()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\sliced_cylinder_"
+    "example\\";
+  std::string filename = "sliced_cylinder";
+  auto stepProcessor = import_holy_step_file(prefix, filename, 0.1, 0.1, true);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    // axom::primal::Point<double, 3> new_query {9.18372491006731, 1.22281293297701, 0.0};
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      wn += axom::primal::winding_number_casting(query,
+                                                 kv.second.nurbsPatch,
+                                                 edge_tol,
+                                                 quad_tol,
+                                                 EPS);
+    }
+    // std::cout << "Query: " << query << " -> " << wn << std::endl;
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  meshBBox.scale(1.1);
+  axom::primal::exportScalarFieldToVTK<double>(prefix + filename + "_field.vtk",
+                                               wn_field,
+                                               meshBBox,
+                                               50,
+                                               50,
+                                               50);
+}
+
 void test_full_sliced_cylinder()
 {
   std::string prefix =
@@ -2319,7 +2467,6 @@ void test_slice_boxed_sphere()
     return wn;
   };
 
-
   axom::primal::BoundingBox<double, 3> meshBBox;
   for(const auto& kv : stepProcessor.getPatchDataMap())
   {
@@ -2362,6 +2509,7 @@ void test_slice_boxed_sphere()
 
 int main()
 {
-  test_slice_boxed_sphere();
+  // test_slice_boxed_sphere();
+  test_holy_sliced_cylinder();
   return 0;
 }
