@@ -200,7 +200,7 @@ bool intersect_2d_circle_line(const Sphere<T, 2> &circ,
   c2 = (c2 < 0.0) ? c2 + 2.0 * M_PI : c2;
 
   // Find the parameter values for the line
-  if(dx != 0.0)
+  if(std::abs( dx ) > std::abs( dy ))
   {
     t1 = (x1 - a[0] + circ.getCenter()[0]) / dx;
     t2 = (x2 - a[0] + circ.getCenter()[0]) / dx;

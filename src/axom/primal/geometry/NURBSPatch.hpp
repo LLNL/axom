@@ -1097,11 +1097,14 @@ public:
   int getNumTrimmingCurves() const { return m_trimming_curves.size(); }
 
   /// Get trimming curves
-  const TrimmingCurveVec& getTrimmingCurves() const { return m_trimming_curves; }
+  const TrimmingCurveVec& getTrimmingCurves() const
+  {
+    return m_trimming_curves;
+  }
 
   /// Get mutable trimming curves
   TrimmingCurveVec& getTrimmingCurves() { return m_trimming_curves; }
-  
+
   /// Get a trimming curve by index
   const TrimmingCurveType& getTrimmingCurve(int idx) const
   {
@@ -1163,8 +1166,18 @@ public:
     diskSplit(u, v, r, n1, n2, isDiskInside, isDiskOutside);
   }
 
-  /// Split a NURBS surface into two, one with a disk of radius r centered at (u, v) removed,
-  ///  and the other with the disk removed. Accounts for existing trimming curves by means of intersection.
+  /*!
+   * \brief Split a NURBS surface into two by cutting out a disk of radius r centered at (u, v)
+   *
+   * \param [in] u The x-coordinate of the center of the disk
+   * \param [in] v The y-coordinate of the center of the disk
+   * \param [in] r The radius of the disk 
+   * \param [out] n1 The NURBS surface inside the disk
+   * \param [out] n2 The NURBS surface outside the disk
+   * \param [out] isDiskInside Flag indicating if the disk is entirely inside the trimming curves
+   * \param [out] isDiskOutside Flag indicating if the disk is entirely outside the trimming curves
+   * \param [in] ignoreInteriorDisk Flag to ignore the interior disk and return an empty NURBS patch
+   */
   void diskSplit(T u,
                  T v,
                  T r,
@@ -1178,16 +1191,13 @@ public:
 
     ParameterPointType uv_param({u, v});
 
-    bool smallestParameterIsOutToIn = false;
-    T smallestCircleParameter = 4.0;  // Greater than 2pi
-
     // Need to define the boundaries as trimming curves
     if(!isTrimmed())
     {
       n1.makeSimpleTrimmed();
     }
 
-    // Intersect the trimming curves with a circle of radius r, centered at (u, v).
+    // Intersect all trimming curves with a circle of radius r, centered at (u, v).
     //  Record each intersection with the circle, and split the trimming curve at each intersection
     primal::Sphere<T, 2> circle_obj(uv_param, r);
     TrimmingCurveVec split_trimming_curves;
@@ -1219,22 +1229,9 @@ public:
                                           0.,
                                           1.);
 
-          // std::cout << "==============" << std::endl;
-          // std::cout << temp_circle_p.size() << std::endl;
-          // std::cout << temp_curve_p.size() << std::endl;
-          // std::cout << "==============" << std::endl;
-
           // Scale the intersection parameters back into the span of the NURBS curve
           for(int j = 0; j < temp_curve_p.size(); ++j)
           {
-            // std::cout << beziers[i].evaluate(temp_curve_p[j]) << std::endl;
-            // std::cout << curve.evaluate(knot_vals[i] +
-            //                             temp_curve_p[j] *
-            //                               (knot_vals[i + 1] - knot_vals[i]))
-            //           << std::endl;
-            // std::cout << "( " << r * std::cos(temp_circle_p[j]) + u << ", "
-            //           << r * std::sin(temp_circle_p[j]) + v << " )" << std::endl;
-
             curve_params.push_back(
               knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
             circle_params.push_back(temp_circle_p[j]);
@@ -1242,50 +1239,7 @@ public:
         }
       }
 
-      // Find smallest circle parameter so far, and keep track if it's out-to-in
-      for(int i = 0; i < curve_params.size(); ++i)
-      {
-        if(circle_params[i] < smallestCircleParameter)
-        {
-          smallestCircleParameter = circle_params[i];
-
-          auto min_knot = curve.getKnot(0);
-          auto max_knot = curve.getKnot(curve.getKnots().getNumKnots() - 1);
-
-          // std::cout
-          //   << "squared_distance(curve.evaluate(axom::utilities::clampUpper("
-          //      "curve_params[i] * 1.01, max_knot)), uv_param) = "
-          //   << squared_distance(
-          //        curve.evaluate(
-          //          axom::utilities::clampUpper(curve_params[i] * 1.01, max_knot)),
-          //        uv_param)
-          //   << std::endl;
-
-          // std::cout
-          //   << "squared_distance(curve.evaluate(axom::utilities::clampLower("
-          //      "curve_params[i] * 0.99, min_knot)), uv_param) = "
-          //   << squared_distance(
-          //        curve.evaluate(
-          //          axom::utilities::clampLower(curve_params[i] * 0.99, min_knot)),
-          //        uv_param)
-          //   << std::endl;
-
-          if(squared_distance(
-               curve.evaluate(axom::utilities::clampUpper(curve_params[i] + 0.1 * (max_knot - min_knot), max_knot)),
-               uv_param) >
-             squared_distance(
-               curve.evaluate(axom::utilities::clampLower(curve_params[i] - 0.1 * (max_knot - min_knot), min_knot)),
-               uv_param))
-          {
-            smallestParameterIsOutToIn = true;
-          }
-          else
-          {
-            smallestParameterIsOutToIn = false;
-          }
-        }
-      }
-
+      // Split all trimming curves at the intersection points
       if(curve_params.size() > 0)
       {
         // Sorting this keeps the splitting logic simpler
@@ -1349,15 +1303,6 @@ public:
       }
     }
 
-    // std::cout << std::endl
-    //           << std::endl
-    //           << "Split trimming curves: " << split_trimming_curves.size()
-    //           << std::endl;
-    // for(const auto& curve : split_trimming_curves)
-    // {
-    //   std::cout << curve << std::endl;
-    // }
-
     if(circle_params.size() % 2 != 0)
     {
       std::cout << "Robustness issue: Not an even number of circle parameters"
@@ -1367,26 +1312,26 @@ public:
     // Sort the circle parameters
     std::sort(circle_params.begin(), circle_params.end());
 
+    // Determine if the first circle arc is kept by the original surface
+    Point<T, 2> mid_arc_point {
+      u + r * std::cos(0.5 * (circle_params[0] + circle_params[1])),
+      v + r * std::sin(0.5 * (circle_params[0] + circle_params[1]))};
+
+    // If the midpoint of the first arc is visible, keep the first arc
+    int start_idx = isVisible(mid_arc_point[0], mid_arc_point[1]) ? 0 : 1;
+
     // Define circular arcs for each *other* trimming curve
     TrimmingCurveVec circle_trimming_curves;
     TrimmingCurveType c1;
 
-    for(int i = (smallestParameterIsOutToIn ? 0 : 1);
-        i < circle_params.size() - 1;
-        i += 2)
+    for(int i = start_idx; i < circle_params.size() - 1; i += 2)
     {
-      // If the arc is small-ish, we only need one arc
       c1.constructCircularArc(circle_params[i], circle_params[i + 1], uv_param, r);
-
-      //   for(double t = 0.1; t < 1.0; t += 0.1)
-      //   {
-      //     std::cout << squared_distance(c1.evaluate(t), uv_param) << std::endl;
-      //   }
       circle_trimming_curves.push_back(c1);
     }
 
     // If we skipped the first segment, add it back here
-    if(!smallestParameterIsOutToIn)
+    if(start_idx == 1)
     {
       // Handle periodicity by adding 2pi to the smaller parameter
       circle_params[0] += 2.0 * M_PI;
@@ -1396,23 +1341,8 @@ public:
                               uv_param,
                               r);
 
-      //   for(double t = 0.1; t < 1.0; t += 0.1)
-      //   {
-      //     std::cout << squared_distance(c1.evaluate(t), uv_param) << std::endl;
-      //   }
-
       circle_trimming_curves.push_back(c1);
     }
-
-    // std::cout << std::endl
-    //           << std::endl
-    //           << std::endl
-    //           << "Circle trimming curves: " << circle_trimming_curves.size()
-    //           << std::endl;
-    // for(const auto& curve : circle_trimming_curves)
-    // {
-    //   std::cout << curve << std::endl;
-    // }
 
     // Clear the trimming curves from each patch.
     //  Let n1 be the "big" patch, and n2 be the "small" patch
@@ -1452,27 +1382,6 @@ public:
 
     // Clip n2 according to the width of the disk
     n2.clip(u - 1.01 * r, u + 1.01 * r, v - 1.01 * r, v + 1.01 * r);
-
-    // Print results for debugging
-    // std::cout << std::endl
-    //   << std::endl
-    //   << std::endl
-    //   << "n1 trimming curves: " << n1.m_trimming_curves.size()
-    //   << std::endl;
-    // for(const auto& curve : n1.m_trimming_curves)
-    // {
-    //   std::cout << curve << std::endl;
-    // }
-
-    // std::cout << std::endl
-    //   << std::endl
-    //   << std::endl
-    //   << "n2 trimming curves: " << n2.m_trimming_curves.size()
-    //   << std::endl;
-    // for(const auto& curve : n2.m_trimming_curves)
-    // {
-    //   std::cout << curve << std::endl;
-    // }
   }
 
   /// Determine if point in parameter space is trimmed out

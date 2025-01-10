@@ -561,6 +561,7 @@ double winding_number_casting(const Point<T, 3>& query,
   return wn_split.first + wn_split.second;
 }
 
+/* This is the main workhorse of the new GWN algorithm!! */
 template <typename T>
 std::pair<double, double> winding_number_casting_split(
   const Point<T, 3>& query,
@@ -572,8 +573,7 @@ std::pair<double, double> winding_number_casting_split(
 {
   const double edge_tol_sq = edge_tol * edge_tol;
 
-  // Fix the number of quadrature nodes arbitrarily, but high enough
-  //  to "catch" near singularities for refinement
+  // Fix the number of quadrature nodes arbitrarily
   constexpr int quad_npts = 15;
 
   // The first is the GWN from stokes, the second is the jump condition
@@ -637,6 +637,7 @@ std::pair<double, double> winding_number_casting_split(
   // Rotation matrix for the patch
   numerics::Matrix<T> rotator;
 
+  // Prefer to work with a trimmed patch
   NURBSPatch<T, 3> rotatedPatch = nPatch;
   if(!rotatedPatch.isTrimmed()) rotatedPatch.makeSimpleTrimmed();
 
@@ -699,7 +700,7 @@ std::pair<double, double> winding_number_casting_split(
         1.0));
     rotator = angleAxisRotMatrix(ang, v1);
   }
-  // Case 2: Cast a ray in the positive z-axis, record intersections
+  // Case 2: Cast a ray, record intersections
   else
   {
     field_direction = detail::DiscontinuityAxis::rotated;
@@ -749,10 +750,9 @@ std::pair<double, double> winding_number_casting_split(
       // 2. The surface is degenerate, and so all intersections were recorded
       //  with the same t parameter, and pruned by `intersect()`.
 
-      // Still unsure what to do in this case :(
-      //  If the query isn't coincident with the query, then we just shoot and try again
-      //  But if it is, we need to trim the *untrimmed* surface around the intersection
-
+      // Treating this case requires some implementation I don't have yet,
+      //  namely clipping trimming curves along u/v isocurves
+      
       // For now, if *any* of the reported intersection points are coincident with the query,
       //  just return a zero
       for(int i = 0; i < up.size(); ++i)
@@ -826,22 +826,20 @@ std::pair<double, double> winding_number_casting_split(
       //  > If the disk intersects the trimming curves, performs disk subdivision
       bool isDiskInside, isDiskOutside, ignoreInteriorDisk = true;
       NURBSPatch<T, 3> disk_patch;
-      rotatedPatch.diskSplit(up[i],
-                             vp[i],
-                             disk_radius,
-                             rotatedPatch,
-                             disk_patch,
-                             isDiskInside,
-                             isDiskOutside,
-                             ignoreInteriorDisk);
-      // Had this before, can't remember why?
-      //  !isOnSurface ? ignoreInteriorDisk : false);
 
-      // std::string prefix =
-      // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\trimming_"
-      // "example\\";
-      // rotatedPatch.printTrimmingCurves(prefix + "punctured_patch.svg");
-      // disk_patch.printTrimmingCurves(prefix + "disk_patch.svg");
+      {
+        // AXOM_ANNOTATE_SCOPE("DISK_SPLIT");
+        rotatedPatch.diskSplit(up[i],
+                               vp[i],
+                               disk_radius,
+                               rotatedPatch,
+                               disk_patch,
+                               isDiskInside,
+                               isDiskOutside,
+                               ignoreInteriorDisk);
+        // --caliper report, counts
+        // --caliper counts 
+      }
 
       // If the query point is on the surface, the contribution of the disk is near-zero,
       //  and we only need to puncture the larger surface to proceed
