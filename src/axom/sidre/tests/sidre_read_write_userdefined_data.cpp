@@ -365,7 +365,7 @@ void test_external_user_defined_data()
                                   num_uint8s,
                                   states.data());
 
-  // Save the array data in to a file
+  // Save the array data into a file
   std::string filename = "sidre_external_states";
   root->save(filename);
 
@@ -446,7 +446,7 @@ void test_MFEMSidreDataCollection_user_defined_data()
                                   num_uint8s,
                                   states.data());
 
-  // Save the array data in to a file
+  // Save the array data into a file
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   sdc_writer.SetComm(MPI_COMM_WORLD);
   #endif
