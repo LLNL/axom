@@ -878,6 +878,7 @@ public:
   using ConnectivityType = typename TopologyView::ConnectivityType;
   using BlendGroupBuilderType =
     BlendGroupBuilder<ExecSpace, typename NamingPolicy::View>;
+  using SelectedZones = typename axom::mir::utilities::blueprint::SelectedZones<ExecSpace>;
   using ClipFieldType = float;
   using ZoneType = typename TopologyView::ShapeType;
 
@@ -977,7 +978,7 @@ public:
 
     // Make the selected zones and get the size.
     ClipOptions opts(n_options);
-    axom::mir::SelectedZones<ExecSpace> selectedZones(
+    SelectedZones selectedZones(
       m_topologyView.numberOfZones(),
       n_options);
     const auto nzones = selectedZones.view().size();
@@ -1316,7 +1317,7 @@ private:
                     NodeData nodeData,
                     FragmentData fragmentData,
                     const ClipOptions &opts,
-                    const SelectedZones<ExecSpace> &selectedZones) const
+                    const SelectedZones &selectedZones) const
   {
     AXOM_ANNOTATE_SCOPE("computeSizes");
     const auto selection = getSelection(opts);
@@ -1480,7 +1481,7 @@ private:
    * \param[inout] fragmentData The object that contains data about the zone fragments.
    */
   void computeFragmentSizes(FragmentData &fragmentData,
-                            const SelectedZones<ExecSpace> &selectedZones) const
+                            const SelectedZones &selectedZones) const
   {
     AXOM_ANNOTATE_SCOPE("computeFragmentSizes");
     const auto nzones = selectedZones.view().size();
@@ -1612,7 +1613,7 @@ private:
                        BlendGroupBuilderType builder,
                        ZoneData zoneData,
                        const ClipOptions &opts,
-                       const SelectedZones<ExecSpace> &selectedZones) const
+                       const SelectedZones &selectedZones) const
   {
     AXOM_ANNOTATE_SCOPE("makeBlendGroups");
     const auto selection = getSelection(opts);
@@ -1757,7 +1758,7 @@ private:
                     NodeData nodeData,
                     FragmentData fragmentData,
                     const ClipOptions &opts,
-                    const SelectedZones<ExecSpace> &selectedZones,
+                    const SelectedZones &selectedZones,
                     const std::string &newTopologyName,
                     conduit::Node &n_newTopo,
                     conduit::Node &n_newCoordset,
@@ -2195,7 +2196,7 @@ private:
    */
   void makeOriginalElements(FragmentData fragmentData,
                             const ClipOptions &opts,
-                            const SelectedZones<ExecSpace> &selectedZones,
+                            const SelectedZones &selectedZones,
                             const conduit::Node &n_fields,
                             conduit::Node &n_newTopo,
                             conduit::Node &n_newFields) const
@@ -2268,7 +2269,7 @@ private:
    */
   template <typename DataView>
   void makeOriginalElements_copy(FragmentData fragmentData,
-                                 const SelectedZones<ExecSpace> &selectedZones,
+                                 const SelectedZones &selectedZones,
                                  DataView valuesView,
                                  DataView origValuesView) const
   {

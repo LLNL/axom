@@ -18,6 +18,11 @@ namespace axom
 {
 namespace mir
 {
+namespace utilities
+{
+namespace blueprint
+{
+
 /*!
  * \brief This class provides a kind of schema over options, as well
  *        as default values, and some utilities functions.
@@ -31,12 +36,26 @@ public:
    *
    * \param nzones The total number of zones in the associated topology.
    * \param options The node that contains the clipping options.
+   * \param selectionKey The name of the node with the selection data in the options.
    */
-  SelectedZones(axom::IndexType nzones, const conduit::Node &options)
+  SelectedZones(axom::IndexType nzones, const conduit::Node &n_options,
+                const std::string &selectionKey = std::string("selectedZones"))
     : m_selectedZones()
     , m_selectedZonesView()
+    , m_sorted(true)
   {
-    buildSelectedZones(nzones, options);
+    buildSelectedZones(nzones, n_options, selectionKey);
+  }
+
+  /*!
+   * \brief Set whether we need to sort the selected zone ids.
+   *
+   * \param sorted Whether the ids need to be sorted.
+   *
+   */
+  void setSorted(bool sorted)
+  {
+    m_sorted = sorted;
   }
 
   /*!
@@ -54,23 +73,29 @@ protected:
 #endif
 
   /*!
-   * \brief The options may contain a "selectedZones" member that is a list of zones
-   *        that will be operated on. If such an array is present, copy and sort it.
-   *        If the zone list is not present, make an array that selects every zone.
+   * \brief The options may contain a "selectedZones" (or other provided name) member
+   *        that is a list of zones on which to operate. If such an array is present,
+   *        copy and sort it. If the zone list is not present, make an array that
+   *        selects every zone.
+   *
+   * \param nzones The total number of zones that are possible.
+   * \param n_options A Conduit node that contains the selection.
+   * \param selectionKey The name of the node with the selection data in the options.
    *
    * \note selectedZones should contain local zone numbers, which in the case of
    *       strided-structured indexing are the [0..n) zone numbers that exist only
    *       within the selected window.
    */
-  void buildSelectedZones(axom::IndexType nzones, const conduit::Node &options)
+  void buildSelectedZones(axom::IndexType nzones, const conduit::Node &n_options,
+                          const std::string &selectionKey)
   {
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-    if(options.has_child("selectedZones"))
+    if(n_options.has_path(selectionKey))
     {
       // Store the zone list in m_selectedZones.
       int badValueCount = 0;
-      views::IndexNode_to_ArrayView(options["selectedZones"], [&](auto zonesView) {
+      views::IndexNode_to_ArrayView(n_options[selectionKey], [&](auto zonesView) {
         // It probably does not make sense to request more zones than we have in the mesh.
         SLIC_ASSERT(zonesView.size() <= nzones);
 
@@ -79,7 +104,7 @@ protected:
 
       if(badValueCount > 0)
       {
-        SLIC_ERROR("Out of range selectedZones values.");
+        SLIC_ERROR(axom::fmt::format("Out of range {} values.", selectionKey));
       }
     }
     else
@@ -130,8 +155,11 @@ protected:
         errReduce += err;
       });
 
-    // Make sure the selectedZones are sorted.
-    RAJA::sort<loop_policy>(RAJA::make_span(szView.data(), szView.size()));
+    if(m_sorted)
+    {
+      // Make sure the selectedZones are sorted.
+      RAJA::sort<loop_policy>(RAJA::make_span(szView.data(), szView.size()));
+    }
 
     return errReduce.get();
   }
@@ -143,8 +171,11 @@ protected:
 
   axom::Array<axom::IndexType> m_selectedZones;  // Storage for a list of selected zone ids.
   axom::ArrayView<axom::IndexType> m_selectedZonesView;
+  bool m_sorted;
 };
 
+}  // end namespace blueprint
+}  // end namespace utilities
 }  // end namespace mir
 }  // end namespace axom
 
