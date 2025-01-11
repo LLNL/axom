@@ -624,7 +624,7 @@ TEST(sidre, OneD_double_MFEMSidreDataCollection_readandwrite)
 {
   test_MFEMSidreDataCollection_user_defined_data<double, 1>();
 }
-/*
+
 TEST(sidre, OneD_StateOne_MFEMSidreDataCollection_readandwrite)
 {
   test_MFEMSidreDataCollection_user_defined_data<StateOne, 1>();
@@ -681,7 +681,7 @@ TEST(sidre, TwoD_StateTensorLarge_MFEMSidreDataCollection_readandwrite)
 {
   test_MFEMSidreDataCollection_user_defined_data<StateTensorLarge, 2>();
 }
-*/
+
 #endif  // AXOM_USE_MFEM
 
 //----------------------------------------------------------------------
