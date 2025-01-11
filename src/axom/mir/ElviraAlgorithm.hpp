@@ -41,24 +41,22 @@ namespace axom
 {
 namespace mir
 {
-using MaterialID = int;
-using MaterialIDArray = axom::Array<MaterialID>;
-using MaterialIDView = axom::ArrayView<MaterialID>;
-using MaterialVF = float;
-using MaterialVFArray = axom::Array<MaterialVF>;
-using MaterialVFView = axom::ArrayView<MaterialVF>;
 
 /*!
  * \accelerated
  * \brief Implements Elvira algorithm on the GPU using Blueprint inputs/outputs.
  */
-template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
-class ElviraAlgorithm : public axom::mir::MIRAlgorithm
+template <typename ExecSpace, typename IndexPolicy, typename CoordsetView, typename MatsetView>
+class ElviraAlgorithm2D : public axom::mir::MIRAlgorithm
 {
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
 public:
+  using TopologyView = axom::mir::views::StructuredTopologyView<IndexPolicy>;
   using ConnectivityType = typename TopologyView::ConnectivityType;
+
+  // Make sure we only instantiate this algorithm for 2D meshes.
+  static_assert(IndexPolicy::dimension() == 2, "IndexPolicy must be 2D");
 
   /*!
    * \brief Constructor
@@ -67,9 +65,9 @@ public:
    * \param coordsetView The coordset view to use for the input data.
    * \param matsetView The matset view to use for the input data.
    */
-  EquiZAlgorithm(const TopologyView &topoView,
-                 const CoordsetView &coordsetView,
-                 const MatsetView &matsetView)
+  ElviraAlgorithm2D(const TopologyView &topoView,
+                    const CoordsetView &coordsetView,
+                    const MatsetView &matsetView)
     : axom::mir::MIRAlgorithm()
     , m_topologyView(topoView)
     , m_coordsetView(coordsetView)
@@ -77,22 +75,7 @@ public:
   { }
 
   /// Destructor
-  virtual ~EquiZAlgorithm() = default;
-
-// The following members are protected (unless using CUDA)
-#if !defined(__CUDACC__)
-protected:
-#endif
-
-#if defined(AXOM_EQUIZ_DEBUG)
-  void printNode(const conduit::Node &n) const
-  {
-    conduit::Node options;
-    options["num_children_threshold"] = 10000;
-    options["num_elements_threshold"] = 10000;
-    n.to_summary_string_stream(std::cout, options);
-  }
-#endif
+  virtual ~ElviraAlgorithm2D() = default;
 
   /*!
    * \brief Perform material interface reconstruction on a single domain.
@@ -120,59 +103,14 @@ protected:
                              conduit::Node &n_newMatset) override
   {
     namespace bputils = axom::mir::utilities::blueprint;
-    AXOM_ANNOTATE_SCOPE("ElviraAlgorithm");
+    AXOM_ANNOTATE_SCOPE("ElviraAlgorithm2D");
 
-    // Copy the options.
+    // Copy the options to make sure they are in the right memory space.
     conduit::Node n_options_copy;
     bputils::copy<ExecSpace>(n_options_copy, n_options);
     n_options_copy["topology"] = n_topo.name();
 
-#if defined(AXOM_ELVIRA_DEBUG)
-    // Save the MIR input.
-    conduit::Node n_tmpInput;
-    n_tmpInput[n_topo.path()].set_external(n_topo);
-    n_tmpInput[n_coordset.path()].set_external(n_coordset);
-    n_tmpInput[n_fields.path()].set_external(n_fields);
-    n_tmpInput[n_matset.path()].set_external(n_matset);
-    conduit::relay::io::blueprint::save_mesh(n_tmpInput,
-                                             "debug_elvira_input",
-                                             "hdf5");
-#endif
-  }
 
-  /*!
-   * \brief Adds original ids field to supplied fields node.
-   *
-   * \param n_field The new field node.
-   * \param topoName The topology name for the field.
-   * \param association The field association.
-   * \param nvalues The number of nodes in the field.
-   *
-   * \note This field is added to the mesh before feeding it through MIR so we will have an idea
-   *       of which nodes are original nodes in the output. Blended nodes may not have good values
-   *       but there is a mask field that can identify those nodes.
-   */
-  void addOriginal(conduit::Node &n_field,
-                   const std::string &topoName,
-                   const std::string &association,
-                   axom::IndexType nvalues) const
-  {
-    AXOM_ANNOTATE_SCOPE("addOriginal");
-    namespace bputils = axom::mir::utilities::blueprint;
-    bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
-
-    // Add a new field for the original ids.
-    n_field["topology"] = topoName;
-    n_field["association"] = association;
-    n_field["values"].set_allocator(c2a.getConduitAllocatorID());
-    n_field["values"].set(
-      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, nvalues));
-    auto view = bputils::make_array_view<ConnectivityType>(n_field["values"]);
-    axom::for_all<ExecSpace>(
-      nvalues,
-      AXOM_LAMBDA(axom::IndexType index) {
-        view[index] = static_cast<ConnectivityType>(index);
-      });
   }
 
 private:
