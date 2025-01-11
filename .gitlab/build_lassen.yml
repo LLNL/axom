@@ -23,7 +23,7 @@
 # Template
 .src_build_on_lassen:
   variables:
-    ALLOC_TIME: "35"
+    ALLOC_TIME: "40"
   extends: [.src_build_script, .on_lassen, .src_workflow]
   needs: []
 
