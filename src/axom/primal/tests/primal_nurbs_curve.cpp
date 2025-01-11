@@ -504,14 +504,18 @@ TEST(primal_nurbscurve, knot_insertion)
   // Inserting knots shouldn't increase its multiplicty
   //  greater than the degree
   num_knots = curve_knots.getNumKnots();
-  curve_knots.insertKnot(0.5, 3);
-  curve_knots.insertKnot(0.0, 1);
-  curve_knots.insertKnot(1.0, 1);
+  curve_knots.insertKnot(0.5, 5);  // Already has degree 3
+  curve_knots.insertKnot(0.0, 5);  // Already has degree 4
+  curve_knots.insertKnot(1.0, 5);  // Already has degree 4
   EXPECT_EQ(curve_knots.getNumKnots(), num_knots);
 
-  // This knot has already been inserted twice
+  // This method inserts knots with a target degree
+  // This wont't change the knot vector since 0.4 is already inserted twice
+  curve_knots.insertKnot(0.4, 1);
   curve_knots.insertKnot(0.4, 2);
-  EXPECT_EQ(curve_knots.getNumKnots(), num_knots + 1);
+  curve_knots.insertKnot(0.4, 1);
+  curve_knots.insertKnot(0.4, 2);
+  EXPECT_EQ(curve_knots.getNumKnots(), num_knots);
 
   for(double t = 0.0; t <= 1.0; t += 0.1)
   {
@@ -615,7 +619,6 @@ TEST(primal_nurbscurve, bezier_extraction)
   curve.insertKnot(0.66, 1);
   curve.insertKnot(0.77, 2);
 
-  NURBSCurveType bezier_curve;
   auto bezier_list = curve.extractBezier();
 
   EXPECT_EQ(bezier_list.size(), 4);
@@ -658,6 +661,108 @@ TEST(primal_nurbscurve, bezier_extraction)
       {
         EXPECT_NEAR(p[i], p4[i], 1e-13);
       }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, bezier_extraction_zero)
+{
+  SLIC_INFO("Testing NURBS Bezier extraction on degree 0 curve");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[4] = {PointType {0.6, 1.2, 1.0},
+                       PointType {1.3, 1.6, 1.8},
+                       PointType {2.9, 2.4, 2.3},
+                       PointType {3.2, 3.5, 3.0}};
+
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  NURBSCurveType curve(data, weights, 4, 0);
+
+  NURBSCurveType bezier_curve;
+  auto bezier_list = curve.extractBezier();
+
+  EXPECT_EQ(bezier_list.size(), curve.getNumControlPoints());
+
+  for(double t = 0.0; t < 1.0; t += 0.05)
+  {
+    PointType p = curve.evaluate(t);
+
+    if(t < 0.25)
+    {
+      PointType pt = bezier_list[0].evaluate(t / 0.25);
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], pt[i], 1e-13);
+      }
+    }
+
+    if(t > 0.25 && t < 0.5)
+    {
+      PointType pt = bezier_list[1].evaluate((t - 0.25) / (0.5 - 0.25));
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], pt[i], 1e-13);
+      }
+    }
+
+    if(t > 0.5 && t < 0.75)
+    {
+      PointType pt = bezier_list[2].evaluate((t - 0.5) / (0.75 - 0.5));
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], pt[i], 1e-13);
+      }
+    }
+
+    if(t > 0.75)
+    {
+      PointType pt = bezier_list[3].evaluate((t - 0.75) / (1 - 0.75));
+      for(int i = 0; i < DIM; ++i)
+      {
+        EXPECT_NEAR(p[i], pt[i], 1e-13);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, bezier_extraction_full)
+{
+  SLIC_INFO("Testing NURBS Bezier extraction on a 'Bezier' curve");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType data[4] = {PointType {0.6, 1.2, 1.0},
+                       PointType {1.3, 1.6, 1.8},
+                       PointType {2.9, 2.4, 2.3},
+                       PointType {3.2, 3.5, 3.0}};
+
+  double weights[4] = {1.0, 2.0, 3.0, 4.0};
+
+  NURBSCurveType curve(data, weights, 4, 3);
+
+  NURBSCurveType bezier_curve;
+  auto bezier_list = curve.extractBezier();
+
+  EXPECT_EQ(bezier_list.size(), 1);
+
+  for(double t = 0.0; t < 1.0; t += 0.05)
+  {
+    PointType p = curve.evaluate(t);
+    PointType pt = bezier_list[0].evaluate(t);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], pt[i], 1e-13);
     }
   }
 }

@@ -18,6 +18,11 @@ namespace axom
 {
 namespace mir
 {
+namespace utilities
+{
+namespace blueprint
+{
+
 /*!
  * \brief This class provides a kind of schema over options, as well
  *        as default values, and some utilities functions.
@@ -33,7 +38,8 @@ public:
    * \param options The node that contains the clipping options.
    * \param selectionKey The name of the node with the selection data in the options.
    */
-  SelectedZones(axom::IndexType nzones, const conduit::Node &n_options,
+  SelectedZones(axom::IndexType nzones,
+                const conduit::Node &n_options,
                 const std::string &selectionKey = std::string("selectedZones"))
     : m_selectedZones()
     , m_selectedZonesView()
@@ -48,10 +54,15 @@ public:
    * \param sorted Whether the ids need to be sorted.
    *
    */
-  void setSorted(bool sorted)
-  {
-    m_sorted = sorted;
-  }
+  void setSorted(bool sorted) { m_sorted = sorted; }
+
+  /*!
+   * \brief Set whether we need to sort the selected zone ids.
+   *
+   * \param sorted Whether the ids need to be sorted.
+   *
+   */
+  void setSorted(bool sorted) { m_sorted = sorted; }
 
   /*!
    * \brief Return a view that contains the list of selected zone ids for the mesh.
@@ -81,7 +92,8 @@ protected:
    *       strided-structured indexing are the [0..n) zone numbers that exist only
    *       within the selected window.
    */
-  void buildSelectedZones(axom::IndexType nzones, const conduit::Node &n_options,
+  void buildSelectedZones(axom::IndexType nzones,
+                          const conduit::Node &n_options,
                           const std::string &selectionKey)
   {
     const auto allocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -169,6 +181,8 @@ protected:
   bool m_sorted;
 };
 
+}  // end namespace blueprint
+}  // end namespace utilities
 }  // end namespace mir
 }  // end namespace axom
 

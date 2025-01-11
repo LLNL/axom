@@ -118,7 +118,7 @@ TEST(mir_clipfield, options)
   }
 
   // There are no "selectedZones" in the options. We should get nzones values from 0 onward.
-  axom::mir::SelectedZones<seq_exec> selectedZones(nzones, options);
+  bputils::SelectedZones<seq_exec> selectedZones(nzones, options);
   auto selectedZonesView = selectedZones.view();
   EXPECT_EQ(selectedZonesView.size(), 6);
   EXPECT_EQ(selectedZonesView[0], 0);
@@ -130,7 +130,7 @@ TEST(mir_clipfield, options)
 
   // Put some "selectedZones" in the options.
   options["selectedZones"].set(std::vector<axom::IndexType> {5, 4, 3});
-  axom::mir::SelectedZones<seq_exec> selectedZones2(nzones, options);
+  bputils::SelectedZones<seq_exec> selectedZones2(nzones, options);
   selectedZonesView = selectedZones2.view();
   EXPECT_EQ(selectedZonesView.size(), 3);
   EXPECT_EQ(selectedZonesView[0], 3);

@@ -49,7 +49,7 @@ public:
    *
    * \note The coordset view must agree with the coordset in n_input. We pass both
    *       a view and the coordset node since the view may not be able to contain
-   *       come coordset metadata and remain trivially copyable.
+   *       some coordset metadata and remain trivially copyable.
    */
   void execute(const BlendData &blend,
                const CoordsetViewType &view,
