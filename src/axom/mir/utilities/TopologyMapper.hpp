@@ -55,6 +55,10 @@ void fill(axom::ArrayView<T> view, T fillValue)
 //------------------------------------------------------------------------------
 /**
  * \brief Represent various shapes that consist of points.
+ *
+ * \tparam T The coordinate precision type.
+ * \tparam NDIMS The spatial coordinate dimension.
+ * \tparam N The max number of points that the shape can contain.
  */
 template <typename T,
           int NDIMS,
@@ -64,16 +68,41 @@ class VariableShape
 public:
   using PointType = axom::primal::Point<T, NDIMS>;
 
+  /*!
+   * \brief Return the shape id type.
+   * \return The shape id type.
+   */
   AXOM_HOST_DEVICE int id() const { return m_shapeId; }
+
+  /*!
+   * \brief Return the number of points in the shape.
+   * \return The number of points in the shape.
+   */
   AXOM_HOST_DEVICE axom::IndexType size() const { return m_points.size(); }
+
+  /*!
+   * \brief Add a point to the shape.
+   * \param pt The point to add.
+   */
   AXOM_HOST_DEVICE void push_back(const PointType &pt)
   {
     m_points.push_back(pt);
   }
+
+  /*!
+   * \brief Return the \a index'th point.
+   * \param index The index of the point to return.
+   * \return The desired point.
+   */
   AXOM_HOST_DEVICE const PointType &operator[](axom::IndexType index) const
   {
     return m_points[index];
   }
+
+  /*!
+   * \brief Return unsigned shape volume.
+   * \return Unsigned shape volume.
+   */
   AXOM_HOST_DEVICE double volume() const
   {
     double retval = 0.;
@@ -122,6 +151,10 @@ public:
     return retval;
   }
 
+  /*!
+   * \brief Split the shape into tets.
+   * \param[out] tets The output array of tets that make up the shape.
+   */
   AXOM_HOST_DEVICE void splitPyramid(axom::primal::Tetrahedron<T, NDIMS> tets[2]) const
   {
     assert(m_shapeId == axom::mir::views::Pyramid_ShapeID);
@@ -129,6 +162,10 @@ public:
     tets[1] = axom::primal::Tetrahedron<T, NDIMS>(m_points[1], m_points[2], m_points[3], m_points[4]);
   }
 
+  /*!
+   * \brief Split the shape into tets.
+   * \param[out] tets The output array of tets that make up the shape.
+   */
   AXOM_HOST_DEVICE void splitWedge(axom::primal::Tetrahedron<T, NDIMS> tets[3]) const
   {
     assert(m_shapeId == axom::mir::views::Wedge_ShapeID);
@@ -160,6 +197,12 @@ std::ostream &operator << (std::ostream &os, const VariableShape<T, NDIMS, N> &o
 }
 
 //------------------------------------------------------------------------------
+/*!
+ * \brief Return area where 2 polygons overlap.
+ * \param shape1 The subject polygon.
+ * \param shape2 The clip polygon.
+ * \return The area common to 2 polygons.
+ */
 AXOM_SUPPRESS_HD_WARN
 template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
 AXOM_HOST_DEVICE double shapeOverlap(
@@ -175,11 +218,17 @@ AXOM_HOST_DEVICE double shapeOverlap(
   Clipper<Polygon>::Clip(shape1, shape2, overlapPoly, eps);
   return overlapPoly.area();
 #else
-  const auto p = axom::primal::clip(shape1, shape1, eps, tryFixOrientation);
+  const auto p = axom::primal::clip(shape1, shape2, eps, tryFixOrientation);
   return p.area();
 #endif
 }
 
+/*!
+ * \brief Return the volume of the overlap between the shapes.
+ * \param shape1 The subject shape.
+ * \param shape2 The clip shape.
+ * \return The volume of the overlap between the shapes.
+ */
 template <typename T>
 AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Tetrahedron<T, 3> &shape1,
                                      const axom::primal::Tetrahedron<T, 3> &shape2,
@@ -189,6 +238,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Tetrahedron<T, 3> &shap
   return ph.volume();
 }
 
+/*!
+ * \brief Return the volume of the overlap between the shapes.
+ * \param shape1 The subject shape.
+ * \param shape2 The clip shape.
+ * \return The volume of the overlap between the shapes.
+ */
 template <typename T>
 AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Hexahedron<T, 3> &shape1,
                                      const axom::primal::Hexahedron<T, 3> &shape2,
@@ -198,6 +253,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Hexahedron<T, 3> &shape
   return ph.volume();
 }
 
+/*!
+ * \brief Return the volume of the overlap between the shapes.
+ * \param shape1 The subject shape.
+ * \param shape2 The clip shape.
+ * \return The volume of the overlap between the shapes.
+ */
 template <typename T>
 AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Tetrahedron<T, 3> &shape1,
                                      const axom::primal::Hexahedron<T, 3> &shape2,
@@ -207,6 +268,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Tetrahedron<T, 3> &shap
   return ph.volume();
 }
 
+/*!
+ * \brief Return the volume of the overlap between the shapes.
+ * \param shape1 The subject shape.
+ * \param shape2 The clip shape.
+ * \return The volume of the overlap between the shapes.
+ */
 template <typename T>
 AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Hexahedron<T, 3> &shape1,
                                      const axom::primal::Tetrahedron<T, 3> &shape2,
@@ -216,6 +283,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Hexahedron<T, 3> &shape
   return ph.volume();
 }
 
+/*!
+ * \brief Return the volume of the overlap between the shapes.
+ * \param shape1 The subject shape.
+ * \param shape2 The clip shape.
+ * \return The volume of the overlap between the shapes.
+ */
 template <typename T, typename Shape2Type>
 AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
                                      const Shape2Type &shape2,
@@ -269,6 +342,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
   return retval;
 }
 
+/*!
+ * \brief Return the volume of the overlap between the shapes.
+ * \param shape1 The subject shape.
+ * \param shape2 The clip shape.
+ * \return The volume of the overlap between the shapes.
+ */
 template <typename T, typename Shape1Type>
 AXOM_HOST_DEVICE double shapeOverlap(const Shape1Type &shape1,
                                      const VariableShape<T, 3> &shape2,
@@ -322,6 +401,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const Shape1Type &shape1,
   return retval;
 }
 
+/*!
+ * \brief Return the volume of the overlap between the shapes.
+ * \param shape1 The subject shape.
+ * \param shape2 The clip shape.
+ * \return The volume of the overlap between the shapes.
+ */
 template <typename T>
 AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
                                      const VariableShape<T, 3> &shape2,
@@ -416,6 +501,7 @@ public:
 
     /**
      * \brief Return the number of zones in the associated topology view.
+     * \return The number of zones in the associated topology view.
      */
     AXOM_HOST_DEVICE axom::IndexType numZones() const
     {

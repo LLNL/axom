@@ -64,6 +64,7 @@ set(mir_headers
     utilities/CoordsetBlender.hpp
     utilities/CoordsetSlicer.hpp
     utilities/ExtractZones.hpp
+    utilities/ExtrudeMesh.hpp
     utilities/FieldBlender.hpp
     utilities/FieldSlicer.hpp
     utilities/MakeUnstructured.hpp
@@ -72,6 +73,7 @@ set(mir_headers
     utilities/NodeToZoneRelationBuilder.hpp
     utilities/RecenterField.hpp
     utilities/SelectedZones.hpp
+    utilities/TopologyMapper.hpp
     utilities/utilities.hpp
     utilities/ZoneListBuilder.hpp
     views/dispatch_coordset.hpp
