@@ -878,7 +878,8 @@ public:
   using ConnectivityType = typename TopologyView::ConnectivityType;
   using BlendGroupBuilderType =
     BlendGroupBuilder<ExecSpace, typename NamingPolicy::View>;
-  using SelectedZones = typename axom::mir::utilities::blueprint::SelectedZones<ExecSpace>;
+  using SelectedZones =
+    typename axom::mir::utilities::blueprint::SelectedZones<ExecSpace>;
   using ClipFieldType = float;
   using ZoneType = typename TopologyView::ShapeType;
 
@@ -978,9 +979,7 @@ public:
 
     // Make the selected zones and get the size.
     ClipOptions opts(n_options);
-    SelectedZones selectedZones(
-      m_topologyView.numberOfZones(),
-      n_options);
+    SelectedZones selectedZones(m_topologyView.numberOfZones(), n_options);
     const auto nzones = selectedZones.view().size();
 
     // Give the intersector a chance to further initialize.
