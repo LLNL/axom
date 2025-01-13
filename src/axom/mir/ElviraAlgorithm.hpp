@@ -109,8 +109,6 @@ public:
     conduit::Node n_options_copy;
     bputils::copy<ExecSpace>(n_options_copy, n_options);
     n_options_copy["topology"] = n_topo.name();
-
-
   }
 
 private:

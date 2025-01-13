@@ -21,6 +21,7 @@ set(gtest_mir_tests
     mir_slicers.cpp
     mir_mergemeshes.cpp
     mir_node_to_zone_relation.cpp
+    mir_topology_mapper.cpp
     )
 
 set(mir_tests_depends_on 

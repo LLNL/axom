@@ -294,7 +294,7 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex1,
                                        double eps = 1.e-10,
                                        bool tryFixOrientation = false)
 {
-  return  detail::clipHexahedron(hex1, hex2, eps, tryFixOrientation);
+  return detail::clipHexahedron(hex1, hex2, eps, tryFixOrientation);
 }
 
 /*!

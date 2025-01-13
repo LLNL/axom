@@ -57,14 +57,6 @@ public:
   void setSorted(bool sorted) { m_sorted = sorted; }
 
   /*!
-   * \brief Set whether we need to sort the selected zone ids.
-   *
-   * \param sorted Whether the ids need to be sorted.
-   *
-   */
-  void setSorted(bool sorted) { m_sorted = sorted; }
-
-  /*!
    * \brief Return a view that contains the list of selected zone ids for the mesh.
    * \return A view that contains the list of selected zone ids for the mesh.
    */
