@@ -29,28 +29,21 @@ namespace primal
  * \brief Splits an Octahedron into eight Tetrahedrons
  *
  * \tparam Tp the coordinate type, such double or float
- * \tparam NDIMS the number of spatial dimensions (must be 3).
  * \param [in] oct The Octahedron to split
  * \param [out] out The \a axom::Array of Tetrahedron objects; the fragments of
  *              oct are appended to out.
- *
- * \pre NDIMS == 3
  *
  * The tets are produced by putting a vertex at the centroid of the oct
  * and drawing an edge from each vertex to the centroid.
  * 
  */
-template <typename Tp, int NDIMS = 3>
-void split(const Octahedron<Tp, NDIMS>& oct,
-           axom::Array<Tetrahedron<Tp, NDIMS>>& out)
+template <typename Tp>
+void split(const Octahedron<Tp, 3>& oct, axom::Array<Tetrahedron<Tp, 3>>& out)
 {
-  // Implemented for three dimensions
-  SLIC_ASSERT(NDIMS == 3);
-
   // Type aliases
-  using NumArray = NumericArray<Tp, NDIMS>;
-  using Oct = Octahedron<Tp, NDIMS>;
-  using Tet = Tetrahedron<Tp, NDIMS>;
+  using NumArray = NumericArray<Tp, 3>;
+  using Oct = Octahedron<Tp, 3>;
+  using Tet = Tetrahedron<Tp, 3>;
 
   // Step 1: Find the centroid
   NumArray c;  // ctor fills with 0
@@ -81,28 +74,22 @@ void split(const Octahedron<Tp, NDIMS>& oct,
 /*!
  * \brief Splits an Octahedron into eight Tetrahedrons
  *
- * \tparam Tp the coordinate type, such double or float
- * \tparam NDIMS the number of spatial dimensions (must be 3).
+ * \tparam Tp the coordinate type, such as double or float
  * \param [in] oct The Octahedron to split
  * \param [out] outPtr C-style array of 8 Tetrahedron objects;
  *              the fragments of oct are appended to out.
  *
- * \pre NDIMS == 3
- *
  * The tets are produced by putting a vertex at the centroid of the oct
  * and drawing an edge from each vertex to the centroid.
  */
-template <typename Tp, int NDIMS = 3>
-AXOM_HOST_DEVICE void split(const Octahedron<Tp, NDIMS>& oct,
-                            Tetrahedron<Tp, NDIMS>* outPtr)
+template <typename Tp>
+AXOM_HOST_DEVICE void split(const Octahedron<Tp, 3>& oct,
+                            Tetrahedron<Tp, 3>* outPtr)
 {
-  // Implemented for three dimensions
-  SLIC_ASSERT(NDIMS == 3);
-
   // Type aliases
-  using NumArray = NumericArray<Tp, NDIMS>;
-  using Oct = Octahedron<Tp, NDIMS>;
-  using Tet = Tetrahedron<Tp, NDIMS>;
+  using NumArray = NumericArray<Tp, 3>;
+  using Oct = Octahedron<Tp, 3>;
+  using Tet = Tetrahedron<Tp, 3>;
 
   // Step 1: Find the centroid
   NumArray c;  // ctor fills with 0

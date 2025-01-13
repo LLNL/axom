@@ -184,12 +184,18 @@ private:
 
 public:
   // These are public only for the CUDA device compiler.
-  void createBlueprintTetsRepresentation();
-  void createTetRepresentation();
-  void createHexRepresentation();
-  void createPlaneRepresentation();
-  void createSphereRepresentation();
-  void createVORRepresentation();
+  //!@brief Create the internal mesh representation of the user's tet mesh.
+  void createRepresentationOfBlueprintTets();
+  //!@brief Create the internal mesh representation of the analytical tetrahedron.
+  void createRepresentationOfTet();
+  //!@brief Create the internal mesh representation of the analytical hexahedron.
+  void createRepresentationOfHex();
+  //!@brief Create the internal mesh representation of the analytical plane.
+  void createRepresentationOfPlane();
+  //!@brief Create the internal mesh representation of the analytical sphere.
+  void createRepresentationOfSphere();
+  //!@brief Create the internal mesh representation of the analytical VOR.
+  void createRepresentationOfVOR();
 };
 
 }  // namespace quest

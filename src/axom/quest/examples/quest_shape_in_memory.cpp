@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file quest_shape_mint_mesh.cpp
+ * \file quest_shape_in_memory.cpp
  * \brief Driver application for shaping material volume fractions onto a simulation mesh
  * using a mint::UnstructuredMesh of tets.
  * Modeled after shaping_driver.cpp.
@@ -640,6 +640,8 @@ axom::klee::Shape createShape_Vor()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
   const int numIntervals = 5;
+  // discreteFunction are discrete z-r pairs describing the function
+  // to be rotated around the z axis.
   axom::Array<double, 2> discreteFunction({numIntervals + 1, 2},
                                           axom::ArrayStrideOrder::ROW);
   double zLen = params.length < 0 ? 1.6 : params.length;
@@ -678,6 +680,8 @@ axom::klee::Shape createShape_Cylinder()
   axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
+  // discreteFunction are discrete z-r pairs describing the function
+  // to be rotated around the z axis.
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double radius = params.radius < 0 ? 0.5 : params.radius;
   double height = params.length < 0 ? 1.2 : params.length;
@@ -705,6 +709,8 @@ axom::klee::Shape createShape_Cone()
   axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
+  // discreteFunction are discrete z-r pairs describing the function
+  // to be rotated around the z axis.
   axom::Array<double, 2> discreteFunction({2, 2}, axom::ArrayStrideOrder::ROW);
   double baseRadius = params.radius < 0 ? 0.7 : params.radius;
   double topRadius = params.radius2 < 0 ? 0.1 : params.radius2;
