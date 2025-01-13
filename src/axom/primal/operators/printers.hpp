@@ -1054,6 +1054,87 @@ void exportSplitScalarFieldToVTK(
 }
 
 template <typename T>
+void exportSliceScalarFieldToVTK(const std::string& filename,
+                                 const std::function<T(Point3D)>& fieldFunc,
+                                 const Point3D& origin,
+                                 const Vector<T, 3>& normal,
+                                 double planeWidth,
+                                 double planeHeight,
+                                 int uSteps,
+                                 int vSteps)
+{
+  // Define two orthogonal vectors to normal
+  Vector<T, 3> u;
+  if(axom::utilities::isNearlyEqual(normal[0], normal[1]))
+  {
+    u = Vector<T, 3>({normal[2], normal[2], -normal[0] - normal[1]}).unitVector();
+  }
+  else
+  {
+    u = Vector<T, 3>({-normal[1] - normal[2], normal[0], normal[0]}).unitVector();
+  }
+  Vector<T, 3> v = Vector<T, 3>::cross_product(normal, u).unitVector();
+
+  std::ofstream file(filename);
+  if(!file.is_open())
+  {
+    std::cerr << "Failed to open file for writing: " << filename << std::endl;
+    return;
+  }
+
+  file << "# vtk DataFile Version 3.0\n";
+  file << "Scalar field on a plane\n";
+  file << "ASCII\n";
+  file << "DATASET STRUCTURED_GRID\n";
+  file << "DIMENSIONS " << uSteps << " " << vSteps << " 1\n";
+
+  // Write points
+  file << "POINTS " << (uSteps * vSteps) << " float\n";
+  for(int j = 0; j < vSteps; ++j)
+  {
+    for(int i = 0; i < uSteps; ++i)
+    {
+      double s = planeWidth * (i / static_cast<double>(uSteps - 1) - 0.5);
+      double t = planeHeight * (j / static_cast<double>(vSteps - 1) - 0.5);
+      double x = origin[0] + s * u[0] + t * v[0];
+      double y = origin[1] + s * u[1] + t * v[1];
+      double z = origin[2] + s * u[2] + t * v[2];
+      file << x << " " << y << " " << z << "\n";
+    }
+  }
+
+  // Write scalar field
+  file << "POINT_DATA " << (uSteps * vSteps) << "\n";
+  file << "SCALARS scalar_field float 1\n";
+  file << "LOOKUP_TABLE default\n";
+  for(int j = 0; j < vSteps; ++j)
+  {
+    printLoadingBar(j, vSteps);
+    for(int i = 0; i < uSteps; ++i)
+    {
+      double s = planeWidth * (i / static_cast<double>(uSteps - 1) - 0.5);
+      double t = planeHeight * (j / static_cast<double>(vSteps - 1) - 0.5);
+      double x = origin[0] + s * u[0] + t * v[0];
+      double y = origin[1] + s * u[1] + t * v[1];
+      double z = origin[2] + s * u[2] + t * v[2];
+
+      auto val = fieldFunc(Point3D({x, y, z}));
+      if(val != val)
+      {
+        std::cout << std::setprecision(20);
+        std::cout << "NAN recorded at (" << x << " " << y << " " << z << ")"
+                  << std::endl;
+        std::cout << std::setprecision(6);
+        val = 0.0;
+      }
+      file << val << "\n";
+    }
+  }
+
+  file.close();
+}
+
+template <typename T>
 void exportSurfaceToSTL(const std::string& filename,
                         const axom::Array<primal::BezierPatch<T, 3>>& patches,
                         int uSteps = 17,
