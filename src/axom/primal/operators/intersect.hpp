@@ -654,6 +654,59 @@ bool intersect(const Ray<T, 2>& r,
 
   return !rp.empty();
 }
+
+/*!
+ * \brief Function to determine *if* a NURBS curve intersects a bounding box
+ * \note Does not attempt to compute the actual points of intersection
+ */
+template <typename T>
+bool intersects(const BoundingBox<T, 2>& bb, const NURBSCurve<T, 2>& n)
+{
+  // If the bounding boxes don't intersect, no intersection is possible
+  if(!intersect(bb, n.boundingBox()))
+  {
+    return false;
+  }
+
+  // If the bounding box contains the entire curve, no intersection is possible
+  if(bb.contains(n.boundingBox()))
+  {
+    return false;
+  }
+
+  // If the first control point or the last control point *touches* the bounding box,
+  //  then that counts as an intersection
+  auto first = n[0];
+  if(first[0] == bb.getMin()[0] || first[0] == bb.getMax()[0] ||
+     first[1] == bb.getMin()[1] || first[1] == bb.getMax()[1])
+  {
+    return true;
+  }
+
+  auto last = n[n.getNumControlPoints() - 1];
+  if(last[0] == bb.getMin()[0] || last[0] == bb.getMax()[0] ||
+     last[1] == bb.getMin()[1] || last[1] == bb.getMax()[1])
+  {
+    return true;
+  }
+
+  // If the first control point is in the bounding box and the last control point is outside,
+  //  or vice versa, then there is guaranteed to be an intersection
+  bool first_in = bb.contains(first);
+  bool last_in = bb.contains(last);
+  if((first_in && !last_in) || (!first_in && last_in))
+  {
+    return true;
+  }
+
+  // Otherwise, need to split the curve in two and check each half
+  NURBSCurve<T, 2> n1, n2;
+  n.bisect(n1, n2);
+
+  // Since we are only looking if intersections exist, can short circuit
+  return intersects(bb, n1) || intersects(bb, n2);
+}
+
 /// @}
 
 /// \name Plane Intersection Routines
@@ -927,6 +980,98 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
 
 template <typename T>
 AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
+                                const NURBSPatchData<T>& patch_data,
+                                axom::Array<T>& t,
+                                axom::Array<T>& u,
+                                axom::Array<T>& v,
+                                double tol = 1e-8,
+                                double EPS = 1e-8,
+                                bool isHalfOpen = false,
+                                bool isTrimmed = true,
+                                double buffer = 0.0)
+{
+  // Check a bounding box of the entire NURBS first
+  Point<T, 3> ip;
+  if(!intersect(line, BoundingBox<T, 3>(patch_data.bbox).scale(1.5), ip))
+  {
+    return true;
+  }
+
+  // Store candidate intersections
+  axom::Array<T> tc, uc, vc;
+
+  // std::cout << "Avoided a bezier extraction! (" << patch_data.beziers.size() << ") " << std::endl;
+
+  // Check each (precomputed) Bezier patch, and scale the intersection parameters
+  //  back into the span of the original NURBS patch
+  bool success = false;
+  for(int ij = 0; ij < patch_data.beziers.size(); ++ij)
+  {
+    // Store candidate intersections from each Bezier patch
+    axom::Array<T> tcc, ucc, vcc;
+    // std::cout << patch_data.beziers[ij] << std::endl;
+    success = intersect(line, patch_data.beziers[ij], tcc, ucc, vcc, tol, EPS);
+
+    // Scale the intersection parameters back into the span of the NURBS patch
+    for(int k = 0; k < tcc.size(); ++k)
+    {
+      // std::cout << patch_data.u_spans[ij].first << ", " << patch_data.u_spans[ij].second << std::endl;
+      tc.push_back(tcc[k]);
+      uc.push_back(patch_data.u_spans[ij].first +
+                   ucc[k] * (patch_data.u_spans[ij].second - patch_data.u_spans[ij].first));
+      vc.push_back(patch_data.v_spans[ij].first +
+                   vcc[k] * (patch_data.v_spans[ij].second - patch_data.v_spans[ij].first));
+    }
+  }
+
+  // Do a second pass to remove duplicates from uc, vc
+  const double sq_EPS = EPS * EPS;
+
+  // The number of reported intersection points will be small,
+  //  so we don't need to fully sort the list
+
+  double max_u_knot = patch_data.patch.getKnots_u()[patch_data.patch.getKnots_u().getNumKnots() - 1];
+  double max_v_knot = patch_data.patch.getKnots_v()[patch_data.patch.getKnots_v().getNumKnots() - 1];
+
+  for(int i = 0; i < tc.size(); ++i)
+  {
+    // Also remove any intersections on the half-interval boundaries
+    if(isHalfOpen &&
+       (uc[i] >= max_u_knot - buffer || vc[i] >= max_v_knot - buffer))
+    {
+      continue;
+    }
+
+    // And remove any intersections that are not visible
+    if(isTrimmed && !patch_data.patch.isVisible(uc[i], vc[i]))
+    {
+      continue;
+    }
+
+    Point<T, 2> uv({uc[i], vc[i]});
+
+    bool foundDuplicate = false;
+    for(int j = i + 1; !foundDuplicate && j < tc.size(); ++j)
+    {
+      if(squared_distance(uv, Point<T, 2>({uc[j], vc[j]})) < sq_EPS)
+      {
+        foundDuplicate = true;
+      }
+    }
+
+    if(!foundDuplicate)
+    {
+      t.push_back(tc[i]);
+      u.push_back(uc[i]);
+      v.push_back(vc[i]);
+    }
+  }
+
+  return success;
+}
+
+template <typename T>
+AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
                                 const NURBSPatch<T, 3>& patch,
                                 axom::Array<T>& t,
                                 axom::Array<T>& u,
@@ -939,7 +1084,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
 {
   // Check a bounding box of the entire NURBS first
   Point<T, 3> ip;
-  if(!intersect(line, patch.boundingBox(), ip))
+  if(!intersect(line, patch.boundingBox().scale(1.5), ip))
   {
     return true;
   }

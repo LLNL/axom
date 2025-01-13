@@ -447,8 +447,8 @@ double winding_number(const Point<T, 3>& query,
     };
 
     // Lambda to rotate the input point using the provided rotation matrix
-    auto rotate_point = [&query](const numerics::Matrix<T>& matx,
-                                 const Point<T, 3> input) -> Point<T, 3> {
+    auto my_rotate_point = [&query](const numerics::Matrix<T>& matx,
+                                    const Point<T, 3> input) -> Point<T, 3> {
       Vector<T, 3> shifted(query, input);
       Vector<T, 3> rotated;
       numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
@@ -490,8 +490,8 @@ double winding_number(const Point<T, 3>& query,
     }
     for(int q = 0; q <= ord_v; ++q)
     {
-      boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_u, q));
-      boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
+      boundingPoly[0][q] = my_rotate_point(rotator, bPatch(ord_u, q));
+      boundingPoly[2][q] = my_rotate_point(rotator, bPatch(0, ord_v - q));
 
       if(patchIsRational)
       {
@@ -510,8 +510,8 @@ double winding_number(const Point<T, 3>& query,
     }
     for(int p = 0; p <= ord_u; ++p)
     {
-      boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_v));
-      boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
+      boundingPoly[1][p] = my_rotate_point(rotator, bPatch(ord_u - p, ord_v));
+      boundingPoly[3][p] = my_rotate_point(rotator, bPatch(p, 0));
 
       if(patchIsRational)
       {
@@ -569,7 +569,8 @@ std::pair<double, double> winding_number_casting_split(
   const Vector<T, 3>& discontinuity_direction,
   const double edge_tol = 1e-8,
   const double quad_tol = 1e-8,
-  const double EPS = 1e-8)
+  const double EPS = 1e-8,
+  const int depth = 0)
 {
   const double edge_tol_sq = edge_tol * edge_tol;
 
@@ -611,8 +612,8 @@ std::pair<double, double> winding_number_casting_split(
   };
 
   // Lambda to rotate the input point using the provided rotation matrix
-  auto rotate_point = [&query](const numerics::Matrix<T>& matx,
-                               const Point<T, 3> input) -> Point<T, 3> {
+  auto my_rotate_point = [&query](const numerics::Matrix<T>& matx,
+                                  const Point<T, 3> input) -> Point<T, 3> {
     Vector<T, 3> shifted(query, input);
     Vector<T, 3> rotated;
     numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
@@ -620,18 +621,26 @@ std::pair<double, double> winding_number_casting_split(
       {rotated[0] + query[0], rotated[1] + query[1], rotated[2] + query[2]});
   };
 
-  // Lambda to generate a random orthogonal vector to the input
+  // Lambda to generate a random orthogonal normal vector to the input
   auto random_orthogonal = [](const Vector<T, 3>& input) -> Vector<T, 3> {
     // Pick a random direction orthogonal to the surface normal
     //  at the center of the disk
     Vector<T, 3> some_perp(
       {input[1] - input[2], input[2] - input[0], input[0] - input[1]});
     double theta = axom::utilities::random_real(0.0, 2.0 * M_PI);
-
     Vector<T, 3> new_direction = std::cos(theta) * some_perp.unitVector() +
       std::sin(theta) * Vector3D::cross_product(input, some_perp).unitVector();
 
     return new_direction;
+  };
+
+  // Lambda to generate an entirely random unit vector
+  auto random_unit = []() -> Vector<T, 3> {
+    double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+    double u = axom::utilities::random_real(-1.0, 1.0);
+    return Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
+                         cos(theta) * sqrt(1 - u * u),
+                         u};
   };
 
   // Rotation matrix for the patch
@@ -723,7 +732,7 @@ std::pair<double, double> winding_number_casting_split(
                              tp,
                              up,
                              vp,
-                             edge_tol,
+                             1e-4,  // This is a good heuristic value for accuracy
                              EPS,
                              isHalfOpen,
                              isTrimmed,
@@ -739,12 +748,15 @@ std::pair<double, double> winding_number_casting_split(
         // Can't handle this case. Need to start over with a different cast direction
         auto new_direction = random_orthogonal(discontinuity_direction);
 
+        // std::cout << "Recasting (very derogatory) at " << depth << std::endl;
+        // std::cout << "Degenerate intersection point" << std::endl;
         return winding_number_casting_split(query,
                                             rotatedPatch,
                                             new_direction,
                                             edge_tol,
                                             quad_tol,
-                                            EPS);
+                                            EPS,
+                                            depth + 1);
       }
 
       // 2. The surface is degenerate, and so all intersections were recorded
@@ -752,7 +764,7 @@ std::pair<double, double> winding_number_casting_split(
 
       // Treating this case requires some implementation I don't have yet,
       //  namely clipping trimming curves along u/v isocurves
-      
+
       // For now, if *any* of the reported intersection points are coincident with the query,
       //  just return a zero
       for(int i = 0; i < up.size(); ++i)
@@ -770,6 +782,8 @@ std::pair<double, double> winding_number_casting_split(
       {
         auto new_direction = random_orthogonal(discontinuity_direction);
 
+        // std::cout << "Degenerate intersection point" << std::endl;
+        // std::cout << "Recasting (derogatory) at " << depth << std::endl;
         return winding_number_casting_split(query,
                                             rotatedPatch,
                                             new_direction,
@@ -804,14 +818,19 @@ std::pair<double, double> winding_number_casting_split(
       {
         // If a far away ray intersects the surface at a tangent/cusp,
         //  can recast and try again
-        auto new_direction = random_orthogonal(the_normal);
+        auto new_direction = random_unit();
 
+        // std::cout << "Recasting: " << the_normal.norm() << ", "
+        // << the_normal.unitVector().dot(discontinuity_direction)
+        // << std::endl;
+        // std::cout << "Recasting at " << depth << std::endl;
         return winding_number_casting_split(query,
                                             rotatedPatch,
                                             new_direction,
                                             edge_tol,
                                             quad_tol,
-                                            EPS);
+                                            EPS,
+                                            depth + 1);
       }
 
       if(isOnSurface)
@@ -838,7 +857,7 @@ std::pair<double, double> winding_number_casting_split(
                                isDiskOutside,
                                ignoreInteriorDisk);
         // --caliper report, counts
-        // --caliper counts 
+        // --caliper counts
       }
 
       // If the query point is on the surface, the contribution of the disk is near-zero,
@@ -855,12 +874,18 @@ std::pair<double, double> winding_number_casting_split(
 
         // We compute the contribution of the disk directly,
         //  but with a different direction to avoid repeated subdivision
-        wn_split.first += winding_number_casting(query,
-                                                 disk_patch,
-                                                 new_direction,
-                                                 edge_tol,
-                                                 quad_tol,
-                                                 EPS);
+        // std::cout << "Disk Subdivision" << std::endl;
+        // if(depth < 3)
+        {
+          // std::cout << "Disk dividing at " << depth << std::endl;
+          wn_split.first += winding_number_casting(query,
+                                                   disk_patch,
+                                                   new_direction,
+                                                   edge_tol,
+                                                   quad_tol,
+                                                   EPS,
+                                                   depth + 1);
+        }
       }
       // If the disk is entirely inside or outside, the jump condition is known
       else if(isDiskOutside)
@@ -897,7 +922,7 @@ std::pair<double, double> winding_number_casting_split(
     {
       for(int j = 0; j < patch_shape[1]; ++j)
       {
-        rotatedPatch(i, j) = rotate_point(rotator, nPatch(i, j));
+        rotatedPatch(i, j) = my_rotate_point(rotator, nPatch(i, j));
       }
     }
   }
@@ -916,14 +941,16 @@ double winding_number_casting(const Point<T, 3>& query,
                               const NURBSPatch<T, 3>& nPatch,
                               const double edge_tol = 1e-8,
                               const double quad_tol = 1e-8,
-                              const double EPS = 1e-8)
+                              const double EPS = 1e-8,
+                              const int depth = 0)
 {
   auto wn_split = winding_number_casting_split(query,
                                                nPatch,
                                                Vector<T, 3> {0.0, 0.0, 1.0},
                                                edge_tol,
                                                quad_tol,
-                                               EPS);
+                                               EPS,
+                                               depth);
   return wn_split.first + wn_split.second;
 }
 
@@ -933,14 +960,16 @@ double winding_number_casting(const Point<T, 3>& query,
                               const Vector<T, 3>& discontinuity_direction,
                               const double edge_tol = 1e-8,
                               const double quad_tol = 1e-8,
-                              const double EPS = 1e-8)
+                              const double EPS = 1e-8,
+                              const int depth = 0)
 {
   auto wn_split = winding_number_casting_split(query,
                                                nPatch,
                                                discontinuity_direction,
                                                edge_tol,
                                                quad_tol,
-                                               EPS);
+                                               EPS,
+                                               depth);
   return wn_split.first + wn_split.second;
 }
 
@@ -997,8 +1026,8 @@ std::pair<double, double> winding_number_casting_split(
   };
 
   // Lambda to rotate the input point using the provided rotation matrix
-  auto rotate_point = [&query](const numerics::Matrix<T>& matx,
-                               const Point<T, 3> input) -> Point<T, 3> {
+  auto my_rotate_point = [&query](const numerics::Matrix<T>& matx,
+                                  const Point<T, 3> input) -> Point<T, 3> {
     Vector<T, 3> shifted(query, input);
     Vector<T, 3> rotated;
     numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
@@ -1173,8 +1202,8 @@ std::pair<double, double> winding_number_casting_split(
   }
   for(int q = 0; q <= ord_v; ++q)
   {
-    boundingPoly[0][q] = rotate_point(rotator, bPatch(ord_u, q));
-    boundingPoly[2][q] = rotate_point(rotator, bPatch(0, ord_v - q));
+    boundingPoly[0][q] = my_rotate_point(rotator, bPatch(ord_u, q));
+    boundingPoly[2][q] = my_rotate_point(rotator, bPatch(0, ord_v - q));
 
     if(patchIsRational)
     {
@@ -1193,8 +1222,8 @@ std::pair<double, double> winding_number_casting_split(
   }
   for(int p = 0; p <= ord_u; ++p)
   {
-    boundingPoly[1][p] = rotate_point(rotator, bPatch(ord_u - p, ord_v));
-    boundingPoly[3][p] = rotate_point(rotator, bPatch(p, 0));
+    boundingPoly[1][p] = my_rotate_point(rotator, bPatch(ord_u - p, ord_v));
+    boundingPoly[3][p] = my_rotate_point(rotator, bPatch(p, 0));
 
     if(patchIsRational)
     {
@@ -1231,6 +1260,455 @@ double winding_number_direct(const Point<T, 3>& query,
 {
   // Compute the winding number with a direct 2D surface integral
   return detail::surface_winding_number(query, bPatch, 100, quad_tol, false);
+}
+
+template <typename T>
+double winding_number_casting(const Point<T, 3>& query,
+                              const NURBSPatchData<T>& nPatchData,
+                              std::tuple<int, int, int, int, int>& stat_tuple,
+                              const double edge_tol = 1e-8,
+                              const double quad_tol = 1e-8,
+                              const double EPS = 1e-8,
+                              const int depth = 0)
+{
+  auto wn_split = winding_number_casting_split(query,
+                                               nPatchData,
+                                               Vector<T, 3> {0.0, 0.0, 1.0},
+                                               stat_tuple,
+                                               edge_tol,
+                                               quad_tol,
+                                               EPS,
+                                               depth);
+  return wn_split.first + wn_split.second;
+}
+
+template <typename T>
+std::pair<double, double> winding_number_casting_split(
+  const Point<T, 3>& query,
+  const NURBSPatchData<T>& nPatchData,
+  const Vector<T, 3>& discontinuity_direction,
+  std::tuple<int, int, int, int, int>& stat_tuple,
+  const double edge_tol = 1e-8,
+  const double quad_tol = 1e-8,
+  const double EPS = 1e-8,
+  const int depth = 0)
+{
+  const double edge_tol_sq = edge_tol * edge_tol;
+
+  // Fix the number of quadrature nodes arbitrarily
+  constexpr int quad_npts = 15;
+
+  // The first is the GWN from stokes, the second is the jump condition
+  std::pair<double, double> wn_split = {0.0, 0.0};
+
+  /* 
+   * To use Stokes theorem, we need to identify either a line containing the
+   * query that does not intersect the surface, or one that intersects the *interior*
+   * of the surface at known locations.
+   */
+
+  // Lambda to generate a 3D rotation matrix from an angle and axis
+  // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
+  auto angleAxisRotMatrix = [](double theta,
+                               const Vector<T, 3>& axis) -> numerics::Matrix<T> {
+    const auto unitized = axis.unitVector();
+    const double x = unitized[0], y = unitized[1], z = unitized[2];
+    const double c = cos(theta), s = sin(theta), C = 1 - c;
+
+    auto matx = numerics::Matrix<T>::zeros(3, 3);
+
+    matx(0, 0) = x * x * C + c;
+    matx(0, 1) = x * y * C - z * s;
+    matx(0, 2) = x * z * C + y * s;
+
+    matx(1, 0) = y * x * C + z * s;
+    matx(1, 1) = y * y * C + c;
+    matx(1, 2) = y * z * C - x * s;
+
+    matx(2, 0) = z * x * C - y * s;
+    matx(2, 1) = z * y * C + x * s;
+    matx(2, 2) = z * z * C + c;
+
+    return matx;
+  };
+
+  // Lambda to generate a random orthogonal normal vector to the input
+  auto random_orthogonal = [](const Vector<T, 3>& input) -> Vector<T, 3> {
+    // Pick a random direction orthogonal to the surface normal
+    //  at the center of the disk
+    Vector<T, 3> some_perp(
+      {input[1] - input[2], input[2] - input[0], input[0] - input[1]});
+    double theta = axom::utilities::random_real(0.0, 2.0 * M_PI);
+    Vector<T, 3> new_direction = std::cos(theta) * some_perp.unitVector() +
+      std::sin(theta) * Vector3D::cross_product(input, some_perp).unitVector();
+
+    return new_direction;
+  };
+
+  // Lambda to generate an entirely random unit vector
+  auto random_unit = []() -> Vector<T, 3> {
+    double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+    double u = axom::utilities::random_real(-1.0, 1.0);
+    return Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
+                         cos(theta) * sqrt(1 - u * u),
+                         u};
+  };
+
+  // Rotation matrix for the patch
+  numerics::Matrix<T> rotator;
+
+  // Prefer to work with a trimmed patch
+  NURBSPatch<T, 3> integralPatch = nPatchData.patch;
+
+  // Define vector fields whose curl gives us the winding number
+  detail::DiscontinuityAxis field_direction;
+  bool extraTrimming = false;
+
+  auto bBox = BoundingBox<T, 3>(nPatchData.bbox);
+  auto characteristic_length = bBox.range().norm();
+  bBox.expand(0.01 * characteristic_length);
+  auto oBox =
+    OrientedBoundingBox<T, 3>(nPatchData.obox).expand(0.01 * characteristic_length);
+
+  // Case 1: Exterior without rotations
+  if(!bBox.contains(query))
+  {
+    std::get<0>(stat_tuple) += 1;
+    const bool exterior_x =
+      bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
+    const bool exterior_y =
+      bBox.getMin()[1] > query[1] || query[1] > bBox.getMax()[1];
+    const bool exterior_z =
+      bBox.getMin()[2] > query[2] || query[2] > bBox.getMax()[2];
+
+    if(exterior_x || exterior_y)
+    {
+      field_direction = detail::DiscontinuityAxis::z;
+    }
+    else if(exterior_y || exterior_z)
+    {
+      field_direction = detail::DiscontinuityAxis::x;
+    }
+    else if(exterior_x || exterior_z)
+    {
+      field_direction = detail::DiscontinuityAxis::y;
+    }
+  }
+  // Case 1.5: Exterior with rotation
+  else if(!oBox.contains(query))
+  {
+    std::get<1>(stat_tuple) += 1;
+    /* The following steps rotate the patch until the OBB is /not/ 
+       directly above or below the query point */
+    field_direction = detail::DiscontinuityAxis::rotated;
+
+    // Find vector from query to the bounding box
+    Point<T, 3> closest = closest_point(query, oBox);
+    Vector<T, 3> v0 = Vector<T, 3>(query, closest).unitVector();
+
+    // Find the direction of a ray perpendicular to that
+    Vector<T, 3> v1;
+    if(std::abs(v0[2]) > std::abs(v0[0]))
+    {
+      v1 = Vector<T, 3>({v0[2], v0[2], -v0[0] - v0[1]}).unitVector();
+    }
+    else
+    {
+      v1 = Vector<T, 3>({-v0[1] - v0[2], v0[0], v0[0]}).unitVector();
+    }
+
+    // Rotate v0 around v1 until it is perpendicular to the plane spanned by k and v1
+    double ang = (v0[2] < 0 ? 1.0 : -1.0) *
+      acos(axom::utilities::clampVal(
+        -(v0[0] * v1[1] - v0[1] * v1[0]) / sqrt(v1[0] * v1[0] + v1[1] * v1[1]),
+        -1.0,
+        1.0));
+    rotator = angleAxisRotMatrix(ang, v1);
+  }
+  // Case 2: Cast a ray, record intersections
+  else
+  {
+    std::get<2>(stat_tuple) += 1;
+
+    // wn_split.first += 0.0;
+    // return wn_split;
+
+    field_direction = detail::DiscontinuityAxis::rotated;
+    Line<T, 3> discontinuity_axis(query, discontinuity_direction);
+
+    T patch_knot_size = axom::utilities::max(
+      integralPatch.getKnots_u()[integralPatch.getNumKnots_u() - 1] -
+        integralPatch.getKnots_u()[0],
+      integralPatch.getKnots_v()[integralPatch.getNumKnots_v() - 1] -
+        integralPatch.getKnots_v()[0]);
+
+    // Tolerance for what counts as "close to a boundary" in parameter space
+    T disk_radius = 0.05 * patch_knot_size;
+
+    // Compute intersections with the *untrimmed and extrapolated* patch
+    axom::Array<T> up, vp, tp;
+    bool isHalfOpen = false, isTrimmed = false;
+    bool success = intersect(discontinuity_axis,
+                             nPatchData,
+                             tp,
+                             up,
+                             vp,
+                             1e-4,  // This is a good heuristic value for accuracy
+                             EPS,
+                             isHalfOpen,
+                             isTrimmed,
+                             disk_radius);
+
+    if(!success)
+    {
+      // If too many intersections with the untrimmed patch are recorded, then either
+
+      // 1. The ray is parallel to a the surface
+      if(up.size() >= 20)
+      {
+        // Can't handle this case. Need to start over with a different cast direction
+        auto new_direction = random_orthogonal(discontinuity_direction);
+
+        // std::cout << "Recasting (very derogatory) at " << depth << std::endl;
+        // std::cout << "Degenerate intersection point" << std::endl;
+        return winding_number_casting_split(query,
+                                            nPatchData.patch,
+                                            new_direction,
+                                            edge_tol,
+                                            quad_tol,
+                                            EPS,
+                                            depth + 1);
+      }
+
+      // 2. The surface is degenerate, and so all intersections were recorded
+      //  with the same t parameter, and pruned by `intersect()`.
+
+      // Treating this case requires some implementation I don't have yet,
+      //  namely clipping trimming curves along u/v isocurves
+
+      // For now, if *any* of the reported intersection points are coincident with the query,
+      //  just return a zero
+      for(int i = 0; i < up.size(); ++i)
+      {
+        Point<T, 3> intersection_point = nPatchData.patch.evaluate(up[i], vp[i]);
+        if(squared_distance(query, intersection_point) <= edge_tol_sq)
+        {
+          wn_split.first = 0.0;
+          wn_split.second = 0.0;
+          return wn_split;
+        }
+      }
+
+      // Otherwise, we can cast again with a different direction
+      {
+        auto new_direction = random_orthogonal(discontinuity_direction);
+
+        // std::cout << "Degenerate intersection point" << std::endl;
+        // std::cout << "Recasting (derogatory) at " << depth << std::endl;
+        return winding_number_casting_split(query,
+                                            nPatchData.patch,
+                                            new_direction,
+                                            edge_tol,
+                                            quad_tol,
+                                            EPS);
+      }
+    }
+
+    // Account for each discontinuity in the integrand on the *untrimmed and extrapolated* surface
+
+    // If no intersection, then nothing to account for
+
+    // Otherwise, account for each discontinuity analytically or through disk subdivision
+    for(int i = 0; i < up.size(); ++i)
+    {
+      // Check for surface degeneracies or tangencies
+      Vector<T, 3> the_normal = nPatchData.patch.normal(up[i], vp[i]);
+      bool bad_intersection =
+        axom::utilities::isNearlyEqual(the_normal.norm(), 0.0, EPS) ||
+        axom::utilities::isNearlyEqual(
+          the_normal.unitVector().dot(discontinuity_direction),
+          0.0,
+          EPS);
+
+      // Check for surface coincidence
+      Point<T, 3> intersection_point = nPatchData.patch.evaluate(up[i], vp[i]);
+      bool isOnSurface =
+        squared_distance(query, intersection_point) <= edge_tol_sq;
+
+      if(bad_intersection && !isOnSurface)
+      {
+        // If a far away ray intersects the surface at a tangent/cusp,
+        //  can recast and try again
+        auto new_direction = random_unit();
+
+        // std::cout << "Recasting: " << the_normal.norm() << ", "
+        // << the_normal.unitVector().dot(discontinuity_direction)
+        // << std::endl;
+        // std::cout << "Recasting at " << depth << std::endl;
+        return winding_number_casting_split(query,
+                                            nPatchData.patch,
+                                            new_direction,
+                                            edge_tol,
+                                            quad_tol,
+                                            EPS,
+                                            depth + 1);
+      }
+
+      if(isOnSurface)
+      {
+        // If the query point is on the surface, we need to consider a smaller disk
+        //  to ensure its winding number is known to be near-zero
+        disk_radius *= 0.1;
+      }
+
+      // This method accomplishes 2 tasks:
+      //  > Determines if the disk of "safe" radius is *entirely* inside or outside trimming curves
+      //  > If the disk intersects the trimming curves, performs disk subdivision
+      bool isDiskInside, isDiskOutside, ignoreInteriorDisk = true;
+      NURBSPatch<T, 3> disk_patch;
+
+      {
+        // AXOM_ANNOTATE_SCOPE("DISK_SPLIT");
+        nPatchData.patch.diskSplit(up[i],
+                                   vp[i],
+                                   disk_radius,
+                                   integralPatch,
+                                   disk_patch,
+                                   isDiskInside,
+                                   isDiskOutside,
+                                   ignoreInteriorDisk);
+
+        // nPatchData.patch.printTrimmingCurves(
+          // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
+          // "example\\original.txt");
+        // disk_patch.printTrimmingCurves(
+          // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
+          // "example\\disk.txt");
+        // integralPatch.printTrimmingCurves(
+          // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
+          // "example\\remaining.txt");
+        // Extra trimming is applied if the disk is NOT inside and if the disk is NOT outside,
+        //   and if the disk is NOT ignored while inside
+        extraTrimming = (!isDiskInside && !isDiskOutside) ||
+          (isDiskInside && !ignoreInteriorDisk);
+
+        // --caliper report, counts
+        // --caliper counts
+      }
+
+      if(extraTrimming)
+      {
+        std::get<3>(stat_tuple) += 1;
+      }
+
+      // If the query point is on the surface, the contribution of the disk is near-zero,
+      //  and we only need to puncture the larger surface to proceed
+      if(isOnSurface)
+      {
+        wn_split.first += 0.0;
+        wn_split.second += 0.0;
+      }
+      // If the disk overlaps with a trimming curve
+      else if(!isDiskInside && !isDiskOutside)
+      {
+        auto new_direction = random_orthogonal(the_normal);
+
+        // We compute the contribution of the disk directly,
+        //  but with a different direction to avoid repeated subdivision
+        // std::cout << "Disk Subdivision" << std::endl;
+        // if(depth < 3)
+        {
+          // std::cout << "Disk dividing at " << depth << std::endl;
+          wn_split.first += winding_number_casting(query,
+                                                   disk_patch,
+                                                   new_direction,
+                                                   edge_tol,
+                                                   quad_tol,
+                                                   EPS,
+                                                   depth + 1);
+        }
+      }
+      // If the disk is entirely inside or outside, the jump condition is known
+      else if(isDiskOutside)
+      {
+        wn_split.second += 0.0;
+      }
+      else if(isDiskInside)
+      {
+        Vector<T, 3> the_direction =
+          Vector<T, 3>(query, intersection_point).unitVector();
+
+        // Do a dot product to see what side of the surface the intersection is on
+        wn_split.second += std::copysign(0.5, the_normal.dot(the_direction));
+      }
+    }
+
+    // Rotate the patch so that the discontinuity direction is aligned with the z-axis
+    Vector<T, 3> axis = {discontinuity_direction[1],
+                         -discontinuity_direction[0],
+                         0.0};
+
+    double ang =
+      acos(axom::utilities::clampVal(discontinuity_direction[2], -1.0, 1.0));
+
+    rotator = angleAxisRotMatrix(ang, axis);
+
+    // std::cout << wn_split.second << std::endl;
+    // std::cout << std::endl;
+  }
+
+  if(extraTrimming)
+  {
+    // Can't use cached quadrature rules, cause it's unclear which ones to use
+
+    //  Rotate it if we need to
+    if(field_direction == detail::DiscontinuityAxis::rotated)
+    {
+      // The trimming curves for rotatedPatch have been changed as needed,
+      //  but we need to rotate the control points
+      auto patch_shape = integralPatch.getControlPoints().shape();
+      for(int i = 0; i < patch_shape[0]; ++i)
+      {
+        for(int j = 0; j < patch_shape[1]; ++j)
+        {
+          integralPatch(i, j) =
+            detail::rotate_point(rotator, query, nPatchData.patch(i, j));
+        }
+      }
+    }
+
+    wn_split.first += detail::stokes_winding_number(query,
+                                                    integralPatch,
+                                                    field_direction,
+                                                    quad_npts,
+                                                    quad_tol);
+
+    // std::cout << "Not Cached: " << wn_split.first << std::endl;
+  }
+  else
+  {
+    // It's easier if we don't need to rotate the patch
+    if(field_direction != detail::DiscontinuityAxis::rotated)
+    {
+      wn_split.first += detail::stokes_winding_number_cached(query,
+                                                             nPatchData,
+                                                             field_direction,
+                                                             quad_npts,
+                                                             quad_tol);
+      // std::cout << "Not Rotated: " << wn_split.first << std::endl;
+    }
+    else
+    {
+      wn_split.first += detail::stokes_winding_number_cached_rotated(query,
+                                                                     nPatchData,
+                                                                     rotator,
+                                                                     quad_npts,
+                                                                     quad_tol);
+      // std::cout << "Rotated wn: " << wn_split.first << std::endl;
+    }
+  }
+
+  return wn_split;
 }
 
 #endif

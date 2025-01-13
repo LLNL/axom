@@ -39,6 +39,165 @@ namespace primal
 template <typename T, int NDIMS>
 class NURBSPatch;
 
+// Define a struct that holds a NURBS Patach, a bounding box, and an axom::Array of Bezier patches
+template <typename T>
+struct TrimmingCurveQuadratureData
+{
+  TrimmingCurveQuadratureData() = default;
+
+  TrimmingCurveQuadratureData(const mfem::IntegrationRule& quad_rule,
+                              const NURBSCurve<T, 2>& a_curve,
+                              const NURBSPatch<T, 3>& a_patch,
+                              int a_refinementLevel,
+                              int a_refinementSection)
+  {
+    const T curve_min_knot = a_curve.getMinKnot();
+    const T curve_max_knot = a_curve.getMaxKnot();
+
+    // Find the right knot span based on the refinement level
+    span_length =
+      (curve_max_knot - curve_min_knot) / std::pow(2, a_refinementLevel);
+    const T span_offset = span_length * a_refinementSection;
+
+    bbox = BoundingBox<T, 3>();
+    quadrature_points.resize(quad_rule.GetNPoints());
+    for(int q = 0; q < quad_rule.GetNPoints(); ++q)
+    {
+      T quad_x =
+        quad_rule.IntPoint(q).x * span_length + curve_min_knot + span_offset;
+    //   T quad_weight = quad_rule.IntPoint(q).weight * span_length;
+
+      Point<T, 2> c_eval;
+      Vector<T, 2> c_Dt;
+      a_curve.evaluate_first_derivative(quad_x, c_eval, c_Dt);
+
+      Point<T, 3> s_eval;
+      Vector<T, 3> s_Du, s_Dv;
+      a_patch.evaluateFirstDerivatives(c_eval[0], c_eval[1], s_eval, s_Du, s_Dv);
+
+      quadrature_points[q] =
+        std::make_pair(s_eval, s_Du * c_Dt[0] + s_Dv * c_Dt[1]);
+      bbox.addPoint(s_eval);
+    }
+  }
+
+  axom::Array<std::pair<Point<T, 3>, Vector<T, 3>>> quadrature_points;
+  BoundingBox<T, 3> bbox;
+  T span_length;
+};
+
+template <typename T>
+struct NURBSPatchData
+{
+  NURBSPatchData() = default;
+
+  NURBSPatchData(int idx, const NURBSPatch<T, 3>& a_patch)
+    : patchIndex(idx)
+    , patch(a_patch)
+  {
+    bbox = patch.boundingBox();
+    obox = patch.orientedBoundingBox();
+
+    beziers = axom::Array<BezierPatch<T, 3>>();
+    u_spans = axom::Array<std::pair<double, double>>();
+    v_spans = axom::Array<std::pair<double, double>>();
+
+    // Filter out the Bezier patches whose knot spans
+    //  are not visible in the trimming curves
+
+    patch.makeSimpleTrimmed();
+    auto candidates = patch.extractBezier();
+
+    axom::Array<T> knot_vals_u = patch.getKnots_u().getUniqueKnots();
+    axom::Array<T> knot_vals_v = patch.getKnots_v().getUniqueKnots();
+
+    const auto num_knot_span_u = knot_vals_u.size() - 1;
+    const auto num_knot_span_v = knot_vals_v.size() - 1;
+
+    for(int i = 0; i < num_knot_span_u; ++i)
+    {
+      for(int j = 0; j < num_knot_span_v; ++j)
+      {
+        auto& bezier = candidates[i * num_knot_span_v + j];
+
+        // For bezier and knot spans to be pushed back, 2 things need to be true:
+        bool center_visible = false;
+        bool found_intersections = false;
+
+        // 1. The 2D bounding box containing the knot span can't intersect the trimming curves
+        BoundingBox<T, 2> knot_span_bb({knot_vals_u[i], knot_vals_v[j]},
+                                       {knot_vals_u[i + 1], knot_vals_v[j + 1]});
+        knot_span_bb = knot_span_bb.scale(1.01);
+        for(auto& curve : patch.getTrimmingCurves())
+        {
+          if(intersects(knot_span_bb, curve))
+          {
+            found_intersections = true;
+            break;
+          }
+        }
+
+        // Need to keep any patch that intersects the trimming curves
+        if(found_intersections)
+        {
+          beziers.push_back(bezier);
+          u_spans.push_back({std::make_pair(knot_vals_u[i], knot_vals_u[i + 1])});
+          v_spans.push_back({std::make_pair(knot_vals_v[j], knot_vals_v[j + 1])});
+          continue;
+        }
+
+        // If the center of the knot span is visible, we need to keep the patch
+        if(patch.isVisible(0.5 * (knot_vals_u[i] + knot_vals_u[i + 1]),
+                           0.5 * (knot_vals_v[j] + knot_vals_v[j + 1])))
+        {
+          beziers.push_back(bezier);
+          u_spans.push_back({std::make_pair(knot_vals_u[i], knot_vals_u[i + 1])});
+          v_spans.push_back({std::make_pair(knot_vals_v[j], knot_vals_v[j + 1])});
+        }
+
+        // Else, we can discard it
+      }
+    }
+  }
+
+  TrimmingCurveQuadratureData<T>& getQuadratureData(int curveIndex,
+                                                 const mfem::IntegrationRule& quad_rule,
+                                                 int refinementLevel,
+                                                 int refinedSection) const
+  {
+    // Check to see if we have already computed the quadrature data for this curve
+    auto hash_key = std::make_pair(refinementLevel, refinedSection);
+
+    if(curve_quadrature_maps[curveIndex].find(hash_key) ==
+       curve_quadrature_maps[curveIndex].end())
+    {
+      curve_quadrature_maps[curveIndex][hash_key] =
+        TrimmingCurveQuadratureData<double>(quad_rule,
+                                    patch.getTrimmingCurves()[curveIndex],
+                                    patch,
+                                    refinementLevel,
+                                    refinedSection);
+    }
+
+    return curve_quadrature_maps[curveIndex][hash_key];
+  }
+
+  int patchIndex;
+  NURBSPatch<T, 3> patch;
+
+  // Per patch stuff
+  BoundingBox<T, 3> bbox;
+  OrientedBoundingBox<T, 3> obox;
+  axom::Array<BezierPatch<T, 3>> beziers;
+  axom::Array<std::pair<double, double>> u_spans;
+  axom::Array<std::pair<double, double>> v_spans;
+
+  // Per trimming curve stuff
+  // Keyed by (whichRefinementLevel, whichRefinedSection)
+  mutable axom::Array<std::map<std::pair<int, int>, TrimmingCurveQuadratureData<T>>>
+    curve_quadrature_maps;
+};
+
 /*! \brief Overloaded output operator for NURBS Patches*/
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& nPatch);
@@ -1393,6 +1552,12 @@ public:
       : (std::lround(winding_number(uv_param, m_trimming_curves)) % 2) == 1;
   }
 
+  double parameterGWN(T u, T v) const
+  {
+    ParameterPointType uv_param({u, v});
+    return winding_number(uv_param, m_trimming_curves);
+  }
+
   /// Clears the list of control points, make nonrational
   void clear()
   {
@@ -1491,6 +1656,26 @@ public:
     else
     {
       reverseOrientation_v();
+    }
+  }
+
+  /// \brief Flip all normals of the NURBS surface by reversing the orientation of the control points
+  ///  in each direction, and mirroring the trimming curves in parameter space
+  void flipNormals()
+  {
+    reverseOrientation_u();
+
+    auto min_u = m_knotvec_u[0];
+    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    for(auto& curve : m_trimming_curves)
+    {
+      // For each trimming curve, mirror the control points over the midpoint 
+      //  of the knot span
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = min_u + max_u - curve[i][0];
+      }
     }
   }
 

@@ -66,6 +66,7 @@ struct PatchData
   bool wasOriginallyPeriodic_u {false};
   bool wasOriginallyPeriodic_v {false};
   axom::primal::NURBSPatch<double, 3> nurbsPatch;
+  axom::primal::NURBSPatchData<double> nurbsPatchData;
   axom::primal::BoundingBox<double, 2> parametricBBox;
   axom::primal::BoundingBox<double, 3> physicalBBox;
   // axom::Array<axom::primal::NURBSCurve<double, 2>> trimmingCurves;
@@ -1107,10 +1108,10 @@ public:
           {
             c.rational++;
           }
-        //   if(kv.second.trimmingCurves_originallyPeriodic[i])
-        //   {
-        //     c.periodic++;
-        //   }
+          //   if(kv.second.trimmingCurves_originallyPeriodic[i])
+          //   {
+          //     c.periodic++;
+          //   }
 
           curveDegreeList.push_back(degree);
         }
@@ -1335,6 +1336,36 @@ public:
           }
         }
       }
+
+      if(patchData.nurbsPatch.isTrimmed())
+      {
+        axom::primal::Point2D p {patchData.parametricBBox.getCentroid()};
+        auto gwn = std::lround(patchData.nurbsPatch.parameterGWN(p[0], p[1]));
+
+        if(gwn < 0)
+        {
+          patchData.nurbsPatch.flipNormals();
+        }
+        else if(gwn == 0)
+        {
+          // patchData.nurbsPatch.printTrimmingCurves(
+            // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\trimming_"
+            // "curve_examples\\unsure_" + std::to_string(patchIndex) + ".txt");
+          std::cout << "Unsure if it's the right orientation! " << patchIndex
+                    << std::endl;
+        }
+      }
+    }
+  }
+
+  void precomputePatchData()
+  {
+    for(auto& kv : m_patchData)
+    {
+      kv.second.nurbsPatchData =
+        axom::primal::NURBSPatchData<double>(kv.first, kv.second.nurbsPatch);
+      kv.second.nurbsPatchData.curve_quadrature_maps.resize(
+        kv.second.nurbsPatch.getNumTrimmingCurves());
     }
   }
 
@@ -2187,6 +2218,7 @@ StepFileProcessor import_step_file(std::string prefix,
 
   stepProcessor.extractPatches();
   stepProcessor.extractTrimmingCurves();
+  stepProcessor.precomputePatchData();
   stepProcessor.printMeshInfo();
 
   const int numPatches = stepProcessor.getPatchDataMap().size();
@@ -2275,7 +2307,9 @@ StepFileProcessor import_holy_step_file(std::string prefix,
 
     std::cout << kv.first << std::endl;
     axom::primal::NURBSPatch<double, 3> dummy_patch;
-    nurbsPatch.printTrimmingCurves("C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_example\\original.txt");
+    nurbsPatch.printTrimmingCurves(
+      "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
+      "example\\original.txt");
     for(int i = 0; i < 3; ++i)
     {
       nurbsPatch.diskSplit(centers[i][0],
@@ -2283,10 +2317,11 @@ StepFileProcessor import_holy_step_file(std::string prefix,
                            radii[i] * max_length,
                            nurbsPatch,
                            dummy_patch);
-    }  
-    nurbsPatch.printTrimmingCurves("C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_example\\remaining_curves.txt");
+    }
+    nurbsPatch.printTrimmingCurves(
+      "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
+      "example\\remaining_curves.txt");
     std::cout << kv.first << std::endl;
-
   }
 
   stepProcessor.printMeshInfo();
@@ -2402,7 +2437,7 @@ void test_full_sliced_cylinder()
                                                  quad_tol,
                                                  EPS);
     }
-    // std::cout << "Query: " << query << " -> " << wn << std::endl;
+    std::cout << "Query: " << query << " -> " << wn << std::endl;
     return wn;
   };
 
@@ -2433,12 +2468,14 @@ void test_slice_boxed_sphere()
   constexpr double EPS = 1e-10;
   constexpr double edge_tol = 1e-6;
 
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS](
+  // (!bBox, !oBox, casting)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
-    axom::primal::Point<double, 3> new_query {-4.44089209850063e-16,
-                                              0.358593854652949,
-                                              0.494444444444481};
+    axom::primal::Point<double, 3> new_query {-0.4006020129,
+                                              0.3343850076,
+                                              -0.3343850076};
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
       if(USE_SUBSET)
@@ -2454,16 +2491,23 @@ void test_slice_boxed_sphere()
         }
         if(!found) continue;
       }
-
-      wn += axom::primal::winding_number_casting(query,
-                                                 kv.second.nurbsPatch,
-                                                 edge_tol,
-                                                 quad_tol,
-                                                 EPS);
-      // std::cout << "\t" << wn << std::endl;
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      if(the_val != the_val)
+      {
+        std::cout << "NAN at " << kv.first << std::endl;
+      }
+      wn += the_val;
     }
-    // std::cout << "Query: " << query;
-    // std::cout << " -> " << wn << std::endl;
+    if(std::abs(wn) > 10)
+    {
+      std::cout << "\t\t\t\t" << wn << std::endl;
+    }
     return wn;
   };
 
@@ -2489,27 +2533,36 @@ void test_slice_boxed_sphere()
 
   meshBBox.scale(1.1);
 
-  // Make a new box that is a slice of the original box
-  auto mid_x = (meshBBox.getMin()[0] + meshBBox.getMax()[0]) / 2;
-  axom::primal::Point<double, 3> the_min = meshBBox.getMin();
-  the_min[0] = mid_x;
+  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
-  axom::primal::Point<double, 3> the_max = meshBBox.getMax();
-  the_max[0] = mid_x;
+  axom::utilities::Timer timer(false);
 
-  axom::primal::BoundingBox<double, 3> sliceBox(the_min, the_max);
+  timer.start();
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_field.vtk",
+    wn_field,
+    origin,
+    normal,
+    1.5,
+    1.5,
+    250,
+    250);
+  timer.stop();
 
-  axom::primal::exportScalarFieldToVTK<double>(prefix + filename + "_field.vtk",
-                                               wn_field,
-                                               sliceBox,
-                                               1,
-                                               100,
-                                               100);
+  auto elapsed_time = timer.elapsedTimeInSec();
+  std::cout << std::endl
+            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
+  std::cout << "Stats:" << std::endl;
+  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
+  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
+  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
+  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
 }
 
 int main()
 {
-  // test_slice_boxed_sphere();
-  test_holy_sliced_cylinder();
+  test_slice_boxed_sphere();
+  //   test_holy_sliced_cylinder();
   return 0;
 }
