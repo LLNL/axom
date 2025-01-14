@@ -416,11 +416,18 @@ public:
     }
   }
 
+  // The following private methods are made public due to CUDA compilers
+  // requirements for methods that call device functions.
+#if defined(__CUDACC__)
 public:
-  //@{
-  //!  @name Functions related to the stages for a given shape
+#else
+private:
+#endif
 
-  // Prepares the tet mesh mesh cells for the spatial index
+  //@{
+  //!  @name Private functions related to the stages for a given shape
+
+  // Prepares the tet mesh cells for the spatial index
   template <typename ExecSpace>
   void prepareTetCells()
   {

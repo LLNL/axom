@@ -91,7 +91,7 @@ public:
 private:
   Path m_path;
   std::vector<SingleOperatorData> m_singleOperatorData;
-};  // GeometryOperatorData
+};
 
 /**
  * Data for a named operator.

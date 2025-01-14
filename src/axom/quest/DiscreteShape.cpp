@@ -73,7 +73,7 @@ private:
 
 }  // end namespace internal
 
-// These were needed for linking - but why? They are constexpr.
+// TODO: These were needed for linking - but why? They are constexpr.
 constexpr int DiscreteShape::DEFAULT_SAMPLES_PER_KNOT_SPAN;
 constexpr double DiscreteShape::MINIMUM_PERCENT_ERROR;
 constexpr double DiscreteShape::MAXIMUM_PERCENT_ERROR;
@@ -116,27 +116,27 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
 
   if(geometryFormat == "blueprint-tets")
   {
-    createBlueprintTetsRepresentation();
+    createRepresentationOfBlueprintTets();
   }
   else if(geometryFormat == "tet3D")
   {
-    createTetRepresentation();
+    createRepresentationOfTet();
   }
   else if(geometryFormat == "hex3D")
   {
-    createHexRepresentation();
+    createRepresentationOfHex();
   }
   else if(geometryFormat == "plane3D")
   {
-    createPlaneRepresentation();
+    createRepresentationOfPlane();
   }
   else if(geometryFormat == "sphere3D")
   {
-    createSphereRepresentation();
+    createRepresentationOfSphere();
   }
   if(geometryFormat == "vor3D")
   {
-    createVORRepresentation();
+    createRepresentationOfVOR();
   }
 
   if(m_meshRep)
@@ -240,7 +240,7 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   return m_meshRep;
 }
 
-void DiscreteShape::createBlueprintTetsRepresentation()
+void DiscreteShape::createRepresentationOfBlueprintTets()
 {
   SLIC_ASSERT(m_sidreGroup != nullptr);
 
@@ -278,7 +278,7 @@ void DiscreteShape::createBlueprintTetsRepresentation()
   applyTransforms();
 }
 
-void DiscreteShape::createTetRepresentation()
+void DiscreteShape::createRepresentationOfTet()
 {
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
 
@@ -321,7 +321,7 @@ void DiscreteShape::createTetRepresentation()
   applyTransforms();
 }
 
-void DiscreteShape::createHexRepresentation()
+void DiscreteShape::createRepresentationOfHex()
 {
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
   const auto& hex = geometry.getHex();
@@ -373,7 +373,7 @@ void DiscreteShape::createHexRepresentation()
   applyTransforms();
 }
 
-void DiscreteShape::createPlaneRepresentation()
+void DiscreteShape::createRepresentationOfPlane()
 {
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
 
@@ -383,7 +383,7 @@ void DiscreteShape::createPlaneRepresentation()
     TODO: Use a specialized plane representation.  Plane is very
     simple, but representing it as huge tets has 2 problems.
     1. The shaper runs slow because the huge tets contains huge
-       numbers of cells, disbling attempts at divide-and-conquer
+       numbers of cells, disabling attempts at divide-and-conquer
        with the BVH.
 
     2. When the tets are orders of magnitude larger then the
@@ -406,6 +406,8 @@ void DiscreteShape::createPlaneRepresentation()
   boundingHex[6] = Point3D{len,  len,  len};
   boundingHex[7] = Point3D{0.0,  len,  len};
   // clang-format on
+
+  // Rotate and translate boundingHex to align with the plane.
   numerics::Matrix<double> rotate = vorAxisRotMatrix(plane.getNormal());
   const auto translate = plane.getNormal() * plane.getOffset();
   for(int i = 0; i < 8; ++i)
@@ -466,7 +468,7 @@ void DiscreteShape::createPlaneRepresentation()
   applyTransforms();
 }
 
-void DiscreteShape::createSphereRepresentation()
+void DiscreteShape::createRepresentationOfSphere()
 {
   const axom::klee::Geometry& geometry = m_shape.getGeometry();
 
@@ -529,7 +531,7 @@ void DiscreteShape::createSphereRepresentation()
   applyTransforms();
 }
 
-void DiscreteShape::createVORRepresentation()
+void DiscreteShape::createRepresentationOfVOR()
 {
   // Construct the tet m_meshRep from the volume-of-revolution.
   auto& vorGeom = m_shape.getGeometry();
@@ -680,7 +682,7 @@ numerics::Matrix<double> DiscreteShape::getTransforms() const
   return transformation;
 }
 
-// Return a 3x3 matrix that rotate coordinates from the x-axis to the given direction.
+// Return a 3x3 matrix that rotates coordinates from the x-axis to the given direction.
 numerics::Matrix<double> DiscreteShape::vorAxisRotMatrix(const Vector3D& dir)
 {
   // Note that the rotation matrix is not unique.

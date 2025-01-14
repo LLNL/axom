@@ -82,13 +82,13 @@ public:
    *
    * \param startProperties the transformable properties before any
    * operators are applied
-   * \param meshGroup the geometry in blueprint format.
+   * \param simplexMeshGroup the geometry in blueprint format.
    *   The elements should be segments, triangles or tetrahedra.
    * \param topology The blueprint topology to use.
    * \param operator_ a possibly null operator to apply to the geometry.
    */
   Geometry(const TransformableGeometryProperties &startProperties,
-           const axom::sidre::Group *meshGroup,
+           const axom::sidre::Group *simplexMeshGroup,
            const std::string &topology,
            std::shared_ptr<GeometryOperator const> operator_);
 

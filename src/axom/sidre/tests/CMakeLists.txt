@@ -24,6 +24,7 @@ set(gtest_sidre_tests
    sidre_native_layout.cpp
    sidre_attribute.cpp
    sidre_mcarray.cpp
+   sidre_read_write_userdefined_data.cpp
    )
 
 set(gtest_sidre_C_tests

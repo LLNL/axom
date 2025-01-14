@@ -243,7 +243,7 @@ if (C2C_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
-# Smoke test for OpenCASCADE third party library
+# Smoke test for Open Cascade third party library
 #------------------------------------------------------------------------------
 
 if (OPENCASCADE_FOUND)

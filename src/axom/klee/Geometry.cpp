@@ -32,13 +32,13 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 { }
 
 Geometry::Geometry(const TransformableGeometryProperties& startProperties,
-                   const axom::sidre::Group* meshGroup,
+                   const axom::sidre::Group* simplexMeshGroup,
                    const std::string& topology,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
   , m_format("blueprint-tets")
   , m_path()
-  , m_meshGroup(meshGroup)
+  , m_meshGroup(simplexMeshGroup)
   , m_topology(topology)
   , m_levelOfRefinement(0)
   , m_operator(std::move(operator_))

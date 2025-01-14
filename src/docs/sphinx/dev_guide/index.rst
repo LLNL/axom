@@ -51,6 +51,7 @@ changes are made, this guide should be updated accordingly.
    testing
    updating_tpls
    gpu_porting
+   memory_checking
    misc_tasks
 
 
