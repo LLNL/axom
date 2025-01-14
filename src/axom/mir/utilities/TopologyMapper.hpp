@@ -938,8 +938,9 @@ public:
         };
 
         // This predicate determines whether 2 bboxes intersect.
-        auto bbIsect = [] AXOM_HOST_DEVICE(const SrcBoundingBox &queryBbox,
-                                           const SrcBoundingBox &bvhBbox) -> bool {
+        auto bbIsect = [] /*AXOM_HOST_DEVICE*/ (
+                         const SrcBoundingBox &queryBbox,
+                         const SrcBoundingBox &bvhBbox) -> bool {
           bool rv = queryBbox.intersectsWith(bvhBbox);
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
           std::cout << "bbIsect: rv=" << rv << ", q=" << queryBbox

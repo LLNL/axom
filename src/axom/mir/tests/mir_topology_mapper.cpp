@@ -8,7 +8,6 @@
 #include "axom/core.hpp"
 #include "axom/mir.hpp"
 #include "axom/mir/tests/mir_testing_data_helpers.hpp"
-#include "axom/mir/tests/mir_testing_helpers.hpp"
 
 #include <conduit/conduit_relay_io_blueprint.hpp>
 #include <cmath>
@@ -16,7 +15,24 @@
 
 namespace bputils = axom::mir::utilities::blueprint;
 
-/**
+//------------------------------------------------------------------------------
+
+// Uncomment to generate baselines
+//#define AXOM_TESTING_GENERATE_BASELINES
+
+// Uncomment to save visualization files for debugging (when making baselines)
+//#define AXOM_TESTING_SAVE_VISUALIZATION
+
+#include "axom/mir/tests/mir_testing_helpers.hpp"
+
+std::string baselineDirectory()
+{
+  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
+               "mir_topology_mapper");
+}
+
+//------------------------------------------------------------------------------
+/*!
 
 coarse
 
@@ -243,11 +259,22 @@ public:
     mapping2D(n_dev);
 
     // device->host
-    conduit::Node n_result;
-    bputils::copy<seq_exec>(n_result, n_dev);
+    conduit::Node hostResult;
+    bputils::copy<seq_exec>(hostResult, n_dev);
 
-    conduit::relay::io::blueprint::save_mesh(n_result, "test2D", "hdf5");
-    conduit::relay::io::save(n_result, "test3D.yaml", "yaml");
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+    conduit::relay::io::blueprint::save_mesh(hostResult, "test2D", "hdf5");
+    conduit::relay::io::save(hostResult, "test2D.yaml", "yaml");
+#endif
+
+    // Handle baseline comparison.
+    const auto paths = baselinePaths<ExecSpace>();
+    std::string baselineName(yamlRoot("test2D"));
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostResult);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostResult));
+#endif
   }
 
   static void test3D()
@@ -266,11 +293,22 @@ public:
     mapping3D(n_dev);
 
     // device->host
-    conduit::Node n_result;
-    bputils::copy<seq_exec>(n_result, n_dev);
+    conduit::Node hostResult;
+    bputils::copy<seq_exec>(hostResult, n_dev);
 
-    conduit::relay::io::blueprint::save_mesh(n_result, "test3D", "hdf5");
-    conduit::relay::io::save(n_result, "test3D.yaml", "yaml");
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+    conduit::relay::io::blueprint::save_mesh(hostResult, "test3D", "hdf5");
+    conduit::relay::io::save(hostResult, "test3D.yaml", "yaml");
+#endif
+
+    // Handle baseline comparison.
+    const auto paths = baselinePaths<ExecSpace>();
+    std::string baselineName(yamlRoot("test3D"));
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostResult);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostResult));
+#endif
   }
 
 private:

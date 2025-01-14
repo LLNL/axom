@@ -306,7 +306,11 @@ public:
     }
   }
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
 private:
+#endif
+
   /*!
    * \brief Find a matset for the specified topology, if a matset exists.
    *
@@ -419,29 +423,68 @@ private:
               auto indicesView,
               auto sizesView,
               auto offsetsView) {
-            for(int z = 0; z < nz - 1; z++)
-            {
-              axom::for_all<ExecSpace>(
-                nzones,
-                AXOM_LAMBDA(axom::IndexType zi) {
-                  const auto offset = srcOffsetsView[zi];
-                  const auto destZone = z * nzones + zi;
-                  sizesView[destZone] = srcSizesView[offset];
-                  offsetsView[destZone] = z * idxSize + srcOffsetsView[offset];
-                  using counter_type =
-                    typename decltype(srcSizesView)::value_type;
-                  for(counter_type i = 0; i < srcSizesView[offset]; i++)
-                  {
-                    const auto idx = srcIndicesView[offset + i];
-                    const auto outIdx = offsetsView[destZone] + i;
-                    volumeFractionsView[outIdx] = srcVolumeFractionsView[idx];
-                    materialIdsView[outIdx] = srcMaterialIdsView[idx];
-                    indicesView[outIdx] = outIdx;
-                  }
-                });
-            }
+            copyMatsetData(srcVolumeFractionsView,
+                           volumeFractionsView,
+                           srcMaterialIdsView,
+                           srcIndicesView,
+                           srcSizesView,
+                           srcOffsetsView,
+                           materialIdsView,
+                           indicesView,
+                           sizesView,
+                           offsetsView,
+                           idxSize,
+                           nzones,
+                           nz);
           });
       });
+  }
+
+  /*!
+   * \brief Copy material data of various types.
+   *
+   * \tparam FloatView The type of view wrapping float data.
+   * \tparam IndexView The type of view wrapping index/int data.
+   *
+   * \note This is done as a template member method because we cannot invoke
+   *       device lambda functions directly from inside other lambdas when
+   *       using CUDA.
+   */
+  template <typename FloatView, typename IndexView>
+  void copyMatsetData(FloatView srcVolumeFractionsView,
+                      FloatView volumeFractionsView,
+                      IndexView srcMaterialIdsView,
+                      IndexView srcIndicesView,
+                      IndexView srcSizesView,
+                      IndexView srcOffsetsView,
+                      IndexView materialIdsView,
+                      IndexView indicesView,
+                      IndexView sizesView,
+                      IndexView offsetsView,
+                      axom::IndexType idxSize,
+                      axom::IndexType nzones,
+                      int nz) const
+  {
+    for(int z = 0; z < nz - 1; z++)
+    {
+      axom::for_all<ExecSpace>(
+        nzones,
+        AXOM_LAMBDA(axom::IndexType zi) {
+          const auto offset = srcOffsetsView[zi];
+          const auto destZone = z * nzones + zi;
+          sizesView[destZone] = srcSizesView[offset];
+          offsetsView[destZone] = z * idxSize + srcOffsetsView[offset];
+          using counter_type = typename decltype(srcSizesView)::value_type;
+          for(counter_type i = 0; i < srcSizesView[offset]; i++)
+          {
+            const auto idx = srcIndicesView[offset + i];
+            const auto outIdx = offsetsView[destZone] + i;
+            volumeFractionsView[outIdx] = srcVolumeFractionsView[idx];
+            materialIdsView[outIdx] = srcMaterialIdsView[idx];
+            indicesView[outIdx] = outIdx;
+          }
+        });
+    }
   }
 
   TopologyView m_topoView;
