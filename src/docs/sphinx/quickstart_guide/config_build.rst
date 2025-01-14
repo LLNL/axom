@@ -79,7 +79,7 @@ The following table lists:
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
   `MFEM`_          Optional: Primal, Quest, Sidre       MFEM_DIR
-  `OPENCASCADE`_   Optional: <none>                     OPENCASCADE_DIR
+  `OPENCASCADE`_   Optional: Quest                      OPENCASCADE_DIR
   `RAJA`_          Optional: Mint, Spin, Quest          RAJA_DIR
   `SCR`_           Optional: Sidre                      SCR_DIR
   `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR

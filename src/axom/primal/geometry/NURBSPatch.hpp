@@ -27,6 +27,7 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include <ostream>
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -329,7 +330,7 @@ public:
    */
   NURBSPatch(const CoordsMat& pts, int deg_u, int deg_v) : m_controlPoints(pts)
   {
-    auto pts_shape = pts.shape();
+    const auto pts_shape = pts.shape();
 
     SLIC_ASSERT(pts_shape[0] >= deg_u + 1 && pts_shape[1] >= deg_v + 1);
     SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
@@ -357,11 +358,11 @@ public:
     : m_controlPoints(pts)
     , m_weights(weights)
   {
-    auto pts_shape = pts.shape();
-    auto weights_shape = weights.shape();
+    const auto pts_shape = pts.shape();
 
-    SLIC_ASSERT(pts_shape[0] >= deg_u + 1 && pts_shape[1] >= deg_v + 1);
     SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
+    SLIC_ASSERT(pts_shape[0] >= deg_u + 1 && pts_shape[1] >= deg_v + 1);
+    SLIC_ASSERT(pts_shape == weights.shape());
 
     m_knotvec_u = KnotVectorType(pts_shape[0], deg_u);
     m_knotvec_v = KnotVectorType(pts_shape[1], deg_v);
@@ -2820,5 +2821,10 @@ std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& nPatch)
 
 }  // namespace primal
 }  // namespace axom
+
+/// Overload to format a primal::NURBSPatch using fmt
+template <typename T, int NDIMS>
+struct axom::fmt::formatter<axom::primal::NURBSPatch<T, NDIMS>> : ostream_formatter
+{ };
 
 #endif  // AXOM_PRIMAL_NURBSPATCH_HPP_

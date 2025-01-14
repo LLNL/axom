@@ -615,3 +615,14 @@ if( MFEM_FOUND)
         FOLDER      axom/quest/examples
         )
 endif()
+
+
+if(OPENCASCADE_FOUND)
+    axom_add_executable(
+        NAME        quest_step_file_ex
+        SOURCES     quest_step_file.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  axom cli11 fmt opencascade
+        FOLDER      axom/quest/examples
+    )
+endif()

@@ -26,9 +26,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Support generating shapes in memory (not requiring input files).
 - `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
 - Sina C++ library is now a component of Axom
-- Adds optional dependency on [Open CASCADE](https://dev.opencascade.org). The initial intention is 
-to use Open CASCADE's file I/O capabilities in support of Quest applications.
+- Adds optional dependency on [Open Cascade](https://dev.opencascade.org). The initial intention is 
+to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
+- Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination
@@ -36,8 +37,11 @@ to use Open CASCADE's file I/O capabilities in support of Quest applications.
   host memory.  This is consistent with the behavior of deep-copying data
   from Sidre.
 - ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
-  to core.  The namespace prefix for these classes is now axom:: insteand of axom::sidre.  The internal usage of
+  to core.  The namespace prefix for these classes is now `axom::` instead of `axom::sidre`.  The internal usage of
   these types within Sidre Datastore and Group is unchanged.
+- `MFEMSidreDataCollection::LoadExternalData` now takes two optional string parameters, one that is a
+  filename (defaults to the `name` member variable) and the other is a `Group` path relative to the base of
+  the Data Collection itself (defaults to the root of the `DataStore`).
 
 ###  Deprecated
 
@@ -78,7 +82,7 @@ as well as support for 32-bit `Word`s in Slam's `BitSet` class.
 - Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
   a polygon in-place.
 - Adds `StaticArray`, a wrapper for `StackArray` with a size member variable.
-- Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
+- Multidimensional `core::Array` supports column-major and arbitrary stride ordering,
   in addition to the default row-major ordering.
 - Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
   or static allocation.
