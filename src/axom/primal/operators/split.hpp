@@ -76,8 +76,7 @@ void split(const Octahedron<Tp, 3>& oct, axom::Array<Tetrahedron<Tp, 3>>& out)
  *
  * \tparam Tp the coordinate type, such as double or float
  * \param [in] oct The Octahedron to split
- * \param [out] outPtr C-style array of 8 Tetrahedron objects;
- *              the fragments of oct are appended to out.
+ * \param [out] outPtr C-style array of 8 Tetrahedron objects.
  *
  * The tets are produced by putting a vertex at the centroid of the oct
  * and drawing an edge from each vertex to the centroid.

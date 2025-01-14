@@ -73,7 +73,7 @@ private:
 
 }  // end namespace internal
 
-// These were needed for linking - but why? They are constexpr.
+// TODO: These were needed for linking - but why? They are constexpr.
 constexpr int DiscreteShape::DEFAULT_SAMPLES_PER_KNOT_SPAN;
 constexpr double DiscreteShape::MINIMUM_PERCENT_ERROR;
 constexpr double DiscreteShape::MAXIMUM_PERCENT_ERROR;
@@ -679,7 +679,7 @@ numerics::Matrix<double> DiscreteShape::getTransforms() const
   return transformation;
 }
 
-// Return a 3x3 matrix that rotate coordinates from the x-axis to the given direction.
+// Return a 3x3 matrix that rotates coordinates from the x-axis to the given direction.
 numerics::Matrix<double> DiscreteShape::vorAxisRotMatrix(const Vector3D& dir)
 {
   // Note that the rotation matrix is not unique.

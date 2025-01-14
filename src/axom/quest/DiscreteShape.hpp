@@ -127,7 +127,8 @@ public:
   }
 
   /*!
-     \brief Get the revolved volume for volumes of revolution.
+     \brief Get the revolved volume for volumes of revolution,
+     which is non-zero only for shapes from C2C contours.
   */
   double getRevolvedVolume() const { return m_revolvedVolume; }
 

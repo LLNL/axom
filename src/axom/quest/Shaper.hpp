@@ -109,14 +109,14 @@ public:
 
 protected:
   /*!
-   * \brief Loads the shape from file into m_surfaceMesh and, if its a C2C
-   *        contour, computes a revolvedVolume for the shape.
+   * \brief Loads the shape into m_surfaceMesh.
    * \param shape The shape.
    * \param percentError A percent error to use when refining the shape. If it
    *                     positive then Axom will try to refine dynamically
    *                     according to this error. Otherwise, it will use the
    *                     segmentsPerKnotSpan value.
-   * \param[out] revolvedvolume A revolved volume for the shape, if possible.
+   * \param[out] revolvedvolume A revolved volume for the shape, if the shape
+   *             is from a C2C contour.
    */
   void loadShapeInternal(const klee::Shape& shape,
                          double percentError,
