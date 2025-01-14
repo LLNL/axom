@@ -35,7 +35,7 @@ public:
   using value_type = DataType;
   using PointType = axom::primal::Point<DataType, NDIMS>;
 
-  constexpr static int dimension() { return NDIMS; }
+  AXOM_HOST_DEVICE constexpr static int dimension() { return NDIMS; }
 
   /*!
    * \brief Constructor

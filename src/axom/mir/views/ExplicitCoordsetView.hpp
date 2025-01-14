@@ -34,7 +34,7 @@ public:
   using value_type = DataType;
   using PointType = axom::primal::Point<DataType, 2>;
 
-  constexpr static int dimension() { return 2; }
+  AXOM_HOST_DEVICE constexpr static int dimension() { return 2; }
 
   /*!
    * \brief Constructor
@@ -120,7 +120,7 @@ public:
   using value_type = DataType;
   using PointType = axom::primal::Point<DataType, 3>;
 
-  constexpr static int dimension() { return 3; }
+  AXOM_HOST_DEVICE constexpr static int dimension() { return 3; }
 
   /*!
    * \brief Constructor
