@@ -20,6 +20,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ###  Added
+- A number of new `klee::Geometry` constructors are added, for the different shapes now supported.
+  This is a temporary change.  The class will be subclassed in the future to support a diversity of geometries.
+- Support some analytical shapes in `IntersectionShaper`.
+- Support generating shapes in memory (not requiring input files).
 - `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
 - Sina C++ library is now a component of Axom
 - Adds optional dependency on [Open Cascade](https://dev.opencascade.org). The initial intention is 
