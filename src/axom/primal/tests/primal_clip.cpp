@@ -1954,6 +1954,121 @@ TEST(primal_clip, polygon_intersects_polygon)
   }
 }
 
+/*
+ * 3x3 grid of quads that occupies the unit square,
+ * that clip against a lower or upper triangle:
+ *
+ * +---+---+---+
+ * | \ |   |   |
+ * |  \|   |   |
+ * +---+---+---+
+ * |   | \ |   |
+ * |   |  \|   |
+ * +---+---+---+
+ * |   |   | \ |
+ * |   |   |  \|
+ * +---+---+---+
+ */
+TEST(primal_clip, polygon_intersect_robustness)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Point2D = axom::primal::Point<double, 2>;
+  constexpr double EPS = 1e-8;
+
+  const double x[] = {0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.,
+                      0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.,
+                      0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.,
+                      0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.};
+  const double y[] = {0.,
+                      0.,
+                      0.,
+                      0.,
+                      1. / 3.,
+                      1. / 3,
+                      1. / 3.,
+                      1. / 3.,
+                      2. / 3.,
+                      2. / 3,
+                      2. / 3.,
+                      2. / 3.,
+                      1.,
+                      1.,
+                      1.,
+                      1.};
+  const int conn[][4] = {{0, 1, 5, 4},
+                         {1, 2, 6, 5},
+                         {2, 3, 7, 6},
+                         {4, 5, 9, 8},
+                         {5, 6, 10, 9},
+                         {6, 7, 11, 10},
+                         {8, 9, 13, 12},
+                         {9, 10, 14, 13},
+                         {10, 11, 15, 14}};
+  Polygon2D fine[9];
+  for(int p = 0; p < 9; p++)
+  {
+    fine[p].addVertex(Point2D {x[conn[p][0]], y[conn[p][0]]});
+    fine[p].addVertex(Point2D {x[conn[p][1]], y[conn[p][1]]});
+    fine[p].addVertex(Point2D {x[conn[p][2]], y[conn[p][2]]});
+    fine[p].addVertex(Point2D {x[conn[p][3]], y[conn[p][3]]});
+  }
+
+  // Overlap polygons
+  Polygon2D clipLower;
+  clipLower.addVertex(Point2D {0., 0.});
+  clipLower.addVertex(Point2D {1., 0.});
+  clipLower.addVertex(Point2D {0., 1.});
+
+  Polygon2D clipUpper;
+  clipUpper.addVertex(Point2D {1., 0.});
+  clipUpper.addVertex(Point2D {1., 1.});
+  clipUpper.addVertex(Point2D {0., 1.});
+
+  // Expected VFs (volume fractions, areas) for overlaps.
+  const double lower_vf[] = {1., 1., 0.5, 1., 0.5, 0., 0.5, 0., 0.};
+  const double upper_vf[] = {0., 0., 0.5, 0., 0.5, 1., 0.5, 1., 1.};
+
+  constexpr double fine_area = (1. / 3.) * (1. / 3.);
+
+  for(int p : std::vector<int> {0, 1, 2, 3, 4, 6})
+  {
+    // Clip clipLower with fine quad
+    const auto overlapPoly = axom::primal::clip(clipLower, fine[p], EPS);
+    EXPECT_TRUE(overlapPoly.isValid());
+
+    if(overlapPoly.isValid())
+    {
+      const double vf = overlapPoly.area() / fine_area;
+      EXPECT_NEAR(vf, lower_vf[p], EPS);
+    }
+  }
+
+  for(int p : std::vector<int> {2, 4, 5, 6, 7, 8})
+  {
+    // Clip clipUpper with fine quad
+    const auto overlapPoly = axom::primal::clip(clipUpper, fine[p], EPS);
+    EXPECT_TRUE(overlapPoly.isValid());
+
+    if(overlapPoly.isValid())
+    {
+      const double vf = overlapPoly.area() / fine_area;
+      EXPECT_NEAR(vf, upper_vf[p], EPS);
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
