@@ -416,13 +416,13 @@ public:
     }
   }
 
-  // The following private methods are made public due to CUDA compilers
-  // requirements for methods that call device functions.
-#if defined(__CUDACC__)
+    // The following private methods are made public due to CUDA compilers
+    // requirements for methods that call device functions.
+  #if defined(__CUDACC__)
 public:
-#else
+  #else
 private:
-#endif
+  #endif
 
   //@{
   //!  @name Private functions related to the stages for a given shape

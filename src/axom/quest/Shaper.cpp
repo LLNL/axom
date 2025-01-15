@@ -23,24 +23,24 @@ static int policyToDefaultAllocatorID(axom::runtime_policy::Policy policy)
   {
     return axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   }
-  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
   if(policy == axom::runtime_policy::Policy::omp)
   {
     return axom::execution_space<axom::OMP_EXEC>::allocatorID();
   }
-  #endif
-  #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
   if(policy == axom::runtime_policy::Policy::cuda)
   {
     return axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
   }
-  #endif
-  #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+#endif
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
   if(policy == axom::runtime_policy::Policy::hip)
   {
     return axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
   }
-  #endif
+#endif
   return axom::INVALID_ALLOCATOR_ID;
 }
 
