@@ -60,7 +60,7 @@ Helpful options:
 
   * ``fast_unwind_on_malloc=0``: This improves ASan's stack tracing ability but also greatly slows
     down the run
-  * ``exitcode=0``: This stops ASan from returning a a non-zero exit code from your executable
+  * ``exitcode=0``: This stops ASan from returning a non-zero exit code from your executable
     (defaults to 23) (``LSAN_OPTIONS``)
 
 .. note::
@@ -109,7 +109,7 @@ Undefined Behavior Checking
 
 Axom uses the `UndefinedBehaviorSanitizer <https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html>`_ on LC.
 UndefinedBehaviorSanitizer (aka UBSan) is an undefined behavior detection tool that is a part of LLVM.
-It requires compile and link flags which are enabled via the CMake option ``AXOM_ENABLE_UBSAN``.
+UBSan requires compile and link flags which are enabled via the CMake option ``AXOM_ENABLE_UBSAN``.
 After that just run your built executable and UBSan will detect and output undefined behavior errors.
 
 .. note::

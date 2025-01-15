@@ -1162,13 +1162,10 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
       {
         domain_ids_array[i] = i;
 
-        // Skip if no rank is assigned
-        if(domain_rank_map[i] < 0)
+        if(domain_rank_map[i] >= 0)
         {
-          continue;
+          domain_file_map[i] = rank_file_map[domain_rank_map[i]];
         }
-
-        domain_file_map[i] = rank_file_map[domain_rank_map[i]];
       }
 
       std::string file_pattern = getFilePatternFromRoot(file_name, "sidre_hdf5");
