@@ -2370,7 +2370,7 @@ public:
         axom::fmt::format(
           " execution space cannot use the connectivity allocator id {}",
           axom::getAllocatorIDFromPointer(connNode.data_ptr())));
-    SLIC_ERROR_IF(connNode.dtype().id() != conduitDataIdOfIndexType,
+    SLIC_ERROR_IF(connNode.dtype().id() != conduitDataIdOfAxomIndexType,
                   "IntersectionShaper error: connectivity data type must be "
                   "axom::IndexType.");
     const auto* connPtr =
