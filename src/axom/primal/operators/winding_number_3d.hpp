@@ -944,9 +944,14 @@ double winding_number_casting(const Point<T, 3>& query,
                               const double EPS = 1e-8,
                               const int depth = 0)
 {
+  double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+  double u = axom::utilities::random_real(-1.0, 1.0);
+  auto cast_direction =
+    Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
+
   auto wn_split = winding_number_casting_split(query,
                                                nPatch,
-                                               Vector<T, 3> {0.0, 0.0, 1.0},
+                                               cast_direction,
                                                edge_tol,
                                                quad_tol,
                                                EPS,
@@ -1271,9 +1276,14 @@ double winding_number_casting(const Point<T, 3>& query,
                               const double EPS = 1e-8,
                               const int depth = 0)
 {
+  double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+  double u = axom::utilities::random_real(-1.0, 1.0);
+  auto cast_direction =
+    Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
+  cast_direction = Vector<T, 3> {0.0, 0.0, 1.0};
   auto wn_split = winding_number_casting_split(query,
                                                nPatchData,
-                                               Vector<T, 3> {0.0, 0.0, 1.0},
+                                               cast_direction,
                                                stat_tuple,
                                                edge_tol,
                                                quad_tol,
@@ -1443,7 +1453,7 @@ std::pair<double, double> winding_number_casting_split(
         integralPatch.getKnots_v()[0]);
 
     // Tolerance for what counts as "close to a boundary" in parameter space
-    T disk_radius = 0.05 * patch_knot_size;
+    T disk_radius = 0.1 * patch_knot_size;
 
     // Compute intersections with the *untrimmed and extrapolated* patch
     axom::Array<T> up, vp, tp;
@@ -1453,7 +1463,7 @@ std::pair<double, double> winding_number_casting_split(
                              tp,
                              up,
                              vp,
-                             1e-4,  // This is a good heuristic value for accuracy
+                             1e-5,  // This is a good heuristic value for accuracy
                              EPS,
                              isHalfOpen,
                              isTrimmed,
@@ -1523,6 +1533,7 @@ std::pair<double, double> winding_number_casting_split(
     {
       // Check for surface degeneracies or tangencies
       Vector<T, 3> the_normal = nPatchData.patch.normal(up[i], vp[i]);
+      // std::cout << the_normal.norm() << " " << the_normal.unitVector().dot(discontinuity_direction) << std::endl;
       bool bad_intersection =
         axom::utilities::isNearlyEqual(the_normal.norm(), 0.0, EPS) ||
         axom::utilities::isNearlyEqual(
@@ -1569,27 +1580,28 @@ std::pair<double, double> winding_number_casting_split(
 
       {
         // AXOM_ANNOTATE_SCOPE("DISK_SPLIT");
-        nPatchData.patch.diskSplit(up[i],
-                                   vp[i],
-                                   disk_radius,
-                                   integralPatch,
-                                   disk_patch,
-                                   isDiskInside,
-                                   isDiskOutside,
-                                   ignoreInteriorDisk);
+        integralPatch.diskSplit(up[i],
+                                vp[i],
+                                disk_radius,
+                                integralPatch,
+                                disk_patch,
+                                isDiskInside,
+                                isDiskOutside,
+                                ignoreInteriorDisk);
 
-        // nPatchData.patch.printTrimmingCurves(
-          // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
-          // "example\\original.txt");
-        // disk_patch.printTrimmingCurves(
-          // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
-          // "example\\disk.txt");
-        // integralPatch.printTrimmingCurves(
-          // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
-          // "example\\remaining.txt");
+        nPatchData.patch.printTrimmingCurves(
+          "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+          "abstract\\trimming_curves\\original.txt");
+        disk_patch.printTrimmingCurves(
+          "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+          "abstract\\trimming_curves\\disk.txt");
+        integralPatch.printTrimmingCurves(
+          "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+          "abstract\\trimming_curves\\remaining.txt");
+
         // Extra trimming is applied if the disk is NOT inside and if the disk is NOT outside,
-        //   and if the disk is NOT ignored while inside
-        extraTrimming = (!isDiskInside && !isDiskOutside) ||
+        // and if the disk is NOT ignored while inside
+        extraTrimming = extraTrimming || (!isDiskInside && !isDiskOutside) ||
           (isDiskInside && !ignoreInteriorDisk);
 
         // --caliper report, counts

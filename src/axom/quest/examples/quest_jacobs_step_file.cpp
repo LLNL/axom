@@ -43,9 +43,9 @@
 #include "opencascade/TopoDS_Wire.hxx"
 #include <iostream>
 
-bool USE_SUBSET = false;
-const int NUM_SUBSET = 3;
-int RELEVANT_INDICES[NUM_SUBSET] = {65, 145, 190};
+bool USE_SUBSET = true;
+const int NUM_SUBSET = 1;
+int RELEVANT_INDICES[NUM_SUBSET] = {11};
 /**
  * /file quest_jacob_step_file.cpp
  * /brief Example that loads in a STEP file and converts the surface patches and curves to Axom's NURBS representations
@@ -1337,22 +1337,46 @@ public:
         }
       }
 
+      patchData.nurbsPatch.normalize();
+      // if(patchIndex == 40)
+      // {
+      //   patchData.nurbsPatch.makeUntrimmed();
+      //   patchData.nurbsPatch.makeSimpleTrimmed();
+      // }
+
       if(patchData.nurbsPatch.isTrimmed())
       {
-        axom::primal::Point2D p {patchData.parametricBBox.getCentroid()};
-        auto gwn = std::lround(patchData.nurbsPatch.parameterGWN(p[0], p[1]));
+        auto min_u = patchData.nurbsPatch.getMinKnot_u();
+        auto max_u = patchData.nurbsPatch.getMaxKnot_u();
 
-        if(gwn < 0)
+        auto min_v = patchData.nurbsPatch.getMinKnot_v();
+        auto max_v = patchData.nurbsPatch.getMaxKnot_v();
+
+        while(true)
         {
-          patchData.nurbsPatch.flipNormals();
-        }
-        else if(gwn == 0)
-        {
-          // patchData.nurbsPatch.printTrimmingCurves(
+          double test_u = axom::utilities::random_real(min_u, max_u);
+          double test_v = axom::utilities::random_real(min_v, max_v);
+
+          axom::primal::Point2D p {test_u, test_v};
+          auto gwn = std::lround(patchData.nurbsPatch.parameterGWN(p[0], p[1]));
+
+          if(gwn < 0)
+          {
+            patchData.nurbsPatch.flipNormals();
+            break;
+          }
+          if(gwn > 0)
+          {
+            break;
+          }
+          else if(gwn == 0)
+          {
+            // patchData.nurbsPatch.printTrimmingCurves(
             // "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\trimming_"
             // "curve_examples\\unsure_" + std::to_string(patchIndex) + ".txt");
-          std::cout << "Unsure if it's the right orientation! " << patchIndex
-                    << std::endl;
+            std::cout << "Unsure if it's the right orientation! Trying again..."
+                      << patchIndex << std::endl;
+          }
         }
       }
     }
@@ -2205,11 +2229,13 @@ private:
 
 StepFileProcessor import_step_file(std::string prefix,
                                    std::string filename,
+                                   bool getTriangulation = false,
                                    double deflection = 0.1,
                                    double angular_deflection = 0.5,
                                    bool export_vtk = true)
 {
-  StepFileProcessor stepProcessor(prefix + filename + ".step", false);
+  std::cout << prefix + filename + ".stp" << std::endl;
+  StepFileProcessor stepProcessor(prefix + filename + ".stp", false);
   if(!stepProcessor.isLoaded())
   {
     std::cerr << "Error: The shape is invalid or empty." << std::endl;
@@ -2247,111 +2273,11 @@ StepFileProcessor import_step_file(std::string prefix,
     patchProcessor.generateSVGForPatch(entry.first, entry.second);
   }
 
-  auto& nurbs_shape = stepProcessor.getShape();
-  PatchTriangulator patchTriangulator(nurbs_shape,
-                                      deflection,
-                                      angular_deflection,
-                                      false);
-  patchTriangulator.setOutputDirectory(output_dir);
-  patchTriangulator.setNumFillZeros(numFillZeros);
-  SLIC_INFO(
-    axom::fmt::format("Generating triangles meshes for trimmed and untrimmed "
-                      "patches in '{}' directory",
-                      output_dir));
-  patchTriangulator.triangulateTrimmedPatches();
-  patchTriangulator.triangulateFullMesh();
-  patchTriangulator.triangulateUntrimmedPatches();
-
-  return stepProcessor;
-};
-
-StepFileProcessor import_holy_step_file(std::string prefix,
-                                        std::string filename,
-                                        double deflection = 0.1,
-                                        double angular_deflection = 0.5,
-                                        bool export_vtk = true)
-{
-  StepFileProcessor stepProcessor(prefix + filename + ".step", false);
-  if(!stepProcessor.isLoaded())
+  if(!getTriangulation)
   {
-    std::cerr << "Error: The shape is invalid or empty." << std::endl;
     return stepProcessor;
   }
 
-  stepProcessor.extractPatches();
-  stepProcessor.extractTrimmingCurves();
-
-  // Use the diskSplit method to add 3 random holes to each patch.
-  //  The radius of each hole is 0.2, 0.3, and 0.4 of the maximum length of the
-  //  parameter space bounding box
-  for(auto& kv : stepProcessor.getMutablePatchDataMap())
-  {
-    auto& patchData = kv.second;
-    auto& nurbsPatch = patchData.nurbsPatch;
-
-    const auto& parametricBBox = patchData.parametricBBox;
-    const double max_length =
-      std::max(parametricBBox.range()[0], parametricBBox.range()[1]);
-
-    const double radii[] = {0.02, 0.03, 0.04};
-    axom::primal::Point<double, 2> centers[3];
-
-    for(int i = 0; i < 3; i++)
-    {
-      double u = axom::utilities::random_real(parametricBBox.getMin()[0],
-                                              parametricBBox.getMax()[0]);
-      double v = axom::utilities::random_real(parametricBBox.getMin()[1],
-                                              parametricBBox.getMax()[1]);
-      centers[i] = {u, v};
-    }
-
-    std::cout << kv.first << std::endl;
-    axom::primal::NURBSPatch<double, 3> dummy_patch;
-    nurbsPatch.printTrimmingCurves(
-      "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
-      "example\\original.txt");
-    for(int i = 0; i < 3; ++i)
-    {
-      nurbsPatch.diskSplit(centers[i][0],
-                           centers[i][1],
-                           radii[i] * max_length,
-                           nurbsPatch,
-                           dummy_patch);
-    }
-    nurbsPatch.printTrimmingCurves(
-      "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_2d\\CAD_holy_"
-      "example\\remaining_curves.txt");
-    std::cout << kv.first << std::endl;
-  }
-
-  stepProcessor.printMeshInfo();
-
-  const int numPatches = stepProcessor.getPatchDataMap().size();
-  const int numFillZeros = static_cast<int>(std::log10(numPatches)) + 1;
-
-  // Generate outputs
-  std::string output_dir = prefix + filename + "_output";
-
-  // Ensure output directory exists
-  if(!axom::utilities::filesystem::pathExists(output_dir))
-  {
-    axom::utilities::filesystem::makeDirsForPath(output_dir);
-  }
-
-  PatchParametricSpaceProcessor patchProcessor;
-  patchProcessor.setUnits(stepProcessor.getFileUnits());
-  patchProcessor.setVerbosity(false);
-  patchProcessor.setOutputDirectory(output_dir);
-  patchProcessor.setNumFillZeros(numFillZeros);
-  SLIC_INFO(
-    axom::fmt::format("Generating SVG meshes for patches and their trimming "
-                      "curves in '{}' directory",
-                      output_dir));
-  for(const auto& entry : stepProcessor.getPatchDataMap())
-  {
-    patchProcessor.generateSVGForPatch(entry.first, entry.second);
-  }
-
   auto& nurbs_shape = stepProcessor.getShape();
   PatchTriangulator patchTriangulator(nurbs_shape,
                                       deflection,
@@ -2369,49 +2295,6 @@ StepFileProcessor import_holy_step_file(std::string prefix,
 
   return stepProcessor;
 };
-
-void test_holy_sliced_cylinder()
-{
-  std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\figures_3d\\sliced_cylinder_"
-    "example\\";
-  std::string filename = "sliced_cylinder";
-  auto stepProcessor = import_holy_step_file(prefix, filename, 0.1, 0.1, true);
-
-  constexpr double quad_tol = 1e-5;
-  constexpr double EPS = 1e-10;
-  constexpr double edge_tol = 1e-6;
-
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS](
-                    axom::primal::Point<double, 3> query) -> double {
-    double wn = 0.0;
-    // axom::primal::Point<double, 3> new_query {9.18372491006731, 1.22281293297701, 0.0};
-    for(const auto& kv : stepProcessor.getPatchDataMap())
-    {
-      wn += axom::primal::winding_number_casting(query,
-                                                 kv.second.nurbsPatch,
-                                                 edge_tol,
-                                                 quad_tol,
-                                                 EPS);
-    }
-    // std::cout << "Query: " << query << " -> " << wn << std::endl;
-    return wn;
-  };
-
-  axom::primal::BoundingBox<double, 3> meshBBox;
-  for(const auto& kv : stepProcessor.getPatchDataMap())
-  {
-    meshBBox.addBox(kv.second.physicalBBox);
-  }
-
-  meshBBox.scale(1.1);
-  axom::primal::exportScalarFieldToVTK<double>(prefix + filename + "_field.vtk",
-                                               wn_field,
-                                               meshBBox,
-                                               50,
-                                               50,
-                                               50);
-}
 
 void test_full_sliced_cylinder()
 {
@@ -2454,6 +2337,233 @@ void test_full_sliced_cylinder()
                                                100,
                                                100,
                                                100);
+}
+
+void solid_56_example()
+
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\solid56\\";
+
+  std::string filename = "Solid_56";
+  auto stepProcessor = import_step_file(prefix, filename, true);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      if(USE_SUBSET)
+      {
+        bool found = false;
+        for(int i = 0; i < NUM_SUBSET; i++)
+        {
+          if(kv.first == RELEVANT_INDICES[i])
+          {
+            found = true;
+            break;
+          }
+        }
+        if(!found) continue;
+      }
+
+      auto new_query =
+        axom::primal::Point<double, 3> {4.44464016, 2.683990002, -8.586549759};
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    if(USE_SUBSET)
+    {
+      bool found = false;
+      for(int i = 0; i < NUM_SUBSET; i++)
+      {
+        if(kv.first == RELEVANT_INDICES[i])
+        {
+          found = true;
+          kv.second.nurbsPatch.printTrimmingCurves(
+            "C:\\Users\\Fireh\\Code\\winding_number_"
+            "code\\siggraph25\\graphical_"
+            "abstract\\trimming_curves\\trimming_" +
+            std::to_string(kv.first) + ".txt");
+          break;
+        }
+      }
+      if(!found) continue;
+    }
+
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+  meshBBox.expand(0.1 * the_range);
+
+  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  axom::primal::Vector<double, 3> normal = {0.1, 1.0, 0.1};
+
+  axom::utilities::Timer timer(false);
+
+  auto linkrods_bbox = axom::primal::BoundingBox<double, 3>();
+  linkrods_bbox.addPoint(axom::primal::Point<double, 3> {9.0, 5.0, 3.0});
+  linkrods_bbox.addPoint(axom::primal::Point<double, 3> {1.0, 2.0, -1.0});
+
+  timer.start();
+  // axom::primal::exportSliceScalarFieldToVTK<double>(
+    // prefix + filename + "_field_3.vtk",
+    // wn_field,
+    // meshBBox.getCentroid(),
+    // normal,
+    // the_range,
+    // the_range,
+    // 250,
+    // 250);
+  axom::primal::exportScalarFieldToVTK<double>(
+    prefix + filename + "_subset_3D_" + std::to_string(RELEVANT_INDICES[0]) + "_field.vtk",
+    wn_field,
+    meshBBox,
+    50, 50, 50);
+  timer.stop();
+
+  auto elapsed_time = timer.elapsedTimeInSec();
+  std::cout << std::endl
+            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
+  std::cout << "Stats:" << std::endl;
+  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
+  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
+  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
+  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
+}
+
+void graphical_abstract()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+    "abstract\\";
+
+  std::string filename = "machine_part_rhino";
+  auto stepProcessor = import_step_file(prefix, filename, true, 0.01);
+
+  // return;
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      if(USE_SUBSET)
+      {
+        bool found = false;
+        for(int i = 0; i < NUM_SUBSET; i++)
+        {
+          if(kv.first == RELEVANT_INDICES[i])
+          {
+            found = true;
+            break;
+          }
+        }
+        if(!found) continue;
+      }
+
+      auto new_query = axom::primal::Point<double, 3> {-0.000705868,
+                                                       0.0389087,
+                                                       -0.00646476};
+      double the_val =
+        axom::primal::winding_number_casting(new_query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    if(USE_SUBSET)
+    {
+      bool found = false;
+      for(int i = 0; i < NUM_SUBSET; i++)
+      {
+        if(kv.first == RELEVANT_INDICES[i])
+        {
+          found = true;
+          kv.second.nurbsPatch.printTrimmingCurves(
+            "C:\\Users\\Fireh\\Code\\winding_number_"
+            "code\\siggraph25\\graphical_"
+            "abstract\\trimming_curves\\trimming_" +
+            std::to_string(kv.first) + ".txt");
+          break;
+        }
+      }
+      if(!found) continue;
+    }
+
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+  meshBBox.expand(0.1 * the_range);
+
+  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
+
+  axom::utilities::Timer timer(false);
+
+  timer.start();
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_subset_slice_3D_" +
+    std::to_string(RELEVANT_INDICES[0]) + "_field.vtk",
+    // prefix + filename + "_field_3.vtk",
+    wn_field,
+    origin,
+    normal,
+    the_range,
+    the_range,
+    250,
+    250);
+  // axom::primal::exportScalarFieldToVTK<double>(
+  //   prefix + filename + "_subset_3D_" + std::to_string(RELEVANT_INDICES[0]) + "_field.vtk",
+  //   wn_field,
+  //   meshBBox,
+  //   50, 50, 50);
+  timer.stop();
+
+  auto elapsed_time = timer.elapsedTimeInSec();
+  std::cout << std::endl
+            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
+  std::cout << "Stats:" << std::endl;
+  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
+  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
+  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
+  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
 }
 
 void test_slice_boxed_sphere()
@@ -2534,7 +2644,7 @@ void test_slice_boxed_sphere()
   meshBBox.scale(1.1);
 
   axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
-  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
+  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 0.0};
 
   axom::utilities::Timer timer(false);
 
@@ -2548,6 +2658,11 @@ void test_slice_boxed_sphere()
     1.5,
     250,
     250);
+  //   axom::primal::exportScalarFieldToVTK<double>(
+  // prefix + filename + "_subset_3D_" + std::to_string(RELEVANT_INDICES[0]) + "_field.vtk",
+  // wn_field,
+  // meshBBox,
+  // 50, 50, 50);
   timer.stop();
 
   auto elapsed_time = timer.elapsedTimeInSec();
@@ -2562,7 +2677,9 @@ void test_slice_boxed_sphere()
 
 int main()
 {
-  test_slice_boxed_sphere();
+  // test_slice_boxed_sphere();
   //   test_holy_sliced_cylinder();
+  graphical_abstract();
+  // solid_56_example();
   return 0;
 }

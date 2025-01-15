@@ -65,7 +65,7 @@ struct TrimmingCurveQuadratureData
     {
       T quad_x =
         quad_rule.IntPoint(q).x * span_length + curve_min_knot + span_offset;
-    //   T quad_weight = quad_rule.IntPoint(q).weight * span_length;
+      //   T quad_weight = quad_rule.IntPoint(q).weight * span_length;
 
       Point<T, 2> c_eval;
       Vector<T, 2> c_Dt;
@@ -95,7 +95,6 @@ struct NURBSPatchData
     : patchIndex(idx)
     , patch(a_patch)
   {
-    bbox = patch.boundingBox();
     obox = patch.orientedBoundingBox();
 
     beziers = axom::Array<BezierPatch<T, 3>>();
@@ -158,12 +157,21 @@ struct NURBSPatchData
         // Else, we can discard it
       }
     }
+
+    // Why doesn't this work?
+    // bbox = BoundingBox<T, 3>();
+    // for(auto& bezier : beziers)
+    // {
+    //   bbox.addBox(bezier.boundingBox());
+    // }
+    bbox = patch.boundingBox();
   }
 
-  TrimmingCurveQuadratureData<T>& getQuadratureData(int curveIndex,
-                                                 const mfem::IntegrationRule& quad_rule,
-                                                 int refinementLevel,
-                                                 int refinedSection) const
+  TrimmingCurveQuadratureData<T>& getQuadratureData(
+    int curveIndex,
+    const mfem::IntegrationRule& quad_rule,
+    int refinementLevel,
+    int refinedSection) const
   {
     // Check to see if we have already computed the quadrature data for this curve
     auto hash_key = std::make_pair(refinementLevel, refinedSection);
@@ -173,10 +181,10 @@ struct NURBSPatchData
     {
       curve_quadrature_maps[curveIndex][hash_key] =
         TrimmingCurveQuadratureData<double>(quad_rule,
-                                    patch.getTrimmingCurves()[curveIndex],
-                                    patch,
-                                    refinementLevel,
-                                    refinedSection);
+                                            patch.getTrimmingCurves()[curveIndex],
+                                            patch,
+                                            refinementLevel,
+                                            refinedSection);
     }
 
     return curve_quadrature_maps[curveIndex][hash_key];
@@ -1211,6 +1219,14 @@ public:
   /// \brief Return an array of knot values on the first axis
   axom::Array<T> getKnotsArray_u() const { return m_knotvec_u.getArray(); }
 
+  T getMinKnot_u() const { return m_knotvec_u[0]; }
+
+  T getMaxKnot_u() const { return m_knotvec_u[m_knotvec_u.getNumKnots() - 1]; }
+
+  T getMinKnot_v() const { return m_knotvec_v[0]; }
+
+  T getMaxKnot_v() const { return m_knotvec_v[m_knotvec_v.getNumKnots() - 1]; }
+
   /// \brief Return a copy of the KnotVector instance on the second axis
   KnotVectorType getKnots_v() const { return m_knotvec_v; }
 
@@ -1273,6 +1289,8 @@ public:
 
   /// Use array size as flag for trimmed-ness
   bool isTrimmed() const { return !m_trimming_curves.empty(); }
+
+  void makeUntrimmed() { m_trimming_curves.clear(); }
 
   /// Make trimmed by adding trimming curves at each boundary
   void makeSimpleTrimmed()
@@ -1418,6 +1436,16 @@ public:
       }
     }
 
+
+    if(circle_params.size() % 2 != 0)
+    {
+      std::cout << std::endl << "Robustness issue: Not an even number of circle parameters"
+                << std::endl;
+
+      // If this is the case, do the closest thing you can to doing nothing.
+      circle_params.clear();
+    }
+
     // Handle special cases where 0 intersections are recorded
     isDiskInside = isDiskOutside = false;
     if(circle_params.size() == 0)
@@ -1460,12 +1488,6 @@ public:
 
         return;
       }
-    }
-
-    if(circle_params.size() % 2 != 0)
-    {
-      std::cout << "Robustness issue: Not an even number of circle parameters"
-                << std::endl;
     }
 
     // Sort the circle parameters
@@ -1513,16 +1535,11 @@ public:
 
     for(const auto& curve : split_trimming_curves)
     {
-      if(squared_distance(curve[0], uv_param) - r * r > 1e-8 ||
-         squared_distance(curve[curve.getNumControlPoints() - 1], uv_param) -
-             r * r >
-           1e-8 ||
-         squared_distance(
-           curve.evaluate(
-             0.5 * (curve.getKnot(0) + curve.getKnot(curve.getNumKnots() - 1))),
+      if(squared_distance(
+           curve.evaluate(0.5 * (curve.getMinKnot() + curve.getMaxKnot())),
            uv_param) -
-             r * r >
-           1e-8)
+           r * r >
+         0)
       {
         n1.addTrimmingCurve(curve);
       }
@@ -1670,7 +1687,7 @@ public:
 
     for(auto& curve : m_trimming_curves)
     {
-      // For each trimming curve, mirror the control points over the midpoint 
+      // For each trimming curve, mirror the control points over the midpoint
       //  of the knot span
       for(int i = 0; i < curve.getNumControlPoints(); ++i)
       {
@@ -2504,7 +2521,7 @@ public:
     axom::IndexType L;
 
     // Compute the alphas, which depend only on the knot vector
-    axom::Array<T, 2> alpha(p - s, r + 1);
+    axom::Array<T, 2> alpha(q - s, r + 1);
     for(int j = 1; j <= r; ++j)
     {
       L = k - q + j;
@@ -3151,15 +3168,43 @@ public:
   /// \brief Normalize the knot vectors to the span [0, 1]
   void normalize()
   {
-    m_knotvec_u.normalize();
-    m_knotvec_v.normalize();
+    normalize_u();
+    normalize_v();
   }
 
   /// \brief Normalize the knot vector in u to the span [0, 1]
-  void normalize_u() { m_knotvec_u.normalize(); }
+  void normalize_u()
+  {
+    auto min_u = m_knotvec_u[0];
+    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    m_knotvec_u.normalize();
+
+    for(auto& curve : m_trimming_curves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = (curve[i][0] - min_u) / (max_u - min_u);
+      }
+    }
+  }
 
   /// \brief Normalize the knot vector in v to the span [0, 1]
-  void normalize_v() { m_knotvec_v.normalize(); }
+  void normalize_v()
+  {
+    auto min_v = m_knotvec_v[0];
+    auto max_v = m_knotvec_v[m_knotvec_v.getNumKnots() - 1];
+
+    m_knotvec_v.normalize();
+
+    for(auto& curve : m_trimming_curves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][1] = (curve[i][1] - min_v) / (max_v - min_v);
+      }
+    }
+  }
 
   /*!
    * \brief Rescale both knot vectors to the span of [a, b]
