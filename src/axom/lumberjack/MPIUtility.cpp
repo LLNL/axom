@@ -60,7 +60,8 @@ const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag)
   int mpiFlag = 0;
   MPI_Iprobe(MPI_ANY_SOURCE, tag, comm, &mpiFlag, &mpiStatus);
 
-  if (mpiFlag == 1) {
+  if(mpiFlag == 1)
+  {
     MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
 
     // Setup where to receive the char array
@@ -69,12 +70,12 @@ const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag)
 
     // Receive packed Message
     MPI_Recv(charArray,
-            messageSize,
-            MPI_CHAR,
-            mpiStatus.MPI_SOURCE,
-            mpiTag,
-            comm,
-            &mpiStatus);
+             messageSize,
+             MPI_CHAR,
+             mpiStatus.MPI_SOURCE,
+             mpiTag,
+             comm,
+             &mpiStatus);
   }
 
   return charArray;

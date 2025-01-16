@@ -13,7 +13,7 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
 
   int commSize = -1;
   MPI_Comm_size(MPI_COMM_WORLD, &commSize);
-  
+
   const int ranksLimit = 5;
   axom::lumberjack::NonCollectiveRootCommunicator c;
 
@@ -24,7 +24,7 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
   std::vector<const char*> receivedPackedMessages;
 
   // send message only from even ranks
-  if ((c.rank() % 2) == 0)
+  if((c.rank() % 2) == 0)
   {
     c.push(message.c_str(), receivedPackedMessages);
   }
@@ -35,11 +35,12 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
   }
   else
   {
-    const int numMessagesToReceive = ((commSize % 2) == 0) ? ((commSize / 2) - 1) : (commSize / 2);
+    const int numMessagesToReceive =
+      ((commSize % 2) == 0) ? ((commSize / 2) - 1) : (commSize / 2);
     EXPECT_EQ((int)receivedPackedMessages.size(), numMessagesToReceive);
     for(int i = 1; i <= numMessagesToReceive; ++i)
     {
-      std::string currMessage = std::to_string(i*2);
+      std::string currMessage = std::to_string(i * 2);
       bool found = false;
       for(auto& rm : receivedPackedMessages)
       {
@@ -69,7 +70,6 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
   }
 
   receivedPackedMessages.clear();
-
 }
 
 TEST(lumberjack_NonCollectiveRootCommunicator, multiple_communicators)
@@ -78,7 +78,7 @@ TEST(lumberjack_NonCollectiveRootCommunicator, multiple_communicators)
 
   int commSize = -1;
   MPI_Comm_size(MPI_COMM_WORLD, &commSize);
-  
+
   const int ranksLimit = 5;
   axom::lumberjack::NonCollectiveRootCommunicator c1;
   axom::lumberjack::NonCollectiveRootCommunicator c2;
@@ -95,5 +95,4 @@ TEST(lumberjack_NonCollectiveRootCommunicator, multiple_communicators)
   c2.finalize();
 
   MPI_Barrier(MPI_COMM_WORLD);
-
 }

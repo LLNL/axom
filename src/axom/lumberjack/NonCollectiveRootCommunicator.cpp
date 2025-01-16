@@ -35,14 +35,18 @@ void NonCollectiveRootCommunicator::finalize() { }
 
 int NonCollectiveRootCommunicator::rank() { return m_mpiCommRank; }
 
-void NonCollectiveRootCommunicator::ranksLimit(int value) { m_ranksLimit = value; }
+void NonCollectiveRootCommunicator::ranksLimit(int value)
+{
+  m_ranksLimit = value;
+}
 
 int NonCollectiveRootCommunicator::ranksLimit() { return m_ranksLimit; }
 
 int NonCollectiveRootCommunicator::numPushesToFlush() { return 1; }
 
-void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
-                            std::vector<const char*>& receivedPackedMessages)
+void NonCollectiveRootCommunicator::push(
+  const char* packedMessagesToBeSent,
+  std::vector<const char*>& receivedPackedMessages)
 {
   if(m_mpiCommRank == 0)
   {
@@ -54,15 +58,14 @@ void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
 
       if(isPackedMessagesEmpty(currPackedMessages))
       {
-        if (currPackedMessages == nullptr )
+        if(currPackedMessages == nullptr)
         {
           receive_messages = false;
         }
         else
         {
-          delete [] currPackedMessages;
+          delete[] currPackedMessages;
         }
-
       }
       else
       {
@@ -70,7 +73,6 @@ void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
       }
 
       currPackedMessages = nullptr;
-
     }
   }
   else
