@@ -268,8 +268,8 @@ AXOM_HOST_DEVICE inline void TempArrayView<hip_exec>::finalize()
 //---------------------------------------------------------------------------
 /**
  * \class
- * \brief Intersects a solid, created by revolving a c2c contour or by
- *        loading a Pro/E mesh, with an input mesh to produce volume fractions.
+ * \brief Intersects a solid with an input mesh to produce volume fractions.
+ * The solid may be any supported by the \c klee::Geometry class.
  *
  * The IntersectionShaper generates material volume fractions:
  *
@@ -281,16 +281,30 @@ AXOM_HOST_DEVICE inline void TempArrayView<hip_exec>::finalize()
  *   intersected with the mesh. The octahedra are intersected with the input
  *   mesh to produce volume fractions.
  *
- * - For Pro/E, an input mesh of 3D tetrahedra are loaded in.
+ * - For tetrahedral mesh (including Pro/E), an input mesh of 3D tetrahedra is loaded in.
  *   Each tetrahedron has its own respective volume. The tetrahedra are
  *   intersected with the input mesh to produce volume fractions.
  *
- * Volume fractions are represented as a GridFunction with a special prefix,
+ * - For analytical geometries, the shapes are discretized into a tetrahedral
+ *   mesh first.  Sphere and surfaces-of-revolution discretization uses
+ *   the refinement level specified in the \c Geometry.
+ *
+ * The input mesh can be an MFEM mesh stored as a \c
+ * sidre::MFEMSidreDataCollection or be a Blueprint mesh stored as a
+ * \c conduit::Node or a \c sidre::Group.
+ *
+ * IntersectionShaper requires Axom configured with RAJA and Umpire.
+ *
+ * Support for replacement rules exists for MFEM input meshes.
+ * Replacement rules for Blueprint meshes is not yet supported.
+ * The following comments apply to replacement rules.
+ *
+ * Volume fractions are represented in the input mesh as a GridFunction with a special prefix,
  * currently "vol_frac_", followed by a material name. Volume fractions
  * can be present in the input data collection prior to shaping and the
  * IntersectionShaper will augment them when changes are needed such as when
- * a material overwrites them. If a new material is not yet represented by
- * a grid function, one will be added.
+ * a material overwrites them. If a new material is not yet represented in
+ * the mesh, one will be added.
  *
  * In addition to user-specified materials, the IntersectionShaper creates
  * a "free" material that is used to account for volume fractions that are
@@ -299,8 +313,6 @@ AXOM_HOST_DEVICE inline void TempArrayView<hip_exec>::finalize()
  * starts out as all 1's indicating that it contains 100% of all possible
  * material in a zone. Volume fractions for other materials are then
  * subtracted from the free material so no zone exceeds 100% of material.
- *
- * IntersectionShaper requires Axom configured with RAJA and Umpire.
  */
 class IntersectionShaper : public Shaper
 {
@@ -2228,8 +2240,10 @@ private:
     return rval;
   }
 
+#if defined(__CUDACC__)
 public:
   // These methods should be private, but NVCC complains unless its public.
+#endif
 
   template <typename ExecSpace>
   void populateHexesFromMesh()
