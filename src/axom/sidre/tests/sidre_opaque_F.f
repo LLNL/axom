@@ -139,6 +139,7 @@ contains
 
     ! clean up...
     deallocate(ext)
+    deallocate(ext2)
     call ds%delete()
   end subroutine basic_inout
 

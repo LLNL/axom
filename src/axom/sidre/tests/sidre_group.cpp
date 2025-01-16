@@ -661,6 +661,8 @@ TEST(sidre_group, string_list)
   }
 
   EXPECT_TRUE(str_vec == test_vec);
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
