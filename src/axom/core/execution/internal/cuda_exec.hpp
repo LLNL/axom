@@ -75,7 +75,7 @@ struct execution_space<CUDA_EXEC<BLOCK_SIZE, SYNCHRONOUS>>
   }
   static bool usesAllocId(int allocId) noexcept
   {
-    return usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+    return allocId == 0 || usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
   }
 };
 

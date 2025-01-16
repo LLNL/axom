@@ -74,7 +74,7 @@ struct execution_space<OMP_EXEC>
   }
   static bool usesAllocId(int allocId) noexcept
   {
-    return usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+    return allocId == 0 || usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
   }
 };
 
