@@ -102,6 +102,18 @@ struct execution_space<HIP_EXEC<BLOCK_SIZE, ASYNC>>
   {
     return axom::getUmpireResourceAllocatorID(umpire::resource::Device);
   }
+  static constexpr runtime_policy::Policy runtimePolicy() noexcept
+  {
+    return runtime_policy::Policy::hip;
+  }
+  static bool usesMemorySpace(axom::MemorySpace m) noexcept
+  {
+    return m == memory_space || m == MemorySpace::Unified;
+  }
+  static bool usesAllocId(int allocId) noexcept
+  {
+    return allocId == 0 || usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+  }
 };
 }  // namespace axom
 
