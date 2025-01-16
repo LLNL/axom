@@ -1589,15 +1589,15 @@ std::pair<double, double> winding_number_casting_split(
                                 isDiskOutside,
                                 ignoreInteriorDisk);
 
-        nPatchData.patch.printTrimmingCurves(
-          "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
-          "abstract\\trimming_curves\\original.txt");
-        disk_patch.printTrimmingCurves(
-          "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
-          "abstract\\trimming_curves\\disk.txt");
-        integralPatch.printTrimmingCurves(
-          "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
-          "abstract\\trimming_curves\\remaining.txt");
+        // nPatchData.patch.printTrimmingCurves(
+        //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+        //   "abstract\\trimming_curves\\original.txt");
+        // disk_patch.printTrimmingCurves(
+        //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+        //   "abstract\\trimming_curves\\disk.txt");
+        // integralPatch.printTrimmingCurves(
+        //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+        //   "abstract\\trimming_curves\\remaining.txt");
 
         // Extra trimming is applied if the disk is NOT inside and if the disk is NOT outside,
         // and if the disk is NOT ignored while inside
