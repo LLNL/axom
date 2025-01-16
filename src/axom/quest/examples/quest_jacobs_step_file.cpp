@@ -2296,13 +2296,12 @@ StepFileProcessor import_step_file(std::string prefix,
   return stepProcessor;
 };
 
-void graphical_abstract_watertight()
+void nut_3d_example()
 {
   std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
-    "abstract\\";
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\simple_gwn_example\\";
 
-  std::string filename = "machine_part_rhino";
+  std::string filename = "nut";
   auto stepProcessor = import_step_file(prefix, filename);
 
   constexpr double quad_tol = 1e-5;
@@ -2348,32 +2347,12 @@ void graphical_abstract_watertight()
 
   timer.start();
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_watertight_slice1.vtk",
+    prefix + filename + "nut_slice.vtk",
     wn_field,
-    axom::primal::Point<double, 3> {0.0021127422476921076, 0.0404, 0.0},
-    axom::primal::Vector<double, 3> {1, 0, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_watertight_slice2.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {-0.01048739455123153, 0.0404, 0.0},
-    axom::primal::Vector<double, 3> {1, 0, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_watertight_slice3.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0.0, 0.0404, 0.0},
-    axom::primal::Vector<double, 3> {0, 1, 0},
-    the_range,
-    the_range,
+    axom::primal::Point<double, 3> {0.0, 0.0, 0.79375 / 1000},
+    axom::primal::Vector<double, 3> {-0.10624472993169809, 0.35459739950848745, -0.928963261718976},
+    1.5 * the_range,
+    1.5 * the_range,
     100,
     100);
   timer.stop();
@@ -2388,194 +2367,31 @@ void graphical_abstract_watertight()
   std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
 }
 
-void graphical_abstract_exploded()
+void nut_2d_example()
 {
   std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
-    "abstract\\";
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\simple_gwn_example\\";
 
-  std::string filename = "machine_part_exploded";
-  auto stepProcessor = import_step_file(prefix, filename);
+  std::string filename = "nut";
 
-  constexpr double quad_tol = 1e-5;
-  constexpr double EPS = 1e-10;
-  constexpr double edge_tol = 1e-6;
-
-  // (!bBox, !oBox, casting, noCache)
-  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
-                    axom::primal::Point<double, 3> query) -> double {
-    double wn = 0.0;
-    for(const auto& kv : stepProcessor.getPatchDataMap())
-    {
-      auto new_query = axom::primal::Point<double, 3> {-0.000705868,
-                                                       0.0389087,
-                                                       -0.00646476};
-      double the_val =
-        axom::primal::winding_number_casting(query,
-                                             kv.second.nurbsPatchData,
-                                             stat_tuple,
-                                             edge_tol,
-                                             quad_tol,
-                                             EPS);
-      wn += the_val;
-    }
-
-    return wn;
-  };
-
-  axom::primal::BoundingBox<double, 3> meshBBox;
-  for(const auto& kv : stepProcessor.getPatchDataMap())
+  axom::Array<axom::primal::BezierCurve<double, 2>> curves;
+  convert_from_svg( prefix + filename + ".svg", curves);
+  std::ofstream curve_out( prefix + filename + "_curves.txt");
+  for(auto& curve : curves)
   {
-    meshBBox.addBox(kv.second.physicalBBox);
+    curve_out << curve << std::endl;
   }
+  
+  std::ofstream wn_out( prefix + filename + "_wn.csv");
 
-  auto the_range = 0.5 * meshBBox.range().norm();
-  meshBBox.expand(0.1 * the_range);
+  auto bbox = curves_bbox( curves, 1.2, true);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
-  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
-
-  axom::utilities::Timer timer(false);
-
-  timer.start();
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_explodedt_slice1.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0.0021127422476921076, -0.005, 0.0},
-    axom::primal::Vector<double, 3> {1, 0, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_explodedt_slice2.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {-0.01048739455123153, -0.005, 0.0},
-    axom::primal::Vector<double, 3> {1, 0, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_explodedt_slice3.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0.0, -0.005, 0.0},
-    axom::primal::Vector<double, 3> {0, 1, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-  timer.stop();
-
-  auto elapsed_time = timer.elapsedTimeInSec();
-  std::cout << std::endl
-            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
-  std::cout << "Stats:" << std::endl;
-  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
-  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
-  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
-  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
-}
-
-void graphical_abstract_hollow()
-{
-  std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
-    "abstract\\";
-
-  std::string filename = "machine_part_hollow";
-  auto stepProcessor = import_step_file(prefix, filename);
-
-  constexpr double quad_tol = 1e-5;
-  constexpr double EPS = 1e-10;
-  constexpr double edge_tol = 1e-6;
-
-  // (!bBox, !oBox, casting, noCache)
-  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
-                    axom::primal::Point<double, 3> query) -> double {
-    double wn = 0.0;
-    for(const auto& kv : stepProcessor.getPatchDataMap())
-    {
-      auto new_query = axom::primal::Point<double, 3> {-0.000705868,
-                                                       0.0389087,
-                                                       -0.00646476};
-      double the_val =
-        axom::primal::winding_number_casting(query,
-                                             kv.second.nurbsPatchData,
-                                             stat_tuple,
-                                             edge_tol,
-                                             quad_tol,
-                                             EPS);
-      wn += the_val;
-    }
-
-    return wn;
-  };
-
-  axom::primal::BoundingBox<double, 3> meshBBox;
-  for(const auto& kv : stepProcessor.getPatchDataMap())
-  {
-    meshBBox.addBox(kv.second.physicalBBox);
-  }
-
-  auto the_range = 0.5 * meshBBox.range().norm();
-  meshBBox.expand(0.1 * the_range);
-
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
-  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
-
-  axom::utilities::Timer timer(false);
-
-  timer.start();
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_hollow_slice1.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0.0021127422476921076, 0.0404, 0.0},
-    axom::primal::Vector<double, 3> {1, 0, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_hollow_slice2.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {-0.01048739455123153, 0.0404, 0.0},
-    axom::primal::Vector<double, 3> {1, 0, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-
-  axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_hollow_slice3.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0.0, 0.0404, 0.0},
-    axom::primal::Vector<double, 3> {0, 1, 0},
-    the_range,
-    the_range,
-    100,
-    100);
-  timer.stop();
-
-  auto elapsed_time = timer.elapsedTimeInSec();
-  std::cout << std::endl
-            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
-  std::cout << "Stats:" << std::endl;
-  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
-  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
-  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
-  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
+  simple_grid_test( curves, bbox, 300, 300, wn_out);
 }
 
 int main()
 {
-  // graphical_abstract_watertight();
-  // graphical_abstract_exploded();
-  graphical_abstract_hollow();
+  // nut_3d_example();
+  nut_2d_example();
   return 0;
 }

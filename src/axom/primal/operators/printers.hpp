@@ -21,6 +21,8 @@
 #include "axom/primal/geometry/BezierPatch.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
+#include "axom/primal/operators/winding_number_2d.hpp"
+
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
@@ -804,7 +806,7 @@ void simple_grid_test(axom::Array<BezierCurve<T, 2>>& curves,
       double wn = 0.0;
       for(int i = 0; i < curves.size(); ++i)
       {
-        wn += primal::winding_number(query, curves[i], nevals, 1e-16, 1e-16);
+        wn += primal::winding_number(query, curves[i], 1e-16, 1e-16);
       }
 
       wn_out << x << "," << y << "," << wn << std::endl;
