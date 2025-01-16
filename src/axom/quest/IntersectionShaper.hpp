@@ -730,9 +730,8 @@ private:
 
     if(m_hex_bbs.empty())
     {
-      // Does m_hex_bbs have to be a member?  I's only used here.  BTNG.
-      // Or if it's saved, it needs not be recomputed if the computational
-      // mesh doesn't change.
+      // Compute m_hex_bbs only once.  We assume that the mesh doesn't change
+      // once set.
       m_hex_bbs =
         axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
 
@@ -1589,8 +1588,9 @@ public:
    *
    * \param materialName The name of the material.
    *
-   * \return A pair containing the associated grid function and material
-   *         number (its order in the list).
+   * \return A pair containing the associated grid function (an element
+   *         in the m_vf_grid_functions array) and material
+   *         number (its index in the array).
    */
   std::pair<axom::ArrayView<double>, int> getMaterial(const std::string& materialName)
   {
