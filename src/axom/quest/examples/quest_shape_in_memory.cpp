@@ -97,7 +97,7 @@ public:
                                                "sphere",
                                                "cyl",
                                                "cone",
-                                               "vor",
+                                               "sor",
                                                "tet",
                                                "hex",
                                                "plane",
@@ -253,7 +253,7 @@ public:
 #endif
 
     app.add_option("--center", center)
-      ->description("Center of sphere or base of cone/cyl/VOR (x,y[,z]) shape")
+      ->description("Center of sphere or base of cone/cyl/SOR (x,y[,z]) shape")
       ->expected(2, 3);
 
     app.add_option("--radius", radius)
@@ -261,12 +261,12 @@ public:
       ->check(axom::CLI::PositiveNumber);
 
     app.add_option("--length", length)
-      ->description("Length of cone/cyl/VOR shape, avg length of hex.")
+      ->description("Length of cone/cyl/SOR shape, avg length of hex.")
       ->check(axom::CLI::PositiveNumber);
 
     app.add_option("--dir", direction)
       ->description(
-        "Direction of axis of rotation (cone/cyl/VOR (x,y[,z])), or rotated "
+        "Direction of axis of rotation (cone/cyl/SOR (x,y[,z])), or rotated "
         "x-axis (hex, tet, tetmesh, and sphere), or positive normal direction "
         "(plane).")
       ->expected(2, 3);
@@ -665,9 +665,9 @@ axom::klee::Shape createShape_TetMesh(sidre::DataStore& ds)
   return tetShape;
 }
 
-axom::klee::Geometry createGeometry_Vor(
-  axom::primal::Point<double, 3>& vorBase,
-  axom::primal::Vector<double, 3>& vorDirection,
+axom::klee::Geometry createGeometry_Sor(
+  axom::primal::Point<double, 3>& sorBase,
+  axom::primal::Vector<double, 3>& sorDirection,
   axom::Array<double, 2>& discreteFunction,
   std::shared_ptr<axom::klee::CompositeOperator>& compositeOp)
 {
@@ -678,20 +678,20 @@ axom::klee::Geometry createGeometry_Vor(
   SLIC_ASSERT(params.scaleFactors.empty() || params.scaleFactors.size() == 3);
 
   const axom::IndexType levelOfRefinement = params.refinementLevel;
-  axom::klee::Geometry vorGeometry(prop,
+  axom::klee::Geometry sorGeometry(prop,
                                    discreteFunction,
-                                   vorBase,
-                                   vorDirection,
+                                   sorBase,
+                                   sorDirection,
                                    levelOfRefinement,
                                    compositeOp);
-  return vorGeometry;
+  return sorGeometry;
 }
 
-axom::klee::Shape createShape_Vor()
+axom::klee::Shape createShape_Sor()
 {
-  Point3D vorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
+  Point3D sorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
                                           : Point3D {params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
+  axom::primal::Vector<double, 3> sorDirection = params.direction.empty()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
   const int numIntervals = 5;
@@ -720,19 +720,19 @@ axom::klee::Shape createShape_Vor()
   addScaleOperator(*compositeOp);
   addTranslateOperator(*compositeOp, -1, -1, 1);
 
-  axom::klee::Geometry vorGeometry =
-    createGeometry_Vor(vorBase, vorDirection, discreteFunction, compositeOp);
+  axom::klee::Geometry sorGeometry =
+    createGeometry_Sor(sorBase, sorDirection, discreteFunction, compositeOp);
 
-  axom::klee::Shape vorShape("vor", "VOR", {}, {}, vorGeometry);
+  axom::klee::Shape sorShape("sor", "SOR", {}, {}, sorGeometry);
 
-  return vorShape;
+  return sorShape;
 }
 
 axom::klee::Shape createShape_Cylinder()
 {
-  Point3D vorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
+  Point3D sorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
                                           : Point3D {params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
+  axom::primal::Vector<double, 3> sorDirection = params.direction.empty()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
   // discreteFunction are discrete z-r pairs describing the function
@@ -749,19 +749,19 @@ axom::klee::Shape createShape_Cylinder()
   addScaleOperator(*compositeOp);
   addTranslateOperator(*compositeOp, 1, -1, 1);
 
-  axom::klee::Geometry vorGeometry =
-    createGeometry_Vor(vorBase, vorDirection, discreteFunction, compositeOp);
+  axom::klee::Geometry sorGeometry =
+    createGeometry_Sor(sorBase, sorDirection, discreteFunction, compositeOp);
 
-  axom::klee::Shape vorShape("cyl", "CYL", {}, {}, vorGeometry);
+  axom::klee::Shape sorShape("cyl", "CYL", {}, {}, sorGeometry);
 
-  return vorShape;
+  return sorShape;
 }
 
 axom::klee::Shape createShape_Cone()
 {
-  Point3D vorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
+  Point3D sorBase = params.center.empty() ? Point3D {0.0, 0.0, 0.0}
                                           : Point3D {params.center.data()};
-  axom::primal::Vector<double, 3> vorDirection = params.direction.empty()
+  axom::primal::Vector<double, 3> sorDirection = params.direction.empty()
     ? primal::Vector3D {0.1, 0.2, 0.4}
     : primal::Vector3D {params.direction.data()};
   // discreteFunction are discrete z-r pairs describing the function
@@ -779,12 +779,12 @@ axom::klee::Shape createShape_Cone()
   addScaleOperator(*compositeOp);
   addTranslateOperator(*compositeOp, 1, 1, -1);
 
-  axom::klee::Geometry vorGeometry =
-    createGeometry_Vor(vorBase, vorDirection, discreteFunction, compositeOp);
+  axom::klee::Geometry sorGeometry =
+    createGeometry_Sor(sorBase, sorDirection, discreteFunction, compositeOp);
 
-  axom::klee::Shape vorShape("cone", "CONE", {}, {}, vorGeometry);
+  axom::klee::Shape sorShape("cone", "CONE", {}, {}, sorGeometry);
 
-  return vorShape;
+  return sorShape;
 }
 
 axom::klee::Shape createShape_Tet()
@@ -1481,9 +1481,9 @@ int main(int argc, char** argv)
   {
     shapeSet = createShapeSet(createShape_Cone());
   }
-  else if(params.testShape == "vor")
+  else if(params.testShape == "sor")
   {
-    shapeSet = createShapeSet(createShape_Vor());
+    shapeSet = createShapeSet(createShape_Sor());
   }
   else if(params.testShape == "plane")
   {
@@ -1496,7 +1496,7 @@ int main(int argc, char** argv)
     shapesVec.push_back(createShape_Tet());
     shapesVec.push_back(createShape_Hex());
     shapesVec.push_back(createShape_Sphere());
-    shapesVec.push_back(createShape_Vor());
+    shapesVec.push_back(createShape_Sor());
     shapesVec.push_back(createShape_Cylinder());
     shapesVec.push_back(createShape_Cone());
     shapeSet.setShapes(shapesVec);

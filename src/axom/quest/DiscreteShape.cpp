@@ -134,9 +134,9 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   {
     createRepresentationOfSphere();
   }
-  if(geometryFormat == "vor3D")
+  if(geometryFormat == "sor3D")
   {
-    createRepresentationOfVOR();
+    createRepresentationOfSOR();
   }
 
   if(m_meshRep)
@@ -408,7 +408,7 @@ void DiscreteShape::createRepresentationOfPlane()
   // clang-format on
 
   // Rotate and translate boundingHex to align with the plane.
-  numerics::Matrix<double> rotate = vorAxisRotMatrix(plane.getNormal());
+  numerics::Matrix<double> rotate = sorAxisRotMatrix(plane.getNormal());
   const auto translate = plane.getNormal() * plane.getOffset();
   for(int i = 0; i < 8; ++i)
   {
@@ -531,11 +531,11 @@ void DiscreteShape::createRepresentationOfSphere()
   applyTransforms();
 }
 
-void DiscreteShape::createRepresentationOfVOR()
+void DiscreteShape::createRepresentationOfSOR()
 {
   // Construct the tet m_meshRep from the volume-of-revolution.
-  auto& vorGeom = m_shape.getGeometry();
-  const auto& discreteFcn = vorGeom.getDiscreteFunction();
+  auto& sorGeom = m_shape.getGeometry();
+  const auto& discreteFcn = sorGeom.getDiscreteFunction();
 
   // Generate the Octahedra
   axom::Array<OctType> octs;
@@ -551,9 +551,9 @@ void DiscreteShape::createRepresentationOfVOR()
   AXOM_UNUSED_VAR(good);
   SLIC_ASSERT(good);
 
-  // Rotate to the VOR axis direction and translate to the base location.
-  numerics::Matrix<double> rotate = vorAxisRotMatrix(vorGeom.getVorDirection());
-  const auto& translate = vorGeom.getVorBaseCoords();
+  // Rotate to the SOR axis direction and translate to the base location.
+  numerics::Matrix<double> rotate = sorAxisRotMatrix(sorGeom.getSorDirection());
+  const auto& translate = sorGeom.getSorBaseCoords();
   auto octsView = octs.view();
   axom::for_all<axom::SEQ_EXEC>(
     octCount,
@@ -683,7 +683,7 @@ numerics::Matrix<double> DiscreteShape::getTransforms() const
 }
 
 // Return a 3x3 matrix that rotates coordinates from the x-axis to the given direction.
-numerics::Matrix<double> DiscreteShape::vorAxisRotMatrix(const Vector3D& dir)
+numerics::Matrix<double> DiscreteShape::sorAxisRotMatrix(const Vector3D& dir)
 {
   // Note that the rotation matrix is not unique.
   static const Vector3D x {1.0, 0.0, 0.0};

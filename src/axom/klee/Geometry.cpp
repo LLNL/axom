@@ -86,19 +86,19 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 
 Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const axom::Array<double, 2>& discreteFunction,
-                   const Point3D& vorBase,
-                   const Vector3D& vorDirection,
+                   const Point3D& sorBase,
+                   const Vector3D& sorDirection,
                    axom::IndexType levelOfRefinement,
                    std::shared_ptr<GeometryOperator const> operator_)
   : m_startProperties(startProperties)
-  , m_format("vor3D")
+  , m_format("sor3D")
   , m_path()
   , m_meshGroup(nullptr)
   , m_topology()
   , m_sphere()
   , m_discreteFunction(discreteFunction)
-  , m_vorBase(vorBase)
-  , m_vorDirection(vorDirection)
+  , m_sorBase(sorBase)
+  , m_sorDirection(sorDirection)
   , m_levelOfRefinement(levelOfRefinement)
   , m_operator(std::move(operator_))
 { }

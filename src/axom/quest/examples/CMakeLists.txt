@@ -293,7 +293,7 @@ if((CONDUIT_FOUND OR
             blt_list_append(TO _policies ELEMENTS "hip"  IF AXOM_ENABLE_HIP)
         endif()
 
-        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "all" "plane")
+        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "sor" "all" "plane")
         foreach(_policy ${_policies})
             foreach(_testshape ${_testshapes})
               set(_testname "quest_shape_in_memory_${_policy}_${_testshape}")

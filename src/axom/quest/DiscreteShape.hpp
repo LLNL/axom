@@ -174,7 +174,7 @@ private:
   void setParentGroup(axom::sidre::Group* parentGroup);
 
   //!@brief Return a 3x3 matrix that rotate coordinates from the x-axis to the given direction.
-  numerics::Matrix<double> vorAxisRotMatrix(const Vector3D& dir);
+  numerics::Matrix<double> sorAxisRotMatrix(const Vector3D& dir);
 
   void clearInternalData();
 
@@ -190,8 +190,8 @@ public:
   void createRepresentationOfPlane();
   //!@brief Create the internal mesh representation of the analytical sphere.
   void createRepresentationOfSphere();
-  //!@brief Create the internal mesh representation of the analytical VOR.
-  void createRepresentationOfVOR();
+  //!@brief Create the internal mesh representation of the analytical SOR.
+  void createRepresentationOfSOR();
 };
 
 }  // namespace quest

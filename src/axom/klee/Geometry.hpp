@@ -132,27 +132,27 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
-   * Create a volume-of-revolution (VOR) Geometry object.
+   * Create a volume-of-revolution (SOR) Geometry object.
    *
    * \param startProperties the transformable properties before any
    * operators are applied
    * \param discreteFunction Discrete function describing the surface
    *        of revolution.
-   * \param vorBase Coordinates of the base of the VOR.
-   * \param vorDirection VOR axis, in the direction of increasing z.
+   * \param sorBase Coordinates of the base of the SOR.
+   * \param sorDirection SOR axis, in the direction of increasing z.
    * \param levelOfRefinement Number of refinement levels to use for
-   *        discretizing the VOR.
+   *        discretizing the SOR.
    * \param operator_ a possibly null operator to apply to the geometry.
    *
    * The \c discreteFunction should be an Nx2 array, interpreted as
    * (z,r) pairs, where z is the axial distance and r is the radius.
-   * The \c vorBase coordinates corresponds to z=0.
-   * \c vorAxis should point in the direction of increasing z.
+   * The \c sorBase coordinates corresponds to z=0.
+   * \c sorAxis should point in the direction of increasing z.
    */
   Geometry(const TransformableGeometryProperties &startProperties,
            const axom::Array<double, 2> &discreteFunction,
-           const Point3D &vorBase,
-           const Vector3D &vorDirection,
+           const Point3D &sorBase,
+           const Vector3D &sorDirection,
            axom::IndexType levelOfRefinement,
            std::shared_ptr<GeometryOperator const> operator_);
 
@@ -181,7 +181,7 @@ public:
    * - "blueprint-tets" = Blueprint tetrahedral mesh in memory
    * - "tet3D" = 3D tetrahedron (4 points)
    * - "sphere3D" = 3D sphere, as \c primal::Sphere<double,3>
-   * - "vor3D" = 3D volume of revolution.
+   * - "sor3D" = 3D volume of revolution.
    * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
    * - "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
    * - "hex3D" = 3D hexahedron (8 points)
@@ -216,14 +216,14 @@ public:
   const std::string &getBlueprintTopology() const;
 
   /**
-     @brief Return the VOR axis direction.
+     @brief Return the SOR axis direction.
   */
-  const Vector3D getVorDirection() const { return m_vorDirection; }
+  const Vector3D getSorDirection() const { return m_sorDirection; }
 
   /**
-     @brief Return the 3D coordinates of the VOR base.
+     @brief Return the 3D coordinates of the SOR base.
   */
-  const Point3D getVorBaseCoords() const { return m_vorBase; }
+  const Point3D getSorBaseCoords() const { return m_sorBase; }
 
   /*! @brief Predicate that returns true when the shape has an associated geometry
 
@@ -336,11 +336,11 @@ private:
   //! @brief The discrete 2D function, as an Nx2 array, if used.
   axom::Array<double, 2> m_discreteFunction;
 
-  //!@brief The point corresponding to z=0 on the VOR axis.
-  Point3D m_vorBase;
+  //!@brief The point corresponding to z=0 on the SOR axis.
+  Point3D m_sorBase;
 
-  //!@brief VOR axis in the direction of increasing z.
-  Vector3D m_vorDirection;
+  //!@brief SOR axis in the direction of increasing z.
+  Vector3D m_sorDirection;
 
   //!@brief Level of refinement for discretizing curved
   // analytical shapes and surfaces of revolutions.
