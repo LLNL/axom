@@ -2240,10 +2240,10 @@ private:
     return rval;
   }
 
-#if defined(__CUDACC__)
+  #if defined(__CUDACC__)
 public:
-  // These methods should be private, but NVCC complains unless its public.
-#endif
+      // These methods should be private, but NVCC complains unless its public.
+  #endif
 
   template <typename ExecSpace>
   void populateHexesFromMesh()

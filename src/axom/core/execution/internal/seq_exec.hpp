@@ -83,7 +83,8 @@ struct execution_space<SEQ_EXEC>
   }
   static bool usesAllocId(int allocId) noexcept
   {
-    return allocId == 0 || usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+    return allocId == 0 ||
+      usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
   }
 };
 
