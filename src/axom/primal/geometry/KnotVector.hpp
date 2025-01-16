@@ -157,8 +157,8 @@ public:
    */
   T& operator[](axom::IndexType i)
   {
-    return m_knots[i];
     SLIC_ASSERT(isValid());
+    return m_knots[i];
   }
 
   /// \brief Return the degree of the knot vector
