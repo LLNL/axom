@@ -23,8 +23,16 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
 
   std::vector<const char*> receivedPackedMessages;
 
-  // send message only from even ranks
-  if((c.rank() % 2) == 0)
+  // send message only from even ranks that are non-zero
+  if((c.rank() % 2) == 0 && c.rank() != 0)
+  {
+    c.push(message.c_str(), receivedPackedMessages);
+  }
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  // receive messages from rank 0 after barrier
+  if(c.rank() == 0)
   {
     c.push(message.c_str(), receivedPackedMessages);
   }
@@ -51,7 +59,7 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
       }
       if(!found)
       {
-        std::cout << "Error: Message not received:" << currMessage << std::endl;
+        std::cout << "Error: Message not received: " << currMessage << std::endl;
       }
       EXPECT_EQ(found, true);
     }
