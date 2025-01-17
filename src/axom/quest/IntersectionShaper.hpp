@@ -86,24 +86,24 @@ template <typename ExecSpace>
 class TempArrayView
 {
 public:
-  #if defined(AXOM_USE_MFEM)
   /*!
-   * \brief Host constructor that accepts the grid function.
+   * \brief Host constructor that accepts data in an Array.
    *
-   * \param gf The grid function that will be accessed/modified by the view.
+   * \param gf The data that will be accessed/modified by this view.
    * \param _needResult Whether the data needs to be brought back to the host
    *                    from the device.
    */
-  AXOM_HOST TempArrayView(mfem::GridFunction* gf, bool _needResult = true)
-  {
-    initialize(gf->GetData(), gf->Size(), _needResult);
-  }
-  #endif
-
   AXOM_HOST TempArrayView(axom::Array<double>& gf, bool _needResult = true)
   {
     initialize(gf.data(), gf.size(), _needResult);
   }
+  /*!
+   * \brief Host constructor that accepts data in an ArrayView.
+   *
+   * \param gf The data that will be accessed/modified by this view.
+   * \param _needResult Whether the data needs to be brought back to the host
+   *                    from the device.
+   */
   AXOM_HOST TempArrayView(axom::ArrayView<double>& gf, bool _needResult = true)
   {
     initialize(gf.data(), gf.size(), _needResult);
@@ -804,10 +804,8 @@ private:
     auto shape_candidates_device_view = shape_candidates_device.view();
 
     // Tetrahedrons from hexes (24 for each hex)
-    // TODO: Why break hexes into tets if we can hex-tet clip (clip_impl.hpp:502).
-    // Possibly because ShapeType can also be oct, and we don't do hex-oct clip.
-    // At least not yet.  We could break the oct into 6 tets and do 6 hex-tet clips.
-    // Isn't that better than breaking the hex into 24 tets and doing 24 oct-tet clips?
+    // NOTE: Why break hexes into tets if we can hex-tet clip (clip_impl.hpp:502).
+    // Possibly because ShapeType can also be oct, and we don't currently do hex-oct clip.
     bool doInitializeTetsFromHexes = false;
     if(m_tets_from_hexes_device.empty())
     {
@@ -2242,7 +2240,7 @@ private:
 
   #if defined(__CUDACC__)
 public:
-      // These methods should be private, but NVCC complains unless its public.
+      // These methods should be private, but NVCC complains unless they're public.
   #endif
 
   template <typename ExecSpace>
@@ -2497,7 +2495,6 @@ public:
 
 private:
   /// Create and return a new volume fraction grid function for the current mesh
-  // TODO: change to generic name.  Nothing in here is about volume fractions.  BTNG.
   mfem::GridFunction* newVolFracGridFunction()
   {
     mfem::Mesh* mesh = getDC()->GetMesh();

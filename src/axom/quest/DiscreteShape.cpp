@@ -571,6 +571,13 @@ void DiscreteShape::createRepresentationOfSOR()
     });
 
   // Dump discretized octs as a tet mesh
+  //
+  // NOTE: mesh_from_discretized_polyline returns a tet mesh.
+  // IntersectionShaper can handle octahedra, which may be faster
+  // because it has 8x fewer elements.  This method returns the
+  // discretization as a mesh.  But mint doesn't support octs and
+  // Blueprint support octs only as polyhedra.  We can always return
+  // an array of primal::Octahedron instead of a mesh.
   axom::mint::Mesh* mesh;
   axom::quest::mesh_from_discretized_polyline(octs.view(),
                                               octCount,
