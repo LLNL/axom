@@ -322,6 +322,103 @@ public:
     }
   }
 
+  /*!
+   * \brief Build the list of clean and mixed zones using the number of materials
+   *        per zone. This method essentially partitions the input selectedZonesView
+   *        into clean and mixed lists.
+   *
+   * \param selectedZonesView A view containing the zone indices we're considering.
+   * \param[out] cleanIndices An array that will contain the list of clean material zone ids.
+   * \param[out] mixedIndices An array that will contain the list of mixed material zone ids.
+   *
+   */
+  void execute(const SelectedZonesView &selectedZonesView,
+               axom::Array<axom::IndexType> &cleanIndices,
+               axom::Array<axom::IndexType> &mixedIndices) const
+  {
+    using reduce_policy =
+      typename axom::execution_space<ExecSpace>::reduce_policy;
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+
+    AXOM_ANNOTATE_BEGIN("mask");
+    const auto nzones = selectedZonesView.size();
+    axom::Array<int> mask(nzones, nzones, allocatorID);
+    auto maskView = mask.view();
+    RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
+    const auto matsetView = m_matsetView;
+    axom::for_all<ExecSpace>(
+      selectedZonesView.size(),
+      AXOM_LAMBDA(axom::IndexType szIndex) {
+        const auto zoneIndex = selectedZonesView[szIndex];
+        // clean zone == 1, mixed zone = 0
+        const int ival = (matsetView.numberOfMaterials(zoneIndex) == 1) ? 1 : 0;
+        maskView[szIndex] = ival;
+        mask_reduce += ival;
+      });
+    AXOM_ANNOTATE_END("mask");
+
+    const axom::IndexType numCleanZones = mask_reduce.get();
+    const axom::IndexType numMixedZones = nzones - numCleanZones;
+    if(numCleanZones > 0 && numMixedZones > 0)
+    {
+      AXOM_ANNOTATE_SCOPE("mixedIndices");
+
+      axom::Array<int> maskOffsets(nzones, nzones, allocatorID);
+      auto maskOffsetsView = maskOffsets.view();
+      axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
+
+      // Fill in clean zone ids.
+      cleanIndices = axom::Array<axom::IndexType>(numCleanZones, numCleanZones, allocatorID);
+      auto cleanIndicesView = cleanIndices.view();
+      axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(axom::IndexType szIndex)
+      {
+        if(maskView[szIndex] > 0)
+        {
+          cleanIndicesView[maskOffsetsView[szIndex]] = selectedZonesView[szIndex];
+        }
+        maskView[szIndex] = ~maskView[szIndex];
+      });
+
+      axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
+
+      // Fill in mixed zone ids.
+      mixedIndices = axom::Array<axom::IndexType>(numMixedZones, numMixedZones, allocatorID);
+      auto mixedIndicesView = mixedIndices.view();
+      axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(axom::IndexType szIndex)
+      {
+        if(maskView[szIndex] > 0)
+        {
+          mixedIndicesView[maskOffsetsView[szIndex]] = selectedZonesView[szIndex];
+        }
+      });
+    }
+    else if(numCleanZones > 0)
+    {
+      AXOM_ANNOTATE_SCOPE("mixedIndices");
+
+      // There were no mixed, so it must all be clean.
+      cleanIndices = axom::Array<axom::IndexType>(nzones, nzones, allocatorID);
+      auto cleanIndicesView = cleanIndices.view();
+      axom::for_all<ExecSpace>(
+        nzones,
+        AXOM_LAMBDA(axom::IndexType index) { cleanIndicesView[index] = selectedZonesView[index]; });
+
+      mixedIndices = axom::Array<axom::IndexType>();
+    }
+    else if(numMixedZones > 0)
+    {
+      AXOM_ANNOTATE_SCOPE("mixedIndices");
+
+      cleanIndices = axom::Array<axom::IndexType>();
+
+      // There were no clean, so it must all be mixed.
+      mixedIndices = axom::Array<axom::IndexType>(nzones, nzones, allocatorID);
+      auto mixedIndicesView = mixedIndices.view();
+      axom::for_all<ExecSpace>(
+        nzones,
+        AXOM_LAMBDA(axom::IndexType index) { mixedIndicesView[index] = selectedZonesView[index]; });
+    }
+  }
 private:
   TopologyView m_topologyView;
   MatsetView m_matsetView;
