@@ -1070,13 +1070,39 @@ void exportSliceScalarFieldToVTK(const std::string& filename,
   if(axom::utilities::isNearlyEqual(normal[0], normal[1]))
   {
     u = Vector<T, 3>({normal[2], normal[2], -normal[0] - normal[1]}).unitVector();
+    // Pick a u that is orthogonal to this one
+    // u = Vector<T, 3>({normal[1], -normal[0], 0}).unitVector();
+    // u = Vector<T, 3>({0, normal[2], -normal[1]}).unitVector();
   }
   else
   {
     u = Vector<T, 3>({-normal[1] - normal[2], normal[0], normal[0]}).unitVector();
   }
+  // u = Vector<T, 3>( {-0.6536123100031038, -0.10738450531201763, -0.7491725543766935});
   Vector<T, 3> v = Vector<T, 3>::cross_product(normal, u).unitVector();
 
+  exportSliceScalarFieldToVTK<T>(filename,
+                            fieldFunc,
+                            origin,
+                            u,
+                            v,
+                            planeWidth,
+                            planeHeight,
+                            uSteps,
+                            vSteps);
+}
+
+template <typename T>
+void exportSliceScalarFieldToVTK(const std::string& filename,
+                                 const std::function<T(Point3D)>& fieldFunc,
+                                 const Point3D& origin,
+                                 const Vector<T, 3>& u,
+                                 const Vector<T, 3>& v,
+                                 double planeWidth,
+                                 double planeHeight,
+                                 int uSteps,
+                                 int vSteps)
+{
   std::ofstream file(filename);
   if(!file.is_open())
   {

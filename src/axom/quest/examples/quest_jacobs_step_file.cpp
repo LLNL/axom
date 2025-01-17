@@ -2299,7 +2299,8 @@ StepFileProcessor import_step_file(std::string prefix,
 void nut_3d_example()
 {
   std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\simple_gwn_example\\";
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\simple_gwn_"
+    "example\\";
 
   std::string filename = "nut";
   auto stepProcessor = import_step_file(prefix, filename);
@@ -2315,9 +2316,8 @@ void nut_3d_example()
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
-      auto new_query = axom::primal::Point<double, 3> {-0.000705868,
-                                                       0.0389087,
-                                                       -0.00646476};
+      auto new_query =
+        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
       double the_val =
         axom::primal::winding_number_casting(query,
                                              kv.second.nurbsPatchData,
@@ -2350,7 +2350,9 @@ void nut_3d_example()
     prefix + filename + "nut_slice.vtk",
     wn_field,
     axom::primal::Point<double, 3> {0.0, 0.0, 0.79375 / 1000},
-    axom::primal::Vector<double, 3> {-0.10624472993169809, 0.35459739950848745, -0.928963261718976},
+    axom::primal::Vector<double, 3> {-0.10624472993169809,
+                                     0.35459739950848745,
+                                     -0.928963261718976},
     1.5 * the_range,
     1.5 * the_range,
     100,
@@ -2370,28 +2372,681 @@ void nut_3d_example()
 void nut_2d_example()
 {
   std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\simple_gwn_example\\";
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\simple_gwn_"
+    "example\\";
 
   std::string filename = "nut";
 
   axom::Array<axom::primal::BezierCurve<double, 2>> curves;
-  convert_from_svg( prefix + filename + ".svg", curves);
-  std::ofstream curve_out( prefix + filename + "_curves.txt");
+  convert_from_svg(prefix + filename + ".svg", curves);
+  std::ofstream curve_out(prefix + filename + "_curves.txt");
   for(auto& curve : curves)
   {
     curve_out << curve << std::endl;
   }
+
+  std::ofstream wn_out(prefix + filename + "_wn.csv");
+
+  auto bbox = curves_bbox(curves, 1.2, true);
+
+  simple_grid_test(curves, bbox, 300, 300, wn_out);
+}
+
+void graphical_abstract_watertight()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+    "abstract\\";
+
+  std::string filename = "machine_part_rhino";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      auto new_query =
+        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+  meshBBox.expand(0.1 * the_range);
+
+  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
+
+  axom::utilities::Timer timer(false);
+
+  timer.start();
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_watertight_slice1.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.0021127422476921076, 0.0404, 0.0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_watertight_slice2.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {-0.01048739455123153, 0.0404, 0.0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_watertight_slice3.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.0, 0.0404, 0.0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+  timer.stop();
+
+  auto elapsed_time = timer.elapsedTimeInSec();
+  std::cout << std::endl
+            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
+  std::cout << "Stats:" << std::endl;
+  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
+  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
+  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
+  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
+}
+
+void graphical_abstract_exploded()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+    "abstract\\";
+
+  std::string filename = "machine_part_exploded";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      auto new_query =
+        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+  meshBBox.expand(0.1 * the_range);
+
+  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
+
+  axom::utilities::Timer timer(false);
+
+  timer.start();
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_explodedt_slice1.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.0021127422476921076, -0.005, 0.0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_explodedt_slice2.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {-0.01048739455123153, -0.005, 0.0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_explodedt_slice3.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.0, -0.005, 0.0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+  timer.stop();
+
+  auto elapsed_time = timer.elapsedTimeInSec();
+  std::cout << std::endl
+            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
+  std::cout << "Stats:" << std::endl;
+  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
+  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
+  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
+  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
+}
+
+void graphical_abstract_hollow()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+    "abstract\\";
+
+  std::string filename = "machine_part_hollow";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      auto new_query =
+        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+  meshBBox.expand(0.1 * the_range);
+
+  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
+
+  axom::utilities::Timer timer(false);
+
+  timer.start();
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_hollow_slice1.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.0021127422476921076, 0.0404, 0.0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_hollow_slice2.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {-0.01048739455123153, 0.0404, 0.0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_hollow_slice3.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.0, 0.0404, 0.0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    the_range,
+    the_range,
+    100,
+    100);
+  timer.stop();
+
+  auto elapsed_time = timer.elapsedTimeInSec();
+  std::cout << std::endl
+            << "Elapsed time: " << elapsed_time << " seconds" << std::endl;
+  std::cout << "Stats:" << std::endl;
+  std::cout << "\tOutside AABB: " << std::get<0>(stat_tuple) << std::endl;
+  std::cout << "\tOutside OBB:  " << std::get<1>(stat_tuple) << std::endl;
+  std::cout << "\tUse Cast Ray: " << std::get<2>(stat_tuple) << std::endl;
+  std::cout << "\t\t(Can't Cache): " << std::get<3>(stat_tuple) << std::endl;
+}
+
+// void discretized_curve_gwn()
+// {
+//   std::string prefix =
+//     "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\wn_comparison\\";
+
+//   std::string filename = "floppy_curve";
+
+//   axom::Array<axom::primal::BezierCurve<double, 2>> curves;
+//   convert_from_svg(prefix + filename + ".svg", curves);
+//   std::ofstream curve_out(prefix + filename + "_curves.txt");
+//   for(auto& curve : curves)
+//   {
+//     curve_out << curve << std::endl;
+//   }
+
+//   std::ofstream wn_out(prefix + filename + "_wn.csv");
+
+//   axom::prieam curve_out2(prefix + filename + "_curves.txt");
+//   for(auto& curve : curves2)
+//   {
+//     curve_out2 << curve << std::endl;
+//   }
+
+//   std::ofstream wn_out2(prefix + filename + "_wn.csv");
+
+//   simple_grid_test(curves2, bbox, 300, 300, wn_out2);mal::BoundingBox<double, 2> bbox;
+//   bbox.addPoint(axom::primal::Point<double, 2> {78.0, 74.0});
+//   bbox.addPoint(axom::primal::Point<double, 2> {40.0, 105.0});
+//   bbox.expand(1.3);
+
+//   simple_grid_test(curves, bbox, 300, 300, wn_out);
+
+//   filename = "discretized_curve";
+
+//   axom::Array<axom::primal::BezierCurve<double, 2>> curves2;
+//   convert_from_svg(prefix + filename + ".svg", curves2);
+//   std::ofstr
+// }
+
+void discretized_surface_gwn()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\wn_comparison\\";
+
+  std::string filename = "floppy_surface";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+
+  // Use this for u
+  // u = Vector<T, 3>( {-0.6536123100031038, -0.10738450531201763, -0.7491725543766935});
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_comparison_slice.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.4226723313331604 / 1000,
+                                    -0.08878263831138611 / 1000,
+                                    0.0012638476388358486},
+    axom::primal::Vector<double, 3> {-0.13465792265548568,
+                                     0.9906402898209166,
+                                     -0.022339651958791562},
+    0.9 * the_range,
+    0.9 * the_range,
+    100,
+    100);
+
+  // ---------------------------------------------------------
+
+  std::string filename2 = "discretized_mesh";
+
+  auto stepProcessor2 = import_step_file(prefix, filename2);
+
+  auto wn_field2 = [&stepProcessor2, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                     axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor2.getPatchDataMap())
+    {
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox2;
+  for(const auto& kv : stepProcessor2.getPatchDataMap())
+  {
+    meshBBox2.addBox(kv.second.physicalBBox);
+  }
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename2 + "_comparison_slice.vtk",
+    wn_field2,
+    axom::primal::Point<double, 3> {0.4226723313331604 / 1000,
+                                    -0.08878263831138611 / 1000,
+                                    0.0012638476388358486},
+    axom::primal::Vector<double, 3> {-0.13465792265548568,
+                                     0.9906402898209166,
+                                     -0.022339651958791562},
+    0.9 * the_range,
+    0.9 * the_range,
+    100,
+    100);
+}
+
+void quadrature_is_bad()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\quadrature_bad\\";
+
+  std::string filename = "random_surface";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field_quad = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      double the_val =
+        axom::primal::detail::surface_winding_number(query,
+                                                     kv.second.nurbsPatch,
+                                                     30);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+
+  // Use this for u
+  // u = Vector<T, 3>( {-0.6536123100031038, -0.10738450531201763, -0.7491725543766935});
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_quadrature_slice_1.vtk",
+    wn_field_quad,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    meshBBox.getMax()[1] - meshBBox.getMin()[1],
+    200,
+    100);
   
-  std::ofstream wn_out( prefix + filename + "_wn.csv");
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_quadrature_slice_3.vtk",
+    wn_field_quad,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    meshBBox.getMax()[2] - meshBBox.getMin()[2],
+    200,
+    100);
 
-  auto bbox = curves_bbox( curves, 1.2, true);
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_casting_slice_1.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    meshBBox.getMax()[1] - meshBBox.getMin()[1],
+    200,
+    100);
+  
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_casting_slice_3.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    meshBBox.getMax()[2] - meshBBox.getMin()[2],
+    200,
+    100);
+}
 
-  simple_grid_test( curves, bbox, 300, 300, wn_out);
+void closure_intuition_3d()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\stokes_intuition\\";
+
+  std::string filename = "intuition_3d";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  std::tuple<int, int, int, int, int> stat_tuple = std::make_tuple(0, 0, 0, 0, 0);
+  auto wn_field_boundary = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      double the_val =
+        axom::primal::detail::stokes_winding_number_cached(query,
+                                                     kv.second.nurbsPatchData, 
+                                                     axom::primal::detail::DiscontinuityAxis::z, 15, quad_tol);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &stat_tuple](
+                    axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             stat_tuple,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    meshBBox.addBox(kv.second.physicalBBox);
+  }
+
+  auto the_range = 0.5 * meshBBox.range().norm();
+
+  // Use this for u
+  // u = Vector<T, 3>( {-0.6536123100031038, -0.10738450531201763, -0.7491725543766935});
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_gwn_slice_1.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {0.18489071073484686, 0.9824752787680089, 0},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    2* (meshBBox.getMax()[1] - meshBBox.getMin()[1]),
+    100,
+    200);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_boundary_slice_1.vtk",
+    wn_field_boundary,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {0.18489071073484686, 0.9824752787680089, 0},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    2* (meshBBox.getMax()[1] - meshBBox.getMin()[1]),
+    100,
+    200);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_gwn_slice_2.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0, 0, -4.5},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    100,
+    100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_boundary_slice_2.vtk",
+    wn_field_boundary,
+    axom::primal::Point<double, 3> {0, 0, -4.5},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    meshBBox.getMax()[0] - meshBBox.getMin()[0],
+    100,
+    100);
+}
+
+void closure_intuition_2d()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\stokes_intuition\\";
+
+  std::string filename = "intuition_2d";
+
+  axom::Array<axom::primal::BezierCurve<double, 2>> curves;
+  axom::Array<axom::primal::BezierCurve<double, 2>> curves2;
+  convert_from_svg(prefix + filename + ".svg", curves);
+  std::ofstream curve_out(prefix + filename + "_curves.txt");
+  std::ofstream curve_out2(prefix + filename + "_curves2.txt");
+  for(int i = 1; i < curves.size(); i++)
+  {
+    curve_out << curves[i] << std::endl;
+  }
+  curves2.push_back(curves[0]);
+  curve_out2 << curves[0] << std::endl;
+
+  curves.erase(curves.begin());
+
+  std::ofstream wn_out(prefix + filename + "_wn.csv");
+  std::ofstream wn_out2(prefix + filename + "_wn2.csv");
+
+  auto bbox = curves_bbox(curves, 1.2, true);
+
+  simple_grid_test(curves, bbox, 300, 300, wn_out);
+  simple_grid_test(curves2, bbox, 300, 300, wn_out2);
 }
 
 int main()
 {
   // nut_3d_example();
-  nut_2d_example();
+  // nut_2d_example();
+  // discretized_curve_gwn();
+  // discretized_surface_gwn();
+  // quadrature_is_bad();
+  // closure_intuition_2d();
+  closure_intuition_3d();
   return 0;
 }

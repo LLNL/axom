@@ -828,6 +828,39 @@ double single_stokes_cached_rotated(
 
 template <typename T>
 double surface_winding_number(const Point<T, 3>& query,
+                              const NURBSPatch<T, 3>& patch,
+                              int npts)
+{
+  // Generate the quadrature rules in parameter space
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+
+  const mfem::IntegrationRule& quad_rule =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
+
+  double quadrature = 0.0;
+  for(int qu = 0; qu < quad_rule.GetNPoints(); ++qu)
+  {
+    for(int qv = 0; qv < quad_rule.GetNPoints(); ++qv)
+    {
+      Vector3D node(
+        query,
+        patch.evaluate(quad_rule.IntPoint(qu).x, quad_rule.IntPoint(qv).x));
+
+      // Compute the normal vector
+      Vector3D normal =
+        patch.normal(quad_rule.IntPoint(qu).x, quad_rule.IntPoint(qv).x);
+
+      quadrature += quad_rule.IntPoint(qu).weight *
+        quad_rule.IntPoint(qv).weight * Vector3D::dot_product(node, normal) /
+        std::pow(node.norm(), 3);
+    }
+  }
+
+  return 0.25 * M_1_PI * quadrature;
+}
+
+template <typename T>
+double surface_winding_number(const Point<T, 3>& query,
                               const BezierPatch<T, 3>& patch,
                               int npts,
                               double quad_tol,
