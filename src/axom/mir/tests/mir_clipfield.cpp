@@ -305,12 +305,13 @@ std::vector<int> makeRandomArray(int n)
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, sort_values)
 {
-  for(int n = 1; n < 15; n++)
+  constexpr int MaxSize = 15;
+  for(int n = 1; n < MaxSize; n++)
   {
     for(int trial = 1; trial <= n; trial++)
     {
       auto values = makeUnsortedArray(n);
-      axom::utilities::Sorting<int, 15>::sort(values.data(), values.size());
+      axom::utilities::Sorting<MaxSize>::sort(values.data(), values.size());
       EXPECT_TRUE(increasing(values));
     }
   }
