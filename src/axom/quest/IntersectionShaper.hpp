@@ -891,16 +891,20 @@ private:
 
     // Overlap volume is the volume of clip(oct,tet) for c2c
     // or clip(tet,tet) for Pro/E meshes
-    // TODO: don't reallocate.  m_cellCount shouldn't change.
-    m_overlap_volumes =
-      axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
+    if (m_overlap_volumes.empty())
+    {
+      m_overlap_volumes =
+        axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
+    }
     m_overlap_volumes.fill(0.0);
 
     // Hex volume is the volume of the hexahedron element
-    // TODO: Make reallocate and recompute explicit (with a resetMesh or something).
-    m_hex_volumes =
-      axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
-    m_hex_volumes.fill(0.0);
+    if (m_hex_volumes.empty())
+    {
+      m_hex_volumes =
+        axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
+      m_hex_volumes.fill(0.0);
+    }
 
     axom::ArrayView<double> overlap_volumes_device_view =
       m_overlap_volumes.view();
