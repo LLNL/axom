@@ -299,7 +299,17 @@ std::vector<int> makeRandomArray(int n)
   {
     values[i] = static_cast<int>(largestId * drand48());
   }
-  return permute(values);
+  return values;
+}
+std::vector<double> makeRandomDoubleArray(int n)
+{
+  std::vector<double> values;
+  values.resize(n);
+  for(int i = 0; i < n; i++)
+  {
+    values[i] = drand48();
+  }
+  return values;
 }
 
 //------------------------------------------------------------------------------
@@ -311,11 +321,42 @@ TEST(mir_clipfield, sort_values)
     for(int trial = 1; trial <= n; trial++)
     {
       auto values = makeUnsortedArray(n);
-      axom::utilities::Sorting<MaxSize>::sort(values.data(), values.size());
+      axom::utilities::Sorting<int, MaxSize>::sort(values.data(), values.size());
       EXPECT_TRUE(increasing(values));
     }
   }
 }
+
+//------------------------------------------------------------------------------
+TEST(mir_clipfield, sort_multiple_values)
+{
+  constexpr int MaxSize = 15;
+  for(int n = 1; n < MaxSize; n++)
+  {
+    for(int trial = 1; trial <= n; trial++)
+    {
+      auto vec0 = makeRandomDoubleArray(n);
+      std::vector<int> vec1(n);
+      std::iota(vec1.begin(), vec1.end(), n);
+
+      auto vec0Copy(vec0);
+      auto vec1Copy(vec1);
+
+      // Sort values based on vec0.
+      axom::utilities::sort_multiple(vec0.data(), vec1.data(), n);
+      EXPECT_TRUE(increasing(vec0));
+
+      // Sort back based on vec1.
+      axom::utilities::sort_multiple(vec1.data(), vec0.data(), n);
+      EXPECT_TRUE(increasing(vec1));
+
+      // Make sure both vectors are the same as the initial vectors.
+      EXPECT_EQ(vec0, vec0Copy);
+      EXPECT_EQ(vec1, vec1Copy);
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 struct test_unique
@@ -340,9 +381,9 @@ struct test_unique
     // Make unique ids.
     axom::Array<int> uIds;
     axom::Array<axom::IndexType> uIndices;
-    axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(),
-                                                         uIds,
-                                                         uIndices);
+    axom::mir::utilities::Unique<ExecSpace, int>::execute(ids.view(),
+                                                          uIds,
+                                                          uIndices);
     // _mir_utilities_unique_end
 
     // device->host

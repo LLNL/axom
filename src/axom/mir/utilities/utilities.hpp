@@ -257,7 +257,7 @@ public:
         sorted[0] = p[0];
         sorted[1] = p[1];
         sorted[2] = p[2];
-        axom::utilities::Sorting<3>::sort(sorted);
+        axom::utilities::Sorting<IndexType, 3>::sort(sorted);
 
         KeyType k0 = static_cast<KeyType>(sorted[0]) & Max20Bit;
         KeyType k1 = static_cast<KeyType>(sorted[1]) & Max20Bit;
@@ -273,7 +273,7 @@ public:
         sorted[1] = p[1];
         sorted[2] = p[2];
         sorted[3] = p[3];
-        axom::utilities::Sorting<4>::sort(sorted);
+        axom::utilities::Sorting<IndexType, 4>::sort(sorted);
 
         KeyType k0 = static_cast<KeyType>(sorted[0]) & Max15Bit;
         KeyType k1 = static_cast<KeyType>(sorted[1]) & Max15Bit;
@@ -290,7 +290,7 @@ public:
         {
           sorted[i] = static_cast<std::uint16_t>(p[i]);
         }
-        axom::utilities::Sorting<MAXIDS>::sort(sorted, n);
+        axom::utilities::Sorting<std::uint16_t, MAXIDS>::sort(sorted, n);
 
         // Make a hash from the narrowed ids
         void *ptr = static_cast<void *>(sorted);
@@ -307,7 +307,7 @@ public:
         {
           sorted[i] = static_cast<std::uint32_t>(p[i]);
         }
-        axom::utilities::Sorting<MAXIDS>::sort(sorted, n);
+        axom::utilities::Sorting<std::uint32_t, MAXIDS>::sort(sorted, n);
 
         // Make a hash from the narrowed ids
         void *ptr = static_cast<void *>(sorted);
@@ -323,7 +323,7 @@ public:
         {
           sorted[i] = p[i];
         }
-        axom::utilities::Sorting<MAXIDS>::sort(sorted, n);
+        axom::utilities::Sorting<IndexType, MAXIDS>::sort(sorted, n);
 
         // Make a hash from the ids
         void *ptr = static_cast<void *>(sorted);
