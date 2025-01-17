@@ -45,7 +45,7 @@ public:
    * \param coordsetView The coordset view.
    */
   ExtrudeMesh(const TopologyView &topoView, const CoordsetView &coordsetView)
-    : m_topoView(topoView)
+    : m_topologyView(topoView)
     , m_coordsetView(coordsetView)
   { }
 
@@ -95,11 +95,11 @@ public:
 
     // Count the number of values needed to store the connectivity.
     AXOM_ANNOTATE_BEGIN("counts");
-    const TopologyView topoView = m_topoView;
+    const TopologyView topoView = m_topologyView;
     RAJA::ReduceSum<reduce_policy, int> connSizeReduce(0);
     RAJA::ReduceBitOr<reduce_policy, int> zoneTypeReduce(0);
     axom::for_all<ExecSpace>(
-      m_topoView.numberOfZones(),
+      m_topologyView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zi) {
         const auto zone = topoView.zone(zi);
         switch(zone.id())
@@ -122,7 +122,7 @@ public:
     const axom::IndexType totalConnSize =
       static_cast<axom::IndexType>(nz - 1) * connSizeReduce.get();
     const axom::IndexType totalZones =
-      static_cast<axom::IndexType>(nz - 1) * m_topoView.numberOfZones();
+      static_cast<axom::IndexType>(nz - 1) * m_topologyView.numberOfZones();
     const axom::IndexType totalNodes =
       static_cast<axom::IndexType>(nz) * m_coordsetView.numberOfNodes();
 
@@ -400,8 +400,6 @@ private:
                         n_src_offsets.dtype().number_of_elements() * (nz - 1)));
 
     // Extrude the old arrays into the new arrays.
-    const axom::IndexType idxSize = n_src_indices.dtype().number_of_elements();
-    const axom::IndexType nzones = n_src_sizes.dtype().number_of_elements();
     axom::mir::views::FloatNode_to_ArrayView_same(
       n_src_volume_fractions,
       n_volume_fractions,
@@ -433,8 +431,6 @@ private:
                            indicesView,
                            sizesView,
                            offsetsView,
-                           idxSize,
-                           nzones,
                            nz);
           });
       });
@@ -461,15 +457,15 @@ private:
                       IndexView indicesView,
                       IndexView sizesView,
                       IndexView offsetsView,
-                      axom::IndexType idxSize,
-                      axom::IndexType nzones,
                       int nz) const
   {
+    const auto nzones = srcSizesView.size();
     for(int z = 0; z < nz - 1; z++)
     {
       axom::for_all<ExecSpace>(
         nzones,
         AXOM_LAMBDA(axom::IndexType zi) {
+          const auto idxSize = srcIndicesView.size();
           const auto offset = srcOffsetsView[zi];
           const auto destZone = z * nzones + zi;
           sizesView[destZone] = srcSizesView[offset];
@@ -487,7 +483,7 @@ private:
     }
   }
 
-  TopologyView m_topoView;
+  TopologyView m_topologyView;
   CoordsetView m_coordsetView;
 };
 

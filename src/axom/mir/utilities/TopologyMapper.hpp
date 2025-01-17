@@ -526,8 +526,8 @@ public:
 
   /**
    * \brief This class is a view that exposes shapes in MIR topology and
-   *        coordset views as primal shapes. SFINAE is used for the zone()
-   *        method so various shapes can be returned.
+   *        coordset views as primal shapes. SFINAE is used for the getShape()
+   *        method.
    */
   template <typename TopologyView, typename CoordsetView>
   struct PrimalAdaptor
