@@ -1613,12 +1613,14 @@ int main(int argc, char** argv)
   if(params.useBlueprintSidre())
   {
     shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         allocatorId,
                                                          shapeSet,
                                                          compMeshGrp);
   }
   if(params.useBlueprintConduit())
   {
     shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         allocatorId,
                                                          shapeSet,
                                                          compMeshNode.get());
   }
@@ -1626,6 +1628,7 @@ int main(int argc, char** argv)
   if(params.useMfem())
   {
     shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         allocatorId,
                                                          shapeSet,
                                                          shapingDC.get());
   }

@@ -318,7 +318,10 @@ class SamplingShaper : public Shaper
 public:
   SamplingShaper(const klee::ShapeSet& shapeSet,
                  sidre::MFEMSidreDataCollection* dc)
-    : Shaper(Shaper::RuntimePolicy::seq, shapeSet, dc)
+    : Shaper(Shaper::RuntimePolicy::seq,
+             axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq),
+             shapeSet,
+             dc)
   { }
 
   ~SamplingShaper()

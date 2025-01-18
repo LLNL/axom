@@ -567,8 +567,11 @@ int main(int argc, char** argv)
     break;
   case ShapingMethod::Intersection:
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-    shaper =
-      new quest::IntersectionShaper(params.policy, params.shapeSet, &shapingDC);
+    shaper = new quest::IntersectionShaper(
+      params.policy,
+      axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq),
+      params.shapeSet,
+      &shapingDC);
 #else
     SLIC_ERROR(
       "IntersectionShaper requires Axom to be configured with Umpire.");

@@ -29,9 +29,11 @@ constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 
 #if defined(AXOM_USE_MFEM)
 Shaper::Shaper(RuntimePolicy execPolicy,
+               int allocatorId,
                const klee::ShapeSet& shapeSet,
                sidre::MFEMSidreDataCollection* dc)
   : m_execPolicy(execPolicy)
+  , m_allocatorId(allocatorId)
   , m_shapeSet(shapeSet)
   , m_dc(dc)
   #if defined(AXOM_USE_CONDUIT)
@@ -51,10 +53,12 @@ Shaper::Shaper(RuntimePolicy execPolicy,
 #endif
 
 Shaper::Shaper(RuntimePolicy execPolicy,
+               int allocatorId,
                const klee::ShapeSet& shapeSet,
                sidre::Group* bpGrp,
                const std::string& topo)
   : m_execPolicy(execPolicy)
+  , m_allocatorId(allocatorId)
   , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(bpGrp)
@@ -82,10 +86,12 @@ Shaper::Shaper(RuntimePolicy execPolicy,
 }
 
 Shaper::Shaper(RuntimePolicy execPolicy,
+               int allocatorId,
                const klee::ShapeSet& shapeSet,
                conduit::Node* bpNode,
                const std::string& topo)
   : m_execPolicy(execPolicy)
+  , m_allocatorId(allocatorId)
   , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)

@@ -335,12 +335,13 @@ public:
 public:
   #if defined(AXOM_USE_MFEM)
   /*!
-    @brief Construct Shaper to operate on an MFEM mesh.
+    \brief Construct Shaper to operate on an MFEM mesh.
   */
   IntersectionShaper(RuntimePolicy runtimePolicy,
+                     int allocatorId,
                      const klee::ShapeSet& shapeSet,
                      sidre::MFEMSidreDataCollection* dc)
-    : Shaper(runtimePolicy, shapeSet, dc)
+    : Shaper(runtimePolicy, allocatorId, shapeSet, dc)
   {
     m_free_mat_name = "free";
   }
@@ -348,26 +349,33 @@ public:
 
   #if defined(AXOM_USE_CONDUIT)
   /*!
-    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    \brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a sidre Group.
+    \param [in] runtimePolicy A value from RuntimePolicy.
+                The simplest policy is RuntimePolicy::seq, which specifies
+                running sequentially on the CPU.
+    \param [in] allocatorID Data allocator ID.  Choose something compatible
+                with \c runtimePolicy.  See \c execution_space.
   */
   IntersectionShaper(RuntimePolicy runtimePolicy,
+                     int allocatorId,
                      const klee::ShapeSet& shapeSet,
                      sidre::Group* bpGrp,
                      const std::string& topo = "")
-    : Shaper(runtimePolicy, shapeSet, bpGrp, topo)
+    : Shaper(runtimePolicy, allocatorId, shapeSet, bpGrp, topo)
     , m_free_mat_name("free")
   { }
 
   /*!
-    @brief Construct Shaper to operate on a blueprint-formatted mesh
+    \brief Construct Shaper to operate on a blueprint-formatted mesh
     stored in a Conduit Node.
   */
   IntersectionShaper(RuntimePolicy runtimePolicy,
+                     int allocatorId,
                      const klee::ShapeSet& shapeSet,
                      conduit::Node* bpNode,
                      const std::string& topo = "")
-    : Shaper(runtimePolicy, shapeSet, bpNode, topo)
+    : Shaper(runtimePolicy, allocatorId, shapeSet, bpNode, topo)
     , m_free_mat_name("free")
   { }
   #endif
@@ -891,7 +899,7 @@ private:
 
     // Overlap volume is the volume of clip(oct,tet) for c2c
     // or clip(tet,tet) for Pro/E meshes
-    if (m_overlap_volumes.empty())
+    if(m_overlap_volumes.empty())
     {
       m_overlap_volumes =
         axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
@@ -899,7 +907,7 @@ private:
     m_overlap_volumes.fill(0.0);
 
     // Hex volume is the volume of the hexahedron element
-    if (m_hex_volumes.empty())
+    if(m_hex_volumes.empty())
     {
       m_hex_volumes =
         axom::Array<double>(m_cellCount, m_cellCount, device_allocator);
@@ -2143,7 +2151,7 @@ private:
     return has;
   }
 
-  /*!  @brief Get a scalar double-type field data from the mesh,
+  /*!  \brief Get a scalar double-type field data from the mesh,
     "fields/fieldName/values", creating it if it doesn't exist.
 
     Also add the corresponding entry in the blueprint field
@@ -2319,7 +2327,7 @@ public:
       });  // end of loop to initialize hexahedral elements and bounding boxes
   }
 
-  //!@brief Set shape vertices to zero of within threshold.
+  //!\brief Set shape vertices to zero of within threshold.
   template <typename ExecSpace, typename ShapeType>
   void snapShapeVerticesToZero(axom::Array<ShapeType>& shapes,
                                axom::IndexType shapeCount,
@@ -2529,10 +2537,10 @@ private:
   double m_revolvedVolume {DEFAULT_REVOLVED_VOLUME};
   std::string m_free_mat_name;
 
-  //! @brief Volumes of cells in the computational mesh.
+  //! \brief Volumes of cells in the computational mesh.
   axom::Array<double> m_hex_volumes;
 
-  //! @brief Overlap volumes of cells in the computational mesh for the last shape.
+  //! \brief Overlap volumes of cells in the computational mesh for the last shape.
   axom::Array<double> m_overlap_volumes;
 
   double m_vertexWeldThreshold {1.e-10};

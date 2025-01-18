@@ -56,6 +56,7 @@ public:
     @brief Construct Shaper to operate on an MFEM mesh.
   */
   Shaper(RuntimePolicy execPolicy,
+         int allocatorId,
          const klee::ShapeSet& shapeSet,
          sidre::MFEMSidreDataCollection* dc);
 #endif
@@ -65,6 +66,7 @@ public:
     stored in a sidre Group.
   */
   Shaper(RuntimePolicy execPolicy,
+         int allocatorId,
          const klee::ShapeSet& shapeSet,
          sidre::Group* bpMesh,
          const std::string& topo = "");
@@ -79,6 +81,7 @@ public:
     policy.  Any needed-but-missing space would lead to an exception.
   */
   Shaper(RuntimePolicy execPolicy,
+         int allocatorId,
          const klee::ShapeSet& shapeSet,
          conduit::Node* bpNode,
          const std::string& topo = "");
@@ -212,6 +215,8 @@ protected:
 
 protected:
   RuntimePolicy m_execPolicy;
+  int m_allocatorId;
+
   sidre::DataStore m_dataStore;
 
   const klee::ShapeSet& m_shapeSet;
