@@ -3039,6 +3039,39 @@ void closure_intuition_2d()
   simple_grid_test(curves2, bbox, 300, 300, wn_out2);
 }
 
+void plot_trimming_curves()
+{
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
+    "subdivision\\";
+
+  std::string filename = "trimmed_surface";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  axom::primal::NURBSPatch<double, 3> the_patch;
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  for(const auto& kv : stepProcessor.getPatchDataMap())
+  {
+    std::cout << kv.first << std::endl;
+    meshBBox.addBox(kv.second.physicalBBox);
+    the_patch = kv.second.nurbsPatch;
+  }
+
+  // auto the_patch = stepProcessor.getPatchDataMap()[0].nurbsPatch;
+  axom::primal::NURBSPatch<double, 3> n1, n2;
+  the_patch.diskSplit(0.4, 0.2, 0.08, n1, n2);
+
+  the_patch.printTrimmingCurves(
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
+    "subdivision\\original.txt");
+  n1.printTrimmingCurves(
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
+    "subdivision\\disk.txt");
+  n2.printTrimmingCurves(
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
+    "subdivision\\remaining.txt");
+}
+
 int main()
 {
   // nut_3d_example();
