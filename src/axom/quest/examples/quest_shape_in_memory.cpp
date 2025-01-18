@@ -1431,20 +1431,7 @@ int main(int argc, char** argv)
   axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
     params.annotationMode);
 
-  // We will use array memory compatible with the specified runtime policy.
-  int defaultAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-#if defined(AXOM_USE_CUDA)
-  if(params.policy == RuntimePolicy::cuda)
-  {
-    defaultAllocId = axom::execution_space<axom::CUDA_EXEC<256>>::allocatorID();
-  }
-#endif
-#if defined(AXOM_USE_HIP)
-  if(params.policy == RuntimePolicy::hip)
-  {
-    defaultAllocId = axom::execution_space<axom::HIP_EXEC<256>>::allocatorID();
-  }
-#endif
+  const int allocatorId = axom::policyToDefaultAllocatorID(params.policy);
 
   AXOM_ANNOTATE_BEGIN("quest example for shaping primals");
   AXOM_ANNOTATE_BEGIN("init");
@@ -1577,7 +1564,7 @@ int main(int argc, char** argv)
   if(params.useBlueprintSidre() || params.useBlueprintConduit())
   {
     compMeshGrp = ds.getRoot()->createGroup("compMesh");
-    compMeshGrp->setDefaultAllocator(defaultAllocId);
+    compMeshGrp->setDefaultAllocator(allocatorId);
 
     createBoxMesh(compMeshGrp);
 
