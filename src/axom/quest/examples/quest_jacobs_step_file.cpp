@@ -1393,8 +1393,6 @@ public:
     {
       kv.second.nurbsPatchData =
         axom::primal::NURBSPatchData<double>(kv.first, kv.second.nurbsPatch);
-      kv.second.nurbsPatchData.curve_quadrature_maps.resize(
-        kv.second.nurbsPatch.getNumTrimmingCurves());
     }
   }
 
@@ -3316,7 +3314,6 @@ void generic_timing_test(std::string prefix,
                          axom::primal::BoundingBox<double, 3> bbox)
 {
   auto stepProcessor = import_step_file(prefix, filename);
-  return;
 
   std::ofstream results(prefix + filename + "_timing_results.csv");
   std::ofstream summary(prefix + filename + "_timing_summary.csv");
@@ -3374,6 +3371,8 @@ void generic_timing_test(std::string prefix,
         int case_code = -1;
         int integrated_trimming_curves = 0;
         axom::utilities::Timer timer(false);
+
+        std::cout << i << ", " << j << ", " << k << ": Query: " << query << std::endl;
 
         double wn = 0.0;
         for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3879,6 +3878,95 @@ void complex_gear_subset_example(bool process_only = false)
     200);
 }
 
+void spring_direction_example()
+{
+  // ABC example 86
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\spring_"
+    "direction\\";
+
+  std::string filename = "spring";
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  int case_code = -1;
+  axom::primal::Vector<double, 3> direction = {1.0, 0.0, 0.0};
+
+  auto wn_field =
+    [&direction, &stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+      axom::primal::Point<double, 3> query) -> std::pair<double, double> {
+    double wn = 0.0;
+    axom::utilities::Timer timer(false);
+
+    timer.start();
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      int integrated_trimming_curves;
+      auto split_val =
+        axom::primal::winding_number_casting_split(query,
+                                             kv.second.nurbsPatchData,
+                                             direction,
+                                             case_code,
+                                             integrated_trimming_curves,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      wn += split_val.first + split_val.second;
+    }
+    timer.stop();
+
+    std::pair<double, double> result = {wn, timer.elapsedTimeInSec()};
+    return result;
+  };
+
+  axom::primal::BoundingBox<double, 3> meshBBox;
+  meshBBox.addPoint(axom::primal::Point<double, 3> {-0.04, -0.04, -0.03});
+  meshBBox.addPoint(axom::primal::Point<double, 3> {0.04, 0.04, 0.03});
+  meshBBox.scale(1.11);
+
+  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+
+  direction = axom::primal::Vector<double, 3> {1.0, 0.0, 0.0};
+  axom::primal::exportSplitScalarSliceFieldToVTK<double>(
+    prefix + filename + "_slice_x.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    meshBBox.getMax()[1] - meshBBox.getMin()[1],
+    meshBBox.getMax()[2] - meshBBox.getMin()[2],
+    100,
+    100);
+
+  direction = axom::primal::Vector<double, 3> {0.0, 1.0, 0.0};
+  axom::primal::exportSplitScalarSliceFieldToVTK<double>(
+    prefix + filename + "_slice_y.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    meshBBox.getMax()[1] - meshBBox.getMin()[1],
+    meshBBox.getMax()[2] - meshBBox.getMin()[2],
+    100,
+    100);
+
+  direction = axom::primal::Vector<double, 3> {0.0, 0.0, 1.0};
+  axom::primal::exportSplitScalarSliceFieldToVTK<double>(
+    prefix + filename + "_slice_z.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0, 0, 0},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    meshBBox.getMax()[1] - meshBBox.getMin()[1],
+    meshBBox.getMax()[2] - meshBBox.getMin()[2],
+    100,
+    100);
+}
+
 int main()
 {
   // nut_3d_example();
@@ -3906,12 +3994,12 @@ int main()
   std::string filename;
 
   // Spring
-  // filename = "spring";
-  // bbox.clear();
-  // bbox.addPoint(axom::primal::Point<double, 3> {-0.04, -0.04, -0.03});
-  // bbox.addPoint(axom::primal::Point<double, 3> {0.04, 0.04, 0.03});
-  // bbox.scale(1.01);
-  // generic_timing_test(prefix, filename, bbox);
+  filename = "spring";
+  bbox.clear();
+  bbox.addPoint(axom::primal::Point<double, 3> {-0.04, -0.04, -0.03});
+  bbox.addPoint(axom::primal::Point<double, 3> {0.04, 0.04, 0.03});
+  bbox.scale(1.01);
+  generic_timing_test(prefix, filename, bbox);
 
   // // Van
   // filename = "van";
@@ -3922,12 +4010,12 @@ int main()
   // generic_timing_test(prefix, filename, bbox);
 
   // Bobbin
-  filename = "bobbin";
-  bbox.clear();
-  bbox.addPoint(axom::primal::Point<double, 3> {-0.065, -0.065, 0});
-  bbox.addPoint(axom::primal::Point<double, 3> {0.065, 0.065, 0.05});
-  bbox.scale(1.01);
-  generic_timing_test(prefix, filename, bbox);
+  //   filename = "bobbin";
+  //   bbox.clear();
+  //   bbox.addPoint(axom::primal::Point<double, 3> {-0.065, -0.065, 0});
+  //   bbox.addPoint(axom::primal::Point<double, 3> {0.065, 0.065, 0.05});
+  //   bbox.scale(1.01);
+  //   generic_timing_test(prefix, filename, bbox);
 
   // Complex Gear
   // filename = "complex_gear";
@@ -3937,5 +4025,6 @@ int main()
   // bbox.scale(1.01);
   // generic_timing_test(prefix, filename, bbox);
 
+  // spring_direction_example();
   return 0;
 }

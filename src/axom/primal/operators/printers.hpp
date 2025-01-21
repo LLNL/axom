@@ -1040,7 +1040,7 @@ void exportScalarFieldToVTK(const std::string& filename,
 }
 
 template <typename T>
-void exportSplitScalarFieldToVTK(
+void exportSumSplitScalarFieldToVTK(
   const std::string& filename,
   std::function<std::pair<double, double>(Point3D)> scalarField,
   primal::BoundingBox<T, 3> bbox,
@@ -1158,14 +1158,14 @@ void exportSliceScalarFieldToVTK(const std::string& filename,
   Vector<T, 3> v = Vector<T, 3>::cross_product(normal, u).unitVector();
 
   exportSliceScalarFieldToVTK<T>(filename,
-                            fieldFunc,
-                            origin,
-                            u,
-                            v,
-                            planeWidth,
-                            planeHeight,
-                            uSteps,
-                            vSteps);
+                                 fieldFunc,
+                                 origin,
+                                 u,
+                                 v,
+                                 planeWidth,
+                                 planeHeight,
+                                 uSteps,
+                                 vSteps);
 }
 
 template <typename T>
@@ -1234,6 +1234,101 @@ void exportSliceScalarFieldToVTK(const std::string& filename,
       file << val << "\n";
     }
   }
+
+  file.close();
+}
+
+template <typename T>
+void exportSplitScalarSliceFieldToVTK(
+  const std::string& filename,
+  std::function<std::pair<double, double>(Point3D)> scalarField,
+  const Point3D& origin,
+  const Vector<T, 3>& u,
+  const Vector<T, 3>& v,
+  double planeWidth,
+  double planeHeight,
+  int uSteps,
+  int vSteps)
+{
+  std::ofstream file(filename);
+
+  // Arrays to store the scalar fields
+  std::vector<double> scalarField1, scalarField2;
+
+  // Reserve space for the arrays
+  int totalPoints = uSteps * vSteps;
+  scalarField1.reserve(totalPoints);
+  scalarField2.reserve(totalPoints);
+
+  for(int j = 0; j < vSteps; ++j)
+  {
+    printLoadingBar(j, vSteps);
+    for(int i = 0; i < uSteps; ++i)
+    {
+      double s = planeWidth * (i / static_cast<double>(uSteps - 1) - 0.5);
+      double t = planeHeight * (j / static_cast<double>(vSteps - 1) - 0.5);
+      double x = origin[0] + s * u[0] + t * v[0];
+      double y = origin[1] + s * u[1] + t * v[1];
+      double z = origin[2] + s * u[2] + t * v[2];
+
+      auto val = scalarField(Point3D({x, y, z}));
+      if(val.first != val.first)
+      {
+        std::cout << std::setprecision(20);
+        std::cout << "NAN recorded at (" << x << " " << y << " " << z << ")"
+                  << std::endl;
+        std::cout << std::setprecision(6);
+        val.first = 0.0;
+      }
+      scalarField1.push_back(val.first);
+      scalarField2.push_back(val.second);
+    }
+  }
+
+  if(!file.is_open())
+  {
+    std::cerr << "Failed to open file: " << filename << std::endl;
+    return;
+  }
+
+  // Write VTK header
+  file << "# vtk DataFile Version 3.0\n";
+  file << "Scalar field on a plane\n";
+  file << "ASCII\n";
+  file << "DATASET STRUCTURED_GRID\n";
+  file << "DIMENSIONS " << uSteps << " " << vSteps << " 1\n";
+
+  // Write points
+  file << "POINTS " << (uSteps * vSteps) << " float\n";
+  for(int j = 0; j < vSteps; ++j)
+  {
+    for(int i = 0; i < uSteps; ++i)
+    {
+      double s = planeWidth * (i / static_cast<double>(uSteps - 1) - 0.5);
+      double t = planeHeight * (j / static_cast<double>(vSteps - 1) - 0.5);
+      double x = origin[0] + s * u[0] + t * v[0];
+      double y = origin[1] + s * u[1] + t * v[1];
+      double z = origin[2] + s * u[2] + t * v[2];
+      file << x << " " << y << " " << z << "\n";
+    }
+  }
+
+  // Write scalar field data
+  file << "POINT_DATA " << (uSteps * vSteps) << "\n";
+  file << "SCALARS gwn double 1\n";
+  file << "LOOKUP_TABLE default\n";
+  for(int i = 0; i < totalPoints; ++i)
+  {
+    file << scalarField1[i] << "\n";
+  }
+
+  file << "SCALARS timing double 1\n";
+  file << "LOOKUP_TABLE default\n";
+  for(int i = 0; i < totalPoints; ++i)
+  {
+    file << scalarField2[i] << "\n";
+  }
+
   file.close();
 }
 
