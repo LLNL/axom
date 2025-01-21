@@ -1102,8 +1102,7 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
  * \param [in] seg A segment
  * \param [out] t Intersection point of plane and seg, w.r.t. 
  *   parametrization of seg
- * \param [in] EPS tolerance parameter for determining if \a t
- *             is just within 0.0 <= t <= 1.0 .
+ * \param [in] EPS tolerance parameter for determining if 0.0 <= t <= 1.0
  * \return true iff plane intersects with segment, otherwise, false.
  */
 template <typename T, int DIM>

@@ -763,11 +763,10 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   for(int i = 0; i < outputList.numVertices(); i++)
   {
     int prevIndex = ((i - 1) == -1) ? (outputList.numVertices() - 1) : (i - 1);
-    if(outputList[i] == outputList[prevIndex])
+    if(outputList[i] != outputList[prevIndex])
     {
-      continue;
+      uniqueList.addVertex(outputList[i]);
     }
-    uniqueList.addVertex(outputList[i]);
   }
 
   return uniqueList;

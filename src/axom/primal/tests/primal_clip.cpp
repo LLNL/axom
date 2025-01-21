@@ -2044,7 +2044,7 @@ TEST(primal_clip, polygon_intersect_robustness)
 
   for(int p : std::vector<int> {0, 1, 2, 3, 4, 6})
   {
-    // Clip clipLower with fine quad
+    // Clip clipLower with overlapping fine quad
     const auto overlapPoly = axom::primal::clip(clipLower, fine[p], EPS);
     EXPECT_TRUE(overlapPoly.isValid());
 
@@ -2055,9 +2055,17 @@ TEST(primal_clip, polygon_intersect_robustness)
     }
   }
 
+  for(int p : std::vector<int> {5, 7, 8})
+  {
+    // Clip clipLower with non-intersecting fine quad
+    const auto overlapPoly = axom::primal::clip(clipLower, fine[p], EPS);
+    EXPECT_FALSE(overlapPoly.isValid());
+    EXPECT_EQ(overlapPoly.numVertices(), 0);
+  }
+
   for(int p : std::vector<int> {2, 4, 5, 6, 7, 8})
   {
-    // Clip clipUpper with fine quad
+    // Clip clipUpper with overlapping fine quad
     const auto overlapPoly = axom::primal::clip(clipUpper, fine[p], EPS);
     EXPECT_TRUE(overlapPoly.isValid());
 
@@ -2066,6 +2074,14 @@ TEST(primal_clip, polygon_intersect_robustness)
       const double vf = overlapPoly.area() / fine_area;
       EXPECT_NEAR(vf, upper_vf[p], EPS);
     }
+  }
+
+  for(int p : std::vector<int> {0, 1, 3})
+  {
+    // Clip clipUpper with non-intersecting fine quad
+    const auto overlapPoly = axom::primal::clip(clipUpper, fine[p], EPS);
+    EXPECT_FALSE(overlapPoly.isValid());
+    EXPECT_EQ(overlapPoly.numVertices(), 0);
   }
 }
 
