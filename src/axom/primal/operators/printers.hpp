@@ -881,7 +881,9 @@ void simple_timing_test(axom::Array<BezierCurve<T, 2>>& curves,
     }
   }
 }
-inline void printLoadingBar(int progress, int total, int barWidth = 40)
+
+template <typename T>
+inline void printLoadingBar(T progress, int total, int barWidth = 40)
 {
   float percentage = static_cast<float>(progress) / total;
   int progressWidth = static_cast<int>(percentage * barWidth);
@@ -929,6 +931,80 @@ void exportScalarFieldToVTK(const std::string& filename,
   file << "POINT_DATA " << xSteps * ySteps * zSteps << "\n";
   file << "SCALARS scalars float\n";
   file << "LOOKUP_TABLE default\n";
+
+  // Write scalar field data
+  for(int k = 0; k < zSteps; ++k)
+  {
+    printLoadingBar(k, zSteps);
+
+    for(int j = 0; j < ySteps; ++j)
+    {
+      for(int i = 0; i < xSteps; ++i)
+      {
+        T x = bbox.getMin()[0] + i * dx;
+        T y = bbox.getMin()[1] + j * dy;
+        T z = bbox.getMin()[2] + k * dz;
+
+        auto query = Point3D({x, y, z});
+
+        T scalarValue = scalarField(query);
+
+        // Print the query if scalarValue is nan
+        if(scalarValue != scalarValue)
+          std::cout << std::setprecision(20) << query << std::endl;
+
+        //for(int n = 0; n < patches.size(); ++n)
+        //scalarValue +=
+        //winding_number(query, patches[n], edge_tol, quad_tol, EPS);
+
+        file << scalarValue << "\n";
+      }
+    }
+  }
+
+  file.close();
+}
+
+template <typename T>
+void exportScalarFieldToVTK(const std::string& filename,
+                            const std::string& timing_filename,
+                            std::function<T(Point3D)> scalarField,
+                            primal::BoundingBox<T, 3> bbox,
+                            int xSteps,
+                            int ySteps,
+                            int zSteps)
+{
+  std::ofstream file(filename);
+  std::ofstream timing_file(timing_filename);
+
+  if(!file.is_open())
+  {
+    std::cerr << "Failed to open file: " << filename << std::endl;
+    return;
+  }
+
+  T dx =
+    (xSteps > 1) ? (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1) : 0.0;
+  T dy =
+    (ySteps > 1) ? (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1) : 0.0;
+  T dz =
+    (zSteps > 1) ? (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1) : 0.0;
+
+  // Write VTK header
+  file << "# vtk DataFile Version 3.0\n";
+  file << "Scalar field data\n";
+  file << "ASCII\n";
+  file << "DATASET STRUCTURED_POINTS\n";
+  file << "DIMENSIONS " << xSteps << " " << ySteps << " " << zSteps << "\n";
+  file << "ORIGIN " << bbox.getMin()[0] << " " << bbox.getMin()[1] << " "
+       << bbox.getMin()[2] << "\n";
+  file << "SPACING " << dx << " " << dy << " " << dz << "\n";
+  file << "POINT_DATA " << xSteps * ySteps * zSteps << "\n";
+  file << "SCALARS scalars float\n";
+  file << "LOOKUP_TABLE default\n";
+
+  int case_count[4] = {0, 0, 0, 0};
+  double case_time[4] = {0.0, 0.0, 0.0, 0.0};
 
   // Write scalar field data
   for(int k = 0; k < zSteps; ++k)
@@ -1158,7 +1234,6 @@ void exportSliceScalarFieldToVTK(const std::string& filename,
       file << val << "\n";
     }
   }
-
   file.close();
 }
 

@@ -1270,7 +1270,8 @@ double winding_number_direct(const Point<T, 3>& query,
 template <typename T>
 double winding_number_casting(const Point<T, 3>& query,
                               const NURBSPatchData<T>& nPatchData,
-                              std::tuple<int, int, int, int, int>& stat_tuple,
+                              int& case_code,
+                              int& integrated_trimming_curves,
                               const double edge_tol = 1e-8,
                               const double quad_tol = 1e-8,
                               const double EPS = 1e-8,
@@ -1280,11 +1281,12 @@ double winding_number_casting(const Point<T, 3>& query,
   double u = axom::utilities::random_real(-1.0, 1.0);
   auto cast_direction =
     Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
-  cast_direction = Vector<T, 3> {0.0, 0.0, 1.0};
+  // cast_direction = Vector<T, 3> {0.0, 0.0, 1.0};
   auto wn_split = winding_number_casting_split(query,
                                                nPatchData,
                                                cast_direction,
-                                               stat_tuple,
+                                               case_code,
+                                               integrated_trimming_curves,
                                                edge_tol,
                                                quad_tol,
                                                EPS,
@@ -1297,7 +1299,8 @@ std::pair<double, double> winding_number_casting_split(
   const Point<T, 3>& query,
   const NURBSPatchData<T>& nPatchData,
   const Vector<T, 3>& discontinuity_direction,
-  std::tuple<int, int, int, int, int>& stat_tuple,
+  int& case_code,
+  int& integrated_trimming_curves,
   const double edge_tol = 1e-8,
   const double quad_tol = 1e-8,
   const double EPS = 1e-8,
@@ -1383,7 +1386,9 @@ std::pair<double, double> winding_number_casting_split(
   // Case 1: Exterior without rotations
   if(!bBox.contains(query))
   {
-    std::get<0>(stat_tuple) += 1;
+    case_code = 0;
+    integrated_trimming_curves = integralPatch.getNumTrimmingCurves();
+
     const bool exterior_x =
       bBox.getMin()[0] > query[0] || query[0] > bBox.getMax()[0];
     const bool exterior_y =
@@ -1407,7 +1412,9 @@ std::pair<double, double> winding_number_casting_split(
   // Case 1.5: Exterior with rotation
   else if(!oBox.contains(query))
   {
-    std::get<1>(stat_tuple) += 1;
+    case_code = 1;
+    integrated_trimming_curves = integralPatch.getNumTrimmingCurves();
+
     /* The following steps rotate the patch until the OBB is /not/ 
        directly above or below the query point */
     field_direction = detail::DiscontinuityAxis::rotated;
@@ -1438,7 +1445,8 @@ std::pair<double, double> winding_number_casting_split(
   // Case 2: Cast a ray, record intersections
   else
   {
-    std::get<2>(stat_tuple) += 1;
+    case_code = 2;
+    integrated_trimming_curves = integralPatch.getNumTrimmingCurves();
 
     // wn_split.first += 0.0;
     // return wn_split;
@@ -1577,6 +1585,7 @@ std::pair<double, double> winding_number_casting_split(
       //  > If the disk intersects the trimming curves, performs disk subdivision
       bool isDiskInside, isDiskOutside, ignoreInteriorDisk = true;
       NURBSPatch<T, 3> disk_patch;
+      int old_num_trim = integralPatch.getNumTrimmingCurves();
 
       {
         // AXOM_ANNOTATE_SCOPE("DISK_SPLIT");
@@ -1610,7 +1619,9 @@ std::pair<double, double> winding_number_casting_split(
 
       if(extraTrimming)
       {
-        std::get<3>(stat_tuple) += 1;
+        case_code = 3;
+        integrated_trimming_curves += disk_patch.getNumTrimmingCurves() +
+          (integralPatch.getNumTrimmingCurves() - old_num_trim);
       }
 
       // If the query point is on the surface, the contribution of the disk is near-zero,
@@ -1723,6 +1734,111 @@ std::pair<double, double> winding_number_casting_split(
   return wn_split;
 }
 
+template <typename T>
+double simple_coincident_wn(const Point<T, 3>& query,
+                            const NURBSPatch<T, 3>& nPatch,
+                            const Vector<T, 3>& discontinuity_direction,
+                            const double quad_tol = 1e-8)
+{
+  // Fix the number of quadrature nodes arbitrarily
+  constexpr int quad_npts = 15;
+
+  double wn = 0.0;
+
+  /* 
+   * To use Stokes theorem, we need to identify either a line containing the
+   * query that does not intersect the surface, or one that intersects the *interior*
+   * of the surface at known locations.
+   */
+
+  // Lambda to generate a 3D rotation matrix from an angle and axis
+  // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
+  auto angleAxisRotMatrix = [](double theta,
+                               const Vector<T, 3>& axis) -> numerics::Matrix<T> {
+    const auto unitized = axis.unitVector();
+    const double x = unitized[0], y = unitized[1], z = unitized[2];
+    const double c = cos(theta), s = sin(theta), C = 1 - c;
+
+    auto matx = numerics::Matrix<T>::zeros(3, 3);
+
+    matx(0, 0) = x * x * C + c;
+    matx(0, 1) = x * y * C - z * s;
+    matx(0, 2) = x * z * C + y * s;
+
+    matx(1, 0) = y * x * C + z * s;
+    matx(1, 1) = y * y * C + c;
+    matx(1, 2) = y * z * C - x * s;
+
+    matx(2, 0) = z * x * C - y * s;
+    matx(2, 1) = z * y * C + x * s;
+    matx(2, 2) = z * z * C + c;
+
+    return matx;
+  };
+
+  // Rotation matrix for the patch
+  numerics::Matrix<T> rotator;
+
+  // Prefer to work with a trimmed patch
+  NURBSPatch<T, 3> integralPatch = nPatch;
+
+  // Define vector fields whose curl gives us the winding number
+  detail::DiscontinuityAxis field_direction;
+  bool extraTrimming = false;
+
+  auto bBox = nPatch.boundingBox();
+  auto characteristic_length = bBox.range().norm();
+  bBox.expand(0.01 * characteristic_length);
+  auto oBox = nPatch.orientedBoundingBox().expand(0.01 * characteristic_length);
+
+  // Case 2: Cast a ray, record intersections
+  {
+    field_direction = detail::DiscontinuityAxis::rotated;
+    Line<T, 3> discontinuity_axis(query, discontinuity_direction);
+
+    T patch_knot_size = axom::utilities::max(
+      integralPatch.getKnots_u()[integralPatch.getNumKnots_u() - 1] -
+        integralPatch.getKnots_u()[0],
+      integralPatch.getKnots_v()[integralPatch.getNumKnots_v() - 1] -
+        integralPatch.getKnots_v()[0]);
+
+    // Rotate the patch so that the discontinuity direction is aligned with the z-axis
+    Vector<T, 3> axis = {discontinuity_direction[1],
+                         -discontinuity_direction[0],
+                         0.0};
+
+    double ang =
+      acos(axom::utilities::clampVal(discontinuity_direction[2], -1.0, 1.0));
+
+    rotator = angleAxisRotMatrix(ang, axis);
+
+    // std::cout << wn_split.second << std::endl;
+    // std::cout << std::endl;
+  }
+
+  //  Rotate it if we need to
+  if(field_direction == detail::DiscontinuityAxis::rotated)
+  {
+    // The trimming curves for rotatedPatch have been changed as needed,
+    //  but we need to rotate the control points
+    auto patch_shape = integralPatch.getControlPoints().shape();
+    for(int i = 0; i < patch_shape[0]; ++i)
+    {
+      for(int j = 0; j < patch_shape[1]; ++j)
+      {
+        integralPatch(i, j) = detail::rotate_point(rotator, query, nPatch(i, j));
+      }
+    }
+  }
+
+  wn += detail::stokes_winding_number(query,
+                                      integralPatch,
+                                      field_direction,
+                                      quad_npts,
+                                      0);
+
+  return wn;
+}
 #endif
 
 }  // namespace primal
