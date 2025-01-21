@@ -510,7 +510,7 @@ double stokes_winding_number_cached(const Point<T, 3>& query,
       single_stokes_cached(query, quad_rule, ax, trimming_curve_data);
 
     // If far away, use this value
-    if(false)//!isNearAxisBox(query, trimming_curve_data.bbox, 5.0, ax))
+    if(!isNearAxisBox(query, trimming_curve_data.bbox, 5.0, ax))
     {
       quad += 0.25 * M_1_PI * quad_coarse;
     }
@@ -571,7 +571,7 @@ double adaptive_stokes_cached(const Point<T, 3>& query,
   else
   {
     // If we're not near the axis, we can trust the original value
-    if(true)//isNearAxisBox(query, trimming_curve_data_1.bbox, 5.0, ax))
+    if(isNearAxisBox(query, trimming_curve_data_1.bbox, 5.0, ax))
       quad_fine_1 = adaptive_stokes_cached(query,
                                            nPatchData,
                                            quad_rule,
@@ -582,7 +582,7 @@ double adaptive_stokes_cached(const Point<T, 3>& query,
                                            quad_fine_1,
                                            quad_tol);
 
-    if(true)//isNearAxisBox(query, trimming_curve_data_2.bbox, 5.0, ax))
+    if(isNearAxisBox(query, trimming_curve_data_2.bbox, 5.0, ax))
       quad_fine_2 = adaptive_stokes_cached(query,
                                            nPatchData,
                                            quad_rule,
@@ -705,7 +705,7 @@ double stokes_winding_number_cached_rotated(const Point<T, 3>& query,
       single_stokes_cached_rotated(query, quad_rule, rotator, trimming_curve_data);
 
     // If far away, use this value
-    if(false)//!isNearAxisBoxRotated(query, trimming_curve_data.bbox, 5.0, rotator))
+    if(!isNearAxisBoxRotated(query, trimming_curve_data.bbox, 5.0, rotator))
     {
       quad += 0.25 * M_1_PI * quad_coarse;
     }
@@ -766,7 +766,7 @@ double adaptive_stokes_cached_rotated(const Point<T, 3>& query,
   else
   {
     // If we're not near the axis, we can trust the original value
-    if(true)//isNearAxisBoxRotated(query, trimming_curve_data_1.bbox, 5.0, rotator))
+    if(isNearAxisBoxRotated(query, trimming_curve_data_1.bbox, 5.0, rotator))
       quad_fine_1 = adaptive_stokes_cached_rotated(query,
                                                    nPatchData,
                                                    quad_rule,
@@ -777,7 +777,7 @@ double adaptive_stokes_cached_rotated(const Point<T, 3>& query,
                                                    quad_fine_1,
                                                    quad_tol);
 
-    if(true)//isNearAxisBoxRotated(query, trimming_curve_data_2.bbox, 5.0, rotator))
+    if(isNearAxisBoxRotated(query, trimming_curve_data_2.bbox, 5.0, rotator))
       quad_fine_2 = adaptive_stokes_cached_rotated(query,
                                                    nPatchData,
                                                    quad_rule,
