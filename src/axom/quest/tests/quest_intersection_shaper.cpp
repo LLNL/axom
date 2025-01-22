@@ -326,7 +326,7 @@ void replacementRuleTest(const std::string &shapeFile,
   #endif
   quest::IntersectionShaper shaper(
     policy,
-    axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq),
+    axom::INVALID_ALLOCATOR_ID,
     shapeSet,
     &dc);
   shaper.setLevel(refinementLevel);
@@ -465,7 +465,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
   #endif
   quest::IntersectionShaper shaper(
     policy,
-    axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq),
+    axom::INVALID_ALLOCATOR_ID,
     shapeSet,
     &dc);
   shaper.setLevel(refinementLevel);
