@@ -33,7 +33,9 @@ Shaper::Shaper(RuntimePolicy execPolicy,
                const klee::ShapeSet& shapeSet,
                sidre::MFEMSidreDataCollection* dc)
   : m_execPolicy(execPolicy)
-  , m_allocatorId(allocatorId)
+  , m_allocatorId(allocatorId != axom::INVALID_ALLOCATOR_ID
+                    ? allocatorId
+                    : axom::policyToDefaultAllocatorID(execPolicy))
   , m_shapeSet(shapeSet)
   , m_dc(dc)
   #if defined(AXOM_USE_CONDUIT)
@@ -58,7 +60,9 @@ Shaper::Shaper(RuntimePolicy execPolicy,
                sidre::Group* bpGrp,
                const std::string& topo)
   : m_execPolicy(execPolicy)
-  , m_allocatorId(allocatorId)
+  , m_allocatorId(allocatorId != axom::INVALID_ALLOCATOR_ID
+                    ? allocatorId
+                    : axom::policyToDefaultAllocatorID(execPolicy))
   , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(bpGrp)
@@ -91,7 +95,9 @@ Shaper::Shaper(RuntimePolicy execPolicy,
                conduit::Node* bpNode,
                const std::string& topo)
   : m_execPolicy(execPolicy)
-  , m_allocatorId(allocatorId)
+  , m_allocatorId(allocatorId != axom::INVALID_ALLOCATOR_ID
+                    ? allocatorId
+                    : axom::policyToDefaultAllocatorID(execPolicy))
   , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)
@@ -104,7 +110,7 @@ Shaper::Shaper(RuntimePolicy execPolicy,
 {
   AXOM_ANNOTATE_SCOPE("Shaper::Shaper_Node");
   m_bpGrp = m_ds.getRoot()->createGroup("internalGrp");
-  m_bpGrp->setDefaultAllocator(policyToDefaultAllocatorID(m_execPolicy));
+  m_bpGrp->setDefaultAllocator(m_allocatorId);
 
   m_bpGrp->importConduitTreeExternal(*bpNode);
 
