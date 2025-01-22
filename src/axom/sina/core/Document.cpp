@@ -197,51 +197,46 @@ conduit::Node Document::toNode() const
   return document;
 }
 
-void Document::createFromNode(conduit::Node const &asNode,
-                              RecordLoader const &recordLoader)
+void Document::createFromNode(const conduit::Node &asNode, 
+                              const RecordLoader &recordLoader)
 {
-  if(asNode.has_child(RECORDS_KEY))
-  {
-    conduit::Node record_nodes = asNode[RECORDS_KEY];
-    if(record_nodes.dtype().is_list())
+    conduit::Node nodeCopy = asNode;
+    auto processChildNodes = [&](const char* key, 
+                                 std::function<void(conduit::Node&)> addFunc)
     {
-      auto recordIter = record_nodes.children();
-      while(recordIter.has_next())
-      {
-        auto record = recordIter.next();
+        if (nodeCopy.has_child(key))
+        {
+            conduit::Node &childNodes = nodeCopy[key];
+
+            if (childNodes.number_of_children() == 0)
+            {
+                childNodes.set(conduit::DataType::list());
+            }
+            if (!childNodes.dtype().is_list())
+            {
+                std::ostringstream message;
+                message << "The '" << key << "' element of a document must be an array";
+                throw std::invalid_argument(message.str());
+            }
+
+            auto childIter = childNodes.children();
+            while (childIter.has_next())
+            {
+                conduit::Node child = childIter.next();
+                addFunc(child);
+            }
+        }
+    };
+
+    processChildNodes(RECORDS_KEY, [&](conduit::Node &record)
+    {
         add(recordLoader.load(record));
-      }
-    }
-    else
-    {
-      std::ostringstream message;
-      message << "The '" << RECORDS_KEY
-              << "' element of a document must be an array";
-      throw std::invalid_argument(message.str());
-    }
-  }
+    });
 
-  if (asNode.has_child(RELATIONSHIPS_KEY))
+    processChildNodes(RELATIONSHIPS_KEY, [&](conduit::Node &relationship)
     {
-        conduit::Node relationship_nodes = asNode[RELATIONSHIPS_KEY];
-        if (relationship_nodes.number_of_children() == 0)
-        {
-            relationship_nodes.set(conduit::DataType::list());
-        }
-        else if (!relationship_nodes.dtype().is_list())
-        {
-            std::ostringstream message;
-            message << "The '" << RELATIONSHIPS_KEY << "' element of a document must be an array";
-            throw std::invalid_argument(message.str());
-        }
-
-        auto relationshipsIter = relationship_nodes.children();
-        while (relationshipsIter.has_next())
-        {
-            auto &relationship = relationshipsIter.next();
-            add(Relationship{relationship});
-        }
-    }
+        add(Relationship{relationship});
+    });
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -485,7 +480,7 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets, cons
     return true;
 }
 
-bool append_to_json(const std::string& jsonFilePath, Document const &newData) {
+bool append_to_json(const std::string& jsonFilePath, Document const &newData, const int data_protocol, const int udc_protocol) {
     std::ifstream file(jsonFilePath);
     if (!file.is_open()) {
         std::cerr << "Error opening file: " << jsonFilePath << std::endl;
@@ -542,30 +537,23 @@ bool append_to_json(const std::string& jsonFilePath, Document const &newData) {
                 }
 
 
+
+                // Protocols: 1 = replace duplicates, 2 = ignore duplicates, Default = cancel append
                 if ((new_record->getData().size() >0) && existing_record.contains("data")) {
                     nlohmann::json& existing_data_sets = existing_record["data"];
                     auto& new_data_sets = new_record->getData();
                     for (auto& new_data : new_data_sets) {
-                        int data_protocol = -1;
                         auto& [new_data_key, new_data_pair] = new_data;
                         json obj = obj.parse(new_data_pair.toNode().to_json());
                         if (existing_data_sets.contains(new_data_key)) {
-                            if (data_protocol == -1) {
-                                std::cout << "Detected a duplicate data key, would you like to: 1 = overwrite duplicates, 2 = ignore duplicates, 3 = cancel the append";
-                                std::cin >> data_protocol;
-                            }
-
                             switch(data_protocol) {
                                 case 1:
                                     existing_data_sets[new_data_key] = obj;
                                     break;
                                 case 2:
                                     break;
-                                case 3:
-                                    std::cout << "Append Cancelled";
-                                    return false;
                                 default:
-                                    std::cout << "Invalid Entry";
+                                    std::cout << "Append Cancelled";
                                     return false;
                             }
                         } else {
@@ -579,24 +567,15 @@ bool append_to_json(const std::string& jsonFilePath, Document const &newData) {
                     auto& new_udc = new_record->getUserDefinedContent();
                     for (auto& udc : new_udc.children()) {
                         std::string udc_name = udc.name();
-                        int udc_protocol = -1;
                         if (existing_record["user_defined"].contains(udc_name)) {
-                            if (udc_protocol == -1) {
-                                std::cout << "Detected a duplicate user_defined key, would you like to: 1 = overwrite duplicates, 2 = ignore duplicates, 3 = cancel the append";
-                                std::cin >> udc_protocol;
-                            }
-
                             switch(udc_protocol) {
                                 case 1:
                                     existing_udc[udc_name] = udc.as_string();
                                     break;
                                 case 2:
                                     break;
-                                case 3:
-                                    std::cout << "Append Cancelled";
-                                    return false;
                                 default:
-                                    std::cout << "Invalid Entry";
+                                    std::cout << "Append Cancelled";
                                     return false;
                             }
                         } else {
@@ -773,7 +752,7 @@ bool validate_curve_sets_hdf5(const DataHolder::CurveSetMap &new_curve_sets, con
 }
 
 
-bool append_to_hdf5(const std::string &hdf5FilePath, const Document &newData) {
+bool append_to_hdf5(const std::string &hdf5FilePath, const Document &newData, const int data_protocol, const int udc_protocol) {
     conduit::relay::io::IOHandle existing_file;
     conduit::Node to_load;
     conduit::Node to_set;

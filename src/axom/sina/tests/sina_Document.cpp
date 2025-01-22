@@ -573,7 +573,7 @@ TEST(Document, test_append_to_json) {
     axom::sina::Document newData =
         Document(data, createRecordLoaderWithAllKnownTypes());
 
-    bool result = append_to_json(jsonFilePath, newData);
+    bool result = append_to_json(jsonFilePath, newData, 1, 1);
 
     std::ifstream updatedFile(jsonFilePath);
     nlohmann::json j;
@@ -659,7 +659,7 @@ TEST(Document, test_append_to_hdf5) {
     "]}";
 
     axom::sina::Document newData = Document(data, createRecordLoaderWithAllKnownTypes());
-    bool result = append_to_hdf5(hdf5FilePath, newData);
+    bool result = append_to_hdf5(hdf5FilePath, newData, 1, 1);
 
 
     // std::ofstream testFile(hdf5FilePath);

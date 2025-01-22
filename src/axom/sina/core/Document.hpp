@@ -251,7 +251,7 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
  * 
  * \return true if appended successfully, false if the append fails
  */
-bool append_to_json(const std::string& jsonFilePath, Document const &newData);
+bool append_to_json(const std::string& jsonFilePath, Document const &newData, const int data_protocol = 2, const int udc_protocol = 2);
 
 /**
  * \brief Append data to the curve set values of a HDF5 File. Listed variants allow for appending to
@@ -264,7 +264,7 @@ bool append_to_json(const std::string& jsonFilePath, Document const &newData);
  * 
  * \return true if appended successfully, false if the append fails
  */
-bool append_to_hdf5(const std::string& hdf5FilePath, Document const &newData);
+bool append_to_hdf5(const std::string& hdf5FilePath, Document const &newData, const int data_protocol = 2, const int udc_protocol = 2);
 }  // namespace sina
 }  // namespace axom
 
