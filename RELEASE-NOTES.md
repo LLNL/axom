@@ -53,6 +53,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
 as well as support for 32-bit `Word`s in Slam's `BitSet` class.
 - Fixes a memory leak in `axom::Array` copy constructor.
+- Fixes robustness issue with the `axom::primal::clip` overload for clipping a 2D polygon against another 2D polygon.
 
 ## [Version 0.10.1] - Release date 2024-10-22
 
