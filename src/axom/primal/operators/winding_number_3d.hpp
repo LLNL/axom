@@ -1281,9 +1281,9 @@ double winding_number_casting(const Point<T, 3>& query,
                               const double EPS = 1e-8,
                               const int depth = 0)
 {
-  double theta = axom::utilities::random_real(0.0, 2 * M_PI);
-  double u = axom::utilities::random_real(-1.0, 1.0);
-  auto cast_direction =
+  const double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+  const double u = axom::utilities::random_real(-1.0, 1.0);
+  const auto cast_direction =
     Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
   // cast_direction = Vector<T, 3> {0.0, 0.0, 1.0};
   auto wn_split = winding_number_casting_split(query,

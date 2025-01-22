@@ -2239,6 +2239,8 @@ StepFileProcessor import_step_file(std::string prefix,
                                    double angular_deflection = 0.5,
                                    bool export_vtk = true)
 {
+  AXOM_ANNOTATE_SCOPE("Load step file");
+
   const std::string stepFilePath = axom::utilities::filesystem::joinPath(prefix, filename + ".step");
   StepFileProcessor stepProcessor(stepFilePath, false);
   if(!stepProcessor.isLoaded())
@@ -2264,40 +2266,43 @@ StepFileProcessor import_step_file(std::string prefix,
     axom::utilities::filesystem::makeDirsForPath(output_dir);
   }
 
-  PatchParametricSpaceProcessor patchProcessor;
-  patchProcessor.setUnits(stepProcessor.getFileUnits());
-  patchProcessor.setVerbosity(false);
-  patchProcessor.setOutputDirectory(output_dir);
-  patchProcessor.setNumFillZeros(numFillZeros);
-  SLIC_INFO(
-    axom::fmt::format("Generating SVG meshes for patches and their trimming "
-                      "curves in '{}' directory",
-                      output_dir));
-  for(const auto& entry : stepProcessor.getPatchDataMap())
   {
-    patchProcessor.generateSVGForPatch(entry.first, entry.second);
+    AXOM_ANNOTATE_SCOPE("Generate SVGs");
+    PatchParametricSpaceProcessor patchProcessor;
+    patchProcessor.setUnits(stepProcessor.getFileUnits());
+    patchProcessor.setVerbosity(false);
+    patchProcessor.setOutputDirectory(output_dir);
+    patchProcessor.setNumFillZeros(numFillZeros);
+    SLIC_INFO(
+      axom::fmt::format("Generating SVG meshes for patches and their trimming "
+                        "curves in '{}' directory",
+                        output_dir));
+    for(const auto& entry : stepProcessor.getPatchDataMap())
+    {
+      patchProcessor.generateSVGForPatch(entry.first, entry.second);
+    }
   }
-
-  if(!getTriangulation)
+  if(getTriangulation)
   {
-    return stepProcessor;
-  }
-  AXOM_UNUSED_VAR(export_vtk);
+    AXOM_ANNOTATE_BEGIN("Triangulate STEP");
 
-  auto& nurbs_shape = stepProcessor.getShape();
-  PatchTriangulator patchTriangulator(nurbs_shape,
-                                      deflection,
-                                      angular_deflection,
-                                      false);
-  patchTriangulator.setOutputDirectory(output_dir);
-  patchTriangulator.setNumFillZeros(numFillZeros);
-  SLIC_INFO(
-    axom::fmt::format("Generating triangles meshes for trimmed and untrimmed "
-                      "patches in '{}' directory",
-                      output_dir));
-  patchTriangulator.triangulateTrimmedPatches();
-  patchTriangulator.triangulateFullMesh();
-  patchTriangulator.triangulateUntrimmedPatches();
+    AXOM_UNUSED_VAR(export_vtk);
+
+    auto& nurbs_shape = stepProcessor.getShape();
+    PatchTriangulator patchTriangulator(nurbs_shape,
+                                        deflection,
+                                        angular_deflection,
+                                        false);
+    patchTriangulator.setOutputDirectory(output_dir);
+    patchTriangulator.setNumFillZeros(numFillZeros);
+    SLIC_INFO(
+      axom::fmt::format("Generating triangles meshes for trimmed and untrimmed "
+                        "patches in '{}' directory",
+                        output_dir));
+    patchTriangulator.triangulateTrimmedPatches();
+    patchTriangulator.triangulateFullMesh();
+    patchTriangulator.triangulateUntrimmedPatches();
+  }
 
   return stepProcessor;
 };
@@ -3350,10 +3355,16 @@ void generic_timing_test(std::string prefix,
 
   axom::fmt::memory_buffer res;
 
-  // write the header for the results table
-  axom::fmt::format_to(std::back_inserter(res),
-    "x, y, z, patch_index, integrated_trimming_curves, winding_number, case_code, elapsed_time\n");
+  const bool output_query_file = false;
 
+  if(output_query_file)
+  {
+    // write the header for the results table
+    axom::fmt::format_to(std::back_inserter(res),
+      "x, y, z, patch_index, integrated_trimming_curves, winding_number, case_code, elapsed_time\n");
+  }
+
+  AXOM_ANNOTATE_BEGIN("GWN query");
   for(int k = 0; k < zSteps; ++k)
   {
     axom::primal::printLoadingBar(k, zSteps);
@@ -3374,6 +3385,8 @@ void generic_timing_test(std::string prefix,
         double wn = 0.0;
         for(const auto& kv : stepProcessor.getPatchDataMap())
         {
+          
+
           int integrated_trimming_curves = 0;
           timer.start();
           double the_val =
@@ -3391,24 +3404,30 @@ void generic_timing_test(std::string prefix,
           case_time_totals[case_code] += timer.elapsedTimeInSec();
           wn += the_val;
 
-          axom::fmt::format_to(std::back_inserter(res),
-                      "{:.15f}, {:.15f}, {:.15f}, {}, {}, {:.15f}, {}, {:.15f}\n",
-                      x,
-                      y,
-                      z,
-                      kv.first,
-                      integrated_trimming_curves,
-                      the_val,
-                      case_code,
-                      timer.elapsedTimeInSec());
+          if(output_query_file)
+          {
+            axom::fmt::format_to(std::back_inserter(res),
+                        "{:.15f}, {:.15f}, {:.15f}, {}, {}, {:.15f}, {}, {:.15f}\n",
+                        x,
+                        y,
+                        z,
+                        kv.first,
+                        integrated_trimming_curves,
+                        the_val,
+                        case_code,
+                        timer.elapsedTimeInSec());
+          }
 
         }
         axom::fmt::format_to(std::back_inserter(vtk), "{:15f}\n", wn);
       }
     }
   }
+  AXOM_ANNOTATE_END("GWN query");
+
 
   using axom::utilities::filesystem::joinPath;
+  if(output_query_file)
   {
     std::ofstream results(joinPath(prefix, filename + "_timing_results.csv"));
     results << axom::fmt::to_string(res);
@@ -3420,25 +3439,18 @@ void generic_timing_test(std::string prefix,
 
   {
     std::ofstream summary(joinPath(prefix, filename + "_timing_summary.csv"));
-    summary << std::setprecision(15);
+    summary << "Case, Total patches, Total curves, Time Totals (s)\n";
+    summary << axom::fmt::format("Case 0: Outside AABB: {}, {}, {:.15f}\n",
+           case_patch_totals[0], case_curves_totals[0], case_time_totals[0]);
 
-    // Case 0: Outside AABB (far-field)
-    // Case 1: Outside OBB (far-field)
-    // Case 2: Casting Necessary (near-field)
-    // Case 3: Trimming Curve Subdivision (edge case)
+    summary << axom::fmt::format("Case 1: Outside OBB: {}, {}, {:.15f}\n",
+               case_patch_totals[1], case_curves_totals[1], case_time_totals[1]);
 
-    summary << "Case 0: Outside AABB: " << case_patch_totals[0] << ", "
-            << case_curves_totals[0] << ", " << case_time_totals[0] << "\n";
+    summary << axom::fmt::format("Case 2: Casting Necessary: {}, {}, {:.15f}\n",
+               case_patch_totals[2], case_curves_totals[2], case_time_totals[2]);
 
-    summary << "Case 1: Outside OBB: " << case_patch_totals[1] << ", "
-            << case_curves_totals[1] << ", " << case_time_totals[1] << "\n";
-
-    summary << "Case 2: Casting Necessary: " << case_patch_totals[2] << ", "
-            << case_curves_totals[2] << ", " << case_time_totals[2] << "\n";
-
-    summary << "Case 3: Trimming Curve Subdivision: " << case_patch_totals[3]
-            << ", " << case_curves_totals[3] << ", " << case_time_totals[3]
-            << "\n";
+    summary << axom::fmt::format("Case 3: Trimming Curve Subdivision: {}, {}, {:.15f}\n",
+               case_patch_totals[3], case_curves_totals[3], case_time_totals[3]);
   }
 }
 
@@ -3926,6 +3938,15 @@ int main(int argc, char** argv)
       ->capture_default_str()
       ->expected(3);
 
+  std::string annotationMode {"none"};
+#ifdef AXOM_USE_CALIPER
+    app.add_option("--caliper", annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
 
   double scale_factor {1.01};
   app.add_option("--scale_factor", scale_factor, "BoundingBox scale factor")->capture_default_str();
@@ -3950,6 +3971,8 @@ int main(int argc, char** argv)
    Scaled BBox: {}
    Resolution: {}
 )raw", prefix, filename, scale_factor, unscaled_bbox, bbox, res));
+
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
 
   generic_timing_test(prefix, filename, bbox, res);
 
