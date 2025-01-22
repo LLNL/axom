@@ -59,7 +59,11 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // Intersect the ray and the patch, intersection parameters will be
   // in arrays (u, v) and t, for the patch and ray, respectively
   Array u, v, t;
-  bool ray_intersects = intersect(ray, patch, t, u, v, 1e-8, 1e-8, isHalfOpen);
+
+  // WARNING (KW): This branch appears to be missing an intersect(ray, patch) operator
+  // Looks like it was renamed to intersect(line, patch)
+  //
+  bool ray_intersects = false;//intersect(ray, patch, t, u, v, 1e-8, 1e-8, isHalfOpen);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());

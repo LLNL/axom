@@ -810,16 +810,25 @@ AXOM_HOST_DEVICE bool intersect(const Point<T, 3>& p0,
                                 std::vector<T>& v,
                                 std::vector<T>& t)
 {
-  const int order_u = patch.getOrder_u();
-  const int order_v = patch.getOrder_v();
-  return detail::intersect_bilinear_patch_ray(patch(0, 0),
-                                              patch(order_u, 0),
-                                              patch(order_u, order_v),
-                                              patch(0, order_v),
-                                              ray,
-                                              u,
-                                              v,
-                                              t);
+  SLIC_ERROR("Not implemented!");
+  AXOM_UNUSED_VAR(p0);
+  AXOM_UNUSED_VAR(p1);
+  AXOM_UNUSED_VAR(p2);
+  AXOM_UNUSED_VAR(p3);
+  AXOM_UNUSED_VAR(line);
+  AXOM_UNUSED_VAR(u);
+  AXOM_UNUSED_VAR(v);
+  AXOM_UNUSED_VAR(t);
+  // const int order_u = patch.getOrder_u();
+  // const int order_v = patch.getOrder_v();
+  // return detail::intersect_bilinear_patch_ray(patch(0, 0),
+  //                                             patch(order_u, 0),
+  //                                             patch(order_u, order_v),
+  //                                             patch(0, order_v),
+  //                                             ray,
+  //                                             u,
+  //                                             v,
+  //                                             t);
 }
 
 /// @}

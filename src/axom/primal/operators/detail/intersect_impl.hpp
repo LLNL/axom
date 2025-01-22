@@ -1108,12 +1108,12 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
  *   parametrization of seg
  * \return true iff plane intersects with segment, otherwise, false.
  */
-template <typename T>
-AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
-                                          const Segment<T, 3>& seg,
+template <typename T, int DIM>
+AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, DIM>& plane,
+                                          const Segment<T, DIM>& seg,
                                           T& t)
 {
-  using VectorType = Vector<T, 3>;
+  using VectorType = Vector<T, DIM>;
 
   VectorType ab(seg.source(), seg.target());
   VectorType normal = plane.getNormal();
@@ -1128,6 +1128,7 @@ AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, 3>& plane,
 
   return false;
 }
+
 
 AXOM_HOST_DEVICE
 inline bool intersectOnePermutedTriangle(const Point3& p1,

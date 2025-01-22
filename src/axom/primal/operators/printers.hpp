@@ -783,6 +783,20 @@ BoundingBox<T, 2> curves_bbox(axom::Array<BezierCurve<T, 2>>& curves,
 }
 
 template <typename T>
+inline void printLoadingBar(T progress, int total, int barWidth = 40)
+{
+  float percentage = static_cast<float>(progress) / total;
+  int progressWidth = static_cast<int>(percentage * barWidth);
+
+  std::cout << "[";
+  for(int i = 0; i < progressWidth; ++i) std::cout << "=";
+  for(int i = progressWidth; i < barWidth; ++i) std::cout << "-";
+  std::cout << "] " << std::setw(3) << static_cast<int>(percentage * 100.0)
+            << "%\r";
+  std::cout.flush();
+}
+
+template <typename T>
 void simple_grid_test(axom::Array<BezierCurve<T, 2>>& curves,
                       const BoundingBox<T, 2>& bb,
                       int npts_x,
@@ -801,7 +815,7 @@ void simple_grid_test(axom::Array<BezierCurve<T, 2>>& curves,
       double y = bb.getMin()[1] + yi * (bb.getMax()[1] - bb.getMin()[1]) / npts_y;
       primal::Point<double, 2> query({x, y});
 
-      int nevals = 0;
+      //int nevals = 0;
 
       double wn = 0.0;
       for(int i = 0; i < curves.size(); ++i)
@@ -851,6 +865,8 @@ void simple_grid_test(axom::Array<BezierCurve<T, 2>>& curves,
 //  }
 //}
 
+
+
 template <typename T>
 void simple_timing_test(axom::Array<BezierCurve<T, 2>>& curves,
                         const BoundingBox<T, 2>& bb,
@@ -882,19 +898,6 @@ void simple_timing_test(axom::Array<BezierCurve<T, 2>>& curves,
   }
 }
 
-template <typename T>
-inline void printLoadingBar(T progress, int total, int barWidth = 40)
-{
-  float percentage = static_cast<float>(progress) / total;
-  int progressWidth = static_cast<int>(percentage * barWidth);
-
-  std::cout << "[";
-  for(int i = 0; i < progressWidth; ++i) std::cout << "=";
-  for(int i = progressWidth; i < barWidth; ++i) std::cout << "-";
-  std::cout << "] " << std::setw(3) << static_cast<int>(percentage * 100.0)
-            << "%\r";
-  std::cout.flush();
-}
 
 template <typename T>
 void exportScalarFieldToVTK(const std::string& filename,
@@ -1003,8 +1006,8 @@ void exportScalarFieldToVTK(const std::string& filename,
   file << "SCALARS scalars float\n";
   file << "LOOKUP_TABLE default\n";
 
-  int case_count[4] = {0, 0, 0, 0};
-  double case_time[4] = {0.0, 0.0, 0.0, 0.0};
+  //int case_count[4] = {0, 0, 0, 0};
+  //double case_time[4] = {0.0, 0.0, 0.0, 0.0};
 
   // Write scalar field data
   for(int k = 0; k < zSteps; ++k)

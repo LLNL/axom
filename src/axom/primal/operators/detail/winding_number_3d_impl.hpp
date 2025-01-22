@@ -40,6 +40,46 @@ enum class DiscontinuityAxis
 };
 
 #ifdef AXOM_USE_MFEM
+
+// some necessary declarations
+
+template <typename T>
+double single_stokes_cached(const Point<T, 3>& query,
+                            const mfem::IntegrationRule& quad_rule,
+                            const DiscontinuityAxis ax,
+                            const TrimmingCurveQuadratureData<T>& trimming_curve_data);
+
+template <typename T>
+double single_stokes_cached_rotated(
+  const Point<T, 3>& query,
+  const mfem::IntegrationRule& quad_rule,
+  const axom::numerics::Matrix<T>& rotator,
+  const TrimmingCurveQuadratureData<T>& trimming_curve_data);
+
+
+template <typename T>
+double adaptive_stokes_cached_rotated(const Point<T, 3>& query,
+                                      const NURBSPatchData<T>& nPatchData,
+                                      const mfem::IntegrationRule& quad_rule,
+                                      const axom::numerics::Matrix<T>& rotator,
+                                      const int curve_index,
+                                      const int refinement_level,
+                                      const int refinement_index,
+                                      const double quad_coarse,
+                                      const double quad_tol);
+
+template <typename T>
+double surface_winding_number_adaptive(const Point<T, 3>& query,
+                                       const BezierPatch<T, 3>& patch,
+                                       const mfem::IntegrationRule& quad_rule,
+                                       const double quad_coarse,
+                                       const double quad_tol,
+                                       const int depth = 1);
+
+
+// ------------------------------------------------------------------------------
+
+
 /*!
  * \brief Evaluates the integral of the "anti-curl" of the GWN integrand
  *        (via Stokes' theorem) at a point wrt to a 3D Bezier curve
@@ -911,7 +951,7 @@ double surface_winding_number_adaptive(const Point<T, 3>& query,
                                        const mfem::IntegrationRule& quad_rule,
                                        const double quad_coarse,
                                        const double quad_tol,
-                                       const int depth = 1)
+                                       const int depth)
 {
   // Split the patch, do the quadrature over all four components
   BezierPatch<T, 3> subpatches[4];

@@ -65,6 +65,16 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
                              int order,
                              double c_offset,
                              double c_scale);
+
+template <typename T>
+bool intersect_2d_circle_line(const Sphere<T, 2> &circ,
+                              const Point<T, 2> &a,
+                              const Point<T, 2> &b,
+                              T &c1,
+                              T &c2,
+                              T &t1,
+                              T &t2);
+
 //------------------------------ IMPLEMENTATIONS --------------------------------
 
 template <typename T>
