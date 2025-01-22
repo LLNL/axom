@@ -121,7 +121,8 @@ struct NURBSPatchData
 
         // For bezier and knot spans to be pushed back, 2 things need to be true:
         bool center_visible = false;
-        AXOM_UNUSED_VAR(center_visible); // based on the above comment, it seems like this should be used!
+        AXOM_UNUSED_VAR(
+          center_visible);  // based on the above comment, it seems like this should be used!
         bool found_intersections = false;
 
         // 1. The 2D bounding box containing the knot span can't intersect the trimming curves
@@ -1437,10 +1438,10 @@ public:
       }
     }
 
-
     if(circle_params.size() % 2 != 0)
     {
-      std::cout << std::endl << "Robustness issue: Not an even number of circle parameters"
+      std::cout << std::endl
+                << "Robustness issue: Not an even number of circle parameters"
                 << std::endl;
 
       // If this is the case, do the closest thing you can to doing nothing.

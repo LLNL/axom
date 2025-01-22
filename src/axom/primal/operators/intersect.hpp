@@ -1026,10 +1026,12 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
     {
       // std::cout << patch_data.u_spans[ij].first << ", " << patch_data.u_spans[ij].second << std::endl;
       tc.push_back(tcc[k]);
-      uc.push_back(patch_data.u_spans[ij].first +
-                   ucc[k] * (patch_data.u_spans[ij].second - patch_data.u_spans[ij].first));
-      vc.push_back(patch_data.v_spans[ij].first +
-                   vcc[k] * (patch_data.v_spans[ij].second - patch_data.v_spans[ij].first));
+      uc.push_back(
+        patch_data.u_spans[ij].first +
+        ucc[k] * (patch_data.u_spans[ij].second - patch_data.u_spans[ij].first));
+      vc.push_back(
+        patch_data.v_spans[ij].first +
+        vcc[k] * (patch_data.v_spans[ij].second - patch_data.v_spans[ij].first));
     }
   }
 
@@ -1039,8 +1041,10 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
   // The number of reported intersection points will be small,
   //  so we don't need to fully sort the list
 
-  double max_u_knot = patch_data.patch.getKnots_u()[patch_data.patch.getKnots_u().getNumKnots() - 1];
-  double max_v_knot = patch_data.patch.getKnots_v()[patch_data.patch.getKnots_v().getNumKnots() - 1];
+  double max_u_knot =
+    patch_data.patch.getKnots_u()[patch_data.patch.getKnots_u().getNumKnots() - 1];
+  double max_v_knot =
+    patch_data.patch.getKnots_v()[patch_data.patch.getKnots_v().getNumKnots() - 1];
 
   for(int i = 0; i < tc.size(); ++i)
   {

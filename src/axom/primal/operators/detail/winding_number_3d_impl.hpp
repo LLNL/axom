@@ -41,7 +41,9 @@ enum class DiscontinuityAxis
   z,
   rotated
 };
-}}}
+}  // namespace detail
+}  // namespace primal
+}  // namespace axom
 
 template <>
 struct axom::fmt::formatter<axom::primal::detail::DiscontinuityAxis>
@@ -52,7 +54,8 @@ struct axom::fmt::formatter<axom::primal::detail::DiscontinuityAxis>
   }
 
   template <typename FormatContext>
-  auto format(const axom::primal::detail::DiscontinuityAxis& ax, FormatContext& ctx) -> decltype(ctx.out())
+  auto format(const axom::primal::detail::DiscontinuityAxis& ax,
+              FormatContext& ctx) -> decltype(ctx.out())
   {
     std::string name;
     switch(ax)
@@ -89,10 +92,11 @@ namespace detail
 // some necessary declarations
 
 template <typename T>
-double single_stokes_cached(const Point<T, 3>& query,
-                            const mfem::IntegrationRule& quad_rule,
-                            const DiscontinuityAxis ax,
-                            const TrimmingCurveQuadratureData<T>& trimming_curve_data);
+double single_stokes_cached(
+  const Point<T, 3>& query,
+  const mfem::IntegrationRule& quad_rule,
+  const DiscontinuityAxis ax,
+  const TrimmingCurveQuadratureData<T>& trimming_curve_data);
 
 template <typename T>
 double single_stokes_cached_rotated(
@@ -100,7 +104,6 @@ double single_stokes_cached_rotated(
   const mfem::IntegrationRule& quad_rule,
   const axom::numerics::Matrix<T>& rotator,
   const TrimmingCurveQuadratureData<T>& trimming_curve_data);
-
 
 template <typename T>
 double adaptive_stokes_cached_rotated(const Point<T, 3>& query,
@@ -121,9 +124,7 @@ double surface_winding_number_adaptive(const Point<T, 3>& query,
                                        const double quad_tol,
                                        const int depth = 1);
 
-
 // ------------------------------------------------------------------------------
-
 
 /*!
  * \brief Evaluates the integral of the "anti-curl" of the GWN integrand
@@ -570,8 +571,13 @@ bool isNearAxisBox(const Point<T, 3>& query,
     return distance_to_axis <= beta * bbox_radius;
   default:
     // rotated should not be possible here
-    SLIC_ERROR(axom::fmt::format("Axis should either be 'x' ({}), 'y' ({}) or 'z' ({}); was {}", DiscontinuityAxis::x, DiscontinuityAxis::y, DiscontinuityAxis::z, ax));
-    break;  
+    SLIC_ERROR(axom::fmt::format(
+      "Axis should either be 'x' ({}), 'y' ({}) or 'z' ({}); was {}",
+      DiscontinuityAxis::x,
+      DiscontinuityAxis::y,
+      DiscontinuityAxis::z,
+      ax));
+    break;
   }
 
   // Make "true" the default for more reliable quadrature
@@ -723,9 +729,14 @@ double single_stokes_cached(const Point<T, 3>& query,
         (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
         (node[0] * node[0] + node[1] * node[1]) / node_norm;
       break;
-  default:
-    SLIC_ERROR(axom::fmt::format("Axis should either be 'x' ({}), 'y' ({}) or 'z' ({}); was {}", DiscontinuityAxis::x, DiscontinuityAxis::y, DiscontinuityAxis::z, ax));
-    break;        
+    default:
+      SLIC_ERROR(axom::fmt::format(
+        "Axis should either be 'x' ({}), 'y' ({}) or 'z' ({}); was {}",
+        DiscontinuityAxis::x,
+        DiscontinuityAxis::y,
+        DiscontinuityAxis::z,
+        ax));
+      break;
     }
   }
 

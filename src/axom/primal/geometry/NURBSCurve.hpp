@@ -438,9 +438,9 @@ public:
                     m_controlPoints[1 + 2 * idx + 1][0]) /
                      weight_num});
 
-    //   std::cout << m_controlPoints << std::endl;
-    //   std::cout << m_weights << std::endl;
-    //   std::cout << std::endl;
+      //   std::cout << m_controlPoints << std::endl;
+      //   std::cout << m_weights << std::endl;
+      //   std::cout << std::endl;
     }
 
     // Scale all the control points to the right radius and center
@@ -474,9 +474,7 @@ public:
   PointType evaluate(T t) const
   {
     SLIC_ASSERT(m_knotvec.isValidParameter(t));
-    t = axom::utilities::clampVal(t,
-                                  getMinKnot(),
-                                  getMaxKnot());
+    t = axom::utilities::clampVal(t, getMinKnot(), getMaxKnot());
 
     const auto span = m_knotvec.findSpan(t);
     const auto N_evals = m_knotvec.calculateBasisFunctionsBySpan(span, t);
@@ -626,9 +624,7 @@ public:
                            axom::Array<VectorType>& ders) const
   {
     SLIC_ASSERT(m_knotvec.isValidParameter(t));
-    t = axom::utilities::clampVal(t,
-                                  getMinKnot(),
-                                  getMaxKnot());
+    t = axom::utilities::clampVal(t, getMinKnot(), getMaxKnot());
 
     const int p = m_knotvec.getDegree();
     ders.resize(d);
@@ -735,9 +731,7 @@ public:
   axom::IndexType insertKnot(T t, int target_multiplicity = 1)
   {
     SLIC_ASSERT(m_knotvec.isValidParameter(t));
-    t = axom::utilities::clampVal(t,
-                                  getMinKnot(),
-                                  getMaxKnot());
+    t = axom::utilities::clampVal(t, getMinKnot(), getMaxKnot());
 
     SLIC_ASSERT(target_multiplicity > 0);
 
@@ -915,12 +909,14 @@ public:
     }
   }
 
-  void bisect( NURBSCurve<T, NDIMS>& n1, NURBSCurve<T, NDIMS>& n2, bool normalize = false) const
+  void bisect(NURBSCurve<T, NDIMS>& n1,
+              NURBSCurve<T, NDIMS>& n2,
+              bool normalize = false) const
   {
     T t = 0.5 * (getMinKnot() + getMaxKnot());
     split(t, n1, n2, normalize);
   }
-  
+
   /// \brief Normalize the knot vector to the span of [0, 1]
   void normalize() { m_knotvec.normalize(); }
 
@@ -1313,7 +1309,7 @@ public:
 
   /// \brief Return the last knot value
   T getMaxKnot() const { return m_knotvec[m_knotvec.getNumKnots() - 1]; }
-  
+
   /// \brief Reverses the order of the NURBS curve's control points and weights
   void reverseOrientation()
   {

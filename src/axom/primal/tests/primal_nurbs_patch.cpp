@@ -1422,7 +1422,7 @@ TEST(primal_nurbspatch, disk_subdivision)
 
   n1.printTrimmingCurves(prefix + "punctured_1.txt");
   n2.printTrimmingCurves(prefix + "disk_1.txt");
-  
+
   NURBSPatchType n11, n12;
   n1.diskSplit(0.5, 0.3, 0.1, n11, n12);
 
@@ -1437,7 +1437,7 @@ TEST(primal_nurbspatch, disk_subdivision)
 
   NURBSPatchType n31, n32;
   n21.diskSplit(0.75, 0.75, 0.05, n31, n32);
-  
+
   n31.printTrimmingCurves(prefix + "punctured_4.txt");
   n32.printTrimmingCurves(prefix + "disk_4.txt");
 

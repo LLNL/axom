@@ -808,7 +808,8 @@ public:
     }
     else
     {
-      SLIC_INFO( "Parameter " << t << " is outside the knot span [" << m_knots[0] << ", " << m_knots[m_knots.size() - 1] << "]");
+      SLIC_INFO("Parameter " << t << " is outside the knot span [" << m_knots[0]
+                             << ", " << m_knots[m_knots.size() - 1] << "]");
       return false;
     }
   }

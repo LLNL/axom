@@ -865,8 +865,6 @@ void simple_grid_test(axom::Array<BezierCurve<T, 2>>& curves,
 //  }
 //}
 
-
-
 template <typename T>
 void simple_timing_test(axom::Array<BezierCurve<T, 2>>& curves,
                         const BoundingBox<T, 2>& bb,
@@ -897,7 +895,6 @@ void simple_timing_test(axom::Array<BezierCurve<T, 2>>& curves,
     }
   }
 }
-
 
 template <typename T>
 void exportScalarFieldToVTK(const std::string& filename,
@@ -1161,14 +1158,14 @@ void exportSliceScalarFieldToVTK(const std::string& filename,
   Vector<T, 3> v = Vector<T, 3>::cross_product(normal, u).unitVector();
 
   exportSliceScalarFieldToVTK<T>(filename,
-                            fieldFunc,
-                            origin,
-                            u,
-                            v,
-                            planeWidth,
-                            planeHeight,
-                            uSteps,
-                            vSteps);
+                                 fieldFunc,
+                                 origin,
+                                 u,
+                                 v,
+                                 planeWidth,
+                                 planeHeight,
+                                 uSteps,
+                                 vSteps);
 }
 
 template <typename T>

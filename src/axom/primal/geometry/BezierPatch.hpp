@@ -1931,7 +1931,6 @@ public:
     return true;
   }
 
-
   /*!
    * \brief Predicate to check if the patch can be approximated by a polygon
    *

@@ -63,7 +63,8 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // WARNING (KW): This branch appears to be missing an intersect(ray, patch) operator
   // Looks like it was renamed to intersect(line, patch)
   //
-  bool ray_intersects = false;//intersect(ray, patch, t, u, v, 1e-8, 1e-8, isHalfOpen);
+  bool ray_intersects =
+    false;  //intersect(ray, patch, t, u, v, 1e-8, 1e-8, isHalfOpen);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());

@@ -1123,7 +1123,7 @@ std::pair<double, double> winding_number_casting_split(
           // Do a dot product between the normal and the cast direction
           //  to see what side of the surface the intersection is on
           double surf_orientation = the_normal.dot(the_direction);
-          
+
           // UNUSED
           //double cast_orientation = singularity_direction.dot(the_direction);
 

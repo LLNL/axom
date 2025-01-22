@@ -2167,14 +2167,14 @@ int main(int argc, char** argv)
     });
   std::string annotationMode {"none"};
 
-// #ifdef AXOM_USE_CALIPER
-//   app.add_option("--caliper", annotationMode)
-//     ->description(
-//       "caliper annotation mode. Valid options include 'none' and 'report'. "
-//       "Use 'help' to see full list.")
-//     ->capture_default_str()
-//     ->check(axom::utilities::ValidCaliperMode);
-// #endif
+  // #ifdef AXOM_USE_CALIPER
+  //   app.add_option("--caliper", annotationMode)
+  //     ->description(
+  //       "caliper annotation mode. Valid options include 'none' and 'report'. "
+  //       "Use 'help' to see full list.")
+  //     ->capture_default_str()
+  //     ->check(axom::utilities::ValidCaliperMode);
+  // #endif
 
   CLI11_PARSE(app, argc, argv);
 

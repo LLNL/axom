@@ -1129,7 +1129,6 @@ AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, DIM>& plane,
   return false;
 }
 
-
 AXOM_HOST_DEVICE
 inline bool intersectOnePermutedTriangle(const Point3& p1,
                                          const Point3& q1,

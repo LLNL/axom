@@ -629,21 +629,24 @@ TEST(primal_3d_paper_figure_data, full_patch_test)
     // std::cout << wn_on << " " << wn_in << " " << wn_out << std::endl;
 
     // Check the coincident point
-    if( !axom::utilities::isNearlyEqual( wn_on, 0.5, 6 * quad_tol ) )
+    if(!axom::utilities::isNearlyEqual(wn_on, 0.5, 6 * quad_tol))
     {
-      std::cout << '\t' << "Coincident point: " << on_query << " -> " << wn_on << std::endl;
+      std::cout << '\t' << "Coincident point: " << on_query << " -> " << wn_on
+                << std::endl;
     }
 
     // Check the near point
-    if( !axom::utilities::isNearlyEqual( wn_in, 1.0, 6 * quad_tol ) )
+    if(!axom::utilities::isNearlyEqual(wn_in, 1.0, 6 * quad_tol))
     {
-      std::cout << '\t' << "Inside point: " << on_query << " -> " << wn_in << std::endl;
+      std::cout << '\t' << "Inside point: " << on_query << " -> " << wn_in
+                << std::endl;
     }
 
     // Check the far point
-    if( !axom::utilities::isNearlyEqual( wn_out, 0.0, 6 * quad_tol ) )
+    if(!axom::utilities::isNearlyEqual(wn_out, 0.0, 6 * quad_tol))
     {
-      std::cout << '\t' << "Out point: " << on_query << " -> " << wn_out << std::endl;
+      std::cout << '\t' << "Out point: " << on_query << " -> " << wn_out
+                << std::endl;
     }
   }
 }
@@ -1023,9 +1026,9 @@ TEST(primal_3d_paper_figure_data, vase_shape)
     axom::Array<BPatch> single_patch;
     single_patch.push_back(patches[i]);
     // exportSurfaceToSTL(data_dir + "/vase_shape_" + std::to_string(i) + ".stl",
-                      //  single_patch,
-                      //  50,
-                      //  50);
+    //  single_patch,
+    //  50,
+    //  50);
   }
 
   for(int i = 0; i < trim_patches.size(); ++i)
@@ -1033,9 +1036,9 @@ TEST(primal_3d_paper_figure_data, vase_shape)
     axom::Array<BPatch> single_patch;
     single_patch.push_back(trim_patches[i]);
     // exportSurfaceToSTL(data_dir + "/trim_shape_" + std::to_string(i) + ".stl",
-                      //  single_patch,
-                      //  50,
-                      //  50);
+    //  single_patch,
+    //  50,
+    //  50);
   }
 
   // exportSurfaceToSTL(data_dir + "/vase_shape.stl", patches, 50, 50);
@@ -1131,17 +1134,17 @@ TEST(primal_3d_paper_figure_data, two_teapots)
     };
 
   // exportScalarFieldToVTK(data_dir + "/teapot_half_field_high.vtk",
-                        //  half_teapot_wn,
-                        //  bbox,
-                        //  400,
-                        //  200,
-                        //  200);
+  //  half_teapot_wn,
+  //  bbox,
+  //  400,
+  //  200,
+  //  200);
   // exportScalarFieldToVTK(data_dir + "/teapot_mirror_field_high.vtk",
-                        //  mirror_teapot_wn,
-                        //  bbox,
-                        //  400,
-                        //  200,
-                        //  200);
+  //  mirror_teapot_wn,
+  //  bbox,
+  //  400,
+  //  200,
+  //  200);
 }
 
 int main(int argc, char* argv[])
