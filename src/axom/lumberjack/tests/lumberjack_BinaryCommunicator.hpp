@@ -117,7 +117,7 @@ TEST(lumberjack_BinaryCommunicator, basic)
   // cleanup allocated memory from received messages
   for(auto& rm : receivedPackedMessages)
   {
-    delete rm;
+    delete[] rm;
   }
   receivedPackedMessages.clear();
 }

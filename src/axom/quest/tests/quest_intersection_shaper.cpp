@@ -504,6 +504,10 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
     double actualPercentError =
       100. * (1. - shaper.getApproximateRevolvedVolume() / revolvedVolume);
     EXPECT_LT(actualPercentError, targetPercentError);
+
+    // Finalize data structures associated with this shape and spatial index
+    shaper.finalizeShapeQuery();
+    slic::flushStreams();
   }
 
   // Clean up files.

@@ -459,6 +459,10 @@ Tools and features primarily intended for developers
 | AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS | OFF     | Enable an expanded set of tests for    |
 |                                          |         | the Axom Quest component               |
 +------------------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_ASAN                         | OFF     | Enable AddressSanitizer                |
++------------------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_UBSAN                        | OFF     | Enable UndefinedBehaviorSanitizer      |
++------------------------------------------+---------+----------------------------------------+
 
 Axom source code macro constants
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

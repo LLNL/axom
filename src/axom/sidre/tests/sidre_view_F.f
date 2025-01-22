@@ -1010,6 +1010,8 @@ contains
     call v_buffer
     call v_external
     call v_opaque
+
+    call ds%delete()
     
   contains 
     ! Create an empty view.
