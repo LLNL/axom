@@ -821,6 +821,7 @@ private:
 
   {
     AXOM_ANNOTATE_SCOPE("IntersectionShaper::runShapeQueryImpl");
+
     // No need for parameter shape, because it has been converted into
     // m_tets or m_octs, which is what the parameter shapes is.
     AXOM_UNUSED_VAR(shape);
@@ -842,13 +843,11 @@ private:
 
     // Generate the BVH tree over the shapes
     // Axis-aligned bounding boxes
-    // Does m_aabbs need to be a member?  It's only used here.  BTNG.
-    m_aabbs =
-      axom::Array<BoundingBoxType>(shape_count, shape_count, device_allocator);
+    axom::Array<BoundingBoxType> aabbs(shape_count, shape_count, device_allocator);
 
     axom::ArrayView<ShapeType> shapes_device_view = shapes.view();
 
-    axom::ArrayView<BoundingBoxType> aabbs_device_view = m_aabbs.view();
+    axom::ArrayView<BoundingBoxType> aabbs_device_view = aabbs.view();
 
     // Get the bounding boxes for the shapes
     axom::for_all<ExecSpace>(
@@ -2594,7 +2593,6 @@ private:
   axom::Array<OctahedronType> m_octs;
   axom::Array<TetrahedronType> m_tets;
 
-  axom::Array<BoundingBoxType> m_aabbs;
   axom::Array<HexahedronType> m_hexes;
   axom::Array<BoundingBoxType> m_hex_bbs;
   axom::Array<TetrahedronType> m_tets_from_hexes_device;
