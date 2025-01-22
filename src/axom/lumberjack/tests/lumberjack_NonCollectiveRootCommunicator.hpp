@@ -74,7 +74,7 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
   // cleanup allocated memory from received messages
   for(auto& rm : receivedPackedMessages)
   {
-    delete rm;
+    delete[] rm;
   }
 
   receivedPackedMessages.clear();
