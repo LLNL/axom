@@ -164,6 +164,8 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
       foundIntersection = true;
     }
   }
+
+  return foundIntersection;
 }
 
 // Find intersections between a circle and an *infinite* line passing through a and b,

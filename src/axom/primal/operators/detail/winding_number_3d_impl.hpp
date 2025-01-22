@@ -8,6 +8,9 @@
 
 // Axom includes
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
+#include "axom/fmt.hpp"
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
@@ -38,6 +41,48 @@ enum class DiscontinuityAxis
   z,
   rotated
 };
+}}}
+
+template <>
+struct axom::fmt::formatter<axom::primal::detail::DiscontinuityAxis>
+{
+  constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
+  {
+    return ctx.end();
+  }
+
+  template <typename FormatContext>
+  auto format(const axom::primal::detail::DiscontinuityAxis& ax, FormatContext& ctx) -> decltype(ctx.out())
+  {
+    std::string name;
+    switch(ax)
+    {
+    case axom::primal::detail::DiscontinuityAxis::x:
+      name = "x";
+      break;
+    case axom::primal::detail::DiscontinuityAxis::y:
+      name = "y";
+      break;
+    case axom::primal::detail::DiscontinuityAxis::z:
+      name = "z";
+      break;
+    case axom::primal::detail::DiscontinuityAxis::rotated:
+      name = "rotated";
+      break;
+    default:
+      name = "unknown";
+      break;
+    }
+    return fmt::format_to(ctx.out(), "{}", name);
+  }
+};
+
+namespace axom
+{
+namespace primal
+{
+namespace detail
+{
 
 #ifdef AXOM_USE_MFEM
 
@@ -523,6 +568,10 @@ bool isNearAxisBox(const Point<T, 3>& query,
     distance_to_axis = c_query[0] * c_query[0] + c_query[1] * c_query[1];
     bbox_radius = box_max[0] * box_max[0] + box_max[1] * box_max[1];
     return distance_to_axis <= beta * bbox_radius;
+  default:
+    // rotated should not be possible here
+    SLIC_ERROR(axom::fmt::format("Axis should either be 'x' ({}), 'y' ({}) or 'z' ({}); was {}", DiscontinuityAxis::x, DiscontinuityAxis::y, DiscontinuityAxis::z, ax));
+    break;  
   }
 
   // Make "true" the default for more reliable quadrature
@@ -674,6 +723,9 @@ double single_stokes_cached(const Point<T, 3>& query,
         (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
         (node[0] * node[0] + node[1] * node[1]) / node_norm;
       break;
+  default:
+    SLIC_ERROR(axom::fmt::format("Axis should either be 'x' ({}), 'y' ({}) or 'z' ({}); was {}", DiscontinuityAxis::x, DiscontinuityAxis::y, DiscontinuityAxis::z, ax));
+    break;        
     }
   }
 

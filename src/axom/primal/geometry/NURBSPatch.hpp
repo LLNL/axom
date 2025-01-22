@@ -121,6 +121,7 @@ struct NURBSPatchData
 
         // For bezier and knot spans to be pushed back, 2 things need to be true:
         bool center_visible = false;
+        AXOM_UNUSED_VAR(center_visible); // based on the above comment, it seems like this should be used!
         bool found_intersections = false;
 
         // 1. The 2D bounding box containing the knot span can't intersect the trimming curves
@@ -2501,7 +2502,7 @@ public:
     const bool isRationalPatch = isRational();
 
     const int np = getNumControlPoints_u() - 1;
-    const int p = getDegree_u();
+    //const int p = getDegree_u();
 
     const int nq = getNumControlPoints_v() - 1;
     const int q = getDegree_v();

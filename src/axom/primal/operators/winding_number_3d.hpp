@@ -654,7 +654,7 @@ std::pair<double, double> winding_number_casting_split(
   OrientedBoundingBox<T, 3> oBox(nPatch.orientedBoundingBox().scale(1.05));
 
   // Define vector fields whose curl gives us the winding number
-  detail::DiscontinuityAxis field_direction;
+  detail::DiscontinuityAxis field_direction {detail::DiscontinuityAxis::rotated};
 
   // Case 1: Exterior without rotations
   if(!bBox.contains(query))
@@ -1123,7 +1123,9 @@ std::pair<double, double> winding_number_casting_split(
           // Do a dot product between the normal and the cast direction
           //  to see what side of the surface the intersection is on
           double surf_orientation = the_normal.dot(the_direction);
-          double cast_orientation = singularity_direction.dot(the_direction);
+          
+          // UNUSED
+          //double cast_orientation = singularity_direction.dot(the_direction);
 
           queryOnSurface =
             squared_distance(query, intersect_point) <= edge_tol_sq;
@@ -1263,6 +1265,8 @@ double winding_number_direct(const Point<T, 3>& query,
                              const double quad_tol = 1e-8,
                              const double EPS = 1e-8)
 {
+  AXOM_UNUSED_VAR(edge_tol);
+  AXOM_UNUSED_VAR(EPS);
   // Compute the winding number with a direct 2D surface integral
   return detail::surface_winding_number(query, bPatch, 100, quad_tol, false);
 }
@@ -1740,6 +1744,8 @@ double simple_coincident_wn(const Point<T, 3>& query,
                             const Vector<T, 3>& discontinuity_direction,
                             const double quad_tol = 1e-8)
 {
+  AXOM_UNUSED_VAR(quad_tol);
+
   // Fix the number of quadrature nodes arbitrarily
   constexpr int quad_npts = 15;
 
@@ -1785,6 +1791,7 @@ double simple_coincident_wn(const Point<T, 3>& query,
   // Define vector fields whose curl gives us the winding number
   detail::DiscontinuityAxis field_direction;
   bool extraTrimming = false;
+  AXOM_UNUSED_VAR(extraTrimming);
 
   auto bBox = nPatch.boundingBox();
   auto characteristic_length = bBox.range().norm();
@@ -1796,11 +1803,12 @@ double simple_coincident_wn(const Point<T, 3>& query,
     field_direction = detail::DiscontinuityAxis::rotated;
     Line<T, 3> discontinuity_axis(query, discontinuity_direction);
 
-    T patch_knot_size = axom::utilities::max(
-      integralPatch.getKnots_u()[integralPatch.getNumKnots_u() - 1] -
-        integralPatch.getKnots_u()[0],
-      integralPatch.getKnots_v()[integralPatch.getNumKnots_v() - 1] -
-        integralPatch.getKnots_v()[0]);
+    // UNUSED
+    //T patch_knot_size = axom::utilities::max(
+    //  integralPatch.getKnots_u()[integralPatch.getNumKnots_u() - 1] -
+    //    integralPatch.getKnots_u()[0],
+    //  integralPatch.getKnots_v()[integralPatch.getNumKnots_v() - 1] -
+    //    integralPatch.getKnots_v()[0]);
 
     // Rotate the patch so that the discontinuity direction is aligned with the z-axis
     Vector<T, 3> axis = {discontinuity_direction[1],

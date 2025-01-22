@@ -2239,8 +2239,8 @@ StepFileProcessor import_step_file(std::string prefix,
                                    double angular_deflection = 0.5,
                                    bool export_vtk = true)
 {
-  std::cout << prefix + filename + ".step" << std::endl;
-  StepFileProcessor stepProcessor(prefix + filename + ".step", false);
+  const std::string stepFilePath = axom::utilities::filesystem::joinPath(prefix, filename + ".step");
+  StepFileProcessor stepProcessor(stepFilePath, false);
   if(!stepProcessor.isLoaded())
   {
     std::cerr << "Error: The shape is invalid or empty." << std::endl;
@@ -2282,6 +2282,7 @@ StepFileProcessor import_step_file(std::string prefix,
   {
     return stepProcessor;
   }
+  AXOM_UNUSED_VAR(export_vtk);
 
   auto& nurbs_shape = stepProcessor.getShape();
   PatchTriangulator patchTriangulator(nurbs_shape,
@@ -2316,15 +2317,15 @@ void nut_3d_example()
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
       int integrated_trimming_curves;
-      auto new_query =
-
-        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
+      //auto new_query =
+      //  axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
       double the_val =
         axom::primal::winding_number_casting(query,
                                              kv.second.nurbsPatchData,
@@ -2348,7 +2349,7 @@ void nut_3d_example()
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -2367,7 +2368,7 @@ void nut_3d_example()
     100);
   timer.stop();
 
-  auto elapsed_time = timer.elapsedTimeInSec();
+  //auto elapsed_time = timer.elapsedTimeInSec();
 }
 
 void nut_2d_example()
@@ -2408,15 +2409,15 @@ void graphical_abstract_watertight()
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
       int integrated_trimming_curves;
-      auto new_query =
-
-        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
+      //auto new_query =
+      //  axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
       double the_val =
         axom::primal::winding_number_casting(query,
                                              kv.second.nurbsPatchData,
@@ -2440,7 +2441,7 @@ void graphical_abstract_watertight()
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -2477,7 +2478,7 @@ void graphical_abstract_watertight()
     100);
   timer.stop();
 
-  auto elapsed_time = timer.elapsedTimeInSec();
+  //auto elapsed_time = timer.elapsedTimeInSec();
 }
 
 void graphical_abstract_exploded()
@@ -2495,15 +2496,15 @@ void graphical_abstract_exploded()
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
       int integrated_trimming_curves;
-      auto new_query =
-
-        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
+      //auto new_query =
+      //  axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
       double the_val =
         axom::primal::winding_number_casting(query,
                                              kv.second.nurbsPatchData,
@@ -2527,7 +2528,7 @@ void graphical_abstract_exploded()
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -2564,7 +2565,7 @@ void graphical_abstract_exploded()
     100);
   timer.stop();
 
-  auto elapsed_time = timer.elapsedTimeInSec();
+  // auto elapsed_time = timer.elapsedTimeInSec();
 }
 
 void graphical_abstract_hollow()
@@ -2582,15 +2583,15 @@ void graphical_abstract_hollow()
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
       int integrated_trimming_curves;
-      auto new_query =
-
-        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
+      //auto new_query =
+      //  axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
       double the_val =
         axom::primal::winding_number_casting(query,
                                              kv.second.nurbsPatchData,
@@ -2614,7 +2615,7 @@ void graphical_abstract_hollow()
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -2651,7 +2652,7 @@ void graphical_abstract_hollow()
     100);
   timer.stop();
 
-  auto elapsed_time = timer.elapsedTimeInSec();
+  //auto elapsed_time = timer.elapsedTimeInSec();
 }
 
 // void discretized_curve_gwn()
@@ -2707,7 +2708,8 @@ void discretized_surface_gwn()
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -2757,7 +2759,8 @@ void discretized_surface_gwn()
 
   auto stepProcessor2 = import_step_file(prefix, filename2);
 
-  auto wn_field2 = [&stepProcessor2, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field2 = [&stepProcessor2, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field2 = [&stepProcessor2, &case_code](
                      axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor2.getPatchDataMap())
@@ -2812,12 +2815,13 @@ void quadrature_is_bad()
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field_quad = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field_quad = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field_quad = [&stepProcessor](
                          axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
-      int integrated_trimming_curves;
+      //int integrated_trimming_curves;
       double the_val =
         axom::primal::detail::surface_winding_number(query,
                                                      kv.second.nurbsPatch,
@@ -2828,7 +2832,8 @@ void quadrature_is_bad()
     return wn;
   };
 
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -2854,7 +2859,7 @@ void quadrature_is_bad()
     meshBBox.addBox(kv.second.physicalBBox);
   }
 
-  auto the_range = 0.5 * meshBBox.range().norm();
+  //auto the_range = 0.5 * meshBBox.range().norm();
 
   // Use this for u
   // u = Vector<T, 3>( {-0.6536123100031038, -0.10738450531201763, -0.7491725543766935});
@@ -2918,13 +2923,13 @@ void closure_intuition_3d()
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field_boundary =
-    [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field_boundary = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field_boundary = [&stepProcessor](
       axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
     {
-      int integrated_trimming_curves;
+      //int integrated_trimming_curves;
       double the_val = axom::primal::detail::stokes_winding_number_cached(
         query,
         kv.second.nurbsPatchData,
@@ -2937,7 +2942,8 @@ void closure_intuition_3d()
     return wn;
   };
 
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -2963,7 +2969,7 @@ void closure_intuition_3d()
     meshBBox.addBox(kv.second.physicalBBox);
   }
 
-  auto the_range = 0.5 * meshBBox.range().norm();
+  //auto the_range = 0.5 * meshBBox.range().norm();
 
   // Use this for u
   // u = Vector<T, 3>( {-0.6536123100031038, -0.10738450531201763, -0.7491725543766935});
@@ -3043,12 +3049,8 @@ void closure_intuition_2d()
   simple_grid_test(curves2, bbox, 300, 300, wn_out2);
 }
 
-void plot_trimming_curves()
+void plot_trimming_curves(const std::string& prefix)
 {
-  std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
-    "subdivision\\";
-
   std::string filename = "trimmed_surface";
   auto stepProcessor = import_step_file(prefix, filename);
 
@@ -3065,15 +3067,10 @@ void plot_trimming_curves()
   axom::primal::NURBSPatch<double, 3> n1, n2;
   the_patch.diskSplit(0.4, 0.2, 0.08, n1, n2);
 
-  the_patch.printTrimmingCurves(
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
-    "subdivision\\original.txt");
-  n1.printTrimmingCurves(
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
-    "subdivision\\disk.txt");
-  n2.printTrimmingCurves(
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
-    "subdivision\\remaining.txt");
+  using axom::utilities::filesystem::joinPath;
+  the_patch.printTrimmingCurves(joinPath(prefix, "original.txt"));
+  n1.printTrimmingCurves(joinPath(prefix, "disk.txt"));
+  n2.printTrimmingCurves(joinPath(prefix, "remaining.txt"));
 }
 
 // Surface curvature evaluation at parameter (3.86209, 3.73582):
@@ -3180,8 +3177,8 @@ void nearby_point()
     axom::primal::Vector<double, 3> direction =  //axom::primal::Vector<double, 3> {0.0, 0.0, 1.0};
       -the_patch.normal(centers[i][0], centers[i][1]);
 
-    axom::primal::Vector<double, 3> other_direction =
-      the_patch.du(centers[i][0], centers[i][1]);
+    // axom::primal::Vector<double, 3> other_direction =
+    //   the_patch.du(centers[i][0], centers[i][1]);
 
     the_patch.evaluate(centers[i][0], centers[i][1]);
 
@@ -3232,7 +3229,8 @@ void spring_example(bool process_only = false)
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3261,7 +3259,7 @@ void spring_example(bool process_only = false)
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -3313,22 +3311,18 @@ void spring_example(bool process_only = false)
 
 void generic_timing_test(std::string prefix,
                          std::string filename,
-                         axom::primal::BoundingBox<double, 3> bbox)
+                         axom::primal::BoundingBox<double, 3> bbox,
+                         const axom::primal::Point<int,3>& resolution)
 {
   auto stepProcessor = import_step_file(prefix, filename);
-  return;
-
-  std::ofstream results(prefix + filename + "_timing_results.csv");
-  std::ofstream summary(prefix + filename + "_timing_summary.csv");
-  std::ofstream gwn_field(prefix + filename + "_gwn_field.vtk");
 
   constexpr double quad_tol = 1e-5;
   constexpr double EPS = 1e-10;
   constexpr double edge_tol = 1e-6;
 
-  int xSteps = 50;
-  int ySteps = 50;
-  int zSteps = 50;
+  int xSteps = resolution[0];
+  int ySteps = resolution[1];
+  int zSteps = resolution[2];
 
   double dx =
     (xSteps > 1) ? (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1) : 0.0;
@@ -3342,21 +3336,23 @@ void generic_timing_test(std::string prefix,
   double case_time_totals[4] = {0.0, 0.0, 0.0, 0.0};
 
   // Write VTK header
-  gwn_field << "# vtk DataFile Version 3.0\n";
-  gwn_field << "Scalar field data\n";
-  gwn_field << "ASCII\n";
-  gwn_field << "DATASET STRUCTURED_POINTS\n";
-  gwn_field << "DIMENSIONS " << xSteps << " " << ySteps << " " << zSteps << "\n";
-  gwn_field << "ORIGIN " << bbox.getMin()[0] << " " << bbox.getMin()[1] << " "
-            << bbox.getMin()[2] << "\n";
-  gwn_field << "SPACING " << dx << " " << dy << " " << dz << "\n";
-  gwn_field << "POINT_DATA " << xSteps * ySteps * zSteps << "\n";
-  gwn_field << "SCALARS scalars float\n";
-  gwn_field << "LOOKUP_TABLE default\n";
+  axom::fmt::memory_buffer vtk;
+  axom::fmt::format_to(std::back_inserter(vtk), "# vtk DataFile Version 3.0\n");
+  axom::fmt::format_to(std::back_inserter(vtk), "Scalar field data\n");
+  axom::fmt::format_to(std::back_inserter(vtk), "ASCII\n");
+  axom::fmt::format_to(std::back_inserter(vtk), "DATASET STRUCTURED_POINTS\n");
+  axom::fmt::format_to(std::back_inserter(vtk), "DIMENSIONS {} {} {}\n", xSteps, ySteps, zSteps);
+  axom::fmt::format_to(std::back_inserter(vtk), "ORIGIN {} {} {}\n", bbox.getMin()[0], bbox.getMin()[1], bbox.getMin()[2]);
+  axom::fmt::format_to(std::back_inserter(vtk), "SPACING {} {} {}\n", dx, dy, dz);
+  axom::fmt::format_to(std::back_inserter(vtk), "POINT_DATA {}\n", xSteps * ySteps * zSteps);
+  axom::fmt::format_to(std::back_inserter(vtk), "SCALARS scalars float\n");
+  axom::fmt::format_to(std::back_inserter(vtk), "LOOKUP_TABLE default\n");
 
-  gwn_field << std::setprecision(15);
-  results << std::setprecision(15);
-  summary << std::setprecision(15);
+  axom::fmt::memory_buffer res;
+
+  // write the header for the results table
+  axom::fmt::format_to(std::back_inserter(res),
+    "x, y, z, patch_index, integrated_trimming_curves, winding_number, case_code, elapsed_time\n");
 
   for(int k = 0; k < zSteps; ++k)
   {
@@ -3372,13 +3368,13 @@ void generic_timing_test(std::string prefix,
 
         auto query = axom::primal::Point<double, 3> {x, y, z};
         int case_code = -1;
-        int integrated_trimming_curves = 0;
+        //int integrated_trimming_curves = 0;
         axom::utilities::Timer timer(false);
 
         double wn = 0.0;
         for(const auto& kv : stepProcessor.getPatchDataMap())
         {
-          int integrated_trimming_curves;
+          int integrated_trimming_curves = 0;
           timer.start();
           double the_val =
             axom::primal::winding_number_casting(query,
@@ -3395,37 +3391,55 @@ void generic_timing_test(std::string prefix,
           case_time_totals[case_code] += timer.elapsedTimeInSec();
           wn += the_val;
 
-          results << x << ", " << y << ", " << z << ", " << kv.first << ", "
-                  << integrated_trimming_curves << ", " << the_val << ", "
-                  << case_code << ", " << timer.elapsedTimeInSec() << "\n";
+          axom::fmt::format_to(std::back_inserter(res),
+                      "{:.15f}, {:.15f}, {:.15f}, {}, {}, {:.15f}, {}, {:.15f}\n",
+                      x,
+                      y,
+                      z,
+                      kv.first,
+                      integrated_trimming_curves,
+                      the_val,
+                      case_code,
+                      timer.elapsedTimeInSec());
 
-          gwn_field << the_val << "\n";
         }
+        axom::fmt::format_to(std::back_inserter(vtk), "{:15f}\n", wn);
       }
     }
   }
 
-  // Case 0: Outside AABB (far-field)
-  // Case 1: Outside OBB (far-field)
-  // Case 2: Casting Necessary (near-field)
-  // Case 3: Trimming Curve Subdivision (edge case)
+  using axom::utilities::filesystem::joinPath;
+  {
+    std::ofstream results(joinPath(prefix, filename + "_timing_results.csv"));
+    results << axom::fmt::to_string(res);
+  }
+  {
+    std::ofstream gwn_field(joinPath(prefix, filename + "_gwn_field.vtk"));
+    gwn_field << axom::fmt::to_string(vtk);
+  }
 
-  summary << "Case 0: Outside AABB: " << case_patch_totals[0] << ", "
-          << case_curves_totals[0] << ", " << case_time_totals[0] << "\n";
+  {
+    std::ofstream summary(joinPath(prefix, filename + "_timing_summary.csv"));
+    summary << std::setprecision(15);
 
-  summary << "Case 1: Outside OBB: " << case_patch_totals[1] << ", "
-          << case_curves_totals[1] << ", " << case_time_totals[1] << "\n";
+    // Case 0: Outside AABB (far-field)
+    // Case 1: Outside OBB (far-field)
+    // Case 2: Casting Necessary (near-field)
+    // Case 3: Trimming Curve Subdivision (edge case)
 
-  summary << "Case 2: Casting Necessary: " << case_patch_totals[2] << ", "
-          << case_curves_totals[2] << ", " << case_time_totals[2] << "\n";
+    summary << "Case 0: Outside AABB: " << case_patch_totals[0] << ", "
+            << case_curves_totals[0] << ", " << case_time_totals[0] << "\n";
 
-  summary << "Case 3: Trimming Curve Subdivision: " << case_patch_totals[3]
-          << ", " << case_curves_totals[3] << ", " << case_time_totals[3]
-          << "\n";
+    summary << "Case 1: Outside OBB: " << case_patch_totals[1] << ", "
+            << case_curves_totals[1] << ", " << case_time_totals[1] << "\n";
 
-  gwn_field.close();
-  results.close();
-  summary.close();
+    summary << "Case 2: Casting Necessary: " << case_patch_totals[2] << ", "
+            << case_curves_totals[2] << ", " << case_time_totals[2] << "\n";
+
+    summary << "Case 3: Trimming Curve Subdivision: " << case_patch_totals[3]
+            << ", " << case_curves_totals[3] << ", " << case_time_totals[3]
+            << "\n";
+  }
 }
 
 void van_example(bool process_only = false)
@@ -3448,7 +3462,8 @@ void van_example(bool process_only = false)
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3477,7 +3492,7 @@ void van_example(bool process_only = false)
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -3525,7 +3540,8 @@ void spring_example_volume(bool process_only = false)
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor,&case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3554,7 +3570,7 @@ void spring_example_volume(bool process_only = false)
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -3593,7 +3609,8 @@ void bobbin_example_volume(bool process_only = false)
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3622,7 +3639,7 @@ void bobbin_example_volume(bool process_only = false)
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -3662,7 +3679,8 @@ void bobbin_example(bool process_only = false)
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3693,7 +3711,7 @@ void bobbin_example(bool process_only = false)
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -3751,7 +3769,8 @@ void complex_gear_example(bool process_only = false)
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3782,7 +3801,7 @@ void complex_gear_example(bool process_only = false)
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -3818,7 +3837,8 @@ void complex_gear_subset_example(bool process_only = false)
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
-  auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  //auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+  auto wn_field = [&stepProcessor, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
     for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3849,7 +3869,7 @@ void complex_gear_subset_example(bool process_only = false)
   auto the_range = 0.5 * meshBBox.range().norm();
   meshBBox.expand(0.1 * the_range);
 
-  axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
+  //axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
   axom::primal::Vector<double, 3> normal = {1.0, 1.0, 1.0};
 
   axom::utilities::Timer timer(false);
@@ -3879,8 +3899,60 @@ void complex_gear_subset_example(bool process_only = false)
     200);
 }
 
-int main()
+int main(int argc, char** argv)
 {
+  axom::slic::SimpleLogger logger;
+
+  axom::CLI::App app{"Winding number experiments"};
+
+  app.set_config("--config");
+
+  std::string prefix;
+  app.add_option("--prefix", prefix, "Prefix string")->required();
+
+  std::string filename;
+  app.add_option("--filename", filename, "Filename string")->required();
+
+  std::vector<double> min_bbox(3), max_bbox(3);
+  app.add_option("--min_bbox", min_bbox, "BoundingBox min values")
+    ->required()
+    ->expected(3);
+  app.add_option("--max_bbox", max_bbox, "BoundingBox max values")
+    ->required()
+    ->expected(3);
+
+    std::vector<int> resolution {50,50,50};
+    app.add_option("--resolution", resolution, "Resolution values")
+      ->capture_default_str()
+      ->expected(3);
+
+
+  double scale_factor {1.01};
+  app.add_option("--scale_factor", scale_factor, "BoundingBox scale factor")->capture_default_str();
+
+  CLI11_PARSE(app, argc, argv);
+
+
+  axom::primal::BoundingBox<double, 3> unscaled_bbox;
+  unscaled_bbox.addPoint(axom::primal::Point<double, 3> {min_bbox[0], min_bbox[1], min_bbox[2]});
+  unscaled_bbox.addPoint(axom::primal::Point<double, 3> {max_bbox[0], max_bbox[1], max_bbox[2]});
+  axom::primal::BoundingBox<double, 3> bbox = unscaled_bbox;
+  bbox.scale(scale_factor);
+
+  axom::primal::Point<int, 3> res { resolution[0], resolution[1], resolution[2]};
+
+
+  SLIC_INFO(axom::fmt::format(R"raw(Input parameters:
+   Prefix: {}
+   Filename: {}
+   BBox scale factor: {}
+   Unscaled BBox: {}
+   Scaled BBox: {}
+   Resolution: {}
+)raw", prefix, filename, scale_factor, unscaled_bbox, bbox, res));
+
+  generic_timing_test(prefix, filename, bbox, res);
+
   // nut_3d_example();
   // nut_2d_example();
   // discretized_curve_gwn();
@@ -3899,43 +3971,6 @@ int main()
   // Overlap of 9995 and 4196
   // 9979 at varying levels zooming
 
-  std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\bulk_timing_"
-    "results\\";
-  axom::primal::BoundingBox<double, 3> bbox;
-  std::string filename;
-
-  // Spring
-  // filename = "spring";
-  // bbox.clear();
-  // bbox.addPoint(axom::primal::Point<double, 3> {-0.04, -0.04, -0.03});
-  // bbox.addPoint(axom::primal::Point<double, 3> {0.04, 0.04, 0.03});
-  // bbox.scale(1.01);
-  // generic_timing_test(prefix, filename, bbox);
-
-  // // Van
-  // filename = "van";
-  // bbox.clear();
-  // bbox.addPoint(axom::primal::Point<double, 3> {-1.25, -3.2, -0.5});
-  // bbox.addPoint(axom::primal::Point<double, 3> {1.25, 4.8, 2.25});
-  // bbox.scale(1.01);
-  // generic_timing_test(prefix, filename, bbox);
-
-  // Bobbin
-  filename = "bobbin";
-  bbox.clear();
-  bbox.addPoint(axom::primal::Point<double, 3> {-0.065, -0.065, 0});
-  bbox.addPoint(axom::primal::Point<double, 3> {0.065, 0.065, 0.05});
-  bbox.scale(1.01);
-  generic_timing_test(prefix, filename, bbox);
-
-  // Complex Gear
-  // filename = "complex_gear";
-  // bbox.clear();
-  // bbox.addPoint(axom::primal::Point<double, 3> {-0.06, -0.06, -0.013});
-  // bbox.addPoint(axom::primal::Point<double, 3> { 0.06,  0.06,  0.013});
-  // bbox.scale(1.01);
-  // generic_timing_test(prefix, filename, bbox);
-
   return 0;
+
 }

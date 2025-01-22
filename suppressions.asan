@@ -1,2 +1,4 @@
 # Library that isn't built by us
 leak:libpsm2.so.2
+leak:*CLI11.hpp*
+leak:*Standard_Handle.hxx*
