@@ -1952,6 +1952,45 @@ TEST(primal_clip, polygon_intersects_polygon)
     EXPECT_NEAR(poly[9][0], 100, EPS);
     EXPECT_NEAR(poly[9][1], 250, EPS);
   }
+
+  /*
+   * Edge case where polygons overlap along diagonal of one polygon,
+   * and the edge of the other:
+   *    +-----------+
+   *   /| \         |
+   *  / |  \        |
+   * +  |   +       |
+   *  \ |  /        |
+   *   \| /         |
+   *    +-----------+
+   */
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0., 0.});
+    subjectPolygon.addVertex(Point2D {1., 0.});
+    subjectPolygon.addVertex(Point2D {1., 1.});
+    subjectPolygon.addVertex(Point2D {0., 1.});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0., 0.});
+    clipPolygon.addVertex(Point2D {0.3, 0.3});
+    clipPolygon.addVertex(Point2D {0., 1.});
+    clipPolygon.addVertex(Point2D {-0.3, 0.7});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+    EXPECT_NEAR(poly.signedArea(), 0.15, EPS);
+    EXPECT_EQ(poly.numVertices(), 3);
+
+    // Check vertices
+    EXPECT_NEAR(poly[0][0], 0, EPS);
+    EXPECT_NEAR(poly[0][1], 1, EPS);
+
+    EXPECT_NEAR(poly[1][0], 0, EPS);
+    EXPECT_NEAR(poly[1][1], 0, EPS);
+
+    EXPECT_NEAR(poly[2][0], 0.3, EPS);
+    EXPECT_NEAR(poly[2][1], 0.3, EPS);
+  }
 }
 
 /*
