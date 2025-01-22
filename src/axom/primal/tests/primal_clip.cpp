@@ -2040,6 +2040,7 @@ TEST(primal_clip, polygon_intersect_robustness)
   const double lower_vf[] = {1., 1., 0.5, 1., 0.5, 0., 0.5, 0., 0.};
   const double upper_vf[] = {0., 0., 0.5, 0., 0.5, 1., 0.5, 1., 1.};
 
+  // Each quad has an area of 1/9 (3x3 quads in the unit square).
   constexpr double fine_area = (1. / 3.) * (1. / 3.);
 
   for(int p : std::vector<int> {0, 1, 2, 3, 4, 6})
@@ -2050,6 +2051,8 @@ TEST(primal_clip, polygon_intersect_robustness)
 
     if(overlapPoly.isValid())
     {
+      // Area of overlapped polygon is some fraction of 1/9.
+      // Divide by 1/9 to get a volume fraction.
       const double vf = overlapPoly.area() / fine_area;
       EXPECT_NEAR(vf, lower_vf[p], EPS);
     }
@@ -2071,6 +2074,8 @@ TEST(primal_clip, polygon_intersect_robustness)
 
     if(overlapPoly.isValid())
     {
+      // Area of overlapped polygon is some fraction of 1/9.
+      // Divide by 1/9 to get a volume fraction.
       const double vf = overlapPoly.area() / fine_area;
       EXPECT_NEAR(vf, upper_vf[p], EPS);
     }
