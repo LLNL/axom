@@ -10,6 +10,7 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/BezierCurve.hpp"
@@ -18,6 +19,28 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include "axom/core/numerics/matvecops.hpp"
+
+#ifdef AXOM_USE_OPENCASCADE
+  #include "opencascade/Standard_Version.hxx"
+  #include "opencascade/Bnd_Box.hxx"
+  #include "opencascade/BRepBndLib.hxx"
+  #include "opencascade/BRepBuilderAPI_MakeFace.hxx"
+  #include "opencascade/BRepBuilderAPI_MakeWire.hxx"
+  #include "opencascade/BRepBuilderAPI_MakeEdge.hxx"
+  #include "opencascade/BRepBuilderAPI_MakeShell.hxx"
+  #include "opencascade/BRepPrimAPI_MakeBox.hxx"
+  #include "opencascade/gp_Pnt.hxx"
+  #include "opencascade/IFSelect_ReturnStatus.hxx"
+  #include "opencascade/TopAbs.hxx"
+  #include "opencascade/TopoDS_Shape.hxx"
+  #include "opencascade/TopoDS_Face.hxx"
+  #include "opencascade/TopExp_Explorer.hxx"
+  #include "opencascade/TColgp_Array2OfPnt.hxx"
+  #include "opencascade/TColStd_Array2OfReal.hxx"
+  #include "opencascade/Geom_BezierSurface.hxx"
+  #include "opencascade/STEPControl_Writer.hxx"
+  #include "opencascade/STEPControl_Reader.hxx"
+#endif
 
 namespace primal = axom::primal;
 
@@ -1373,7 +1396,6 @@ TEST(primal_nurbspatch, disk_subdivision)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
   using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
 
   const int npts_u = 5;
@@ -1446,6 +1468,123 @@ TEST(primal_nurbspatch, disk_subdivision)
 
   n41.printTrimmingCurves(prefix + "punctured_5.txt");
   n42.printTrimmingCurves(prefix + "disk_5.txt");
+}
+
+TEST(primal_nurbspatch, sphere_step)
+{
+  using Point3D = primal::Point<double, 3>;
+  using BPatch = primal::BezierPatch<double, 3>;
+
+  const double rt2 = sqrt(2);
+  const double rt3 = sqrt(3);
+  const double rt6 = sqrt(6);
+
+  // Define the nodes and weights for one of six rational, biquartic Bezier patches
+  //  that compose the unit sphere. These will be rotated to form the other 5.
+  // Nodes and weights obtained from the technical report
+  // "Tiling the Sphere with Rational Bezier Patches",
+  //  James E. Cobb, University of Utah, 1988
+
+  // clang-format off
+  axom::Array<Point3D> node_data = {
+    Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
+    Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
+    Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
+
+  axom::Array<double> weight_data = {
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
+  // clang-format on
+
+  BPatch sphere_faces[6];
+  for(int n = 0; n < 6; ++n)
+  {
+    sphere_faces[n].setOrder(4, 4);
+    sphere_faces[n].makeRational();
+  }
+
+  sphere_faces[0].setOrder(4, 4);
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      const int idx = 5 * i + j;
+      for(int n = 0; n < 6; ++n)
+      {
+        sphere_faces[n].setWeight(i, j, weight_data[idx]);
+      }
+
+      // Set up each face by rotating one of the patch faces
+      sphere_faces[0](i, j)[0] = node_data[idx][1];
+      sphere_faces[0](i, j)[1] = node_data[idx][0];
+      sphere_faces[0](i, j)[2] = node_data[idx][2];
+      sphere_faces[0](i, j).array() /= weight_data[idx];
+
+      sphere_faces[1](i, j)[0] = -node_data[idx][0];
+      sphere_faces[1](i, j)[1] = -node_data[idx][1];
+      sphere_faces[1](i, j)[2] = -node_data[idx][2];
+      sphere_faces[1](i, j).array() /= weight_data[idx];
+
+      sphere_faces[2](i, j)[0] = node_data[idx][2];
+      sphere_faces[2](i, j)[1] = node_data[idx][1];
+      sphere_faces[2](i, j)[2] = node_data[idx][0];
+      sphere_faces[2](i, j).array() /= weight_data[idx];
+
+      sphere_faces[3](i, j)[0] = -node_data[idx][1];
+      sphere_faces[3](i, j)[1] = -node_data[idx][2];
+      sphere_faces[3](i, j)[2] = -node_data[idx][0];
+      sphere_faces[3](i, j).array() /= weight_data[idx];
+
+      sphere_faces[4](i, j)[0] = node_data[idx][0];
+      sphere_faces[4](i, j)[1] = node_data[idx][2];
+      sphere_faces[4](i, j)[2] = node_data[idx][1];
+      sphere_faces[4](i, j).array() /= weight_data[idx];
+
+      sphere_faces[5](i, j)[0] = -node_data[idx][2];
+      sphere_faces[5](i, j)[1] = -node_data[idx][0];
+      sphere_faces[5](i, j)[2] = -node_data[idx][1];
+      sphere_faces[5](i, j).array() /= weight_data[idx];
+    }
+  }
+
+#ifdef AXOM_USE_OPENCASCADE
+  STEPControl_Writer writer;
+  writer.SetTolerance(1e-6);
+
+  for(int n = 0; n < 6; ++n)
+  {
+    // Create a TopoDS_Shape from the Bezier patch
+    TColgp_Array2OfPnt poles(1, 5, 1, 5);
+    TColStd_Array2OfReal weights(1, 5, 1, 5);
+
+    for(int i = 1; i <= 5; ++i)
+    {
+      for(int j = 1; j <= 5; ++j)
+      {
+        const auto& pt = sphere_faces[n](i - 1, j - 1);
+        poles.SetValue(i, j, gp_Pnt(pt[0], pt[1], pt[2]));
+        weights.SetValue(i, j, sphere_faces[n].getWeight(i - 1, j - 1));
+      }
+    }
+
+    Handle(Geom_BezierSurface) bezierSurface =
+      new Geom_BezierSurface(poles, weights);
+    TopoDS_Face face = BRepBuilderAPI_MakeFace(bezierSurface, 1e-6);
+
+    writer.Transfer(face, STEPControl_AsIs);
+  }
+
+  IFSelect_ReturnStatus status = writer.Write("sphere_faces.step");
+  if(status != IFSelect_RetDone)
+  {
+    SLIC_ERROR("Failed to write STEP file");
+  }
+#endif
 }
 
 int main(int argc, char* argv[])

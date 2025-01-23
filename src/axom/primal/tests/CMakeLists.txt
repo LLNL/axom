@@ -69,6 +69,10 @@ foreach ( test ${primal_tests} )
         FOLDER     axom/primal/tests
        )
 
+   if(OPENCASCADE_FOUND AND test_name STREQUAL primal_nurbs_patch)
+      blt_patch_target(NAME ${test_name}_test DEPENDS_ON opencascade)
+   endif()
+
    axom_add_test(
         NAME    ${test_name}
         COMMAND ${test_name}_test
