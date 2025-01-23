@@ -1650,7 +1650,7 @@ public:
             std::string& name_from_file);
 
   /*!
-   * \brief Load data into the Group's external views from a hdf5 handle.
+   * \brief Load data into the Group's external views from an hdf5 handle.
    *
    * No protocol argument is needed, as this only is used with the sidre_hdf5
    * protocol.  Returns true (success) if no Conduit I/O error occurred since
@@ -1661,6 +1661,22 @@ public:
    * \return           True if no error occurred, otherwise false.
    */
   bool loadExternalData(const hid_t& h5_id);
+
+  /*!
+   * \brief Load data into the Group's external views from a path into
+   *        hdf5 handle
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.  Returns true (success) if no Conduit I/O error occurred since
+   * this Group's DataStore was created or had its error flag cleared; false,
+   * if an error occurred at some point.
+   *
+   * \param h5_id        hdf5 handle
+   * \param group_path   path to a group below the group pointed by the h5_id.
+   *                     This path points to the group in the hdf5 hierarchy
+   *                     that represents this Group object.
+   */
+  bool loadExternalData(const hid_t& h5_id, const std::string& group_path);
 
 #endif /* AXOM_USE_HDF5 */
 
