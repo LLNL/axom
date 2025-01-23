@@ -3366,7 +3366,6 @@ void generic_timing_test(std::string prefix,
                          "winding_number, case_code, elapsed_time\n");
   }
 
-
   AXOM_ANNOTATE_BEGIN("GWN query");
   for(int k = 0; k < zSteps; ++k)
   {
@@ -3439,6 +3438,149 @@ void generic_timing_test(std::string prefix,
 
   {
     std::ofstream summary(joinPath(prefix, filename + "_timing_summary.csv"));
+    summary << "Case, Total patches, Total curves, Time Totals (s)\n";
+    summary << axom::fmt::format("Case 0: Outside AABB: {}, {}, {:.15f}\n",
+                                 case_patch_totals[0],
+                                 case_curves_totals[0],
+                                 case_time_totals[0]);
+
+    summary << axom::fmt::format("Case 1: Outside OBB: {}, {}, {:.15f}\n",
+                                 case_patch_totals[1],
+                                 case_curves_totals[1],
+                                 case_time_totals[1]);
+
+    summary << axom::fmt::format("Case 2: Casting Necessary: {}, {}, {:.15f}\n",
+                                 case_patch_totals[2],
+                                 case_curves_totals[2],
+                                 case_time_totals[2]);
+
+    summary << axom::fmt::format(
+      "Case 3: Trimming Curve Subdivision: {}, {}, {:.15f}\n",
+      case_patch_totals[3],
+      case_curves_totals[3],
+      case_time_totals[3]);
+  }
+}
+
+void query_timing_test(const std::string& in_prefix,
+                       const std::string& filename,
+                       const std::string& out_prefix,
+                       const std::vector<axom::primal::Point<double, 3>>& query_points,
+                       const std::string& out_suffix = "")
+{
+  auto stepProcessor = import_step_file(in_prefix, filename);
+
+  constexpr double quad_tol = 1e-12;
+  constexpr double EPS = 1e-12;
+  constexpr double edge_tol = 1e-12;
+
+  int case_patch_totals[4] = {0, 0, 0, 0};
+  int case_curves_totals[4] = {0, 0, 0, 0};
+  double case_time_totals[4] = {0.0, 0.0, 0.0, 0.0};
+
+  AXOM_ANNOTATE_BEGIN("GWN query");
+
+  const int num_query_pts = query_points.size();
+  const int progress_idx = [num_query_pts](int div) {
+    return num_query_pts > div
+      ? static_cast<int>(num_query_pts / static_cast<double>(div))
+      : num_query_pts;
+  }(20);
+  axom::Array<double> gwn(num_query_pts);
+
+  for(int idx = 0; idx < num_query_pts; ++idx)
+  {
+    if(idx % progress_idx == 0)
+    {
+      axom::primal::printLoadingBar(idx, num_query_pts);
+    }
+
+    const auto& query = query_points[idx];
+    int case_code = -1;
+    axom::utilities::Timer timer(false);
+
+    double wn = 0.0;
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      int integrated_trimming_curves = 0;
+      timer.start();
+      double the_val =
+        axom::primal::winding_number_casting(query,
+                                             kv.second.nurbsPatchData,
+                                             case_code,
+                                             integrated_trimming_curves,
+                                             edge_tol,
+                                             quad_tol,
+                                             EPS);
+      timer.stop();
+
+      case_patch_totals[case_code]++;
+      case_curves_totals[case_code] += integrated_trimming_curves;
+      case_time_totals[case_code] += timer.elapsedTimeInSec();
+      wn += the_val;
+    }
+    gwn[idx] = wn;
+  }
+  AXOM_ANNOTATE_END("GWN query");
+
+  using axom::utilities::filesystem::joinPath;
+  {
+    // Write query points and GWN field to CSV
+    axom::fmt::memory_buffer csv;
+    axom::fmt::format_to(
+      std::back_inserter(csv),
+      "x, y, z, radius, winding_number, expected_inside, rounded\n");
+
+    int outside_count = 0;
+    for(int idx = 0; idx < num_query_pts; ++idx)
+    {
+      const auto& query = query_points[idx];
+      const double radius = std::sqrt(
+        query[0] * query[0] + query[1] * query[1] + query[2] * query[2]);
+      const bool inside = radius > 1.0 ? false : true;
+      const int rounded = std::lround(gwn[idx]);
+      axom::fmt::format_to(
+        std::back_inserter(csv),
+        "{:.15f}, {:.15f}, {:.15f}, {:.15f}, {:.15f}, {}, {}\n",
+        query[0],
+        query[1],
+        query[2],
+        radius,
+        gwn[idx],
+        inside,
+        rounded);
+
+      if(rounded == 0)
+      {
+        ++outside_count;
+      }
+    }
+
+    std::string csvFilename =
+      joinPath(out_prefix,
+               axom::fmt::format("{}_gwn_field{}.csv", filename, out_suffix));
+    std::ofstream csvFile(csvFilename);
+    csvFile << axom::fmt::to_string(csv);
+    SLIC_INFO(axom::fmt::format("CSV file generated: '{}'", csvFilename));
+    const int inside_count = num_query_pts - outside_count;
+    SLIC_INFO(axom::fmt::format(
+      axom::utilities::locale(),
+      "Out of {:L} query points, {:L} were inside ({:.2f}%) and {:L} were "
+      "outside ({:.2f}%)",
+      num_query_pts,
+      inside_count,
+      (static_cast<double>(inside_count) / num_query_pts) * 100.0,
+      outside_count,
+      (static_cast<double>(outside_count) / num_query_pts) * 100.0));
+  }
+
+  {
+    std::string out_file = joinPath(
+      out_prefix,
+      axom::fmt::format("{}_timing_summary{}.csv", filename, out_suffix));
+
+    SLIC_INFO(axom::fmt::format("Writing results to '{}'", out_file));
+    std::ofstream summary(out_file);
     summary << "Case, Total patches, Total curves, Time Totals (s)\n";
     summary << axom::fmt::format("Case 0: Outside AABB: {}, {}, {:.15f}\n",
                                  case_patch_totals[0],
@@ -3920,6 +4062,47 @@ void complex_gear_subset_example(bool process_only = false)
     200);
 }
 
+/**
+ * Generates a given number of sample points near the surface of a unit sphere
+ * 
+ * @param numSamples The number of sample points to generate.
+ * @param EPS Allowed distance to sphere (inside the sphere)
+ * @return A vector of sample points near unit sphere
+ */
+std::vector<axom::primal::Point<double, 3>> generateSamplePointsOnSphere(
+  int numSamples,
+  double EPS = 1e-3)
+{
+  std::vector<axom::primal::Point<double, 3>> samplePoints;
+  samplePoints.reserve(numSamples);
+
+  const double eps_lower = 1. - 1.1 * EPS;
+  const double eps_upper = 1. - 0.9 * EPS;
+  SLIC_INFO(
+    axom::fmt::format("Generating {} sample points near unit sphere with EPS: "
+                      "{} and range: [{}, {}]",
+                      numSamples,
+                      EPS,
+                      eps_lower,
+                      eps_upper));
+
+  for(int i = 0; i < numSamples; ++i)
+  {
+    const double phi = axom::utilities::random_real(0., 2. * M_PI);
+    const double cosTheta = axom::utilities::random_real(-1., 1.);
+    const double sinTheta = std::sqrt(1. - cosTheta * cosTheta);
+
+    const double mag = axom::utilities::random_real(eps_lower, eps_upper);
+
+    samplePoints.emplace_back(
+      axom::primal::Point<double, 3> {mag * sinTheta * std::cos(phi),
+                                      mag * sinTheta * std::sin(phi),
+                                      mag * cosTheta});
+  }
+
+  return samplePoints;
+}
+
 int main(int argc, char** argv)
 {
   axom::slic::SimpleLogger logger;
@@ -3928,17 +4111,22 @@ int main(int argc, char** argv)
 
   app.set_config("--config");
 
-  std::string prefix;
-  app.add_option("--prefix", prefix, "Prefix string")->required();
+  std::string in_prefix;
+  app.add_option("--input-directory", in_prefix, "Prefix path for input file")
+    ->required();
+
+  std::string out_prefix {"winding_results"};
+  app.add_option("--output-prefix", out_prefix, "Prefix path for output files")
+    ->capture_default_str();
 
   std::string filename;
   app.add_option("--filename", filename, "Filename string")->required();
 
   std::vector<double> min_bbox(3), max_bbox(3);
-  app.add_option("--min_bbox", min_bbox, "BoundingBox min values")
+  app.add_option("--min-bbox", min_bbox, "BoundingBox min values")
     ->required()
     ->expected(3);
-  app.add_option("--max_bbox", max_bbox, "BoundingBox max values")
+  app.add_option("--max-bbox", max_bbox, "BoundingBox max values")
     ->required()
     ->expected(3);
 
@@ -3946,6 +4134,17 @@ int main(int argc, char** argv)
   app.add_option("--resolution", resolution, "Resolution values")
     ->capture_default_str()
     ->expected(3);
+
+  int num_query_pts {1000};
+  app.add_option("-q,--num-query-pts", num_query_pts, "Number of query points")
+    ->capture_default_str();
+
+  double distance_to_surface {1e-3};
+  app
+    .add_option("--distance-to-surface",
+                distance_to_surface,
+                "Distance to surface")
+    ->capture_default_str();
 
   std::string annotationMode {"none"};
 #ifdef AXOM_USE_CALIPER
@@ -3974,24 +4173,42 @@ int main(int argc, char** argv)
   axom::primal::Point<int, 3> res {resolution[0], resolution[1], resolution[2]};
 
   SLIC_INFO(axom::fmt::format(R"raw(Input parameters:
-   Prefix: {}
+   Input directory prefix: {}
+   Output directory prefix: {}
    Filename: {}
    BBox scale factor: {}
    Unscaled BBox: {}
    Scaled BBox: {}
    Resolution: {}
+   Num query pts: {}
+   Distance from surface: {}
 )raw",
-                              prefix,
+                              in_prefix,
+                              out_prefix,
                               filename,
                               scale_factor,
                               unscaled_bbox,
                               bbox,
-                              res));
+                              res,
+                              num_query_pts,
+                              distance_to_surface));
 
   axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
     annotationMode);
 
-  generic_timing_test(prefix, filename, bbox, res);
+  //generic_timing_test(prefix, filename, bbox, res);
+  if(!axom::utilities::filesystem::pathExists(out_prefix))
+  {
+    axom::utilities::filesystem::makeDirsForPath(out_prefix);
+  }
+
+  auto query_pts =
+    generateSamplePointsOnSphere(num_query_pts, distance_to_surface);
+  query_timing_test(in_prefix,
+                    filename,
+                    out_prefix,
+                    query_pts,
+                    axom::fmt::format("_within_{}", distance_to_surface));
 
   // nut_3d_example();
   // nut_2d_example();
