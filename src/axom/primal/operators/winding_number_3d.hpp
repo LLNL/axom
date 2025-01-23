@@ -946,8 +946,9 @@ double winding_number_casting(const Point<T, 3>& query,
 {
   double theta = axom::utilities::random_real(0.0, 2 * M_PI);
   double u = axom::utilities::random_real(-1.0, 1.0);
-  auto cast_direction =
-    Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
+  //auto cast_direction =
+  //  Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
+  const auto cast_direction = Vector<T, 3> {query[0], query[1], query[2]};
 
   auto wn_split = winding_number_casting_split(query,
                                                nPatch,
@@ -1465,7 +1466,7 @@ std::pair<double, double> winding_number_casting_split(
         integralPatch.getKnots_v()[0]);
 
     // Tolerance for what counts as "close to a boundary" in parameter space
-    T disk_radius = 0.1 * patch_knot_size;
+    T disk_radius = 0.001 * patch_knot_size;
 
     // Compute intersections with the *untrimmed and extrapolated* patch
     axom::Array<T> up, vp, tp;
