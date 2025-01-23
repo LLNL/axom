@@ -57,7 +57,8 @@ TEST(lumberjack_NonCollectiveRootCommunicator, noncollective_communication)
           found = true;
         }
       }
-      EXPECT_EQ(found, true) << "Message not received: " << currMessage << std::endl;
+      EXPECT_EQ(found, true)
+        << "Message not received: " << currMessage << std::endl;
     }
   }
 

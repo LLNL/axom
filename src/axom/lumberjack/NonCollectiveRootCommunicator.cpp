@@ -28,6 +28,10 @@ void NonCollectiveRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
   MPI_Comm_size(m_mpiComm, &m_mpiCommSize);
   m_ranksLimit = ranksLimit;
   m_mpiTag = mpiTag;
+  /*
+    Each communicator that sends/receives messages non-collectively needs its 
+    own mpiTag in order to not interfere with other communicators.
+   */
   ++mpiTag;
 }
 
