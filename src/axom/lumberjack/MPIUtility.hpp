@@ -53,7 +53,7 @@ const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag = 0);
  * \param [in,out] packedMessagesToBeSent All of the Message classes to be sent
  *  packed together.
  * \param [in] tag The MPI tag to use for communication.  When set to zero, 
- *  MPI communication uses default LJ_Tag.
+ *  MPI communication uses the default Lumberjack Tag.
  *****************************************************************************
  */
 void mpiNonBlockingSendMessages(MPI_Comm comm,
