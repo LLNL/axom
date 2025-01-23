@@ -892,11 +892,6 @@ double volumeOfTetMesh(
   const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& tetMesh)
 {
   using TetType = axom::primal::Tetrahedron<double, 3>;
-  if(0)
-  {
-    std::ofstream os("tets.js");
-    tetMesh.getSidreGroup()->print(os);
-  }
   axom::StackArray<axom::IndexType, 1> nodesShape {tetMesh.getNumberOfNodes()};
   axom::ArrayView<const double> x(tetMesh.getCoordinateArray(0), nodesShape);
   axom::ArrayView<const double> y(tetMesh.getCoordinateArray(1), nodesShape);

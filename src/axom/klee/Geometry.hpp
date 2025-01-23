@@ -132,7 +132,7 @@ public:
            std::shared_ptr<GeometryOperator const> operator_);
 
   /**
-   * Create a volume-of-revolution (SOR) Geometry object.
+   * Create a surface-of-revolution (SOR) Geometry object.
    *
    * \param startProperties the transformable properties before any
    * operators are applied
@@ -181,7 +181,7 @@ public:
    * - "blueprint-tets" = Blueprint tetrahedral mesh in memory
    * - "tet3D" = 3D tetrahedron (4 points)
    * - "sphere3D" = 3D sphere, as \c primal::Sphere<double,3>
-   * - "sor3D" = 3D volume of revolution.
+   * - "sor3D" = 3D surface of revolution.
    * - "cone3D" = 3D cone, as \c primal::Cone<double,3>
    * - "cylinder3D" = 3D cylinder, as \c primal::Cylinder<double,3>
    * - "hex3D" = 3D hexahedron (8 points)
@@ -299,7 +299,7 @@ public:
   const axom::primal::Plane<double, 3> &getPlane() const { return m_plane; }
 
   /**
-   @brief Get the discrete function used in volumes of revolution.
+   @brief Get the discrete function used in surfaces of revolution.
   */
   axom::ArrayView<const double, 2> getDiscreteFunction() const
   {

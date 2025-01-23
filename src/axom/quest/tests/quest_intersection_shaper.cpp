@@ -324,11 +324,10 @@ void replacementRuleTest(const std::string &shapeFile,
   // the C2C reader.
   dc.SetComm(MPI_COMM_WORLD);
   #endif
-  quest::IntersectionShaper shaper(
-    policy,
-    axom::INVALID_ALLOCATOR_ID,
-    shapeSet,
-    &dc);
+  quest::IntersectionShaper shaper(policy,
+                                   axom::INVALID_ALLOCATOR_ID,
+                                   shapeSet,
+                                   &dc);
   shaper.setLevel(refinementLevel);
 
   // Borrowed from shaping_driver.
@@ -463,11 +462,10 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
   // the C2C reader.
   dc.SetComm(MPI_COMM_WORLD);
   #endif
-  quest::IntersectionShaper shaper(
-    policy,
-    axom::INVALID_ALLOCATOR_ID,
-    shapeSet,
-    &dc);
+  quest::IntersectionShaper shaper(policy,
+                                   axom::INVALID_ALLOCATOR_ID,
+                                   shapeSet,
+                                   &dc);
   shaper.setLevel(refinementLevel);
   shaper.setPercentError(targetPercentError);
   shaper.setRefinementType(quest::DiscreteShape::RefinementDynamic);
