@@ -2039,6 +2039,13 @@ public:
           patchIndex));
         continue;
       }
+      else
+      {
+        const int numTriangles = triangulation->NbTriangles();
+        SLIC_INFO(axom::fmt::format("Patch {} has {} triangles",
+                                    patchIndex,
+                                    numTriangles));
+      }
 
       const int numTriangles = triangulation->NbTriangles();
       for(int i = 1; i <= numTriangles; ++i)
@@ -2074,8 +2081,12 @@ public:
       axom::utilities::filesystem::joinPath(m_outputDirectory,
                                             "triangulated_mesh.vtk");
     axom::mint::write_vtk(&mesh, filename);
-    SLIC_INFO_IF(m_verbose,
-                 "VTK triangle mesh of entire model generated: " << filename);
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "VTK triangle mesh of entire model with {:L} "
+                                "vertices and {:L} triangles generated: '{}'",
+                                mesh.getNumberOfNodes(),
+                                mesh.getNumberOfCells(),
+                                filename));
   }
 
 private:
