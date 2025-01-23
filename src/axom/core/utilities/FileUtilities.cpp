@@ -30,6 +30,9 @@
   #define Unlink unlink
 #endif
 
+// Note: The hard-wired path separator character in this file
+// should be set to the backslash when on Windows.
+
 namespace axom
 {
 namespace utilities
