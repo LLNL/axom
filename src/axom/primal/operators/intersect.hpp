@@ -575,6 +575,7 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * \param [in] seg A line segment
  * \param [out] t Intersection point of plane and seg, w.r.t. seg's
  *  parametrization
+ * \param [in] EPS tolerance parameter for determining if 0.0 <= t <= 1.0
  * \note If there is an intersection, the intersection point pt is:
  *                     pt = seg.at(t)
  * \return true iff plane intersects with seg, otherwise, false.
@@ -586,9 +587,10 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
 template <typename T, int DIM>
 AXOM_HOST_DEVICE bool intersect(const Plane<T, DIM>& plane,
                                 const Segment<T, DIM>& seg,
-                                T& t)
+                                T& t,
+                                const double& EPS = 1e-12)
 {
-  return detail::intersect_plane_seg(plane, seg, t);
+  return detail::intersect_plane_seg(plane, seg, t, EPS);
 }
 
 /*!

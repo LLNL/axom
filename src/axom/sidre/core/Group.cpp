@@ -963,7 +963,7 @@ View* Group::copyView(View* view)
  *
  *************************************************************************
  */
-View* Group::deepCopyView(View* view, int allocID)
+View* Group::deepCopyView(const View* view, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 
@@ -1402,7 +1402,7 @@ Group* Group::copyGroup(Group* group)
  *
  *************************************************************************
  */
-Group* Group::deepCopyGroup(Group* srcGroup, int allocID)
+Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 

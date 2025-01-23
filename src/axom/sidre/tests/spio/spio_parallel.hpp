@@ -359,7 +359,7 @@ TEST(spio_parallel, external_writeread)
   View* view2 = root2->getView("fields2/b/external_undescribed");
   view2->setExternalDataPtr(restored_vals2);
 
-  reader.loadExternalData(root2, "out_spio_external_write_read.root");
+  reader.loadExternalData(root2, file_name + ROOT_EXT);
 
   enum SpioTestResult
   {
@@ -421,7 +421,7 @@ TEST(spio_parallel, external_writeread)
 }
 
 //------------------------------------------------------------------------------
-TEST(spio_parallel, external_partial_writeread)
+TEST(spio_parallel, external_piecemeal_writeread)
 {
   if(PROTOCOL != "sidre_hdf5")
   {
@@ -450,7 +450,7 @@ TEST(spio_parallel, external_partial_writeread)
    * Create a DataStore and give it a small hierarchy of groups and views.
    *
    * The views are filled with repeatable nonsense data that will vary based
-   * on rank
+   * on rank.
    */
   DataStore* ds1 = new DataStore();
 
@@ -469,7 +469,7 @@ TEST(spio_parallel, external_partial_writeread)
   const int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  std::string file_name = "out_spio_external_partial";
+  std::string file_name = "out_spio_external_piecemeal_write_read";
 
   writer.write(root1, num_files, file_name, PROTOCOL);
 
@@ -486,6 +486,7 @@ TEST(spio_parallel, external_partial_writeread)
 
   reader.read(root2, file_name + ROOT_EXT);
 
+  // pollute values so we know they are changed
   int restored_vals1[nvals], restored_vals2[nvals];
   for(int i = 0; i < nvals; ++i)
   {
@@ -722,6 +723,7 @@ TEST(spio_parallel, external_partial_writeread)
   /*
    * Verify that the contents of view2 are restored.
    */
+
   EXPECT_EQ(view2->getNumElements(), nvals);
   if(view2->getNumElements() != nvals)
   {
@@ -1054,6 +1056,8 @@ TEST(spio_parallel, parallel_increase_procs)
     MPI_Comm_split(MPI_COMM_WORLD, my_rank, 0, &split_comm);
   }
 
+  const std::string file_name = "out_spio_parallel_increase_procs";
+
   DataStore* ds = new DataStore();
   if(my_rank <= top_output_rank)
   {
@@ -1076,8 +1080,6 @@ TEST(spio_parallel, parallel_increase_procs)
     int num_files = 1;
     axom::sidre::IOManager writer(split_comm);
 
-    const std::string file_name = "out_spio_parallel_increase_procs";
-
     writer.write(root, num_files, file_name, PROTOCOL);
   }
 
@@ -1091,8 +1093,7 @@ TEST(spio_parallel, parallel_increase_procs)
 
   IOManager reader(MPI_COMM_WORLD);
 
-  const std::string root_name = "out_spio_parallel_increase_procs.root";
-  reader.read(ds2->getRoot(), root_name);
+  reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
   /*
    * Verify that the contents of ds2 on rank 0 match those written from ds.
@@ -1218,8 +1219,7 @@ TEST(spio_parallel, parallel_decrease_procs)
   {
     IOManager reader(split_comm);
 
-    const std::string root_name = "out_spio_parallel_decrease_procs.root";
-    reader.read(ds2->getRoot(), root_name);
+    reader.read(ds2->getRoot(), file_name + ROOT_EXT);
 
     Group* ds2_root = ds2->getRoot();
 
@@ -1349,7 +1349,7 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // Add the bp index to the root file
   writer.writeBlueprintIndexToRootFile(&ds,
                                        "mesh",
-                                       "out_spio_blueprint_example.root",
+                                       file_name + ROOT_EXT,
                                        "mesh");
 
 #endif  // AXOM_USE_HDF5

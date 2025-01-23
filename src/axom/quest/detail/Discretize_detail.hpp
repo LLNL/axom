@@ -264,7 +264,7 @@ namespace quest
  * This routine initializes an Array pointed to by \a out.
  */
 template <typename ExecSpace>
-bool discretize(axom::Array<Point2D> &polyline,
+bool discretize(const axom::ArrayView<Point2D> &polyline,
                 int pointcount,
                 int levels,
                 axom::Array<OctType> &out,
@@ -276,8 +276,8 @@ bool discretize(axom::Array<Point2D> &polyline,
   int segmentcount = pointcount - 1;
   for(int seg = 0; seg < segmentcount && stillValid; ++seg)
   {
-    Point2D &a = polyline[seg];
-    Point2D &b = polyline[seg + 1];
+    const Point2D &a = polyline[seg];
+    const Point2D &b = polyline[seg + 1];
     // invalid if a.x > b.x
     if(a[0] > b[0])
     {

@@ -29,7 +29,8 @@ TEST(quest_initialize, inout_pointer_initialize)
 {
   int rc = quest::QUEST_INOUT_SUCCESS;
 
-  mint::Mesh* input_mesh = axom::quest::utilities::make_tetrahedron_mesh();
+  std::shared_ptr<mint::Mesh> input_mesh {
+    axom::quest::utilities::make_tetrahedron_mesh()};
 
   // Note: the following call updates the input_mesh pointer
 #ifdef AXOM_USE_MPI
@@ -47,8 +48,6 @@ TEST(quest_initialize, inout_pointer_initialize)
 
   rc = quest::inout_finalize();
   EXPECT_EQ(quest::QUEST_INOUT_SUCCESS, rc);
-
-  delete input_mesh;
 }
 
 // Test initializing quest signed_distance from a preloaded mesh

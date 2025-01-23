@@ -501,6 +501,8 @@ TEST(sidre_buffer, buffer_iterate)
   }
   expbufcount = 3;
   EXPECT_EQ(expbufcount, bufcount);
+
+  delete ds;
 }
 
 // Tests that alloc(0) and realloc(0) are valid and have same behavior

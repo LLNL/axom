@@ -53,24 +53,6 @@ using UMesh = axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>;
 using IndexPair = std::pair<axom::IndexType, axom::IndexType>;
 using RuntimePolicy = axom::runtime_policy::Policy;
 
-// clang-format off
-#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
-  using omp_exec = axom::OMP_EXEC;
-#else
-  using omp_exec = seq_exec;
-#endif
-
-#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
-  constexpr int CUDA_BLK_SZ = 256;
-  using cuda_exec = axom::CUDA_EXEC<CUDA_BLK_SZ>;
-#else
-  using cuda_exec = seq_exec;
-#endif
-
-// Hip exec included from IntersectionShaper header
-
-// clang-format on
-
 //-----------------------------------------------------------------------------
 /// Basic RAII utility class for initializing and finalizing slic logger
 //-----------------------------------------------------------------------------
@@ -725,6 +707,28 @@ std::vector<IndexPair> findCandidatesImplicit(const HexMesh& insertMesh,
 
 int main(int argc, char** argv)
 {
+  // clang-format off
+#if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+  using omp_exec = axom::OMP_EXEC;
+#else
+  using omp_exec = seq_exec;
+#endif
+
+#if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+  constexpr int CUDA_BLK_SZ = 256;
+  using cuda_exec = axom::CUDA_EXEC<CUDA_BLK_SZ>;
+#else
+  using cuda_exec = seq_exec;
+#endif
+
+#if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+  constexpr int HIP_BLK_SZ = 256;
+  using hip_exec = axom::HIP_EXEC<HIP_BLK_SZ>;
+#else
+  using hip_exec = seq_exec;
+#endif
+  // clang-format on
+
   // Initialize logger; use RAII so it will finalize at the end of the application
   BasicLogger logger;
 

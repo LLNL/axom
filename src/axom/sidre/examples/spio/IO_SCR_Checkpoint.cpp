@@ -425,6 +425,9 @@ int main(int argc, char* argv[])
   SLIC_ASSERT(success);
   AXOM_UNUSED_VAR(success);
 
+  delete ds_output;
+  delete ds_input;
+
   MPI_Finalize();
 
   return 0;

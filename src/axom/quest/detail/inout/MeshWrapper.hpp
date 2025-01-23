@@ -81,7 +81,7 @@ public:
   static constexpr CellIndex NO_CELL = -1;
 
 protected:
-  SimplexMeshWrapper(SurfaceMesh*& meshPtr)
+  SimplexMeshWrapper(std::shared_ptr<SurfaceMesh>& meshPtr)
     : m_surfaceMesh(meshPtr)
     , m_vertexPositions(&m_vertexSet)
     , m_cellToVertexRelation()
@@ -278,7 +278,7 @@ public:
   }
 
 protected:
-  SurfaceMesh*& m_surfaceMesh;  // ref to pointer to allow changing the mesh
+  std::shared_ptr<SurfaceMesh>& m_surfaceMesh;  // ref to pointer to allow changing the mesh
 
   MeshVertexSet m_vertexSet {0};
   MeshElementSet m_elementSet {0};
@@ -312,7 +312,7 @@ public:
 
 public:
   /// \brief Constructor for a mesh wrapper */
-  MeshWrapper(SurfaceMesh*& meshPtr) : Base(meshPtr) { }
+  MeshWrapper(std::shared_ptr<SurfaceMesh>& meshPtr) : Base(meshPtr) { }
 
   /**
    * \brief Helper function to compute the bounding box of an edge
@@ -419,7 +419,7 @@ public:
       // Grab relation from mesh
       using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
       axom::IndexType* vertIds =
-        static_cast<UMesh*>(m_surfaceMesh)->getCellNodeIDs(i);
+        std::static_pointer_cast<UMesh>(m_surfaceMesh)->getCellNodeIDs(i);
 
       // Remap the vertex IDs
       for(int j = 0; j < NUM_EDGE_VERTS; ++j)
@@ -442,9 +442,8 @@ public:
     m_cellToVertexRelation.bindIndices(static_cast<int>(m_cv_data.size()),
                                        &m_cv_data);
 
-    // Delete old mesh, and NULL its pointer
-    delete m_surfaceMesh;
-    m_surfaceMesh = nullptr;
+    // Delete old mesh
+    m_surfaceMesh.reset();
 
     m_meshWasReindexed = true;
   }
@@ -454,8 +453,7 @@ public:
   {
     if(m_surfaceMesh != nullptr)
     {
-      delete m_surfaceMesh;
-      m_surfaceMesh = nullptr;
+      m_surfaceMesh.reset();
     }
 
     using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
@@ -476,7 +474,7 @@ public:
       edgeMesh->appendCell(tv);
     }
 
-    m_surfaceMesh = edgeMesh;
+    m_surfaceMesh.reset(edgeMesh);
   }
 };
 
@@ -500,7 +498,7 @@ public:
 
 public:
   /// \brief Constructor for a mesh wrapper */
-  MeshWrapper(SurfaceMesh*& meshPtr) : Base(meshPtr) { }
+  MeshWrapper(std::shared_ptr<SurfaceMesh>& meshPtr) : Base(meshPtr) { }
 
   /**
    * \brief Helper function to compute the bounding box of a triangle
@@ -570,7 +568,7 @@ public:
       // Grab relation from mesh
       using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
       axom::IndexType* vertIds =
-        static_cast<UMesh*>(m_surfaceMesh)->getCellNodeIDs(i);
+        std::static_pointer_cast<UMesh>(m_surfaceMesh)->getCellNodeIDs(i);
 
       // Remap the vertex IDs
       for(int j = 0; j < NUM_TRI_VERTS; ++j)
@@ -595,9 +593,8 @@ public:
     m_cellToVertexRelation.bindIndices(static_cast<int>(m_cv_data.size()),
                                        &m_cv_data);
 
-    // Delete old mesh, and NULL its pointer
-    delete m_surfaceMesh;
-    m_surfaceMesh = nullptr;
+    // Delete old mesh
+    m_surfaceMesh.reset();
 
     m_meshWasReindexed = true;
   }
@@ -607,8 +604,7 @@ public:
   {
     if(m_surfaceMesh != nullptr)
     {
-      delete m_surfaceMesh;
-      m_surfaceMesh = nullptr;
+      m_surfaceMesh.reset();
     }
 
     using UMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
@@ -629,7 +625,7 @@ public:
       triMesh->appendCell(tv);
     }
 
-    m_surfaceMesh = triMesh;
+    m_surfaceMesh.reset(triMesh);
   }
 };
 

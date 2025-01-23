@@ -208,6 +208,11 @@ Domain::~Domain()
   }
   delete [] m_regElemlist;
 
+#ifdef _OPENMP
+  delete [] m_nodeElemStart ;
+  delete [] m_nodeElemCornerList ;
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////

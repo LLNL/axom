@@ -80,14 +80,15 @@ public:
    *
    * \note Does not take ownership of the surface mesh
    */
-  InOutSampler(const std::string& shapeName, mint::Mesh* surfaceMesh)
+  InOutSampler(const std::string& shapeName,
+               std::shared_ptr<mint::Mesh> surfaceMesh)
     : m_shapeName(shapeName)
     , m_surfaceMesh(surfaceMesh)
   { }
 
   ~InOutSampler() { delete m_octree; }
 
-  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+  std::shared_ptr<mint::Mesh> getSurfaceMesh() const { return m_surfaceMesh; }
 
   /// Computes the bounding box of the surface mesh
   void computeBounds()
@@ -303,9 +304,9 @@ private:
   std::string m_shapeName;
 
   GeometricBoundingBox m_bbox;
-  mint::Mesh* m_surfaceMesh {nullptr};
+  std::shared_ptr<mint::Mesh> m_surfaceMesh {nullptr};
   InOutOctreeType* m_octree {nullptr};
-};
+};  // class InOutSampler
 
 }  // end namespace shaping
 
@@ -415,14 +416,12 @@ public:
       m_inoutSampler2D = new shaping::InOutSampler<2>(shapeName, m_surfaceMesh);
       m_inoutSampler2D->computeBounds();
       m_inoutSampler2D->initSpatialIndex(this->m_vertexWeldThreshold);
-      m_surfaceMesh = m_inoutSampler2D->getSurfaceMesh();
       break;
 
     case klee::Dimensions::Three:
       m_inoutSampler3D = new shaping::InOutSampler<3>(shapeName, m_surfaceMesh);
       m_inoutSampler3D->computeBounds();
       m_inoutSampler3D->initSpatialIndex(this->m_vertexWeldThreshold);
-      m_surfaceMesh = m_inoutSampler3D->getSurfaceMesh();
       break;
 
     default:
@@ -446,7 +445,7 @@ public:
         "After welding, surface mesh has {} vertices  and {} triangles.",
         nVerts,
         nCells));
-      mint::write_vtk(m_surfaceMesh,
+      mint::write_vtk(m_surfaceMesh.get(),
                       axom::fmt::format("meldedTriMesh_{}.vtk", shapeName));
     }
   }
@@ -584,8 +583,7 @@ public:
     delete m_inoutSampler3D;
     m_inoutSampler3D = nullptr;
 
-    delete m_surfaceMesh;
-    m_surfaceMesh = nullptr;
+    m_surfaceMesh.reset();
   }
 
   //@}
