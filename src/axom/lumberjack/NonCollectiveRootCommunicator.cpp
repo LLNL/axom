@@ -13,6 +13,8 @@
  ******************************************************************************
  */
 
+#include <limits>
+
 #include "axom/lumberjack/NonCollectiveRootCommunicator.hpp"
 #include "axom/lumberjack/MPIUtility.hpp"
 
@@ -32,7 +34,14 @@ void NonCollectiveRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
     Each communicator that sends/receives messages non-collectively needs its 
     own mpiTag in order to not interfere with other communicators.
    */
-  ++mpiTag;
+  if(mpiTag == std::numeric_limits<int>::max())
+  {
+    mpiTag = 32767;
+  }
+  else
+  {
+    ++mpiTag;
+  }
 }
 
 void NonCollectiveRootCommunicator::finalize() { }
