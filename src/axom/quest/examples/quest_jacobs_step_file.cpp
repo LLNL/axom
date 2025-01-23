@@ -12,8 +12,6 @@
 #include "axom/CLI11.hpp"
 #include "axom/fmt.hpp"
 
-#include "RAJA/RAJA.hpp"
-
 #include "opencascade/BRepAdaptor_Curve.hxx"
 #include "opencascade/BRepBuilderAPI_MakeFace.hxx"
 #include "opencascade/BRepBuilderAPI_NurbsConvert.hxx"
@@ -3368,252 +3366,65 @@ void generic_timing_test(std::string prefix,
                          "winding_number, case_code, elapsed_time\n");
   }
 
-  /// TODO: Copy NURBSPatchData to each thread as thread local data
-  /// Then run the algorithm separately on each thread
-  /// Write results into a 3D array
-
-  // Create a thread_local variable to copy the stepProcessor patch data map
-  static thread_local StepFileProcessor::PatchDataMap localPatchDataMap {};
-  thread_local int items_processed {0};
-
-  // Create a 3D array to store the winding number results
-  axom::Array<double, 3> gwn(xSteps, ySteps, zSteps);
-  axom::Array<double, 3> accessed(xSteps, ySteps, zSteps);
-  axom::Array<double, 3> processed(xSteps, ySteps, zSteps);
-
-// Copy the patch data to each thread
-#pragma omp parallel
-  {
-    int totalTrimmingCurves = 0;
-    localPatchDataMap.clear();
-    for(const auto& kv : stepProcessor.getPatchDataMap())
-    {
-      const auto& originalPatchData = kv.second;
-      const auto idx = kv.first;
-
-      localPatchDataMap[idx].patchIndex = originalPatchData.patchIndex;
-      localPatchDataMap[idx].nurbsPatch = originalPatchData.nurbsPatch;
-      localPatchDataMap[idx].nurbsPatchData = originalPatchData.nurbsPatchData;
-
-      totalTrimmingCurves +=
-        localPatchDataMap[idx].nurbsPatch.getNumTrimmingCurves();
-
-      SLIC_ASSERT(kv.second.nurbsPatch.getNumTrimmingCurves() ==
-                  localPatchDataMap[idx].nurbsPatch.getNumTrimmingCurves());
-      SLIC_ASSERT_MSG(
-        localPatchDataMap[idx].nurbsPatch.getNumTrimmingCurves() > 0,
-        axom::fmt::format(
-          "Patch {} has {} trimming curves",
-          idx,
-          localPatchDataMap[idx].nurbsPatch.getNumTrimmingCurves()));
-      SLIC_ASSERT_MSG(
-        localPatchDataMap[idx].nurbsPatchData.curve_quadrature_maps.size() > 0,
-        axom::fmt::format(
-          "Patch {} has {} trimming curves in quadrature maps but {} trimming "
-          "curves",
-          idx,
-          localPatchDataMap[idx].nurbsPatchData.curve_quadrature_maps.size(),
-          localPatchDataMap[idx].nurbsPatch.getNumTrimmingCurves()));
-    }
-
-#pragma omp critical
-    SLIC_INFO(
-      axom::fmt::format("Thread {:03} has {} patches and {} trimming curves",
-                        omp_get_thread_num(),
-                        localPatchDataMap.size(),
-                        totalTrimmingCurves));
-  }
 
   AXOM_ANNOTATE_BEGIN("GWN query");
-
-// use RAJA with an openmp policy to loop through the 3D index space xSteps, ySteps, zSteps and set the winding number to zero
-//RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, xSteps * ySteps * zSteps), [&](int idx) {
-#pragma omp parallel for
-  for(int idx = 0; idx < xSteps * ySteps * zSteps; ++idx)
+  for(int k = 0; k < zSteps; ++k)
   {
-    const int i = idx % xSteps;
-    const int j = (idx / xSteps) % ySteps;
-    const int k = idx / (xSteps * ySteps);
+    axom::primal::printLoadingBar(k, zSteps);
 
-    auto query = axom::primal::Point<double, 3> {bbox.getMin()[0] + i * dx,
-                                                 bbox.getMin()[1] + j * dy,
-                                                 bbox.getMin()[2] + k * dz};
-    int case_code = -1;
-    double wn = 0.0;
-
-    for(const auto& kv : localPatchDataMap)
+    for(int j = 0; j < ySteps; ++j)
     {
-      const auto idx = kv.first;
-      SLIC_ASSERT(idx == kv.second.patchIndex);
-      SLIC_ASSERT(stepProcessor.getPatchDataMap().at(idx).patchIndex ==
-                  kv.second.patchIndex);
+      for(int i = 0; i < xSteps; ++i)
+      {
+        double x = bbox.getMin()[0] + i * dx;
+        double y = bbox.getMin()[1] + j * dy;
+        double z = bbox.getMin()[2] + k * dz;
 
-      int integrated_trimming_curves = 0;
-      double the_val =
-        axom::primal::winding_number_casting(query,
-                                             kv.second.nurbsPatchData,
-                                             case_code,
-                                             integrated_trimming_curves,
-                                             edge_tol,
-                                             quad_tol,
-                                             EPS);
-      wn += the_val;
+        auto query = axom::primal::Point<double, 3> {x, y, z};
+        int case_code = -1;
+        //int integrated_trimming_curves = 0;
+        axom::utilities::Timer timer(false);
+
+        double wn = 0.0;
+        for(const auto& kv : stepProcessor.getPatchDataMap())
+        {
+          int integrated_trimming_curves = 0;
+          timer.start();
+          double the_val =
+            axom::primal::winding_number_casting(query,
+                                                 kv.second.nurbsPatchData,
+                                                 case_code,
+                                                 integrated_trimming_curves,
+                                                 edge_tol,
+                                                 quad_tol,
+                                                 EPS);
+          timer.stop();
+
+          case_patch_totals[case_code]++;
+          case_curves_totals[case_code] += integrated_trimming_curves;
+          case_time_totals[case_code] += timer.elapsedTimeInSec();
+          wn += the_val;
+
+          if(output_query_file)
+          {
+            axom::fmt::format_to(
+              std::back_inserter(res),
+              "{:.15f}, {:.15f}, {:.15f}, {}, {}, {:.15f}, {}, {:.15f}\n",
+              x,
+              y,
+              z,
+              kv.first,
+              integrated_trimming_curves,
+              the_val,
+              case_code,
+              timer.elapsedTimeInSec());
+          }
+        }
+        axom::fmt::format_to(std::back_inserter(vtk), "{:15f}\n", wn);
+      }
     }
-
-    gwn(i, j, k) = wn;
-    ++accessed(i, j, k);
-    processed(i, j, k) = omp_get_thread_num();
-    ++items_processed;
   }
   AXOM_ANNOTATE_END("GWN query");
-
-// Print the number of items processed by each thread
-#pragma omp parallel
-  {
-#pragma omp critical
-    SLIC_INFO(axom::fmt::format(
-      axom::utilities::locale(),
-      "Thread {:03} processed {:L} items out of {:L} ({:.2f}%).",
-      omp_get_thread_num(),
-      items_processed,
-      xSteps * ySteps * zSteps,
-      (items_processed * 100.0) / (xSteps * ySteps * zSteps)));
-  }
-
-  RAJA::forall<RAJA::omp_parallel_for_exec>(
-    RAJA::RangeSegment(0, xSteps * ySteps * zSteps),
-    [&](int idx) {
-      const int i = idx % xSteps;
-      const int j = (idx / xSteps) % ySteps;
-      const int k = idx / (xSteps * ySteps);
-
-      if(accessed(i, j, k) != 1)
-      {
-#pragma omp critical
-        SLIC_WARNING(
-          axom::fmt::format("Thread {:03} -- item ({:03}, {:03}, {:03}) was "
-                            "accessed {} times; processed == {}",
-                            omp_get_thread_num(),
-                            i,
-                            j,
-                            k,
-                            accessed(i, j, k),
-                            processed(i, j, k)));
-      }
-    });
-
-  {
-    std::stringstream sstr;
-    sstr << "Accessed array:\n";
-    for(int k = 0; k < zSteps; ++k)
-    {
-      for(int j = 0; j < ySteps; ++j)
-      {
-        for(int i = 0; i < xSteps; ++i)
-        {
-          sstr << accessed(i, j, k);
-        }
-        sstr << "\t";
-      }
-      sstr << "\n";
-    }
-    SLIC_INFO(sstr.str());
-  }
-
-  {
-    std::stringstream sstr;
-    sstr << "Processed array:\n";
-    for(int k = 0; k < zSteps; ++k)
-    {
-      for(int j = 0; j < ySteps; ++j)
-      {
-        for(int i = 0; i < xSteps; ++i)
-        {
-          sstr << processed(i, j, k);
-        }
-        sstr << "\t";
-      }
-      sstr << "\n";
-    }
-    SLIC_INFO(sstr.str());
-  }
-
-  {
-    std::stringstream sstr;
-    sstr << "WN array:\n";
-    for(int k = 0; k < zSteps; ++k)
-    {
-      for(int j = 0; j < ySteps; ++j)
-      {
-        for(int i = 0; i < xSteps; ++i)
-        {
-          sstr << gwn(i, j, k);
-        }
-        sstr << "\t";
-      }
-      sstr << "\n";
-    }
-    SLIC_INFO(sstr.str());
-  }
-
-  // AXOM_ANNOTATE_BEGIN("GWN query");
-  // for(int k = 0; k < zSteps; ++k)
-  // {
-  //   axom::primal::printLoadingBar(k, zSteps);
-
-  //   for(int j = 0; j < ySteps; ++j)
-  //   {
-  //     for(int i = 0; i < xSteps; ++i)
-  //     {
-  //       double x = bbox.getMin()[0] + i * dx;
-  //       double y = bbox.getMin()[1] + j * dy;
-  //       double z = bbox.getMin()[2] + k * dz;
-
-  //       auto query = axom::primal::Point<double, 3> {x, y, z};
-  //       int case_code = -1;
-  //       //int integrated_trimming_curves = 0;
-  //       axom::utilities::Timer timer(false);
-
-  //       double wn = 0.0;
-  //       for(const auto& kv : stepProcessor.getPatchDataMap())
-  //       {
-  //         int integrated_trimming_curves = 0;
-  //         timer.start();
-  //         double the_val =
-  //           axom::primal::winding_number_casting(query,
-  //                                                kv.second.nurbsPatchData,
-  //                                                case_code,
-  //                                                integrated_trimming_curves,
-  //                                                edge_tol,
-  //                                                quad_tol,
-  //                                                EPS);
-  //         timer.stop();
-
-  //         case_patch_totals[case_code]++;
-  //         case_curves_totals[case_code] += integrated_trimming_curves;
-  //         case_time_totals[case_code] += timer.elapsedTimeInSec();
-  //         wn += the_val;
-
-  //         if(output_query_file)
-  //         {
-  //           axom::fmt::format_to(
-  //             std::back_inserter(res),
-  //             "{:.15f}, {:.15f}, {:.15f}, {}, {}, {:.15f}, {}, {:.15f}\n",
-  //             x,
-  //             y,
-  //             z,
-  //             kv.first,
-  //             integrated_trimming_curves,
-  //             the_val,
-  //             case_code,
-  //             timer.elapsedTimeInSec());
-  //         }
-  //       }
-  //       axom::fmt::format_to(std::back_inserter(vtk), "{:15f}\n", wn);
-  //     }
-  //   }
-  // }
-  // AXOM_ANNOTATE_END("GWN query");
 
   using axom::utilities::filesystem::joinPath;
   if(output_query_file)
