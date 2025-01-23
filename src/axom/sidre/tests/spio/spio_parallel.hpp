@@ -583,7 +583,6 @@ TEST(spio_parallel, external_partial_writeread)
     restored_vals2[i] = -1;
   }
 
-
   view1 = root3->getView("testdata/fields/a/vals1");
   view1->setExternalDataPtr(restored_vals1);
 
@@ -624,7 +623,7 @@ TEST(spio_parallel, external_partial_writeread)
 
   result = SPIO_TEST_SUCCESS;
 
-    /*
+  /*
    * Verify that the contents of view2 are restored.
    */
   EXPECT_EQ(view2->getNumElements(), nvals);

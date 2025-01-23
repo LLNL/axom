@@ -2293,7 +2293,8 @@ bool Group::loadExternalData(const hid_t& h5_id, const std::string& group_path)
 {
   bool success;
   std::string delim(1, getPathDelimiter());
-  if (group_path.empty() || group_path == delim) {
+  if(group_path.empty() || group_path == delim)
+  {
     // An empty or trivial path means the load should read from the start of
     // the file.
     success = loadExternalData(h5_id);
@@ -2306,8 +2307,7 @@ bool Group::loadExternalData(const hid_t& h5_id, const std::string& group_path)
 
     std::string read_path("sidre/external/" + group_path);
 
-    checkConduitCall(
-      [&] { conduit::relay::io::hdf5_read(h5_id, read_path, n); });
+    checkConduitCall([&] { conduit::relay::io::hdf5_read(h5_id, read_path, n); });
     success = !(getDataStore()->getConduitErrorOccurred());
   }
   return success;

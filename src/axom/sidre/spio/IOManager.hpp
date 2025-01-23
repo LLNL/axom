@@ -326,7 +326,9 @@ public:
    * \param load_group    Group holding views to be filled with external data
    * \param root_file     root file containing input data
    */
-  void loadExternalData(sidre::Group* parent_group, sidre::Group* load_group, const std::string& root_file);
+  void loadExternalData(sidre::Group* parent_group,
+                        sidre::Group* load_group,
+                        const std::string& root_file);
 
   /*!
    * \brief gets the number of files in the dataset from the specified root file

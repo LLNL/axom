@@ -500,29 +500,35 @@ void IOManager::loadExternalData(sidre::Group* parent_group,
 
   size_t parent_size = parent_parts.size();
   bool can_load = true;
-  if (load_parts.size() < parent_size) {
-     can_load = false;
+  if(load_parts.size() < parent_size)
+  {
+    can_load = false;
   }
 
-  for (size_t i = 0; i < parent_size; ++i) {
-     if (parent_parts[i] != load_parts[i]) {
-        can_load = false;
-     }
+  for(size_t i = 0; i < parent_size; ++i)
+  {
+    if(parent_parts[i] != load_parts[i])
+    {
+      can_load = false;
+    }
   }
 
   std::string subpath = load_name.substr(parent_name.size());
   char delimiter = parent_group->getPathDelimiter();
-  if (!subpath.empty() && subpath[0] == delimiter) {
-     subpath.erase(0,1);
+  if(!subpath.empty() && subpath[0] == delimiter)
+  {
+    subpath.erase(0, 1);
   }
 
-  if (!subpath.empty() && !parent_group->hasGroup(subpath)) {
-     can_load = false;
+  if(!subpath.empty() && !parent_group->hasGroup(subpath))
+  {
+    can_load = false;
   }
 
   int set_id = m_baton->wait();
 
-  if (can_load) {
+  if(can_load)
+  {
     if(num_groups <= m_comm_size)
     {
       if(m_my_rank < num_groups)
@@ -530,7 +536,8 @@ void IOManager::loadExternalData(sidre::Group* parent_group,
         herr_t errv;
         AXOM_UNUSED_VAR(errv);
 
-        std::string hdf5_name = getFileNameForRank(file_pattern, root_file, set_id);
+        std::string hdf5_name =
+          getFileNameForRank(file_pattern, root_file, set_id);
 
         hdf5_name = getSCRPath(hdf5_name);
 
