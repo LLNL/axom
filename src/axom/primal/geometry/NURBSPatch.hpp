@@ -97,18 +97,14 @@ struct NURBSPatchData
   {
     obox = patch.orientedBoundingBox();
 
-    beziers = axom::Array<BezierPatch<T, 3>>();
-    u_spans = axom::Array<std::pair<double, double>>();
-    v_spans = axom::Array<std::pair<double, double>>();
-
     // Filter out the Bezier patches whose knot spans
     //  are not visible in the trimming curves
 
     patch.makeSimpleTrimmed();
     auto candidates = patch.extractBezier();
 
-    axom::Array<T> knot_vals_u = patch.getKnots_u().getUniqueKnots();
-    axom::Array<T> knot_vals_v = patch.getKnots_v().getUniqueKnots();
+    const auto knot_vals_u = patch.getKnots_u().getUniqueKnots();
+    const auto knot_vals_v = patch.getKnots_v().getUniqueKnots();
 
     const auto num_knot_span_u = knot_vals_u.size() - 1;
     const auto num_knot_span_v = knot_vals_v.size() - 1;
