@@ -188,66 +188,6 @@ conduit::Node Document::toNode() const
   return document;
 }
 
-// void Document::createFromNode(conduit::Node const &asNode,
-//                               RecordLoader const &recordLoader)
-// {
-//   if (asNode.has_child(RECORDS_KEY))
-//   {
-//     const conduit::Node &record_nodes = asNode[RECORDS_KEY];
-//     if (record_nodes.dtype().is_list())
-//     {
-//       auto recordIter = record_nodes.children();
-//       while (recordIter.has_next())
-//       {
-//         auto record = recordIter.next();
-//         add(recordLoader.load(record));
-//       }
-//     }
-//     else
-//     {
-//       std::ostringstream message;
-//       message << "The '" << RECORDS_KEY
-//               << "' element of a document must be an array";
-//       throw std::invalid_argument(message.str());
-//     }
-//   }
-
-//   if (asNode.has_child(RELATIONSHIPS_KEY))
-//   {
-//     const conduit::Node &relationships_node = asNode[RELATIONSHIPS_KEY];
-
-//     if (!relationships_node.dtype().is_list())
-//     {
-//       if (relationships_node.number_of_children() == 0)
-//       {
-//         // Create a temporary mutable node for transformation
-//         conduit::Node temp_node(conduit::DataType::list());
-//         auto relationshipsIter = temp_node.children();
-//         while (relationshipsIter.has_next())
-//         {
-//           auto &relationship = relationshipsIter.next();
-//           add(Relationship{relationship});
-//         }
-//       }
-//       else
-//       {
-//         std::ostringstream message;
-//         message << "The '" << RELATIONSHIPS_KEY << "' element of a document must be an array";
-//         throw std::invalid_argument(message.str());
-//       }
-//     }
-//     else
-//     {
-//       auto relationshipsIter = relationships_node.children();
-//       while (relationshipsIter.has_next())
-//       {
-//         auto &relationship = relationshipsIter.next();
-//         add(Relationship{relationship});
-//       }
-//     }
-//   }
-// }
-
 void Document::createFromNode(const conduit::Node &asNode, 
                               const RecordLoader &recordLoader)
 {
@@ -297,14 +237,11 @@ void Document::createFromNode(const conduit::Node &asNode,
             }
         }
     };
-
-    // Example usage for your "records" array:
     processChildNodes(RECORDS_KEY, [&](conduit::Node &record)
     {
         add(recordLoader.load(record));
     });
 
-    // Example usage for your "relationships" array:
     processChildNodes(RELATIONSHIPS_KEY, [&](conduit::Node &relationship)
     {
         add(Relationship{relationship});
