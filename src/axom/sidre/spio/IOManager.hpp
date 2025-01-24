@@ -289,7 +289,7 @@ public:
    * This currently only works if the root file was created for protocol
    * sidre_hdf5.
    *
-   * The call to this must follow a call to the IOManager::read with the
+   * The call to this method must follow a call to the IOManager::read with the
    * same group and root file.
    *
    * This is intended as the third step of the three step process to load
@@ -319,8 +319,9 @@ public:
    * to call this method.  parent_group must be the same group that was
    * passed to IOManager::read with the same root file.
    *
-   * This may be called multiple times with different instances of load_group
-   * representing different subtrees of the hierachy under parent_group.
+   * This method may be called multiple times with different instances of
+   * load_group representing different subtrees of the hierachy under
+   * parent_group.
    *
    * \param parent_group  Group that was passed to IOManager::read
    * \param load_group    Group holding views to be filled with external data
