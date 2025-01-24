@@ -1672,9 +1672,9 @@ public:
    * if an error occurred at some point.
    *
    * \param h5_id        hdf5 handle
-   * \param group_path   path to a group below the group pointed by the h5_id.
-   *                     This path points to the group in the hdf5 hierarchy
-   *                     that represents this Group object.
+   * \param group_path   Path pointing to this Group. This path must be the
+   *                     relative path from the top Group that was written
+   *                     to a file to this Group.
    */
   bool loadExternalData(const hid_t& h5_id, const std::string& group_path);
 
