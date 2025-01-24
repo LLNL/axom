@@ -603,6 +603,12 @@ void IOManager::loadExternalData(sidre::Group* parent_group,
       }
     }
   }
+  else
+  {
+    SLIC_WARNING("Path from parent group " << parent_group->getPathName()
+                 << " to group " << load_group->getPathName()
+		 << " was not found. No external data will be loaded.");
+  }
 
 #else
   AXOM_UNUSED_VAR(datagroup);
