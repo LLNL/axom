@@ -252,6 +252,7 @@ void Document::createFromNode(const conduit::Node &asNode,
                               const RecordLoader &recordLoader)
 {
     conduit::Node nodeCopy = asNode;
+
     auto processChildNodes = [&](const char* key, 
                                  std::function<void(conduit::Node&)> addFunc)
     {
@@ -259,17 +260,35 @@ void Document::createFromNode(const conduit::Node &asNode,
         {
             conduit::Node &childNodes = nodeCopy[key];
 
-            if (childNodes.number_of_children() == 0)
-            {
-                childNodes.set(conduit::DataType::list());
-            }
-            if (!childNodes.dtype().is_list())
+            // -- 1. Check if this node is a primitive leaf (throw immediately if so)
+            // Customize these checks to match exactly what you consider "primitive."
+            if (childNodes.dtype().is_number()     ||
+                childNodes.dtype().is_char8_str() ||
+                childNodes.dtype().is_string())
             {
                 std::ostringstream message;
-                message << "The '" << key << "' element of a document must be an array";
+                std::cout << "The '" << key 
+                        << "' element of a document cannot be a primitive value.";
                 throw std::invalid_argument(message.str());
             }
 
+            // -- 2. Not a primitive. Check if it has no children.
+            if (childNodes.number_of_children() == 0)
+            {
+                // Turn it into an empty list
+                childNodes.set(conduit::DataType::list());
+            }
+
+            // -- 3. If it's still not a list, throw
+            if (!childNodes.dtype().is_list())
+            {
+                std::ostringstream message;
+                message << "The '" << key 
+                        << "' element of a document must be an array/list.";
+                throw std::invalid_argument(message.str());
+            }
+
+            // -- 4. Now it's guaranteed to be a list, so iterate
             auto childIter = childNodes.children();
             while (childIter.has_next())
             {
@@ -279,11 +298,13 @@ void Document::createFromNode(const conduit::Node &asNode,
         }
     };
 
+    // Example usage for your "records" array:
     processChildNodes(RECORDS_KEY, [&](conduit::Node &record)
     {
         add(recordLoader.load(record));
     });
 
+    // Example usage for your "relationships" array:
     processChildNodes(RELATIONSHIPS_KEY, [&](conduit::Node &relationship)
     {
         add(Relationship{relationship});
