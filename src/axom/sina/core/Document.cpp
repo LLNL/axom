@@ -350,6 +350,7 @@ Document loadDocument(std::string const &path, RecordLoader const &recordLoader,
         node.parse(file_contents.str(), "json");
         return Document {node, recordLoader};
       case Protocol::HDF5:
+        file_in.close();
         conduit::relay::io::load(path, "hdf5", node);
         restoreSlashes(node, modifiedNode);
         return Document {modifiedNode, recordLoader};
