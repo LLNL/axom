@@ -79,7 +79,7 @@ The following table lists:
   `HDF5`_          Optional: Sidre                      HDF5_DIR
   `Lua`_           Optional: Inlet                      LUA_DIR
   `MFEM`_          Optional: Primal, Quest, Sidre       MFEM_DIR
-  `OPENCASCADE`_   Optional: <none>                     OPENCASCADE_DIR
+  `OPENCASCADE`_   Optional: Quest                      OPENCASCADE_DIR
   `RAJA`_          Optional: Mint, Spin, Quest          RAJA_DIR
   `SCR`_           Optional: Sidre                      SCR_DIR
   `Umpire`_        Optional: Core, Spin, Quest          UMPIRE_DIR
@@ -458,6 +458,10 @@ Tools and features primarily intended for developers
 +------------------------------------------+---------+----------------------------------------+
 | AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS | OFF     | Enable an expanded set of tests for    |
 |                                          |         | the Axom Quest component               |
++------------------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_ASAN                         | OFF     | Enable AddressSanitizer                |
++------------------------------------------+---------+----------------------------------------+
+| AXOM_ENABLE_UBSAN                        | OFF     | Enable UndefinedBehaviorSanitizer      |
 +------------------------------------------+---------+----------------------------------------+
 
 Axom source code macro constants

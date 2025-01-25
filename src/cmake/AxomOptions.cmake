@@ -13,6 +13,13 @@ if(AXOM_ENABLE_ASAN)
     endif()
 endif()
 
+option(AXOM_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer for undefined behavior detection (Clang or GCC only)" OFF)
+if(AXOM_ENABLE_UBSAN)
+    if(NOT (C_COMPILER_FAMILY_IS_CLANG OR C_COMPILER_FAMILY_IS_GNU))
+        message(FATAL_ERROR "AXOM_ENABLE_UBSAN only supports Clang and GCC")
+    endif()
+endif()
+
 option(AXOM_ENABLE_SPARSEHASH "Enables Sparsehash." ON)
 option(AXOM_ENABLE_ALL_COMPONENTS "Enables all components by default" ON)
 option(AXOM_USE_64BIT_INDEXTYPE "Use 64-bit integers for axom::IndexType" OFF)

@@ -578,7 +578,7 @@ int main(int argc, char** argv)
   if(params.percentError > 0.)
   {
     shaper->setPercentError(params.percentError);
-    shaper->setRefinementType(quest::Shaper::RefinementDynamic);
+    shaper->setRefinementType(quest::DiscreteShape::RefinementDynamic);
   }
 
   // Associate any fields that begin with "vol_frac" with "material" so when

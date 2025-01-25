@@ -134,8 +134,10 @@ if(MFEM_FOUND AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SI
     list(APPEND quest_headers Shaper.hpp
                               SamplingShaper.hpp
                               IntersectionShaper.hpp
+                              DiscreteShape.hpp
                               detail/shaping/shaping_helpers.hpp)
     list(APPEND quest_sources Shaper.cpp
+                              DiscreteShape.cpp
                               detail/shaping/shaping_helpers.cpp)
     list(APPEND quest_depends_on klee)
 endif()

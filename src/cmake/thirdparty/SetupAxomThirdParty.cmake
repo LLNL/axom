@@ -312,7 +312,7 @@ else()
 endif()
 
 #------------------------------------------------------------------------------
-# OpenCASCADE
+# Open Cascade
 #------------------------------------------------------------------------------
 if (OPENCASCADE_DIR)
     axom_assert_is_directory(DIR_VARIABLE OPENCASCADE_DIR)
@@ -325,7 +325,7 @@ if (OPENCASCADE_DIR)
         EXPORTABLE    ON)
     blt_list_append(TO TPL_DEPS ELEMENTS opencascade)
 else()
-    message(STATUS "OpenCASCADE support is OFF")
+    message(STATUS "Open Cascade support is OFF")
     set(OPENCASCADE_FOUND FALSE)
 endif()
 

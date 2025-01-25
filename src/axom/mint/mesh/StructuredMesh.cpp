@@ -187,13 +187,17 @@ void StructuredMesh::structuredInit()
   /* Build the cell to node offsets. */
   m_cell_node_offsets[0] = 0;
   m_cell_node_offsets[1] = 1;
-  m_cell_node_offsets[2] = 1 + nodeJp();
+  m_cell_node_offsets[2] =
+    (m_ndims == 1) ? axom::numeric_limits<IndexType>::min() : (1 + nodeJp());
   m_cell_node_offsets[3] = nodeJp();
 
   m_cell_node_offsets[4] = nodeKp();
-  m_cell_node_offsets[5] = 1 + nodeKp();
-  m_cell_node_offsets[6] = 1 + nodeJp() + nodeKp();
-  m_cell_node_offsets[7] = nodeJp() + nodeKp();
+  m_cell_node_offsets[5] =
+    (m_ndims < 3) ? axom::numeric_limits<IndexType>::min() : (1 + nodeKp());
+  m_cell_node_offsets[6] = (m_ndims < 3) ? axom::numeric_limits<IndexType>::min()
+                                         : (1 + nodeJp() + nodeKp());
+  m_cell_node_offsets[7] = (m_ndims < 3) ? axom::numeric_limits<IndexType>::min()
+                                         : (nodeJp() + nodeKp());
 
   /* Initialize the face meta data */
   if(m_ndims == 2)

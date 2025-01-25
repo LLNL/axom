@@ -1068,7 +1068,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
       bool found =
         getVisitResult(candidatePredicate, iword * bitsPerWord + currBit);
       currBit++;
-      currBit += axom::utilities::countr_zero(currWord >> currBit);
+      currBit += (currBit < numBits)
+        ? axom::utilities::countr_zero(currWord >> currBit)
+        : 0;
+
       if(found)
       {
         return;
@@ -1138,7 +1141,10 @@ ImplicitGrid<NDIMS, ExecSpace, IndexType>::QueryObject::visitCandidates(
       bool found =
         getVisitResult(candidatePredicate, iword * bitsPerWord + currBit);
       currBit++;
-      currBit += axom::utilities::countr_zero(currWord >> currBit);
+      currBit += (currBit < numBits)
+        ? axom::utilities::countr_zero(currWord >> currBit)
+        : 0;
+
       if(found)
       {
         return;
