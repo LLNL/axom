@@ -2266,7 +2266,7 @@ bool Group::load(const hid_t& h5_id,
  *
  * Load External Data from an hdf5 file
  *
- * Note: this ASSUMES uses the "sidre_hdf5" protocol
+ * Note: this ASSUMES usage of the "sidre_hdf5" protocol
  *************************************************************************
  */
 bool Group::loadExternalData(const hid_t& h5_id)
@@ -2279,6 +2279,38 @@ bool Group::loadExternalData(const hid_t& h5_id)
     [&] { conduit::relay::io::hdf5_read(h5_id, "sidre/external", n); });
 
   return !(getDataStore()->getConduitErrorOccurred());
+}
+
+/*
+ *************************************************************************
+ *
+ * Load External Data from a path within an hdf5 file
+ *
+ * Note: this ASSUMES usage of the "sidre_hdf5" protocol
+ *************************************************************************
+ */
+bool Group::loadExternalData(const hid_t& h5_id, const std::string& group_path)
+{
+  bool success;
+  std::string delim(1, getPathDelimiter());
+  if(group_path.empty() || group_path == delim)
+  {
+    // An empty or trivial path means the load should read from the start of
+    // the file.
+    success = loadExternalData(h5_id);
+  }
+  else
+  {
+    Node n;
+    createExternalLayout(n);
+    ConduitErrorSuppressor checkConduitCall(getDataStore());
+
+    std::string read_path("sidre/external/" + group_path);
+
+    checkConduitCall([&] { conduit::relay::io::hdf5_read(h5_id, read_path, n); });
+    success = !(getDataStore()->getConduitErrorOccurred());
+  }
+  return success;
 }
 
 #endif /* AXOM_USE_HDF5 */
