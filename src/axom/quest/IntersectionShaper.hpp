@@ -864,20 +864,7 @@ private:
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
     axom::ArrayView<const HexahedronType> hexes_device_view = m_hexes.view();
-
-    // Compute m_hex_bbs only once.  We assume that the mesh doesn't change
-    // once set.
-    m_hex_bbs =
-      axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, device_allocator);
-
-    // Get bounding boxes for hexahedral elements
-    axom::ArrayView<BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
-    axom::for_all<ExecSpace>(
-      m_cellCount,
-      AXOM_LAMBDA(axom::IndexType i) {
-        hex_bbs_device_view[i] =
-          primal::compute_bounding_box<double, 3>(hexes_device_view[i]);
-      });  // end of loop to initialize hexahedral elements and bounding boxes
+    axom::ArrayView<const BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
 
     // Set shape components to zero if within threshold
     snapShapeVerticesToZero<ExecSpace, ShapeType>(shapes,
