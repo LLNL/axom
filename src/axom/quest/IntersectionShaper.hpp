@@ -478,24 +478,6 @@ public:
     m_overlap_volumes =
       axom::Array<double>(m_cellCount, m_cellCount, m_allocatorId);
     AXOM_ANNOTATE_END("allocate m_overlap_volumes");
-
-    // Non-essential output
-    auto overlapVolumesView = m_overlap_volumes.view();
-    using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
-    RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
-    RAJA::ReduceSum<REDUCE_POL, double> totalHex(0);
-    axom::for_all<ExecSpace>(
-      m_cellCount,
-      AXOM_LAMBDA(axom::IndexType i) {
-        totalOverlap += overlapVolumesView[i];
-        totalHex += hexVolumesView[i];
-      });
-    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-                                "Total overlap volume with shape is {:.3Lf}",
-                                this->allReduceSum(totalOverlap)));
-    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-                                "Total mesh volume is {:.3Lf}",
-                                this->allReduceSum(totalHex)));
   }
 
   //@{
