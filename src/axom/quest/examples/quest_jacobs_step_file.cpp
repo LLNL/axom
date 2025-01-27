@@ -2309,8 +2309,8 @@ void nut_3d_example()
   auto stepProcessor = import_step_file(prefix, filename);
 
   constexpr double quad_tol = 1e-5;
-  constexpr double EPS = 1e-10;
-  constexpr double edge_tol = 1e-6;
+  constexpr double EPS = 1e-6;
+  constexpr double edge_tol = 0;
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
@@ -2361,8 +2361,8 @@ void nut_3d_example()
                                      -0.928963261718976},
     1.5 * the_range,
     1.5 * the_range,
-    100,
-    100);
+    300,
+    300);
   timer.stop();
 
   auto elapsed_time = timer.elapsedTimeInSec();
@@ -2445,34 +2445,34 @@ void graphical_abstract_watertight()
 
   timer.start();
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_watertight_slice1.vtk",
+    prefix + filename + "_watertight_slice1_final.vtk",
     wn_field,
     axom::primal::Point<double, 3> {0.0021127422476921076, 0.0404, 0.0},
     axom::primal::Vector<double, 3> {1, 0, 0},
     the_range,
     the_range,
-    100,
-    100);
+    200,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_watertight_slice2.vtk",
+    prefix + filename + "_watertight_slice2_final.vtk",
     wn_field,
     axom::primal::Point<double, 3> {-0.01048739455123153, 0.0404, 0.0},
     axom::primal::Vector<double, 3> {1, 0, 0},
     the_range,
     the_range,
-    100,
-    100);
+    200,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_watertight_slice3.vtk",
+    prefix + filename + "_watertight_slice3_final.vtk",
     wn_field,
     axom::primal::Point<double, 3> {0.0, 0.0404, 0.0},
     axom::primal::Vector<double, 3> {0, 1, 0},
     the_range,
     the_range,
-    100,
-    100);
+    200,
+    200);
   timer.stop();
 
   auto elapsed_time = timer.elapsedTimeInSec();
@@ -2532,34 +2532,34 @@ void graphical_abstract_exploded()
 
   timer.start();
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_explodedt_slice1.vtk",
+    prefix + filename + "_explodedt_slice1_slice.vtk",
     wn_field,
     axom::primal::Point<double, 3> {0.0021127422476921076, -0.005, 0.0},
     axom::primal::Vector<double, 3> {1, 0, 0},
     the_range,
     the_range,
-    100,
-    100);
+    200,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_explodedt_slice2.vtk",
+    prefix + filename + "_explodedt_slice2_slice.vtk",
     wn_field,
     axom::primal::Point<double, 3> {-0.01048739455123153, -0.005, 0.0},
     axom::primal::Vector<double, 3> {1, 0, 0},
     the_range,
     the_range,
-    100,
-    100);
+    200,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_explodedt_slice3.vtk",
+    prefix + filename + "_explodedt_slice3_slice.vtk",
     wn_field,
     axom::primal::Point<double, 3> {0.0, -0.005, 0.0},
     axom::primal::Vector<double, 3> {0, 1, 0},
     the_range,
     the_range,
-    100,
-    100);
+    200,
+    200);
   timer.stop();
 
   auto elapsed_time = timer.elapsedTimeInSec();
@@ -2736,16 +2736,19 @@ void discretized_surface_gwn()
   // Use this for u
   // u = Vector<T, 3>( {-0.6536123100031038, -0.10738450531201763, -0.7491725543766935});
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_comparison_slice.vtk",
+    prefix + filename + "_comparison_slice_precision_small.vtk",
     wn_field,
     axom::primal::Point<double, 3> {0.4226723313331604 / 1000,
                                     -0.08878263831138611 / 1000,
                                     0.0012638476388358486},
+    // axom::primal::Point<double, 3> {0.0005490059848,
+    // -2.757400034e-05,
+    // 0.00310928002},
     axom::primal::Vector<double, 3> {-0.13465792265548568,
                                      0.9906402898209166,
                                      -0.022339651958791562},
-    0.9 * the_range,
-    0.9 * the_range,
+    9 * the_range,
+    9 * the_range,
     100,
     100);
 
@@ -2782,16 +2785,19 @@ void discretized_surface_gwn()
   }
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename2 + "_comparison_slice.vtk",
+    prefix + filename2 + "_comparison_slice_precision_small.vtk",
     wn_field2,
     axom::primal::Point<double, 3> {0.4226723313331604 / 1000,
                                     -0.08878263831138611 / 1000,
                                     0.0012638476388358486},
+    // axom::primal::Point<double, 3> {0.0005490059848,
+    // -2.757400034e-05,
+    // 0.00310928002},
     axom::primal::Vector<double, 3> {-0.13465792265548568,
                                      0.9906402898209166,
                                      -0.022339651958791562},
-    0.9 * the_range,
-    0.9 * the_range,
+    9 * the_range,
+    9 * the_range,
     100,
     100);
 }
@@ -2899,6 +2905,244 @@ void quadrature_is_bad()
     meshBBox.getMax()[2] - meshBBox.getMin()[2],
     200,
     100);
+}
+
+void quadrature_on_sphere()
+{
+  double rt2 = sqrt(2), rt3 = sqrt(3), rt6 = sqrt(6);
+
+  // Define the nodes and weights for one of six rational, biquartic Bezier patches
+  //  that compose the unit sphere. These will be rotated to form the other 5.
+  // Nodes and weights obtained from the technical report
+  // "Tiling the Sphere with Rational Bezier Patches",
+  //  James E. Cobb, University of Utah, 1988
+
+  using Point3D = axom::primal::Point<double, 3>;
+  // clang-format off
+  axom::Array<Point3D> node_data = {
+    Point3D {4*(1-rt3),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(rt3-4),            -rt2, rt2*(rt3-4)}, Point3D {4*(1-2*rt3)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(rt3-4),           rt2,   rt2*(rt3-4)}, Point3D {4*(1-rt3),     4*(rt3-1),     4*(1-rt3)},
+    Point3D {     -rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(2-3*rt3)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(2*rt3-7)/3, 0,      -5*rt6/3}, Point3D {(2-3*rt3)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {     -rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {        0, 4*(1-2*rt3)/3, 4*(1-2*rt3)/3}, Point3D {          0, rt2*(2*rt3-7)/3,    -5*rt6/3}, Point3D {0,               0,   4*(rt3-5)/3}, Point3D {          0, rt2*(7-2*rt3)/3,    -5*rt6/3}, Point3D {        0, 4*(2*rt3-1)/3, 4*(1-2*rt3)/3},
+    Point3D {      rt2, rt2*(rt3 - 4), rt2*(rt3 - 4)}, Point3D {(3*rt3-2)/2,     (2-3*rt3)/2,  -(rt3+6)/2}, Point3D {rt2*(7-2*rt3)/3, 0,      -5*rt6/3}, Point3D {(3*rt3-2)/2,   (3*rt3-2)/2,    -(rt3+6)/2}, Point3D {      rt2,   rt2*(4-rt3),   rt2*(rt3-4)},
+    Point3D {4*(rt3-1),     4*(1-rt3),     4*(1-rt3)}, Point3D {rt2*(4-rt3),            -rt2, rt2*(rt3-4)}, Point3D {4*(2*rt3-1)/3,   0, 4*(1-2*rt3)/3}, Point3D {rt2*(4-rt3),           rt2,   rt2*(rt3-4)}, Point3D {4*(rt3-1),     4*(rt3-1),     4*(1-rt3)}};
+
+  axom::Array<double> weight_data = {
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3),
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+       4*(5-rt3)/3, rt2*(rt3+6)/3, 4*(5*rt3-1)/9, rt2*(rt3+6)/3,   4*(5-rt3)/3,
+     rt2*(3*rt3-2),     (rt3+6)/2, rt2*(rt3+6)/3,     (rt3+6)/2, rt2*(3*rt3-2),
+         4*(3-rt3), rt2*(3*rt3-2),   4*(5-rt3)/3, rt2*(3*rt3-2),     4*(3-rt3)};
+  // clang-format on
+
+  axom::primal::BezierPatch<double, 3> sphere_faces[6];
+  for(int n = 0; n < 6; ++n)
+  {
+    sphere_faces[n].setOrder(4, 4);
+    sphere_faces[n].makeRational();
+  }
+
+  sphere_faces[0].setOrder(4, 4);
+  for(int i = 0; i < 5; ++i)
+  {
+    for(int j = 0; j < 5; ++j)
+    {
+      const int idx = 5 * i + j;
+      for(int n = 0; n < 6; ++n)
+      {
+        sphere_faces[n].setWeight(i, j, weight_data[idx]);
+      }
+
+      // Set up each face by rotating one of the patch faces
+      sphere_faces[0](i, j)[0] = node_data[idx][1];
+      sphere_faces[0](i, j)[1] = node_data[idx][0];
+      sphere_faces[0](i, j)[2] = node_data[idx][2];
+      sphere_faces[0](i, j).array() /= weight_data[idx];
+
+      sphere_faces[1](i, j)[0] = -node_data[idx][0];
+      sphere_faces[1](i, j)[1] = -node_data[idx][1];
+      sphere_faces[1](i, j)[2] = -node_data[idx][2];
+      sphere_faces[1](i, j).array() /= weight_data[idx];
+
+      sphere_faces[2](i, j)[0] = node_data[idx][2];
+      sphere_faces[2](i, j)[1] = node_data[idx][1];
+      sphere_faces[2](i, j)[2] = node_data[idx][0];
+      sphere_faces[2](i, j).array() /= weight_data[idx];
+
+      sphere_faces[3](i, j)[0] = -node_data[idx][1];
+      sphere_faces[3](i, j)[1] = -node_data[idx][2];
+      sphere_faces[3](i, j)[2] = -node_data[idx][0];
+      sphere_faces[3](i, j).array() /= weight_data[idx];
+
+      sphere_faces[4](i, j)[0] = node_data[idx][0];
+      sphere_faces[4](i, j)[1] = node_data[idx][2];
+      sphere_faces[4](i, j)[2] = node_data[idx][1];
+      sphere_faces[4](i, j).array() /= weight_data[idx];
+
+      sphere_faces[5](i, j)[0] = -node_data[idx][2];
+      sphere_faces[5](i, j)[1] = -node_data[idx][0];
+      sphere_faces[5](i, j)[2] = -node_data[idx][1];
+      sphere_faces[5](i, j).array() /= weight_data[idx];
+    }
+  }
+
+  axom::primal::NURBSPatch<double, 3> nurbs_faces[6];
+  axom::primal::NURBSPatchData<double> nurbs_faces_data[6];
+
+  for(int i = 0; i < 6; ++i)
+  {
+    nurbs_faces[i] = axom::primal::NURBSPatch<double, 3>(sphere_faces[i]);
+    nurbs_faces[i].makeSimpleTrimmed();
+    nurbs_faces_data[i] = axom::primal::NURBSPatchData<double>(i, nurbs_faces[i]);
+  }
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  // (!bBox, !oBox, casting, noCache)
+  int case_code = -1;
+  auto wn_field_surf_quad =
+    [&sphere_faces, &edge_tol, &quad_tol, &EPS, &case_code](
+      axom::primal::Point<double, 3> query) -> double {
+    auto query_norm =
+      std::sqrt(query[0] * query[0] + query[1] * query[1] + query[2] * query[2]);
+
+    double wn = 0.0;
+    for(int k = 0; k < 1; ++k)
+    {
+      double the_val =
+        axom::primal::detail::surface_winding_number(query, sphere_faces[k], 20);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  auto wn_field_boundary_quad =
+    [&nurbs_faces_data, &edge_tol, &quad_tol, &EPS, &case_code](
+      axom::primal::Point<double, 3> query) -> double {
+    double wn = 0.0;
+    int integrated_trimming_curves = 0;
+    for(int k = 0; k < 1; ++k)
+    {
+      auto the_val =
+        axom::primal::sphere_winding_number_casting(query,
+                                                    nurbs_faces_data[k],
+                                                    case_code,
+                                                    integrated_trimming_curves,
+                                                    edge_tol,
+                                                    quad_tol,
+                                                    EPS);
+      wn += the_val;
+    }
+
+    return wn;
+  };
+
+  auto wn_field_exact = [&sphere_faces, &edge_tol, &quad_tol, &EPS, &case_code](
+                          axom::primal::Point<double, 3> query) -> double {
+    auto query_norm =
+      std::sqrt(query[0] * query[0] + query[1] * query[1] + query[2] * query[2]);
+
+    if(query_norm > 1.0)
+    {
+      return 0.0;
+    }
+
+    if(query_norm == 1.0)
+    {
+      return 0.5;
+    }
+
+    if(query_norm < 1.0)
+    {
+      return 1.0;
+    }
+  };
+
+  std::string prefix =
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\quadrature_"
+    "bad\\";
+
+  for(int k = 0; k < 6; ++k)
+  {
+    axom::primal::exportSurfaceToSTL(
+      prefix + "sphere_face_" + std::to_string(k) + ".stl",
+      sphere_faces[k],
+      20,
+      20);
+  }
+
+  axom::primal::BoundingBox<double, 3> bbox;
+  bbox.addPoint(axom::primal::Point<double, 3> {1.0 / std::sqrt(3) + 0.1,
+                                                1.0 / std::sqrt(3) + 0.1,
+                                                1.0 / std::sqrt(3) + 0.1});
+  bbox.addPoint(axom::primal::Point<double, 3> {1.0 / std::sqrt(3) - 0.1,
+                                                1.0 / std::sqrt(3) - 0.1,
+                                                1.0 / std::sqrt(3) - 0.1});
+  // bbox.addPoint(axom::primal::Point<double, 3> {1.2, 1.2, 1.2});
+  // bbox.addPoint(axom::primal::Point<double, 3> {-1.2, -1.2, -1.2});
+
+  // axom::primal::exportScalarFieldToVTK<double>(prefix + "sphere_field_subset_20_interrupted.vtk",
+  //                                              wn_field_quad,
+  //                                              bbox,
+  //                                              100,
+  //                                              100,
+  //                                              100);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + "sphere_surface_slice_20.vtk",
+    wn_field_surf_quad,
+    axom::primal::Point<double, 3> {0, 0, -0.75},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    2,
+    2,
+    300,
+    300);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + "sphere_surface_slice_20_orth.vtk",
+    wn_field_surf_quad,
+    axom::primal::Point<double, 3> {0, 0, -0.75},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    axom::primal::Vector<double, 3> {1, 1.2, 0},
+    2 * 0.4,
+    2,
+    300 * 0.4,
+    300);
+
+  // axom::primal::exportSliceScalarFieldToVTK<double>(
+  //   prefix + "sphere_exact_20.vtk",
+  //   wn_field_exact,
+  //   axom::primal::Point<double, 3> {0, 0, -0.75},
+  //   axom::primal::Vector<double, 3> {0, 0, 1},
+  //   axom::primal::Vector<double, 3> {1, 1.1, 0},
+  //   0.5,
+  //   2.4,
+  //   50,
+  //   200);
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + "sphere_boundary_slice_20.vtk",
+    wn_field_boundary_quad,
+    axom::primal::Point<double, 3> {0, 0, -0.75},
+    axom::primal::Vector<double, 3> {0, 1, 0},
+    axom::primal::Vector<double, 3> {1, 0, 0},
+    2,
+    2,
+    300,
+    300);
+
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + "sphere_boundary_slice_20_orth.vtk",
+    wn_field_boundary_quad,
+    axom::primal::Point<double, 3> {0, 0, -0.75},
+    axom::primal::Vector<double, 3> {0, 0, 1},
+    axom::primal::Vector<double, 3> {1, 1.2, 0},
+    2 * 0.4,
+    2,
+    300 * 0.4,
+    300);
 }
 
 void closure_intuition_3d()
@@ -3047,8 +3291,8 @@ void plot_trimming_curves()
     "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
     "subdivision\\";
 
-  std::string filename = "trimmed_surface";
-  auto stepProcessor = import_step_file(prefix, filename);
+  std::string filename = "machine_part_ugly_tims";
+  auto stepProcessor = import_step_file(prefix, filename, true, 0.005, 0.0025);
 
   axom::primal::NURBSPatch<double, 3> the_patch;
   axom::primal::BoundingBox<double, 3> meshBBox;
@@ -3060,18 +3304,18 @@ void plot_trimming_curves()
   }
 
   // auto the_patch = stepProcessor.getPatchDataMap()[0].nurbsPatch;
-  axom::primal::NURBSPatch<double, 3> n1, n2;
-  the_patch.diskSplit(0.4, 0.2, 0.08, n1, n2);
+  // axom::primal::NURBSPatch<double, 3> n1, n2;
+  // the_patch.diskSplit(0.4, 0.2, 0.08, n1, n2);
 
   the_patch.printTrimmingCurves(
     "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
-    "subdivision\\original.txt");
-  n1.printTrimmingCurves(
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
-    "subdivision\\disk.txt");
-  n2.printTrimmingCurves(
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
-    "subdivision\\remaining.txt");
+    "subdivision\\wack.txt");
+  // n1.printTrimmingCurves(
+  //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
+  //   "subdivision\\disk.txt");
+  // n2.printTrimmingCurves(
+  //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\trimming_"
+  //   "subdivision\\remaining.txt");
 }
 
 // Surface curvature evaluation at parameter (3.86209, 3.73582):
@@ -3216,7 +3460,7 @@ void spring_example(bool process_only = false)
   std::string prefix =
     "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\simple_results\\";
 
-  std::string filename = "spring";
+  std::string filename = "spring_split";
   auto stepProcessor = import_step_file(prefix, filename);
 
   if(process_only)
@@ -3224,7 +3468,7 @@ void spring_example(bool process_only = false)
     return;
   }
 
-  constexpr double quad_tol = 1e-5;
+  constexpr double quad_tol = 1e-10;
   constexpr double EPS = 1e-10;
   constexpr double edge_tol = 1e-6;
 
@@ -3272,8 +3516,8 @@ void spring_example(bool process_only = false)
     axom::primal::Vector<double, 3> {0, 0, 1},
     meshBBox.getMax()[0] - meshBBox.getMin()[0],
     meshBBox.getMax()[2] - meshBBox.getMin()[2],
-    50,
-    50);
+    200,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
     prefix + filename + "_slice_2.vtk",
@@ -3283,8 +3527,8 @@ void spring_example(bool process_only = false)
     axom::primal::Vector<double, 3> {0, 1, 0},
     meshBBox.getMax()[0] - meshBBox.getMin()[0],
     meshBBox.getMax()[1] - meshBBox.getMin()[1],
-    50,
-    50);
+    200,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
     prefix + filename + "_slice_3.vtk",
@@ -3294,8 +3538,8 @@ void spring_example(bool process_only = false)
     axom::primal::Vector<double, 3> {0, 1, 0},
     meshBBox.getMax()[0] - meshBBox.getMin()[0],
     meshBBox.getMax()[1] - meshBBox.getMin()[1],
-    50,
-    50);
+    200,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
     prefix + filename + "_slice_4.vtk",
@@ -3305,15 +3549,16 @@ void spring_example(bool process_only = false)
     axom::primal::Vector<double, 3> {0, 1, 0},
     meshBBox.getMax()[2] - meshBBox.getMin()[2],
     meshBBox.getMax()[1] - meshBBox.getMin()[1],
-    50,
-    50);
+    200,
+    200);
 }
 
 void generic_timing_test(std::string prefix,
                          std::string filename,
                          axom::primal::BoundingBox<double, 3> bbox)
 {
-  auto stepProcessor = import_step_file(prefix, filename);
+  auto stepProcessor = import_step_file(prefix, filename, true);
+  // return;
 
   std::ofstream results(prefix + filename + "_timing_results.csv");
   std::ofstream summary(prefix + filename + "_timing_summary.csv");
@@ -3372,7 +3617,8 @@ void generic_timing_test(std::string prefix,
         int integrated_trimming_curves = 0;
         axom::utilities::Timer timer(false);
 
-        std::cout << i << ", " << j << ", " << k << ": Query: " << query << std::endl;
+        // std::cout << i << ", " << j << ", " << k << ": Query: " << query
+        //           << std::endl;
 
         double wn = 0.0;
         for(const auto& kv : stepProcessor.getPatchDataMap())
@@ -3399,6 +3645,129 @@ void generic_timing_test(std::string prefix,
                   << case_code << ", " << timer.elapsedTimeInSec() << "\n";
 
           gwn_field << the_val << "\n";
+        }
+      }
+    }
+  }
+
+  // Case 0: Outside AABB (far-field)
+  // Case 1: Outside OBB (far-field)
+  // Case 2: Casting Necessary (near-field)
+  // Case 3: Trimming Curve Subdivision (edge case)
+
+  summary << "Case 0: Outside AABB: " << case_patch_totals[0] << ", "
+          << case_curves_totals[0] << ", " << case_time_totals[0] << "\n";
+
+  summary << "Case 1: Outside OBB: " << case_patch_totals[1] << ", "
+          << case_curves_totals[1] << ", " << case_time_totals[1] << "\n";
+
+  summary << "Case 2: Casting Necessary: " << case_patch_totals[2] << ", "
+          << case_curves_totals[2] << ", " << case_time_totals[2] << "\n";
+
+  summary << "Case 3: Trimming Curve Subdivision: " << case_patch_totals[3]
+          << ", " << case_curves_totals[3] << ", " << case_time_totals[3]
+          << "\n";
+
+  gwn_field.close();
+  results.close();
+  summary.close();
+}
+
+void generic_direction_timing_test(std::string prefix,
+                                   std::string filename,
+                                   std::string file_tag,
+                                   axom::primal::Vector<double, 3> direction,
+                                   axom::primal::BoundingBox<double, 3> bbox)
+{
+  auto stepProcessor = import_step_file(prefix, filename);
+
+  std::ofstream results(prefix + filename + "_timing_results_" + file_tag + ".csv");
+  std::ofstream summary(prefix + filename + "_timing_summary_" + file_tag + ".csv");
+  std::ofstream gwn_field(prefix + filename + "_gwn_field_" + file_tag + ".csv");
+
+  constexpr double quad_tol = 1e-5;
+  constexpr double EPS = 1e-10;
+  constexpr double edge_tol = 1e-6;
+
+  int xSteps = 50;
+  int ySteps = 50;
+  int zSteps = 50;
+
+  double dx =
+    (xSteps > 1) ? (bbox.getMax()[0] - bbox.getMin()[0]) / (xSteps - 1) : 0.0;
+  double dy =
+    (ySteps > 1) ? (bbox.getMax()[1] - bbox.getMin()[1]) / (ySteps - 1) : 0.0;
+  double dz =
+    (zSteps > 1) ? (bbox.getMax()[2] - bbox.getMin()[2]) / (zSteps - 1) : 0.0;
+
+  int case_patch_totals[4] = {0, 0, 0, 0};
+  int case_curves_totals[4] = {0, 0, 0, 0};
+  double case_time_totals[4] = {0.0, 0.0, 0.0, 0.0};
+
+  // Write VTK header
+  gwn_field << "# vtk DataFile Version 3.0\n";
+  gwn_field << "Scalar field data\n";
+  gwn_field << "ASCII\n";
+  gwn_field << "DATASET STRUCTURED_POINTS\n";
+  gwn_field << "DIMENSIONS " << xSteps << " " << ySteps << " " << zSteps << "\n";
+  gwn_field << "ORIGIN " << bbox.getMin()[0] << " " << bbox.getMin()[1] << " "
+            << bbox.getMin()[2] << "\n";
+  gwn_field << "SPACING " << dx << " " << dy << " " << dz << "\n";
+  gwn_field << "POINT_DATA " << xSteps * ySteps * zSteps << "\n";
+  gwn_field << "SCALARS scalars float\n";
+  gwn_field << "LOOKUP_TABLE default\n";
+
+  gwn_field << std::setprecision(15);
+  results << std::setprecision(15);
+  summary << std::setprecision(15);
+
+  for(int k = 0; k < zSteps; ++k)
+  {
+    axom::primal::printLoadingBar(k, zSteps);
+
+    for(int j = 0; j < ySteps; ++j)
+    {
+      for(int i = 0; i < xSteps; ++i)
+      {
+        double x = bbox.getMin()[0] + i * dx;
+        double y = bbox.getMin()[1] + j * dy;
+        double z = bbox.getMin()[2] + k * dz;
+
+        auto query = axom::primal::Point<double, 3> {x, y, z};
+        int case_code = -1;
+        int integrated_trimming_curves = 0;
+        axom::utilities::Timer timer(false);
+
+        // std::cout << i << ", " << j << ", " << k << ": Query: " << query
+        //           << std::endl;
+
+        double wn = 0.0;
+        for(const auto& kv : stepProcessor.getPatchDataMap())
+        {
+          int integrated_trimming_curves;
+          timer.start();
+          auto split_val = axom::primal::winding_number_casting_split(
+            query,
+            kv.second.nurbsPatchData,
+            direction,
+            case_code,
+            integrated_trimming_curves,
+            edge_tol,
+            quad_tol,
+            EPS);
+          timer.stop();
+
+          case_patch_totals[case_code]++;
+          case_curves_totals[case_code] += integrated_trimming_curves;
+          case_time_totals[case_code] += timer.elapsedTimeInSec();
+          wn += split_val.first + split_val.second;
+
+          results << x << ", " << y << ", " << z << ", " << kv.first << ", "
+                  << integrated_trimming_curves << ", "
+                  << split_val.first + split_val.second << ", " << case_code
+                  << ", " << timer.elapsedTimeInSec() << "\n";
+
+          gwn_field << split_val.first + split_val.second << "\n";
         }
       }
     }
@@ -3489,8 +3858,8 @@ void van_example(bool process_only = false)
     axom::primal::Vector<double, 3> {0, 1, 0},
     meshBBox.getMax()[0] - meshBBox.getMin()[0],
     meshBBox.getMax()[1] - meshBBox.getMin()[1],
-    50,
-    100);
+    100,
+    200);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
     prefix + filename + "_slice_2.vtk",
@@ -3500,8 +3869,8 @@ void van_example(bool process_only = false)
     axom::primal::Vector<double, 3> {0, 1, 0},
     meshBBox.getMax()[2] - meshBBox.getMin()[2],
     meshBBox.getMax()[1] - meshBBox.getMin()[1],
-    50,
-    100);
+    100,
+    200);
 }
 
 void spring_example_volume(bool process_only = false)
@@ -3628,16 +3997,16 @@ void bobbin_example_volume(bool process_only = false)
 
   axom::primal::BoundingBox<double, 3> smaller_box;
   smaller_box.addPoint(
-    axom::primal::Point<double, 3> {0.047 + 0.01, -0.005 + 0.01, 0.05 + 0.01});
+    axom::primal::Point<double, 3> {0.047 + 0.008, -0.005 + 0.008, 0.05 + 0.002});
   smaller_box.addPoint(
-    axom::primal::Point<double, 3> {0.047 - 0.01, -0.005 - 0.01, 0.05 - 0.01});
+    axom::primal::Point<double, 3> {0.047 - 0.008, -0.005 - 0.008, 0.05 - 0.002});
 
   axom::primal::exportScalarFieldToVTK<double>(prefix + filename + "_volume.vtk",
                                                wn_field,
                                                smaller_box,
                                                100,
                                                100,
-                                               100);
+                                               50);
 }
 //0.2741457196484367
 
@@ -3794,8 +4163,8 @@ void complex_gear_example(bool process_only = false)
     axom::primal::Vector<double, 3> {0, 1, 0},
     0.2 * (meshBBox.getMax()[0] - meshBBox.getMin()[0]),
     0.2 * (meshBBox.getMax()[1] - meshBBox.getMin()[1]),
-    100,
-    100);
+    200,
+    200);
 }
 
 void complex_gear_subset_example(bool process_only = false)
@@ -3811,9 +4180,9 @@ void complex_gear_subset_example(bool process_only = false)
     return;
   }
 
-  constexpr double quad_tol = 1e-5;
-  constexpr double EPS = 1e-10;
-  constexpr double edge_tol = 1e-6;
+  constexpr double quad_tol = 1e-10;
+  constexpr double EPS = 1e-16;
+  constexpr double edge_tol = 1e-16;
 
   // (!bBox, !oBox, casting, noCache)
   int case_code = -1;
@@ -3853,29 +4222,33 @@ void complex_gear_subset_example(bool process_only = false)
 
   axom::utilities::Timer timer(false);
 
-  // axom::primal::exportSliceScalarFieldToVTK<double>(
-  //   prefix + filename + "_subset_slice_1.vtk",
-  //   wn_field,
-  //   axom::primal::Point<double, 3> {0.044658458307408416, 0.015908217648718987, 0.0076132148484121575},
-  //   axom::primal::Vector<double, 3> {0.9815644542845647, 0.051996087231145134, 0.183922888727031},
-  //   0.02,
-  //   0.02,
-  //   200,
-  //   200);
+  axom::primal::exportSliceScalarFieldToVTK<double>(
+    prefix + filename + "_subset_slice_1_hires.vtk",
+    wn_field,
+    axom::primal::Point<double, 3> {0.044658458307408416,
+                                    0.015908217648718987,
+                                    0.0076132148484121575},
+    axom::primal::Vector<double, 3> {0.9815644542845647,
+                                     0.051996087231145134,
+                                     0.183922888727031},
+    0.02,
+    0.02,
+    300,
+    300);
 
   axom::primal::exportSliceScalarFieldToVTK<double>(
-    prefix + filename + "_subset_slice_2.vtk",
+    prefix + filename + "_subset_slice_3_hires.vtk",
     wn_field,
-    axom::primal::Point<double, 3> {0.043949259805650946,
-                                    0.01569962565063724,
-                                    0.0113693041165032},
-    axom::primal::Vector<double, 3> {0.05241730314620468,
-                                     -0.7681876302012245,
-                                     -0.6380753804502299},
+    axom::primal::Point<double, 3> {0.043513682724686795,
+                                    0.016015024578763956,
+                                    0.007885157983450936},
+    axom::primal::Vector<double, 3> {0.15398755023658012,
+                                     -0.9090236554643468,
+                                     -0.3872516341842515},
     0.02 * 0.075,
     0.02 * 0.075,
-    200,
-    200);
+    300,
+    300);
 }
 
 void spring_direction_example()
@@ -3885,7 +4258,7 @@ void spring_direction_example()
     "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\spring_"
     "direction\\";
 
-  std::string filename = "spring";
+  std::string filename = "spring_split";
   auto stepProcessor = import_step_file(prefix, filename);
 
   constexpr double quad_tol = 1e-5;
@@ -3908,14 +4281,40 @@ void spring_direction_example()
       int integrated_trimming_curves;
       auto split_val =
         axom::primal::winding_number_casting_split(query,
+                                                   kv.second.nurbsPatchData,
+                                                   direction,
+                                                   case_code,
+                                                   integrated_trimming_curves,
+                                                   edge_tol,
+                                                   quad_tol,
+                                                   EPS);
+      wn += split_val.first + split_val.second;
+    }
+    timer.stop();
+
+    std::pair<double, double> result = {wn, timer.elapsedTimeInSec()};
+    return result;
+  };
+
+  auto wn_random_field =
+    [&direction, &stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
+      axom::primal::Point<double, 3> query) -> std::pair<double, double> {
+    double wn = 0.0;
+    axom::utilities::Timer timer(false);
+
+    timer.start();
+    for(const auto& kv : stepProcessor.getPatchDataMap())
+    {
+      int integrated_trimming_curves;
+      auto split_val =
+        axom::primal::winding_number_casting(query,
                                              kv.second.nurbsPatchData,
-                                             direction,
                                              case_code,
                                              integrated_trimming_curves,
                                              edge_tol,
                                              quad_tol,
                                              EPS);
-      wn += split_val.first + split_val.second;
+      wn += split_val;
     }
     timer.stop();
 
@@ -3926,49 +4325,62 @@ void spring_direction_example()
   axom::primal::BoundingBox<double, 3> meshBBox;
   meshBBox.addPoint(axom::primal::Point<double, 3> {-0.04, -0.04, -0.03});
   meshBBox.addPoint(axom::primal::Point<double, 3> {0.04, 0.04, 0.03});
-  meshBBox.scale(1.11);
+  meshBBox.scale(1.2);
 
   axom::primal::Point<double, 3> origin = meshBBox.getCentroid();
 
-  direction = axom::primal::Vector<double, 3> {1.0, 0.0, 0.0};
-  axom::primal::exportSplitScalarSliceFieldToVTK<double>(
-    prefix + filename + "_slice_x.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0, 0, 0},
-    axom::primal::Vector<double, 3> {0, 1, 0},
-    axom::primal::Vector<double, 3> {0, 0, 1},
-    meshBBox.getMax()[1] - meshBBox.getMin()[1],
-    meshBBox.getMax()[2] - meshBBox.getMin()[2],
-    100,
-    100);
+  // direction = axom::primal::Vector<double, 3> {1.0, 0.0, 0.0};
+  // axom::primal::exportSplitScalarSliceFieldToVTK<double>(
+  //   prefix + filename + "_slice_x.vtk",
+  //   wn_field,
+  //   axom::primal::Point<double, 3> {0, 0, 0},
+  //   axom::primal::Vector<double, 3> {0, 1, 0},
+  //   axom::primal::Vector<double, 3> {0, 0, 1},
+  //   meshBBox.getMax()[1] - meshBBox.getMin()[1],
+  //   meshBBox.getMax()[2] - meshBBox.getMin()[2],
+  //   200,
+  //   200);
 
-  direction = axom::primal::Vector<double, 3> {0.0, 1.0, 0.0};
-  axom::primal::exportSplitScalarSliceFieldToVTK<double>(
-    prefix + filename + "_slice_y.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0, 0, 0},
-    axom::primal::Vector<double, 3> {0, 1, 0},
-    axom::primal::Vector<double, 3> {0, 0, 1},
-    meshBBox.getMax()[1] - meshBBox.getMin()[1],
-    meshBBox.getMax()[2] - meshBBox.getMin()[2],
-    100,
-    100);
+  // direction = axom::primal::Vector<double, 3> {0.0, 1.0, 0.0};
+  // axom::primal::exportSplitScalarSliceFieldToVTK<double>(
+  //   prefix + filename + "_slice_y.vtk",
+  //   wn_field,
+  //   axom::primal::Point<double, 3> {0, 0, 0},
+  //   axom::primal::Vector<double, 3> {0, 1, 0},
+  //   axom::primal::Vector<double, 3> {0, 0, 1},
+  //   meshBBox.getMax()[1] - meshBBox.getMin()[1],
+  //   meshBBox.getMax()[2] - meshBBox.getMin()[2],
+  //   200,
+  //   200);
 
-  direction = axom::primal::Vector<double, 3> {0.0, 0.0, 1.0};
+  // direction = axom::primal::Vector<double, 3> {0.0, 0.0, 1.0};
+  // axom::primal::exportSplitScalarSliceFieldToVTK<double>(
+  //   prefix + filename + "_slice_z.vtk",
+  //   wn_field,
+  //   axom::primal::Point<double, 3> {0, 0, 0},
+  //   axom::primal::Vector<double, 3> {0, 1, 0},
+  //   axom::primal::Vector<double, 3> {0, 0, 1},
+  //   meshBBox.getMax()[1] - meshBBox.getMin()[1],
+  //   meshBBox.getMax()[2] - meshBBox.getMin()[2],
+  //   200,
+  //   200);
+
   axom::primal::exportSplitScalarSliceFieldToVTK<double>(
-    prefix + filename + "_slice_z.vtk",
-    wn_field,
-    axom::primal::Point<double, 3> {0, 0, 0},
+    prefix + filename + "_slice_random.vtk",
+    wn_random_field,
+    axom::primal::Point<double, 3> {-0.005, 0, 0},
     axom::primal::Vector<double, 3> {0, 1, 0},
     axom::primal::Vector<double, 3> {0, 0, 1},
     meshBBox.getMax()[1] - meshBBox.getMin()[1],
     meshBBox.getMax()[2] - meshBBox.getMin()[2],
-    100,
-    100);
+    200,
+    200);
 }
 
 int main()
 {
+  // graphical_abstract_watertight();
+  // graphical_abstract_exploded();
   // nut_3d_example();
   // nut_2d_example();
   // discretized_curve_gwn();
@@ -3977,10 +4389,11 @@ int main()
   // closure_intuition_2d();
   // coincident_point();
   // nearby_point();
+  // spring_example();
   // spring_timing_example();
-  // van_example(true);
+  // van_example();
   // bobbin_example(true);
-  // complex_gear_example(true);
+  // complex_gear_example();
   // complex_gear_subset_example();
   // bobbin_example_volume();
   // van_example_volume();
@@ -3988,34 +4401,37 @@ int main()
   // 9979 at varying levels zooming
 
   std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\bulk_timing_"
-    "results\\";
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\spring_direction\\";
   axom::primal::BoundingBox<double, 3> bbox;
   std::string filename;
 
   // Spring
-  filename = "spring";
+  filename = "spring_split";
   bbox.clear();
   bbox.addPoint(axom::primal::Point<double, 3> {-0.04, -0.04, -0.03});
   bbox.addPoint(axom::primal::Point<double, 3> {0.04, 0.04, 0.03});
   bbox.scale(1.01);
-  generic_timing_test(prefix, filename, bbox);
+  // generic_timing_test(prefix, filename, bbox);
+
+  // generic_direction_timing_test(prefix, filename, "x", axom::primal::Vector<double, 3> {1, 0, 0}, bbox);
+  // generic_direction_timing_test(prefix, filename, "y", axom::primal::Vector<double, 3> {0, 1, 0}, bbox);
+  // generic_direction_timing_test(prefix, filename, "z", axom::primal::Vector<double, 3> {0, 0, 1}, bbox);
 
   // // Van
   // filename = "van";
-  // bbox.clear();
+  // bbox.clear(); //max(-1, min(1, round(scalar_field)))
   // bbox.addPoint(axom::primal::Point<double, 3> {-1.25, -3.2, -0.5});
   // bbox.addPoint(axom::primal::Point<double, 3> {1.25, 4.8, 2.25});
   // bbox.scale(1.01);
   // generic_timing_test(prefix, filename, bbox);
 
   // Bobbin
-  //   filename = "bobbin";
-  //   bbox.clear();
-  //   bbox.addPoint(axom::primal::Point<double, 3> {-0.065, -0.065, 0});
-  //   bbox.addPoint(axom::primal::Point<double, 3> {0.065, 0.065, 0.05});
-  //   bbox.scale(1.01);
-  //   generic_timing_test(prefix, filename, bbox);
+  // filename = "bobbin";
+  // bbox.clear();
+  // bbox.addPoint(axom::primal::Point<double, 3> {-0.065, -0.065, 0});
+  // bbox.addPoint(axom::primal::Point<double, 3> {0.065, 0.065, 0.05});
+  // bbox.scale(1.01);
+  // generic_timing_test(prefix, filename, bbox);
 
   // Complex Gear
   // filename = "complex_gear";
@@ -4026,5 +4442,7 @@ int main()
   // generic_timing_test(prefix, filename, bbox);
 
   // spring_direction_example();
+  // quadrature_on_sphere();
+  plot_trimming_curves();
   return 0;
 }

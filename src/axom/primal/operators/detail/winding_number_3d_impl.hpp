@@ -243,6 +243,8 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
   }
 }
 
+const bool FORCE_ADAPTIVE = false;
+
 template <typename T>
 double stokes_winding_number(const Point<T, 3>& query,
                              const NURBSPatch<T, 3>& patch,
@@ -343,7 +345,7 @@ double stokes_winding_number_trimming(const Point<T, 3>& query,
   // Adaptively refine quadrature over curves if the minimum distance
   //  from the axis to the curve is within 10% of the difference between
   //  the maximum and minimum distances (this is a bad heuristic).
-  if(true)  //min_dist <= 0.1 * (max_dist - min_dist))
+  if(FORCE_ADAPTIVE || true)  //min_dist <= 0.1 * (max_dist - min_dist))
   {
     return stokes_winding_number_trimming_adaptive(query,
                                                    curve,
@@ -509,13 +511,8 @@ double stokes_winding_number_cached(const Point<T, 3>& query,
     double quad_coarse =
       single_stokes_cached(query, quad_rule, ax, trimming_curve_data);
 
-    // If far away, use this value
-    if(!isNearAxisBox(query, trimming_curve_data.bbox, 5.0, ax))
-    {
-      quad += 0.25 * M_1_PI * quad_coarse;
-    }
-    // Otherwise, do some refinement
-    else
+    // If near, use adaptive
+    if(FORCE_ADAPTIVE || isNearAxisBox(query, trimming_curve_data.bbox, 5.0, ax))
     {
       quad += 0.25 * M_1_PI *
         adaptive_stokes_cached(query,
@@ -527,6 +524,11 @@ double stokes_winding_number_cached(const Point<T, 3>& query,
                                0,
                                quad_coarse,
                                quad_tol);
+    }
+    // Otherwise, do some refinement
+    else
+    {
+      quad += 0.25 * M_1_PI * quad_coarse;
     }
   }
 
@@ -571,7 +573,8 @@ double adaptive_stokes_cached(const Point<T, 3>& query,
   else
   {
     // If we're not near the axis, we can trust the original value
-    if(isNearAxisBox(query, trimming_curve_data_1.bbox, 5.0, ax))
+    if(FORCE_ADAPTIVE ||
+       isNearAxisBox(query, trimming_curve_data_1.bbox, 5.0, ax))
       quad_fine_1 = adaptive_stokes_cached(query,
                                            nPatchData,
                                            quad_rule,
@@ -582,7 +585,8 @@ double adaptive_stokes_cached(const Point<T, 3>& query,
                                            quad_fine_1,
                                            quad_tol);
 
-    if(isNearAxisBox(query, trimming_curve_data_2.bbox, 5.0, ax))
+    if(FORCE_ADAPTIVE ||
+       isNearAxisBox(query, trimming_curve_data_2.bbox, 5.0, ax))
       quad_fine_2 = adaptive_stokes_cached(query,
                                            nPatchData,
                                            quad_rule,
@@ -705,12 +709,8 @@ double stokes_winding_number_cached_rotated(const Point<T, 3>& query,
       single_stokes_cached_rotated(query, quad_rule, rotator, trimming_curve_data);
 
     // If far away, use this value
-    if(!isNearAxisBoxRotated(query, trimming_curve_data.bbox, 5.0, rotator))
-    {
-      quad += 0.25 * M_1_PI * quad_coarse;
-    }
-    // Otherwise, do some refinement
-    else
+    if(FORCE_ADAPTIVE ||
+       isNearAxisBoxRotated(query, trimming_curve_data.bbox, 5.0, rotator))
     {
       quad += 0.25 * M_1_PI *
         adaptive_stokes_cached_rotated(query,
@@ -723,6 +723,38 @@ double stokes_winding_number_cached_rotated(const Point<T, 3>& query,
                                        quad_coarse,
                                        quad_tol);
     }
+    // Otherwise, do some refinement
+    else
+    {
+      quad += 0.25 * M_1_PI * quad_coarse;
+    }
+  }
+
+  return quad;
+}
+
+template <typename T>
+double stokes_winding_number_cached_rotated_adaptless(
+  const Point<T, 3>& query,
+  const NURBSPatchData<T>& nPatchData,
+  const axom::numerics::Matrix<T>& rotator,
+  const int quad_npts,
+  const double quad_tol)
+{
+  // Generate the quadrature rules in parameter space
+  static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
+  const mfem::IntegrationRule& quad_rule =
+    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * quad_npts - 1);
+
+  double quad = 0;
+  for(int n = 0; n < nPatchData.patch.getNumTrimmingCurves(); ++n)
+  {
+    // Get the quadrature points for the curve without any refinement
+    auto trimming_curve_data = nPatchData.getQuadratureData(n, quad_rule, 0, 0);
+    double quad_coarse =
+      single_stokes_cached_rotated(query, quad_rule, rotator, trimming_curve_data);
+
+    quad += 0.25 * M_1_PI * quad_coarse;
   }
 
   return quad;
@@ -863,7 +895,6 @@ template <typename T>
 double surface_winding_number(const Point<T, 3>& query,
                               const BezierPatch<T, 3>& patch,
                               int npts,
-                              double quad_tol,
                               bool needs_adapt = true)
 {
   // Generate the quadrature rules in parameter space
@@ -891,18 +922,7 @@ double surface_winding_number(const Point<T, 3>& query,
     }
   }
 
-  if(needs_adapt)
-  {
-    return surface_winding_number_adaptive(query,
-                                           patch,
-                                           quad_rule,
-                                           quadrature,
-                                           quad_tol);
-  }
-  else
-  {
-    return 0.25 * M_1_PI * quadrature;
-  }
+  return 0.25 * M_1_PI * quadrature;
 }
 
 template <typename T>

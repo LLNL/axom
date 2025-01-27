@@ -1281,7 +1281,7 @@ double winding_number_casting(const Point<T, 3>& query,
   double u = axom::utilities::random_real(-1.0, 1.0);
   auto cast_direction =
     Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
-  // cast_direction = Vector<T, 3> {0.0, 0.0, 1.0};
+  // cast_direction = Vector<T, 3> {0.01, 0.01, 1};
   auto wn_split = winding_number_casting_split(query,
                                                nPatchData,
                                                cast_direction,
@@ -1836,6 +1836,183 @@ double simple_coincident_wn(const Point<T, 3>& query,
                                       field_direction,
                                       quad_npts,
                                       0);
+
+  return wn;
+}
+
+template <typename T>
+double sphere_winding_number_casting(const Point<T, 3>& query,
+                                     const NURBSPatchData<T>& nPatchData,
+                                     int& case_code,
+                                     int& integrated_trimming_curves,
+                                     const double edge_tol = 1e-8,
+                                     const double quad_tol = 1e-8,
+                                     const double EPS = 1e-8,
+                                     const int depth = 0)
+{
+  const double edge_tol_sq = edge_tol * edge_tol;
+
+  // We know the surface is parts of a sphere, so pick the discontinuity direction advantageously
+  const Vector<T, 3>& discontinuity_direction = {0, 0, 1};
+
+  // Fix the number of quadrature nodes arbitrarily
+  constexpr int quad_npts = 20;
+
+  // The first is the GWN from stokes, the second is the jump condition
+  double wn = 0.0;
+
+  /* 
+   * To use Stokes theorem, we need to identify either a line containing the
+   * query that does not intersect the surface, or one that intersects the *interior*
+   * of the surface at known locations.
+   */
+
+  // Lambda to generate a 3D rotation matrix from an angle and axis
+  // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
+  auto angleAxisRotMatrix = [](double theta,
+                               const Vector<T, 3>& axis) -> numerics::Matrix<T> {
+    const auto unitized = axis.unitVector();
+    const double x = unitized[0], y = unitized[1], z = unitized[2];
+    const double c = cos(theta), s = sin(theta), C = 1 - c;
+
+    auto matx = numerics::Matrix<T>::zeros(3, 3);
+
+    matx(0, 0) = x * x * C + c;
+    matx(0, 1) = x * y * C - z * s;
+    matx(0, 2) = x * z * C + y * s;
+
+    matx(1, 0) = y * x * C + z * s;
+    matx(1, 1) = y * y * C + c;
+    matx(1, 2) = y * z * C - x * s;
+
+    matx(2, 0) = z * x * C - y * s;
+    matx(2, 1) = z * y * C + x * s;
+    matx(2, 2) = z * z * C + c;
+
+    return matx;
+  };
+
+  // Lambda to generate a random orthogonal normal vector to the input
+  auto random_orthogonal = [](const Vector<T, 3>& input) -> Vector<T, 3> {
+    // Pick a random direction orthogonal to the surface normal
+    //  at the center of the disk
+    Vector<T, 3> some_perp(
+      {input[1] - input[2], input[2] - input[0], input[0] - input[1]});
+    double theta = axom::utilities::random_real(0.0, 2.0 * M_PI);
+    Vector<T, 3> new_direction = std::cos(theta) * some_perp.unitVector() +
+      std::sin(theta) * Vector3D::cross_product(input, some_perp).unitVector();
+
+    return new_direction;
+  };
+
+  // Lambda to generate an entirely random unit vector
+  auto random_unit = []() -> Vector<T, 3> {
+    double theta = axom::utilities::random_real(0.0, 2 * M_PI);
+    double u = axom::utilities::random_real(-1.0, 1.0);
+    return Vector<T, 3> {sin(theta) * sqrt(1 - u * u),
+                         cos(theta) * sqrt(1 - u * u),
+                         u};
+  };
+
+  // Rotation matrix for the patch
+  numerics::Matrix<T> rotator;
+
+  // Prefer to work with a trimmed patch
+  NURBSPatch<T, 3> integralPatch = nPatchData.patch;
+
+  // Define vector fields whose curl gives us the winding number
+  detail::DiscontinuityAxis field_direction;
+  bool extraTrimming = false;
+
+  auto bBox = BoundingBox<T, 3>(nPatchData.bbox);
+  auto characteristic_length = bBox.range().norm();
+  bBox.expand(0.01 * characteristic_length);
+  auto oBox =
+    OrientedBoundingBox<T, 3>(nPatchData.obox).expand(0.01 * characteristic_length);
+
+  // Case 2: Cast a ray, record intersections
+  if(true)
+  {
+    case_code = 2;
+    integrated_trimming_curves = integralPatch.getNumTrimmingCurves();
+
+    // wn_split.first += 0.0;
+    // return wn_split;
+
+    field_direction = detail::DiscontinuityAxis::rotated;
+    Line<T, 3> discontinuity_axis(query, discontinuity_direction);
+
+    // Compute intersections with the *untrimmed and extrapolated* patch
+    axom::Array<T> up, vp, tp;
+    bool isHalfOpen = false, isTrimmed = false;
+    bool success = intersect(discontinuity_axis,
+                             nPatchData,
+                             tp,
+                             up,
+                             vp,
+                             1e-5,  // This is a good heuristic value for accuracy
+                             EPS,
+                             isHalfOpen,
+                             isTrimmed,
+                             0.1);
+
+    // Account for each discontinuity in the integrand on the *untrimmed and extrapolated* surface
+
+    // If no intersection, then nothing to account for
+
+    // Otherwise, account for each discontinuity analytically or through disk subdivision
+    for(int i = 0; i < up.size(); ++i)
+    {
+      // Check for surface degeneracies or tangencies
+      Vector<T, 3> the_normal = nPatchData.patch.normal(up[i], vp[i]);
+      // std::cout << the_normal.norm() << " " << the_normal.unitVector().dot(discontinuity_direction) << std::endl;
+
+      // Check for surface coincidence
+      Point<T, 3> intersection_point = nPatchData.patch.evaluate(up[i], vp[i]);
+      bool isOnSurface =
+        squared_distance(query, intersection_point) <= edge_tol_sq;
+
+      // If the query point is on the surface, the contribution of the disk is near-zero,
+      //  and we only need to puncture the larger surface to proceed
+      if(isOnSurface)
+      {
+        wn += 0.0;
+      }
+      else
+      {
+        Vector<T, 3> the_direction =
+          Vector<T, 3>(query, intersection_point).unitVector();
+
+        // Do a dot product to see what side of the surface the intersection is on
+        wn += std::copysign(0.5, the_normal.dot(the_direction));
+      }
+    }
+
+    // Rotate the patch so that the discontinuity direction is aligned with the z-axis
+    Vector<T, 3> axis = {discontinuity_direction[1],
+                         -discontinuity_direction[0],
+                         0.0};
+
+    double ang =
+      acos(axom::utilities::clampVal(discontinuity_direction[2], -1.0, 1.0));
+
+    rotator = angleAxisRotMatrix(ang, axis);
+
+    // std::cout << wn_split.second << std::endl;
+    // std::cout << std::endl;
+  }
+
+  if(true)
+  {
+    {
+      wn += detail::stokes_winding_number_cached_rotated_adaptless(query,
+                                                                   nPatchData,
+                                                                   rotator,
+                                                                   quad_npts,
+                                                                   quad_tol);
+      // std::cout << "Rotated wn: " << wn_split.first << std::endl;
+    }
+  }
 
   return wn;
 }

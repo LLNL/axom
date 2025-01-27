@@ -932,6 +932,8 @@ void exportScalarFieldToVTK(const std::string& filename,
   file << "SCALARS scalars float\n";
   file << "LOOKUP_TABLE default\n";
 
+  file << std::setprecision(20);
+  
   // Write scalar field data
   for(int k = 0; k < zSteps; ++k)
   {
@@ -1172,13 +1174,16 @@ template <typename T>
 void exportSliceScalarFieldToVTK(const std::string& filename,
                                  const std::function<T(Point3D)>& fieldFunc,
                                  const Point3D& origin,
-                                 const Vector<T, 3>& u,
-                                 const Vector<T, 3>& v,
+                                 Vector<T, 3> u,
+                                 Vector<T, 3> v,
                                  double planeWidth,
                                  double planeHeight,
                                  int uSteps,
                                  int vSteps)
 {
+  u = u.unitVector();
+  v = v.unitVector();
+
   std::ofstream file(filename);
   if(!file.is_open())
   {
@@ -1206,6 +1211,8 @@ void exportSliceScalarFieldToVTK(const std::string& filename,
       file << x << " " << y << " " << z << "\n";
     }
   }
+
+  file << std::setprecision(20);
 
   // Write scalar field
   file << "POINT_DATA " << (uSteps * vSteps) << "\n";
