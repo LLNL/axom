@@ -71,6 +71,19 @@ namespace axom
 {
 namespace quest
 {
+
+  #if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
+    #if defined(AXOM_USE_CONDUIT)
+static constexpr conduit::DataType::TypeID conduitDataIdOfAxomIndexType =
+  conduit::DataType::INT64_ID;
+    #endif
+  #else
+    #if defined(AXOM_USE_CONDUIT)
+static constexpr conduit::DataType::TypeID conduitDataIdOfAxomIndexType =
+  conduit::DataType::INT32_ID;
+    #endif
+  #endif
+
 /*!
  * \class TempArrayView
  *

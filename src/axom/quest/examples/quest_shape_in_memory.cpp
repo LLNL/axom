@@ -1052,7 +1052,7 @@ axom::sidre::View* getElementVolumes(
                        ->getGroup("elements")
                        ->getView("connectivity");
     SLIC_ASSERT(connData->getNode().dtype().id() ==
-                axom::conduitDataIdOfAxomIndexType);
+                axom::quest::conduitDataIdOfAxomIndexType);
 
     conduit::Node coordNode;
     meshGrp->getGroup("coordsets")
