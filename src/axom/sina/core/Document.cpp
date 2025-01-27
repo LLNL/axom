@@ -207,7 +207,7 @@ void Document::createFromNode(const conduit::Node &asNode,
                 childNodes.dtype().is_string())
             {
                 std::ostringstream message;
-                std::cout << "The '" << key 
+                message << "The '" << key 
                         << "' element of a document cannot be a primitive value.";
                 throw std::invalid_argument(message.str());
             }
