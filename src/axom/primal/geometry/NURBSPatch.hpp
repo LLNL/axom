@@ -95,6 +95,8 @@ struct NURBSPatchData
     : patchIndex(idx)
     , patch(a_patch)
   {
+    curve_quadrature_maps.resize(patch.getNumTrimmingCurves());
+
     obox = patch.orientedBoundingBox();
 
     beziers = axom::Array<BezierPatch<T, 3>>();
