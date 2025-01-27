@@ -35,6 +35,7 @@ int main(int argc, char* argv[])
   }
   else
   {
+    delete ds;
     return 0;
   }
 

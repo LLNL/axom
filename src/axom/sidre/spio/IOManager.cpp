@@ -465,6 +465,161 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
   (void)m_baton->pass();
 }
 
+void IOManager::loadExternalData(sidre::Group* parent_group,
+                                 sidre::Group* load_group,
+                                 const std::string& root_file)
+{
+  int num_files = getNumFilesFromRoot(root_file);
+  int num_groups = getNumGroupsFromRoot(root_file);
+  SLIC_ASSERT(num_files > 0);
+  SLIC_ASSERT(num_groups > 0);
+
+  if(m_baton)
+  {
+    if(m_baton->getNumFiles() != num_files)
+    {
+      delete m_baton;
+      m_baton = nullptr;
+    }
+  }
+
+  if(!m_baton)
+  {
+    m_baton = new IOBaton(m_mpi_comm, num_files, num_groups);
+  }
+
+#ifdef AXOM_USE_HDF5
+  std::string file_pattern = getHDF5FilePattern(root_file);
+
+  std::string parent_name(parent_group->getPathName());
+  std::string load_name(load_group->getPathName());
+  axom::Path parent_path(parent_name);
+  axom::Path load_path(load_name);
+  std::vector<std::string> parent_parts(parent_path.parts());
+  std::vector<std::string> load_parts(load_path.parts());
+
+  size_t parent_size = parent_parts.size();
+  bool can_load = true;
+  if(load_parts.size() < parent_size)
+  {
+    can_load = false;
+  }
+
+  for(size_t i = 0; i < parent_size; ++i)
+  {
+    if(parent_parts[i] != load_parts[i])
+    {
+      can_load = false;
+    }
+  }
+
+  std::string subpath = load_name.substr(parent_name.size());
+  char delimiter = parent_group->getPathDelimiter();
+  if(!subpath.empty() && subpath[0] == delimiter)
+  {
+    subpath.erase(0, 1);
+  }
+
+  if(!subpath.empty() && !parent_group->hasGroup(subpath))
+  {
+    can_load = false;
+  }
+
+  int set_id = m_baton->wait();
+
+  if(can_load)
+  {
+    if(num_groups <= m_comm_size)
+    {
+      if(m_my_rank < num_groups)
+      {
+        herr_t errv;
+        AXOM_UNUSED_VAR(errv);
+
+        std::string hdf5_name =
+          getFileNameForRank(file_pattern, root_file, set_id);
+
+        hdf5_name = getSCRPath(hdf5_name);
+
+        hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
+        SLIC_ASSERT(h5_file_id >= 0);
+
+        std::string group_name = "datagroup";
+        if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+        {
+          group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+        }
+
+        hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+        SLIC_ASSERT(h5_group_id >= 0);
+
+        load_group->loadExternalData(h5_group_id, subpath);
+
+        errv = H5Gclose(h5_group_id);
+        SLIC_ASSERT(errv >= 0);
+
+        errv = H5Fclose(h5_file_id);
+        SLIC_ASSERT(errv >= 0);
+      }
+    }
+    else
+    {
+      for(int input_rank = m_my_rank; input_rank < num_groups;
+          input_rank += m_comm_size)
+      {
+        herr_t errv;
+        AXOM_UNUSED_VAR(errv);
+
+        std::string hdf5_name =
+          getFileNameForRank(file_pattern, root_file, input_rank);
+
+        hdf5_name = getSCRPath(hdf5_name);
+
+        hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
+        SLIC_ASSERT(h5_file_id >= 0);
+
+        std::string group_name = "datagroup";
+        if(H5Lexists(h5_file_id, group_name.c_str(), 0) <= 0)
+        {
+          group_name = fmt::sprintf("datagroup_%07d", input_rank);
+        }
+
+        hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+        SLIC_ASSERT(h5_group_id >= 0);
+
+        std::string input_name = fmt::sprintf("rank_%07d", input_rank);
+
+        input_name = input_name + delimiter + "sidre_input" + delimiter + subpath;
+
+        Group* one_rank_input = parent_group->getGroup(input_name);
+
+        one_rank_input->loadExternalData(h5_group_id, subpath);
+
+        errv = H5Gclose(h5_group_id);
+        SLIC_ASSERT(errv >= 0);
+
+        errv = H5Fclose(h5_file_id);
+        SLIC_ASSERT(errv >= 0);
+      }
+    }
+  }
+  else
+  {
+    SLIC_WARNING("Path from parent group "
+                 << parent_group->getPathName() << " to group "
+                 << load_group->getPathName()
+                 << " was not found. No external data will be loaded.");
+  }
+
+#else
+  AXOM_UNUSED_VAR(datagroup);
+  SLIC_WARNING("Loading external data only only available "
+               << "when Axom is configured with hdf5");
+#endif /* AXOM_USE_HDF5 */
+
+  (void)m_baton->pass();
+}
+
 /*
  *************************************************************************
  *
@@ -1161,7 +1316,11 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
       for(IndexType i = 0; i < domain_to_file->getNumElements(); ++i)
       {
         domain_ids_array[i] = i;
-        domain_file_map[i] = rank_file_map[domain_rank_map[i]];
+
+        if(domain_rank_map[i] >= 0)
+        {
+          domain_file_map[i] = rank_file_map[domain_rank_map[i]];
+        }
       }
 
       std::string file_pattern = getFilePatternFromRoot(file_name, "sidre_hdf5");

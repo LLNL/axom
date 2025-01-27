@@ -561,8 +561,6 @@ public:
   {
     SLIC_ASSERT(isValidSpan(span, t));
 
-    const int m_deg = getDegree();
-
     axom::Array<axom::Array<T>> ders(n + 1);
 
     axom::Array<axom::Array<T>> ndu(m_deg + 1), a(2);

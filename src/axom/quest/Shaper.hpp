@@ -23,6 +23,7 @@
 #include "axom/sidre.hpp"
 #include "axom/klee.hpp"
 #include "axom/mint.hpp"
+#include "axom/quest/DiscreteShape.hpp"
 
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 
@@ -48,7 +49,7 @@ public:
   static constexpr double DEFAULT_VERTEX_WELD_THRESHOLD {1e-9};
 
   /// Refinement type.
-  using RefinementType = enum { RefinementUniformSegments, RefinementDynamic };
+  using RefinementType = DiscreteShape::RefinementType;
 
   //@{
   //!  @name Functions to get and set shaping parameters
@@ -64,7 +65,7 @@ public:
   bool isVerbose() const { return m_verboseOutput; }
 
   sidre::MFEMSidreDataCollection* getDC() { return m_dc; }
-  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh; }
+  mint::Mesh* getSurfaceMesh() const { return m_surfaceMesh.get(); }
 
   /*!
    * \brief Predicate to determine if the specified format is valid
@@ -108,14 +109,14 @@ public:
 
 protected:
   /*!
-   * \brief Loads the shape from file into m_surfaceMesh and computes a revolvedVolume
-   *        for the shape.
+   * \brief Loads the shape into m_surfaceMesh.
    * \param shape The shape.
    * \param percentError A percent error to use when refining the shape. If it
    *                     positive then Axom will try to refine dynamically
    *                     according to this error. Otherwise, it will use the
    *                     segmentsPerKnotSpan value.
-   * \param[out] revolvedvolume A revolved volume for the shape, if possible.
+   * \param[out] revolvedvolume A revolved volume for the shape, if the shape
+   *             is from a C2C contour.
    */
   void loadShapeInternal(const klee::Shape& shape,
                          double percentError,
@@ -151,14 +152,16 @@ protected:
   int getRank() const;
 
 protected:
+  sidre::DataStore m_dataStore;
+
   const klee::ShapeSet& m_shapeSet;
   sidre::MFEMSidreDataCollection* m_dc;
 
-  mint::Mesh* m_surfaceMesh {nullptr};
+  std::shared_ptr<mint::Mesh> m_surfaceMesh;
 
   int m_samplesPerKnotSpan {DEFAULT_SAMPLES_PER_KNOT_SPAN};
   double m_percentError {MINIMUM_PERCENT_ERROR};
-  RefinementType m_refinementType {RefinementUniformSegments};
+  RefinementType m_refinementType {DiscreteShape::RefinementUniformSegments};
   double m_vertexWeldThreshold {DEFAULT_VERTEX_WELD_THRESHOLD};
   bool m_verboseOutput {false};
 

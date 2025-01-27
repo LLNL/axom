@@ -283,6 +283,8 @@ TEST(sidre_external, verify_external_layout)
     // Buffer and scalar views are not present in the external layout
     EXPECT_FALSE(node.has_path("int"));
   }
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

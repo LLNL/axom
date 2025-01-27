@@ -140,7 +140,7 @@ private:
 
     std::string containerName;
     std::string description;
-    bool isSelectedElement;
+    bool isSelectedElement = false;
     std::vector<std::vector<std::string>> fieldTable;
     std::vector<std::vector<std::string>> functionTable;
   };
