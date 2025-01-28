@@ -12,6 +12,28 @@ Miscellaneous Development Items
 This section describes various development tasks that need to be 
 performed at times and which are not covered in other sections.
 
+===============================
+Updating Copyright Information
+===============================
+
+Many Axom files in Axom contain a copyright header that includes dates, which
+need to be updated in the new year. Axom's ``scripts`` directory contains scripts
+that can perform this update across Axom's sources. Before executing the scripts,
+they need to be updated so they contain the new year. This can be done by replacing
+the previous year ``(Y-1)`` to the new current year ``(Y)`` and then repeating that process
+for the last previous year ``(Y-2)``. The following script shows how to update the
+scripts to the year 2025 using the command line. In future years, different numbers
+apply.
+
+.. code-block:: bash
+
+  cd scripts
+  sed "s/2024/2025/g" copyrightPrepender.py > tmp
+  mv tmp copyrightPrepender.py
+
+  sed "s/2024/2025/g" update_copyright_date.sh > tmp
+  sed "s/2023/2024/g" tmp > update_copyright_date.sh
+  rm -f tmp
 
 ===================
 Web Documentation
