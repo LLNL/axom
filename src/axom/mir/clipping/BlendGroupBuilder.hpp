@@ -8,6 +8,7 @@
 #include "axom/core.hpp"
 #include "axom/mir/utilities/utilities.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
+#include "axom/mir/utilities/BlendData.hpp"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)

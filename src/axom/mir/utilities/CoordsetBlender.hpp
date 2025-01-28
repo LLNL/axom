@@ -8,6 +8,7 @@
 #include "axom/core.hpp"
 #include "axom/mir/utilities/FieldBlender.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
+#include "axom/mir/utilities/BlendData.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/slic.hpp"

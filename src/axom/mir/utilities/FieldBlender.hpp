@@ -9,6 +9,7 @@
 #include "axom/mir/views/NodeArrayView.hpp"
 #include "axom/mir/utilities/utilities.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
+#include "axom/mir/utilities/BlendData.hpp"
 
 #include <conduit/conduit.hpp>
 

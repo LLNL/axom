@@ -60,6 +60,7 @@ set(mir_headers
     MIROptions.hpp
     Options.hpp
     utilities/blueprint_utilities.hpp
+    utilities/BlendData.hpp
     utilities/CoordsetBlender.hpp
     utilities/CoordsetSlicer.hpp
     utilities/ExtractZones.hpp
