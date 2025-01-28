@@ -444,7 +444,7 @@ struct SSVertexFieldIndexing
  * \tparam ReturnType The data type of the returned min/max values.
  */
 template <typename ExecSpace, typename ReturnType>
-struct minmax
+struct MinMax
 {
   /*!
    * \brief Get the min/max values for the data in a Conduit node.
