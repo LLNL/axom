@@ -13,17 +13,17 @@ This section describes various development tasks that need to be
 performed at times and which are not covered in other sections.
 
 ===========================
-Updating Copyright Header
+Updating Copyright Headers
 ===========================
 
-Many Axom files in Axom contain a copyright header that includes dates, which
-need to be updated in the new year. Axom's ``scripts`` directory contains scripts
-that can perform this update across Axom's sources. Before executing the scripts,
+Many files in Axom contain a copyright header that includes dates. These headers
+need to be updated in new calendar years. Axom's ``scripts`` directory contains
+tools that can update the date across Axom's sources. Before running the tools,
 they need to be updated so they contain the new year. This can be done by replacing
-the previous year ``(Y-1)`` to the new current year ``(Y)`` and then repeating that process
-for the last previous year ``(Y-2)``. The following script shows how to update the
-scripts to the year 2025 using the command line. In future years, different numbers
-apply.
+the previous year ``(Y-1)`` to the new current year ``(Y)`` and then repeating that
+step for the last previous year ``(Y-2)``. The following commands can update
+the scripts to the year 2025 using the command line. In future years, increment the
+numbers.
 
 .. code-block:: bash
 
@@ -37,8 +37,8 @@ apply.
   cd ..
 
 
-After updating the scripts, commit the changes to a branch since the next step of
-actually running the scrupt will cause many files to change.
+After updating the scripts, commit the changes to a branch since actually running
+the update script will cause many files to change.
 
 .. code-block:: bash
 
@@ -50,7 +50,7 @@ run the next command to prepend a copyright header to files that lack one.
 
 .. code-block:: bash
 
-  python3 scripts/copyrightPrepender.py -r -t src
+  python3 scripts/copyrightPrepender.py -r src
 
 
 Again, commit any changed files to the branch. That is all. Create a pull request
