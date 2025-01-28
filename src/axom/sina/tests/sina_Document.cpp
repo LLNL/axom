@@ -37,7 +37,6 @@ char const TEST_RECORD_TYPE[] = "test type";
 char const EXPECTED_RECORDS_KEY[] = "records";
 char const EXPECTED_RELATIONSHIPS_KEY[] = "relationships";
 
-
 // Large JSONs Used For JSON and HDF5 Save Tests
 std::string data_json =
   "{\"records\": [{\"type\": \"run\", \"application\":\"test\", \"id\": "
@@ -63,7 +62,6 @@ std::string long_json =
   "[{\"predicate\": \"completes\",\"subject\": \"test_2\",\"object\": "
   "\"test_1\"},{\"subject\": \"test_3\", \"predicate\": \"overrides\", "
   "\"object\": \"test_4\"}]}";
-
 
 // Tests
 TEST(Document, create_fromNode_empty)
@@ -376,12 +374,11 @@ NamedTempFile::~NamedTempFile()
   axom::utilities::filesystem::removeFile(fileName.data());
 }
 
-
 TEST(Document, create_fromJson_roundtrip_json)
 {
   std::string orig_json =
     "{\"records\": [{\"type\": \"test_rec\",\"id\": "
-    "\"test\"}],\"relationships\": []}"; 
+    "\"test\"}],\"relationships\": []}";
   axom::sina::Document myDocument =
     Document(orig_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(0, myDocument.getRelationships().size());
@@ -395,7 +392,7 @@ TEST(Document, create_fromJson_roundtrip_hdf5)
 {
   std::string orig_json =
     "{\"records\": [{\"type\": \"test_rec\",\"id\": "
-    "\"test\"}],\"relationships\": []}"; 
+    "\"test\"}],\"relationships\": []}";
   axom::sina::Document myDocument =
     Document(orig_json, createRecordLoaderWithAllKnownTypes());
   saveDocument(myDocument, "round_json.hdf5", Protocol::HDF5);
@@ -493,29 +490,29 @@ TEST(Document, saveDocument_json)
 
 TEST(Document, saveDocument_hdf5)
 {
-    NamedTempFile tmpFile;
+  NamedTempFile tmpFile;
 
-    // First, write some random stuff to the temp file to make sure it is
-    // overwritten.
-    {
-        std::ofstream fout {tmpFile.getName()};
-        fout << "Initial contents";
-    }
+  // First, write some random stuff to the temp file to make sure it is
+  // overwritten.
+  {
+    std::ofstream fout {tmpFile.getName()};
+    fout << "Initial contents";
+  }
 
-    Document document;
-    document.add(
-        std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+  Document document;
+  document.add(
+    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
-    saveDocument(document, tmpFile.getName(), Protocol::HDF5);
+  saveDocument(document, tmpFile.getName(), Protocol::HDF5);
 
-    conduit::Node readContents;
-    conduit::relay::io::load(tmpFile.getName(), "hdf5", readContents);
+  conduit::Node readContents;
+  conduit::relay::io::load(tmpFile.getName(), "hdf5", readContents);
 
-    ASSERT_TRUE(readContents[EXPECTED_RECORDS_KEY].dtype().is_list());
-    EXPECT_EQ(1, readContents[EXPECTED_RECORDS_KEY].number_of_children());
-    auto &readRecord = readContents[EXPECTED_RECORDS_KEY][0];
-    EXPECT_EQ("the id", readRecord["id"].as_string());
-    EXPECT_EQ("the type", readRecord["type"].as_string());
+  ASSERT_TRUE(readContents[EXPECTED_RECORDS_KEY].dtype().is_list());
+  EXPECT_EQ(1, readContents[EXPECTED_RECORDS_KEY].number_of_children());
+  auto &readRecord = readContents[EXPECTED_RECORDS_KEY][0];
+  EXPECT_EQ("the id", readRecord["id"].as_string());
+  EXPECT_EQ("the type", readRecord["type"].as_string());
 }
 
 TEST(Document, load_specifiedRecordLoader)

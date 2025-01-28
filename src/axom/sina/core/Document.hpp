@@ -38,15 +38,12 @@ enum class Protocol
   HDF5
 };
 
-const std::string supported_types[] = {
-   "JSON",
-   "HDF5"
-};
+const std::string supported_types[] = {"JSON", "HDF5"};
 
 /**
  * \brief The string used to replace '/' in parent node names when saving to HDF5.
  */
-const std::string slashSubstitute = "__SINA_SLASHREPLACE__"; 
+const std::string slashSubstitute = "__SINA_SLASHREPLACE__";
 
 /**
  * \brief An object representing the top-level object of a Sina JSON file
@@ -229,7 +226,9 @@ private:
  * \param protocol the file type requested to save as, default = JSON
  * \throws std::ios::failure if there are any IO errors
  */
-void saveDocument(Document const &document, std::string const &fileName, Protocol protocol = Protocol::JSON);
+void saveDocument(Document const &document,
+                  std::string const &fileName,
+                  Protocol protocol = Protocol::JSON);
 
 /**
  * \brief Get the current file format version.
@@ -250,7 +249,8 @@ inline std::string getSinaFileFormatVersion()
  * \param protocol the type of file being loaded, default = JSON
  * \return the loaded Document
  */
-Document loadDocument(std::string const &path, Protocol protocol = Protocol::JSON);
+Document loadDocument(std::string const &path,
+                      Protocol protocol = Protocol::JSON);
 
 /**
  * \brief Load a document from the given path.
@@ -261,7 +261,9 @@ Document loadDocument(std::string const &path, Protocol protocol = Protocol::JSO
  * \param protocol the type of file being loaded, default = JSON
  * \return the loaded Document
  */
-Document loadDocument(std::string const &path, RecordLoader const &recordLoader, Protocol protocol = Protocol::JSON);
+Document loadDocument(std::string const &path,
+                      RecordLoader const &recordLoader,
+                      Protocol protocol = Protocol::JSON);
 
 }  // namespace sina
 }  // namespace axom
