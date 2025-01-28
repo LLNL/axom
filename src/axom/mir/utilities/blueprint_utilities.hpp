@@ -227,7 +227,9 @@ private:
     const auto axomAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
     void *ptr = static_cast<void *>(
       axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
-    //std::cout << axom::execution_space<ExecSpace>::name() << ": Allocated for Conduit via axom: items=" << items << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
+    //std::cout << axom::execution_space<ExecSpace>::name()
+    //  << ": Allocated for Conduit via axom: items=" << items
+    //  << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
     return ptr;
   }
 
@@ -236,7 +238,8 @@ private:
    */
   static void internal_free(void *ptr)
   {
-    //std::cout << axom::execution_space<ExecSpace>::name() << ": Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
+    //std::cout << axom::execution_space<ExecSpace>::name()
+    //  << ": Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
     axom::deallocate(ptr);
   }
 };
@@ -247,7 +250,7 @@ private:
  *        making sure to allocate array data in the appropriate memory space for
  *        the execution space.
  *
- * \tparam The destination execution space (e.g. axom::SEQ_EXEC).
+ * \tparam ExecSpace The destination execution space (e.g. axom::SEQ_EXEC).
  *
  * \param dest The conduit node that will receive the copied data.
  * \param src The source data to be copied.
@@ -436,6 +439,9 @@ struct SSVertexFieldIndexing
 
 /*!
  * \brief Get the min/max values for the data in a Conduit node or ArrayView.
+ *
+ * \tparam ExecSpace The execution space where the algorithm will run.
+ * \tparam ReturnType The data type of the returned min/max values.
  */
 template <typename ExecSpace, typename ReturnType>
 struct minmax

@@ -20,6 +20,7 @@ namespace views
  * \brief This class encapsulates a structured mesh size and contains methods to
  *        help with indexing into it.
  *
+ * \tparam IndexT The type used for indices.
  * \tparam NDIMS The number of dimensions.
  */
 template <typename IndexT, int NDIMS = 3>

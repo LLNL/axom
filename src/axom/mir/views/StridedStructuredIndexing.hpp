@@ -16,11 +16,10 @@ namespace mir
 namespace views
 {
 /*!
- * \accelerated
- * \class StridedStructuredIndexing
+ * \brief This class encapsulates data for strided structured indexing and provides
+ *        methods for creating/manipulating indices.
  *
- * \brief This class encapsulates data for strided structured indexing and provides methods for creating/manipulating indices.
- *
+ * \tparam IndexT The type used for indices.
  * \tparam NDIMS The number of dimensions.
  *
  *

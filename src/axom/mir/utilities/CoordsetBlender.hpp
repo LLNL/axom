@@ -25,7 +25,7 @@ namespace blueprint
 {
 /*!
  * \accelerated
- * \class FieldBlender
+ * \class CoordsetBlender
  *
  * \tparam ExecSpace The execution space for the algorithm.
  * \tparam CSVType The coordset view type.
@@ -43,6 +43,7 @@ public:
   /*!
    * \brief Create a new blended field from the \a n_input field and place it in \a n_output.
    *
+   * \param blend Blend data that describes how to create the new coordset.
    * \param blend The BlendData that will be used to make the new coordset.
    * \param n_input The input coordset that we're blending.
    * \param n_output The output node that will contain the new coordset.
@@ -79,7 +80,7 @@ public:
     SLIC_ASSERT(PointType::DIMENSION == nComponents);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
     n_output.reset();
     n_output["type"] = "explicit";
@@ -98,7 +99,7 @@ public:
       conduit::Node &comp = n_values[axes[i]];
       comp.set_allocator(c2a.getConduitAllocatorID());
       comp.set(conduit::DataType(
-        axom::mir::utilities::blueprint::cpp2conduit<value_type>::id,
+        bputils::cpp2conduit<value_type>::id,
         outputSize));
       compViews[i] = bputils::make_array_view<value_type>(comp);
     }

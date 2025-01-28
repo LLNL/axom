@@ -25,6 +25,7 @@ namespace blueprint
  * \brief This class uses SliceData to generate a new sliced coordset (pulling out specific points from input coordset).
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
+ * \tparam CoordsetView The coordset view type to be operated on.
  *
  */
 template <typename ExecSpace, typename CoordsetView>
