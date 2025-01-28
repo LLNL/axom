@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,9 +12,9 @@ Miscellaneous Development Items
 This section describes various development tasks that need to be 
 performed at times and which are not covered in other sections.
 
-===============================
-Updating Copyright Information
-===============================
+===========================
+Updating Copyright Header
+===========================
 
 Many Axom files in Axom contain a copyright header that includes dates, which
 need to be updated in the new year. Axom's ``scripts`` directory contains scripts
@@ -34,6 +34,28 @@ apply.
   sed "s/2024/2025/g" update_copyright_date.sh > tmp
   sed "s/2023/2024/g" tmp > update_copyright_date.sh
   rm -f tmp
+  cd ..
+
+
+After updating the scripts, commit the changes to a branch since the next step of
+actually running the scrupt will cause many files to change.
+
+.. code-block:: bash
+
+  ./scripts/update_copyright_date.sh
+
+
+Now that the copyrights have been changed, commit the changed files to a branch and
+run the next command to prepend a copyright header to files that lack one.
+
+.. code-block:: bash
+
+  python3 scripts/copyrightPrepender.py -r -t src
+
+
+Again, commit any changed files to the branch. That is all. Create a pull request
+to merge the updated files to the ``develop`` branch.
+
 
 ===================
 Web Documentation
