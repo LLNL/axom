@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -160,32 +160,6 @@ inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
 
 //------------------------------------------------------------------------------
 /*!
- * \brief This class contains views of blend data. Blend data lets is make new
- *        nodal fields and coordsets. The field data are sampled using m_originalIdsView
- *        which is a compact list of the original node ids that we want to preserve
- *        without any blending. This stream is followed by a second stream of data
- *        made using the field and the blend groups. Each blend group has
- *        m_blendGroupSizesView[i] elements, starts at m_blendGroupStartView[i] and 
- *        uses values from the m_blendIdsView, m_blendCoeffView members to blend the
- *        data values.
- *
- */
-struct BlendData
-{
-  axom::ArrayView<IndexType>
-    m_originalIdsView;  // Contains indices of original node ids to be preserved.
-
-  axom::ArrayView<IndexType> m_selectedIndicesView;  // Contains indices of the selected blend groups.
-
-  axom::ArrayView<IndexType> m_blendGroupSizesView;  // The number of ids/weights in each blend group.
-  axom::ArrayView<IndexType>
-    m_blendGroupStartView;  // The starting offset for a blend group in the ids/weights.
-  axom::ArrayView<IndexType> m_blendIdsView;  // Contains ids that make up the blend groups
-  axom::ArrayView<float> m_blendCoeffView;  // Contains the weights that make up the blend groups.
-};
-
-//------------------------------------------------------------------------------
-/*!
  * \brief This class registers a Conduit allocator that can make Conduit allocate
  *        through Axom's allocate/deallocate functions using a specific allocator.
  *        This permits Conduit to allocate through Axom's UMPIRE logic.
@@ -227,7 +201,9 @@ private:
     const auto axomAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
     void *ptr = static_cast<void *>(
       axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
-    //std::cout << axom::execution_space<ExecSpace>::name() << ": Allocated for Conduit via axom: items=" << items << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
+    //std::cout << axom::execution_space<ExecSpace>::name()
+    //  << ": Allocated for Conduit via axom: items=" << items
+    //  << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
     return ptr;
   }
 
@@ -236,7 +212,8 @@ private:
    */
   static void internal_free(void *ptr)
   {
-    //std::cout << axom::execution_space<ExecSpace>::name() << ": Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
+    //std::cout << axom::execution_space<ExecSpace>::name()
+    //  << ": Dellocating for Conduit via axom: ptr=" << ptr << std::endl;
     axom::deallocate(ptr);
   }
 };
@@ -247,7 +224,7 @@ private:
  *        making sure to allocate array data in the appropriate memory space for
  *        the execution space.
  *
- * \tparam The destination execution space (e.g. axom::SEQ_EXEC).
+ * \tparam ExecSpace The destination execution space (e.g. axom::SEQ_EXEC).
  *
  * \param dest The conduit node that will receive the copied data.
  * \param src The source data to be copied.
@@ -436,9 +413,12 @@ struct SSVertexFieldIndexing
 
 /*!
  * \brief Get the min/max values for the data in a Conduit node or ArrayView.
+ *
+ * \tparam ExecSpace The execution space where the algorithm will run.
+ * \tparam ReturnType The data type of the returned min/max values.
  */
 template <typename ExecSpace, typename ReturnType>
-struct minmax
+struct MinMax
 {
   /*!
    * \brief Get the min/max values for the data in a Conduit node.

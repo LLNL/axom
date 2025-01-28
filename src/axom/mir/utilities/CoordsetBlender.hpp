@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,6 +8,7 @@
 #include "axom/core.hpp"
 #include "axom/mir/utilities/FieldBlender.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
+#include "axom/mir/utilities/BlendData.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/slic.hpp"
@@ -25,7 +26,7 @@ namespace blueprint
 {
 /*!
  * \accelerated
- * \class FieldBlender
+ * \class CoordsetBlender
  *
  * \tparam ExecSpace The execution space for the algorithm.
  * \tparam CSVType The coordset view type.
@@ -43,6 +44,7 @@ public:
   /*!
    * \brief Create a new blended field from the \a n_input field and place it in \a n_output.
    *
+   * \param blend Blend data that describes how to create the new coordset.
    * \param blend The BlendData that will be used to make the new coordset.
    * \param n_input The input coordset that we're blending.
    * \param n_output The output node that will contain the new coordset.
@@ -79,7 +81,7 @@ public:
     SLIC_ASSERT(PointType::DIMENSION == nComponents);
 
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
-    utilities::blueprint::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
     n_output.reset();
     n_output["type"] = "explicit";
@@ -97,9 +99,8 @@ public:
       // Allocate data in the Conduit node and make a view.
       conduit::Node &comp = n_values[axes[i]];
       comp.set_allocator(c2a.getConduitAllocatorID());
-      comp.set(conduit::DataType(
-        axom::mir::utilities::blueprint::cpp2conduit<value_type>::id,
-        outputSize));
+      comp.set(
+        conduit::DataType(bputils::cpp2conduit<value_type>::id, outputSize));
       compViews[i] = bputils::make_array_view<value_type>(comp);
     }
 

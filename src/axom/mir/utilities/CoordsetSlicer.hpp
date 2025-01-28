@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,6 +25,7 @@ namespace blueprint
  * \brief This class uses SliceData to generate a new sliced coordset (pulling out specific points from input coordset).
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
+ * \tparam CoordsetView The coordset view type to be operated on.
  *
  */
 template <typename ExecSpace, typename CoordsetView>

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -261,6 +261,50 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
         # actual value is accurate to about 1% at coarse resolution
         set_tests_properties(${_testname} PROPERTIES 
             PASS_REGULAR_EXPRESSION  "Volume of material 'air' is 182,?227,?963")
+    endif()
+endif()
+
+# Shaping in-memory example ------------------------------------------------------
+if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
+                   AND AXOM_ENABLE_SIDRE AND AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION
+                   AND AXOM_ENABLE_KLEE AND RAJA_FOUND)
+    axom_add_executable(
+        NAME        quest_shape_in_memory_ex
+        SOURCES     quest_shape_in_memory.cpp
+        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_example_depends} mfem
+        FOLDER      axom/quest/examples
+        )
+
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        # 3D shaping tests.  No 2D shaping in this feature, at least for now.
+        set(_nranks 1)
+
+        # Run the in-memory shaping example on with each enabled policy
+        set(_policies "seq")
+        if(RAJA_FOUND)
+            blt_list_append(TO _policies ELEMENTS "omp"  IF AXOM_ENABLE_OPENMP)
+            blt_list_append(TO _policies ELEMENTS "cuda" IF AXOM_ENABLE_CUDA)
+            blt_list_append(TO _policies ELEMENTS "hip"  IF AXOM_ENABLE_HIP)
+        endif()
+
+        set(_testshapes "tetmesh" "tet" "hex" "sphere" "cyl" "cone" "vor" "all" "plane")
+
+        foreach(_policy ${_policies})
+            foreach(_testshape ${_testshapes})
+              set(_testname "quest_shape_in_memory_${_policy}_${_testshape}")
+              axom_add_test(
+                NAME ${_testname}
+                COMMAND quest_shape_in_memory_ex
+                           --policy ${_policy}
+                           --testShape ${_testshape}
+                           --refinements 2
+                           --scale 0.75 0.75 0.75
+                           --dir 0.2 0.4 0.8
+                           inline_mesh --min -2 -2 -2 --max 2 2 2 --res 30 30 30
+                NUM_MPI_TASKS ${_nranks})
+            endforeach()
+        endforeach()
     endif()
 endif()
 

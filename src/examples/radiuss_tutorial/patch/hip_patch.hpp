@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #ifndef AXOM_RADIUSS_TUTORIAL_HIP_PATCH
 #define AXOM_RADIUSS_TUTORIAL_HIP_PATCH
 

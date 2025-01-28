@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -92,25 +92,25 @@ struct test_copy_braid
 
     constexpr double eps = 1.e-7;
 
-    auto x = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
+    auto x = axom::mir::utilities::blueprint::MinMax<ExecSpace, double>::execute(
       deviceMesh["coordsets/coords/values/x"]);
     //std::cout << std::setw(16) << "x={" << x.first << ", " << x.second << "}\n";
     EXPECT_NEAR(x.first, -10., eps);
     EXPECT_NEAR(x.second, 10., eps);
 
-    auto y = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
+    auto y = axom::mir::utilities::blueprint::MinMax<ExecSpace, double>::execute(
       deviceMesh["coordsets/coords/values/y"]);
     //std::cout << std::setw(16) << "y={" << y.first << ", " << y.second << "}\n";
     EXPECT_NEAR(y.first, -10., eps);
     EXPECT_NEAR(y.second, 10., eps);
 
-    auto c = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
+    auto c = axom::mir::utilities::blueprint::MinMax<ExecSpace, double>::execute(
       deviceMesh["topologies/mesh/elements/connectivity"]);
     //std::cout << std::setw(16) << "conn={" << c.first << ", " << c.second << "}\n";
     EXPECT_NEAR(c.first, 0., eps);
     EXPECT_NEAR(c.second, 999., eps);
 
-    auto r = axom::mir::utilities::blueprint::minmax<ExecSpace, double>::execute(
+    auto r = axom::mir::utilities::blueprint::MinMax<ExecSpace, double>::execute(
       deviceMesh["fields/radial/values"]);
     //std::cout << std::setw(16) << "radial={" << r.first << ", " << r.second << "}\n";
     EXPECT_NEAR(r.first, 19.2450089729875, eps);

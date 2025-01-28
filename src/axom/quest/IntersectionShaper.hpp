@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,7 +41,7 @@
 #endif
 
 // clang-format off
-#if defined (AXOM_USE_RAJA) && defined (AXOM_USE_UMPIRE)
+#if defined (AXOM_USE_RAJA)
   using seq_exec = axom::SEQ_EXEC;
 
   #if defined(AXOM_USE_OPENMP)
@@ -50,14 +50,14 @@
     using omp_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined (AXOM_USE_UMPIRE)
     constexpr int CUDA_BLOCK_SIZE = 256;
     using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
   #else
     using cuda_exec = seq_exec;
   #endif
 
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined (AXOM_USE_UMPIRE)
     constexpr int HIP_BLOCK_SIZE = 64;
     using hip_exec = axom::HIP_EXEC<HIP_BLOCK_SIZE>;
   #else
@@ -299,6 +299,7 @@ public:
   using Point3D = primal::Point<double, 3>;
   using TetrahedronType = primal::Tetrahedron<double, 3>;
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+  using TetMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
 
   using RuntimePolicy = axom::runtime_policy::Policy;
 
@@ -354,7 +355,7 @@ public:
    */
   double getApproximateRevolvedVolume() const
   {
-    return volume(m_surfaceMesh, m_level);
+    return volume(m_surfaceMesh.get(), m_level);
   }
 
   virtual void loadShape(const klee::Shape& shape) override
@@ -366,21 +367,27 @@ public:
     if(shape.getGeometry().getFormat() == "c2c")
     {
       SegmentMesh* newm =
-        filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
-      delete m_surfaceMesh;
-      m_surfaceMesh = newm;
+        filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh.get()));
+      m_surfaceMesh.reset(newm);
     }
   }
 
+  // The following private methods are made public due to CUDA compilers
+  // requirements for methods that call device functions.
+#if defined(__CUDACC__)
 public:
+#else
+private:
+#endif
+
   //@{
-  //!  @name Functions related to the stages for a given shape
+  //!  @name Private functions related to the stages for a given shape
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
 
-  // Prepares the ProE mesh cells for the spatial index
+  // Prepares the tet mesh cells for the spatial index
   template <typename ExecSpace>
-  void prepareProECells()
+  void prepareTetCells()
   {
     const int host_allocator =
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
@@ -454,7 +461,7 @@ public:
         num_degenerate.get()));
 
       // Dump tet mesh as a vtk mesh
-      axom::mint::write_vtk(m_surfaceMesh, "proe_tet.vtk");
+      axom::mint::write_vtk(m_surfaceMesh.get(), "proe_tet.vtk");
 
     }  // end of verbose output for Pro/E
   }
@@ -600,18 +607,16 @@ public:
     AXOM_UNUSED_VAR(shapeDimension);
     AXOM_UNUSED_VAR(shapeName);
 
-    SLIC_INFO(axom::fmt::format("Current shape is {}", shapeName));
-
     std::string shapeFormat = shape.getGeometry().getFormat();
 
+    // C2C mesh is not discretized into tets, but all others are.
     if(shapeFormat == "c2c")
     {
       prepareC2CCells<ExecSpace>();
     }
-
-    else if(shapeFormat == "proe")
+    else if(surfaceMeshIsTet())
     {
-      prepareProECells<ExecSpace>();
+      prepareTetCells<ExecSpace>();
     }
     else
     {
@@ -621,7 +626,7 @@ public:
   }
 #endif
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   template <typename ExecSpace, typename ShapeType>
   void runShapeQueryImpl(const klee::Shape& shape,
                          axom::Array<ShapeType>& shapes,
@@ -999,7 +1004,7 @@ public:
   }  // end of runShapeQuery() function
 #endif
 
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   // These methods are private in support of replacement rules.
 private:
   /*!
@@ -1410,7 +1415,7 @@ public:
 
     switch(m_execPolicy)
     {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
     case RuntimePolicy::seq:
       applyReplacementRulesImpl<seq_exec>(shape);
       break;
@@ -1419,12 +1424,12 @@ public:
       applyReplacementRulesImpl<omp_exec>(shape);
       break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::cuda:
       applyReplacementRulesImpl<cuda_exec>(shape);
       break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::hip:
       applyReplacementRulesImpl<hip_exec>(shape);
       break;
@@ -1439,9 +1444,7 @@ public:
     AXOM_ANNOTATE_SCOPE("finalizeShapeQuery");
 
     // Implementation here -- destroy BVH tree and other shape-based data structures
-    delete m_surfaceMesh;
-
-    m_surfaceMesh = nullptr;
+    m_surfaceMesh.reset();
   }
 
   //@}
@@ -1468,7 +1471,7 @@ public:
     // Now that the mesh is refined, dispatch to device implementations.
     switch(m_execPolicy)
     {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
     case RuntimePolicy::seq:
       prepareShapeQueryImpl<seq_exec>(shapeDimension, shape);
       break;
@@ -1477,12 +1480,12 @@ public:
       prepareShapeQueryImpl<omp_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::cuda:
       prepareShapeQueryImpl<cuda_exec>(shapeDimension, shape);
       break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
     case RuntimePolicy::hip:
       prepareShapeQueryImpl<hip_exec>(shapeDimension, shape);
       break;
@@ -1504,12 +1507,12 @@ public:
     AXOM_ANNOTATE_SCOPE("runShapeQuery");
     const std::string shapeFormat = shape.getGeometry().getFormat();
 
-    // Testing separate workflow for Pro/E
-    if(shapeFormat == "proe")
+    // C2C mesh is not discretized into tets, but all others are.
+    if(surfaceMeshIsTet())
     {
       switch(m_execPolicy)
       {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
       case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
@@ -1518,12 +1521,12 @@ public:
         runShapeQueryImpl<omp_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
@@ -1535,7 +1538,7 @@ public:
     {
       switch(m_execPolicy)
       {
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
       case RuntimePolicy::seq:
         runShapeQueryImpl<seq_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
@@ -1544,12 +1547,12 @@ public:
         runShapeQueryImpl<omp_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_OPENMP
-  #if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
         runShapeQueryImpl<cuda_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_CUDA
-  #if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
         runShapeQueryImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
@@ -1833,7 +1836,7 @@ private:
   {
     // If we are not refining dynamically, return.
     if(m_percentError <= MINIMUM_PERCENT_ERROR ||
-       m_refinementType != RefinementDynamic)
+       m_refinementType != DiscreteShape::RefinementDynamic)
     {
       return;
     }
@@ -1921,7 +1924,7 @@ private:
       for(int level = m_level; level < MAX_LEVELS; level++)
       {
         // Compute the revolved volume of the surface mesh at level.
-        currentVol = volume(m_surfaceMesh, level);
+        currentVol = volume(m_surfaceMesh.get(), level);
         pct = 100. * (1. - currentVol / revolvedVolume);
 
         SLIC_INFO(
@@ -1994,8 +1997,7 @@ private:
           curvePercentError = ce;
 
           // Free the previous surface mesh.
-          delete m_surfaceMesh;
-          m_surfaceMesh = nullptr;
+          m_surfaceMesh.reset();
 
           // Reload the shape using new curvePercentError. This will cause
           // a new m_surfaceMesh to be created.
@@ -2008,9 +2010,8 @@ private:
 
           // Filter the mesh, store in m_surfaceMesh.
           SegmentMesh* newm =
-            filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh));
-          delete m_surfaceMesh;
-          m_surfaceMesh = newm;
+            filterMesh(dynamic_cast<const SegmentMesh*>(m_surfaceMesh.get()));
+          m_surfaceMesh.reset(newm);
         }
         else
         {
@@ -2043,6 +2044,14 @@ private:
     return volFrac;
   }
 
+  bool surfaceMeshIsTet() const
+  {
+    bool isTet = m_surfaceMesh != nullptr &&
+      m_surfaceMesh->getDimension() == 3 && !m_surfaceMesh->hasMixedCellTypes() &&
+      m_surfaceMesh->getCellType() == mint::TET;
+    return isTet;
+  }
+
 private:
   RuntimePolicy m_execPolicy {RuntimePolicy::seq};
   int m_level {DEFAULT_CIRCLE_REFINEMENT_LEVEL};
@@ -2052,7 +2061,7 @@ private:
 
   axom::Array<double> m_hex_volumes;
   axom::Array<double> m_overlap_volumes;
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_RAJA)
   double m_vertexWeldThreshold {1.e-10};
   int m_octcount {0};
   int m_tetcount {0};

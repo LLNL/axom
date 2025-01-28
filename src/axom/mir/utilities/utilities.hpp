@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -146,6 +146,9 @@ inline std::uint64_t hash_bytes(const std::uint8_t *data, std::uint32_t length)
 /*!
  * \brief This class implements a naming policy that uses some hashing functions
  *        to produce a "name" for an array of ids.
+ *
+ * \tparam IndexT The index type that gets hashed.
+ * \tparam MAXIDS The max number of ids that get hashed.
  */
 template <typename IndexT, int MAXIDS = 14>
 class HashNaming

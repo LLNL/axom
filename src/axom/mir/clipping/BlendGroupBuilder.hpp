@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,6 +8,7 @@
 #include "axom/core.hpp"
 #include "axom/mir/utilities/utilities.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
+#include "axom/mir/utilities/BlendData.hpp"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -277,7 +277,7 @@ TEST(sidre_datastore, create_destroy_buffers_views)
 int psrand(int min, int max)
 {
   // Returns a pseudorandom int in [min, max].  Note the closed interval.
-  int range = max - min + 1;
+  std::int64_t range = max - min + 1;
   return min + int(range * rand() / (RAND_MAX + 1.0));
 }
 

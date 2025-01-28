@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -127,6 +127,18 @@
     static void cuda_test_##X##Y()
 #else
   #define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
+#endif
+
+/*
+ * \def AXOM_SUPPRESS_UBSAN
+ *
+ * \brief Macro used to silence UndefinedBehaviorSanitizer errors
+ *  when compiling and linking with -fsanitize=undefined
+ */
+#if __has_attribute(no_sanitize_undefined)
+  #define AXOM_SUPPRESS_UBSAN __attribute__((no_sanitize_undefined))
+#else
+  #define AXOM_SUPPRESS_UBSAN
 #endif
 
 /*!

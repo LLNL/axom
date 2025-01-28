@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -462,7 +462,7 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
   quest::IntersectionShaper shaper(shapeSet, &dc);
   shaper.setLevel(refinementLevel);
   shaper.setPercentError(targetPercentError);
-  shaper.setRefinementType(quest::Shaper::RefinementDynamic);
+  shaper.setRefinementType(quest::DiscreteShape::RefinementDynamic);
   shaper.setExecPolicy(policy);
 
   // Borrowed from shaping_driver (there should just be one shape)
@@ -497,6 +497,10 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
     double actualPercentError =
       100. * (1. - shaper.getApproximateRevolvedVolume() / revolvedVolume);
     EXPECT_LT(actualPercentError, targetPercentError);
+
+    // Finalize data structures associated with this shape and spatial index
+    shaper.finalizeShapeQuery();
+    slic::flushStreams();
   }
 
   // Clean up files.

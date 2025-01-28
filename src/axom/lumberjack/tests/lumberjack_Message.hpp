@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -638,7 +638,7 @@ TEST(lumberjack_Message, packMessagesIndividually)
     EXPECT_EQ(packedMessage, answer);
 
     // cleanup
-    delete packedMessage;
+    delete[] packedMessage;
     delete m;
     messages.clear();
   }
@@ -668,7 +668,7 @@ TEST(lumberjack_Message, packMessages)
   EXPECT_EQ(packedMessages, answer);
 
   // cleanup
-  delete packedMessages;
+  delete[] packedMessages;
   for(auto* _m : messages)
   {
     delete _m;
