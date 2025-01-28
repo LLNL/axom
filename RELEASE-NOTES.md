@@ -31,6 +31,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
+- Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
+  of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination
