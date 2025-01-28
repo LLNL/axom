@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-
 #ifndef AXOM_RADIUSS_TUTORIAL_HIP_PATCH
 #define AXOM_RADIUSS_TUTORIAL_HIP_PATCH
 
