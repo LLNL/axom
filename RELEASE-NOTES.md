@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2025, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -25,12 +25,19 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   to split any input zones that contain multiple materials into zones that contain a single material.
   The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
   oriented algorithm that produces smooth interfaces between zones and their neighbors.
+- Adds new CMake configuration options, `AXOM_ENABLE_ASAN` and `AXOM_ENABLE_UBSAN`, to enable/disable AddressSanitizer and UndefinedBehaviorSanitizer respectively in Axom. Default is OFF for both.
+- A number of new `klee::Geometry` constructors are added, for the different shapes now supported.
+  This is a temporary change.  The class will be subclassed in the future to support a diversity of geometries.
+- Support some analytical shapes in `IntersectionShaper`.
+- Support generating shapes in memory (not requiring input files).
 - `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
 - Sina C++ library is now a component of Axom
 - Adds optional dependency on [Open Cascade](https://dev.opencascade.org). The initial intention is 
 to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
+- Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
+  of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination
@@ -40,6 +47,9 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
   to core.  The namespace prefix for these classes is now `axom::` instead of `axom::sidre`.  The internal usage of
   these types within Sidre Datastore and Group is unchanged.
+- `MFEMSidreDataCollection::LoadExternalData` now takes two optional string parameters, one that is a
+  filename (defaults to the `name` member variable) and the other is a `Group` path relative to the base of
+  the Data Collection itself (defaults to the root of the `DataStore`).
 
 ###  Deprecated
 
@@ -50,6 +60,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
 as well as support for 32-bit `Word`s in Slam's `BitSet` class.
 - Fixes a memory leak in `axom::Array` copy constructor.
+- Fixes robustness issue with the `axom::primal::clip` overload for clipping a 2D polygon against another 2D polygon.
 
 ## [Version 0.10.1] - Release date 2024-10-22
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -862,13 +862,13 @@ public:
 
   /*!
    * \brief Destroy View with given name or path owned by this Group, but leave
-   * its data intect.
+   * its data intact.
    */
   void destroyView(const std::string& path);
 
   /*!
    * \brief Destroy View with given index owned by this Group, but leave
-   * its data intect.
+   * its data intact.
    */
   void destroyView(IndexType idx);
 
@@ -950,7 +950,7 @@ public:
    * \return pointer to the new copied View object or nullptr if a View
    * is not copied into this Group.
    */
-  View* deepCopyView(View* view, int allocID = INVALID_ALLOCATOR_ID);
+  View* deepCopyView(const View* view, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1277,7 +1277,7 @@ public:
 
   /*!
    * \brief Create a (shallow) copy of Group hierarchy rooted at given
-   *        Group and make it a child of this Group.
+   *        Group and make the copy a child of this Group.
    *
    * Note that all Views in the Group hierarchy are copied as well.
    *
@@ -1319,7 +1319,7 @@ public:
    * \return pointer to the new copied Group object or nullptr if a Group
    * is not copied into this Group.
    */
-  Group* deepCopyGroup(Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
+  Group* deepCopyGroup(const Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1650,7 +1650,7 @@ public:
             std::string& name_from_file);
 
   /*!
-   * \brief Load data into the Group's external views from a hdf5 handle.
+   * \brief Load data into the Group's external views from an hdf5 handle.
    *
    * No protocol argument is needed, as this only is used with the sidre_hdf5
    * protocol.  Returns true (success) if no Conduit I/O error occurred since
@@ -1661,6 +1661,22 @@ public:
    * \return           True if no error occurred, otherwise false.
    */
   bool loadExternalData(const hid_t& h5_id);
+
+  /*!
+   * \brief Load data into the Group's external views from a path into
+   *        hdf5 handle
+   *
+   * No protocol argument is needed, as this only is used with the sidre_hdf5
+   * protocol.  Returns true (success) if no Conduit I/O error occurred since
+   * this Group's DataStore was created or had its error flag cleared; false,
+   * if an error occurred at some point.
+   *
+   * \param h5_id        hdf5 handle
+   * \param group_path   Path pointing to this Group. This path must be the
+   *                     relative path from the top Group that was written
+   *                     to a file to this Group.
+   */
+  bool loadExternalData(const hid_t& h5_id, const std::string& group_path);
 
 #endif /* AXOM_USE_HDF5 */
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -208,7 +208,7 @@ double octPolyVolume(const OctType& o)
 }  // namespace
 
 //------------------------------------------------------------------------------
-int mesh_from_discretized_polyline(axom::ArrayView<OctType>& octs,
+int mesh_from_discretized_polyline(const axom::ArrayView<OctType>& octs,
                                    int octcount,
                                    int segcount,
                                    mint::Mesh*& mesh)

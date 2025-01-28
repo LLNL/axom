@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,8 +44,8 @@ AXOM_HOST_DEVICE bool operator==(const NumericArray<T, SIZE>& lhs,
  * \return status true if lhs!=rhs, otherwise, false.
  */
 template <typename T, int SIZE>
-bool operator!=(const NumericArray<T, SIZE>& lhs,
-                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE bool operator!=(const NumericArray<T, SIZE>& lhs,
+                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Performs component-wise addition of two numeric arrays.
@@ -73,7 +73,7 @@ AXOM_HOST_DEVICE NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& lh
  * \result C resulting numeric array from unary negation.
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& arr);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& arr);
 
 /*!
  * \brief Scalar multiplication a numeric array; Scalar on rhs.
@@ -82,7 +82,8 @@ NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& arr);
  * \return C resutling numeric array, \f$ \ni: C_i = scalar*arr_i, \forall i\f$
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& arr, double scalar);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& arr,
+                                                 double scalar);
 
 /*!
  * \brief Scalar multiplication a numeric array; Scalar on lhs.
@@ -91,7 +92,8 @@ NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& arr, double scalar)
  * \return C resulting numeric array, \f$ \ni: C_i = scalar*arr_i, \forall i\f$
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator*(double scalar, const NumericArray<T, SIZE>& arr);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator*(double scalar,
+                                                 const NumericArray<T, SIZE>& arr);
 
 /*!
  * \brief Component-wise multiplication of NumericArrays
@@ -111,8 +113,8 @@ AXOM_HOST_DEVICE NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& lh
  * \pre \f$ rhs_i != 0.0, \forall i \f$
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& lhs,
-                                const NumericArray<T, SIZE>& rhs);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& lhs,
+                                                 const NumericArray<T, SIZE>& rhs);
 
 /*!
  * \brief Scalar division of NumericArray; Scalar on rhs
@@ -122,7 +124,8 @@ NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& lhs,
  * \pre scalar != 0.0
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& arr, double scalar);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& arr,
+                                                 double scalar);
 
 /*!
  * \brief Coordinate-wise absolute value on the NumericArray
@@ -131,7 +134,7 @@ NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& arr, double scalar)
  * \return A NumericArray whose coordinates are the absolute value of arr
  */
 template <typename T, int SIZE>
-NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr);
+AXOM_HOST_DEVICE NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr);
 
 /*!
  * \brief Overloaded output operator for numeric arrays
@@ -310,6 +313,7 @@ public:
    * \pre forall i, arr[i] != 0
    * \return A reference to the NumericArray instance after cwise division.
    */
+  AXOM_HOST_DEVICE
   NumericArray& operator/=(const NumericArray& arr);
 
   /*!
@@ -535,7 +539,7 @@ AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator*=
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator/=(
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator/=(
   const NumericArray<T, SIZE>& v)
 {
   for(int i = 0; i < SIZE; ++i)
@@ -715,7 +719,8 @@ AXOM_HOST_DEVICE bool operator==(const NumericArray<T, SIZE>& lhs,
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-bool operator!=(const NumericArray<T, SIZE>& lhs, const NumericArray<T, SIZE>& rhs)
+AXOM_HOST_DEVICE bool operator!=(const NumericArray<T, SIZE>& lhs,
+                                 const NumericArray<T, SIZE>& rhs)
 {
   return !(lhs == rhs);
 }
@@ -730,8 +735,9 @@ std::ostream& operator<<(std::ostream& os, const NumericArray<T, SIZE>& arr)
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& arr,
-                                       double scalar)
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator*(
+  const NumericArray<T, SIZE>& arr,
+  double scalar)
 {
   NumericArray<T, SIZE> result(arr);
   result *= scalar;
@@ -740,8 +746,9 @@ inline NumericArray<T, SIZE> operator*(const NumericArray<T, SIZE>& arr,
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline NumericArray<T, SIZE> operator*(double scalar,
-                                       const NumericArray<T, SIZE>& arr)
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator*(
+  double scalar,
+  const NumericArray<T, SIZE>& arr)
 {
   NumericArray<T, SIZE> result(arr);
   result *= scalar;
@@ -772,8 +779,9 @@ AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator*(
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& lhs,
-                                       const NumericArray<T, SIZE>& rhs)
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator/(
+  const NumericArray<T, SIZE>& lhs,
+  const NumericArray<T, SIZE>& rhs)
 {
   NumericArray<T, SIZE> result(lhs);
   result /= rhs;
@@ -782,8 +790,9 @@ inline NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& lhs,
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline NumericArray<T, SIZE> operator/(const NumericArray<T, SIZE>& arr,
-                                       double scalar)
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator/(
+  const NumericArray<T, SIZE>& arr,
+  double scalar)
 {
   NumericArray<T, SIZE> result(arr);
   result /= scalar;
@@ -803,7 +812,8 @@ AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator-(
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& arr)
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> operator-(
+  const NumericArray<T, SIZE>& arr)
 {
   NumericArray<T, SIZE> result;
   result -= arr;
@@ -812,7 +822,7 @@ inline NumericArray<T, SIZE> operator-(const NumericArray<T, SIZE>& arr)
 
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
-inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr)
+AXOM_HOST_DEVICE inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& arr)
 {
   NumericArray<T, SIZE> result(arr);
 

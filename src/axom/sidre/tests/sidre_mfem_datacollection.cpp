@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -254,6 +254,59 @@ TEST(sidre_datacollection, dc_reload_gf_vdim)
   EXPECT_EQ(gf_read->FESpace()->GetVDim(), vdim);
 
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
+}
+
+TEST(sidre_datacollection, dc_reload_externaldata)
+{
+  const std::string view_name = "external_data";
+
+  // Create DC
+  auto mesh = mfem::Mesh::MakeCartesian1D(10);
+  const bool owns_mesh_data = true;
+  MFEMSidreDataCollection sdc_writer(testName(), &mesh, owns_mesh_data);
+  // After creation set owning to false so data doesn't get double free'd by reader and writer
+  sdc_writer.SetOwnData(false);
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_writer.SetComm(MPI_COMM_WORLD);
+#endif
+  sdc_writer.SetCycle(0);
+
+  // Create external buffer and add it to DC
+  axom::Array<int64_t> writer_data {1, 2, 3, 4};
+  axom::sidre::Group* writer_bp_group = sdc_writer.GetBPGroup();
+  axom::sidre::View* writer_external_view =
+    writer_bp_group->createView(view_name);
+  writer_external_view->setExternalDataPtr(axom::sidre::INT64_ID,
+                                           writer_data.size(),
+                                           writer_data.data());
+  EXPECT_TRUE(writer_bp_group->hasView(view_name));
+
+  sdc_writer.Save();
+
+  // Load DC from file
+  MFEMSidreDataCollection sdc_reader(testName());
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  sdc_reader.SetComm(MPI_COMM_WORLD);
+#endif
+  // Note: this will recreate the external view but not load the external data yet
+  sdc_reader.Load();
+  axom::sidre::Group* reader_bp_group = sdc_reader.GetBPGroup();
+  EXPECT_TRUE(reader_bp_group->hasView(view_name));
+  axom::sidre::View* reader_external_view = reader_bp_group->getView(view_name);
+
+  // Create external buffer with wrong data and load previously saved data into it
+  axom::Array<int64_t> reader_data {5, 6, 7, 8};
+  reader_external_view->setExternalDataPtr(reader_data.data());
+  sdc_reader.LoadExternalData();
+
+  EXPECT_TRUE(writer_data.size() == reader_data.size());
+  SLIC_INFO(axom::fmt::format("~~~~ {}", writer_data.size()));
+  for(int i = 0; i < reader_data.size(); ++i)
+  {
+    SLIC_INFO(axom::fmt::format("~~~~ {} == {}", reader_data[i], writer_data[i]));
+    EXPECT_TRUE(reader_data[i] == writer_data[i]);
+  }
+  SLIC_INFO("~~~ END");
 }
 
 TEST(sidre_datacollection, dc_reload_mesh)

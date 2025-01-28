@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -578,7 +578,7 @@ int main(int argc, char** argv)
   if(params.percentError > 0.)
   {
     shaper->setPercentError(params.percentError);
-    shaper->setRefinementType(quest::Shaper::RefinementDynamic);
+    shaper->setRefinementType(quest::DiscreteShape::RefinementDynamic);
   }
 
   // Associate any fields that begin with "vol_frac" with "material" so when

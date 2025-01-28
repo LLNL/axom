@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1102,12 +1102,14 @@ AXOM_HOST_DEVICE bool intersect_plane_bbox(const Plane<T, 3>& p,
  * \param [in] seg A segment
  * \param [out] t Intersection point of plane and seg, w.r.t. 
  *   parametrization of seg
+ * \param [in] EPS tolerance parameter for determining if 0.0 <= t <= 1.0
  * \return true iff plane intersects with segment, otherwise, false.
  */
 template <typename T, int DIM>
 AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, DIM>& plane,
                                           const Segment<T, DIM>& seg,
-                                          T& t)
+                                          T& t,
+                                          double EPS = 1E-12)
 {
   using VectorType = Vector<T, DIM>;
 
@@ -1117,7 +1119,7 @@ AXOM_HOST_DEVICE bool intersect_plane_seg(const Plane<T, DIM>& plane,
   t = (plane.getOffset() - normal.dot(VectorType(seg.source()))) /
     (normal.dot(ab));
 
-  if(t >= 0.0 && t <= 1.0)
+  if(isGeq(t, 0.0, EPS) && isLeq(t, 1.0, EPS))
   {
     return true;
   }
