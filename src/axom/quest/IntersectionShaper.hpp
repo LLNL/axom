@@ -330,7 +330,8 @@ AXOM_HOST_DEVICE inline void TempArrayView<hip_exec>::finalize()
 class IntersectionShaper : public Shaper
 {
 public:
-  using BoundingBoxType = primal::BoundingBox<double, 3>;
+  using BoundingBox2D = primal::BoundingBox<double, 2>;
+  using BoundingBox3D = primal::BoundingBox<double, 3>;
   using HexahedronType = primal::Hexahedron<double, 3>;
   using OctahedronType = primal::Octahedron<double, 3>;
   using PolyhedronType = primal::Polyhedron<double, 3>;
@@ -339,6 +340,12 @@ public:
   using TetrahedronType = primal::Tetrahedron<double, 3>;
   using SegmentMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
   using TetMesh = mint::UnstructuredMesh<mint::SINGLE_SHAPE>;
+
+  // Use default for MAX_VERTS (8).
+  // Assume intersection between triangles and quads,
+  // max vertices for overlap is 7.
+  using PolygonStaticType =
+    primal::Polygon<double, 2, axom::primal::PolygonArray::Static>;
 
   using RuntimePolicy = axom::runtime_policy::Policy;
 
@@ -466,10 +473,10 @@ public:
 
     AXOM_ANNOTATE_BEGIN("populate m_hex_bbs");
     m_hex_bbs =
-      axom::Array<BoundingBoxType>(m_cellCount, m_cellCount, m_allocatorId);
+      axom::Array<BoundingBox3D>(m_cellCount, m_cellCount, m_allocatorId);
 
     // Get bounding boxes for hexahedral elements
-    axom::ArrayView<BoundingBoxType> hexBbsView = m_hex_bbs.view();
+    axom::ArrayView<BoundingBox3D> hexBbsView = m_hex_bbs.view();
     axom::for_all<ExecSpace>(
       m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
@@ -556,8 +563,8 @@ public:
     }
   }
 
-    // The following private methods are made public due to CUDA compilers
-    // requirements for methods that call device functions.
+  // The following private methods are made public due to CUDA compilers
+  // requirements for methods that call device functions.
   #if defined(__CUDACC__)
 public:
   #else
@@ -566,6 +573,100 @@ private:
 
   //@{
   //!  @name Private functions related to the stages for a given shape
+
+  template <typename ExecSpace>
+  void prepareTriCells()
+  {
+    const int host_allocator =
+      axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+    const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
+    printf("ooo ooo INSIDE prepareTriCells ooo ooo\n");
+
+    // Number of triangles in mesh
+    m_tricount = m_surfaceMesh->getNumberOfCells();
+    printf("\t --> m_tricount is %d\n", m_tricount);
+
+    axom::Array<PolygonStaticType> tris_host(m_tricount,
+                                             m_tricount,
+                                             host_allocator);
+
+    // Initialize 2D triangles from 3D stl Points (ignore z coordinate)
+    axom::Array<IndexType> nodeIds(3);
+    axom::Array<Point3D> pts(3);
+
+    for(int i = 0; i < m_tricount; i++)
+    {
+      m_surfaceMesh->getCellNodeIDs(i, nodeIds.data());
+
+      m_surfaceMesh->getNode(nodeIds[0], pts[0].data());
+      m_surfaceMesh->getNode(nodeIds[1], pts[1].data());
+      m_surfaceMesh->getNode(nodeIds[2], pts[2].data());
+
+      Point2D p1({pts[0][0], pts[0][1]});
+      Point2D p2({pts[1][0], pts[1][1]});
+      Point2D p3({pts[2][0], pts[2][1]});
+
+      tris_host[i] = PolygonStaticType({p1, p2, p3});
+
+      SLIC_INFO("\t --> tris_host[" << i << "] is " << tris_host[i]);
+      SLIC_INFO("\t\t --> Full pts[" << 0 << "] is " << pts[0]);
+      SLIC_INFO("\t\t --> Full pts[" << 1 << "] is " << pts[1]);
+      SLIC_INFO("\t\t --> Full pts[" << 2 << "] is " << pts[2]);
+      slic::flushStreams();
+    }
+
+    // Copy triangles to device
+    m_tris = axom::Array<PolygonStaticType>(tris_host, device_allocator);
+
+    if(this->isVerbose())
+    {
+      // Print out the bounding box containing all the triangles
+      BoundingBox2D all_tris_bb;
+      for(int i = 0; i < m_tricount; i++)
+      {
+        // Use non-static Polygon to match template
+        axom::primal::Polygon<double, 2> tempPoly(
+          {tris_host[i][0], tris_host[i][1], tris_host[i][2]});
+        all_tris_bb.addBox(primal::compute_bounding_box(tempPoly));
+      }
+      SLIC_INFO(axom::fmt::format(
+        "DEBUG: Bounding box containing all generated triangles "
+        "has dimensions:\n\t{}",
+        all_tris_bb));
+
+      auto tri_device_view = m_tris.view();
+
+      // Print out the total volume of all the triangles
+      using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
+      RAJA::ReduceSum<REDUCE_POL, double> total_tri_area(0.0);
+      axom::for_all<ExecSpace>(
+        m_tricount,
+        AXOM_LAMBDA(axom::IndexType i) {
+          total_tri_area += tri_device_view[i].area();
+        });
+
+      SLIC_INFO(
+        axom::fmt::format("DEBUG: Total area of all generated triangles is {}",
+                          total_tri_area.get()));
+
+      // Check if any Triangles are degenerate with zero area
+      RAJA::ReduceSum<REDUCE_POL, int> num_degenerate(0);
+      axom::for_all<ExecSpace>(
+        m_tricount,
+        AXOM_LAMBDA(axom::IndexType i) {
+          if(axom::utilities::isNearlyEqual(tri_device_view[i].area(), 0.0))
+          {
+            num_degenerate += 1;
+          }
+        });
+
+      SLIC_INFO(
+        axom::fmt::format("DEBUG: Degenerate {} triangles found with zero area",
+                          num_degenerate.get()));
+
+    }  // end of verbose output for triangles
+
+  }  // end of prepareTriCells()
 
   // Prepares the tet mesh cells for the spatial index
   template <typename ExecSpace>
@@ -602,7 +703,7 @@ private:
     if(this->isVerbose())
     {
       // Print out the bounding box containing all the tetrahedra
-      BoundingBoxType all_tet_bb;
+      BoundingBox3D all_tet_bb;
       for(int i = 0; i < m_tetcount; i++)
       {
         all_tet_bb.addBox(primal::compute_bounding_box(tets_host[i]));
@@ -702,7 +803,7 @@ private:
     if(this->isVerbose())
     {
       // Print out the bounding box containing all the octahedra
-      BoundingBoxType all_oct_bb;
+      BoundingBox3D all_oct_bb;
       axom::Array<OctahedronType> octs_host =
         axom::Array<OctahedronType>(m_octs, host_allocator);
       auto octs_host_view = octs_host.view();
@@ -800,12 +901,437 @@ private:
     {
       prepareTetCells<ExecSpace>();
     }
+    // 2D STL Triangle mesh
+    else if(shapeFormat == "stl")
+    {
+      prepareTriCells<ExecSpace>();
+    }
     else
     {
       SLIC_ERROR(
         axom::fmt::format("The shape format {} is unsupported", shapeFormat));
     }
   }
+
+  template <typename ExecSpace>
+  void runShapeQuery2DImpl(const klee::Shape& shape,
+                           axom::Array<PolygonStaticType>& shapes,
+                           int shape_count)
+  {
+    constexpr int NUM_VERTS_PER_QUAD = 4;
+    constexpr int NUM_COMPS_PER_VERT = 2;
+    constexpr double ZERO_THRESHOLD = 1.e-10;
+
+    const int host_allocator =
+      axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+    const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
+    printf("xxx xxx INSIDE runShapeQuery2DImpl xxx xxx\n");
+
+    SLIC_INFO(axom::fmt::format("{:-^80}",
+                                " Inserting shapes' bounding boxes into BVH "));
+
+    // Generate the BVH tree over the shapes
+    // Access-aligned bounding boxes
+    m_aabbs_2d =
+      axom::Array<BoundingBox2D>(shape_count, shape_count, device_allocator);
+
+    axom::ArrayView<PolygonStaticType> shapes_device_view = shapes.view();
+
+    axom::ArrayView<BoundingBox2D> aabbs_device_view = m_aabbs_2d.view();
+
+    // Get the bounding boxes for the shapes
+    axom::for_all<ExecSpace>(
+      shape_count,
+      AXOM_LAMBDA(axom::IndexType i) {
+        BoundingBox2D res;
+
+        int num_verts = shapes_device_view[i].numVertices();
+        for(int j = 0; j < num_verts; ++j)
+        {
+          res.addPoint(shapes_device_view[i][j]);
+        }
+
+        aabbs_device_view[i] = res;
+      });
+
+    // Insert shapes' Bounding Boxes into BVH.
+    //bvh.setAllocatorID(poolID);
+    spin::BVH<2, ExecSpace, double> bvh;
+    bvh.initialize(aabbs_device_view, shape_count);
+
+    SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
+
+    mfem::Mesh* mesh = getDC()->GetMesh();
+
+    // Intersection algorithm only works on linear elements
+    SLIC_ASSERT(mesh != nullptr);
+    int const NE = mesh->GetNE();
+
+    if(this->isVerbose())
+    {
+      SLIC_INFO(axom::fmt::format(
+        "{:-^80}",
+        axom::fmt::format(" Initializing {} quad elements from given mesh ", NE)));
+    }
+
+    if(NE > 0)
+    {
+      SLIC_ASSERT(mesh->GetNodes() == nullptr ||
+                  mesh->GetNodes()->FESpace()->GetOrder(0));
+    }
+
+    // Create and register a scalar field for this shape's volume fractions
+    // The Degrees of Freedom will be in correspondence with the elements
+    auto* volFrac = this->newVolFracGridFunction();
+    auto volFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
+    this->getDC()->RegisterField(volFracName, volFrac);
+
+    // Initialize quad elements
+    m_quads = axom::Array<PolygonStaticType>(NE, NE, device_allocator);
+    axom::ArrayView<PolygonStaticType> quads_device_view = m_quads.view();
+
+    m_quad_bbs = axom::Array<BoundingBox2D>(NE, NE, device_allocator);
+    axom::ArrayView<BoundingBox2D> quad_bbs_device_view = m_quad_bbs.view();
+
+    // Initialize vertices from mfem mesh and
+    // set each shape volume fraction to 1
+    // Allocation size is:
+    // # of elements * # of vertices per hex * # of components per vertex
+    axom::Array<double> vertCoords_host(
+      NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
+      NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
+      host_allocator);
+
+    for(int i = 0; i < NE; i++)
+    {
+      // Get the indices of this element's vertices
+      mfem::Array<int> verts;
+      mesh->GetElementVertices(i, verts);
+      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_QUAD);
+
+      // Set each shape volume fraction to 1
+      double vf = 1.0;
+      (*volFrac)(i) = vf;
+
+      // Get the coordinates for the vertices
+      for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
+      {
+        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+        {
+          vertCoords_host[(i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
+                          (j * NUM_COMPS_PER_VERT) + k] =
+            (mesh->GetVertex(verts[j]))[k];
+        }
+      }
+    }
+
+    printf("\t--> CHECKPOINT 1\n");
+    for(int i = 0; i < NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT; i++)
+    {
+      printf("%f ", vertCoords_host[i]);
+    }
+    printf("\n");
+
+    axom::Array<double> vertCoords_device =
+      axom::Array<double>(vertCoords_host, device_allocator);
+    auto vertCoords_device_view = vertCoords_device.view();
+
+    // Initialize each quad element and its bounding box
+    axom::for_all<ExecSpace>(
+      NE,
+      AXOM_LAMBDA(axom::IndexType i) {
+        // Set each hexahedral element vertices
+        quads_device_view[i] = PolygonStaticType();
+        for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
+        {
+          int vertIndex = (i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
+            j * NUM_COMPS_PER_VERT;
+          quads_device_view[i].addVertex(
+            Point2D({vertCoords_device_view[vertIndex],
+                     vertCoords_device_view[vertIndex + 1]}));
+
+          // Set hexahedra components to zero if within threshold
+          if(axom::utilities::isNearlyEqual(quads_device_view[i][j][0],
+                                            0.0,
+                                            ZERO_THRESHOLD))
+          {
+            quads_device_view[i][j][0] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(quads_device_view[i][j][1],
+                                            0.0,
+                                            ZERO_THRESHOLD))
+          {
+            quads_device_view[i][j][1] = 0.0;
+          }
+        }
+
+        // Get bounding box for quadrilateral element
+        BoundingBox2D res;
+
+        int num_verts = quads_device_view[i].numVertices();
+        for(int j = 0; j < num_verts; ++j)
+        {
+          res.addPoint(quads_device_view[i][j]);
+        }
+
+        quad_bbs_device_view[i] = res;
+      });  // end of loop to initialize hexahedral elements and bounding boxes
+
+    printf("\t--> CHECKPOINT 2\n");
+    for(int i = 0; i < NE; i++)
+    {
+      SLIC_INFO("\t\t--> Quad[" << i << "] is " << quads_device_view[i]);
+    }
+
+    // Set shape components to zero if within threshold
+    axom::for_all<ExecSpace>(
+      shape_count,
+      AXOM_LAMBDA(axom::IndexType i) {
+        for(int j = 0; j < shapes_device_view[i].numVertices(); j++)
+        {
+          if(axom::utilities::isNearlyEqual(shapes_device_view[i][j][0],
+                                            0.0,
+                                            ZERO_THRESHOLD))
+          {
+            shapes_device_view[i][j][0] = 0.0;
+          }
+
+          if(axom::utilities::isNearlyEqual(shapes_device_view[i][j][1],
+                                            0.0,
+                                            ZERO_THRESHOLD))
+          {
+            shapes_device_view[i][j][1] = 0.0;
+          }
+        }
+      });
+
+    printf("\t--> CHECKPOINT 3\n");
+
+    // Find which shape bounding boxes intersect quadrilateral bounding boxes
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      " Finding shape candidates for each hexahedral element "));
+
+    axom::Array<IndexType> offsets(NE, NE, device_allocator);
+    axom::Array<IndexType> counts(NE, NE, device_allocator);
+    axom::Array<IndexType> candidates;
+    bvh.findBoundingBoxes(offsets, counts, candidates, NE, quad_bbs_device_view);
+
+    // Get the total number of candidates
+    using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
+    using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
+
+    const auto counts_device_view = counts.view();
+    RAJA::ReduceSum<REDUCE_POL, int> totalCandidates(0);
+    axom::for_all<ExecSpace>(
+      NE,
+      AXOM_LAMBDA(axom::IndexType i) {
+        totalCandidates += counts_device_view[i];
+      });
+
+    // Initialize hexahedron indices and shape candidates
+    // axom::Array<IndexType> hex_indices_device(
+    //   totalCandidates.get() * NUM_TETS_PER_HEX,
+    //   totalCandidates.get() * NUM_TETS_PER_HEX,
+    //   device_allocator);
+    // auto hex_indices_device_view = hex_indices_device.view();
+
+    // axom::Array<IndexType> shape_candidates_device(
+    //   totalCandidates.get() * NUM_TETS_PER_HEX,
+    //   totalCandidates.get() * NUM_TETS_PER_HEX,
+    //   device_allocator);
+    // auto shape_candidates_device_view = shape_candidates_device.view();
+
+    // Initialize quadrilateral indices and shape candidates
+    axom::Array<IndexType> quad_indices_device(totalCandidates.get(),
+                                               totalCandidates.get(),
+                                               device_allocator);
+    auto quad_indices_device_view = quad_indices_device.view();
+
+    axom::Array<IndexType> shape_candidates_device(totalCandidates.get(),
+                                                   totalCandidates.get(),
+                                                   device_allocator);
+    auto shape_candidates_device_view = shape_candidates_device.view();
+
+    // Tetrahedrons from hexes (24 for each hex)
+    // axom::Array<TetrahedronType> tets_from_hexes_device(NE * NUM_TETS_PER_HEX,
+    //                                                     NE * NUM_TETS_PER_HEX,
+    //                                                     device_allocator);
+    // axom::ArrayView<TetrahedronType> tets_from_hexes_device_view =
+    //   tets_from_hexes_device.view();
+
+    // Index into 'tets'
+    // axom::Array<IndexType> tet_indices_device(
+    //   totalCandidates.get() * NUM_TETS_PER_HEX,
+    //   totalCandidates.get() * NUM_TETS_PER_HEX,
+    //   device_allocator);
+    // auto tet_indices_device_view = tet_indices_device.view();
+
+    // New total number of candidates after omitting degenerate shapes
+    axom::Array<IndexType> newTotalCandidates_host(1, 1, host_allocator);
+    newTotalCandidates_host[0] = 0;
+    axom::Array<IndexType> newTotalCandidates_device =
+      axom::Array<IndexType>(newTotalCandidates_host, device_allocator);
+    auto newTotalCandidates_device_view = newTotalCandidates_device.view();
+
+    // SLIC_INFO(axom::fmt::format(
+    //   "{:-^80}",
+    //   " Decomposing each hexahedron element into 24 tetrahedrons "));
+
+    // using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
+
+    // {
+    //   AXOM_ANNOTATE_SCOPE("init_tets");
+    //   axom::for_all<ExecSpace>(
+    //     NE,
+    //     AXOM_LAMBDA(axom::IndexType i) {
+    //       TetHexArray cur_tets;
+    //       hexes_device_view[i].triangulate(cur_tets);
+
+    //       for(int j = 0; j < NUM_TETS_PER_HEX; j++)
+    //       {
+    //         tets_from_hexes_device_view[i * NUM_TETS_PER_HEX + j] = cur_tets[j];
+    //       }
+    //     });
+    // }
+
+    SLIC_INFO(
+      axom::fmt::format("{:-^80}",
+                        " Creating an array of candidate pairs for shaping "));
+
+    const auto offsets_device_view = offsets.view();
+    const auto candidates_device_view = candidates.view();
+    {
+      AXOM_ANNOTATE_SCOPE("init_candidates");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          for(int j = 0; j < counts_device_view[i]; j++)
+          {
+            int shapeIdx = candidates_device_view[offsets_device_view[i] + j];
+
+            // for(int k = 0; k < NUM_TETS_PER_HEX; k++)
+            // {
+            //   IndexType idx =
+            //     RAJA::atomicAdd<ATOMIC_POL>(&newTotalCandidates_device_view[0],
+            //                                 IndexType {1});
+            //   hex_indices_device_view[idx] = i;
+            //   shape_candidates_device_view[idx] = shapeIdx;
+            //   tet_indices_device_view[idx] = i * NUM_TETS_PER_HEX + k;
+            // }
+            IndexType idx =
+              RAJA::atomicAdd<ATOMIC_POL>(&newTotalCandidates_device_view[0],
+                                          IndexType {1});
+            quad_indices_device_view[idx] = i;
+            shape_candidates_device_view[idx] = shapeIdx;
+          }
+        });
+    }
+
+    // Overlap volume is the volume of clip(tri, quad) for stl
+    m_overlap_volumes = axom::Array<double>(NE, NE, device_allocator);
+
+    // Quad volume is the volume of the quadrilateral element
+    m_hex_volumes = axom::Array<double>(NE, NE, device_allocator);
+
+    axom::ArrayView<double> overlap_volumes_device_view =
+      m_overlap_volumes.view();
+    axom::ArrayView<double> hex_volumes_device_view = m_hex_volumes.view();
+
+    // Set initial values to 0
+    axom::for_all<ExecSpace>(
+      NE,
+      AXOM_LAMBDA(axom::IndexType i) {
+        overlap_volumes_device_view[i] = 0;
+        hex_volumes_device_view[i] = 0;
+      });
+
+    SLIC_INFO(axom::fmt::format("{:-^80}",
+                                " Calculating quadrilateral element volume "));
+
+    {
+      AXOM_ANNOTATE_SCOPE("quad_volume");
+      axom::for_all<ExecSpace>(
+        NE,
+        AXOM_LAMBDA(axom::IndexType i) {
+          hex_volumes_device_view[i] = quads_device_view[i].area();
+        });
+    }
+    SLIC_INFO(axom::fmt::format(
+      "{:-^80}",
+      " Calculating element overlap volume from each quad-shape pair "));
+
+    constexpr double EPS = 1e-10;
+    constexpr bool tryFixOrientation = true;
+
+    {
+      // Copy calculated total back to host
+      axom::Array<IndexType> newTotalCandidates_calc_host =
+        axom::Array<IndexType>(newTotalCandidates_device, host_allocator);
+
+      AXOM_ANNOTATE_SCOPE("quad_shape_volume");
+      axom::for_all<ExecSpace>(
+        newTotalCandidates_calc_host[0],
+        AXOM_LAMBDA(axom::IndexType i) {
+          // const int index = hex_indices_device_view[i];
+          // const int shapeIndex = shape_candidates_device_view[i];
+          // const int tetIndex = tet_indices_device_view[i];
+
+          // const PolyhedronType poly =
+          //   primal::clip(shapes_device_view[shapeIndex],
+          //                tets_from_hexes_device_view[tetIndex],
+          //                EPS,
+          //                tryFixOrientation);
+
+          // // Poly is valid
+          // if(poly.numVertices() >= 4)
+          // {
+          //   // Workaround - intermediate volume variable needed for
+          //   // CUDA Pro/E test case correctness
+          //   double volume = poly.volume();
+          //   RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_device_view.data() + index,
+          //                               volume);
+          // }
+          const int index = quad_indices_device_view[i];
+          const int shapeIndex = shape_candidates_device_view[i];
+
+          const PolygonStaticType poly =
+            primal::clip(shapes_device_view[shapeIndex],
+                         quads_device_view[index],
+                         EPS,
+                         tryFixOrientation);
+
+          // Polygon is valid
+          if(poly.numVertices() >= 3)
+          {
+            // Workaround - intermediate volume variable needed for
+            // CUDA Pro/E test case correctness
+            double area = poly.area();
+            RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_device_view.data() + index,
+                                        area);
+          }
+        });
+    }
+
+    RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
+    RAJA::ReduceSum<REDUCE_POL, double> totalQuad(0);
+
+    axom::for_all<ExecSpace>(
+      NE,
+      AXOM_LAMBDA(axom::IndexType i) {
+        totalOverlap += overlap_volumes_device_view[i];
+        totalQuad += hex_volumes_device_view[i];
+      });
+
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Total overlap volume with shape is {:.3Lf}",
+                                this->allReduceSum(totalOverlap)));
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Total mesh volume is {:.3Lf}",
+                                this->allReduceSum(totalQuad)));
+
+  }  // end of runShapeQuery2DImpl() function
 
   /*!
     \tparam ShapeType either TetrahedeonType or OctahedronType.
@@ -817,9 +1343,9 @@ private:
            separately from the array.
   */
   template <typename ExecSpace, typename ShapeType>
-  void runShapeQueryImpl(const klee::Shape& shape,
-                         axom::Array<ShapeType>& shapes,
-                         int shape_count)
+  void runShapeQuery3DImpl(const klee::Shape& shape,
+                           axom::Array<ShapeType>& shapes,
+                           int shape_count)
 
   {
     AXOM_ANNOTATE_SCOPE("IntersectionShaper::runShapeQueryImpl");
@@ -845,11 +1371,11 @@ private:
 
     // Generate the BVH tree over the shapes
     // Axis-aligned bounding boxes
-    axom::Array<BoundingBoxType> aabbs(shape_count, shape_count, device_allocator);
+    axom::Array<BoundingBox3D> aabbs(shape_count, shape_count, device_allocator);
 
     axom::ArrayView<ShapeType> shapes_device_view = shapes.view();
 
-    axom::ArrayView<BoundingBoxType> aabbs_device_view = aabbs.view();
+    axom::ArrayView<BoundingBox3D> aabbs_device_view = aabbs.view();
 
     // Get the bounding boxes for the shapes
     axom::for_all<ExecSpace>(
@@ -865,7 +1391,7 @@ private:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    axom::ArrayView<const BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
+    axom::ArrayView<const BoundingBox3D> hex_bbs_device_view = m_hex_bbs.view();
 
     // Set shape components to zero if within threshold
     snapShapeVerticesToZero<ExecSpace, ShapeType>(shapes,
@@ -1485,21 +2011,21 @@ public:
       switch(m_execPolicy)
       {
       case RuntimePolicy::seq:
-        runShapeQueryImpl<seq_exec, TetrahedronType>(shape, m_tets, m_tetcount);
+        runShapeQuery3DImpl<seq_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #if defined(AXOM_USE_OPENMP)
       case RuntimePolicy::omp:
-        runShapeQueryImpl<omp_exec, TetrahedronType>(shape, m_tets, m_tetcount);
+        runShapeQuery3DImpl<omp_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
-        runShapeQueryImpl<cuda_exec, TetrahedronType>(shape, m_tets, m_tetcount);
+        runShapeQuery3DImpl<cuda_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
-        runShapeQueryImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
+        runShapeQuery3DImpl<hip_exec, TetrahedronType>(shape, m_tets, m_tetcount);
         break;
   #endif  // AXOM_USE_HIP
       }
@@ -1509,21 +2035,45 @@ public:
       switch(m_execPolicy)
       {
       case RuntimePolicy::seq:
-        runShapeQueryImpl<seq_exec, OctahedronType>(shape, m_octs, m_octcount);
+        runShapeQuery3DImpl<seq_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #if defined(AXOM_USE_OPENMP)
       case RuntimePolicy::omp:
-        runShapeQueryImpl<omp_exec, OctahedronType>(shape, m_octs, m_octcount);
+        runShapeQuery3DImpl<omp_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_OPENMP
   #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::cuda:
-        runShapeQueryImpl<cuda_exec, OctahedronType>(shape, m_octs, m_octcount);
+        runShapeQuery3DImpl<cuda_exec, OctahedronType>(shape, m_octs, m_octcount);
         break;
   #endif  // AXOM_USE_CUDA
   #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case RuntimePolicy::hip:
-        runShapeQueryImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
+        runShapeQuery3DImpl<hip_exec, OctahedronType>(shape, m_octs, m_octcount);
+        break;
+  #endif  // AXOM_USE_HIP
+      }
+    }
+    else if(shapeFormat == "stl")
+    {
+      switch(m_execPolicy)
+      {
+      case RuntimePolicy::seq:
+        runShapeQuery2DImpl<seq_exec>(shape, m_tris, m_tricount);
+        break;
+  #if defined(AXOM_USE_OPENMP)
+      case RuntimePolicy::omp:
+        runShapeQuery2DImpl<omp_exec>(shape, m_tris, m_tricount);
+        break;
+  #endif  // AXOM_USE_OPENMP
+  #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+      case RuntimePolicy::cuda:
+        runShapeQuery2DImpl<cuda_exec>(shape, m_tris, m_tricount);
+        break;
+  #endif  // AXOM_USE_CUDA
+  #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
+      case RuntimePolicy::hip:
+        runShapeQuery2DImpl<hip_exec>(shape, m_tris, m_tricount);
         break;
   #endif  // AXOM_USE_HIP
       }
@@ -2554,6 +3104,7 @@ private:
   }
   #endif  // AXOM_USE_MFEM
 
+  // Check that surface mesh is composed of 3D Tetrahedra
   bool surfaceMeshIsTet() const
   {
     bool isTet = m_surfaceMesh != nullptr &&
@@ -2577,12 +3128,20 @@ private:
   // Guard these to prevent warnings.
   int m_octcount {0};
   int m_tetcount {0};
+  int m_tricount {0};
 
   axom::Array<OctahedronType> m_octs;
   axom::Array<TetrahedronType> m_tets;
+  axom::Array<PolygonStaticType> m_tris;
+
+  axom::Array<BoundingBox2D> m_aabbs_2d;
+  axom::Array<BoundingBox3D> m_aabbs_3d;
+
+  axom::Array<PolygonStaticType> m_quads;
+  axom::Array<BoundingBox2D> m_quad_bbs;
 
   axom::Array<HexahedronType> m_hexes;
-  axom::Array<BoundingBoxType> m_hex_bbs;
+  axom::Array<BoundingBox3D> m_hex_bbs;
   axom::Array<TetrahedronType> m_tets_from_hexes_device;
 
   // Views of volume-fraction data owned by grid.
