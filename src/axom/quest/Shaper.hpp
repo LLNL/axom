@@ -83,7 +83,7 @@ public:
   Shaper(RuntimePolicy execPolicy,
          int allocatorId,
          const klee::ShapeSet& shapeSet,
-         conduit::Node* bpNode,
+         conduit::Node& bpNode,
          const std::string& topo = "");
 
   virtual ~Shaper();

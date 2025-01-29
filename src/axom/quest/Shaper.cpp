@@ -92,7 +92,7 @@ Shaper::Shaper(RuntimePolicy execPolicy,
 Shaper::Shaper(RuntimePolicy execPolicy,
                int allocatorId,
                const klee::ShapeSet& shapeSet,
-               conduit::Node* bpNode,
+               conduit::Node& bpNode,
                const std::string& topo)
   : m_execPolicy(execPolicy)
   , m_allocatorId(allocatorId != axom::INVALID_ALLOCATOR_ID
@@ -101,9 +101,9 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)
-  , m_bpTopo(topo.empty() ? bpNode->fetch_existing("topologies").child(0).name()
+  , m_bpTopo(topo.empty() ? bpNode.fetch_existing("topologies").child(0).name()
                           : topo)
-  , m_bpNodeExt(bpNode)
+  , m_bpNodeExt(&bpNode)
   , m_bpNodeInt()
 #endif
   , m_comm(MPI_COMM_WORLD)
@@ -112,10 +112,10 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   m_bpGrp = m_ds.getRoot()->createGroup("internalGrp");
   m_bpGrp->setDefaultAllocator(m_allocatorId);
 
-  m_bpGrp->importConduitTreeExternal(*bpNode);
+  m_bpGrp->importConduitTreeExternal(bpNode);
 
   // We want unstructured topo but can accomodate structured.
-  const std::string topoType = bpNode->fetch_existing("topologies")
+  const std::string topoType = bpNode.fetch_existing("topologies")
                                  .fetch_existing(m_bpTopo)
                                  .fetch_existing("type")
                                  .as_string();
@@ -137,7 +137,7 @@ Shaper::Shaper(RuntimePolicy execPolicy,
 #endif
 
   m_cellCount = conduit::blueprint::mesh::topology::length(
-    bpNode->fetch_existing("topologies").fetch_existing(m_bpTopo));
+    bpNode.fetch_existing("topologies").fetch_existing(m_bpTopo));
 
   setFilePath(shapeSet.getPath());
 }

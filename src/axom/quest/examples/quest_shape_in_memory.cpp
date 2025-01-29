@@ -1617,7 +1617,7 @@ int main(int argc, char** argv)
     shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
                                                          allocatorId,
                                                          shapeSet,
-                                                         compMeshNode.get());
+                                                         *compMeshNode);
   }
 #if defined(AXOM_USE_MFEM)
   if(params.useMfem())

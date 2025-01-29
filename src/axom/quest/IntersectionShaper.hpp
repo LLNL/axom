@@ -386,7 +386,7 @@ public:
   IntersectionShaper(RuntimePolicy runtimePolicy,
                      int allocatorId,
                      const klee::ShapeSet& shapeSet,
-                     conduit::Node* bpNode,
+                     conduit::Node& bpNode,
                      const std::string& topo = "")
     : Shaper(runtimePolicy, allocatorId, shapeSet, bpNode, topo)
     , m_free_mat_name("free")
