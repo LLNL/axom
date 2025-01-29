@@ -109,7 +109,7 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   , m_comm(MPI_COMM_WORLD)
 {
   AXOM_ANNOTATE_SCOPE("Shaper::Shaper_Node");
-  m_bpGrp = m_ds.getRoot()->createGroup("internalGrp");
+  m_bpGrp = m_dataStore.getRoot()->createGroup("internalGrp");
   m_bpGrp->setDefaultAllocator(m_allocatorId);
 
   m_bpGrp->importConduitTreeExternal(bpNode);

@@ -128,10 +128,14 @@ bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info);
 
 /*!
   @brief Fill in structured mesh cartesian coordinates.
+  \param runtimePolicy Runtime execution space selector
   \param xView Vertex x-values array
   \param yView Vertex y-values array
   \param zView Vertex z-values array
   \param domainBox Physical domain
+
+  Array data must be in a memory space accessible by the
+  selected \c runtimePolicy.
 */
 void fill_cartesian_coords_3d(axom::runtime_policy::Policy runtimePolicy,
                               const primal::BoundingBox<double, 3>& domainBox,

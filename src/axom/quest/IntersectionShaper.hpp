@@ -393,6 +393,7 @@ public:
   { }
   #endif
 
+  //!@brief Set data that depends on mesh (but not on shapes).
   void setMeshDependentData()
   {
     AXOM_ANNOTATE_SCOPE("IntersectionShaper::setMeshDependentData");
@@ -421,6 +422,12 @@ public:
     }
   }
 
+  /*!
+    @brief Set mesh-dependent data, using the given ExecSpace for execution.
+
+    This method has proven to be a potential bottleneck on devices.
+    The performance annotations will be removed once it is robustly fixed.
+  */
   template <typename ExecSpace>
   void setMeshDependentDataImpl()
   {
@@ -858,7 +865,6 @@ private:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    axom::ArrayView<const HexahedronType> hexes_device_view = m_hexes.view();
     axom::ArrayView<const BoundingBoxType> hex_bbs_device_view = m_hex_bbs.view();
 
     // Set shape components to zero if within threshold

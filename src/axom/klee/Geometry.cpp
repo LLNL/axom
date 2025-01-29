@@ -86,7 +86,7 @@ Geometry::Geometry(const TransformableGeometryProperties& startProperties,
 
 Geometry::Geometry(const TransformableGeometryProperties& startProperties,
                    const axom::Array<double, 2>& discreteFunction,
-                   const Point3D& sorBase,
+                   const Point3D& sorBase,  // surface of revolution.
                    const Vector3D& sorDirection,
                    axom::IndexType levelOfRefinement,
                    std::shared_ptr<GeometryOperator const> operator_)

@@ -217,6 +217,7 @@ protected:
   RuntimePolicy m_execPolicy;
   int m_allocatorId;
 
+  // For any mesh represented in Conduit or sidre
   sidre::DataStore m_dataStore;
 
   const klee::ShapeSet& m_shapeSet;
@@ -230,8 +231,6 @@ protected:
 #endif
 
 #if defined(AXOM_USE_CONDUIT)
-  // For mesh represented in Conduit or sidre
-  sidre::DataStore m_ds;
   //! @brief Version of the mesh for computations.
   axom::sidre::Group* m_bpGrp;
   const std::string m_bpTopo;
