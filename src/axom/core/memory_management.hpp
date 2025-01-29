@@ -25,6 +25,7 @@
 namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
+constexpr int DYNAMIC_ALLOCATOR_ID = 0;
 
 // _memory_space_start
 /*! 
@@ -106,14 +107,15 @@ inline int getDefaultAllocatorID()
 #ifdef AXOM_USE_UMPIRE
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
-  return 0;
+  return DYNAMIC_ALLOCATOR_ID;
 #endif
 }
 
 /*!
  * \brief Get the allocator id from which data has been allocated.
  * \return Allocator id.  If Umpire doesn't have an allocator for
- * the pointer, or Axom wasn't configured with Umpire, return 0.
+ * the pointer, or Axom wasn't configured with Umpire, return
+ * \c axom::DYNAMIC_ALLOCATOR_ID.
  *
  * \pre ptr has a valid pointer value.
  */
@@ -128,7 +130,7 @@ inline int getAllocatorIDFromPointer(const void* ptr)
   }
 #endif
   AXOM_UNUSED_VAR(ptr);
-  return 0;
+  return DYNAMIC_ALLOCATOR_ID;
 }
 
 /*!

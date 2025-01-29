@@ -132,6 +132,9 @@ namespace axom
 inline int policyToDefaultAllocatorID(axom::runtime_policy::Policy policy)
 {
   return
+    policy == axom::runtime_policy::Policy::seq
+    ? axom::execution_space<axom::SEQ_EXEC>::allocatorID()
+    :
 #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
     policy == axom::runtime_policy::Policy::omp
     ? axom::execution_space<axom::OMP_EXEC>::allocatorID()
@@ -147,7 +150,7 @@ inline int policyToDefaultAllocatorID(axom::runtime_policy::Policy policy)
     ? axom::execution_space<axom::HIP_EXEC<256>>::allocatorID()
     :
 #endif
-    axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+    INVALID_ALLOCATOR_ID;
 }
 
 }  // namespace axom
