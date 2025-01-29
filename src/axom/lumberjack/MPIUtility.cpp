@@ -15,6 +15,7 @@
 
 #include "axom/lumberjack/MPIUtility.hpp"
 #include <cstring>
+#include <iostream>
 
 namespace axom
 {
@@ -48,16 +49,15 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm)
   return charArray;
 }
 
-const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag)
+const char* mpiNonBlockingReceiveMessages(MPI_Comm comm)
 {
-  const int mpiTag = (tag == 0) ? LJ_TAG : tag;
   char* charArray = nullptr;
   int messageSize = -1;
   MPI_Status mpiStatus;
 
   // Get size and source of MPI message
   int mpiFlag = 0;
-  MPI_Iprobe(MPI_ANY_SOURCE, tag, comm, &mpiFlag, &mpiStatus);
+  MPI_Iprobe(MPI_ANY_SOURCE, LJ_TAG, comm, &mpiFlag, &mpiStatus);
 
   if(mpiFlag == 1)
   {
@@ -72,7 +72,7 @@ const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag)
              messageSize,
              MPI_CHAR,
              mpiStatus.MPI_SOURCE,
-             mpiTag,
+             LJ_TAG,
              comm,
              &mpiStatus);
   }
@@ -82,16 +82,14 @@ const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag)
 
 void mpiNonBlockingSendMessages(MPI_Comm comm,
                                 int destinationRank,
-                                const char* packedMessagesToBeSent,
-                                int tag)
+                                const char* packedMessagesToBeSent)
 {
-  const int mpiTag = (tag == 0) ? LJ_TAG : tag;
   MPI_Request mpiRequest;
   MPI_Isend(const_cast<char*>(packedMessagesToBeSent),
             strlen(packedMessagesToBeSent),
             MPI_CHAR,
             destinationRank,
-            mpiTag,
+            LJ_TAG,
             comm,
             &mpiRequest);
   MPI_Request_free(&mpiRequest);

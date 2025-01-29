@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/lumberjack/NonCollectiveRootCommunicator.hpp"
+#include "axom/lumberjack/MPIUtility.hpp"
 #include "gtest/gtest.h"
 #include "mpi.h"
 
@@ -87,12 +88,45 @@ TEST(lumberjack_NonCollectiveRootCommunicator, multiple_communicators)
   const int ranksLimit = 5;
   axom::lumberjack::NonCollectiveRootCommunicator c1;
   axom::lumberjack::NonCollectiveRootCommunicator c2;
-
+  
   c1.initialize(MPI_COMM_WORLD, ranksLimit);
   c2.initialize(MPI_COMM_WORLD, ranksLimit);
 
-  // each communicator has unique MPI tag
-  EXPECT_NE(c1.mpiTag(), c2.mpiTag());
+  std::vector<const char*> receivedPackedMessages_c1;
+  std::vector<const char*> receivedPackedMessages_c2;
+  const std::string c1_message = "c1";
+  const std::string c2_message = "c2";
+
+  if (c1.rank() == 1 ) {
+    c1.push(c1_message.c_str(), receivedPackedMessages_c1);
+  }
+
+  if (c2.rank() == 1 ) {
+    c2.push(c2_message.c_str(), receivedPackedMessages_c2);
+  }
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  /*
+    Sending/receiving messages from c1 should not 
+    interfere with sending/receiving from c2.
+    This tests that ordering of sends should not affect 
+    the order of messages being received.
+  */
+
+  if (commSize > 1 && c1.rank() == 0) {
+    c1.push(nullptr, receivedPackedMessages_c1);
+    EXPECT_EQ(receivedPackedMessages_c1.size(), 1);
+    EXPECT_TRUE(!std::strcmp(receivedPackedMessages_c1[0], "c1"));
+  }
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  if (commSize > 1 && c2.rank() == 0) {
+    c2.push(nullptr, receivedPackedMessages_c2);
+    EXPECT_EQ(receivedPackedMessages_c2.size(), 1);
+    EXPECT_TRUE(!std::strcmp(receivedPackedMessages_c2[0], "c2"));
+  }
 
   MPI_Barrier(MPI_COMM_WORLD);
 
@@ -100,4 +134,19 @@ TEST(lumberjack_NonCollectiveRootCommunicator, multiple_communicators)
   c2.finalize();
 
   MPI_Barrier(MPI_COMM_WORLD);
+
+    // cleanup allocated memory from received messages
+  for(auto& rm : receivedPackedMessages_c1)
+  {
+    delete[] rm;
+  }
+
+  for(auto& rm : receivedPackedMessages_c2)
+  {
+    delete[] rm;
+  }
+
+  receivedPackedMessages_c1.clear();
+  receivedPackedMessages_c2.clear();
+
 }

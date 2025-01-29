@@ -40,7 +40,7 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
  *  MPI communication uses default LJ_Tag. 
  *****************************************************************************
  */
-const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag = 0);
+const char* mpiNonBlockingReceiveMessages(MPI_Comm comm);
 
 /*!
  *****************************************************************************
@@ -58,8 +58,7 @@ const char* mpiNonBlockingReceiveMessages(MPI_Comm comm, int tag = 0);
  */
 void mpiNonBlockingSendMessages(MPI_Comm comm,
                                 int destinationRank,
-                                const char* packedMessagesToBeSent,
-                                int tag = 0);
+                                const char* packedMessagesToBeSent);
 }  // end namespace lumberjack
 }  // end namespace axom
 

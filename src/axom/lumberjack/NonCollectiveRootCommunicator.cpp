@@ -13,10 +13,12 @@
  ******************************************************************************
  */
 
+#include <mpi.h>
 #include <limits>
 
 #include "axom/lumberjack/NonCollectiveRootCommunicator.hpp"
 #include "axom/lumberjack/MPIUtility.hpp"
+#include <iostream>
 
 namespace axom
 {
@@ -24,27 +26,13 @@ namespace lumberjack
 {
 void NonCollectiveRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
 {
-  static int mpiTag = 32767;
-  m_mpiComm = comm;
+  MPI_Comm_dup(comm, &m_mpiComm);
   MPI_Comm_rank(m_mpiComm, &m_mpiCommRank);
   MPI_Comm_size(m_mpiComm, &m_mpiCommSize);
   m_ranksLimit = ranksLimit;
-  m_mpiTag = mpiTag;
-  /*
-    Each communicator that sends/receives messages non-collectively needs its 
-    own mpiTag in order to not interfere with other communicators.
-   */
-  if(mpiTag == std::numeric_limits<int>::max())
-  {
-    mpiTag = 32767;
-  }
-  else
-  {
-    ++mpiTag;
-  }
 }
 
-void NonCollectiveRootCommunicator::finalize() { }
+void NonCollectiveRootCommunicator::finalize() { MPI_Comm_free(&m_mpiComm); }
 
 int NonCollectiveRootCommunicator::rank() { return m_mpiCommRank; }
 
@@ -67,7 +55,7 @@ void NonCollectiveRootCommunicator::push(
     bool receive_messages = true;
     while(receive_messages)
     {
-      currPackedMessages = mpiNonBlockingReceiveMessages(m_mpiComm, m_mpiTag);
+      currPackedMessages = mpiNonBlockingReceiveMessages(m_mpiComm);
 
       if(isPackedMessagesEmpty(currPackedMessages))
       {
@@ -92,7 +80,7 @@ void NonCollectiveRootCommunicator::push(
   {
     if(isPackedMessagesEmpty(packedMessagesToBeSent) == false)
     {
-      mpiNonBlockingSendMessages(m_mpiComm, 0, packedMessagesToBeSent, m_mpiTag);
+      mpiNonBlockingSendMessages(m_mpiComm, 0, packedMessagesToBeSent);
     }
   }
 }
@@ -105,8 +93,6 @@ bool NonCollectiveRootCommunicator::isOutputNode()
   }
   return false;
 }
-
-int NonCollectiveRootCommunicator::mpiTag() const { return m_mpiTag; }
 
 }  // end namespace lumberjack
 }  // end namespace axom
