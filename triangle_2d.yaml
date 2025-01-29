@@ -1,0 +1,8 @@
+dimensions: 2
+units: cm
+shapes:
+  - name: unit_triangle 
+    material: steel
+    geometry:
+      format: stl 
+      path: ./unit_triangle.stl
