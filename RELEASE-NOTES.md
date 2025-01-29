@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2025, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -33,6 +33,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
+- Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
+  of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
 
 ###  Changed
 - `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
