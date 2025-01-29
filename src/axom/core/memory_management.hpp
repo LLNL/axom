@@ -329,7 +329,7 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
   // Treat non-Umpire allocatorID first.  Umpire's getAllocator
   // throws exception if given a non-Umpire id.
   assert(allocatorId != INVALID_ALLOCATOR_ID);
-  if (allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
+  if(allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
 
 #ifdef AXOM_USE_UMPIRE
   using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;

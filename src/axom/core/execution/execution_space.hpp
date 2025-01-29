@@ -130,8 +130,7 @@ namespace axom
 /// \brief Return default allocator id for a runtime policy.
 inline int policyToDefaultAllocatorID(axom::runtime_policy::Policy policy)
 {
-  return
-    policy == axom::runtime_policy::Policy::seq
+  return policy == axom::runtime_policy::Policy::seq
     ? axom::execution_space<axom::SEQ_EXEC>::allocatorID()
     :
 #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
