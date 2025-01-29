@@ -13,12 +13,10 @@
  ******************************************************************************
  */
 
-#include <mpi.h>
 #include <limits>
 
 #include "axom/lumberjack/NonCollectiveRootCommunicator.hpp"
 #include "axom/lumberjack/MPIUtility.hpp"
-#include <iostream>
 
 namespace axom
 {
