@@ -113,8 +113,7 @@ struct execution_space<HIP_EXEC<BLOCK_SIZE, ASYNC>>
   }
   static bool usesAllocId(int allocId) noexcept
   {
-    return allocId == 0 ||
-      usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+    return usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
   }
 };
 }  // namespace axom

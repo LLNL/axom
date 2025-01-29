@@ -326,6 +326,11 @@ inline int getAllocatorID<MemorySpace::Dynamic>()
 
 inline MemorySpace getAllocatorSpace(int allocatorId)
 {
+  // Treat non-Umpire allocatorID first.  Umpire's getAllocator
+  // throws exception if given a non-Umpire id.
+  assert(allocatorId != INVALID_ALLOCATOR_ID);
+  if (allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
+
 #ifdef AXOM_USE_UMPIRE
   using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;
 
@@ -348,9 +353,6 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
   default:
     return MemorySpace::Dynamic;
   }
-#else
-  AXOM_UNUSED_VAR(allocatorId);
-  return MemorySpace::Dynamic;
 #endif
 }
 

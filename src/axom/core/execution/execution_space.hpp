@@ -101,8 +101,7 @@ struct execution_space
   //!@brief Returns whether @c ExecSpace can use the given allocator id.
   static bool usesAllocId(int allocId) noexcept
   {
-    return allocId == 0 ||
-      usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
+    return usesMemorySpace(axom::detail::getAllocatorSpace(allocId));
   }
 };
 
