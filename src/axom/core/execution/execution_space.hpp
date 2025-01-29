@@ -93,10 +93,12 @@ struct execution_space
   {
     return runtime_policy::Policy::seq;
   }
+  //!@brief Returns whether @c ExecSpace can use the given @c MemorySpace.
   static bool usesMemorySpace(axom::MemorySpace m) noexcept
   {
     return m == memory_space;
   }
+  //!@brief Returns whether @c ExecSpace can use the given allocator id.
   static bool usesAllocId(int allocId) noexcept
   {
     return allocId == 0 ||

@@ -259,6 +259,9 @@ bool Shaper::verifyInputMesh(std::string& whyBad) const
   if(m_bpGrp != nullptr)
   {
     conduit::Node info;
+    // Conduit's verify should work even if m_bpNodeInt has array data on
+    // devices. because the verification doesn't dereference array data.
+    // If this changes in the future, more care must be taken.
     rval = conduit::blueprint::mesh::verify(m_bpNodeInt, info);
     if(rval)
     {
