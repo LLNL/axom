@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1951,6 +1951,181 @@ TEST(primal_clip, polygon_intersects_polygon)
 
     EXPECT_NEAR(poly[9][0], 100, EPS);
     EXPECT_NEAR(poly[9][1], 250, EPS);
+  }
+
+  /*
+   * Edge case where polygons overlap along diagonal of one polygon,
+   * and the edge of the other:
+   *    +-----------+
+   *   /| \         |
+   *  / |  \        |
+   * +  |   +       |
+   *  \ |  /        |
+   *   \| /         |
+   *    +-----------+
+   */
+  {
+    Polygon2D subjectPolygon;
+    subjectPolygon.addVertex(Point2D {0., 0.});
+    subjectPolygon.addVertex(Point2D {1., 0.});
+    subjectPolygon.addVertex(Point2D {1., 1.});
+    subjectPolygon.addVertex(Point2D {0., 1.});
+
+    Polygon2D clipPolygon;
+    clipPolygon.addVertex(Point2D {0., 0.});
+    clipPolygon.addVertex(Point2D {0.3, 0.3});
+    clipPolygon.addVertex(Point2D {0., 1.});
+    clipPolygon.addVertex(Point2D {-0.3, 0.7});
+
+    Polygon2D poly = axom::primal::clip(subjectPolygon, clipPolygon, EPS);
+    EXPECT_NEAR(poly.signedArea(), 0.15, EPS);
+    EXPECT_EQ(poly.numVertices(), 3);
+
+    // Check vertices
+    EXPECT_NEAR(poly[0][0], 0, EPS);
+    EXPECT_NEAR(poly[0][1], 1, EPS);
+
+    EXPECT_NEAR(poly[1][0], 0, EPS);
+    EXPECT_NEAR(poly[1][1], 0, EPS);
+
+    EXPECT_NEAR(poly[2][0], 0.3, EPS);
+    EXPECT_NEAR(poly[2][1], 0.3, EPS);
+  }
+}
+
+/*
+ * 3x3 grid of quads that occupies the unit square,
+ * that clip against a lower or upper triangle:
+ *
+ * +---+---+---+
+ * | \ |   |   |
+ * |  \|   |   |
+ * +---+---+---+
+ * |   | \ |   |
+ * |   |  \|   |
+ * +---+---+---+
+ * |   |   | \ |
+ * |   |   |  \|
+ * +---+---+---+
+ */
+TEST(primal_clip, polygon_intersect_robustness)
+{
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Point2D = axom::primal::Point<double, 2>;
+  constexpr double EPS = 1e-8;
+
+  const double x[] = {0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.,
+                      0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.,
+                      0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.,
+                      0.,
+                      1. / 3.,
+                      2. / 3,
+                      1.};
+  const double y[] = {0.,
+                      0.,
+                      0.,
+                      0.,
+                      1. / 3.,
+                      1. / 3,
+                      1. / 3.,
+                      1. / 3.,
+                      2. / 3.,
+                      2. / 3,
+                      2. / 3.,
+                      2. / 3.,
+                      1.,
+                      1.,
+                      1.,
+                      1.};
+  const int conn[][4] = {{0, 1, 5, 4},
+                         {1, 2, 6, 5},
+                         {2, 3, 7, 6},
+                         {4, 5, 9, 8},
+                         {5, 6, 10, 9},
+                         {6, 7, 11, 10},
+                         {8, 9, 13, 12},
+                         {9, 10, 14, 13},
+                         {10, 11, 15, 14}};
+  Polygon2D fine[9];
+  for(int p = 0; p < 9; p++)
+  {
+    fine[p].addVertex(Point2D {x[conn[p][0]], y[conn[p][0]]});
+    fine[p].addVertex(Point2D {x[conn[p][1]], y[conn[p][1]]});
+    fine[p].addVertex(Point2D {x[conn[p][2]], y[conn[p][2]]});
+    fine[p].addVertex(Point2D {x[conn[p][3]], y[conn[p][3]]});
+  }
+
+  // Overlap polygons
+  Polygon2D clipLower;
+  clipLower.addVertex(Point2D {0., 0.});
+  clipLower.addVertex(Point2D {1., 0.});
+  clipLower.addVertex(Point2D {0., 1.});
+
+  Polygon2D clipUpper;
+  clipUpper.addVertex(Point2D {1., 0.});
+  clipUpper.addVertex(Point2D {1., 1.});
+  clipUpper.addVertex(Point2D {0., 1.});
+
+  // Expected VFs (volume fractions, areas) for overlaps.
+  const double lower_vf[] = {1., 1., 0.5, 1., 0.5, 0., 0.5, 0., 0.};
+  const double upper_vf[] = {0., 0., 0.5, 0., 0.5, 1., 0.5, 1., 1.};
+
+  // Each quad has an area of 1/9 (3x3 quads in the unit square).
+  constexpr double fine_area = (1. / 3.) * (1. / 3.);
+
+  for(int p : std::vector<int> {0, 1, 2, 3, 4, 6})
+  {
+    // Clip clipLower with overlapping fine quad
+    const auto overlapPoly = axom::primal::clip(clipLower, fine[p], EPS);
+    EXPECT_TRUE(overlapPoly.isValid());
+
+    if(overlapPoly.isValid())
+    {
+      // Area of overlapped polygon is some fraction of 1/9.
+      // Divide by 1/9 to get a volume fraction.
+      const double vf = overlapPoly.area() / fine_area;
+      EXPECT_NEAR(vf, lower_vf[p], EPS);
+    }
+  }
+
+  for(int p : std::vector<int> {5, 7, 8})
+  {
+    // Clip clipLower with non-intersecting fine quad
+    const auto overlapPoly = axom::primal::clip(clipLower, fine[p], EPS);
+    EXPECT_FALSE(overlapPoly.isValid());
+    EXPECT_EQ(overlapPoly.numVertices(), 0);
+  }
+
+  for(int p : std::vector<int> {2, 4, 5, 6, 7, 8})
+  {
+    // Clip clipUpper with overlapping fine quad
+    const auto overlapPoly = axom::primal::clip(clipUpper, fine[p], EPS);
+    EXPECT_TRUE(overlapPoly.isValid());
+
+    if(overlapPoly.isValid())
+    {
+      // Area of overlapped polygon is some fraction of 1/9.
+      // Divide by 1/9 to get a volume fraction.
+      const double vf = overlapPoly.area() / fine_area;
+      EXPECT_NEAR(vf, upper_vf[p], EPS);
+    }
+  }
+
+  for(int p : std::vector<int> {0, 1, 3})
+  {
+    // Clip clipUpper with non-intersecting fine quad
+    const auto overlapPoly = axom::primal::clip(clipUpper, fine[p], EPS);
+    EXPECT_FALSE(overlapPoly.isValid());
+    EXPECT_EQ(overlapPoly.numVertices(), 0);
   }
 }
 

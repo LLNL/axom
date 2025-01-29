@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -456,11 +456,12 @@ TEST(spio_parallel, external_piecemeal_writeread)
 
   Group* root1 = ds1->getRoot();
 
-  Group* flds1 = root1->createGroup("fields1");
-  Group* flds2 = root1->createGroup("fields2");
+  Group* flds = root1->createGroup("testdata/fields");
 
-  flds1->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals1);
-  flds2->createView("external_array", axom::sidre::INT_ID, nvals, orig_vals2);
+  Group* ga = flds->createGroup("a");
+  Group* gb = flds->createGroup("b");
+  ga->createView("vals1", axom::sidre::INT_ID, nvals, orig_vals1);
+  gb->createView("vals2", axom::sidre::INT_ID, nvals, orig_vals2);
 
   /*
    * Contents of the DataStore written to files with IOManager.
@@ -468,15 +469,22 @@ TEST(spio_parallel, external_piecemeal_writeread)
   const int num_files = num_output;
   IOManager writer(MPI_COMM_WORLD);
 
-  const std::string file_name = "out_spio_external_piecemeal_write_read";
+  std::string file_name = "out_spio_external_piecemeal_write_read";
 
   writer.write(root1, num_files, file_name, PROTOCOL);
 
   /*
-   * Create another DataStore than holds nothing but the root group.
+   * Create another DataStore to be the destination for input from file
    */
   DataStore* ds2 = new DataStore();
   Group* root2 = ds2->getRoot();
+
+  /*
+   * Read from the files that were written above.
+   */
+  IOManager reader(MPI_COMM_WORLD);
+
+  reader.read(root2, file_name + ROOT_EXT);
 
   // pollute values so we know they are changed
   int restored_vals1[nvals], restored_vals2[nvals];
@@ -486,64 +494,29 @@ TEST(spio_parallel, external_piecemeal_writeread)
     restored_vals2[i] = -1;
   }
 
-  /*
-   * Read from the files that were written above.
-   */
-  IOManager reader(MPI_COMM_WORLD);
+  Group* group_a = root2->getGroup("testdata/fields/a");
+  Group* group_b = root2->getGroup("testdata/fields/b");
 
-  reader.read(root2, file_name + ROOT_EXT);
-
-  // Swap these two sections to show lack of piecemeal loading
-
-  // Section 1: (Works) Load all external arrays at a single time
-  EXPECT_TRUE(root2->hasGroup("fields1"));
-  flds1 = root2->getGroup("fields1");
-  EXPECT_TRUE(flds1->hasView("external_array"));
-  View* view1 = flds1->getView("external_array");
+  View* view1 = group_a->getView("vals1");
   view1->setExternalDataPtr(restored_vals1);
 
-  EXPECT_TRUE(root2->hasGroup("fields2"));
-  flds2 = root2->getGroup("fields2");
-  EXPECT_TRUE(flds2->hasView("external_array"));
-  View* view2 = flds2->getView("external_array");
+  View* view2 = group_b->getView("vals2");
   view2->setExternalDataPtr(restored_vals2);
 
-  reader.loadExternalData(root2, file_name + ROOT_EXT);
-
-  // TODO: convert test to this when functionality works
-  // Section 2: (Doesn't work) Load external arrays one at a time
-  // EXPECT_TRUE(root2->hasGroup("fields1"));
-  // flds1 = root2->getGroup("fields1");
-  // EXPECT_TRUE(flds1->hasView("external_array"));
-  // View* view1 = flds1->getView("external_array");
-  // view1->setExternalDataPtr(restored_vals1);
-  // reader.loadExternalData(flds1, file_name + ROOT_EXT);
-
-  // EXPECT_TRUE(root2->hasGroup("fields2"));
-  // flds2 = root2->getGroup("fields2");
-  // EXPECT_TRUE(flds2->hasView("external_array"));
-  // View* view2 = flds2->getView("external_array");
-  // view2->setExternalDataPtr(restored_vals2);
-  // reader.loadExternalData(flds2, file_name + ROOT_EXT);
+  reader.loadExternalData(root2, group_a, file_name + ROOT_EXT);
 
   enum SpioTestResult
   {
     SPIO_TEST_SUCCESS = 0,
     HIERARCHY_ERROR = 1 << 0,
     EXT_ARRAY_ERROR = 1 << 1,
+    EXT_UNDESC_ERROR = 1 << 2
   };
   int result = SPIO_TEST_SUCCESS;
 
   /*
-   * Verify that the contents of ds2 match those written from ds.
+   * Verify that the contents of view1 are restored.
    */
-  EXPECT_TRUE(ds2->getRoot()->isEquivalentTo(root1));
-  if(!ds2->getRoot()->isEquivalentTo(root1))
-  {
-    result |= HIERARCHY_ERROR;
-  }
-  SLIC_WARNING_IF(result & HIERARCHY_ERROR, "Tree layouts don't match");
-
   EXPECT_EQ(view1->getNumElements(), nvals);
   if(view1->getNumElements() != nvals)
   {
@@ -562,7 +535,194 @@ TEST(spio_parallel, external_piecemeal_writeread)
     }
   }
   SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
-                  "External_array1 was not correctly loaded");
+                  "External_array was not correctly loaded");
+
+  result = SPIO_TEST_SUCCESS;
+
+  /*
+   * Load view within group_b
+   */
+  reader.loadExternalData(root2, group_b, file_name + ROOT_EXT);
+
+  /*
+   * Verify that the contents of view2 are restored.
+   */
+  EXPECT_EQ(view2->getNumElements(), nvals);
+  if(view2->getNumElements() != nvals)
+  {
+    result |= EXT_ARRAY_ERROR;
+  }
+  else
+  {
+    for(int i = 0; i < nvals; ++i)
+    {
+      EXPECT_EQ(orig_vals2[i], restored_vals2[i]);
+      if(orig_vals2[i] != restored_vals2[i])
+      {
+        result |= EXT_ARRAY_ERROR;
+        break;
+      }
+    }
+  }
+  SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
+                  "External_array was not correctly loaded");
+
+  /*
+   * Create another DataStore to test another way of reading input
+   */
+  DataStore* ds3 = new DataStore();
+  Group* root3 = ds3->getRoot();
+
+  reader.read(root3, file_name + ROOT_EXT);
+
+  /*
+   * Reset the restored_vals arrays to incorrect values.
+   */
+  for(int i = 0; i < nvals; ++i)
+  {
+    restored_vals1[i] = -1;
+    restored_vals2[i] = -1;
+  }
+
+  view1 = root3->getView("testdata/fields/a/vals1");
+  view1->setExternalDataPtr(restored_vals1);
+
+  view2 = root3->getView("testdata/fields/b/vals2");
+  view2->setExternalDataPtr(restored_vals2);
+
+  /*
+   * This uses the API for piecewise loading of external data but calls it
+   * to load into the root group.  When loading into the root group, it is
+   * unnecessary to use this API, but here we test that it works nonetheless.
+   */
+  reader.loadExternalData(root3, root3, file_name + ROOT_EXT);
+
+  result = SPIO_TEST_SUCCESS;
+
+  /*
+   * Verify that the contents of view1 are restored.
+   */
+  EXPECT_EQ(view1->getNumElements(), nvals);
+  if(view1->getNumElements() != nvals)
+  {
+    result |= EXT_ARRAY_ERROR;
+  }
+  else
+  {
+    for(int i = 0; i < nvals; ++i)
+    {
+      EXPECT_EQ(orig_vals1[i], restored_vals1[i]);
+      if(orig_vals1[i] != restored_vals1[i])
+      {
+        result |= EXT_ARRAY_ERROR;
+        break;
+      }
+    }
+  }
+  SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
+                  "External_array was not correctly loaded");
+
+  result = SPIO_TEST_SUCCESS;
+
+  /*
+   * Verify that the contents of view2 are restored.
+   */
+  EXPECT_EQ(view2->getNumElements(), nvals);
+  if(view2->getNumElements() != nvals)
+  {
+    result |= EXT_ARRAY_ERROR;
+  }
+  else
+  {
+    for(int i = 0; i < nvals; ++i)
+    {
+      EXPECT_EQ(orig_vals2[i], restored_vals2[i]);
+      if(orig_vals2[i] != restored_vals2[i])
+      {
+        result |= EXT_ARRAY_ERROR;
+        break;
+      }
+    }
+  }
+  SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
+                  "External_array was not correctly loaded");
+
+  /*
+   * Create another DataStore to test another way of reading input
+   */
+  DataStore* ds4 = new DataStore();
+
+  /*
+   * Write the ds1 data to a different file name, starting at a subgroup,
+   * not at the root.
+   */
+  file_name = "out_spio_external_partial_subgroup";
+  writer.write(root1->getGroup("testdata"), num_files, file_name, PROTOCOL);
+
+  Group* root4 = ds4->getRoot();
+  Group* testdata = root4->createGroup("testdata");
+  reader.read(testdata, file_name + ROOT_EXT);
+
+  /*
+   * Reset the restored_vals arrays to incorrect values.
+   */
+  for(int i = 0; i < nvals; ++i)
+  {
+    restored_vals1[i] = -1;
+    restored_vals2[i] = -1;
+  }
+
+  group_a = root4->getGroup("testdata/fields/a");
+  group_b = root4->getGroup("testdata/fields/b");
+
+  view1 = group_a->getView("vals1");
+  view1->setExternalDataPtr(restored_vals1);
+
+  view2 = group_b->getView("vals2");
+  view2->setExternalDataPtr(restored_vals2);
+
+  /*
+   * Do a piecewise loadExternalData for group_a.  The first argument must
+   * match the Group passed in the 'reader.read()' call.
+   */
+  reader.loadExternalData(testdata, group_a, file_name + ROOT_EXT);
+
+  result = SPIO_TEST_SUCCESS;
+
+  /*
+   * Verify that the contents of view1 are restored.
+   */
+  EXPECT_EQ(view1->getNumElements(), nvals);
+  if(view1->getNumElements() != nvals)
+  {
+    result |= EXT_ARRAY_ERROR;
+  }
+  else
+  {
+    for(int i = 0; i < nvals; ++i)
+    {
+      EXPECT_EQ(orig_vals1[i], restored_vals1[i]);
+      if(orig_vals1[i] != restored_vals1[i])
+      {
+        result |= EXT_ARRAY_ERROR;
+        break;
+      }
+    }
+  }
+  SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
+                  "External_array was not correctly loaded");
+
+  result = SPIO_TEST_SUCCESS;
+
+  /*
+   * Do a piecewise loadExternalData for group_b.  The first argument must
+   * match the Group passed in the 'reader.read()' call.
+   */
+  reader.loadExternalData(testdata, group_b, file_name + ROOT_EXT);
+
+  /*
+   * Verify that the contents of view2 are restored.
+   */
 
   EXPECT_EQ(view2->getNumElements(), nvals);
   if(view2->getNumElements() != nvals)
@@ -582,10 +742,12 @@ TEST(spio_parallel, external_piecemeal_writeread)
     }
   }
   SLIC_WARNING_IF(result & EXT_ARRAY_ERROR,
-                  "External_array2 was not correctly loaded");
+                  "External_array was not correctly loaded");
 
   delete ds1;
   delete ds2;
+  delete ds3;
+  delete ds4;
 }
 
 //----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2025, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -31,6 +31,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
+- Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
+  of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
 
 ###  Changed
 - Importing Conduit array data into `sidre::View` now allocates destination
@@ -53,6 +55,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
 as well as support for 32-bit `Word`s in Slam's `BitSet` class.
 - Fixes a memory leak in `axom::Array` copy constructor.
+- Fixes robustness issue with the `axom::primal::clip` overload for clipping a 2D polygon against another 2D polygon.
 
 ## [Version 0.10.1] - Release date 2024-10-22
 
