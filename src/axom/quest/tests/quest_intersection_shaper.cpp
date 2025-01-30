@@ -284,6 +284,7 @@ bool loadBaseline(const std::string &filename, conduit::Node &n)
   return loaded;
 }
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 void replacementRuleTest(const std::string &shapeFile,
                          const std::string &policyName,
                          RuntimePolicy policy,
@@ -316,16 +317,18 @@ void replacementRuleTest(const std::string &shapeFile,
   // Need to do the pipeline of the shaping driver.
   SLIC_INFO(axom::fmt::format("Shaping materials..."));
   const int refinementLevel = 7;
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   // This has to happen here because the shaper gets its communicator from it.
   // If we do it before the mfem mesh is added to the data collection then the
   // data collection communicator gets set to MPI_COMM_NULL, which is bad for
   // the C2C reader.
   dc.SetComm(MPI_COMM_WORLD);
-#endif
-  quest::IntersectionShaper shaper(shapeSet, &dc);
+  #endif
+  quest::IntersectionShaper shaper(policy,
+                                   axom::INVALID_ALLOCATOR_ID,
+                                   shapeSet,
+                                   &dc);
   shaper.setLevel(refinementLevel);
-  shaper.setExecPolicy(policy);
 
   // Borrowed from shaping_driver.
   const klee::Dimensions shapeDim = shapeSet.getDimensions();
@@ -360,10 +363,10 @@ void replacementRuleTest(const std::string &shapeFile,
   conduit::Node current;
   dcToConduit(dc, current);
 
-#ifdef VISUALIZE_DATASETS
+  #ifdef VISUALIZE_DATASETS
   saveVisIt("", baselineName, dc);
-#endif
-#ifdef GENERATE_BASELINES
+  #endif
+  #ifdef GENERATE_BASELINES
   for(const auto &path : baselinePaths)
   {
     SLIC_INFO(axom::fmt::format("Saving baseline to {}", path));
@@ -371,7 +374,7 @@ void replacementRuleTest(const std::string &shapeFile,
     std::string filename(pjoin(path, baselineName));
     saveBaseline(filename, current);
   }
-#endif
+  #endif
 
   // TODO: I might want an auto compare for generating baselines so I know if I need a policy-specific baseline.
 
@@ -452,18 +455,20 @@ void IntersectionWithErrorTolerances(const std::string &filebase,
 
   // Need to do the pipeline of the shaping driver.
   SLIC_INFO(axom::fmt::format("Shaping materials..."));
-#ifdef AXOM_USE_MPI
+  #ifdef AXOM_USE_MPI
   // This has to happen here because the shaper gets its communicator from it.
   // If we do it before the mfem mesh is added to the data collection then the
   // data collection communicator gets set to MPI_COMM_NULL, which is bad for
   // the C2C reader.
   dc.SetComm(MPI_COMM_WORLD);
-#endif
-  quest::IntersectionShaper shaper(shapeSet, &dc);
+  #endif
+  quest::IntersectionShaper shaper(policy,
+                                   axom::INVALID_ALLOCATOR_ID,
+                                   shapeSet,
+                                   &dc);
   shaper.setLevel(refinementLevel);
   shaper.setPercentError(targetPercentError);
   shaper.setRefinementType(quest::DiscreteShape::RefinementDynamic);
-  shaper.setExecPolicy(policy);
 
   // Borrowed from shaping_driver (there should just be one shape)
   const klee::Dimensions shapeDim = shapeSet.getDimensions();
@@ -775,6 +780,7 @@ shapes:
                                     policy);
   }
 }
+#endif
 
 //---------------------------------------------------------------------------
 // Define testing functions for different modes.

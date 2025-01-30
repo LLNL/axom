@@ -6,7 +6,8 @@
 #ifndef AXOM_CORE_EXECUTION_RUNTIME_POLICY_HPP_
 #define AXOM_CORE_EXECUTION_RUNTIME_POLICY_HPP_
 
-#include "axom/config.hpp"   /* for compile time defs. */
+#include "axom/config.hpp" /* for compile time defs. */
+#include <string>
 #include "axom/fmt/format.h" /* for axom::fmt */
 
 #include <map>
