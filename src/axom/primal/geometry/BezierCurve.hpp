@@ -827,9 +827,10 @@ public:
    * are approximately on the line defined by its two endpoints
    *
    * \param [in] tol Threshold for sum of squared distances
+   * \param [in] useStrictLinear If true, the control points must be evenly spaced
    * \return True if c1 is near-linear
    */
-  bool isLinear(double tol = 1E-8) const
+  bool isLinear(double tol = 1E-8, bool useStrictLinear = false) const
   {
     const int ord = getOrder();
     if(ord <= 1)
@@ -837,13 +838,41 @@ public:
       return true;
     }
 
-    SegmentType seg(m_controlPoints[0], m_controlPoints[ord]);
-    double sqDist = 0.0;
-    for(int p = 1; p < ord && sqDist <= tol; ++p)  // check interior control points
+    if(useStrictLinear)
     {
-      sqDist += squared_distance(m_controlPoints[p], seg);
+      // Check that the control points are not too far away from the line,
+      //  AND that they are evenly spaced along the line
+      for(int p = 1; p < ord; ++p)
+      {
+        double t = p / static_cast<T>(ord);
+        PointType the_pt = (1 - t) * m_controlPoints[0].array() +
+          t * m_controlPoints[ord].array();
+
+        double sqDist = squared_distance(m_controlPoints[p], the_pt);
+
+        if(sqDist > tol)
+        {
+          return false;
+        }
+      }
     }
-    return (sqDist <= tol);
+    else
+    {
+      // Check that the control points are not too far away from the line between control points
+      SegmentType seg(m_controlPoints[0], m_controlPoints[ord]);
+
+      for(int p = 1; p < ord; ++p)  // check interior control points
+      {
+        double sqDist = squared_distance(m_controlPoints[p], seg);
+
+        if(sqDist > tol)
+        {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   /*!
