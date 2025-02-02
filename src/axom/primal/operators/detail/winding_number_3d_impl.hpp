@@ -243,7 +243,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
   }
 }
 
-const bool FORCE_ADAPTIVE = false;
+const bool FORCE_ADAPTIVE = true;
 
 template <typename T>
 double stokes_winding_number(const Point<T, 3>& query,
@@ -798,7 +798,7 @@ double adaptive_stokes_cached_rotated(const Point<T, 3>& query,
   else
   {
     // If we're not near the axis, we can trust the original value
-    if(isNearAxisBoxRotated(query, trimming_curve_data_1.bbox, 5.0, rotator))
+    if(FORCE_ADAPTIVE || isNearAxisBoxRotated(query, trimming_curve_data_1.bbox, 5.0, rotator))
       quad_fine_1 = adaptive_stokes_cached_rotated(query,
                                                    nPatchData,
                                                    quad_rule,
@@ -809,7 +809,7 @@ double adaptive_stokes_cached_rotated(const Point<T, 3>& query,
                                                    quad_fine_1,
                                                    quad_tol);
 
-    if(isNearAxisBoxRotated(query, trimming_curve_data_2.bbox, 5.0, rotator))
+    if(FORCE_ADAPTIVE || isNearAxisBoxRotated(query, trimming_curve_data_2.bbox, 5.0, rotator))
       quad_fine_2 = adaptive_stokes_cached_rotated(query,
                                                    nPatchData,
                                                    quad_rule,

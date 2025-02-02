@@ -45,7 +45,7 @@
 
 bool USE_SUBSET = false;
 const int NUM_SUBSET = 1;
-int RELEVANT_INDICES[NUM_SUBSET] = {11};
+int RELEVANT_INDICES[NUM_SUBSET] = {4};
 /**
  * /file quest_jacob_step_file.cpp
  * /brief Example that loads in a STEP file and converts the surface patches and curves to Axom's NURBS representations
@@ -1342,7 +1342,12 @@ public:
         }
       }
 
-      // patchData.nurbsPatch.normalize();
+      // patchData.nurbsPatch.normalizeBySpan();
+      // patchData.nurbsPatch.makeSimpleTrimmed();
+      // exportSurfaceToSTL("C:\\Users\\Fireh\\Code\\winding_number_code\\misc_patches\\untrimmed_patch_" + std::to_string(patchIndex) + ".stl", patchData.nurbsPatch, 17, 17);
+      // patchData.nurbsPatch.expandParameterSpace(0.1);
+      // exportSurfaceToSTL("C:\\Users\\Fireh\\Code\\winding_number_code\\misc_patches\\expanded_untrimmed_patch_" + std::to_string(patchIndex) + ".stl", patchData.nurbsPatch, 17, 17);
+      
       // if(patchIndex == 40)
       // {
       //   patchData.nurbsPatch.makeUntrimmed();
@@ -2306,9 +2311,9 @@ void nut_3d_example()
     "example\\";
 
   std::string filename = "nut";
-  auto stepProcessor = import_step_file(prefix, filename);
+  auto stepProcessor = import_step_file(prefix, filename, true, 0.0001, 0.05);
 
-  constexpr double quad_tol = 1e-5;
+  constexpr double quad_tol = 1e-10;
   constexpr double EPS = 1e-6;
   constexpr double edge_tol = 0;
 
@@ -2317,23 +2322,43 @@ void nut_3d_example()
   auto wn_field = [&stepProcessor, &edge_tol, &quad_tol, &EPS, &case_code](
                     axom::primal::Point<double, 3> query) -> double {
     double wn = 0.0;
-    for(const auto& kv : stepProcessor.getPatchDataMap())
+    auto new_query = axom::primal::Point<double, 3> {-0.002348480048,
+                                                     0.0009630179848,
+                                                     0.001429939992};
+    for(int i = 0; i < NUM_SUBSET; ++i)
     {
       int integrated_trimming_curves;
-      auto new_query =
-
-        axom::primal::Point<double, 3> {-0.000705868, 0.0389087, -0.00646476};
-      double the_val =
-        axom::primal::winding_number_casting(query,
-                                             kv.second.nurbsPatchData,
-                                             case_code,
-                                             integrated_trimming_curves,
-                                             edge_tol,
-                                             quad_tol,
-                                             EPS);
+      double the_val = axom::primal::winding_number_casting(
+        new_query,
+        stepProcessor.getPatchDataMap().at(RELEVANT_INDICES[i]).nurbsPatchData,
+        case_code,
+        integrated_trimming_curves,
+        edge_tol,
+        quad_tol,
+        EPS);
       wn += the_val;
     }
+    // std::cout << std::endl;
+    // for(const auto& kv : stepProcessor.getPatchDataMap())
+    // {
+    //   int integrated_trimming_curves;
+    //   double the_val =
+    //     axom::primal::winding_number_casting(new_query,
+    //                                          kv.second.nurbsPatchData,
+    //                                          case_code,
+    //                                          integrated_trimming_curves,
+    //                                          edge_tol,
+    //                                          quad_tol,
+    //                                          EPS);
 
+    //   // kv.second.nurbsPatchData.patch.printTrimmingCurves(
+    //   // "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+    //   // "abstract\\trimming_curves\\curve_set" + std::to_string(kv.first) + ".txt");
+    //   //   std::cout << kv.first << ": " << case_code << std::endl;
+
+    //   wn += the_val;
+    // }
+    // std::cout << std::endl;
     return wn;
   };
 
@@ -2361,11 +2386,16 @@ void nut_3d_example()
                                      -0.928963261718976},
     1.5 * the_range,
     1.5 * the_range,
-    300,
-    300);
+    100,
+    100);
   timer.stop();
 
   auto elapsed_time = timer.elapsedTimeInSec();
+}
+
+void specific_test()
+{
+
 }
 
 void nut_2d_example()
@@ -3681,8 +3711,10 @@ void generic_direction_timing_test(std::string prefix,
 {
   auto stepProcessor = import_step_file(prefix, filename);
 
-  std::ofstream results(prefix + filename + "_timing_results_" + file_tag + ".csv");
-  std::ofstream summary(prefix + filename + "_timing_summary_" + file_tag + ".csv");
+  std::ofstream results(prefix + filename + "_timing_results_" + file_tag +
+                        ".csv");
+  std::ofstream summary(prefix + filename + "_timing_summary_" + file_tag +
+                        ".csv");
   std::ofstream gwn_field(prefix + filename + "_gwn_field_" + file_tag + ".csv");
 
   constexpr double quad_tol = 1e-5;
@@ -4381,7 +4413,7 @@ int main()
 {
   // graphical_abstract_watertight();
   // graphical_abstract_exploded();
-  // nut_3d_example();
+  nut_3d_example();
   // nut_2d_example();
   // discretized_curve_gwn();
   // discretized_surface_gwn();
@@ -4401,7 +4433,8 @@ int main()
   // 9979 at varying levels zooming
 
   std::string prefix =
-    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\spring_direction\\";
+    "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\spring_"
+    "direction\\";
   axom::primal::BoundingBox<double, 3> bbox;
   std::string filename;
 
@@ -4443,6 +4476,6 @@ int main()
 
   // spring_direction_example();
   // quadrature_on_sphere();
-  plot_trimming_curves();
+  //   plot_trimming_curves();
   return 0;
 }

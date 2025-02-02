@@ -933,7 +933,7 @@ void exportScalarFieldToVTK(const std::string& filename,
   file << "LOOKUP_TABLE default\n";
 
   file << std::setprecision(20);
-  
+
   // Write scalar field data
   for(int k = 0; k < zSteps; ++k)
   {
@@ -1414,6 +1414,16 @@ void exportSurfaceToSTL(const std::string& filename,
   axom::Array<primal::BezierPatch<T, 3>> patchArray;
   patchArray.push_back(patches);
   exportSurfaceToSTL(filename, patchArray, uSteps, vSteps);
+}
+
+template <typename T>
+void exportSurfaceToSTL(const std::string& filename,
+                        const primal::NURBSPatch<T, 3>& patch,
+                        int u_steps = 17,
+                        int v_steps = 17)
+{
+  auto beziers = patch.extractBezier();
+  exportSurfaceToSTL(filename, beziers, u_steps, v_steps);
 }
 
 }  // namespace primal

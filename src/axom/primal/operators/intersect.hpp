@@ -986,9 +986,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
                                 axom::Array<T>& v,
                                 double tol = 1e-8,
                                 double EPS = 1e-8,
-                                bool isHalfOpen = false,
-                                bool isTrimmed = true,
-                                double buffer = 0.0)
+                                bool isHalfOpen = false)
 {
   // Check a bounding box of the entire NURBS first
   Point<T, 3> ip;
@@ -1000,8 +998,6 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
   // Store candidate intersections
   axom::Array<T> tc, uc, vc;
 
-  // std::cout << "Avoided a bezier extraction! (" << patch_data.beziers.size() << ") " << std::endl;
-
   // Check each (precomputed) Bezier patch, and scale the intersection parameters
   //  back into the span of the original NURBS patch
   bool success = false;
@@ -1009,18 +1005,19 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
   {
     // Store candidate intersections from each Bezier patch
     axom::Array<T> tcc, ucc, vcc;
-    // std::cout << patch_data.beziers[ij] << std::endl;
+
     success = intersect(line, patch_data.beziers[ij], tcc, ucc, vcc, tol, EPS);
 
     // Scale the intersection parameters back into the span of the NURBS patch
     for(int k = 0; k < tcc.size(); ++k)
     {
-      // std::cout << patch_data.u_spans[ij].first << ", " << patch_data.u_spans[ij].second << std::endl;
       tc.push_back(tcc[k]);
-      uc.push_back(patch_data.u_spans[ij].first +
-                   ucc[k] * (patch_data.u_spans[ij].second - patch_data.u_spans[ij].first));
-      vc.push_back(patch_data.v_spans[ij].first +
-                   vcc[k] * (patch_data.v_spans[ij].second - patch_data.v_spans[ij].first));
+      uc.push_back(
+        patch_data.u_spans[ij].first +
+        ucc[k] * (patch_data.u_spans[ij].second - patch_data.u_spans[ij].first));
+      vc.push_back(
+        patch_data.v_spans[ij].first +
+        vcc[k] * (patch_data.v_spans[ij].second - patch_data.v_spans[ij].first));
     }
   }
 
@@ -1030,20 +1027,15 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
   // The number of reported intersection points will be small,
   //  so we don't need to fully sort the list
 
-  double max_u_knot = patch_data.patch.getKnots_u()[patch_data.patch.getKnots_u().getNumKnots() - 1];
-  double max_v_knot = patch_data.patch.getKnots_v()[patch_data.patch.getKnots_v().getNumKnots() - 1];
+  double max_u_knot =
+    patch_data.patch.getKnots_u()[patch_data.patch.getKnots_u().getNumKnots() - 1];
+  double max_v_knot =
+    patch_data.patch.getKnots_v()[patch_data.patch.getKnots_v().getNumKnots() - 1];
 
   for(int i = 0; i < tc.size(); ++i)
   {
     // Also remove any intersections on the half-interval boundaries
-    if(isHalfOpen &&
-       (uc[i] >= max_u_knot - buffer || vc[i] >= max_v_knot - buffer))
-    {
-      continue;
-    }
-
-    // And remove any intersections that are not visible
-    if(isTrimmed && !patch_data.patch.isVisible(uc[i], vc[i]))
+    if(isHalfOpen && (uc[i] >= max_u_knot || vc[i] >= max_v_knot))
     {
       continue;
     }
@@ -1078,9 +1070,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
                                 axom::Array<T>& v,
                                 double tol = 1e-8,
                                 double EPS = 1e-8,
-                                bool isHalfOpen = false,
-                                bool isTrimmed = true,
-                                double buffer = 0.0)
+                                bool isHalfOpen = false)
 {
   // Check a bounding box of the entire NURBS first
   Point<T, 3> ip;
@@ -1138,14 +1128,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, 3>& line,
   for(int i = 0; i < tc.size(); ++i)
   {
     // Also remove any intersections on the half-interval boundaries
-    if(isHalfOpen &&
-       (uc[i] >= max_u_knot - buffer || vc[i] >= max_v_knot - buffer))
-    {
-      continue;
-    }
-
-    // And remove any intersections that are not visible
-    if(isTrimmed && !patch.isVisible(uc[i], vc[i]))
+    if(isHalfOpen && (uc[i] >= max_u_knot || vc[i] >= max_v_knot))
     {
       continue;
     }

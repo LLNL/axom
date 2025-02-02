@@ -575,7 +575,7 @@ std::pair<double, double> winding_number_casting_split(
   const double edge_tol_sq = edge_tol * edge_tol;
 
   // Fix the number of quadrature nodes arbitrarily
-  constexpr int quad_npts = 15;
+  constexpr int quad_npts = 100;
 
   // The first is the GWN from stokes, the second is the jump condition
   std::pair<double, double> wn_split = {0.0, 0.0};
@@ -650,8 +650,12 @@ std::pair<double, double> winding_number_casting_split(
   NURBSPatch<T, 3> rotatedPatch = nPatch;
   if(!rotatedPatch.isTrimmed()) rotatedPatch.makeSimpleTrimmed();
 
-  BoundingBox<T, 3> bBox(nPatch.boundingBox().scale(1.05));
-  OrientedBoundingBox<T, 3> oBox(nPatch.orientedBoundingBox().scale(1.05));
+  BoundingBox<T, 3> bBox = nPatch.boundingBox();
+  OrientedBoundingBox<T, 3> oBox = nPatch.orientedBoundingBox();
+  auto characteristic_length = bBox.range().norm();
+
+  bBox.expand(0.01 * characteristic_length);
+  oBox.expand(0.01 * characteristic_length);
 
   // Define vector fields whose curl gives us the winding number
   detail::DiscontinuityAxis field_direction;
@@ -722,7 +726,7 @@ std::pair<double, double> winding_number_casting_split(
         rotatedPatch.getKnots_v()[0]);
 
     // Tolerance for what counts as "close to a boundary" in parameter space
-    T disk_radius = 0.05 * patch_knot_size;
+    T disk_radius = 0.1 * patch_knot_size;
 
     // Compute intersections with the *untrimmed and extrapolated* patch
     axom::Array<T> up, vp, tp;
@@ -732,11 +736,17 @@ std::pair<double, double> winding_number_casting_split(
                              tp,
                              up,
                              vp,
-                             1e-4,  // This is a good heuristic value for accuracy
+                             1e-10,  // This is a good heuristic value for accuracy
                              EPS,
-                             isHalfOpen,
-                             isTrimmed,
-                             disk_radius);
+                             isHalfOpen);
+
+    // for(int kk = 0; kk < up.size(); ++kk)
+    // {
+    // Point<T, 3> intersection_point = rotatedPatch.evaluate(up[kk], vp[kk]);
+    // Point<T, 3> line_point = discontinuity_axis.at(tp[kk]);
+    // std::cout << intersection_point << " " << line_point << std::endl;
+    // std::cout << std::endl;
+    // }
 
     if(!success)
     {
@@ -847,6 +857,10 @@ std::pair<double, double> winding_number_casting_split(
       NURBSPatch<T, 3> disk_patch;
 
       {
+        // rotatedPatch.printTrimmingCurves(
+        //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+        //   "abstract\\trimming_curves\\original.txt");
+
         // AXOM_ANNOTATE_SCOPE("DISK_SPLIT");
         rotatedPatch.diskSplit(up[i],
                                vp[i],
@@ -856,8 +870,82 @@ std::pair<double, double> winding_number_casting_split(
                                isDiskInside,
                                isDiskOutside,
                                ignoreInteriorDisk);
-        // --caliper report, counts
-        // --caliper counts
+
+        // disk_patch.printTrimmingCurves(
+        //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+        //   "abstract\\trimming_curves\\disk.txt");
+        // rotatedPatch.printTrimmingCurves(
+        //   "C:\\Users\\Fireh\\Code\\winding_number_code\\siggraph25\\graphical_"
+        //   "abstract\\trimming_curves\\remaining.txt");
+
+        // axom::Array<T> up_1, vp_1, tp_1;
+        // bool isHalfOpen = false, isTrimmed = false;
+        // intersect(discontinuity_axis,
+        //           disk_patch,
+        //           tp_1,
+        //           up_1,
+        //           vp_1,
+        //           1e-8,  // This is a good heuristic value for accuracy
+        //           EPS,
+        //           isHalfOpen);
+
+        // for(int kk = 0; kk < up_1.size(); ++kk)
+        // {
+        //   Point<T, 3> intersection_point = disk_patch.evaluate(up_1[kk], vp_1[kk]);
+        //   Point<T, 3> line_point = discontinuity_axis.at(tp_1[kk]);
+        //   std::cout << intersection_point << std::endl;
+        //   std::cout << line_point << std::endl;
+        // }
+
+        // std::cout << disk_patch.getKnots_u() << std::endl;
+        // std::cout << disk_patch.getKnots_v() << std::endl;
+        // disk_patch.clip(up[i] - 2 * disk_radius,
+        //                 up[i] + 2 * disk_radius,
+        //                 vp[i] - 2 * disk_radius,
+        //                 vp[i] + 2 * disk_radius);
+        // std::cout << disk_patch.getKnots_u() << std::endl;
+        // std::cout << disk_patch.getKnots_v() << std::endl;
+
+        // axom::Array<T> up_2, vp_2, tp_2;
+        // intersect(discontinuity_axis,
+        //           disk_patch,
+        //           tp_2,
+        //           up_2,
+        //           vp_2,
+        //           1e-8,  // This is a good heuristic value for accuracy
+        //           EPS,
+        //           isHalfOpen);
+
+        // for(int kk = 0; kk < up_2.size(); ++kk)
+        // {
+        //   Point<T, 3> intersection_point = disk_patch.evaluate(up_2[kk], vp_2[kk]);
+        //   Point<T, 3> line_point = discontinuity_axis.at(tp_2[kk]);
+        //   std::cout << intersection_point << std::endl;
+        //   std::cout << line_point << std::endl;
+        // }
+
+        // std::cout << "===========" << std::endl;
+        // std::cout << up_1 << std::endl;
+        // std::cout << up_2 << std::endl;
+        // std::cout << "===========" << std::endl;
+        // std::cout << vp_1 << std::endl;
+        // std::cout << vp_2 << std::endl;
+        // std::cout << "===========" << std::endl;
+        // std::cout << discontinuity_axis.at(tp_e[0]) << std::endl;
+        // std::cout << disk_patch.evaluate(up_e[0], vp_e[0]) << std::endl;
+        // std::cout << rotatedPatch.evaluate(up_e[0], vp_e[0]) << std::endl;
+        // std::cout << rotatedPatch.evaluate(up[i], vp[i]) << std::endl;
+        // std::cout << disk_patch.evaluate(up[i], vp[i]) << std::endl;
+        // disk_patch.clip(up[i] - 2 * disk_radius,
+        //                 up[i] + 2 * disk_radius,
+        //                 vp[i] - 2 * disk_radius,
+        //                 vp[i] + 2 * disk_radius);
+        // std::cout << disk_patch.evaluate(up[i], vp[i]) << std::endl;
+        // std::cout << rotatedPatch.evaluate(up[i], vp[i]) << std::endl;
+        // std::cout << disk_patch.evaluate(up[i], vp[i]) << std::endl;
+        // std::cout << up[i] << ": " << up_e << std::endl;
+        // std::cout << vp[i] << ": " << vp_e << std::endl;
+        // std::cout << std::endl;
       }
 
       // If the query point is on the surface, the contribution of the disk is near-zero,
@@ -871,7 +959,8 @@ std::pair<double, double> winding_number_casting_split(
       else if(!isDiskInside && !isDiskOutside)
       {
         auto new_direction = random_orthogonal(the_normal);
-
+        // std::cout << "SUBCAST " << new_direction[0] << ", " << new_direction[1]
+        //           << ", " << new_direction[2] << std::endl;
         // We compute the contribution of the disk directly,
         //  but with a different direction to avoid repeated subdivision
         // std::cout << "Disk Subdivision" << std::endl;
@@ -1281,7 +1370,7 @@ double winding_number_casting(const Point<T, 3>& query,
   double u = axom::utilities::random_real(-1.0, 1.0);
   auto cast_direction =
     Vector<T, 3> {sin(theta) * sqrt(1 - u * u), cos(theta) * sqrt(1 - u * u), u};
-  // cast_direction = Vector<T, 3> {0.01, 0.01, 1};
+  cast_direction = Vector<T, 3>({1, 0.5, 1}).unitVector();
   auto wn_split = winding_number_casting_split(query,
                                                nPatchData,
                                                cast_direction,
@@ -1471,11 +1560,9 @@ std::pair<double, double> winding_number_casting_split(
                              tp,
                              up,
                              vp,
-                             1e-5,  // This is a good heuristic value for accuracy
+                             1e-10,  // This is a good heuristic value for accuracy
                              EPS,
-                             isHalfOpen,
-                             isTrimmed,
-                             disk_radius);
+                             isHalfOpen);
 
     if(!success)
     {
@@ -1635,6 +1722,12 @@ std::pair<double, double> winding_number_casting_split(
       else if(!isDiskInside && !isDiskOutside)
       {
         auto new_direction = random_orthogonal(the_normal);
+        std::cout << std::setprecision(15) << std::endl;
+        std::cout << new_direction[0] << "," << std::endl;
+        std::cout << new_direction[1] << "," << std::endl;
+        std::cout << new_direction[2] << "};" << std::endl;
+        new_direction =
+          Vector<T, 3> {0.183876962693649, -0.850254833796789, 0.493209874389953};
 
         // We compute the contribution of the disk directly,
         //  but with a different direction to avoid repeated subdivision
@@ -1705,8 +1798,6 @@ std::pair<double, double> winding_number_casting_split(
                                                     field_direction,
                                                     quad_npts,
                                                     quad_tol);
-
-    // std::cout << "Not Cached: " << wn_split.first << std::endl;
   }
   else
   {
@@ -1718,7 +1809,6 @@ std::pair<double, double> winding_number_casting_split(
                                                              field_direction,
                                                              quad_npts,
                                                              quad_tol);
-      // std::cout << "Not Rotated: " << wn_split.first << std::endl;
     }
     else
     {
@@ -1727,7 +1817,6 @@ std::pair<double, double> winding_number_casting_split(
                                                                      rotator,
                                                                      quad_npts,
                                                                      quad_tol);
-      // std::cout << "Rotated wn: " << wn_split.first << std::endl;
     }
   }
 
@@ -1811,9 +1900,6 @@ double simple_coincident_wn(const Point<T, 3>& query,
       acos(axom::utilities::clampVal(discontinuity_direction[2], -1.0, 1.0));
 
     rotator = angleAxisRotMatrix(ang, axis);
-
-    // std::cout << wn_split.second << std::endl;
-    // std::cout << std::endl;
   }
 
   //  Rotate it if we need to
@@ -1950,11 +2036,9 @@ double sphere_winding_number_casting(const Point<T, 3>& query,
                              tp,
                              up,
                              vp,
-                             1e-5,  // This is a good heuristic value for accuracy
+                             1e-10,  // This is a good heuristic value for accuracy
                              EPS,
-                             isHalfOpen,
-                             isTrimmed,
-                             0.1);
+                             isHalfOpen);
 
     // Account for each discontinuity in the integrand on the *untrimmed and extrapolated* surface
 
@@ -1965,7 +2049,6 @@ double sphere_winding_number_casting(const Point<T, 3>& query,
     {
       // Check for surface degeneracies or tangencies
       Vector<T, 3> the_normal = nPatchData.patch.normal(up[i], vp[i]);
-      // std::cout << the_normal.norm() << " " << the_normal.unitVector().dot(discontinuity_direction) << std::endl;
 
       // Check for surface coincidence
       Point<T, 3> intersection_point = nPatchData.patch.evaluate(up[i], vp[i]);
@@ -1997,9 +2080,6 @@ double sphere_winding_number_casting(const Point<T, 3>& query,
       acos(axom::utilities::clampVal(discontinuity_direction[2], -1.0, 1.0));
 
     rotator = angleAxisRotMatrix(ang, axis);
-
-    // std::cout << wn_split.second << std::endl;
-    // std::cout << std::endl;
   }
 
   if(true)
@@ -2010,7 +2090,6 @@ double sphere_winding_number_casting(const Point<T, 3>& query,
                                                                    rotator,
                                                                    quad_npts,
                                                                    quad_tol);
-      // std::cout << "Rotated wn: " << wn_split.first << std::endl;
     }
   }
 

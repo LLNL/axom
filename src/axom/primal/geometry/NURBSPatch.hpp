@@ -95,7 +95,6 @@ struct NURBSPatchData
     : patchIndex(idx)
     , patch(a_patch)
   {
-    curve_quadrature_maps.resize(patch.getNumTrimmingCurves());
 
     obox = patch.orientedBoundingBox();
 
@@ -106,7 +105,9 @@ struct NURBSPatchData
     // Filter out the Bezier patches whose knot spans
     //  are not visible in the trimming curves
 
+    patch.normalizeBySpan();
     patch.makeSimpleTrimmed();
+    patch.expandParameterSpace(0.1);
     auto candidates = patch.extractBezier();
 
     axom::Array<T> knot_vals_u = patch.getKnots_u().getUniqueKnots();
@@ -115,11 +116,18 @@ struct NURBSPatchData
     const auto num_knot_span_u = knot_vals_u.size() - 1;
     const auto num_knot_span_v = knot_vals_v.size() - 1;
 
+    // Add all internal Bezier patches directly
     for(int i = 0; i < num_knot_span_u; ++i)
     {
       for(int j = 0; j < num_knot_span_v; ++j)
       {
         auto& bezier = candidates[i * num_knot_span_v + j];
+
+        // For now, let's just add all of the Bezier patches
+        beziers.push_back(bezier);
+        u_spans.push_back({std::make_pair(knot_vals_u[i], knot_vals_u[i + 1])});
+        v_spans.push_back({std::make_pair(knot_vals_v[j], knot_vals_v[j + 1])});
+        continue;
 
         // For bezier and knot spans to be pushed back, 2 things need to be true:
         bool center_visible = false;
@@ -160,13 +168,8 @@ struct NURBSPatchData
       }
     }
 
-    // Why doesn't this work?
-    // bbox = BoundingBox<T, 3>();
-    // for(auto& bezier : beziers)
-    // {
-    //   bbox.addBox(bezier.boundingBox());
-    // }
     bbox = patch.boundingBox();
+    curve_quadrature_maps.resize(patch.getNumTrimmingCurves());
   }
 
   TrimmingCurveQuadratureData<T>& getQuadratureData(
@@ -1408,6 +1411,17 @@ public:
                                           0.,
                                           1.);
 
+          // Check the accuracy of the intersections
+          // for(int j = 0; j < temp_curve_p.size(); ++j)
+          // {
+          //   std::cout << "======= " << j << " =========" << std::endl;
+          //   std::cout << beziers[i].evaluate(temp_curve_p[j]) << std::endl;
+          //   std::cout << Point<T, 2> {u + r * std::cos(temp_circle_p[j]),
+          //                             v + r * std::sin(temp_circle_p[j])}
+          //             << std::endl;
+          //   std::cout << "=====================" << std::endl;
+          // }
+
           // Scale the intersection parameters back into the span of the NURBS curve
           for(int j = 0; j < temp_curve_p.size(); ++j)
           {
@@ -1438,10 +1452,10 @@ public:
       }
     }
 
-
     if(circle_params.size() % 2 != 0)
     {
-      std::cout << std::endl << "Robustness issue: Not an even number of circle parameters"
+      std::cout << std::endl
+                << "Robustness issue: Not an even number of circle parameters"
                 << std::endl;
 
       // If this is the case, do the closest thing you can to doing nothing.
@@ -1471,7 +1485,7 @@ public:
 
         n2.m_trimming_curves.clear();
         n2.addTrimmingCurve(c1);
-        n2.clip(u - 1.01 * r, u + 1.01 * r, v - 1.01 * r, v + 1.01 * r);
+        n2.clip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
 
         c1.reverseOrientation();
         n1.addTrimmingCurve(c1);
@@ -1559,7 +1573,7 @@ public:
     }
 
     // Clip n2 according to the width of the disk
-    n2.clip(u - 1.01 * r, u + 1.01 * r, v - 1.01 * r, v + 1.01 * r);
+    n2.clip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
   }
 
   /// Determine if point in parameter space is trimmed out
@@ -2662,6 +2676,7 @@ public:
       normalize();
     }
   }
+
   /*!
     * \brief Splits a NURBS patch into four NURBS patches
     *
@@ -3167,6 +3182,146 @@ public:
     return beziers;
   }
 
+  /// \brief Normalize to the span [0, N] x [0, M] where N and M are the number of spans in u and v
+  void normalizeBySpan()
+  {
+    auto min_u = getMinKnot_u();
+    auto max_u = getMaxKnot_u();
+    auto min_v = getMinKnot_v();
+    auto max_v = getMaxKnot_v();
+
+    auto n = m_knotvec_u.getNumKnotSpans();
+    auto m = m_knotvec_v.getNumKnotSpans();
+
+    m_knotvec_u.rescale(0, n);
+    m_knotvec_v.rescale(0, m);
+
+    for(auto& curve : m_trimming_curves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = n * (curve[i][0] - min_u) / (max_u - min_u);
+        curve[i][1] = m * (curve[i][1] - min_v) / (max_v - min_v);
+      }
+    }
+  }
+
+  void expandParameterSpace(double buffer)
+  {
+    auto n = getNumControlPoints_u();
+    auto m = getNumControlPoints_v();
+
+    if(n <= 1 || m <= 1)
+    {
+      return;
+    }
+
+    auto deg_u = getDegree_u();
+    auto deg_v = getDegree_v();
+
+    CoordsMat newControlPoints(n + 2 * deg_u, m + 2 * deg_v);
+    WeightsMat newWeights(0, 0);
+    if(isRational())
+    {
+      newWeights.resize(n + 2 * deg_u, m + 2 * deg_v);
+      newWeights.fill(1.0);
+    }
+
+    axom::Array<T> newKnotVec_u, newKnotVec_v;
+
+    // Copy the original control points
+    for(int i = 0; i < n; ++i)
+    {
+      for(int j = 0; j < m; ++j)
+      {
+        newControlPoints(i + deg_u, j + deg_v) = m_controlPoints(i, j);
+        if(isRational())
+        {
+          newWeights(i + deg_u, j + deg_v) = m_weights(i, j);
+        }
+      }
+    }
+
+    // Add the control points on the u direction
+    for(int i = 0; i < n; ++i)
+    {
+      Vector<T, 3> v(m_controlPoints(i, 1), m_controlPoints(i, 0));
+      for(int j = 0; j < deg_v; ++j)
+      {
+        newControlPoints(i + deg_u, j).array() = m_controlPoints(i, 0).array() +
+          static_cast<T>(deg_v - j) / (deg_v)*buffer * v.array();
+      }
+
+      v = Vector<T, 3>(m_controlPoints(i, m - 2), m_controlPoints(i, m - 1));
+      for(int j = 0; j < deg_v; ++j)
+      {
+        newControlPoints(i + deg_u, m + deg_v + j).array() =
+          m_controlPoints(i, m - 1).array() +
+          static_cast<T>(j + 1) / (deg_v)*buffer * v.array();
+      }
+    }
+
+    // Add the control points on the v direction
+    //  Note that this method uses values added in the u direction,
+    //  making it slightly anisotropic at the corners
+    for(int j = 0; j < m + 2 * deg_v; ++j)
+    {
+      Vector<T, 3> v(newControlPoints(deg_u + 1, j), newControlPoints(deg_u, j));
+      for(int i = 0; i < deg_u; ++i)
+      {
+        newControlPoints(i, j).array() = newControlPoints(deg_u, j).array() +
+          static_cast<T>(deg_u - i) / (deg_u)*buffer * v.array();
+      }
+
+      v = Vector<T, 3>(newControlPoints(n - 2 + deg_u, j),
+                       newControlPoints(n + deg_u - 1, j));
+      for(int i = 0; i < deg_u; ++i)
+      {
+        newControlPoints(n + deg_u + i, j).array() =
+          newControlPoints(n + deg_u - 1, j).array() +
+          static_cast<T>(i + 1) / (deg_u)*buffer * v.array();
+      }
+    }
+
+    // Fix the knot vectors
+    newKnotVec_u.resize(m_knotvec_u.getNumKnots() + 2 * m_knotvec_u.getDegree());
+    for(int i = 0; i <= deg_u; ++i)
+    {
+      newKnotVec_u[i] = m_knotvec_u[0] - buffer;
+    }
+    for(int i = 0; i < m_knotvec_u.getNumKnots() - 2; ++i)
+    {
+      newKnotVec_u[i + deg_u + 1] = m_knotvec_u[i + 1];
+    }
+    for(int i = 0; i <= deg_u; ++i)
+    {
+      newKnotVec_u[i + deg_u + m_knotvec_u.getNumKnots() - 1] =
+        m_knotvec_u[m_knotvec_u.getNumKnots() - 1] + buffer;
+    }
+
+    // Fix the knot vector
+    newKnotVec_v.resize(m_knotvec_v.getNumKnots() + 2 * m_knotvec_v.getDegree());
+    for(int i = 0; i <= deg_v; ++i)
+    {
+      newKnotVec_v[i] = m_knotvec_v[0] - buffer;
+    }
+    for(int i = 0; i < m_knotvec_v.getNumKnots() - 2; ++i)
+    {
+      newKnotVec_v[i + deg_v + 1] = m_knotvec_v[i + 1];
+    }
+    for(int i = 0; i <= deg_v; ++i)
+    {
+      newKnotVec_v[i + deg_v + m_knotvec_v.getNumKnots() - 1] =
+        m_knotvec_v[m_knotvec_v.getNumKnots() - 1] + buffer;
+    }
+
+    m_controlPoints = newControlPoints;
+    m_weights = newWeights;
+
+    m_knotvec_u = KnotVectorType(newKnotVec_u, deg_u);
+    m_knotvec_v = KnotVectorType(newKnotVec_v, deg_v);
+  }
+
   /// \brief Normalize the knot vectors to the span [0, 1]
   void normalize()
   {
@@ -3177,6 +3332,7 @@ public:
   /// \brief Normalize the knot vector in u to the span [0, 1]
   void normalize_u()
   {
+    m_knotvec_u.normalize();
     auto min_u = m_knotvec_u[0];
     auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
 
