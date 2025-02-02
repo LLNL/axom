@@ -848,9 +848,7 @@ public:
         PointType the_pt = (1 - t) * m_controlPoints[0].array() +
           t * m_controlPoints[ord].array();
 
-        double sqDist = squared_distance(m_controlPoints[p], the_pt);
-
-        if(sqDist > tol)
+        if(squared_distance(m_controlPoints[p], the_pt) > tol)
         {
           return false;
         }
@@ -863,9 +861,7 @@ public:
 
       for(int p = 1; p < ord; ++p)  // check interior control points
       {
-        double sqDist = squared_distance(m_controlPoints[p], seg);
-
-        if(sqDist > tol)
+        if(squared_distance(m_controlPoints[p], seg) > tol)
         {
           return false;
         }
