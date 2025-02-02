@@ -524,6 +524,75 @@ bool intersect(const Sphere<T, DIM>& s1,
   return s1.intersectsWith(s2, TOL);
 }
 
+/*!
+ * \brief Determines if a 2D sphere intersects a bounding box 
+ *
+ * \param [in] circle The sphere to check for intersection
+ * \param [in] bb The bounding box to check for intersection
+ */
+template <typename T>
+bool intersect(const Sphere<T, 2>& circle, const BoundingBox<T, 2>& bb)
+{
+  T dx = axom::utilities::clampVal(circle.getCenter()[0],
+                                   bb.getMin()[0],
+                                   bb.getMax()[0]);
+  T dy = axom::utilities::clampVal(circle.getCenter()[1],
+                                   bb.getMin()[1],
+                                   bb.getMax()[1]);
+  if(circle.computeSignedDistance(primal::Point<T, 2>({dx, dy})) > 0)
+  {
+    return false;
+  }
+
+  return true;
+}
+
+/*!
+ * \brief Determines if a 2D sphere intersects a NURBS Curve
+ * 
+ * \param [in] circle The sphere to check for intersection
+ * \param [in] curve The NURBS curve to check for intersection
+ * \param [in] tol Tolerance parameter for physical distances
+ * \param [in] EPS Tolerance parameter for parameter-space distances
+ * 
+ * \return True if the sphere intersects the curve, false otherwise
+ */
+template <typename T>
+bool intersect(const Sphere<T, 2>& circle,
+               const NURBSCurve<T, 2>& curve,
+               double tol = 1e-8,
+               double EPS = 1e-8)
+{
+  const double sq_tol = tol * tol;
+
+  // Extract the Bezier curves of the NURBS curve
+  auto beziers = curve.extractBezier();
+  axom::Array<T> knot_vals = curve.getKnots().getUniqueKnots();
+
+  // Check each Bezier segment for intersection
+  for(int i = 0; i < beziers.size(); ++i)
+  {
+    axom::Array<T> temp_curve_p;
+    axom::Array<T> temp_circle_p;
+    detail::intersect_circle_bezier(circle,
+                                    beziers[i],
+                                    temp_circle_p,
+                                    temp_curve_p,
+                                    sq_tol,
+                                    EPS,
+                                    beziers[i].getOrder(),
+                                    0.,
+                                    1.);
+
+    // Scale the intersection parameters back into the span of the NURBS curve
+    for(int j = 0; j < temp_curve_p.size(); ++j)
+    {
+      curve_params.push_back(
+        knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
+      circle_params.push_back(temp_circle_p[j]);
+    }
+  }
+}
 /// @}
 
 /// \name Oriented Bounding Box Intersection Routines
