@@ -560,6 +560,8 @@ bool intersect(const Sphere<T, 2>& circle, const BoundingBox<T, 2>& bb)
 template <typename T>
 bool intersect(const Sphere<T, 2>& circle,
                const NURBSCurve<T, 2>& curve,
+               axom::Array<T>& circle_params,
+               axom::Array<T>& curve_params,
                double tol = 1e-8,
                double EPS = 1e-8)
 {
@@ -592,6 +594,8 @@ bool intersect(const Sphere<T, 2>& circle,
       circle_params.push_back(temp_circle_p[j]);
     }
   }
+
+  return curve_params.size() > 0;
 }
 /// @}
 

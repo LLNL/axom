@@ -21,6 +21,7 @@
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 
 #include <vector>
+#include <math.h>
 
 namespace axom
 {
@@ -230,6 +231,11 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
 
   bool foundIntersection = false;
 
+  if(c1.isLinear(sq_tol))
+  {
+    c1.isLinear(sq_tol, true);
+  }
+
   if(c1.isLinear(sq_tol, true) && c2.isLinear(sq_tol, true))
   {
     T s, t;
@@ -420,14 +426,14 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
     T c1, c2, t1, t2;
     if(intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2))
     {
-      if(t1 >= 0.0 && t1 < 1.0)
+      if(t1 >= -EPS && t1 < 1.0 - EPS)
       {
         circle_p.push_back(c1);
         curve_p.push_back(c_offset + c_scale * t1);
         foundIntersection = true;
       }
 
-      if(t2 >= 0.0 && t2 < 1.0)
+      if(t2 >= -EPS && t2 < 1.0 - EPS)
       {
         intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2);
         circle_p.push_back(c2);

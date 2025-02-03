@@ -846,8 +846,8 @@ public:
       for(int p = 1; p < ord; ++p)
       {
         double t = p / static_cast<T>(ord);
-        PointType the_pt = (1 - t) * m_controlPoints[0].array() +
-          t * m_controlPoints[ord].array();
+        PointType the_pt((1 - t) * m_controlPoints[0].array() +
+                         t * m_controlPoints[ord].array());
 
         if(squared_distance(m_controlPoints[p], the_pt) > tol)
         {
