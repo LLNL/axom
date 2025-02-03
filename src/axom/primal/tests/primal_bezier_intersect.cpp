@@ -454,7 +454,7 @@ TEST(primal_bezier_inter, cubic_bezier_nine_intersections)
   checkIntersections(curve1, curve2, exp_s, exp_t, eps, eps_test);
 }
 
-/**
+/*
  * Helper function to compute the intersections of a curve and a ray and check that
  * their intersection points match our expectations, stored in \a exp_s
  * and \a exp_t. Intersections are computed within tolerance \a eps
@@ -483,7 +483,7 @@ void checkIntersectionsRay(const primal::Ray<CoordType, 2>& ray,
   const bool exp_intersect = (num_exp_intersections > 0);
 
   // Intersect the curve and ray, intersection parameters will be
-  // in arrays s and t, for curve and ray, respectively
+  // in arrays r and c, for ray and curve, respectively
   Array r, c;
   bool curves_intersect = intersect(ray, curve, r, c, eps);
   EXPECT_EQ(exp_intersect, curves_intersect);
@@ -961,6 +961,98 @@ TEST(primal_bezier_inter, ray_nurbs_intersections)
     RayType ray(ray_origin, ray_direction);
 
     checkIntersectionsRay(ray, circle, {1.0}, {params[i]}, eps, eps_test);
+  }
+}
+
+/*
+ * Helper function to compute the intersections of a curve and a circle and check that
+ * their intersection points match our expectations, stored in \a exp_s
+ * and \a exp_t. Intersections are computed within tolerance \a eps
+ * and our checks use \a test_eps.
+ *
+ * Param \a shouldPrintIntersections is used for debugging and for generating
+ * the initial array of expected intersections.
+ */
+template <typename CoordType, typename CurveType>
+void checkIntersectionsCircle(const primal::Sphere<CoordType, 2>& circle,
+                              const CurveType& curve,
+                              const axom::Array<CoordType>& exp_circle,
+                              const axom::Array<CoordType>& exp_curve,
+                              double eps,
+                              double test_eps,
+                              bool shouldPrintIntersections = false)
+{
+  constexpr int DIM = 2;
+  using Array = axom::Array<CoordType>;
+
+  // Check validity of input data exp_c and exp_r.
+  // They should have the same size
+  EXPECT_EQ(exp_circle.size(), exp_curve.size());
+
+  const int num_exp_intersections = static_cast<int>(exp_circle.size());
+  const bool exp_intersect = (num_exp_intersections > 0);
+
+  // Intersect the curve and ray, intersection parameters will be
+  // in arrays for circle and curve, respectively
+  Array circle_params, curve_params;
+  bool curves_intersect =
+    intersect(circle, curve, circle_params, curve_params, eps);
+  EXPECT_EQ(exp_intersect, curves_intersect);
+  EXPECT_EQ(circle_params.size(), curve_params.size());
+
+  // check that we found the expected number of intersection points
+  const int num_actual_intersections = static_cast<int>(circle_params.size());
+  EXPECT_EQ(num_exp_intersections, num_actual_intersections);
+
+  // check that the evaluated intersection points are identical
+  for(int i = 0; i < num_actual_intersections; ++i)
+  {
+    auto p1 = primal::Vector<T.2> {
+      circle.getCenter()[0] + circle.getRadius() * std::cos(circle_params[i]),
+      circle.getCenter()[1] + circle.getRadius() * std::sin(circle_params[i])};
+    auto p2 = curve.evaluate(curve_params[i]);
+
+    EXPECT_NEAR(0., primal::squared_distance(p1, p2), test_eps);
+
+    for(int d = 0; d < DIM; ++d)
+    {
+      EXPECT_NEAR(p1[d], p2[d], test_eps);
+    }
+  }
+
+  if(shouldPrintIntersections)
+  {
+    std::stringstream sstr;
+
+    sstr << "Intersections for curve and ray: "
+         << "\n\t" << curve << "\n\t" << ray;
+
+    sstr << "\ns (" << circle_params.size() << "): ";
+    for(auto i = 0u; i < circle_params.size(); ++i)
+    {
+      sstr << std::setprecision(16) << circle_params[i] << ",";
+    }
+
+    sstr << "\nt (" << curve_params.size() << "): ";
+    for(auto i = 0u; i < curve_params.size(); ++i)
+    {
+      sstr << std::setprecision(16) << curve_params[i] << ",";
+    }
+
+    SLIC_INFO(sstr.str());
+  }
+
+  for(int i = 0; i < num_actual_intersections; ++i)
+  {
+    EXPECT_NEAR(exp_circle[i], circle_params[i], test_eps);
+    EXPECT_NEAR(exp_curve[i], curve_params[i], test_eps);
+
+    if(shouldPrintIntersections)
+    {
+      SLIC_INFO("\t" << i << ": {curve:" << curve_params[i] << ", circle:" << circle_params[i]
+                     << std::setprecision(16) << ", curve_actual:" << exp_curve[i]
+                     << ", circle_actual:" << exp_circle[i] << "}");
+    }
   }
 }
 
