@@ -1056,6 +1056,193 @@ void checkIntersectionsCircle(const primal::Sphere<CoordType, 2>& circle,
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, circle_simple_intersections)
+{
+  static const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+  using CircleType = primal::Sphere<CoordType, DIM>;
+
+  SLIC_INFO("primal: testing nurbs-circle intersection");
+
+  const int degree = 3;
+
+  // Cubic curve
+  PointType data[order + 1] = {PointType {0.0 / 3.0, 0.5},
+                               PointType {1.0 / 3.0, -1.0},
+                               PointType {2.0 / 3.0, 1.0},
+                               PointType {3.0 / 3.0, -0.5}};
+  NURBSCurveType curve(data, degree);
+
+  // Circle 1 - Two intersections
+  PointType center({0.5, 0.0});
+  CoordType radius = 0.25;
+  CircleType circle(center, radius);
+
+  axom::Array<CoordType> exp_circle_intersections = {0.17267316464601146,
+                                                     0.827326835353989};
+
+  axom::Array<CoordType> exp_curve_intersections = {0.17267316464601146,
+                                                    0.827326835353989};
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        exp_circle_intersections,
+                        exp_curve_intersections,
+                        eps,
+                        eps_test);
+
+  // Circle 2 - Two different intersections
+  center = PointType({0.75, 0.3});
+  circle = CircleType(center, radius);
+
+  exp_circle_intersections = {0.5, 0.5};
+  exp_curve_intersections = {0.5, 0.5};
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        exp_circle_intersections,
+                        exp_curve_intersections,
+                        eps,
+                        eps_test);
+
+  // Circle 3 - One intersection
+  center = PointType({0.0, 0.5});
+  circle = CircleType(center, radius);
+
+  exp_circle_intersections = {0.5};
+  exp_curve_intersections = {0.5};
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        exp_circle_intersections,
+                        exp_curve_intersections,
+                        eps,
+                        eps_test);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, circle_endpoint_intersections)
+{
+  static const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+  using CircleType = primal::Sphere<CoordType, DIM>;
+
+  SLIC_INFO("primal: testing nurbs-circle intersection");
+
+  const int degree = 3;
+
+  // Cubic curve
+  PointType data[order + 1] = {PointType {0.0 / 3.0, 0.5},
+                               PointType {1.0 / 3.0, -1.0},
+                               PointType {2.0 / 3.0, 1.0},
+                               PointType {3.0 / 3.0, -0.5}};
+  NURBSCurveType curve(data, degree);
+
+  // Circle 1 - Record intersections at the t = 0 endpoint
+  PointType center({0.0, 0.75});
+  CoordType radius = 0.25;
+  CircleType circle(center, radius);
+
+  axom::Array<CoordType> exp_circle_intersections = {1.5 * M_PI};
+  axom::Array<CoordType> exp_curve_intersections = {0.0};
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        exp_circle_intersections,
+                        exp_curve_intersections,
+                        eps,
+                        eps_test);
+
+  // Circle 2 - Don't record intersections at the t = 1 endpoint
+  center = PointType({1.0, -0.75});
+  circle = CircleType(center, radius);
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        axom::Array<CoordType>(),
+                        axom::Array<CoordType>(),
+                        eps,
+                        eps_test);
+
+  // Circle 3 - The circle is parameterized on [0, 2pi)
+  center = PointType({-0.25, 0.5});
+  circle = CircleType(center, radius);
+
+  exp_circle_intersections = {0.0};
+  exp_curve_intersections = {0.0};
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        exp_circle_intersections,
+                        exp_curve_intersections,
+                        eps,
+                        eps_test);
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_bezier_inter, circle_nurbs_knot_intersections)
+{
+  static const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+  using RayType = primal::Ray<CoordType, DIM>;
+
+  SLIC_INFO("primal: testing NURBS intersection");
+
+  const double eps = 1E-10;
+  const double eps_test = 1E-10;
+
+  // NURBS Curve which defines an entire circle
+  PointType data[7] = {PointType {1.0, 0.0},
+                       PointType {1.0, 2.0},
+                       PointType {-1.0, 2.0},
+                       PointType {-1.0, 0.0},
+                       PointType {-1.0, -2.0},
+                       PointType {1.0, -2.0},
+                       PointType {1.0, 0.0}};
+  double weights[7] = {1.0, 1. / 3., 1. / 3., 1.0, 1. / 3., 1. / 3., 1.0};
+  double knots[11] = {0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0, 1.0};
+  NURBSCurveType circle(data, weights, 7, knots, 11);
+
+  // Circle 1 - Intersect at the 0.5 knot of the NURBS
+  PointType center({-1.0, 0.25});
+  CoordType radius = 0.25;
+  CircleType circle(center, radius);
+
+  axom::Array<CoordType> exp_circle_intersections = {0.4, 0.5};
+  axom::Array<CoordType> exp_curve_intersections = {0.4, 0.5};
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        exp_circle_intersections,
+                        exp_curve_intersections,
+                        eps,
+                        eps_test);
+
+  // Circle 2 - Intersect in both knot spans of the NURBS
+  center = PointType({-1.0, 0.0});
+  circle = CircleType(center, radius);
+
+  exp_circle_intersections = {0.0, 0.5};
+  exp_curve_intersections = {0.0, 0.5};
+
+  checkIntersectionsRay(circle,
+                        curve,
+                        exp_circle_intersections,
+                        exp_curve_intersections,
+                        eps,
+                        eps_test);
+}
+
 int main(int argc, char* argv[])
 {
   int result = 0;
