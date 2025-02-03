@@ -1223,7 +1223,8 @@ TEST(primal_bezier_inter, circle_nurbs_knot_intersections)
   CoordType radius = 0.25;
   CircleType circle(center, radius);
 
-  axom::Array<CoordType> exp_circle_intersections = {1.0808390002995705, 4.7123889803846897};
+  axom::Array<CoordType> exp_circle_intersections = {1.0808390002995705,
+                                                     4.7123889803846897};
   axom::Array<CoordType> exp_curve_intersections = {0.4, 0.5};
 
   checkIntersectionsCircle(circle,
