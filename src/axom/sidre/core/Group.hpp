@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1346,7 +1346,7 @@ public:
    * \brief Print given number of levels of Group sub-tree
    *        starting at this Group object to an output stream.
    */
-  void printTree(const int nlevels, std::ostream& os) const;
+  void printTree(const int nlevels, std::ostream& os = std::cout) const;
 
   //@}
 
@@ -1818,11 +1818,13 @@ private:
 
   /*!
    * \brief Detach Child Group with given name from this Group.
+   * \return the detached Group.
    */
   Group* detachGroup(const std::string& name);
 
   /*!
    * \brief Detach Child Group with given index from this Group.
+   * \return the detached Group.
    */
   Group* detachGroup(IndexType idx);
 
