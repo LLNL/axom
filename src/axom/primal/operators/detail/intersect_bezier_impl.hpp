@@ -118,7 +118,7 @@ bool intersect_2d_linear(const Point<T, 2> &a,
  * \param c_scale The scale in parameter space for \a c
  *
  * A ray can only intersect a Bezier curve if it intersects its bounding box
- * The base case of the recursion is when we can approximate the curves with
+ * The base case of the recursion is when we can approximate the curves parametrically with
  * line segments, where we directly find their intersection with the ray. Otherwise,
  * check for intersections recursively after bisecting the curve.
  *
@@ -158,7 +158,7 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
  * \param c_scale The scale in parameter space for \a c
  *
  * A circle can only intersect a Bezier curve if it intersects its bounding box
- * The base case of the recursion is when we can approximate the curve with
+ * The base case of the recursion is when we can approximate the curve parametrically with
  * a line segment, where we directly find its intersection with the circle. Otherwise,
  * check for intersections recursively after bisecting the curve.
  *
@@ -167,7 +167,7 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
  *
  * \note This function assumes the all intersections have multiplicity
  * one, i.e. there are no points at which the curves and their derivatives
- * both intersect. Thus, the function does not find tangencies.
+ * both intersect. Thus, this function does not find tangencies.
  * 
  * \return True if the two curves intersect, False otherwise
  * \sa intersect_bezier
@@ -230,7 +230,7 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
 
   bool foundIntersection = false;
 
-  if(c1.isLinear(sq_tol) && c2.isLinear(sq_tol))
+  if(c1.isLinear(sq_tol, true) && c2.isLinear(sq_tol, true))
   {
     T s, t;
     if(intersect_2d_linear(c1[0], c1[order1], c2[0], c2[order2], s, t))
@@ -354,7 +354,7 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
   bool foundIntersection = false;
 
   // For the base case, represent the Bezier curve as a line segment
-  if(c.isLinear(sq_tol))
+  if(c.isLinear(sq_tol, true))
   {
     Segment<T, 2> seg(c[0], c[order]);
 
@@ -415,7 +415,7 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
 
   bool foundIntersection = false;
 
-  if(curve.isLinear(sq_tol))
+  if(curve.isLinear(sq_tol, true))
   {
     T c1, c2, t1, t2;
     if(intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2))
