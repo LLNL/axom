@@ -24,8 +24,14 @@
 #include <stdexcept>
 #include <algorithm>
 #include "conduit.hpp"
-#include "conduit_relay.hpp"
-#include "conduit_relay_io.hpp"
+#include "axom/core/Path.hpp"
+
+#ifdef AXOM_USE_HDF5
+  #include "conduit_relay.hpp"
+  #include "conduit_relay_io.hpp"
+
+  #include "axom/core/utilities/StringUtilities.hpp"
+#endif
 
 namespace axom
 {
@@ -47,124 +53,14 @@ void protocolWarn(std::string const protocol, std::string const &name)
      ".hdf5 extension not found, did you use one of its other supported types? "
      "(h5, hdf, ...)"}};
 
-  size_t pos = name.rfind('.');
-  if(pos != std::string::npos)
+  Path path(name, '.');
+
+  if(protocol != '.' + path.baseName())
   {
-    std::string found = name.substr(pos);
-
-    if(found != protocol)
+    auto messageIt = protocolMessages.find(protocol);
+    if(messageIt != protocolMessages.end())
     {
-      auto messageIt = protocolMessages.find(protocol);
-      if(messageIt != protocolMessages.end())
-      {
-        std::cout << messageIt->second << std::endl;
-      }
-    }
-  }
-  else
-  {
-    std::cout << "No file extension found, did you mean to use one of "
-              << protocol << "'s supported types?" << std::endl;
-  }
-}
-
-void removeSlashes(const conduit::Node &originalNode, conduit::Node &modifiedNode)
-{
-  for(auto it = originalNode.children(); it.has_next();)
-  {
-    it.next();
-    std::string key = it.name();
-    std::string modifiedKey = key;
-
-    std::string toReplace = "/";
-
-    size_t pos = 0;
-    // Find and replace all occurrences of "/"
-    while((pos = modifiedKey.find(toReplace, pos)) != std::string::npos)
-    {
-      modifiedKey.replace(pos, toReplace.length(), slashSubstitute);
-      pos += slashSubstitute.length();  // Move past the replaced substring
-    }
-
-    modifiedNode[modifiedKey] = it.node();
-
-    if(it.node().dtype().is_object())
-    {
-      conduit::Node nestedNode;
-      removeSlashes(it.node(), nestedNode);
-      modifiedNode[modifiedKey].set(nestedNode);
-    }
-  }
-}
-
-void restoreSlashes(const conduit::Node &modifiedNode, conduit::Node &restoredNode)
-{
-  // Check if List or Object, if its a list the else statement would turn it into an object
-  // which breaks the Document
-
-  if(modifiedNode.dtype().is_list())
-  {
-    // If its empty with no children it's the end of a tree
-
-    for(auto it = modifiedNode.children(); it.has_next();)
-    {
-      it.next();
-      conduit::Node &newChild = restoredNode.append();
-
-      // Leaves empty nodes empty, if null data is set the
-      // Document breaks
-
-      if(it.node().dtype().is_string() || it.node().dtype().is_number())
-      {
-        newChild.set(it.node());  // Lists need .set
-      }
-
-      // Recursive Call
-      if(it.node().number_of_children() > 0)
-      {
-        restoreSlashes(it.node(), newChild);
-      }
-    }
-  }
-  else
-  {
-    for(auto it = modifiedNode.children(); it.has_next();)
-    {
-      it.next();
-      std::string key = it.name();
-      std::string restoredKey = key;
-      std::string replacement = "/";
-
-      size_t pos = 0;
-      // Find and replace all occurrences of "__SLASH__"
-
-      while((pos = restoredKey.find(slashSubstitute, pos)) != std::string::npos)
-      {
-        restoredKey.replace(pos, slashSubstitute.length(), replacement);
-        pos += replacement.length();
-      }
-
-      // Initialize a new node for the restored key
-      conduit::Node &newChild = restoredNode.add_child(restoredKey);
-
-      // Leaves empty keys empty but continues recursive call if its a list
-      if(it.node().dtype().is_string() || it.node().dtype().is_number() ||
-         it.node().dtype().is_object())
-      {
-        newChild.set(it.node());
-      }
-      else if(it.node().dtype().is_list())
-      {
-        restoreSlashes(it.node(), newChild);  // Handle nested lists
-      }
-
-      // If the node has children, recursively restore them
-      if(it.node().number_of_children() > 0)
-      {
-        conduit::Node nestedNode;
-        restoreSlashes(it.node(), nestedNode);
-        newChild.set(nestedNode);
-      }
+      std::cerr << messageIt->second;
     }
   }
 }
@@ -265,6 +161,90 @@ Document::Document(std::string const &asJson, RecordLoader const &recordLoader)
   this->createFromNode(asNode, recordLoader);
 }
 
+#ifdef AXOM_USE_HDF5
+void removeSlashes(const conduit::Node &originalNode, conduit::Node &modifiedNode)
+{
+  for(auto it = originalNode.children(); it.has_next();)
+  {
+    it.next();
+    std::string key = it.name();
+    std::string modifiedKey =
+      axom::utilities::string::replaceAllInstances(key, "/", slashSubstitute);
+
+    modifiedNode[modifiedKey] = it.node();
+
+    if(it.node().dtype().is_object())
+    {
+      conduit::Node nestedNode;
+      removeSlashes(it.node(), nestedNode);
+      modifiedNode[modifiedKey].set(nestedNode);
+    }
+  }
+}
+
+void restoreSlashes(const conduit::Node &modifiedNode, conduit::Node &restoredNode)
+{
+  // Check if List or Object, if its a list the else statement would turn it into an object
+  // which breaks the Document
+
+  if(modifiedNode.dtype().is_list())
+  {
+    // If its empty with no children it's the end of a tree
+
+    for(auto it = modifiedNode.children(); it.has_next();)
+    {
+      it.next();
+      conduit::Node &newChild = restoredNode.append();
+
+      // Leaves empty nodes empty, if null data is set the
+      // Document breaks
+
+      if(it.node().dtype().is_string() || it.node().dtype().is_number())
+      {
+        newChild.set(it.node());  // Lists need .set
+      }
+
+      // Recursive Call
+      if(it.node().number_of_children() > 0)
+      {
+        restoreSlashes(it.node(), newChild);
+      }
+    }
+  }
+  else
+  {
+    for(auto it = modifiedNode.children(); it.has_next();)
+    {
+      it.next();
+      std::string key = it.name();
+      std::string restoredKey =
+        axom::utilities::string::replaceAllInstances(key, slashSubstitute, "/");
+
+      // Initialize a new node for the restored key
+      conduit::Node &newChild = restoredNode.add_child(restoredKey);
+
+      // Leaves empty keys empty but continues recursive call if its a list
+      if(it.node().dtype().is_string() || it.node().dtype().is_number() ||
+         it.node().dtype().is_object())
+      {
+        newChild.set(it.node());
+      }
+      else if(it.node().dtype().is_list())
+      {
+        restoreSlashes(it.node(), newChild);  // Handle nested lists
+      }
+
+      // If the node has children, recursively restore them
+      if(it.node().number_of_children() > 0)
+      {
+        conduit::Node nestedNode;
+        restoreSlashes(it.node(), nestedNode);
+        newChild.set(nestedNode);
+      }
+    }
+  }
+}
+
 void Document::toHDF5(const std::string &filename) const
 {
   conduit::Node node;
@@ -288,6 +268,7 @@ void Document::toHDF5(const std::string &filename) const
 
   conduit::relay::io::save(node, filename, "hdf5");
 }
+#endif
 
 //
 
@@ -363,11 +344,15 @@ Document loadDocument(std::string const &path,
     file_in.close();
     node.parse(file_contents.str(), "json");
     return Document {node, recordLoader};
+
+#ifdef AXOM_USE_HDF5
   case Protocol::HDF5:
     file_in.close();
     conduit::relay::io::load(path, "hdf5", node);
     restoreSlashes(node, modifiedNode);
     return Document {modifiedNode, recordLoader};
+#endif
+
   default:
     break;
   }

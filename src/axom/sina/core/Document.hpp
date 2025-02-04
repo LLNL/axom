@@ -35,10 +35,16 @@ namespace sina
 enum class Protocol
 {
   JSON,
+#ifdef AXOM_USE_HDF5
   HDF5
+#endif
 };
 
-const std::string supported_types[] = {"JSON", "HDF5"};
+const std::string supported_types[] = {"JSON",
+#ifdef AXOM_USE_HDF5
+                                       "HDF5"
+#endif
+};
 
 /**
  * \brief The string used to replace '/' in parent node names when saving to HDF5.
@@ -190,12 +196,14 @@ public:
      */
   conduit::Node toNode() const;
 
+#ifdef AXOM_USE_HDF5
   /**
    *  \brief Dump this document as an HDF5 File
    * 
    *  \return None, conduit automatically dumps the hdf5 file without a return
    */
   void toHDF5(const std::string &filename) const;
+#endif
 
   /**
      * \brief Convert this document to a JSON string.
