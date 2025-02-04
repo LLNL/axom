@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 #include "axom/slic.hpp"
+#include "axom/core/utilities/NumericArray.hpp"
 
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -47,7 +48,7 @@ TEST(primal_vector, vector_constructors)
 {
   constexpr int DIM = 5;
   using CoordType = double;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
   using QVec = primal::Vector<CoordType, DIM>;
 
   QVec vec1;

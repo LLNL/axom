@@ -67,7 +67,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   {
     spatialIndexResolution = (int)(1 + std::pow(ncells, 1 / 3.));
   }
-  primal::NumericArray<int, 3> resolutions(spatialIndexResolution);
+  NumericArray<int, 3> resolutions(spatialIndexResolution);
 
   SLIC_INFO("Building UniformGrid index...");
   std::vector<int> nondegenerateIndices;

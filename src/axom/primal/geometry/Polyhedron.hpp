@@ -15,7 +15,7 @@
 #include "axom/core/StackArray.hpp"
 
 #include "axom/primal/geometry/Hexahedron.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/core/utilities/NumericArray.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
@@ -253,7 +253,7 @@ class Polyhedron
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
+  using NumArrayType = axom::NumericArray<T, NDIMS>;
 
   constexpr static int MAX_VERTS = NeighborCollection::MAX_VERTS;
 

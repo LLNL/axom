@@ -8,6 +8,7 @@
 
 #include "axom/core/StackArray.hpp"
 
+#include "axom/core/utilities/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -59,7 +60,7 @@ public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
   using TetrahedronType = Tetrahedron<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
+  using NumArrayType = axom::NumericArray<T, NDIMS>;
 
   enum
   {

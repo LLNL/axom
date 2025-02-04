@@ -135,7 +135,7 @@ mfem::GridFunction *newGridFunction(mfem::Mesh *mesh)
 void makeTestMesh(sidre::MFEMSidreDataCollection &dc, bool initialMats)
 {
   const int polynomialOrder = 1;
-  const auto celldims = primal::NumericArray<int, 3> {20, 20, 1};
+  const auto celldims = axom::NumericArray<int, 3> {20, 20, 1};
   const auto bbox = primal::BoundingBox<double, 3> {{0., 0., 0.}, {1., 1., .25}};
 
   auto mesh = quest::util::make_cartesian_mfem_mesh_3D(bbox,

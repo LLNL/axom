@@ -12,7 +12,6 @@
 #ifndef AXOM_PRIMAL_COMPUTE_BOUNDING_BOX_HPP_
 #define AXOM_PRIMAL_COMPUTE_BOUNDING_BOX_HPP_
 
-#include "axom/primal/geometry/NumericArray.hpp"  // for numeric arrays
 #include "axom/core/numerics/Matrix.hpp"          // for Matrix
 #include "axom/core/Macros.hpp"                   // for AXOM_HOST__DEVICE
 #include "axom/core/numerics/eigen_solve.hpp"     // for eigen_solve

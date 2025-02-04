@@ -322,7 +322,7 @@ private:
 
     // Fit as many bits as possible per dimension into an int64, i.e. floor(63/DIM)
     constexpr QuantizedCoordType shift_bits = (DIM == 2) ? 31 : 21;
-    primal::NumericArray<QuantizedCoordType, DIM> res(
+    NumericArray<QuantizedCoordType, DIM> res(
       static_cast<QuantizedCoordType>(1) << shift_bits,
       DIM);
     auto quantizer =
