@@ -491,7 +491,9 @@
 
 /// @}
 
-// Use assert when on device
+// Use assert when on device (note that messages are omitted).
+// Device HIP assert() tested with rocm@6.1.2
+// (ROCm support for device assert() begins with version 5.1.0).
 #elif defined(AXOM_DEBUG) && defined(AXOM_DEVICE_CODE)
   #define SLIC_ASSERT(EXP) assert(EXP)
   #define SLIC_ASSERT_MSG(EXP, msg) assert(EXP)
