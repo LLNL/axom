@@ -303,11 +303,13 @@ void saveDocument(Document const &document,
     fout << asJson;
     fout.close();
   }
+#ifdef AXOM_USE_HDF5
   else if(protocol == Protocol::HDF5)
   {
     protocolWarn(".hdf5", fileName);
     document.toHDF5(tmpFileName);
   }
+#endif
   else
   {
     throw std::invalid_argument(
