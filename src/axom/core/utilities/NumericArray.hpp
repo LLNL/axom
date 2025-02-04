@@ -833,8 +833,7 @@ AXOM_HOST_DEVICE inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& a
 
 /// Overload to format a axom::NumericArray using fmt
 template <typename T, int NDIMS>
-struct axom::fmt::formatter<axom::NumericArray<T, NDIMS>>
-  : ostream_formatter
+struct axom::fmt::formatter<axom::NumericArray<T, NDIMS>> : ostream_formatter
 { };
 
 #endif  // AXOM_PRIMAL_NUMERIC_ARRAY_HPP_

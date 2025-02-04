@@ -276,8 +276,7 @@ public:
     const IndexType totalElements = m_mesh.elements().size();
     const IndexType res =
       axom::utilities::ceil(0.33 * std::pow(totalVertices, 1. / DIM));
-    UniformGridType grid(m_bounding_box,
-                         NumericArray<int, DIM>(res).data());
+    UniformGridType grid(m_bounding_box, NumericArray<int, DIM>(res).data());
 
     // An array to cache the circumspheres associated with each element
     axom::Array<typename ElementType::SphereType> circumspheres(totalElements);

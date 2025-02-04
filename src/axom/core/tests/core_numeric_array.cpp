@@ -272,7 +272,8 @@ TEST(primal_numeric_array, clamping)
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
   // in
   // debug mode
-  std::cout << "Checking that clamping with ill-formed range throws an assert." << std::endl;
+  std::cout << "Checking that clamping with ill-formed range throws an assert."
+            << std::endl;
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED(QArray(seq).clamp(7, 3), "");
