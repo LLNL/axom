@@ -4,6 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core/utilities/NumericArray.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
+#include "axom/core/memory_management.hpp"
 
 #include "gtest/gtest.h"
 
@@ -270,8 +273,7 @@ TEST(primal_numeric_array, clamping)
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
-  // in
-  // debug mode
+  // in debug mode
   std::cout << "Checking that clamping with ill-formed range throws an assert."
             << std::endl;
 
@@ -310,18 +312,4 @@ AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
 
   check_numeric_array_policy<hip_exec>();
 #endif
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

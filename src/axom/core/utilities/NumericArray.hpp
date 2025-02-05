@@ -8,7 +8,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
-#include <assert.h>
+#include <cassert>
 
 // C/C++ includes
 #include <algorithm>
@@ -379,8 +379,9 @@ public:
 
 private:
   AXOM_HOST_DEVICE
-  void verifyIndex(int AXOM_DEBUG_PARAM(idx)) const
+  void verifyIndex(int idx) const
   {
+    AXOM_UNUSED_VAR(idx);
     assert(idx >= 0 && idx < SIZE);
   }
 
