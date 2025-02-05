@@ -8,7 +8,7 @@
 
 #include "axom/core/StackArray.hpp"
 
-#include "axom/core/utilities/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Vector.hpp"

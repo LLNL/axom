@@ -7,7 +7,7 @@
 #define AXOM_SPIN_RECTANGULAR_LATTICE_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/utilities/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/constants.hpp"

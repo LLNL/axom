@@ -10,7 +10,7 @@
 #include "axom/core/execution/for_all.hpp"
 #include "axom/core/Array.hpp"
 #include "axom/core/NumericLimits.hpp"
-#include "axom/core/utilities/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 

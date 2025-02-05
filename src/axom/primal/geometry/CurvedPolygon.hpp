@@ -14,7 +14,7 @@
 
 #include "axom/slic.hpp"
 
-#include "axom/core/utilities/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"

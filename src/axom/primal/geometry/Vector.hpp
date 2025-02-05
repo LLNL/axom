@@ -8,7 +8,7 @@
 
 // axom_utils includes
 #include "axom/core/Macros.hpp"
-#include "axom/core/utilities/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 #include "axom/core/utilities/Utilities.hpp"

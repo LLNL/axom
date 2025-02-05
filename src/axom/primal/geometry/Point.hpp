@@ -6,7 +6,7 @@
 #ifndef AXOM_PRIMAL_POINT_HPP_
 #define AXOM_PRIMAL_POINT_HPP_
 
-#include "axom/core/utilities/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/slic/interface/slic.hpp"
 

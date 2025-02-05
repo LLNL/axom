@@ -26,7 +26,6 @@ set(core_headers
     utilities/BitUtilities.hpp
     utilities/CommandLineUtilities.hpp
     utilities/FileUtilities.hpp
-    utilities/NumericArray.hpp
     utilities/RAII.hpp
     utilities/StringUtilities.hpp
     utilities/System.hpp
@@ -65,6 +64,7 @@ set(core_headers
     Map.hpp
     MapCollection.hpp
     FlatMap.hpp
+    NumericArray.hpp
     NumericLimits.hpp
     Path.hpp
     RangeAdapter.hpp
