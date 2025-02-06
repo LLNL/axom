@@ -9,15 +9,12 @@
 #include "axom/core.hpp"
 #include "axom/primal/operators/split.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
+#include "axom/quest/Shaper.hpp"
 #include "axom/quest/DiscreteShape.hpp"
+#include "axom/quest/util/mesh_helpers.hpp"
+#include "conduit_blueprint_mesh.hpp"
 
 #include "axom/fmt.hpp"
-
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
-#endif
-
-#include "mfem.hpp"
 
 namespace axom
 {
@@ -30,13 +27,133 @@ constexpr double Shaper::MINIMUM_PERCENT_ERROR;
 constexpr double Shaper::MAXIMUM_PERCENT_ERROR;
 constexpr double Shaper::DEFAULT_VERTEX_WELD_THRESHOLD;
 
-Shaper::Shaper(const klee::ShapeSet& shapeSet, sidre::MFEMSidreDataCollection* dc)
-  : m_shapeSet(shapeSet)
+#if defined(AXOM_USE_MFEM)
+Shaper::Shaper(RuntimePolicy execPolicy,
+               int allocatorId,
+               const klee::ShapeSet& shapeSet,
+               sidre::MFEMSidreDataCollection* dc)
+  : m_execPolicy(execPolicy)
+  , m_allocatorId(allocatorId != axom::INVALID_ALLOCATOR_ID
+                    ? allocatorId
+                    : axom::policyToDefaultAllocatorID(execPolicy))
+  , m_shapeSet(shapeSet)
   , m_dc(dc)
+  #if defined(AXOM_USE_CONDUIT)
+  , m_bpGrp(nullptr)
+  , m_bpTopo()
+  , m_bpNodeExt(nullptr)
+  , m_bpNodeInt()
+  #endif
 {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = m_dc->GetComm();
+  #endif
+  m_cellCount = m_dc->GetMesh()->GetNE();
+
+  setFilePath(shapeSet.getPath());
+}
 #endif
+
+Shaper::Shaper(RuntimePolicy execPolicy,
+               int allocatorId,
+               const klee::ShapeSet& shapeSet,
+               sidre::Group* bpGrp,
+               const std::string& topo)
+  : m_execPolicy(execPolicy)
+  , m_allocatorId(allocatorId != axom::INVALID_ALLOCATOR_ID
+                    ? allocatorId
+                    : axom::policyToDefaultAllocatorID(execPolicy))
+  , m_shapeSet(shapeSet)
+#if defined(AXOM_USE_CONDUIT)
+  , m_bpGrp(bpGrp)
+  , m_bpTopo(topo.empty() ? bpGrp->getGroup("topologies")->getGroupName(0) : topo)
+  , m_bpNodeExt(nullptr)
+  , m_bpNodeInt()
+#endif
+  , m_comm(MPI_COMM_WORLD)
+{
+  SLIC_ASSERT(m_bpTopo != sidre::InvalidName);
+
+  // This may take too long if there are repeated construction.
+  m_bpGrp->createNativeLayout(m_bpNodeInt);
+
+#if defined(AXOM_DEBUG)
+  std::string whyBad;
+  bool goodMesh = verifyInputMesh(whyBad);
+  SLIC_ASSERT_MSG(goodMesh, whyBad);
+#endif
+
+  m_cellCount = conduit::blueprint::mesh::topology::length(
+    m_bpNodeInt.fetch_existing("topologies").fetch_existing(m_bpTopo));
+
+  setFilePath(shapeSet.getPath());
+}
+
+Shaper::Shaper(RuntimePolicy execPolicy,
+               int allocatorId,
+               const klee::ShapeSet& shapeSet,
+               conduit::Node& bpNode,
+               const std::string& topo)
+  : m_execPolicy(execPolicy)
+  , m_allocatorId(allocatorId != axom::INVALID_ALLOCATOR_ID
+                    ? allocatorId
+                    : axom::policyToDefaultAllocatorID(execPolicy))
+  , m_shapeSet(shapeSet)
+#if defined(AXOM_USE_CONDUIT)
+  , m_bpGrp(nullptr)
+  , m_bpTopo(topo.empty() ? bpNode.fetch_existing("topologies").child(0).name()
+                          : topo)
+  , m_bpNodeExt(&bpNode)
+  , m_bpNodeInt()
+#endif
+  , m_comm(MPI_COMM_WORLD)
+{
+  AXOM_ANNOTATE_SCOPE("Shaper::Shaper_Node");
+  m_bpGrp = m_dataStore.getRoot()->createGroup("internalGrp");
+  m_bpGrp->setDefaultAllocator(m_allocatorId);
+
+  m_bpGrp->importConduitTreeExternal(bpNode);
+
+  // We want unstructured topo but can accomodate structured.
+  const std::string topoType = bpNode.fetch_existing("topologies")
+                                 .fetch_existing(m_bpTopo)
+                                 .fetch_existing("type")
+                                 .as_string();
+  if(topoType == "structured")
+  {
+    AXOM_ANNOTATE_SCOPE("Shaper::convertStructured");
+    axom::quest::util::convert_blueprint_structured_explicit_to_unstructured(
+      m_bpGrp,
+      m_bpTopo,
+      m_execPolicy);
+  }
+
+  m_bpGrp->createNativeLayout(m_bpNodeInt);
+
+#if defined(AXOM_DEBUG)
+  std::string whyBad;
+  bool goodMesh = verifyInputMesh(whyBad);
+  SLIC_ASSERT_MSG(goodMesh, whyBad);
+#endif
+
+  m_cellCount = conduit::blueprint::mesh::topology::length(
+    bpNode.fetch_existing("topologies").fetch_existing(m_bpTopo));
+
+  setFilePath(shapeSet.getPath());
+}
+
+Shaper::~Shaper() { }
+
+void Shaper::setFilePath(const std::string& filePath)
+{
+  if(filePath.empty())
+  {
+    m_prefixPath.clear();
+  }
+  else
+  {
+    m_prefixPath = utilities::filesystem::getParentPath(filePath);
+  }
 }
 
 void Shaper::setSamplesPerKnotSpan(int nSamples)
@@ -94,7 +211,7 @@ bool Shaper::isValidFormat(const std::string& format) const
   return (format == "stl" || format == "proe" || format == "c2c" ||
           format == "blueprint-tets" || format == "tet3D" ||
           format == "hex3D" || format == "plane3D" || format == "sphere3D" ||
-          format == "vor3D" || format == "none");
+          format == "sor3D" || format == "none");
 }
 
 void Shaper::loadShape(const klee::Shape& shape)
@@ -110,6 +227,7 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
                                double percentError,
                                double& revolvedVolume)
 {
+  AXOM_ANNOTATE_SCOPE("Shaper::loadShapeInternal");
   internal::ScopedLogLevelChanger logLevelChanger(
     this->isVerbose() ? slic::message::Debug : slic::message::Warning);
 
@@ -117,14 +235,12 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
     "{:-^80}",
     axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
-  const axom::klee::Geometry& geometry = shape.getGeometry();
-  const std::string& geometryFormat = geometry.getFormat();
-  SLIC_ASSERT_MSG(
-    this->isValidFormat(geometryFormat),
-    axom::fmt::format("Shape has unsupported format: '{}", geometryFormat));
+  SLIC_ASSERT_MSG(this->isValidFormat(shape.getGeometry().getFormat()),
+                  axom::fmt::format("Shape has unsupported format: '{}",
+                                    shape.getGeometry().getFormat()));
 
   // Code for discretizing shapes has been factored into DiscreteShape class.
-  DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_shapeSet.getPath());
+  DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_prefixPath);
   discreteShape.setVertexWeldThreshold(m_vertexWeldThreshold);
   discreteShape.setRefinementType(m_refinementType);
   if(percentError > 0)
@@ -135,29 +251,65 @@ void Shaper::loadShapeInternal(const klee::Shape& shape,
   revolvedVolume = discreteShape.getRevolvedVolume();
 }
 
+bool Shaper::verifyInputMesh(std::string& whyBad) const
+{
+  bool rval = true;
+
+#if defined(AXOM_USE_CONDUIT)
+  if(m_bpGrp != nullptr)
+  {
+    conduit::Node info;
+    // Conduit's verify should work even if m_bpNodeInt has array data on
+    // devices. because the verification doesn't dereference array data.
+    // If this changes in the future, more care must be taken.
+    rval = conduit::blueprint::mesh::verify(m_bpNodeInt, info);
+    if(rval)
+    {
+      std::string topoType =
+        m_bpNodeInt.fetch("topologies")[m_bpTopo]["type"].as_string();
+      rval = topoType == "unstructured";
+      info[0].set_string("Topology is not unstructured.");
+    }
+    if(rval)
+    {
+      std::string elemShape =
+        m_bpNodeInt.fetch("topologies")[m_bpTopo]["elements"]["shape"].as_string();
+      rval = elemShape == "hex";
+      info[0].set_string("Topology elements are not hex.");
+    }
+    whyBad = info.to_summary_string();
+  }
+#endif
+
+#if defined(AXOM_USE_MFEM)
+  if(m_dc != nullptr)
+  {
+    // No specific requirements for MFEM mesh.
+  }
+#endif
+
+  return rval;
+}
+
 // ----------------------------------------------------------------------------
 
 int Shaper::getRank() const
 {
-#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  if(auto* pmesh = static_cast<mfem::ParMesh*>(m_dc->GetMesh()))
-  {
-    return pmesh->GetMyRank();
-  }
+#if defined(AXOM_USE_MPI)
+  int rank = -1;
+  MPI_Comm_rank(m_comm, &rank);
+  return rank;
 #endif
   return 0;
 }
 
 double Shaper::allReduceSum(double val) const
 {
-  if(m_dc != nullptr && m_dc->GetNumProcs() > 1)
-  {
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-    double global;
-    MPI_Allreduce(&val, &global, 1, MPI_DOUBLE, MPI_SUM, m_comm);
-    return global;
+  double global;
+  MPI_Allreduce(&val, &global, 1, MPI_DOUBLE, MPI_SUM, m_comm);
+  return global;
 #endif
-  }
   return val;
 }
 

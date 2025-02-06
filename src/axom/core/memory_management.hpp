@@ -25,6 +25,7 @@
 namespace axom
 {
 constexpr int INVALID_ALLOCATOR_ID = -1;
+constexpr int DYNAMIC_ALLOCATOR_ID = 0;
 
 // _memory_space_start
 /*! 
@@ -106,59 +107,31 @@ inline int getDefaultAllocatorID()
 #ifdef AXOM_USE_UMPIRE
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
-  return 0;
+  return DYNAMIC_ALLOCATOR_ID;
 #endif
 }
 
 /*!
- * \brief Returns the ID of the allocator that allocated the memory pointed
- *        to by \a ptr.
- * \param ptr A pointer to memory.
- * \return ID of the allocator that allocated the memory.
+ * \brief Get the allocator id from which data has been allocated.
+ * \return Allocator id.  If Umpire doesn't have an allocator for
+ * the pointer, or Axom wasn't configured with Umpire, return
+ * \c axom::DYNAMIC_ALLOCATOR_ID.
+ *
+ * \pre ptr has a valid pointer value.
  */
-/// &{
+inline int getAllocatorIDFromPointer(const void* ptr)
+{
 #ifdef AXOM_USE_UMPIRE
-inline int getAllocatorIDForAddress(void* ptr)
-{
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  int id;
-  try
+  if(rm.hasAllocator(const_cast<void*>(ptr)))
   {
-    id = rm.getAllocator(ptr).getId();
+    umpire::Allocator allocator = rm.getAllocator(const_cast<void*>(ptr));
+    return allocator.getId();
   }
-  catch(...)
-  {
-    // The pointer was likely not allocated via umpire.
-    id = INVALID_ALLOCATOR_ID;
-  }
-  return id;
-}
-inline int getAllocatorIDForAddress(const void* ptr)
-{
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  int id;
-  try
-  {
-    id = rm.getAllocator(const_cast<void*>(ptr)).getId();
-  }
-  catch(...)
-  {
-    // The pointer was likely not allocated via umpire.
-    id = INVALID_ALLOCATOR_ID;
-  }
-  return id;
-}
-#else
-inline int getAllocatorIDForAddress(void* AXOM_UNUSED_PARAM(ptr))
-{
-  return axom::getDefaultAllocatorID();
-}
-inline int getAllocatorIDForAddress(const void* AXOM_UNUSED_PARAM(ptr))
-{
-  return axom::getDefaultAllocatorID();
-}
 #endif
-/// @}
+  AXOM_UNUSED_VAR(ptr);
+  return DYNAMIC_ALLOCATOR_ID;
+}
 
 /*!
  * \brief Allocates a chunk of memory of type T.
@@ -353,6 +326,11 @@ inline int getAllocatorID<MemorySpace::Dynamic>()
 
 inline MemorySpace getAllocatorSpace(int allocatorId)
 {
+  // Treat non-Umpire allocatorID first.  Umpire's getAllocator
+  // throws exception if given a non-Umpire id.
+  assert(allocatorId != INVALID_ALLOCATOR_ID);
+  if(allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
+
 #ifdef AXOM_USE_UMPIRE
   using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;
 
@@ -375,9 +353,6 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
   default:
     return MemorySpace::Dynamic;
   }
-#else
-  AXOM_UNUSED_VAR(allocatorId);
-  return MemorySpace::Dynamic;
 #endif
 }
 
