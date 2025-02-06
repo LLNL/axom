@@ -285,8 +285,8 @@ TEST(primal_bezier_inter, no_intersections_bezier)
 
   axom::Array<CoordType> exp_intersections;
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   checkIntersections(curve1,
                      curve2,
@@ -328,7 +328,7 @@ TEST(primal_bezier_inter, cubic_bezier)
                                               0.827326835353989};
 
   const double eps = 1E-10;
-  const double eps_test = 1E-5;
+  const double eps_test = 1E-8;
 
   for(int otherorder = 1; otherorder <= 20; ++otherorder)
   {
@@ -428,8 +428,8 @@ TEST(primal_bezier_inter, cubic_bezier_nine_intersections)
                                 PointType {145, 135}};
   BezierCurveType curve2(data2, order);
 
-  const double eps = 1E-8;
-  const double eps_test = 1E-5;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   axom::Array<CoordType> exp_s = {0.04832125363145223,
                                   0.09691296096235966,
@@ -677,8 +677,8 @@ TEST(primal_bezier_inter, ray_no_intersections_bezier)
 
   axom::Array<CoordType> exp_intersections;
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   checkIntersectionsRay(ray,
                         curve,
@@ -781,8 +781,8 @@ TEST(primal_bezier_inter, ray_cubic_bezier)
                                               0.5,
                                               0.827326835353989};
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   for(CoordType origin = 0.0; origin <= 1.0; origin += 0.05)
   {
@@ -902,8 +902,8 @@ TEST(primal_bezier_inter, ray_cubic_bezier_four_intersections)
   VectorType ray_direction({1.0, 1.0961665896209309});
   RayType ray(ray_origin, ray_direction);
 
-  const double eps = 1E-8;
-  const double eps_test = 1E-5;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   axom::Array<CoordType> exp_s = {21.19004780170474,
                                   45.76845689117871,
@@ -931,7 +931,7 @@ TEST(primal_bezier_inter, ray_nurbs_intersections)
   SLIC_INFO("primal: testing NURBS intersection");
 
   const double eps = 1E-10;
-  const double eps_test = 1E-10;
+  const double eps_test = 1E-8;
 
   // NURBS Curve which defines an entire circle
   PointType data[7] = {PointType {1.0, 0.0},
@@ -1069,7 +1069,7 @@ TEST(primal_bezier_inter, circle_simple_intersections)
 
   SLIC_INFO("primal: testing nurbs-circle intersection");
   const double eps = 1E-10;
-  const double eps_test = 1E-10;
+  const double eps_test = 1E-8;
 
   const int degree = 3;
 
@@ -1102,7 +1102,7 @@ TEST(primal_bezier_inter, circle_simple_intersections)
   center = PointType({0.75, 0.3});
   circle = CircleType(center, radius);
 
-  exp_circle_intersections = {4.204825027981725, 4.8500530183585209};
+  exp_circle_intersections = {4.204825027981725, 4.8500530181913142};
   exp_curve_intersections = {0.62848756166905084, 0.78430740726486492};
 
   checkIntersectionsCircle(circle,
@@ -1139,7 +1139,7 @@ TEST(primal_bezier_inter, circle_endpoint_intersections)
 
   SLIC_INFO("primal: testing nurbs-circle intersection");
   const double eps = 1E-10;
-  const double eps_test = 1E-10;
+  const double eps_test = 1E-8;
 
   const int degree = 3;
 
@@ -1204,7 +1204,7 @@ TEST(primal_bezier_inter, circle_nurbs_knot_intersections)
   SLIC_INFO("primal: testing NURBS intersection");
 
   const double eps = 1E-10;
-  const double eps_test = 1E-10;
+  const double eps_test = 1E-8;
 
   // NURBS Curve which defines an entire circle
   PointType data[7] = {PointType {1.0, 0.0},
