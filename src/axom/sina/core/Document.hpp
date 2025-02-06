@@ -52,11 +52,12 @@ const std::string supported_types[] = {"JSON",
 const std::string slashSubstitute = "__SINA_SLASHREPLACE__";
 
 /**
- * \brief An object representing the top-level object of a Sina JSON file
+ * \brief An object representing the top-level object of a Sina file
  *
- * A Document represents the top-level object of a JSON file conforming to the
+ * A Document represents the top-level object of a file conforming to the
  * Sina schema. When serialized, these documents can be ingested into a
- * Sina database and used with the Sina tool.
+ * Sina database and used with the Sina tool. Sina files are defaulted to
+ * JSON but optionally support HDF5.
  *
  * Documents contain at most two objects: a list of Records and a list of Relationships. A simple, empty document:
  * \code{.json}
@@ -93,6 +94,13 @@ const std::string slashSubstitute = "__SINA_SLASHREPLACE__";
  * You can also export your Document to file:
  * \code
  *   axom::sina::saveDocument(myDocument, "path/to/outfile.json")
+ * \endcode
+ * 
+ *  Loading and Saving documents will default to the JSON file type, but if an optional file type is
+ *  loaded the Protocol parameter will control your file type. For example with HDF5:
+ * \code
+ *   axom::sina::Document myDocument = axom::sina::loadDocument("path/to/infile.hdf5, Protocol::HDF5");
+ *   axom::sina::saveDocument(myDocument, "path/to/outfile.hdf5", Protocol::HDF5)
  * \endcode
  *
  * Check the Sina file format version with:
@@ -200,7 +208,7 @@ public:
   /**
    *  \brief Dump this document as an HDF5 File
    * 
-   *  \return None, conduit automatically dumps the hdf5 file without a return
+   *  \param filename the location of which to save the file
    */
   void toHDF5(const std::string &filename) const;
 #endif
@@ -230,8 +238,8 @@ private:
  *        it will be overwritten.
  *
  * \param document the Document to save
- * \param fileName the location to which to save the file
- * \param protocol the file type requested to save as, default = JSON
+ * \param fileName the location of which to save the file
+ * \param protocol the file type requested to save as contained in supported_types, default = JSON
  * \throws std::ios::failure if there are any IO errors
  */
 void saveDocument(Document const &document,
