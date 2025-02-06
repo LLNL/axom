@@ -17,6 +17,7 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 
+#include "axom/primal/operators/in_sphere.hpp"
 #include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 
@@ -412,31 +413,29 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
   using BCurve = BezierCurve<T, 2>;
 
   // Other function put here to avoid circular dependency
-  if(!intersect(circle, curve.boundingBox().scale(1.1)))
+  primal::BoundingBox<T, 2> bb = curve.boundingBox().scale(1.1);
+  if(!intersect(circle, bb) || in_sphere(bb, circle))
   {
     return false;
   }
 
-  primal::BoundingBox<T, 2> bb = curve.boundingBox().scale(1.1);
-
   bool foundIntersection = false;
 
-  if(curve.isLinear(sq_tol, true))
+  if(curve.isLinear(sq_tol))
   {
     T c1, c2, t1, t2;
     if(intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2))
     {
       if(t1 >= -EPS && t1 < 1.0 - EPS)
       {
-        circle_p.push_back(c1);
+        circle_p.push_back(axom::utilities::isNearlyEqual(c1, 2.0 * M_PI, EPS) ? 0.0 : c1);
         curve_p.push_back(c_offset + c_scale * t1);
         foundIntersection = true;
       }
 
       if(t2 >= -EPS && t2 < 1.0 - EPS)
       {
-        intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2);
-        circle_p.push_back(c2);
+        circle_p.push_back(axom::utilities::isNearlyEqual(c2, 2.0 * M_PI, EPS) ? 0.0 : c2);
         curve_p.push_back(c_offset + c_scale * t2);
         foundIntersection = true;
       }

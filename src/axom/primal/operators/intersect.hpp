@@ -525,21 +525,25 @@ bool intersect(const Sphere<T, DIM>& s1,
 }
 
 /*!
- * \brief Determines if a 2D sphere intersects a bounding box 
+ * \brief Determines if a 2D sphere intersects (overlaps with) a bounding box 
  *
  * \param [in] circle The sphere to check for intersection
  * \param [in] bb The bounding box to check for intersection
  */
 template <typename T>
-bool intersect(const Sphere<T, 2>& circle, const BoundingBox<T, 2>& bb)
+bool intersect(const Sphere<T, 2>& circle, const BoundingBox<T, 2>& bb, bool useEmptyInterior = false)
 {
-  T dx = axom::utilities::clampVal(circle.getCenter()[0],
+  auto center = circle.getCenter();
+  auto radius = circle.getRadius();
+  T dx = axom::utilities::clampVal(center[0],
                                    bb.getMin()[0],
                                    bb.getMax()[0]);
-  T dy = axom::utilities::clampVal(circle.getCenter()[1],
+  T dy = axom::utilities::clampVal(center[1],
                                    bb.getMin()[1],
                                    bb.getMax()[1]);
-  if(circle.computeSignedDistance(primal::Point<T, 2>({dx, dy})) > 0)
+
+  if( (center[0] - dx) * (center[0] - dx) + (center[1] - dy) * (center[1] - dy) >
+      radius * radius )
   {
     return false;
   }
