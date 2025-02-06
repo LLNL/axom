@@ -129,7 +129,7 @@ void dispatch_unstructured_mixed_topology(const conduit::Node &topo,
 
         // Get the allocator that allocated the connectivity. The shape map data
         // need to go into the same memory space.
-        const int allocatorID = axom::getAllocatorIDForAddress(
+        const int allocatorID = axom::getAllocatorIDFromPointer(
           topo["elements/connectivity"].data_ptr());
 
         // Make the shape map.
@@ -165,7 +165,7 @@ void typed_dispatch_unstructured_mixed_topology(const conduit::Node &topo,
     // Get the allocator that allocated the connectivity. The shape map data
     // need to go into the same memory space.
     volatile int allocatorID =
-      axom::getAllocatorIDForAddress(topo["elements/connectivity"].data_ptr());
+      axom::getAllocatorIDFromPointer(topo["elements/connectivity"].data_ptr());
 
     // Make the shape map.
     axom::Array<IndexType> values, ids;
