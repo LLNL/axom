@@ -428,14 +428,16 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
     {
       if(t1 >= -EPS && t1 < 1.0 - EPS)
       {
-        circle_p.push_back(axom::utilities::isNearlyEqual(c1, 2.0 * M_PI, EPS) ? 0.0 : c1);
+        circle_p.push_back(
+          axom::utilities::isNearlyEqual(c1, 2.0 * M_PI, EPS) ? 0.0 : c1);
         curve_p.push_back(c_offset + c_scale * t1);
         foundIntersection = true;
       }
 
       if(t2 >= -EPS && t2 < 1.0 - EPS)
       {
-        circle_p.push_back(axom::utilities::isNearlyEqual(c2, 2.0 * M_PI, EPS) ? 0.0 : c2);
+        circle_p.push_back(
+          axom::utilities::isNearlyEqual(c2, 2.0 * M_PI, EPS) ? 0.0 : c2);
         curve_p.push_back(c_offset + c_scale * t2);
         foundIntersection = true;
       }

@@ -149,30 +149,34 @@ inline bool in_sphere(const BoundingBox<T, 2>& bb, const Sphere<T, 2>& circle)
   auto radius = circle.getRadius();
   auto center = circle.getCenter();
 
-  if( (center[0] - the_min[0]) * (center[0] - the_min[0]) +
-      (center[1] - the_min[1]) * (center[1] - the_min[1]) > radius * radius )
+  if((center[0] - the_min[0]) * (center[0] - the_min[0]) +
+       (center[1] - the_min[1]) * (center[1] - the_min[1]) >
+     radius * radius)
   {
     return false;
   }
 
-  if( (center[0] - the_max[0]) * (center[0] - the_max[0]) +
-      (center[1] - the_min[1]) * (center[1] - the_min[1]) > radius * radius )
+  if((center[0] - the_max[0]) * (center[0] - the_max[0]) +
+       (center[1] - the_min[1]) * (center[1] - the_min[1]) >
+     radius * radius)
   {
     return false;
   }
 
-  if( (center[0] - the_min[0]) * (center[0] - the_min[0]) +
-      (center[1] - the_max[1]) * (center[1] - the_max[1]) > radius * radius )
+  if((center[0] - the_min[0]) * (center[0] - the_min[0]) +
+       (center[1] - the_max[1]) * (center[1] - the_max[1]) >
+     radius * radius)
   {
     return false;
   }
 
-  if( (center[0] - the_max[0]) * (center[0] - the_max[0]) +
-      (center[1] - the_max[1]) * (center[1] - the_max[1]) > radius * radius )
+  if((center[0] - the_max[0]) * (center[0] - the_max[0]) +
+       (center[1] - the_max[1]) * (center[1] - the_max[1]) >
+     radius * radius)
   {
     return false;
   }
-  
+
   return true;
 }
 
