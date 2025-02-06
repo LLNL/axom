@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2025, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -20,6 +20,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ###  Added
+- Support in `quest::IntersectionShaper` for Blueprint mesh stored in a `conduit::Node`
+  or `sidre::Group`.
 - Adds new CMake configuration options, `AXOM_ENABLE_ASAN` and `AXOM_ENABLE_UBSAN`, to enable/disable AddressSanitizer and UndefinedBehaviorSanitizer respectively in Axom. Default is OFF for both.
 - A number of new `klee::Geometry` constructors are added, for the different shapes now supported.
   This is a temporary change.  The class will be subclassed in the future to support a diversity of geometries.
@@ -31,8 +33,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
+- Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
+  of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
 
 ###  Changed
+- `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
+  Changing the policy after construction is no longer supported.
 - Importing Conduit array data into `sidre::View` now allocates destination
   data using the `View`'s parent's allocator ID, instead of always using
   host memory.  This is consistent with the behavior of deep-copying data
