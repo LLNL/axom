@@ -7,6 +7,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/primal.hpp"
 #include <conduit/conduit.hpp>
 #include <string>
 #include <vector>
@@ -34,18 +35,18 @@ void add_distance(conduit::Node &mesh, float dist = 6.5f)
   // Make a new distance field.
   const conduit::Node &n_coordset = mesh["coordsets"][0];
   axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
+    using PointType = typename decltype(coordsetView)::PointType;
+    using SphereType = axom::primal::Sphere<typename PointType::CoordType, PointType::DIMENSION>;
     mesh["fields/distance/topology"] = "mesh";
     mesh["fields/distance/association"] = "vertex";
     conduit::Node &n_values = mesh["fields/distance/values"];
     const auto nnodes = coordsetView.size();
     n_values.set(conduit::DataType::float32(nnodes));
     float *valuesPtr = static_cast<float *>(n_values.data_ptr());
+    SphereType s(dist);
     for(int index = 0; index < nnodes; index++)
     {
-      const auto pt = coordsetView[index];
-      float norm2 = 0.f;
-      for(int i = 0; i < pt.DIMENSION; i++) norm2 += pt[i] * pt[i];
-      valuesPtr[index] = sqrt(norm2) - dist;
+      valuesPtr[index] = s.computeSignedDistance(coordsetView[index]);
     }
   });
 }
@@ -134,7 +135,7 @@ void make_unibuffer(const std::vector<float> &vfA,
 /*!
  * \brief Make a new mesh with a matset that has 3 materials.
  *
- * \param type The type of mesh topology to create.
+ * \param type The type of matset to create.
  * \param topoName The name of mesh topology.
  * \param dims The dimensions of the mesh
  * \param[out] mesh The mesh node to which a matset will be added.
@@ -220,7 +221,6 @@ void make_matset(const std::string &type,
   matB.clear();
   matC.clear();
 
-#if 1
   // Debugging. Add the vfs as fields.
   mesh["fields/vfA/topology"] = topoName;
   mesh["fields/vfA/association"] = "element";
@@ -233,7 +233,6 @@ void make_matset(const std::string &type,
   mesh["fields/vfC/topology"] = topoName;
   mesh["fields/vfC/association"] = "element";
   mesh["fields/vfC/values"].set(vfC);
-#endif
 
   const std::vector<int> matnos {{22, 66, 33}};
   conduit::Node &matset = mesh["matsets/mat"];
