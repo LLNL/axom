@@ -41,7 +41,7 @@ set(CMAKE_Fortran_FLAGS "-ef" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -DNDEBUG" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g" CACHE STRING "")
 
 #------------------------------------------------------------------------------
 # MPI
