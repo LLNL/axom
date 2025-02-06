@@ -21,6 +21,14 @@ namespace data
 {
 //------------------------------------------------------------------------------
 
+/*!
+ * \brief Make a new radial distance field at each of the mesh coordinates and
+ *        subtract a \a dist value from it. This makes the zero value of the
+ *        field the radius in which we're interested for isosurfacing.
+ *
+ * \param mesh The node that contains the blueprint mesh and fields.
+ * \param dist The radial distance of interest.
+ */
 void add_distance(conduit::Node &mesh, float dist = 6.5f)
 {
   // Make a new distance field.
@@ -42,6 +50,14 @@ void add_distance(conduit::Node &mesh, float dist = 6.5f)
   });
 }
 
+/*!
+ * \brief Creates a mesh of the desired \a type and dimensions \a dims and puts
+ *        the values into the \a mesh node. A distance field is also added.
+ *
+ * \param type The type of mesh being added. See Conduit's braid function docs.
+ * \param dims An array containing the dimensions.
+ * \param[out] mesh The node that will contain the new mesh and fields.
+ */
 template <typename Dimensions>
 void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
 {
@@ -56,6 +72,17 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
   add_distance(mesh);
 }
 
+/*!
+ * \brief Make a new "unibuffer" matset from the input vectors. The unibuffer
+ *        matset is a style of matset in Blueprint that combines material ids
+ *        and volume fractions from multiple materials shared arrays.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
 void make_unibuffer(const std::vector<float> &vfA,
                     const std::vector<float> &vfB,
                     const std::vector<float> &vfC,
@@ -104,6 +131,24 @@ void make_unibuffer(const std::vector<float> &vfA,
   matset["indices"].set(indices);
 }
 
+/*!
+ * \brief Make a new mesh with a matset that has 3 materials.
+ *
+ * \param type The type of mesh topology to create.
+ * \param topoName The name of mesh topology.
+ * \param dims The dimensions of the mesh
+ * \param[out] mesh The mesh node to which a matset will be added.
+ *
+ *   *--------------*
+ *   |            ==|
+ *   |    A     ==  |
+ *   |       ==     |
+ *   |=======    C  |
+ *   |       ==     |
+ *   |    B    ==   |
+ *   |           == |
+ *   *--------------*
+ */
 template <typename Dimensions>
 void make_matset(const std::string &type,
                  const std::string &topoName,
@@ -211,6 +256,11 @@ void make_matset(const std::string &type,
   { }
 }
 
+/*!
+ * \brief Makes a new Blueprint 3D mesh made of mixed cell types.
+ *
+ * \param[out] mesh The node that will contain the new mesh.
+ */
 void mixed3d(conduit::Node &mesh)
 {
   // clang-format off
@@ -283,6 +333,11 @@ void mixed3d(conduit::Node &mesh)
   add_distance(mesh, 0.f);
 }
 
+/*!
+ * \brief Make a Blueprint mesh that contains one hex.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 void make_one_hex(conduit::Node &hostMesh)
 {
   hostMesh["coordsets/coords/type"] = "explicit";
@@ -305,6 +360,11 @@ void make_one_hex(conduit::Node &hostMesh)
     std::vector<float> {{1., -1., -1., -1., -1., -1., -1., -1.}});
 }
 
+/*!
+ * \brief Make a Blueprint mesh that contains one tet.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 void make_one_tet(conduit::Node &hostMesh)
 {
   hostMesh["coordsets/coords/type"] = "explicit";
@@ -322,6 +382,12 @@ void make_one_tet(conduit::Node &hostMesh)
   hostMesh["fields/distance/association"] = "vertex";
   hostMesh["fields/distance/values"].set(std::vector<float> {{-1., -1., -1., 1.}});
 }
+
+/*!
+ * \brief Make a Blueprint mesh that contains one pyramid.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 
 void make_one_pyr(conduit::Node &hostMesh)
 {
@@ -345,6 +411,11 @@ void make_one_pyr(conduit::Node &hostMesh)
     std::vector<float> {{1., 1., -1., -1., -1.}});
 }
 
+/*!
+ * \brief Make a Blueprint mesh that contains one wedge.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 void make_one_wdg(conduit::Node &hostMesh)
 {
   hostMesh["coordsets/coords/type"] = "explicit";
@@ -367,6 +438,13 @@ void make_one_wdg(conduit::Node &hostMesh)
     std::vector<float> {{1., 1., -1., -1., -1., -1.}});
 }
 
+/*!
+ * \brief Make a Blueprint with a strided structured topology.
+ *
+ * \tparam NDIMS The number of topological mesh dimensions.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 template <int NDIMS = 2>
 void strided_structured(conduit::Node &hostMesh)
 {
