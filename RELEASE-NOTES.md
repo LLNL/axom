@@ -35,6 +35,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
 - Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
   of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
+- Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
 
 ###  Changed
 - `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
