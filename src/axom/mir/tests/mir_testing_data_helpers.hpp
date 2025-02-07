@@ -9,6 +9,7 @@
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
 #include <conduit/conduit.hpp>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -127,9 +128,34 @@ void make_unibuffer(const std::vector<float> &vfA,
 
   matset["material_ids"].set(material_ids);
   matset["volume_fractions"].set(volume_fractions);
+  matset["indices"].set(indices);
   matset["sizes"].set(sizes);
   matset["offsets"].set(offsets);
-  matset["indices"].set(indices);
+}
+
+/*!
+ * \brief Make a new "multibuffer" matset from the input vectors.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
+void make_multibuffer(const std::vector<float> &vfA,
+                      const std::vector<float> &vfB,
+                      const std::vector<float> &vfC,
+                      const std::vector<int> &AXOM_UNUSED_PARAM(matnos),
+                      conduit::Node &matset)
+{
+  std::vector<int> indices(vfA.size());
+  std::iota(indices.begin(), indices.end(), 0);
+  matset["volume_fractions/A/values"].set(vfA);
+  matset["volume_fractions/A/indices"].set(indices);
+  matset["volume_fractions/B/values"].set(vfB);
+  matset["volume_fractions/B/indices"].set(indices);
+  matset["volume_fractions/C/values"].set(vfC);
+  matset["volume_fractions/C/indices"].set(indices);
 }
 
 /*!
@@ -246,9 +272,11 @@ void make_matset(const std::string &type,
   {
     make_unibuffer(vfA, vfB, vfC, matnos, matset);
   }
-  // TODO: write these other cases.
   else if(type == "multibuffer")
-  { }
+  {
+    make_multibuffer(vfA, vfB, vfC, matnos, matset);
+  }
+  // TODO: write these other cases.
   else if(type == "element_dominant")
   { }
   else if(type == "material_dominant")

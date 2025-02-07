@@ -378,12 +378,13 @@ struct test_braid2d_mat
     conduit::Node hostMesh, deviceMesh;
     axom::mir::testing::data::braid(type, dims, hostMesh);
     axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
+//printNode(hostMesh["matsets/mat"]);
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
     conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 
-    if(type == "unibuffer")
+    if(mattype == "unibuffer")
     {
       // clang-format off
       // _mir_views_matsetview_begin
@@ -399,20 +400,31 @@ struct test_braid2d_mat
       EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
       test_matsetview(matsetView, allocatorID);
     }
+    else if(mattype == "multibuffer")
+    {
+      axom::mir::views::dispatch_material_multibuffer(deviceMesh["matsets/mat"], [&](auto matsetView)
+      {
+        EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
+        test_matsetview(matsetView, allocatorID);
+      });
+    }
+
   }
 
   template <typename MatsetView>
   static void test_matsetview(MatsetView matsetView, int allocatorID)
   {
-    constexpr int MATA = 0;
-    constexpr int MATB = 1;
-    constexpr int MATC = 2;
+    // These values are used in that material_map.
+    constexpr int MATA = 22;
+    constexpr int MATB = 66;
+    constexpr int MATC = 33;
+    // The zone ids that are being queried.
     const int zoneids[] = {0, 36, 40};
 
     // clang-format off
-    const int results[] = {/*contains mat*/ 0, 1, 0, /*mats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
-                           /*contains mat*/ 1, 1, 0, /*mats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
-                           /*contains mat*/ 1, 1, 1, /*mats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
+    const int results[] = {/*contains mat*/ 0, 1, 0, /*nmats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
+                           /*contains mat*/ 1, 1, 0, /*nmats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
+                           /*contains mat*/ 1, 1, 1, /*nmats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
     // clang-format on
     constexpr int nZones = sizeof(zoneids) / sizeof(int);
 
@@ -431,19 +443,23 @@ struct test_braid2d_mat
     axom::for_all<ExecSpace>(
       3,
       AXOM_LAMBDA(axom::IndexType index) {
+        // contains mat
         resultsView[nResultsPerZone * index + 0] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATA) ? 1 : 0;
         resultsView[nResultsPerZone * index + 1] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATB) ? 1 : 0;
         resultsView[nResultsPerZone * index + 2] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATC) ? 1 : 0;
+        // nmats in zone
         resultsView[nResultsPerZone * index + 3] =
           matsetView.numberOfMaterials(zoneidsView[index]);
 
         typename MatsetView::IDList ids {};
         typename MatsetView::VFList vfs {};
+        // ids.size
         matsetView.zoneMaterials(zoneidsView[index], ids, vfs);
         resultsView[nResultsPerZone * index + 4] = ids.size();
+        // mats in zone
         for(axom::IndexType i = 0; i < 3; i++)
         {
           resultsView[nResultsPerZone * index + 5 + i] =
@@ -488,6 +504,37 @@ TEST(mir_views, matset_unibuffer_hip)
   test_braid2d_mat<hip_exec>::test("uniform",
                                    "unibuffer",
                                    "uniform2d_unibuffer");
+}
+#endif
+
+TEST(mir_views, matset_multibuffer_seq)
+{
+  test_braid2d_mat<seq_exec>::test("uniform",
+                                   "multibuffer",
+                                   "uniform2d_multibuffer");
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, matset_multibuffer_omp)
+{
+  test_braid2d_mat<omp_exec>::test("uniform",
+                                   "multibuffer",
+                                   "uniform2d_multibuffer");
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, matset_multibuffer_cuda)
+{
+  test_braid2d_mat<cuda_exec>::test("uniform",
+                                    "multibuffer",
+                                    "uniform2d_multibuffer");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, matset_multibuffer_hip)
+{
+  test_braid2d_mat<hip_exec>::test("uniform",
+                                   "multibuffer",
+                                   "uniform2d_multibuffer");
 }
 #endif
 
