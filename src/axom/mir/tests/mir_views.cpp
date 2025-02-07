@@ -491,6 +491,79 @@ TEST(mir_views, matset_unibuffer_hip)
 }
 #endif
 
+TEST(mir_views, matset_multibuffer)
+{
+  const char *yaml = R"(
+matsets:
+  matset:
+    topology: topology
+    volume_fractions:
+      a:
+        values: [0, 0, 0, 0.33, 0, 0.3]  # [0, 0, 0, a1, 0, a0]
+        indices: [5, 3]
+      b:
+        values: [0, 0.7, 1., 0.67, 0]    # [0, b0, b2, b1, 0]
+        indices: [1, 3, 2]
+    material_map: # (optional)
+      a: 0
+      b: 1
+)";
+  conduit::Node matsets;
+  matsets.parse(yaml);
+  const conduit::Node &n_matset = matsets["matsets/matset"];
+  axom::mir::views::dispatch_material_multibuffer(n_matset, [&](auto matsetView)
+  {
+    using IDList = typename decltype(matsetView)::IDList;
+    using VFList = typename decltype(matsetView)::VFList;
+    using VFType = typename VFList::value_type;
+
+    EXPECT_EQ(matsetView.numberOfZones(), 3);
+    EXPECT_EQ(matsetView.numberOfMaterials(0), 2);
+    EXPECT_EQ(matsetView.numberOfMaterials(1), 2);
+    EXPECT_EQ(matsetView.numberOfMaterials(2), 1);
+
+    IDList m0, m1, m2;
+    VFList vf0, vf1, vf2;
+    matsetView.zoneMaterials(0, m0, vf0);
+    EXPECT_EQ(m0.size(), 2);
+    EXPECT_EQ(vf0.size(), 2);
+    EXPECT_EQ(m0[0], 0);
+    EXPECT_EQ(m0[1], 1);
+    EXPECT_EQ(vf0[0], 0.3);
+    EXPECT_EQ(vf0[1], 0.7);
+
+    VFType vf;
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(0, 0, vf));
+    EXPECT_EQ(vf, 0.3);
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(0, 1, vf));
+    EXPECT_EQ(vf, 0.7);
+
+    matsetView.zoneMaterials(1, m1, vf1);
+    EXPECT_EQ(m1.size(), 2);
+    EXPECT_EQ(vf1.size(), 2);
+    EXPECT_EQ(m1[0], 0);
+    EXPECT_EQ(m1[1], 1);
+    EXPECT_EQ(vf1[0], 0.33);
+    EXPECT_EQ(vf1[1], 0.67);
+
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(1, 0, vf));
+    EXPECT_EQ(vf, 0.33);
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(1, 1, vf));
+    EXPECT_EQ(vf, 0.67);
+
+    matsetView.zoneMaterials(2, m2, vf2);
+    EXPECT_EQ(m2.size(), 1);
+    EXPECT_EQ(m2[0], 1);
+    EXPECT_EQ(vf2[0], 1);
+
+    EXPECT_FALSE(matsetView.zoneContainsMaterial(2, 0, vf));
+    EXPECT_EQ(vf, 0.);
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(2, 1, vf));
+    EXPECT_EQ(vf, 1.);
+
+  });
+}
+
 //------------------------------------------------------------------------------
 #if defined(DEBUGGING_TEST_CASES)
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)

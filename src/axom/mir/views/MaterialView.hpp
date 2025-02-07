@@ -56,7 +56,7 @@ MaterialInformation materials(const conduit::Node &matset);
  \tparam FloatT The floating point type used for material data (volume fractions).
  \tparam MAXMATERIALS The maximum number of materials to support.
 
- \verbatum
+ \verbatim
 
 matsets:
   matset:
@@ -71,7 +71,7 @@ matsets:
     offsets: [0, 2, 4]
     indices: [1, 4, 6, 3, 2]
 
- \endverbatum
+ \endverbatim
  */
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class UnibufferMaterialView
@@ -181,7 +181,7 @@ private:
  \tparam FloatT The floating point type used for material data (volume fractions).
  \tparam MAXMATERIALS The maximum number of materials to support.
 
- \verbatum
+ \verbatim
 
 matsets:
   matset:
@@ -197,7 +197,7 @@ matsets:
       a: 0
       b: 1
 
- \endverbatum
+ \endverbatim
  */
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class MultiBufferMaterialView
@@ -237,10 +237,13 @@ public:
     axom::IndexType nmats = 0;
     for(axom::IndexType i = 0; i < m_size; i++)
     {
-      if(zi < m_indices[i].size())
+      const auto &curIndices = m_indices[i];
+      const auto &curValues = m_values[i];
+
+      if(zi < static_cast<ZoneIndex>(curIndices.size()))
       {
-        const auto idx = m_indices[zi];
-        if(m_values[i][idx] > 0.) nmats++;
+        const auto idx = curIndices[zi];
+        nmats += (curValues[idx] > 0.) ? 1 : 0;
       }
     }
 
@@ -255,13 +258,16 @@ public:
 
     for(axom::IndexType i = 0; i < m_size; i++)
     {
-      if(zi < m_indices[i].size())
+      const auto &curIndices = m_indices[i];
+      const auto &curValues = m_values[i];
+
+      if(zi < static_cast<ZoneIndex>(curIndices.size()))
       {
-        const auto idx = m_indices[zi];
-        if(m_values[i][idx] > 0.)
+        const auto idx = curIndices[zi];
+        if(curValues[idx] > 0.)
         {
-          ids.push_back(i);
-          vfs.push_back(m_values[i][idx]);
+          ids.push_back(static_cast<IndexType>(i));
+          vfs.push_back(curValues[idx]);
         }
       }
     }
@@ -270,22 +276,38 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
   {
-    assert(mat < m_size);
-    assert(zi < m_indices[mat].size());
-
-    const auto idx = m_indices[mat][zi];
-    return m_values[mat][zi] > 0.;
+    const auto mi = static_cast<axom::IndexType>(mat);
+    assert(mi < m_size);
+    const auto &curIndices = m_indices[mi];
+    const auto &curValues = m_values[mi];
+    bool retval = false;
+    if(zi < static_cast<ZoneIndex>(curIndices.size()))
+    {
+      const auto idx = curIndices[zi];
+      retval = curValues[idx] > 0.;
+    }
+    return retval;
   }
 
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
   {
-    assert(mat < m_size);
-    assert(zi < m_indices[mat].size());
-
-    const auto idx = m_indices[mat][zi];
-    vf = m_values[mat][zi];
-    return vf > 0.;
+    const auto mi = static_cast<axom::IndexType>(mat);
+    assert(mi < m_size);
+    const auto &curIndices = m_indices[mi];
+    const auto &curValues = m_values[mi];
+    bool retval = false;
+    if(zi < static_cast<ZoneIndex>(curIndices.size()))
+    {
+      const auto idx = curIndices[zi];
+      vf = curValues[idx];
+      retval = vf > 0.;
+    }
+    else
+    {
+      vf = FloatType{};
+    }
+    return retval;
   }
 
 private:
@@ -301,7 +323,7 @@ private:
  \tparam FloatT The floating point type used for material data (volume fractions).
  \tparam MAXMATERIALS The maximum number of materials to support.
 
- \verbatum
+ \verbatim
 
 matsets:
   matset:
@@ -315,7 +337,7 @@ matsets:
       b: 1
       c: 2
 
- \endverbatum
+ \endverbatim
  */
 template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class ElementDominantMaterialView
@@ -411,7 +433,7 @@ private:
  \tparam FloatT The floating point type used for material data (volume fractions).
  \tparam MAXMATERIALS The maximum number of materials to support.
 
- \verbatum
+ \verbatim
 
 matsets:
   matset:
@@ -429,7 +451,7 @@ matsets:
       b: 1
       c: 2
 
- \endverbatum
+ \endverbatim
 
  \note This matset type does not seem so GPU friendly since there is some work to do for some of the queries.
 

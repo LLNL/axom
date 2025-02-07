@@ -17,8 +17,9 @@ namespace mir
 {
 namespace views
 {
+
 /*!
- * \brief Dispatch a Conduit node containing a matset to a function as the appropriate type of matset view.
+ * \brief Dispatch a Conduit node containing a unibuffer matset to a function as the appropriate type of matset view.
  *
  * \tparam FuncType The function/lambda type that will take the matset.
  *
@@ -26,7 +27,7 @@ namespace views
  * \param func   The function/lambda that will operate on the matset view.
  */
 template <typename FuncType, size_t MAXMATERIALS = 20>
-void dispatch_material(const conduit::Node &matset, FuncType &&func)
+void dispatch_material_unibuffer(const conduit::Node &matset, FuncType &&func)
 {
   if(conduit::blueprint::mesh::matset::is_uni_buffer(matset))
   {
@@ -46,20 +47,32 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
         });
       });
   }
-#if 0
-  else if(conduit::blueprint::mesh::matset::is_multi_buffer(matset))
+}
+
+/*!
+ * \brief Dispatch a Conduit node containing a multibuffer matset to a function as the appropriate type of matset view.
+ *
+ * \tparam FuncType The function/lambda type that will take the matset.
+ *
+ * \param matset The node that contains the matset.
+ * \param func   The function/lambda that will operate on the matset view.
+ */
+template <typename FuncType, size_t MAXMATERIALS = 20>
+void dispatch_material_multibuffer(const conduit::Node &matset, FuncType &&func)
+{
+  if(conduit::blueprint::mesh::matset::is_multi_buffer(matset))
   {
     const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
     const conduit::Node &n_firstValues = volume_fractions[0].fetch_existing("values");
     const conduit::Node &n_firstIndices = volume_fractions[0].fetch_existing("indices");
-    IndexNode_To_ArrayView(n_firstIndices, [&](auto firstIndices)
+    IndexNode_to_ArrayView(n_firstIndices, [&](auto firstIndices)
     {
-      FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
+      FloatNode_to_ArrayView(n_firstValues, [&](auto firstValues)
       {
-        using IntView = decltype(firstIndices);
-        using IntElement = typename IntView::value_type;
-        using FloatView = decltype(firstValues);
-        using FloatElement = typename FloatView::value_type;
+        using IntElement = typename std::remove_const<typename decltype(firstIndices)::value_type>::type;
+        using FloatElement = typename std::remove_const<typename decltype(firstValues)::value_type>::type;
+        using IntView = axom::ArrayView<IntElement>;
+        using FloatView = axom::ArrayView<FloatElement>;
 
         MultiBufferMaterialView<IntElement, FloatElement, MAXMATERIALS> matsetView;
 
@@ -71,8 +84,8 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
           const IntElement *indices_ptr = indices.value();
           const FloatElement *values_ptr = values.value();
 
-          IntView   indices_view(indices_ptr, indices.dtype().number_of_elements());
-          FloatView values_view(values_ptr, values.dtype().number_of_elements());
+          IntView   indices_view(const_cast<IntElement *>(indices_ptr), indices.dtype().number_of_elements());
+          FloatView values_view(const_cast<FloatElement *>(values_ptr), values.dtype().number_of_elements());
           matsetView.add(indices_view, values_view);
         }
 
@@ -80,11 +93,24 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
       });
     });
   }
-  else if(conduit::blueprint::mesh::matset::is_element_dominant(matset))
+}
+
+/*!
+ * \brief Dispatch a Conduit node containing a element-dominant matset to a function as the appropriate type of matset view.
+ *
+ * \tparam FuncType The function/lambda type that will take the matset.
+ *
+ * \param matset The node that contains the matset.
+ * \param func   The function/lambda that will operate on the matset view.
+ */
+template <typename FuncType, size_t MAXMATERIALS = 20>
+void dispatch_material_element_dominant(const conduit::Node &matset, FuncType &&func)
+{
+  if(conduit::blueprint::mesh::matset::is_element_dominant(matset))
   {
     const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
     const conduit::Node &n_firstValues = volume_fractions[0];
-    FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
+    FloatNode_to_ArrayView(n_firstValues, [&](auto firstValues)
     {
       using FloatView = decltype(firstValues);
       using FloatElement = typename FloatView::value_type;
@@ -102,16 +128,29 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
       func(matsetView);
     });
   }  
-  else if(conduit::blueprint::mesh::matset::is_material_dominant(matset))
+}
+
+/*!
+ * \brief Dispatch a Conduit node containing a material-dominant matset to a function as the appropriate type of matset view.
+ *
+ * \tparam FuncType The function/lambda type that will take the matset.
+ *
+ * \param matset The node that contains the matset.
+ * \param func   The function/lambda that will operate on the matset view.
+ */
+template <typename FuncType, size_t MAXMATERIALS = 20>
+void dispatch_material_material_dominant(const conduit::Node &matset, FuncType &&func)
+{
+  if(conduit::blueprint::mesh::matset::is_material_dominant(matset))
   {
     const conduit::Node &volume_fractions = matset.fetch_existing("volume_fractions");
     const conduit::Node &element_ids = matset.fetch_existing("element_ids");   
     const conduit::Node &n_firstValues = volume_fractions[0];
     const conduit::Node &n_firstIndices = element_ids[0];
 
-    IndexNode_To_ArrayView(n_firstIndices, [&](auto firstIndices)
+    IndexNode_to_ArrayView(n_firstIndices, [&](auto firstIndices)
     {
-      FloatNode_To_ArrayView(n_firstValues, [&](auto firstValues)
+      FloatNode_to_ArrayView(n_firstValues, [&](auto firstValues)
       {
         using IntView = decltype(firstIndices);
         using IntElement = typename IntView::value_type;
@@ -137,7 +176,23 @@ void dispatch_material(const conduit::Node &matset, FuncType &&func)
       });
     });
   }
-#endif
+}
+
+/*!
+ * \brief Dispatch a Conduit node containing a matset to a function as the appropriate type of matset view.
+ *
+ * \tparam FuncType The function/lambda type that will take the matset.
+ *
+ * \param matset The node that contains the matset.
+ * \param func   The function/lambda that will operate on the matset view.
+ */
+template <typename FuncType, size_t MAXMATERIALS = 20>
+void dispatch_material(const conduit::Node &matset, FuncType &&func)
+{
+  dispatch_material_unibuffer<FuncType, MAXMATERIALS>(matset, std::forward<FuncType>(func));
+  dispatch_material_multibuffer<FuncType, MAXMATERIALS>(matset, std::forward<FuncType>(func));
+  //dispatch_material_element_dominant(matset, std::forward(func));
+  //dispatch_material_material_dominant(matset, std::forward(func));
 }
 
 }  // end namespace views
