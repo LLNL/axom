@@ -13,6 +13,7 @@
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/OrientationResult.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/operators/in_sphere.hpp"
 
 #include "axom/fmt.hpp"
@@ -176,6 +177,49 @@ TEST(primal_in_sphere, compare_to_sphere_orientation)
     const bool oper_in_sphere = in_sphere(query, tet);
     const bool geom_in_sphere = (res == primal::ON_NEGATIVE_SIDE);
     EXPECT_EQ(oper_in_sphere, geom_in_sphere);
+  }
+}
+
+TEST(primal_in_sphere, bounding_box_in_sphere)
+{
+  constexpr int DIM = 2;
+  using PointType = primal::Point<double, DIM>;
+  using SphereType = primal::Sphere<double, DIM>;
+  using BoxType = primal::BoundingBox<double, DIM>;
+
+  SphereType circle(PointType {1.0, 2.0}, 1.3);
+
+  // Circle contains box: All 4 corners inside
+  {
+    BoxType box(
+      PointType {circle.getCenter()[0] - 0.5, circle.getCenter()[1] - 0.5},
+      PointType {circle.getCenter()[0] + 0.5, circle.getCenter()[1] + 0.5});
+    EXPECT_TRUE(primal::in_sphere(box, circle));
+  }
+
+  // One corner outside
+  {
+    BoxType box(PointType {0, 1},
+                PointType {circle.getCenter()[0], circle.getCenter()[1]});
+    EXPECT_FALSE(primal::in_sphere(box, circle));
+  }
+
+  // Two corners outside
+  {
+    BoxType box(PointType {0, 1}, PointType {2, 2});
+    EXPECT_FALSE(primal::in_sphere(box, circle));
+  }
+
+  // Three corners outside
+  {
+    BoxType box(PointType {0, 1}, PointType {2.2, 2.6});
+    EXPECT_FALSE(primal::in_sphere(box, circle));
+  }
+
+  // All four corners outside
+  {
+    BoxType box(PointType {0, 1}, PointType {3, 3});
+    EXPECT_FALSE(primal::in_sphere(box, circle));
   }
 }
 

@@ -540,7 +540,7 @@ bool intersect(const Sphere<T, 2>& circle,
   T dx = axom::utilities::clampVal(center[0], bb.getMin()[0], bb.getMax()[0]);
   T dy = axom::utilities::clampVal(center[1], bb.getMin()[1], bb.getMax()[1]);
 
-  if((center[0] - dx) * (center[0] - dx) + (center[1] - dy) * (center[1] - dy) >
+  if((center[0] - dx) * (center[0] - dx) + (center[1] - dy) * (center[1] - dy) >=
      radius * radius)
   {
     return false;
