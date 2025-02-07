@@ -130,7 +130,7 @@ private:
   {
     using Precision = typename DataView::value_type;
     using AccumType =
-      typename axom::mir::utilities::accumulation_traits<Precision>::value_type;
+      typename axom::mir::utilities::accumulation_traits<Precision>::type;
     const auto relSize = sizesView.size();
     axom::for_all<ExecSpace>(
       relSize,
