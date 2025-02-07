@@ -15,6 +15,11 @@
 #include "axom/config.hpp"
 #include <cassert>  // for assert()
 
+// Header for assert() in HIP device kernels
+#if defined(AXOM_USE_HIP)
+  #include <hip/hip_runtime.h>
+#endif
+
 // _guarding_macros_start
 /*!
  * \def AXOM_USE_GPU
