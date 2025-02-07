@@ -14,7 +14,7 @@ using SphereType = axom::primal::Sphere<double, 3>;
 using OctType = axom::primal::Octahedron<double, 3>;
 using Point3D = axom::primal::Point<double, 3>;
 using Point2D = axom::primal::Point<double, 2>;
-using NAType = axom::primal::NumericArray<double, 3>;
+using NAType = axom::NumericArray<double, 3>;
 
 // gtest includes
 #include "gtest/gtest.h"

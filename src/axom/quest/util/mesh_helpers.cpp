@@ -22,7 +22,7 @@ namespace util
 {
 #ifdef AXOM_USE_MFEM
 mfem::Mesh* make_cartesian_mfem_mesh_2D(const primal::BoundingBox<double, 2>& bbox,
-                                        const primal::NumericArray<int, 2>& res,
+                                        const NumericArray<int, 2>& res,
                                         int polynomial_order,
                                         bool reorder_space_filling)
 {
@@ -56,7 +56,7 @@ mfem::Mesh* make_cartesian_mfem_mesh_2D(const primal::BoundingBox<double, 2>& bb
 }
 
 mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bbox,
-                                        const primal::NumericArray<int, 3>& res,
+                                        const NumericArray<int, 3>& res,
                                         int polynomial_order,
                                         bool reorder_space_filling)
 {
@@ -97,7 +97,7 @@ mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bb
 axom::sidre::Group* make_structured_blueprint_box_mesh(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 3>& bbox,
-  const primal::NumericArray<int, 3>& res,
+  const NumericArray<int, 3>& res,
   const std::string& topologyName,
   const std::string& coordsetName,
   axom::runtime_policy::Policy runtimePolicy)
@@ -185,7 +185,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
 axom::sidre::Group* make_unstructured_blueprint_box_mesh(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 3>& bbox,
-  const primal::NumericArray<int, 3>& res,
+  const NumericArray<int, 3>& res,
   const std::string& topologyName,
   const std::string& coordsetName,
   axom::runtime_policy::Policy runtimePolicy)
@@ -453,9 +453,9 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
   SLIC_ASSERT(mapping == zView.mapping());
 
   // Mesh resolution
-  const axom::primal::NumericArray<axom::IndexType, 3> res {shape[0] - 1,
-                                                            shape[1] - 1,
-                                                            shape[2] - 1};
+  const axom::NumericArray<axom::IndexType, 3> res {shape[0] - 1,
+                                                    shape[1] - 1,
+                                                    shape[2] - 1};
 
   // Mesh spacings.
   double dx = (domainBox.getMax()[0] - domainBox.getMin()[0]) / res[0];

@@ -1096,7 +1096,7 @@ private:
       break;
 
     case L_INF_METRIC:
-      ret = axom::primal::abs(pt.array()).max();
+      ret = axom::abs(pt.array()).max();
       break;
     }
 

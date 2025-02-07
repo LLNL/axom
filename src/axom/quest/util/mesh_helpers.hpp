@@ -42,7 +42,7 @@ namespace util
  * \note The user will be responsible for the mesh's memory
  */
 mfem::Mesh* make_cartesian_mfem_mesh_2D(const primal::BoundingBox<double, 2>& bbox,
-                                        const primal::NumericArray<int, 2>& res,
+                                        const NumericArray<int, 2>& res,
                                         int polynomial_order,
                                         bool reorder_space_filling = true);
 
@@ -58,7 +58,7 @@ mfem::Mesh* make_cartesian_mfem_mesh_2D(const primal::BoundingBox<double, 2>& bb
  * \note The user will be responsible for the mesh's memory
  */
 mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bbox,
-                                        const primal::NumericArray<int, 3>& res,
+                                        const NumericArray<int, 3>& res,
                                         int polynomial_order,
                                         bool reorder_space_filling = true);
 #endif
@@ -81,7 +81,7 @@ mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bb
 axom::sidre::Group* make_structured_blueprint_box_mesh(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 3>& bbox,
-  const primal::NumericArray<int, 3>& res,
+  const NumericArray<int, 3>& res,
   const std::string& topologyName = "mesh",
   const std::string& coordsetName = "coords",
   axom::runtime_policy::Policy runtimePolicy = axom::runtime_policy::Policy::seq);
@@ -89,7 +89,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
 axom::sidre::Group* make_unstructured_blueprint_box_mesh(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 3>& bbox,
-  const primal::NumericArray<int, 3>& res,
+  const NumericArray<int, 3>& res,
   const std::string& topologyName = "mesh",
   const std::string& coordsetName = "coords",
   axom::runtime_policy::Policy runtimePolicy = axom::runtime_policy::Policy::seq);
