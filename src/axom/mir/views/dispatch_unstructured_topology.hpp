@@ -247,7 +247,7 @@ struct dispatch_shape
   /*!
    * \brief Execute method that gets generated when a shape is not enabled or supported. Do nothing.
    */
-  static void execute4(bool &AXOM_UNUSED_PARAM(eligible),
+  static void execute(bool &AXOM_UNUSED_PARAM(eligible),
                        const std::string &AXOM_UNUSED_PARAM(shape),
                        const conduit::Node &AXOM_UNUSED_PARAM(topo),
                        FuncType &&AXOM_UNUSED_PARAM(func))
@@ -391,7 +391,7 @@ struct SelectMixedShape
 template <typename ConnType, typename FuncType>
 struct dispatch_shape<true, ConnType, SelectMixedShape, FuncType>
 {
-  static void execute4(bool &eligible,
+  static void execute(bool &eligible,
                        const std::string &shape,
                        const conduit::Node &topo,
                        FuncType &&func)
@@ -412,7 +412,7 @@ struct SelectPHShape
 template <typename ConnType, typename FuncType>
 struct dispatch_shape<true, ConnType, SelectPHShape, FuncType>
 {
-  static void execute4(bool &eligible,
+  static void execute(bool &eligible,
                        const std::string &shape,
                        const conduit::Node &topo,
                        FuncType &&func)
@@ -457,7 +457,7 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Polyhedron_ShapeID),
                              ConnType,
                              internal::SelectPHShape,
-                             FuncType>::execute4(eligible,
+                             FuncType>::execute(eligible,
                                                  shape,
                                                  topo,
                                                  std::forward<FuncType>(func));
@@ -466,7 +466,7 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Mixed_ShapeID),
                              ConnType,
                              internal::SelectMixedShape,
-                             FuncType>::execute4(eligible,
+                             FuncType>::execute(eligible,
                                                  shape,
                                                  topo,
                                                  std::forward<FuncType>(func));
