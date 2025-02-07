@@ -463,7 +463,7 @@ struct test_braid2d_mat
         for(axom::IndexType i = 0; i < 3; i++)
         {
           resultsView[nResultsPerZone * index + 5 + i] =
-            (i < ids.size()) ? ids[i] : -1;
+            (i < ids.size()) ? static_cast<int>(ids[i]) : -1;
         }
       });
     // Get containsView data to the host and compare results

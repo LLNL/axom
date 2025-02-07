@@ -88,25 +88,16 @@ void dispatch_material_multibuffer(const conduit::Node &matset, FuncType &&func)
           FloatView values_view(const_cast<FloatElement *>(values_ptr), values.dtype().number_of_elements());
 
           // Get the material number if we can.
-          bool has_matno = false;
-          IntElement matno {};
+          IntElement matno = static_cast<IntElement>(i);
           if(matset.has_child("material_map"))
           {
             const conduit::Node &n_mm = matset["material_map"];
             if(n_mm.has_child(volume_fractions[i].name()))
             {
               matno = static_cast<IntElement>(n_mm[volume_fractions[i].name()].to_int());
-              has_matno = true;
             }
           }
-          if(has_matno)
-          {
-            matsetView.add(indices_view, values_view, matno);
-          }
-          else
-          {
-            matsetView.add(indices_view, values_view);
-          }
+          matsetView.add(matno, indices_view, values_view);
         }
 
         func(matsetView);

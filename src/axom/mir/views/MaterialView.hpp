@@ -134,16 +134,8 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat) const
   {
-    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
-    const auto sz = numberOfMaterials(zi);
-    const auto offset = m_offsets[zi];
-    for(axom::IndexType i = 0; i < sz; i++)
-    {
-      const auto idx = m_indices[offset + i];
-
-      if(m_material_ids[idx] == mat) return true;
-    }
-    return false;
+    FloatType tmp {};
+    return zoneContainsMaterial(zi, mat, tmp);
   }
 
   AXOM_HOST_DEVICE
@@ -211,17 +203,17 @@ public:
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
   constexpr static axom::IndexType MaxMaterials = MAXMATERIALS;
-  constexpr static MaterialID NoMaterialNumber = axom::numeric_limits<MaterialID>::max();
+  constexpr static axom::IndexType InvalidIndex = -1;
 
-  void add(const axom::ArrayView<ZoneIndex> &ids,
-           const axom::ArrayView<FloatType> &vfs,
-           MaterialID matno = NoMaterialNumber)
+  void add(MaterialID matno,
+           const axom::ArrayView<ZoneIndex> &ids,
+           const axom::ArrayView<FloatType> &vfs)
   {
     assert(m_size + 1 < MaxMaterials);
 
     m_indices[m_size] = ids;
     m_values[m_size] = vfs;
-    m_matnos[m_size] = (matno == NoMaterialNumber) ? static_cast<MaterialID>(m_size) : matno;
+    m_matnos[m_size] = matno;
     m_size++;
   }
 
@@ -279,41 +271,24 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat) const
   {
-    bool retval = false;
-    for(axom::IndexType mi = 0; mi < m_size; mi++)
-    {
-      if(mat == m_matnos[mi])
-      {
-        const auto &curIndices = m_indices[mi];
-        const auto &curValues = m_values[mi];
-        if(zi < static_cast<ZoneIndex>(curIndices.size()))
-        {
-          const auto idx = curIndices[zi];
-          retval = curValues[idx] > 0.;
-        }
-        break;
-      }
-    }
-    return retval;
+    FloatType tmp {};
+    return zoneContainsMaterial(zi, mat, tmp);
   }
 
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat, FloatType &vf) const
   {
     bool retval = false;
-    for(axom::IndexType mi = 0; mi < m_size; mi++)
+    axom::IndexType mi = indexOfMaterialID(mat);
+    if(mi != InvalidIndex)
     {
-      if(mat == m_matnos[mi])
+      const auto &curIndices = m_indices[mi];
+      const auto &curValues = m_values[mi];
+      if(zi < static_cast<ZoneIndex>(curIndices.size()))
       {
-        const auto &curIndices = m_indices[mi];
-        const auto &curValues = m_values[mi];
-        if(zi < static_cast<ZoneIndex>(curIndices.size()))
-        {
-          const auto idx = curIndices[zi];
-          vf = curValues[idx];
-          retval = curValues[idx] > 0.;
-        }
-        break;
+        const auto idx = curIndices[zi];
+        vf = curValues[idx];
+        retval = curValues[idx] > 0.;
       }
     }
     if(!retval)
@@ -324,6 +299,21 @@ public:
   }
 
 private:
+  AXOM_HOST_DEVICE
+  axom::IndexType indexOfMaterialID(MaterialID mat) const
+  {
+    axom::IndexType index = InvalidIndex;
+    for(axom::IndexType mi = 0; mi < m_size; mi++)
+    {
+      if(mat == m_matnos[mi])
+      {
+        index = mi;
+        break;
+      }
+    }
+    return index;
+  }
+
   axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_values {};
   axom::StackArray<axom::ArrayView<ZoneIndex>, MAXMATERIALS> m_indices {};
   axom::StackArray<MaterialID, MAXMATERIALS> m_matnos {};

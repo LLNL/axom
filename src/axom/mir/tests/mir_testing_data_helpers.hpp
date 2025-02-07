@@ -159,6 +159,70 @@ void make_multibuffer(const std::vector<float> &vfA,
 }
 
 /*!
+ * \brief Make a new "element_dominant" matset from the input vectors.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
+void make_element_dominant(const std::vector<float> &vfA,
+                           const std::vector<float> &vfB,
+                           const std::vector<float> &vfC,
+                           const std::vector<int> &AXOM_UNUSED_PARAM(matnos),
+                           conduit::Node &matset)
+{
+  matset["volume_fractions/A"].set(vfA);
+  matset["volume_fractions/B"].set(vfB);
+  matset["volume_fractions/C"].set(vfC);
+}
+
+/*!
+ * \brief Make a new "material_dominant" matset from the input vectors.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
+void make_material_dominant(const std::vector<float> &vfA,
+                            const std::vector<float> &vfB,
+                            const std::vector<float> &vfC,
+                            const std::vector<int> &AXOM_UNUSED_PARAM(matnos),
+                            conduit::Node &matset)
+{
+  std::vector<float> svfA, svfB, svfC;
+  std::vector<int> ziA, ziB, ziC;
+  const size_t n = vfA.size();
+  for(size_t zi = 0; zi < n; zi++)
+  {
+    if(vfA[zi] > 0.f)
+    {
+      svfA.push_back(vfA[zi]);
+      ziA.push_back(zi);
+    }
+    if(vfB[zi] > 0.f)
+    {
+      svfB.push_back(vfB[zi]);
+      ziB.push_back(zi);
+    }
+    if(vfC[zi] > 0.f)
+    {
+      svfC.push_back(vfC[zi]);
+      ziC.push_back(zi);
+    }
+  }
+  matset["volume_fractions/A"].set(svfA);
+  matset["volume_fractions/B"].set(svfB);
+  matset["volume_fractions/C"].set(svfC);
+  matset["element_ids/A"].set(ziA);
+  matset["element_ids/B"].set(ziB);
+  matset["element_ids/C"].set(ziC);
+}
+
+/*!
  * \brief Make a new mesh with a matset that has 3 materials.
  *
  * \param type The type of matset to create.
@@ -276,11 +340,14 @@ void make_matset(const std::string &type,
   {
     make_multibuffer(vfA, vfB, vfC, matnos, matset);
   }
-  // TODO: write these other cases.
   else if(type == "element_dominant")
-  { }
+  {
+    make_element_dominant(vfA, vfB, vfC, matnos, matset);
+  }
   else if(type == "material_dominant")
-  { }
+  {
+    make_material_dominant(vfA, vfB, vfC, matnos, matset);
+  }
 }
 
 /*!
