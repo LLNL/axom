@@ -15,7 +15,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Segment.hpp"

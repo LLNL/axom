@@ -24,7 +24,6 @@
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/spin/Brood.hpp"
 
 #include <iterator>
@@ -78,7 +77,7 @@ public:
 
   /** A brood is a collection of sibling blocks that are generated
      simultaneously */
-  using BroodData = primal::NumericArray<BlockDataType, BROOD_SIZE>;
+  using BroodData = NumericArray<BlockDataType, BROOD_SIZE>;
 
   /** Predeclare the BlockIterator type */
   template <typename OctreeLevel, typename IterHelper, typename DataType>

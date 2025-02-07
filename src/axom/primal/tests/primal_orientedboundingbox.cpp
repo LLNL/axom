@@ -9,9 +9,9 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -248,7 +248,7 @@ TEST(primal_OBBox, obb_test_vertices)
   QOBBox obbox1(pt1, u, e);
   std::vector<QPoint> l = obbox1.vertices();
 
-  primal::NumericArray<CoordType, DIM> v;
+  axom::NumericArray<CoordType, DIM> v;
 
   for(int i = 0; i < 2; i++)
   {

@@ -288,7 +288,7 @@ mfem::Mesh* createBoxMesh(const Input& params)
   case 2:
   {
     using Pt2D = primal::Point<double, 2>;
-    auto res = primal::NumericArray<int, 2>(params.boxResolution.data());
+    auto res = axom::NumericArray<int, 2>(params.boxResolution.data());
     auto bbox = primal::BoundingBox<double, 2>(Pt2D(lo.data()), Pt2D(hi.data()));
 
     SLIC_INFO(axom::fmt::format(
@@ -303,7 +303,7 @@ mfem::Mesh* createBoxMesh(const Input& params)
   case 3:
   {
     using Pt3D = primal::Point<double, 3>;
-    auto res = primal::NumericArray<int, 3>(params.boxResolution.data());
+    auto res = axom::NumericArray<int, 3>(params.boxResolution.data());
     auto bbox = primal::BoundingBox<double, 3>(Pt3D(lo.data()), Pt3D(hi.data()));
 
     SLIC_INFO(axom::fmt::format(

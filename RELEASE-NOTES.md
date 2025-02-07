@@ -38,6 +38,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
 
 ###  Changed
+- `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.
 - `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
   Changing the policy after construction is no longer supported.
 - Importing Conduit array data into `sidre::View` now allocates destination

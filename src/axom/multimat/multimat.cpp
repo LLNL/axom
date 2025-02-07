@@ -1936,7 +1936,7 @@ bool MultiMat::isValid(bool verboseOutput) const
       }
       for(unsigned int i = 0; i < volfrac_sum.size(); ++i)
       {
-        if(abs(volfrac_sum[i] - 1.0) > 10e-9)
+        if(std::abs(volfrac_sum[i] - 1.0) > 10e-9)
         {
           errStr << "\n\t*Volfrac does not sum to 1.0 in cell " << i;
           bValid = false;

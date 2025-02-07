@@ -29,7 +29,6 @@ set( primal_headers
     geometry/Line.hpp
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
-    geometry/NumericArray.hpp
     geometry/NURBSCurve.hpp
     geometry/NURBSPatch.hpp
     geometry/Plane.hpp

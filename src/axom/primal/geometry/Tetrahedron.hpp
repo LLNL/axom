@@ -9,7 +9,6 @@
 #include "axom/core.hpp"
 
 #include "axom/primal/constants.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
@@ -194,7 +193,7 @@ public:
       bary[3] = detD * ood;
 
       // Replace the smallest entry with the difference of 1 from the sum of the others
-      const int amin = primal::abs(bary.array()).argMin();
+      const int amin = axom::abs(bary.array()).argMin();
       bary[amin] = 0.;
       bary[amin] = 1. - bary.array().sum();
     }

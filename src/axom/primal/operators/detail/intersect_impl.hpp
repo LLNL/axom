@@ -769,7 +769,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri,
   //find out dimension where ray direction is maximal
   int kx, ky, kz;
 
-  NumArray r = primal::abs(R.direction().array());
+  NumArray r = axom::abs(R.direction().array());
 
   //z-direction largest
   if((r[2] >= r[0]) && (r[2] >= r[1]))

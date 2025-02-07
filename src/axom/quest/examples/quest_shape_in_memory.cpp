@@ -150,7 +150,7 @@ public:
     {
       using BBox2D = primal::BoundingBox<double, 2>;
       using Pt2D = primal::Point<double, 2>;
-      auto res = primal::NumericArray<int, 2>(boxResolution.data());
+      auto res = axom::NumericArray<int, 2>(boxResolution.data());
       auto bbox = BBox2D(Pt2D(boxMins.data()), Pt2D(boxMaxs.data()));
 
       SLIC_INFO(axom::fmt::format(
@@ -165,7 +165,7 @@ public:
     {
       using BBox3D = primal::BoundingBox<double, 3>;
       using Pt3D = primal::Point<double, 3>;
-      auto res = primal::NumericArray<int, 3>(boxResolution.data());
+      auto res = axom::NumericArray<int, 3>(boxResolution.data());
       auto bbox = BBox3D(Pt3D(boxMins.data()), Pt3D(boxMaxs.data()));
 
       SLIC_INFO(axom::fmt::format(
@@ -475,7 +475,7 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
   using BBox3D = primal::BoundingBox<double, 3>;
   using Pt3D = primal::Point<double, 3>;
-  auto res = primal::NumericArray<int, 3>(params.boxResolution.data());
+  auto res = axom::NumericArray<int, 3>(params.boxResolution.data());
   auto bbox = BBox3D(Pt3D(params.boxMins.data()), Pt3D(params.boxMaxs.data()));
   axom::quest::util::make_unstructured_blueprint_box_mesh(meshGrp,
                                                           bbox,
@@ -865,8 +865,8 @@ axom::klee::Shape createShape_Plane()
   // Create a plane crossing center of mesh.  No matter the normal,
   // it cuts the mesh in half.
   Point3D center {0.5 *
-                  (primal::NumericArray<double, 3>(params.boxMins.data()) +
-                   primal::NumericArray<double, 3>(params.boxMaxs.data()))};
+                  (axom::NumericArray<double, 3>(params.boxMins.data()) +
+                   axom::NumericArray<double, 3>(params.boxMaxs.data()))};
   primal::Vector<double, 3> normal = params.direction.empty()
     ? primal::Vector3D {1.0, 0.0, 0.0}
     : primal::Vector3D {params.direction.data()}.unitVector();
