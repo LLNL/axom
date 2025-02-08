@@ -7,6 +7,7 @@
 #define AXOM_MIR_CLIPPING_CLIP_TABLE_MANAGER_HPP_
 
 #include "axom/core.hpp"
+#include "axom/slic.hpp"
 #include "axom/mir/clipping/ClipCases.h"
 
 namespace axom
@@ -292,7 +293,7 @@ public:
   AXOM_HOST_DEVICE
   iterator begin(size_t caseId) const
   {
-    assert(static_cast<IndexType>(caseId) < m_shapes.size());
+    SLIC_ASSERT(static_cast<IndexType>(caseId) < m_shapes.size());
     iterator it;
     it.m_shapeStart = const_cast<TableData *>(m_table.data() + m_offsets[caseId]);
     it.m_offset = 0;
@@ -310,7 +311,7 @@ public:
   AXOM_HOST_DEVICE
   iterator end(size_t caseId) const
   {
-    assert(static_cast<IndexType>(caseId) < m_shapes.size());
+    SLIC_ASSERT(static_cast<IndexType>(caseId) < m_shapes.size());
     iterator it;
     it.m_shapeStart = const_cast<TableData *>(m_table.data() + m_offsets[caseId]);
     it.m_offset = 0;  // not checked in iterator::operator==
@@ -406,7 +407,7 @@ public:
   Table<ExecSpace> &operator[](size_t shape)
   {
     const size_t index = shapeToIndex(shape);
-    assert(shape < ST_MAX);
+    SLIC_ASSERT(shape < ST_MAX);
     loadShape(shape);
     return m_tables[index];
   }

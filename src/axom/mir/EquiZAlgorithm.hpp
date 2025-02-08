@@ -103,16 +103,11 @@ public:
       for(IndexType i = 0; i < n; i++)
       {
         const auto nid = nodeIdsView[i];
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-        assert(nid >= 0 && nid < m_matvfViews[0].size());
-  #else
         SLIC_ASSERT_MSG(nid >= 0 && nid < m_matvfViews[0].size(),
                         axom::fmt::format("Node id {} is not in range [0, {}).",
                                           nid,
                                           m_matvfViews[0].size()));
-  #endif
-#endif
+
         // clang-format off
         MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
         MaterialVF vf2 = (m_currentMaterialIndex != INVALID_INDEX) ? m_matvfViews[m_currentMaterialIndex][nid] : 0;
@@ -140,11 +135,6 @@ public:
       if(zoneMatID != NULL_MATERIAL)
         backgroundIndex = matNumberToIndex(zoneMatID);
         // Determine the matvf view index for the current material.
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-      assert(id0 >= 0 && id0 < m_matvfViews[0].size());
-      assert(id1 >= 0 && id1 < m_matvfViews[0].size());
-  #else
       SLIC_ASSERT_MSG(id0 >= 0 && id0 < m_matvfViews[0].size(),
                       axom::fmt::format("Node id {} is not in range [0, {}).",
                                         id0,
@@ -153,8 +143,7 @@ public:
                       axom::fmt::format("Node id {} is not in range [0, {}).",
                                         id1,
                                         m_matvfViews[0].size()));
-  #endif
-#endif
+
       // Get the volume fractions for mat1, mat2 at the edge endpoints id0, id1.
       MaterialVF vf1[2], vf2[2];
       // clang-format off

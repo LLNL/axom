@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // Define command line options.
-  bool handler = true;
+  bool handler = false;
   axom::CLI::App app;
   app.add_option("--handler", handler)
     ->description("Install a custom error handler that loops forever.");

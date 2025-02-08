@@ -7,6 +7,7 @@
 #define AXOM_MIR_UTILITIES_HPP_
 
 #include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
@@ -218,7 +219,7 @@ public:
     AXOM_HOST_DEVICE
     inline KeyType make_name_1(IndexType p0) const
     {
-      assert(static_cast<KeyType>(p0) < PayloadMask);
+      SLIC_ASSERT(static_cast<KeyType>(p0) < PayloadMask);
       // Store p0 in the key as a 62-bit integer
       KeyType k0 = (static_cast<KeyType>(p0) & PayloadMask);
       return KeyIDSingle | k0;
@@ -233,8 +234,8 @@ public:
     AXOM_HOST_DEVICE
     inline KeyType make_name_2(IndexType p0, IndexType p1) const
     {
-      assert(static_cast<KeyType>(p0) <= Max31Bit &&
-             static_cast<KeyType>(p1) <= Max31Bit);
+      SLIC_ASSERT(static_cast<KeyType>(p0) <= Max31Bit &&
+                  static_cast<KeyType>(p1) <= Max31Bit);
       // Store p0 and p1 both in the 64-bit key as 31-bit integers
       KeyType k0 =
         (static_cast<KeyType>(axom::utilities::min(p0, p1)) & Max31Bit);

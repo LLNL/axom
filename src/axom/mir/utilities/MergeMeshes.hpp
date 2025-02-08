@@ -1325,7 +1325,7 @@ private:
 
           // Get the index of the material number in the local map.
           const auto mapIndex = axom::mir::utilities::bsearch(ids[mi], localView);
-          assert(mapIndex != -1);
+          SLIC_ASSERT(mapIndex != -1);
           // We'll store the all materials number.
           const auto allMatno = allView[mapIndex];
           materialIdsView[destIndex] = allMatno;

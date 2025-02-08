@@ -7,6 +7,7 @@
 #define AXOM_MIR_NODE_TO_ZONE_RELATION_BUILDER_HPP_
 
 #include "axom/core.hpp"
+#include "axom/slic.hpp"
 #include "axom/mir/utilities/utilities.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
 #include "axom/mir/views/dispatch_unstructured_topology.hpp"
@@ -58,7 +59,7 @@ struct BuildRelation
                       ViewType offsetsView)
   {
     AXOM_ANNOTATE_SCOPE("FillZonesAndOffsets");
-    assert(nodesView.size() == zonesView.size());
+    SLIC_ASSERT(nodesView.size() == zonesView.size());
 
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
     using value_type = typename ViewType::value_type;
@@ -125,7 +126,7 @@ struct BuildRelation<axom::SEQ_EXEC, ViewType>
                       ViewType offsetsView)
   {
     AXOM_ANNOTATE_SCOPE("FillZonesAndOffsets");
-    assert(nodesView.size() == zonesView.size());
+    SLIC_ASSERT(nodesView.size() == zonesView.size());
     using value_type = typename ViewType::value_type;
     using ExecSpace = axom::SEQ_EXEC;
     const int allocatorID = execution_space<ExecSpace>::allocatorID();

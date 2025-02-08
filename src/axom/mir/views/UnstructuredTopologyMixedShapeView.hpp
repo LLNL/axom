@@ -121,21 +121,11 @@ public:
     , m_offsets(offsets)
     , m_shapeMap(shapemap)
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(m_shapes.size() != 0);
-    assert(m_sizes.size() != 0);
-    assert(m_offsets.size() != 0);
-    assert(m_offsets.size() == m_sizes.size() &&
-           m_offsets.size() == m_shapes.size());
-  #else
     SLIC_ASSERT(m_shapes.size() != 0);
     SLIC_ASSERT(m_sizes.size() != 0);
     SLIC_ASSERT(m_offsets.size() != 0);
     SLIC_ASSERT(m_offsets.size() == m_sizes.size() &&
                 m_offsets.size() == m_shapes.size());
-  #endif
-#endif
   }
 
   /*!
@@ -171,23 +161,12 @@ public:
    */
   AXOM_HOST_DEVICE ShapeType zone(axom::IndexType zoneIndex) const
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(zoneIndex < numberOfZones());
-  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-  #endif
-#endif
+
     const ConnectivityView shapeData(m_connectivity.data() + m_offsets[zoneIndex],
                                      m_sizes[zoneIndex]);
     const auto shapeID = m_shapeMap[m_shapes[zoneIndex]];
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(shapeID >= Point_ShapeID && shapeID <= Mixed_ShapeID);
-  #else
     SLIC_ASSERT(shapeID >= Point_ShapeID && shapeID <= Mixed_ShapeID);
-  #endif
-#endif
 
     return ShapeType(shapeID, shapeData);
   }

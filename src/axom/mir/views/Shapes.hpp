@@ -581,7 +581,7 @@ struct Shape : public ShapeTraits
     : m_ids(ids)
     , m_faceIds()
   {
-    assert(m_ids.size() == ShapeTraits::numberOfNodes());
+    SLIC_ASSERT(m_ids.size() == ShapeTraits::numberOfNodes());
   }
 
   /*!
@@ -591,9 +591,7 @@ struct Shape : public ShapeTraits
    */
   AXOM_HOST_DEVICE ConnectivityType getId(size_t index) const
   {
-#if defined(AXOM_DEBUG)
-    assert(index < static_cast<size_t>(m_ids.size()));
-#endif
+    SLIC_ASSERT(index < static_cast<size_t>(m_ids.size()));
     return m_ids[index];
   }
 
@@ -753,7 +751,7 @@ struct VariableShape
     : m_shapeId(shapeId)
     , m_ids(ids)
   {
-    assert(shapeId >= Point_ShapeID && shapeId <= Hex_ShapeID);
+    SLIC_ASSERT(shapeId >= Point_ShapeID && shapeId <= Hex_ShapeID);
   }
 
   /*!

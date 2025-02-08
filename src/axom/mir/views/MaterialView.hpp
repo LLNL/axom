@@ -7,6 +7,7 @@
 #define AXOM_MIR_VIEWS_MATERIAL_VIEW_HPP_
 
 #include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -92,8 +93,8 @@ public:
            const axom::ArrayView<IndexType> &offsets,
            const axom::ArrayView<IndexType> &indices)
   {
-    assert(material_ids.size() == volume_fractions.size());
-    assert(sizes.size() == offsets.size());
+    SLIC_ASSERT(material_ids.size() == volume_fractions.size());
+    SLIC_ASSERT(sizes.size() == offsets.size());
 
     m_material_ids = material_ids;
     m_volume_fractions = volume_fractions;
@@ -108,14 +109,14 @@ public:
   AXOM_HOST_DEVICE
   inline axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
-    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
+    SLIC_ASSERT(zi < static_cast<ZoneIndex>(numberOfZones()));
     return m_sizes[zi];
   }
 
   AXOM_HOST_DEVICE
   void zoneMaterials(ZoneIndex zi, IDList &ids, VFList &vfs) const
   {
-    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
+    SLIC_ASSERT(zi < static_cast<ZoneIndex>(numberOfZones()));
 
     ids.clear();
     vfs.clear();
@@ -141,7 +142,7 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat, FloatType &vf) const
   {
-    assert(zi < static_cast<ZoneIndex>(numberOfZones()));
+    SLIC_ASSERT(zi < static_cast<ZoneIndex>(numberOfZones()));
     const auto sz = numberOfMaterials(zi);
     const auto offset = m_offsets[zi];
     for(axom::IndexType i = 0; i < sz; i++)
@@ -209,7 +210,7 @@ public:
            const axom::ArrayView<ZoneIndex> &ids,
            const axom::ArrayView<FloatType> &vfs)
   {
-    assert(m_size + 1 < MaxMaterials);
+    SLIC_ASSERT(m_size + 1 < MaxMaterials);
 
     m_indices[m_size] = ids;
     m_values[m_size] = vfs;
@@ -376,7 +377,7 @@ public:
     for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
     {
       const auto &currentVF = m_volume_fractions[i];
-      assert(zi < currentVF.size());
+      SLIC_ASSERT(zi < currentVF.size());
       nmats += currentVF[zi] > 0 ? 1 : 0;
     }
     return nmats;
@@ -391,7 +392,7 @@ public:
     for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
     {
       const auto &currentVF = m_volume_fractions[i];
-      assert(zi < currentVF.size());
+      SLIC_ASSERT(zi < currentVF.size());
       if(currentVF[zi] > 0)
       {
         ids.push_back(m_matnos[i]);
@@ -416,7 +417,7 @@ public:
     if(mi != InvalidIndex)
     {
       const auto &currentVF = m_volume_fractions[mi];
-      assert(zi < currentVF.size());
+      SLIC_ASSERT(zi < currentVF.size());
       vf = currentVF[zi];
       found = vf > 0;
     }
@@ -492,7 +493,7 @@ public:
            const axom::ArrayView<ZoneIndex> &ids,
            const axom::ArrayView<FloatType> &vfs)
   {
-    assert(m_size + 1 < MaxMaterials);
+    SLIC_ASSERT(m_size + 1 < MaxMaterials);
 
     m_element_ids[m_size] = ids;
     m_volume_fractions[m_size] = vfs;
