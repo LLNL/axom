@@ -75,6 +75,10 @@ public:
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
   using NURBSCurveType = primal::NURBSCurve<T, NDIMS>;
 
+  using TrimmingCurveType = primal::NURBSCurve<T, 2>;
+  using TrimmingCurveVec = axom::Array<TrimmingCurveType>;
+  using ParameterPointType = Point<T, 2>;
+
   AXOM_STATIC_ASSERT_MSG(
     (NDIMS == 1) || (NDIMS == 2) || (NDIMS == 3),
     "A NURBS Patch object may be defined in 1-, 2-, or 3-D");
@@ -1080,6 +1084,79 @@ public:
 
   /// Use array size as flag for rationality
   bool isRational() const { return !m_weights.empty(); }
+
+  /// Get array of trimming curvse
+  const TrimmingCurveVec& getTrimmingCurves() const { return m_trimmingCurves; }
+
+  /// Get mutable array of trimming curves
+  TrimmingCurveVec& getTrimmingCurves() { return m_trimmingCurves; }
+
+  /// Get a trimming curve by index
+  const TrimmingCurveType& getTrimmingCurve(int idx) const
+  {
+    SLIC_ASSERT(idx >= 0 && idx < m_trimmingCurves.size());
+    return m_trimmingCurves[idx];
+  }
+
+  /// Add a trimming curve
+  void addTrimmingCurve(const TrimmingCurveType& curve)
+  {
+    m_trimmingCurves.push_back(curve);
+  }
+
+  /// Add array of trimming curves
+  void addTrimmingCurves(const TrimmingCurveVec& curves)
+  {
+    m_trimmingCurves.insert(m_trimmingCurves.end(), curves.begin(), curves.end());
+  }
+
+  /// Get number of trimming curves
+  int getNumTrimmingCurves() const { return m_trimmingCurves.size(); }
+
+  /// use array size as flag for trimmed-ness
+  bool isTrimmed() const { return !m_trimmingCurves.empty(); }
+
+  /// Delete all trimming curves
+  void makeUntrimmed() { m_trimming_curves.clear(); }
+
+  /// Make trimmed by adding trimming curves at each boundary
+  void makeSimpleTrimmed()
+  {
+    if(isTrimmed())
+    {
+      return;
+    }
+
+    const double min_u = m_knotvec_u[0];
+    const double max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    const double min_v = m_knotvec_v[0];
+    const double max_v = m_knotvec_v[m_knotvec_v.getNumKnots() - 1];
+
+    // For each min/max u/v, add a straight trimming curve along the boundary
+    TrimmingCurveType curve;
+    curve.setParameters(2, 1);
+
+    // Bottom
+    curve[0] = ParameterPointType({min_u, min_v});
+    curve[1] = ParameterPointType({max_u, min_v});
+    addTrimmingCurve(curve);
+
+    // Top
+    curve[0] = ParameterPointType({max_u, max_v});
+    curve[1] = ParameterPointType({min_u, max_v});
+    addTrimmingCurve(curve);
+
+    // Left
+    curve[0] = ParameterPointType({min_u, max_v});
+    curve[1] = ParameterPointType({min_u, min_v});
+    addTrimmingCurve(curve);
+
+    // Right
+    curve[0] = ParameterPointType({max_u, min_v});
+    curve[1] = ParameterPointType({max_u, max_v});
+    addTrimmingCurve(curve);
+  }
 
   /// Clears the list of control points, make nonrational
   void clear()
@@ -2734,7 +2811,7 @@ public:
       os << m_knotvec_v[i] << ((i < nkts_v - 1) ? "," : "]");
     }
 
-    return os;
+    if(isTrimmed) return os;
   }
 
   /// \brief Function to check if the NURBS surface is valid
@@ -2807,6 +2884,7 @@ private:
   CoordsMat m_controlPoints;
   WeightsMat m_weights;
   KnotVectorType m_knotvec_u, m_knotvec_v;
+  TrimmingCurveVec m_trimmingCurves;
 };
 
 //------------------------------------------------------------------------------
