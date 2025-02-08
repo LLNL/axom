@@ -279,6 +279,11 @@ private:
 /*!
  * \accelerated
  * \brief Implements Meredith's Equi-Z algorithm on the GPU using Blueprint inputs/outputs.
+ *
+ * \tparam ExecSpace the execution space where the algorithm will run.
+ * \tparam TopologyView A topology view to be used for accessing zones in the mesh.
+ * \tparam CoordsetView A coordset view that accesses coordinates as primal::Point.
+ * \tparam MatsetView A matset view that interfaces to the Blueprint material set.
  */
 template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
 class EquiZAlgorithm : public axom::mir::MIRAlgorithm
@@ -330,7 +335,7 @@ protected:
    * \param[in] n_fields The Conduit node containing the fields.
    * \param[in] n_matset The Conduit node containing the matset.
    * \param[in] n_options The Conduit node containing the options that help govern MIR execution.
-   *
+   *                      These are documented in the Sphinx documentation.
    * \param[out] n_newTopo A node that will contain the new clipped topology.
    * \param[out] n_newCoordset A node that will contain the new coordset for the clipped topology.
    * \param[out] n_newFields A node that will contain the new fields for the clipped topology.

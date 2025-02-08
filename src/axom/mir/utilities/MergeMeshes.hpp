@@ -7,7 +7,6 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
-#include "axom/mir.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/mir/views/dispatch_material.hpp"

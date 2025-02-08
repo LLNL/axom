@@ -7,9 +7,9 @@
 #define AXOM_MIR_EXTRACT_ZONES_HPP
 
 #include "axom/core.hpp"
-#include "axom/mir.hpp"
 #include "axom/mir/utilities/CoordsetBlender.hpp"
 #include "axom/mir/utilities/CoordsetSlicer.hpp"
+#include "axom/mir/utilities/FieldSlicer.hpp"
 #include "axom/mir/utilities/MatsetSlicer.hpp"
 
 // RAJA
