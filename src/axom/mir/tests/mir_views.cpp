@@ -378,7 +378,6 @@ struct test_braid2d_mat
     conduit::Node hostMesh, deviceMesh;
     axom::mir::testing::data::braid(type, dims, hostMesh);
     axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
-//printNode(hostMesh["matsets/mat"]);
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
     conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
@@ -408,7 +407,22 @@ struct test_braid2d_mat
         test_matsetview(matsetView, allocatorID);
       });
     }
-
+    else if(mattype == "element_dominant")
+    {
+      axom::mir::views::dispatch_material_element_dominant(deviceMesh["matsets/mat"], [&](auto matsetView)
+      {
+        EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
+        test_matsetview(matsetView, allocatorID);
+      });
+    }
+    else if(mattype == "material_dominant")
+    {
+      axom::mir::views::dispatch_material_material_dominant(deviceMesh["matsets/mat"], [&](auto matsetView)
+      {
+        EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
+        test_matsetview(matsetView, allocatorID);
+      });
+    }
   }
 
   template <typename MatsetView>
@@ -476,6 +490,7 @@ struct test_braid2d_mat
   }
 };
 
+// Unibuffer
 TEST(mir_views, matset_unibuffer_seq)
 {
   test_braid2d_mat<seq_exec>::test("uniform",
@@ -507,6 +522,7 @@ TEST(mir_views, matset_unibuffer_hip)
 }
 #endif
 
+// Multibuffer
 TEST(mir_views, matset_multibuffer_seq)
 {
   test_braid2d_mat<seq_exec>::test("uniform",
@@ -535,6 +551,70 @@ TEST(mir_views, matset_multibuffer_hip)
   test_braid2d_mat<hip_exec>::test("uniform",
                                    "multibuffer",
                                    "uniform2d_multibuffer");
+}
+#endif
+
+// Element-dominant
+TEST(mir_views, matset_element_dominant_seq)
+{
+  test_braid2d_mat<seq_exec>::test("uniform",
+                                   "element_dominant",
+                                   "uniform2d_element_dominant");
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, matset_element_dominant_omp)
+{
+  test_braid2d_mat<omp_exec>::test("uniform",
+                                   "element_dominant",
+                                   "uniform2d_element_dominant");
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, matset_element_dominant_cuda)
+{
+  test_braid2d_mat<cuda_exec>::test("uniform",
+                                    "element_dominant",
+                                    "uniform2d_element_dominant");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, matset_element_dominant_hip)
+{
+  test_braid2d_mat<hip_exec>::test("uniform",
+                                   "element_dominant",
+                                   "uniform2d_element_dominant");
+}
+#endif
+
+// Material-dominant
+TEST(mir_views, matset_material_dominant_seq)
+{
+  test_braid2d_mat<seq_exec>::test("uniform",
+                                   "material_dominant",
+                                   "uniform2d_material_dominant");
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, matset_material_dominant_omp)
+{
+  test_braid2d_mat<omp_exec>::test("uniform",
+                                   "material_dominant",
+                                   "uniform2d_material_dominant");
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, matset_material_dominant_cuda)
+{
+  test_braid2d_mat<cuda_exec>::test("uniform",
+                                    "material_dominant",
+                                    "uniform2d_material_dominant");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, matset_material_dominant_hip)
+{
+  test_braid2d_mat<hip_exec>::test("uniform",
+                                   "material_dominant",
+                                   "uniform2d_material_dominant");
 }
 #endif
 

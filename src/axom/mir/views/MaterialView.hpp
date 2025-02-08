@@ -238,7 +238,7 @@ public:
       if(zi < static_cast<ZoneIndex>(curIndices.size()))
       {
         const auto idx = curIndices[zi];
-        nmats += (curValues[idx] > 0.) ? 1 : 0;
+        nmats += (curValues[idx] > 0) ? 1 : 0;
       }
     }
 
@@ -259,7 +259,7 @@ public:
       if(zi < static_cast<ZoneIndex>(curIndices.size()))
       {
         const auto idx = curIndices[zi];
-        if(curValues[idx] > 0.)
+        if(curValues[idx] > 0)
         {
           ids.push_back(m_matnos[i]);
           vfs.push_back(curValues[idx]);
@@ -278,7 +278,8 @@ public:
   AXOM_HOST_DEVICE
   bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat, FloatType &vf) const
   {
-    bool retval = false;
+    bool found = false;
+    vf = FloatType{};
     axom::IndexType mi = indexOfMaterialID(mat);
     if(mi != InvalidIndex)
     {
@@ -288,14 +289,10 @@ public:
       {
         const auto idx = curIndices[zi];
         vf = curValues[idx];
-        retval = curValues[idx] > 0.;
+        found = curValues[idx] > 0;
       }
     }
-    if(!retval)
-    {
-      vf = FloatType{};
-    }
-    return retval;
+    return found;
   }
 
 private:
@@ -347,7 +344,7 @@ template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class ElementDominantMaterialView
 {
 public:
-  using MaterialIndex = IndexT;
+  using MaterialID = IndexT;
   using ZoneIndex = IndexT;
   using IndexType = IndexT;
   using FloatType = FloatT;
@@ -355,10 +352,15 @@ public:
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
   constexpr static axom::IndexType MaxMaterials = MAXMATERIALS;
+  constexpr static axom::IndexType InvalidIndex = -1;
 
-  void add(const axom::ArrayView<FloatType> &vfs)
+  void add(MaterialID matno, const axom::ArrayView<FloatType> &vfs)
   {
-    m_volume_fractions.push_back(vfs);
+    if((m_volume_fractions.size() + 1) < m_volume_fractions.capacity())
+    {
+      m_matnos[m_volume_fractions.size()] = matno;
+      m_volume_fractions.push_back(vfs);
+    }
   }
 
   AXOM_HOST_DEVICE
@@ -371,11 +373,11 @@ public:
   axom::IndexType numberOfMaterials(ZoneIndex zi) const
   {
     axom::IndexType nmats = 0;
-    if(m_volume_fractions.size() > 0)
+    for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
     {
-      assert(zi < m_volume_fractions[0].size());
-      for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
-        nmats += m_volume_fractions[i][zi] > 0. ? 1 : 0;
+      const auto &currentVF = m_volume_fractions[i];
+      assert(zi < currentVF.size());
+      nmats += currentVF[zi] > 0 ? 1 : 0;
     }
     return nmats;
   }
@@ -386,48 +388,60 @@ public:
     ids.clear();
     vfs.clear();
 
-    if(m_volume_fractions.size() > 0)
+    for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
     {
-      assert(zi < m_volume_fractions[0].size());
-      for(axom::IndexType i = 0; i < m_volume_fractions.size(); i++)
+      const auto &currentVF = m_volume_fractions[i];
+      assert(zi < currentVF.size());
+      if(currentVF[zi] > 0)
       {
-        if(m_volume_fractions[i][zi] > 0)
-        {
-          ids.push_back(i);
-          vfs.push_back(m_volume_fractions[i][zi]);
-        }
+        ids.push_back(m_matnos[i]);
+        vfs.push_back(currentVF[zi]);
       }
     }
   }
 
   AXOM_HOST_DEVICE
-  bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
+  bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat) const
   {
-    bool contains = false;
-    if(m_volume_fractions.size() > 0)
-    {
-      assert(zi < m_volume_fractions[0].size());
-      contains = m_volume_fractions[mat][zi] > 0;
-    }
-    return contains;
+    FloatType tmp {};
+    return zoneContainsMaterial(zi, mat, tmp);
   }
 
   AXOM_HOST_DEVICE
-  bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
+  bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat, FloatType &vf) const
   {
-    bool contains = false;
-    vf = 0;
-    if(m_volume_fractions.size() > 0)
+    bool found = false;
+    vf = FloatType{};
+    int mi = indexOfMaterialID(mat);
+    if(mi != InvalidIndex)
     {
-      assert(zi < m_volume_fractions[0].size());
-      vf = m_volume_fractions[mat][zi] > 0;
-      contains = vf > 0;
+      const auto &currentVF = m_volume_fractions[mi];
+      assert(zi < currentVF.size());
+      vf = currentVF[zi];
+      found = vf > 0;
     }
-    return contains;
+    return found;
   }
 
 private:
+  AXOM_HOST_DEVICE
+  axom::IndexType indexOfMaterialID(MaterialID mat) const
+  {
+    axom::IndexType index = InvalidIndex;
+    const auto size = m_volume_fractions.size();
+    for(axom::IndexType mi = 0; mi < size; mi++)
+    {
+      if(mat == m_matnos[mi])
+      {
+        index = mi;
+        break;
+      }
+    }
+    return index;
+  }
+
   axom::StaticArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
+  axom::StackArray<MaterialID, MAXMATERIALS> m_matnos {};
 };
 
 /*!
@@ -464,7 +478,7 @@ template <typename IndexT, typename FloatT, axom::IndexType MAXMATERIALS>
 class MaterialDominantMaterialView
 {
 public:
-  using MaterialIndex = IndexT;
+  using MaterialID = IndexT;
   using ZoneIndex = IndexT;
   using IndexType = IndexT;
   using FloatType = FloatT;
@@ -472,14 +486,17 @@ public:
   using VFList = StaticArray<FloatType, MAXMATERIALS>;
 
   constexpr static axom::IndexType MaxMaterials = MAXMATERIALS;
+  constexpr static axom::IndexType InvalidIndex = -1;
 
-  void add(const axom::ArrayView<ZoneIndex> &ids,
+  void add(MaterialID matno,
+           const axom::ArrayView<ZoneIndex> &ids,
            const axom::ArrayView<FloatType> &vfs)
   {
     assert(m_size + 1 < MaxMaterials);
 
     m_element_ids[m_size] = ids;
     m_volume_fractions[m_size] = vfs;
+    m_matnos[m_size] = matno;
     m_size++;
   }
 
@@ -490,10 +507,15 @@ public:
     {
       for(axom::IndexType mi = 0; mi < m_size; mi++)
       {
-        const auto sz = m_element_ids[mi].size();
+        const auto &element_ids = m_element_ids[mi];
+        const auto sz = element_ids.size();
         for(axom::IndexType i = 0; i < sz; i++)
-          m_nzones = axom::utilities::max(m_nzones, m_element_ids[mi][i]);
+        {
+          const auto ei = static_cast<axom::IndexType>(element_ids[i]);
+          m_nzones = axom::utilities::max(m_nzones, ei);
+        }
       }
+      m_nzones++;
     }
     return m_nzones;
   }
@@ -504,10 +526,11 @@ public:
     axom::IndexType nmats = 0;
     for(axom::IndexType mi = 0; mi < m_size; mi++)
     {
-      const auto sz = m_element_ids[mi].size();
+      const auto &element_ids = m_element_ids[mi];
+      const auto sz = element_ids.size();
       for(axom::IndexType i = 0; i < sz; i++)
       {
-        if(m_element_ids[mi][i] == zi)
+        if(element_ids[i] == zi)
         {
           nmats++;
           break;
@@ -525,13 +548,15 @@ public:
 
     for(axom::IndexType mi = 0; mi < m_size; mi++)
     {
-      const auto sz = m_element_ids[mi].size();
+      const auto &element_ids = m_element_ids[mi];
+      const auto &volume_fractions = m_volume_fractions[mi];
+      const auto sz = element_ids.size();
       for(axom::IndexType i = 0; i < sz; i++)
       {
-        if(m_element_ids[mi][i] == zi)
+        if(element_ids[i] == zi)
         {
-          ids.push_back(mi);
-          vfs.push_back(m_volume_fractions[mi][i]);
+          ids.push_back(m_matnos[mi]);
+          vfs.push_back(volume_fractions[i]);
           break;
         }
       }
@@ -539,45 +564,55 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat) const
+  bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat) const
   {
-    assert(mat < m_element_ids.size());
-
-    bool found = false;
-    const auto element_ids = m_element_ids[mat];
-    for(axom::IndexType i = 0; i < element_ids.size(); i++)
-    {
-      if(element_ids[i] == zi)
-      {
-        found = true;
-        break;
-      }
-    }
-    return found;
+    FloatType tmp {};
+    return zoneContainsMaterial(zi, mat, tmp);
   }
 
   AXOM_HOST_DEVICE
-  bool zoneContainsMaterial(ZoneIndex zi, MaterialIndex mat, FloatType &vf) const
+  bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat, FloatType &vf) const
   {
-    assert(mat < m_element_ids.size());
-
     bool found = false;
-    const auto element_ids = m_element_ids[mat];
-    for(axom::IndexType i = 0; i < element_ids.size(); i++)
+    vf = FloatType {};
+    axom::IndexType mi = indexOfMaterialID(mat);
+    if(mi != InvalidIndex)
     {
-      if(element_ids[i] == zi)
+      const auto &element_ids = m_element_ids[mi];
+      const auto &volume_fractions = m_volume_fractions[mi];
+      const auto n = element_ids.size();
+      for(axom::IndexType i = 0; i < n; i++)
       {
-        found = true;
-        vf = m_volume_fractions[mat][i];
-        break;
+        if(element_ids[i] == zi)
+        {
+          found = true;
+          vf = volume_fractions[i];
+          break;
+        }
       }
     }
     return found;
   }
 
 private:
-  StackArray<axom::ArrayView<IndexType>, MAXMATERIALS> m_element_ids {};
-  StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
+  AXOM_HOST_DEVICE
+  axom::IndexType indexOfMaterialID(MaterialID mat) const
+  {
+    axom::IndexType index = InvalidIndex;
+    for(axom::IndexType mi = 0; mi < m_size; mi++)
+    {
+      if(mat == m_matnos[mi])
+      {
+        index = mi;
+        break;
+      }
+    }
+    return index;
+  }
+
+  axom::StackArray<axom::ArrayView<IndexType>, MAXMATERIALS> m_element_ids {};
+  axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
+  axom::StackArray<MaterialID, MAXMATERIALS> m_matnos {};
   axom::IndexType m_size {0};
   axom::IndexType m_nzones {0};
 };
