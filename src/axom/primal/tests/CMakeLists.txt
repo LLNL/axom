@@ -22,7 +22,6 @@ set( primal_tests
     primal_intersect.cpp
     primal_intersect_impl.cpp
     primal_knot_vector.cpp
-    primal_numeric_array.cpp
     primal_nurbs_curve.cpp
     primal_nurbs_patch.cpp
     primal_orientation.cpp

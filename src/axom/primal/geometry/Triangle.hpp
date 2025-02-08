@@ -259,7 +259,7 @@ public:
 
     // Find best projection plane for computing weights: xy, yz, xz
     // Use dimension from largest component of normal
-    const int pDim = (DIM == 2) ? 2 : primal::abs(u.array()).argMax();
+    const int pDim = (DIM == 2) ? 2 : axom::abs(u.array()).argMax();
     switch(pDim)
     {
     case 0:  // compute in yz plane

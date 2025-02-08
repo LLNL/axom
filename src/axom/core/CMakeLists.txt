@@ -65,6 +65,7 @@ set(core_headers
     Map.hpp
     MapCollection.hpp
     FlatMap.hpp
+    NumericArray.hpp
     NumericLimits.hpp
     Path.hpp
     RangeAdapter.hpp

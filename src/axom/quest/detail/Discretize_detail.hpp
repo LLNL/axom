@@ -24,7 +24,7 @@ using SphereType = axom::quest::SphereType;
 using OctType = axom::quest::OctType;
 using Point2D = axom::quest::Point2D;
 using Point3D = axom::primal::Point<double, 3>;
-using NAType = axom::primal::NumericArray<double, 3>;
+using NAType = axom::NumericArray<double, 3>;
 
 /* Return an octahedron whose six points lie on the truncated cone
  * described by rotating the line segment ab around the positive X-axis

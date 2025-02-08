@@ -42,6 +42,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
   of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
 
 ###  Changed
+- `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.
 - `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
   Changing the policy after construction is no longer supported.
 - Importing Conduit array data into `sidre::View` now allocates destination
@@ -54,6 +55,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - `MFEMSidreDataCollection::LoadExternalData` now takes two optional string parameters, one that is a
   filename (defaults to the `name` member variable) and the other is a `Group` path relative to the base of
   the Data Collection itself (defaults to the root of the `DataStore`).
+- `SLIC_ASSERT`,`SLIC_ASSERT_MSG`,`SLIC_CHECK`, and `SLIC_CHECK_MSG` macros delegate to assert() within HIP device kernels.
 
 ###  Deprecated
 

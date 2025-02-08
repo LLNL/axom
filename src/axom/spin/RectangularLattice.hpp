@@ -7,11 +7,11 @@
 #define AXOM_SPIN_RECTANGULAR_LATTICE_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/constants.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
@@ -247,7 +247,7 @@ template <int NDIMS, typename SpaceCoordType, typename CellCoordType>
 RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>
 rectangular_lattice_from_bounding_box(
   const primal::BoundingBox<SpaceCoordType, NDIMS>& bbox,
-  const primal::NumericArray<CellCoordType, NDIMS>& gridRes)
+  const NumericArray<CellCoordType, NDIMS>& gridRes)
 {
   using LatticeType = RectangularLattice<NDIMS, SpaceCoordType, CellCoordType>;
   using SpaceVector = typename LatticeType::SpaceVector;
