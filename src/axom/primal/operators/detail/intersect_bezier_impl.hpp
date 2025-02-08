@@ -479,6 +479,8 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
       foundIntersection = true;
     }
   }
+
+  return foundIntersection;
 }
 
 template <typename T>

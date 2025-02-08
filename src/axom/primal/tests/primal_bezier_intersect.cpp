@@ -515,13 +515,13 @@ void checkIntersectionsRay(const primal::Ray<CoordType, 2>& ray,
          << "\n\t" << curve << "\n\t" << ray;
 
     sstr << "\ns (" << c.size() << "): ";
-    for(auto i = 0u; i < c.size(); ++i)
+    for(auto i = 0; i < c.size(); ++i)
     {
       sstr << std::setprecision(16) << c[i] << ",";
     }
 
     sstr << "\nt (" << r.size() << "): ";
-    for(auto i = 0u; i < r.size(); ++i)
+    for(auto i = 0; i < r.size(); ++i)
     {
       sstr << std::setprecision(16) << r[i] << ",";
     }
@@ -1028,13 +1028,13 @@ void checkIntersectionsCircle(const primal::Sphere<CoordType, 2>& circle,
          << "\n\t" << curve << "\n\t" << circle;
 
     sstr << "\ns (" << circle_params.size() << "): ";
-    for(auto i = 0u; i < circle_params.size(); ++i)
+    for(auto i = 0; i < circle_params.size(); ++i)
     {
       sstr << std::setprecision(16) << circle_params[i] << ",";
     }
 
     sstr << "\nt (" << curve_params.size() << "): ";
-    for(auto i = 0u; i < curve_params.size(); ++i)
+    for(auto i = 0; i < curve_params.size(); ++i)
     {
       sstr << std::setprecision(16) << curve_params[i] << ",";
     }
@@ -1063,7 +1063,6 @@ TEST(primal_bezier_inter, circle_simple_intersections)
   static const int DIM = 2;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using VectorType = primal::Vector<CoordType, DIM>;
   using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
   using CircleType = primal::Sphere<CoordType, DIM>;
 
@@ -1133,7 +1132,6 @@ TEST(primal_bezier_inter, circle_endpoint_intersections)
   static const int DIM = 2;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using VectorType = primal::Vector<CoordType, DIM>;
   using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
   using CircleType = primal::Sphere<CoordType, DIM>;
 
@@ -1197,7 +1195,6 @@ TEST(primal_bezier_inter, circle_nurbs_knot_intersections)
   static const int DIM = 2;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
-  using VectorType = primal::Vector<CoordType, DIM>;
   using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
   using CircleType = primal::Sphere<CoordType, DIM>;
 
