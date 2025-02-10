@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -10,11 +10,11 @@
 #include "axom/core/execution/for_all.hpp"
 #include "axom/core/Array.hpp"
 #include "axom/core/NumericLimits.hpp"
+#include "axom/core/NumericArray.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/spin/RectangularLattice.hpp"
 
@@ -110,7 +110,7 @@ public:
   /*!
    * \brief Constructor specifying objects to initialize the UniformGrid with.
    */
-  UniformGrid(const primal::NumericArray<int, NDIMS>& res,
+  UniformGrid(const NumericArray<int, NDIMS>& res,
               axom::ArrayView<const BoxType> bboxes,
               axom::ArrayView<const T> objs,
               int allocatorID = axom::execution_space<ExecSpace>::allocatorID());
@@ -245,7 +245,7 @@ private:
    */
   static AXOM_HOST_DEVICE GridCell
   getClampedGridCell(const LatticeType& lattice,
-                     const primal::NumericArray<int, NDIMS>& resolution,
+                     const NumericArray<int, NDIMS>& resolution,
                      const PointType& pt);
 
   /*! \brief Adds an object obj to the bin at index index */
@@ -262,8 +262,8 @@ private:
   BoxType m_boundingBox;
   LatticeType m_lattice;
 
-  primal::NumericArray<int, NDIMS> m_resolution;
-  primal::NumericArray<int, NDIMS> m_strides;
+  NumericArray<int, NDIMS> m_resolution;
+  NumericArray<int, NDIMS> m_strides;
 
   DISABLE_COPY_AND_ASSIGNMENT(UniformGrid);
   DISABLE_MOVE_AND_ASSIGNMENT(UniformGrid);
@@ -289,8 +289,8 @@ public:
 
   QueryObject(BoxType bbox,
               LatticeType lattice,
-              const primal::NumericArray<int, NDIMS>& resolution,
-              const primal::NumericArray<int, NDIMS>& strides,
+              const NumericArray<int, NDIMS>& resolution,
+              const NumericArray<int, NDIMS>& strides,
               const UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>& from)
     : StoragePolicy::ConstViewType(from)
     , m_boundingBox(bbox)
@@ -387,8 +387,8 @@ private:
   BoxType m_boundingBox;
   LatticeType m_lattice;
 
-  primal::NumericArray<int, NDIMS> m_resolution;
-  primal::NumericArray<int, NDIMS> m_strides;
+  NumericArray<int, NDIMS> m_resolution;
+  NumericArray<int, NDIMS> m_strides;
 };
 
 }  //end namespace spin
@@ -425,7 +425,7 @@ UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::UniformGrid(const BoxType& bbox
   SLIC_ASSERT(res != nullptr);
 
   // set up the grid resolution
-  m_resolution = primal::NumericArray<int, NDIMS>(res);
+  m_resolution = NumericArray<int, NDIMS>(res);
 
   initialize_grid();
 }
@@ -433,7 +433,7 @@ UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::UniformGrid(const BoxType& bbox
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS, typename ExecSpace, typename StoragePolicy>
 UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::UniformGrid(
-  const primal::NumericArray<int, NDIMS>& res,
+  const NumericArray<int, NDIMS>& res,
   axom::ArrayView<const BoxType> bboxes,
   axom::ArrayView<const T> objs,
   int allocatorID)
@@ -528,8 +528,8 @@ void UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::initialize(
   using atomic_pol = typename axom::execution_space<ExecSpace>::atomic_policy;
 #endif
 
-  primal::NumericArray<int, NDIMS> strides = m_strides;
-  primal::NumericArray<int, NDIMS> resolution = m_resolution;
+  NumericArray<int, NDIMS> strides = m_strides;
+  NumericArray<int, NDIMS> resolution = m_resolution;
   LatticeType lattice = m_lattice;
 
   axom::for_all<ExecSpace>(
@@ -914,7 +914,7 @@ AXOM_HOST_DEVICE
   typename UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::GridCell
   UniformGrid<T, NDIMS, ExecSpace, StoragePolicy>::getClampedGridCell(
     const LatticeType& lattice,
-    const primal::NumericArray<int, NDIMS>& resolution,
+    const NumericArray<int, NDIMS>& resolution,
     const PointType& pt)
 {
   GridCell cell = lattice.gridCell(pt);

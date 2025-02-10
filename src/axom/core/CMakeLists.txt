@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,6 +64,7 @@ set(core_headers
     Map.hpp
     MapCollection.hpp
     FlatMap.hpp
+    NumericArray.hpp
     NumericLimits.hpp
     Path.hpp
     RangeAdapter.hpp
@@ -110,6 +111,7 @@ blt_list_append( TO core_depends ELEMENTS caliper IF CALIPER_FOUND )
 blt_list_append( TO core_depends ELEMENTS camp IF CAMP_FOUND )
 blt_list_append( TO core_depends ELEMENTS umpire IF UMPIRE_FOUND )
 blt_list_append( TO core_depends ELEMENTS RAJA IF RAJA_FOUND )
+blt_list_append( TO core_depends ELEMENTS conduit::conduit IF CONDUIT_FOUND )
 blt_list_append( TO core_depends ELEMENTS mpi IF AXOM_ENABLE_MPI )
 
 # HACK: RAJA's dependencies are not getting added to core due to a bug in

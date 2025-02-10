@@ -1,22 +1,21 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core.hpp"
-#include "axom/slic.hpp"
-#include "axom/primal.hpp"
+#include "axom/core/NumericArray.hpp"
+#include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
+#include "axom/core/memory_management.hpp"
 
 #include "gtest/gtest.h"
-
-namespace primal = axom::primal;
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 void check_numeric_array_policy()
 {
   constexpr int DIM = 3;
-  using NumericArrayType = primal::NumericArray<double, DIM>;
+  using NumericArrayType = axom::NumericArray<double, DIM>;
 
   double* coords =
     axom::allocate<double>(DIM, axom::execution_space<ExecSpace>::allocatorID());
@@ -41,7 +40,7 @@ TEST(primal_numeric_array, constructors)
 {
   constexpr int DIM = 5;
   using CoordType = double;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
 
   QArray arr1;
   EXPECT_EQ(QArray::size(), DIM);
@@ -82,19 +81,19 @@ TEST(primal_numeric_array, constructors)
     EXPECT_EQ(arrHalfVec[i], expVal);
   }
 
-  primal::NumericArray<int, 3> fromInitializerListRightSize = {10, 20, 30};
+  axom::NumericArray<int, 3> fromInitializerListRightSize = {10, 20, 30};
   for(int i = 0; i < 3; ++i)
   {
     EXPECT_EQ(10 * (i + 1), fromInitializerListRightSize[i]);
   }
 
-  primal::NumericArray<int, 3> fromInitializerListTooLong = {10, 20, 30, 40};
+  axom::NumericArray<int, 3> fromInitializerListTooLong = {10, 20, 30, 40};
   for(int i = 0; i < 3; ++i)
   {
     EXPECT_EQ(10 * (i + 1), fromInitializerListTooLong[i]);
   }
 
-  primal::NumericArray<int, 5> fromInitializerListTooShort = {10, 20};
+  axom::NumericArray<int, 5> fromInitializerListTooShort = {10, 20};
   for(int i = 0; i < 2; ++i)
   {
     EXPECT_EQ(10 * (i + 1), fromInitializerListTooShort[i]);
@@ -104,7 +103,7 @@ TEST(primal_numeric_array, constructors)
     EXPECT_EQ(0, fromInitializerListTooShort[i]);
   }
 
-  primal::NumericArray<int, 3> fromInitializerNoEqualsSign {10, 20, 30};
+  axom::NumericArray<int, 3> fromInitializerNoEqualsSign {10, 20, 30};
   for(int i = 0; i < 3; ++i)
   {
     EXPECT_EQ(10 * (i + 1), fromInitializerNoEqualsSign[i]);
@@ -116,7 +115,7 @@ TEST(primal_numeric_array, num_array_to_array)
 {
   constexpr int DIM = 5;
   using CoordType = double;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
 
   // Compare array initialized from arbitrary array
   CoordType valsArr[DIM] = {12., 23., 34., 45., 56.432};
@@ -142,7 +141,7 @@ TEST(primal_numeric_array, component_wise_arithmetic)
 {
   constexpr int DIM = 3;
   using CoordType = double;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
 
   CoordType ca1[] = {3, 0, 1.2};
   CoordType ca2[] = {0, 4, 1.2};
@@ -191,7 +190,7 @@ TEST(primal_numeric_array, component_min_max)
 {
   constexpr int DIM = 3;
   using CoordType = int;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
 
   QArray incArr {1, 2, 3};
   QArray decArr {3, 2, 1};
@@ -221,7 +220,7 @@ TEST(primal_numeric_array, component_sum)
 {
   constexpr int DIM = 3;
   using CoordType = int;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
 
   QArray incArr {1, 2, 3};
   QArray decArr {3, 2, 1};
@@ -241,7 +240,7 @@ TEST(primal_numeric_array, clamping)
 {
   constexpr int DIM = 3;
   using CoordType = int;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
 
   CoordType seq[] = {15, 4, 2};
   CoordType seqClampUp7[] = {7, 4, 2};
@@ -274,9 +273,9 @@ TEST(primal_numeric_array, clamping)
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
-  // in
-  // debug mode
-  SLIC_INFO("Checking that clamping with ill-formed range throws an assert.");
+  // in debug mode
+  std::cout << "Checking that clamping with ill-formed range throws an assert."
+            << std::endl;
 
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED(QArray(seq).clamp(7, 3), "");
@@ -313,19 +312,4 @@ AXOM_CUDA_TEST(primal_numeric_array, numeric_array_check_policies)
 
   check_numeric_array_policy<hip_exec>();
 #endif
-}
-
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-
-int main(int argc, char* argv[])
-{
-  int result = 0;
-
-  ::testing::InitGoogleTest(&argc, argv);
-  axom::slic::SimpleLogger logger;
-
-  result = RUN_ALL_TESTS();
-
-  return result;
 }

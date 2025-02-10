@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +8,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include <cassert>
 
 // C/C++ includes
 #include <algorithm>
@@ -17,8 +17,6 @@
 #include "axom/fmt.hpp"
 
 namespace axom
-{
-namespace primal
 {
 // Forward declare the templated classes and operator functions
 template <typename T, int SIZE>
@@ -381,16 +379,16 @@ public:
 
 private:
   AXOM_HOST_DEVICE
-  void verifyIndex(int AXOM_DEBUG_PARAM(idx)) const
+  void verifyIndex(int idx) const
   {
-    SLIC_ASSERT(idx >= 0 && idx < SIZE);
+    AXOM_UNUSED_VAR(idx);
+    assert(idx >= 0 && idx < SIZE);
   }
 
 protected:
   T m_components[SIZE];  /// The encapsulated array
 };
 
-}  // namespace primal
 }  // namespace axom
 
 //------------------------------------------------------------------------------
@@ -399,14 +397,12 @@ protected:
 
 namespace axom
 {
-namespace primal
-{
 //------------------------------------------------------------------------------
 template <typename T, int SIZE>
 AXOM_HOST_DEVICE NumericArray<T, SIZE>::NumericArray(T val, int sz)
 {
   // NOTE (KW): This should be a static assert in the class
-  SLIC_ASSERT(SIZE >= 1);
+  assert(SIZE >= 1);
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
@@ -426,7 +422,7 @@ AXOM_HOST_DEVICE NumericArray<T, SIZE>::NumericArray(T val, int sz)
 template <typename T, int SIZE>
 AXOM_HOST_DEVICE NumericArray<T, SIZE>::NumericArray(const T* vals, int sz)
 {
-  SLIC_ASSERT(SIZE >= 1);
+  assert(SIZE >= 1);
 
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
 
@@ -477,7 +473,7 @@ AXOM_HOST_DEVICE inline T* NumericArray<T, SIZE>::data()
 template <typename T, int SIZE>
 AXOM_HOST_DEVICE void NumericArray<T, SIZE>::to_array(T* arr) const
 {
-  SLIC_ASSERT(arr != nullptr);
+  assert(arr != nullptr);
   for(int dim = 0; dim < SIZE; ++dim)
   {
     arr[dim] = m_components[dim];
@@ -520,7 +516,7 @@ template <typename T, int SIZE>
 AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator/=(
   double scalar)
 {
-  SLIC_ASSERT(scalar != 0.);
+  assert(scalar != 0.);
   return operator*=(1. / scalar);
 }
 
@@ -544,7 +540,7 @@ AXOM_HOST_DEVICE inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::operator/=
 {
   for(int i = 0; i < SIZE; ++i)
   {
-    SLIC_ASSERT(v[i] != 0.);
+    assert(v[i] != 0.);
     m_components[i] /= v[i];
   }
 
@@ -582,7 +578,7 @@ template <typename T, int SIZE>
 inline NumericArray<T, SIZE>& NumericArray<T, SIZE>::clamp(const T& lowerVal,
                                                            const T& upperVal)
 {
-  SLIC_ASSERT(lowerVal <= upperVal);
+  assert(lowerVal <= upperVal);
 
   for(int i = 0; i < SIZE; ++i)
   {
@@ -834,13 +830,11 @@ AXOM_HOST_DEVICE inline NumericArray<T, SIZE> abs(const NumericArray<T, SIZE>& a
   return result;
 }
 
-}  // namespace primal
 }  // namespace axom
 
-/// Overload to format a primal::NumericArray using fmt
+/// Overload to format a axom::NumericArray using fmt
 template <typename T, int NDIMS>
-struct axom::fmt::formatter<axom::primal::NumericArray<T, NDIMS>>
-  : ostream_formatter
+struct axom::fmt::formatter<axom::NumericArray<T, NDIMS>> : ostream_formatter
 { };
 
 #endif  // AXOM_PRIMAL_NUMERIC_ARRAY_HPP_

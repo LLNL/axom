@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -342,7 +342,7 @@ public:
   {
     const int polynomialOrder = 2;
     const BBox2D bbox({-2, -2}, {2, 2});
-    const primal::NumericArray<int, 2> celldims {64, 64};
+    const axom::NumericArray<int, 2> celldims {64, 64};
 
     // memory for mesh will be managed by data collection
     auto* mesh =
@@ -412,7 +412,7 @@ public:
   {
     const int polynomialOrder = 2;
     const BBox3D bbox({-2, -2, -2}, {2, 2, 2});
-    const primal::NumericArray<int, 3> celldims {8, 8, 8};
+    const axom::NumericArray<int, 3> celldims {8, 8, 8};
 
     // memory for mesh will be managed by data collection
     auto* mesh =

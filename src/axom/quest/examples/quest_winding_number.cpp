@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -259,7 +259,7 @@ int main(int argc, char** argv)
   }
 
   // Generate a Cartesian (high order) mesh for the query points
-  const auto query_res = primal::NumericArray<int, 2>(boxResolution.data());
+  const auto query_res = axom::NumericArray<int, 2>(boxResolution.data());
   const auto query_box =
     BoundingBox2D(Point2D(boxMins.data()), Point2D(boxMaxs.data()));
 

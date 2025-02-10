@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -54,11 +54,11 @@ public:
     @param parentGroup Group under which to put the discrete mesh
       and support blueprint-tets shapes.
       If null, don't use sidre and don't support blueprint-tets.
-    @param prefixPath Path prefix for shape files specified
+    @param prefixPath Path prefix for shape from a file specified
       with a relative path.
 
     Refinement type is set to DiscreteShape::RefinementUniformSegments
-    and percent erro is set to 0.  See setPercentError() and
+    and percent error is set to 0.  See setPercentError() and
     setRefinementType().
   */
   DiscreteShape(const axom::klee::Shape& shape,
@@ -70,10 +70,8 @@ public:
   //@{
   //! @name Functions to get and set shaping parameters
 
-  void setPrefixPath(const std::string& prefixPath)
-  {
-    m_prefixPath = prefixPath;
-  }
+  //! @brief Set prefix for shape files specified as relative path.
+  void setPrefixPath(const std::string& prefixPath);
 
   /*!
     @brief Set the refinement type.
@@ -170,16 +168,13 @@ private:
   void applyTransforms();
   numerics::Matrix<double> getTransforms() const;
 
-  //! @brief Returns the full geometry path.
-  std::string resolvePath() const;
-
   /*!
     @brief Set the parent group for this object to store data.
   */
   void setParentGroup(axom::sidre::Group* parentGroup);
 
   //!@brief Return a 3x3 matrix that rotate coordinates from the x-axis to the given direction.
-  numerics::Matrix<double> vorAxisRotMatrix(const Vector3D& dir);
+  numerics::Matrix<double> sorAxisRotMatrix(const Vector3D& dir);
 
   void clearInternalData();
 
@@ -195,8 +190,8 @@ public:
   void createRepresentationOfPlane();
   //!@brief Create the internal mesh representation of the analytical sphere.
   void createRepresentationOfSphere();
-  //!@brief Create the internal mesh representation of the analytical VOR.
-  void createRepresentationOfVOR();
+  //!@brief Create the internal mesh representation of the analytical SOR.
+  void createRepresentationOfSOR();
 };
 
 }  // namespace quest
