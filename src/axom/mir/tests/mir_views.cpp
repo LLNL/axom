@@ -373,6 +373,7 @@ struct test_braid2d_mat
 
     axom::StackArray<axom::IndexType, 2> dims {10, 10};
     axom::StackArray<axom::IndexType, 2> zoneDims {dims[0] - 1, dims[1] - 1};
+    const axom::IndexType nzones = zoneDims[0] * zoneDims[1];
 
     // Create the data
     conduit::Node hostMesh, deviceMesh;
@@ -396,37 +397,33 @@ struct test_braid2d_mat
                      bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
       // _mir_views_matsetview_end
       // clang-format on
-      EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
-      test_matsetview(matsetView, allocatorID);
+      test_matsetview(nzones, matsetView, allocatorID);
     }
     else if(mattype == "multibuffer")
     {
       axom::mir::views::dispatch_material_multibuffer(deviceMesh["matsets/mat"], [&](auto matsetView)
       {
-        EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
-        test_matsetview(matsetView, allocatorID);
+        test_matsetview(nzones, matsetView, allocatorID);
       });
     }
     else if(mattype == "element_dominant")
     {
       axom::mir::views::dispatch_material_element_dominant(deviceMesh["matsets/mat"], [&](auto matsetView)
       {
-        EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
-        test_matsetview(matsetView, allocatorID);
+        test_matsetview(nzones, matsetView, allocatorID);
       });
     }
     else if(mattype == "material_dominant")
     {
       axom::mir::views::dispatch_material_material_dominant(deviceMesh["matsets/mat"], [&](auto matsetView)
       {
-        EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
-        test_matsetview(matsetView, allocatorID);
+        test_matsetview(nzones, matsetView, allocatorID);
       });
     }
   }
 
   template <typename MatsetView>
-  static void test_matsetview(MatsetView matsetView, int allocatorID)
+  static void test_matsetview(axom::IndexType nzones, MatsetView matsetView, int allocatorID)
   {
     // These values are used in that material_map.
     constexpr int MATA = 22;
@@ -436,15 +433,16 @@ struct test_braid2d_mat
     const int zoneids[] = {0, 36, 40};
 
     // clang-format off
-    const int results[] = {/*contains mat*/ 0, 1, 0, /*nmats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
-                           /*contains mat*/ 1, 1, 0, /*nmats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
-                           /*contains mat*/ 1, 1, 1, /*nmats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
+    int results[] = {/*nzones*/ static_cast<int>(nzones),
+                     /*contains mat*/ 0, 1, 0, /*nmats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
+                     /*contains mat*/ 1, 1, 0, /*nmats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
+                     /*contains mat*/ 1, 1, 1, /*nmats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
     // clang-format on
-    constexpr int nZones = sizeof(zoneids) / sizeof(int);
+    constexpr int nTestZones = sizeof(zoneids) / sizeof(int);
 
     // Get zoneids into zoneidsView for device.
-    axom::Array<int> zoneidsArray(nZones, nZones, allocatorID);
-    axom::copy(zoneidsArray.data(), zoneids, sizeof(int) * nZones);
+    axom::Array<int> zoneidsArray(nTestZones, nTestZones, allocatorID);
+    axom::copy(zoneidsArray.data(), zoneids, sizeof(int) * nTestZones);
     auto zoneidsView = zoneidsArray.view();
 
     // Allocate results array on device.
@@ -453,30 +451,37 @@ struct test_braid2d_mat
     auto resultsView = resultsArrayDevice.view();
 
     // Fill in resultsView on the device.
-    constexpr int nResultsPerZone = nResults / nZones;
+    constexpr int nResultsPerZone = 8;
     axom::for_all<ExecSpace>(
-      3,
+      nTestZones,
       AXOM_LAMBDA(axom::IndexType index) {
+        if(index == 0)
+        {
+          // Compute number of zones here since some views need to look inside
+          // data to determine the number of zones.
+          resultsView[0] = matsetView.numberOfZones();
+        }
+        const int offset = 1 + nResultsPerZone * index;
         // contains mat
-        resultsView[nResultsPerZone * index + 0] =
+        resultsView[offset + 0] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATA) ? 1 : 0;
-        resultsView[nResultsPerZone * index + 1] =
+        resultsView[offset + 1] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATB) ? 1 : 0;
-        resultsView[nResultsPerZone * index + 2] =
+        resultsView[offset + 2] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATC) ? 1 : 0;
         // nmats in zone
-        resultsView[nResultsPerZone * index + 3] =
+        resultsView[offset + 3] =
           matsetView.numberOfMaterials(zoneidsView[index]);
 
         typename MatsetView::IDList ids {};
         typename MatsetView::VFList vfs {};
         // ids.size
         matsetView.zoneMaterials(zoneidsView[index], ids, vfs);
-        resultsView[nResultsPerZone * index + 4] = ids.size();
+        resultsView[offset + 4] = ids.size();
         // mats in zone
         for(axom::IndexType i = 0; i < 3; i++)
         {
-          resultsView[nResultsPerZone * index + 5 + i] =
+          resultsView[offset + 5 + i] =
             (i < ids.size()) ? static_cast<int>(ids[i]) : -1;
         }
       });

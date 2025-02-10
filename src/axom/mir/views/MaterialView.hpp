@@ -502,23 +502,21 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  axom::IndexType numberOfZones()
+  axom::IndexType numberOfZones() const
   {
-    if(m_nzones == 0)
+    axom::IndexType nzones = -1;
+    for(axom::IndexType mi = 0; mi < m_size; mi++)
     {
-      for(axom::IndexType mi = 0; mi < m_size; mi++)
+      const auto &element_ids = m_element_ids[mi];
+      const auto sz = element_ids.size();
+      for(axom::IndexType i = 0; i < sz; i++)
       {
-        const auto &element_ids = m_element_ids[mi];
-        const auto sz = element_ids.size();
-        for(axom::IndexType i = 0; i < sz; i++)
-        {
-          const auto ei = static_cast<axom::IndexType>(element_ids[i]);
-          m_nzones = axom::utilities::max(m_nzones, ei);
-        }
+        const auto ei = static_cast<axom::IndexType>(element_ids[i]);
+        nzones = axom::utilities::max(nzones, ei);
       }
-      m_nzones++;
     }
-    return m_nzones;
+    nzones++;
+    return nzones;
   }
 
   AXOM_HOST_DEVICE
@@ -615,7 +613,6 @@ private:
   axom::StackArray<axom::ArrayView<FloatType>, MAXMATERIALS> m_volume_fractions {};
   axom::StackArray<MaterialID, MAXMATERIALS> m_matnos {};
   axom::IndexType m_size {0};
-  axom::IndexType m_nzones {0};
 };
 
 }  // end namespace views
