@@ -96,11 +96,11 @@ public:
   NURBSPatch()
   {
     m_controlPoints.resize(0, 0);
-    m_weights.resize(0, 0);
     m_knotvec_u = KnotVectorType();
     m_knotvec_v = KnotVectorType();
 
     makeNonrational();
+    makeUntrimmed();
   }
 
   /*!
@@ -122,6 +122,7 @@ public:
     m_knotvec_v = KnotVectorType(deg_v + 1, deg_v);
 
     makeNonrational();
+    makeUntrimmed();
   }
 
   /*!
@@ -144,6 +145,7 @@ public:
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
 
     makeNonrational();
+    makeUntrimmed();
   }
 
   /*!
@@ -161,6 +163,8 @@ public:
 
     m_knotvec_u = KnotVectorType(deg_u + 1, deg_u);
     m_knotvec_v = KnotVectorType(deg_v + 1, deg_v);
+   
+    makeUntrimmed();
   }
 
   /*!
@@ -191,6 +195,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
@@ -241,6 +246,8 @@ public:
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -271,6 +278,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
@@ -319,6 +327,8 @@ public:
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -340,6 +350,7 @@ public:
     SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(pts_shape[0], deg_u);
     m_knotvec_v = KnotVectorType(pts_shape[1], deg_v);
@@ -370,6 +381,8 @@ public:
 
     m_knotvec_u = KnotVectorType(pts_shape[0], deg_u);
     m_knotvec_v = KnotVectorType(pts_shape[1], deg_v);
+
+    makeUntrimmed();
 
     SLIC_ASSERT(isValidNURBS());
   }
@@ -409,6 +422,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(knots_u, nkts_u, nkts_u - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, nkts_v, nkts_v - npts_v - 1);
@@ -462,6 +476,8 @@ public:
     m_knotvec_u = KnotVectorType(knots_u, nkts_u, nkts_u - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, nkts_v, nkts_v - npts_v - 1);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -494,6 +510,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - npts_v - 1);
@@ -540,6 +557,8 @@ public:
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - npts_v - 1);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -574,6 +593,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     SLIC_ASSERT(isValidNURBS());
   }
@@ -616,6 +636,8 @@ public:
       m_weights.flatIndex(t) = weights[t];
     }
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -641,6 +663,7 @@ public:
     SLIC_ASSERT(pts_shape[0] >= 0 && pts_shape[1] >= 0);
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - pts_shape[0] - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - pts_shape[1] - 1);
@@ -675,6 +698,8 @@ public:
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - pts_shape[0] - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - pts_shape[1] - 1);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -698,6 +723,8 @@ public:
     , m_knotvec_v(knotvec_v)
   {
     makeNonrational();
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -723,6 +750,8 @@ public:
     , m_knotvec_u(knotvec_u)
     , m_knotvec_v(knotvec_v)
   {
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -1117,7 +1146,7 @@ public:
   bool isTrimmed() const { return !m_trimmingCurves.empty(); }
 
   /// Delete all trimming curves
-  void makeUntrimmed() { m_trimming_curves.clear(); }
+  void makeUntrimmed() { m_trimmingCurves.clear(); }
 
   /// Make trimmed by adding trimming curves at each boundary
   void makeSimpleTrimmed()
@@ -1164,6 +1193,7 @@ public:
     m_controlPoints.clear();
     m_knotvec_u.clear();
     m_knotvec_v.clear();
+    m_trimmingCurves.clear();
     makeNonrational();
   }
 
