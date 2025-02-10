@@ -58,9 +58,6 @@ struct test_mergemeshes
     conduit::Node hostResult;
     bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
 
-    //printNode(hostResult);
-    //conduit::relay::io::blueprint::save_mesh(hostResult, "mergemeshes", "hdf5");
-
     constexpr double tolerance = 1.e-7;
     conduit::Node expectedResult, info;
     result(expectedResult);

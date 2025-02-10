@@ -360,7 +360,7 @@ protected:
     bputils::copy<ExecSpace>(n_options_copy, n_options);
     n_options_copy["topology"] = n_topo.name();
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     // Save the MIR input.
     conduit::Node n_tmpInput;
     n_tmpInput[n_topo.path()].set_external(n_topo);
@@ -454,7 +454,7 @@ protected:
       n_mirOutput[n_coordset.path()].set_external(n_newCoordset);
       n_mirOutput[n_fields.path()].set_external(n_newFields);
       n_mirOutput[n_matset.path()].set_external(n_newMatset);
-  #if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
       printNode(n_mirOutput);
       conduit::relay::io::blueprint::save_mesh(n_mirOutput,
                                                "debug_equiz_mir",
@@ -476,7 +476,7 @@ protected:
       mm.execute(inputs, mmOpts, n_merged);
         // _mir_utilities_mergemeshes_end
 
-  #if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
       std::cout << "--- MIR ---\n";
@@ -603,7 +603,7 @@ protected:
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 0;
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
-  #if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     AXOM_ANNOTATE_BEGIN("saveClean");
     conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "clean", "hdf5");
     AXOM_ANNOTATE_END("saveClean");
@@ -692,7 +692,7 @@ protected:
 #endif
 
   /*!
-   * \brief Perform material interface reconstruction on a single domain.
+   * \brief Perform material interface reconstruction on a mixed zones.
    *
    * \param[in] n_topo The Conduit node containing the topology that will be used for MIR.
    * \param[in] n_coordset The Conduit node containing the coordset.
@@ -849,7 +849,7 @@ protected:
       n_newFields.remove(zonalMaterialIDName());
     }
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     //--------------------------------------------------------------------------
     //
     // Save the MIR output.
@@ -1124,7 +1124,7 @@ protected:
 
     const std::string colorField("__equiz__colors");
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     //--------------------------------------------------------------------------
     //
     // Save the iteration inputs.
@@ -1280,7 +1280,7 @@ protected:
         });
     }
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     //--------------------------------------------------------------------------
     //
     // Save the clip results.

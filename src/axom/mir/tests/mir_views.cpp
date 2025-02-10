@@ -380,7 +380,7 @@ struct test_braid2d_mat
     axom::mir::testing::data::braid(type, dims, hostMesh);
     axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
     conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 
