@@ -280,7 +280,7 @@ public:
   bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat, FloatType &vf) const
   {
     bool found = false;
-    vf = FloatType{};
+    vf = FloatType {};
     axom::IndexType mi = indexOfMaterialID(mat);
     if(mi != InvalidIndex)
     {
@@ -412,7 +412,7 @@ public:
   bool zoneContainsMaterial(ZoneIndex zi, MaterialID mat, FloatType &vf) const
   {
     bool found = false;
-    vf = FloatType{};
+    vf = FloatType {};
     int mi = indexOfMaterialID(mat);
     if(mi != InvalidIndex)
     {

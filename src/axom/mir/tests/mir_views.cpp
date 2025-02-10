@@ -401,29 +401,34 @@ struct test_braid2d_mat
     }
     else if(mattype == "multibuffer")
     {
-      axom::mir::views::dispatch_material_multibuffer(deviceMesh["matsets/mat"], [&](auto matsetView)
-      {
-        test_matsetview(nzones, matsetView, allocatorID);
-      });
+      axom::mir::views::dispatch_material_multibuffer(
+        deviceMesh["matsets/mat"],
+        [&](auto matsetView) {
+          test_matsetview(nzones, matsetView, allocatorID);
+        });
     }
     else if(mattype == "element_dominant")
     {
-      axom::mir::views::dispatch_material_element_dominant(deviceMesh["matsets/mat"], [&](auto matsetView)
-      {
-        test_matsetview(nzones, matsetView, allocatorID);
-      });
+      axom::mir::views::dispatch_material_element_dominant(
+        deviceMesh["matsets/mat"],
+        [&](auto matsetView) {
+          test_matsetview(nzones, matsetView, allocatorID);
+        });
     }
     else if(mattype == "material_dominant")
     {
-      axom::mir::views::dispatch_material_material_dominant(deviceMesh["matsets/mat"], [&](auto matsetView)
-      {
-        test_matsetview(nzones, matsetView, allocatorID);
-      });
+      axom::mir::views::dispatch_material_material_dominant(
+        deviceMesh["matsets/mat"],
+        [&](auto matsetView) {
+          test_matsetview(nzones, matsetView, allocatorID);
+        });
     }
   }
 
   template <typename MatsetView>
-  static void test_matsetview(axom::IndexType nzones, MatsetView matsetView, int allocatorID)
+  static void test_matsetview(axom::IndexType nzones,
+                              MatsetView matsetView,
+                              int allocatorID)
   {
     // These values are used in that material_map.
     constexpr int MATA = 22;
@@ -643,8 +648,7 @@ matsets:
   conduit::Node matsets;
   matsets.parse(yaml);
   const conduit::Node &n_matset = matsets["matsets/matset"];
-  axom::mir::views::dispatch_material_multibuffer(n_matset, [&](auto matsetView)
-  {
+  axom::mir::views::dispatch_material_multibuffer(n_matset, [&](auto matsetView) {
     using IDList = typename decltype(matsetView)::IDList;
     using VFList = typename decltype(matsetView)::VFList;
     using VFType = typename VFList::value_type;
@@ -692,7 +696,6 @@ matsets:
     EXPECT_EQ(vf, 0.);
     EXPECT_TRUE(matsetView.zoneContainsMaterial(2, 1, vf));
     EXPECT_EQ(vf, 1.);
-
   });
 }
 

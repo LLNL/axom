@@ -134,7 +134,7 @@ public:
       int zoneMatID = m_zoneMatNumberView[zoneIndex];
       if(zoneMatID != NULL_MATERIAL)
         backgroundIndex = matNumberToIndex(zoneMatID);
-        // Determine the matvf view index for the current material.
+      // Determine the matvf view index for the current material.
       SLIC_ASSERT_MSG(id0 >= 0 && id0 < m_matvfViews[0].size(),
                       axom::fmt::format("Node id {} is not in range [0, {}).",
                                         id0,
