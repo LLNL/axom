@@ -1068,7 +1068,7 @@ TEST(primal_bezier_inter, circle_simple_intersections)
 
   SLIC_INFO("primal: testing nurbs-circle intersection");
   const double eps = 1E-10;
-  const double eps_test = 1E-5;
+  const double eps_test = 1E-8;
 
   const int degree = 3;
 
