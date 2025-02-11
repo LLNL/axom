@@ -467,8 +467,10 @@ protected:
       using IntElement = typename MatsetView::IndexType;
       using FloatElement = typename MatsetView::FloatType;
       constexpr size_t MAXMATERIALS = MatsetView::MaxMaterials;
-      using DispatchPolicy = bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
-      using MergeMeshes = bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
+      using DispatchPolicy =
+        bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
+      using MergeMeshes =
+        bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
 
       // Merge clean and MIR output.
       std::vector<bputils::MeshInput> inputs(2);

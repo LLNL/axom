@@ -1011,18 +1011,17 @@ public:
       n_sizes,
       n_offsets,
       n_indices,
-      [&](auto materialIdsView,
-          auto sizesView,
-          auto offsetsView,
-          auto indicesView) {
-        axom::mir::views::FloatNode_to_ArrayView(
-          n_volume_fractions,
-          [&](auto volumeFractionsView)
-      {
-        // Invoke a function that can use these views.
-        func(materialIdsView, sizesView, offsetsView, indicesView, volumeFractionsView);
+      [&](auto materialIdsView, auto sizesView, auto offsetsView, auto indicesView) {
+        axom::mir::views::FloatNode_to_ArrayView(n_volume_fractions,
+                                                 [&](auto volumeFractionsView) {
+                                                   // Invoke a function that can use these views.
+                                                   func(materialIdsView,
+                                                        sizesView,
+                                                        offsetsView,
+                                                        indicesView,
+                                                        volumeFractionsView);
+                                                 });
       });
-    });
   }
 
   /*!
@@ -1037,10 +1036,8 @@ public:
   template <typename FuncType>
   void dispatchMatset(conduit::Node &n_matset, FuncType &&func)
   {
-    axom::mir::views::dispatch_material(
-      n_matset,
-      [&](auto matsetView) {
-        func(matsetView);
+    axom::mir::views::dispatch_material(n_matset, [&](auto matsetView) {
+      func(matsetView);
     });
   }
 };
@@ -1078,7 +1075,8 @@ public:
     auto sizesView = bputils::make_array_view<IntElement>(n_sizes);
     auto offsetsView = bputils::make_array_view<IntElement>(n_offsets);
     auto indicesView = bputils::make_array_view<IntElement>(n_indices);
-    auto volumeFractionsView = bputils::make_array_view<FloatElement>(n_volume_fractions);
+    auto volumeFractionsView =
+      bputils::make_array_view<FloatElement>(n_volume_fractions);
 
     func(materialIdsView, sizesView, offsetsView, indicesView, volumeFractionsView);
   }
@@ -1097,19 +1095,21 @@ public:
   {
     namespace bputils = axom::mir::utilities::blueprint;
     // We know the types. Make views explicitly.
-    auto material_ids = bputils::make_array_view<IntElement>(n_matset["material_ids"]);
+    auto material_ids =
+      bputils::make_array_view<IntElement>(n_matset["material_ids"]);
     auto sizes = bputils::make_array_view<IntElement>(n_matset["sizes"]);
     auto offsets = bputils::make_array_view<IntElement>(n_matset["offsets"]);
     auto indices = bputils::make_array_view<IntElement>(n_matset["indices"]);
-    auto volume_fractions = bputils::make_array_view<FloatElement>(n_matset["volume_fractions"]);
+    auto volume_fractions =
+      bputils::make_array_view<FloatElement>(n_matset["volume_fractions"]);
     // We know we're making a unibuffer matset.
-    axom::mir::views::UnibufferMaterialView<IntElement, FloatElement, MAXMATERIALS> matsetView;
+    axom::mir::views::UnibufferMaterialView<IntElement, FloatElement, MAXMATERIALS>
+      matsetView;
     matsetView.set(material_ids, volume_fractions, sizes, offsets, indices);
     // Use it.
     func(matsetView);
   }
 };
-
 
 /**
  * \brief Merge multiple unstructured Blueprint meshes (with matsets) through MeshInput.
@@ -1135,7 +1135,8 @@ private:
    * \param inputs A vector of inputs to be merged.
    * \param[out] output The node that will contain the output mesh.
    */
-  virtual void mergeMatset(const std::vector<MeshInput> &inputs, conduit::Node &output) const override
+  virtual void mergeMatset(const std::vector<MeshInput> &inputs,
+                           conduit::Node &output) const override
   {
     AXOM_ANNOTATE_SCOPE("mergeMatset");
     namespace bputils = axom::mir::utilities::blueprint;
@@ -1246,85 +1247,81 @@ private:
           n_material_map[it->first] = it->second;
 
         // Populate
-        disp.execute(n_material_ids,
-                     n_sizes,
-                     n_offsets,
-                     n_indices,
-                     n_volume_fractions,
-                     [&](auto materialIdsView,
-                         auto sizesView,
-                         auto offsetsView,
-                         auto indicesView,
-                         auto volumeFractionsView)
-        {
-                // Fill in sizes array.
-                axom::IndexType zOffset = 0;
-                for(size_t i = 0; i < inputs.size(); i++)
-                {
-                  const auto nzones = This->countZones(inputs, i);
+        disp.execute(
+          n_material_ids,
+          n_sizes,
+          n_offsets,
+          n_indices,
+          n_volume_fractions,
+          [&](auto materialIdsView,
+              auto sizesView,
+              auto offsetsView,
+              auto indicesView,
+              auto volumeFractionsView) {
+            // Fill in sizes array.
+            axom::IndexType zOffset = 0;
+            for(size_t i = 0; i < inputs.size(); i++)
+            {
+              const auto nzones = This->countZones(inputs, i);
 
-                  if(inputs[i].m_input->has_child("matsets"))
-                  {
-                    conduit::Node &n_matsets =
-                      inputs[i].m_input->fetch_existing("matsets");
-                    conduit::Node &n_matset = n_matsets[0];
+              if(inputs[i].m_input->has_child("matsets"))
+              {
+                conduit::Node &n_matsets =
+                  inputs[i].m_input->fetch_existing("matsets");
+                conduit::Node &n_matset = n_matsets[0];
 
-                    disp.dispatchMatset(
-                      n_matset,
-                      [&](auto matsetView) {
-                        This->mergeMatset_sizes(matsetView, sizesView, nzones, zOffset);
-                      });
-                  }
-                  else
-                  {
-                    This->mergeMatset_sizes1(sizesView, nzones, zOffset);
-                  }
-                  zOffset += nzones;
-                }
-                // Make offsets.
-                axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
+                disp.dispatchMatset(n_matset, [&](auto matsetView) {
+                  This->mergeMatset_sizes(matsetView, sizesView, nzones, zOffset);
+                });
+              }
+              else
+              {
+                This->mergeMatset_sizes1(sizesView, nzones, zOffset);
+              }
+              zOffset += nzones;
+            }
+            // Make offsets.
+            axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
-                // Make indices.
-                This->mergeMatset_indices(indicesView, totalMatCount);
+            // Make indices.
+            This->mergeMatset_indices(indicesView, totalMatCount);
 
-                // Fill in material info.
-                zOffset = 0;
-                for(size_t i = 0; i < inputs.size(); i++)
-                {
-                  const auto nzones = This->countZones(inputs, i);
+            // Fill in material info.
+            zOffset = 0;
+            for(size_t i = 0; i < inputs.size(); i++)
+            {
+              const auto nzones = This->countZones(inputs, i);
 
-                  if(inputs[i].m_input->has_child("matsets"))
-                  {
-                    conduit::Node &n_matsets =
-                      inputs[i].m_input->fetch_existing("matsets");
-                    conduit::Node &n_matset = n_matsets[0];
+              if(inputs[i].m_input->has_child("matsets"))
+              {
+                conduit::Node &n_matsets =
+                  inputs[i].m_input->fetch_existing("matsets");
+                conduit::Node &n_matset = n_matsets[0];
 
-                    disp.dispatchMatset(n_matset,
-                                                        [&](auto matsetView) {
-                                                          This->mergeMatset_copy(
-                                                            n_matset,
-                                                            allMats,
-                                                            materialIdsView,
-                                                            offsetsView,
-                                                            volumeFractionsView,
-                                                            matsetView,
-                                                            nzones,
-                                                            zOffset);
-                                                        });
-                  }
-                  else
-                  {
-                    const int dmat = allMats["default"];
-                    This->mergeMatset_default(materialIdsView,
-                                        offsetsView,
-                                        volumeFractionsView,
-                                        dmat,
-                                        nzones,
-                                        zOffset);
-                  }
-                  zOffset += nzones;
-                }
-        });
+                disp.dispatchMatset(n_matset, [&](auto matsetView) {
+                  This->mergeMatset_copy(n_matset,
+                                         allMats,
+                                         materialIdsView,
+                                         offsetsView,
+                                         volumeFractionsView,
+                                         matsetView,
+                                         nzones,
+                                         zOffset);
+                });
+              }
+              else
+              {
+                const int dmat = allMats["default"];
+                This->mergeMatset_default(materialIdsView,
+                                          offsetsView,
+                                          volumeFractionsView,
+                                          dmat,
+                                          nzones,
+                                          zOffset);
+              }
+              zOffset += nzones;
+            }
+          });
       }
     }  // if hasMatsets
   }
