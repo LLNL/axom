@@ -6,7 +6,8 @@
 #define AXOM_MIR_COORDSET_SLICER_HPP_
 
 #include "axom/core.hpp"
-#include "axom/mir.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
+#include "axom/mir/utilities/FieldSlicer.hpp"
 
 #include <conduit/conduit.hpp>
 

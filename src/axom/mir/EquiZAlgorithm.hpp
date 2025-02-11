@@ -103,16 +103,11 @@ public:
       for(IndexType i = 0; i < n; i++)
       {
         const auto nid = nodeIdsView[i];
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-        assert(nid >= 0 && nid < m_matvfViews[0].size());
-  #else
         SLIC_ASSERT_MSG(nid >= 0 && nid < m_matvfViews[0].size(),
                         axom::fmt::format("Node id {} is not in range [0, {}).",
                                           nid,
                                           m_matvfViews[0].size()));
-  #endif
-#endif
+
         // clang-format off
         MaterialVF vf1 = (backgroundIndex != INVALID_INDEX) ? m_matvfViews[backgroundIndex][nid] : NULL_MATERIAL_VF;
         MaterialVF vf2 = (m_currentMaterialIndex != INVALID_INDEX) ? m_matvfViews[m_currentMaterialIndex][nid] : 0;
@@ -139,12 +134,7 @@ public:
       int zoneMatID = m_zoneMatNumberView[zoneIndex];
       if(zoneMatID != NULL_MATERIAL)
         backgroundIndex = matNumberToIndex(zoneMatID);
-        // Determine the matvf view index for the current material.
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-      assert(id0 >= 0 && id0 < m_matvfViews[0].size());
-      assert(id1 >= 0 && id1 < m_matvfViews[0].size());
-  #else
+      // Determine the matvf view index for the current material.
       SLIC_ASSERT_MSG(id0 >= 0 && id0 < m_matvfViews[0].size(),
                       axom::fmt::format("Node id {} is not in range [0, {}).",
                                         id0,
@@ -153,8 +143,7 @@ public:
                       axom::fmt::format("Node id {} is not in range [0, {}).",
                                         id1,
                                         m_matvfViews[0].size()));
-  #endif
-#endif
+
       // Get the volume fractions for mat1, mat2 at the edge endpoints id0, id1.
       MaterialVF vf1[2], vf2[2];
       // clang-format off
@@ -290,6 +279,11 @@ private:
 /*!
  * \accelerated
  * \brief Implements Meredith's Equi-Z algorithm on the GPU using Blueprint inputs/outputs.
+ *
+ * \tparam ExecSpace the execution space where the algorithm will run.
+ * \tparam TopologyView A topology view to be used for accessing zones in the mesh.
+ * \tparam CoordsetView A coordset view that accesses coordinates as primal::Point.
+ * \tparam MatsetView A matset view that interfaces to the Blueprint material set.
  */
 template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
 class EquiZAlgorithm : public axom::mir::MIRAlgorithm
@@ -341,7 +335,7 @@ protected:
    * \param[in] n_fields The Conduit node containing the fields.
    * \param[in] n_matset The Conduit node containing the matset.
    * \param[in] n_options The Conduit node containing the options that help govern MIR execution.
-   *
+   *                      These are documented in the Sphinx documentation.
    * \param[out] n_newTopo A node that will contain the new clipped topology.
    * \param[out] n_newCoordset A node that will contain the new coordset for the clipped topology.
    * \param[out] n_newFields A node that will contain the new fields for the clipped topology.
@@ -366,7 +360,7 @@ protected:
     bputils::copy<ExecSpace>(n_options_copy, n_options);
     n_options_copy["topology"] = n_topo.name();
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     // Save the MIR input.
     conduit::Node n_tmpInput;
     n_tmpInput[n_topo.path()].set_external(n_topo);
@@ -460,15 +454,25 @@ protected:
       n_mirOutput[n_coordset.path()].set_external(n_newCoordset);
       n_mirOutput[n_fields.path()].set_external(n_newFields);
       n_mirOutput[n_matset.path()].set_external(n_newMatset);
-  #if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
       printNode(n_mirOutput);
       conduit::relay::io::blueprint::save_mesh(n_mirOutput,
                                                "debug_equiz_mir",
                                                "hdf5");
   #endif
 
+      // Create a MergeMeshesAndMatsets type that will operate on the material
+      // inputs, which at this point will be unibuffer with known types. We can
+      // reduce code bloat and compile time by passing a MaterialDispatch policy.
+      using IntElement = typename MatsetView::IndexType;
+      using FloatElement = typename MatsetView::FloatType;
+      constexpr size_t MAXMATERIALS = MatsetView::MaxMaterials;
+      using DispatchPolicy =
+        bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
+      using MergeMeshes =
+        bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
+
       // Merge clean and MIR output.
-      // _mir_utilities_mergemeshes_begin
       std::vector<bputils::MeshInput> inputs(2);
       inputs[0].m_input = &n_cleanOutput;
 
@@ -478,11 +482,10 @@ protected:
 
       conduit::Node mmOpts, n_merged;
       mmOpts["topology"] = n_topo.name();
-      bputils::MergeMeshes<ExecSpace> mm;
+      MergeMeshes mm;
       mm.execute(inputs, mmOpts, n_merged);
-        // _mir_utilities_mergemeshes_end
 
-  #if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
       std::cout << "--- MIR ---\n";
@@ -609,7 +612,7 @@ protected:
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 0;
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
-  #if defined(AXOM_EQUIZ_DEBUG)
+  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     AXOM_ANNOTATE_BEGIN("saveClean");
     conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "clean", "hdf5");
     AXOM_ANNOTATE_END("saveClean");
@@ -698,7 +701,7 @@ protected:
 #endif
 
   /*!
-   * \brief Perform material interface reconstruction on a single domain.
+   * \brief Perform material interface reconstruction on a mixed zones.
    *
    * \param[in] n_topo The Conduit node containing the topology that will be used for MIR.
    * \param[in] n_coordset The Conduit node containing the coordset.
@@ -855,7 +858,7 @@ protected:
       n_newFields.remove(zonalMaterialIDName());
     }
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     //--------------------------------------------------------------------------
     //
     // Save the MIR output.
@@ -1130,7 +1133,7 @@ protected:
 
     const std::string colorField("__equiz__colors");
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     //--------------------------------------------------------------------------
     //
     // Save the iteration inputs.
@@ -1286,7 +1289,7 @@ protected:
         });
     }
 
-#if defined(AXOM_EQUIZ_DEBUG)
+#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     //--------------------------------------------------------------------------
     //
     // Save the clip results.

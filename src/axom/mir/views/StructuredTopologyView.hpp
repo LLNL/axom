@@ -134,13 +134,8 @@ public:
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, Shape3D>::type zone(
     axom::IndexType zoneIndex) const
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(zoneIndex < numberOfZones());
-  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-  #endif
-#endif
+
     const auto localLogical = m_zoneIndexing.IndexToLogicalIndex(zoneIndex);
     const auto jp = m_nodeIndexing.jStride();
     const auto kp = m_nodeIndexing.kStride();
@@ -173,13 +168,8 @@ public:
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, Shape2D>::type zone(
     axom::IndexType zoneIndex) const
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(zoneIndex < numberOfZones());
-  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-  #endif
-#endif
+
     const auto localLogical = m_zoneIndexing.IndexToLogicalIndex(zoneIndex);
     const auto jp = m_nodeIndexing.jStride();
 
@@ -207,13 +197,8 @@ public:
   AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, Shape1D>::type zone(
     axom::IndexType zoneIndex) const
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(zoneIndex < numberOfZones());
-  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-  #endif
-#endif
+
     const auto localLogical = m_zoneIndexing.IndexToLogicalIndex(zoneIndex);
 
     Shape1D shape;

@@ -57,13 +57,7 @@ public:
     , m_sizesView(sizes)
     , m_offsetsView(offsets)
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(m_offsetsView.size() == m_sizesView.size());
-  #else
     SLIC_ASSERT(m_offsetsView.size() == m_sizesView.size());
-  #endif
-#endif
   }
 
   /*!
@@ -110,13 +104,7 @@ public:
   AXOM_HOST_DEVICE typename std::enable_if<_variable_size, ShapeType>::type zone(
     axom::IndexType zoneIndex) const
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(zoneIndex < numberOfZones());
-  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-  #endif
-#endif
 
     return ShapeType(
       ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
@@ -127,13 +115,7 @@ public:
   AXOM_HOST_DEVICE typename std::enable_if<!_variable_size, ShapeType>::type zone(
     axom::IndexType zoneIndex) const
   {
-#if defined(AXOM_DEBUG)
-  #if defined(AXOM_DEVICE_CODE)
-    assert(zoneIndex < numberOfZones());
-  #else
     SLIC_ASSERT(zoneIndex < numberOfZones());
-  #endif
-#endif
 
     ConnectivityView shapeIdsView {};
     if(m_sizesView.empty())

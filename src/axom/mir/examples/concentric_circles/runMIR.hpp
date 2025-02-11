@@ -14,6 +14,8 @@ int runMIR(const conduit::Node &hostMesh,
            const conduit::Node &options,
            conduit::Node &hostResult)
 {
+  AXOM_ANNOTATE_BEGIN("runMIR");
+
   namespace bputils = axom::mir::utilities::blueprint;
   using namespace axom::mir::views;
   SLIC_INFO(axom::fmt::format("Using policy {}",
@@ -32,9 +34,11 @@ int runMIR(const conduit::Node &hostMesh,
   }
 
   conduit::Node deviceMesh;
-  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  {
+    AXOM_ANNOTATE_SCOPE("host->device");
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  }
 
-  AXOM_ANNOTATE_BEGIN("runMIR");
   // _equiz_mir_start
   // Make views (we know beforehand which types to make)
   using CoordsetView = ExplicitCoordsetView<float, 2>;
@@ -62,9 +66,10 @@ int runMIR(const conduit::Node &hostMesh,
   m.execute(deviceMesh, options, deviceResult);
   // _equiz_mir_end
 
-  AXOM_ANNOTATE_END("runMIR");
-
-  bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+  {
+    AXOM_ANNOTATE_SCOPE("device->host");
+    bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+  }
 
   return 0;
 }

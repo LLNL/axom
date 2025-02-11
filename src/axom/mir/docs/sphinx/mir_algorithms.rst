@@ -60,9 +60,9 @@ to operate on. Other options have sensible defaults described in the table below
 EquiZAlgorithm
 ###############
 
-The `Equi-Z MIR algorithm <https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.osti.gov/servlets/purl/15014510&ved=2ahUKEwittMui-euIAxUzxOYEHXTWA2kQFnoECBcQAQ&usg=AOvVaw3qbX9qgwCn4qDP0iZ3Sq0J>`_ by J. Meredith 
+The `Equi-Z MIR algorithm <https://www.osti.gov/biblio/15014510>`_ by J. Meredith
 is a useful visualization-oriented algorithm for MIR. Equi-Z can reconstruct mixed-material
-zones that contain many materials per zone. Whereas many MIR algorithms 
+zones (mesh element) that contain many materials per zone. Whereas many MIR algorithms
 produce disjointed element output, Equi-Z creates output that mostly forms continuous
 surfaces and shapes. Continuity is achieved by averaging material volume fractions to
 the mesh nodes for each material and then performing successive clipping for each

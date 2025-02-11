@@ -26,6 +26,7 @@ int runMIR_tri(const conduit::Node &hostMesh,
                const conduit::Node &options,
                conduit::Node &hostResult)
 {
+  AXOM_ANNOTATE_SCOPE("runMIR_tri");
   namespace bputils = axom::mir::utilities::blueprint;
   std::string shape = hostMesh["topologies/mesh/elements/shape"].as_string();
   SLIC_INFO(axom::fmt::format("Using policy {}",
@@ -33,7 +34,10 @@ int runMIR_tri(const conduit::Node &hostMesh,
 
   // host->device
   conduit::Node deviceMesh;
-  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  {
+    AXOM_ANNOTATE_SCOPE("host->device");
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  }
 
   conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
   conduit::Node &n_topo = deviceMesh["topologies/mesh"];
@@ -67,7 +71,10 @@ int runMIR_tri(const conduit::Node &hostMesh,
   m.execute(deviceMesh, options, deviceResult);
 
   // device->host
-  bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+  {
+    AXOM_ANNOTATE_SCOPE("device->host");
+    bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+  }
 
   return 0;
 }
@@ -87,13 +94,17 @@ int runMIR_quad(const conduit::Node &hostMesh,
                 const conduit::Node &options,
                 conduit::Node &hostResult)
 {
+  AXOM_ANNOTATE_SCOPE("runMIR_quad");
   namespace bputils = axom::mir::utilities::blueprint;
   SLIC_INFO(axom::fmt::format("Using policy {}",
                               axom::execution_space<ExecSpace>::name()));
 
   // host->device
   conduit::Node deviceMesh;
-  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  {
+    AXOM_ANNOTATE_SCOPE("host->device");
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  }
 
   conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
   conduit::Node &n_topo = deviceMesh["topologies/mesh"];
@@ -127,8 +138,10 @@ int runMIR_quad(const conduit::Node &hostMesh,
   m.execute(deviceMesh, options, deviceResult);
 
   // device->host
-  bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
-
+  {
+    AXOM_ANNOTATE_SCOPE("device->host");
+    bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+  }
   return 0;
 }
 
@@ -147,13 +160,17 @@ int runMIR_hex(const conduit::Node &hostMesh,
                const conduit::Node &options,
                conduit::Node &hostResult)
 {
+  AXOM_ANNOTATE_SCOPE("runMIR_hex");
   namespace bputils = axom::mir::utilities::blueprint;
   SLIC_INFO(axom::fmt::format("Using policy {}",
                               axom::execution_space<ExecSpace>::name()));
 
   // host->device
   conduit::Node deviceMesh;
-  bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  {
+    AXOM_ANNOTATE_SCOPE("host->device");
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+  }
 
   conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
   conduit::Node &n_topo = deviceMesh["topologies/mesh"];
@@ -187,7 +204,10 @@ int runMIR_hex(const conduit::Node &hostMesh,
   m.execute(deviceMesh, options, deviceResult);
 
   // device->host
-  bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+  {
+    AXOM_ANNOTATE_SCOPE("device->host");
+    bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
+  }
 
   return 0;
 }

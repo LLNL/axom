@@ -7,7 +7,6 @@
 #define AXOM_MIR_ZONELIST_BUILDER_HPP
 
 #include "axom/core.hpp"
-#include "axom/mir.hpp"
 
 #include <conduit.hpp>
 

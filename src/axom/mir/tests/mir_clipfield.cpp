@@ -559,7 +559,7 @@ void braid2d_clip_test(const std::string &type, const std::string &name)
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::braid(type, dims, hostMesh);
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 #if defined(DEBUGGING_TEST_CASES)
@@ -742,7 +742,7 @@ void braid_rectilinear_clip_test(const std::string &name)
   // Create the data
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::braid("rectilinear", dims, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 
@@ -828,7 +828,7 @@ void strided_structured_clip_test(const std::string &name,
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::strided_structured<NDIMS>(hostMesh);
   //hostMesh.print();
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
   conduit::relay::io::blueprint::save_mesh(hostMesh,
                                            name + "_orig_yaml",
@@ -917,7 +917,7 @@ void braid3d_clip_test(const std::string &type, const std::string &name)
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::braid(type, dims, hostMesh);
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 
@@ -1018,7 +1018,7 @@ void braid3d_mixed_clip_test(const std::string &name)
   conduit::Node hostMesh, deviceMesh;
   axom::mir::testing::data::mixed3d(hostMesh);
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
   conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 

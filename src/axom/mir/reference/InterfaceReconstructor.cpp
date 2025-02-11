@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/mir/reference/InterfaceReconstructor.hpp"
+#include <vector>
 
 namespace axom
 {
@@ -35,7 +36,7 @@ void InterfaceReconstructor::computeReconstructedInterface(mir::MIRMesh& inputMe
     mir::MIRMesh intermediateMesh(finalMesh);
 
     // Create an array to store the output of each element being split.
-    CellData temp_cellData[intermediateMesh.m_elems.size()];
+    std::vector<CellData> temp_cellData(intermediateMesh.m_elems.size());
 
     // Process/split each element
     for(int eID = 0; eID < intermediateMesh.m_elems.size(); ++eID)
@@ -226,7 +227,7 @@ void InterfaceReconstructor::generateCleanCells(
   if(centerVertexID != -1 && verticesPresent[centerVertexID] == 1)
   {
     // Set up the cell data struct for the results of the decomposed element being clipped
-    CellData decomposed_cellData[newElements.size()];
+    std::vector<CellData> decomposed_cellData(newElements.size());
     int decompElementID = 0;
     // The clipping is one a tough one, and the element needs to decompose further before splitting with the two materials
     for(auto itr = newElements.begin(); itr != newElements.end();

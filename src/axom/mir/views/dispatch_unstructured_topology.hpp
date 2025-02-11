@@ -129,7 +129,7 @@ void dispatch_unstructured_mixed_topology(const conduit::Node &topo,
 
         // Get the allocator that allocated the connectivity. The shape map data
         // need to go into the same memory space.
-        const int allocatorID = axom::getAllocatorIDForAddress(
+        const int allocatorID = axom::getAllocatorIDFromPointer(
           topo["elements/connectivity"].data_ptr());
 
         // Make the shape map.
@@ -165,7 +165,7 @@ void typed_dispatch_unstructured_mixed_topology(const conduit::Node &topo,
     // Get the allocator that allocated the connectivity. The shape map data
     // need to go into the same memory space.
     volatile int allocatorID =
-      axom::getAllocatorIDForAddress(topo["elements/connectivity"].data_ptr());
+      axom::getAllocatorIDFromPointer(topo["elements/connectivity"].data_ptr());
 
     // Make the shape map.
     axom::Array<IndexType> values, ids;
@@ -247,10 +247,10 @@ struct dispatch_shape
   /*!
    * \brief Execute method that gets generated when a shape is not enabled or supported. Do nothing.
    */
-  static void execute4(bool &AXOM_UNUSED_PARAM(eligible),
-                       const std::string &AXOM_UNUSED_PARAM(shape),
-                       const conduit::Node &AXOM_UNUSED_PARAM(topo),
-                       FuncType &&AXOM_UNUSED_PARAM(func))
+  static void execute(bool &AXOM_UNUSED_PARAM(eligible),
+                      const std::string &AXOM_UNUSED_PARAM(shape),
+                      const conduit::Node &AXOM_UNUSED_PARAM(topo),
+                      FuncType &&AXOM_UNUSED_PARAM(func))
   { }
 };
 
@@ -391,10 +391,10 @@ struct SelectMixedShape
 template <typename ConnType, typename FuncType>
 struct dispatch_shape<true, ConnType, SelectMixedShape, FuncType>
 {
-  static void execute4(bool &eligible,
-                       const std::string &shape,
-                       const conduit::Node &topo,
-                       FuncType &&func)
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const conduit::Node &topo,
+                      FuncType &&func)
   {
     if(eligible && shape == "mixed")
     {
@@ -412,10 +412,10 @@ struct SelectPHShape
 template <typename ConnType, typename FuncType>
 struct dispatch_shape<true, ConnType, SelectPHShape, FuncType>
 {
-  static void execute4(bool &eligible,
-                       const std::string &shape,
-                       const conduit::Node &topo,
-                       FuncType &&func)
+  static void execute(bool &eligible,
+                      const std::string &shape,
+                      const conduit::Node &topo,
+                      FuncType &&func)
   {
     if(eligible && shape == "polyhedral")
     {
@@ -457,19 +457,19 @@ void typed_dispatch_unstructured_topology(const conduit::Node &topo,
     internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Polyhedron_ShapeID),
                              ConnType,
                              internal::SelectPHShape,
-                             FuncType>::execute4(eligible,
-                                                 shape,
-                                                 topo,
-                                                 std::forward<FuncType>(func));
+                             FuncType>::execute(eligible,
+                                                shape,
+                                                topo,
+                                                std::forward<FuncType>(func));
 
     // Conditionally add mixed shape support.
     internal::dispatch_shape<axom::utilities::bitIsSet(ShapeTypes, Mixed_ShapeID),
                              ConnType,
                              internal::SelectMixedShape,
-                             FuncType>::execute4(eligible,
-                                                 shape,
-                                                 topo,
-                                                 std::forward<FuncType>(func));
+                             FuncType>::execute(eligible,
+                                                shape,
+                                                topo,
+                                                std::forward<FuncType>(func));
 
     // Make sizes / offsets views if the values are present.
     axom::ArrayView<ConnType> sizesView, offsetsView;

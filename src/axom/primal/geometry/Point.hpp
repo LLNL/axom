@@ -6,9 +6,9 @@
 #ifndef AXOM_PRIMAL_POINT_HPP_
 #define AXOM_PRIMAL_POINT_HPP_
 
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/slic/interface/slic.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 
 // C/C++ includes
 #include <cstring>
@@ -68,6 +68,7 @@ public:
     NBYTES = NDIMS * sizeof(T)
   };
 
+  using NumericArray = axom::NumericArray<T, NDIMS>;
   using PointType = Point<T, NDIMS>;
   using CoordType = T;
 
@@ -87,7 +88,7 @@ public:
    * \param [in] arr The numeric array to copy from
    */
   AXOM_HOST_DEVICE
-  explicit Point(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
+  explicit Point(const NumericArray& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a point from the first sz values of the input array.
@@ -150,10 +151,10 @@ public:
    * \brief Returns a reference to the underlying NumericArray.
    */
   AXOM_HOST_DEVICE
-  const NumericArray<T, NDIMS>& array() const { return m_components; }
+  const NumericArray& array() const { return m_components; }
 
   AXOM_HOST_DEVICE
-  NumericArray<T, NDIMS>& array() { return m_components; }
+  NumericArray& array() { return m_components; }
 
   /*!
    * \brief Output the point's coordinates to the array
@@ -247,7 +248,7 @@ public:
   static Point ones() { return Point(static_cast<T>(1)); }
 
 private:
-  NumericArray<T, NDIMS> m_components;
+  NumericArray m_components;
 };
 
 /// \name Pre-defined point types

@@ -7,7 +7,8 @@
 #define AXOM_MIR_MATSET_SLICER_HPP
 
 #include "axom/core.hpp"
-#include "axom/mir.hpp"
+#include "axom/mir/utilities/FieldSlicer.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 
 #include <conduit.hpp>
 

@@ -31,11 +31,6 @@ struct test_mergemeshes
     conduit::Node deviceMesh;
     bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
-    // Set up inputs.
-    std::vector<bputils::MeshInput> inputs(2);
-    inputs[0].m_input = deviceMesh.fetch_ptr("domain0000");
-
-    inputs[1].m_input = deviceMesh.fetch_ptr("domain0001");
     // The node names for input 1 in the final merged mesh.
     const axom::IndexType nodeMap[] = {1, 2, 5, 6, 9, 10, 13, 14, 16, 17};
     // The 2 nodes in input 1 that do not appear in input 0
@@ -45,8 +40,16 @@ struct test_mergemeshes
     axom::Array<axom::IndexType> deviceNodeSlice(2, 2, allocatorID);
     axom::copy(deviceNodeMap.data(), nodeMap, 10 * sizeof(axom::IndexType));
     axom::copy(deviceNodeSlice.data(), nodeSlice, 2 * sizeof(axom::IndexType));
+
+    // Set up inputs.
+    // _mir_utilities_mergemeshes_begin
+    std::vector<bputils::MeshInput> inputs(2);
+    inputs[0].m_input = deviceMesh.fetch_ptr("domain0000");
+
+    inputs[1].m_input = deviceMesh.fetch_ptr("domain0001");
     inputs[1].m_nodeMapView = deviceNodeMap.view();
     inputs[1].m_nodeSliceView = deviceNodeSlice.view();
+    // _mir_utilities_mergemeshes_end
 
     // Execute
     conduit::Node opts, deviceResult;
@@ -57,9 +60,6 @@ struct test_mergemeshes
     // device->host
     conduit::Node hostResult;
     bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
-
-    //printNode(hostResult);
-    //conduit::relay::io::blueprint::save_mesh(hostResult, "mergemeshes", "hdf5");
 
     constexpr double tolerance = 1.e-7;
     conduit::Node expectedResult, info;

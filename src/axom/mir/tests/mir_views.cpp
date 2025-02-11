@@ -373,17 +373,18 @@ struct test_braid2d_mat
 
     axom::StackArray<axom::IndexType, 2> dims {10, 10};
     axom::StackArray<axom::IndexType, 2> zoneDims {dims[0] - 1, dims[1] - 1};
+    const axom::IndexType nzones = zoneDims[0] * zoneDims[1];
 
     // Create the data
     conduit::Node hostMesh, deviceMesh;
     axom::mir::testing::data::braid(type, dims, hostMesh);
     axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
     conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
 #endif
 
-    if(type == "unibuffer")
+    if(mattype == "unibuffer")
     {
       // clang-format off
       // _mir_views_matsetview_begin
@@ -396,29 +397,57 @@ struct test_braid2d_mat
                      bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
       // _mir_views_matsetview_end
       // clang-format on
-      EXPECT_EQ(matsetView.numberOfZones(), zoneDims[0] * zoneDims[1]);
-      test_matsetview(matsetView, allocatorID);
+      test_matsetview(nzones, matsetView, allocatorID);
+    }
+    else if(mattype == "multibuffer")
+    {
+      axom::mir::views::dispatch_material_multibuffer(
+        deviceMesh["matsets/mat"],
+        [&](auto matsetView) {
+          test_matsetview(nzones, matsetView, allocatorID);
+        });
+    }
+    else if(mattype == "element_dominant")
+    {
+      axom::mir::views::dispatch_material_element_dominant(
+        deviceMesh["matsets/mat"],
+        [&](auto matsetView) {
+          test_matsetview(nzones, matsetView, allocatorID);
+        });
+    }
+    else if(mattype == "material_dominant")
+    {
+      axom::mir::views::dispatch_material_material_dominant(
+        deviceMesh["matsets/mat"],
+        [&](auto matsetView) {
+          test_matsetview(nzones, matsetView, allocatorID);
+        });
     }
   }
 
   template <typename MatsetView>
-  static void test_matsetview(MatsetView matsetView, int allocatorID)
+  static void test_matsetview(axom::IndexType nzones,
+                              MatsetView matsetView,
+                              int allocatorID)
   {
-    constexpr int MATA = 0;
-    constexpr int MATB = 1;
-    constexpr int MATC = 2;
+    // These values are used in that material_map.
+    constexpr int MATA = 22;
+    constexpr int MATB = 66;
+    constexpr int MATC = 33;
+    // The zone ids that are being queried.
     const int zoneids[] = {0, 36, 40};
 
     // clang-format off
-    const int results[] = {/*contains mat*/ 0, 1, 0, /*mats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
-                           /*contains mat*/ 1, 1, 0, /*mats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
-                           /*contains mat*/ 1, 1, 1, /*mats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
+    int results[] = {/*nzones*/ static_cast<int>(nzones),
+                     /*contains mat*/ 0, 1, 0, /*nmats in zone*/ 1, /*ids.size*/ 1, /*mats in zone*/ MATB, -1, -1,
+                     /*contains mat*/ 1, 1, 0, /*nmats in zone*/ 2, /*ids.size*/ 2, /*mats in zone*/ MATA, MATB, -1,
+                     /*contains mat*/ 1, 1, 1, /*nmats in zone*/ 3, /*ids.size*/ 3, /*mats in zone*/ MATA, MATB, MATC};
     // clang-format on
-    constexpr int nZones = sizeof(zoneids) / sizeof(int);
+    constexpr int nTestZones = sizeof(zoneids) / sizeof(int);
 
     // Get zoneids into zoneidsView for device.
-    axom::Array<int> zoneidsArray(nZones, nZones, allocatorID);
-    axom::copy(zoneidsArray.data(), zoneids, sizeof(int) * nZones);
+    axom::Array<int> zoneidsArray(nTestZones, nTestZones, allocatorID);
+    axom::copy(zoneidsArray.data(), zoneids, sizeof(int) * nTestZones);
     auto zoneidsView = zoneidsArray.view();
 
     // Allocate results array on device.
@@ -427,27 +456,38 @@ struct test_braid2d_mat
     auto resultsView = resultsArrayDevice.view();
 
     // Fill in resultsView on the device.
-    constexpr int nResultsPerZone = nResults / nZones;
+    constexpr int nResultsPerZone = 8;
     axom::for_all<ExecSpace>(
-      3,
+      nTestZones,
       AXOM_LAMBDA(axom::IndexType index) {
-        resultsView[nResultsPerZone * index + 0] =
+        if(index == 0)
+        {
+          // Compute number of zones here since some views need to look inside
+          // data to determine the number of zones.
+          resultsView[0] = matsetView.numberOfZones();
+        }
+        const int offset = 1 + nResultsPerZone * index;
+        // contains mat
+        resultsView[offset + 0] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATA) ? 1 : 0;
-        resultsView[nResultsPerZone * index + 1] =
+        resultsView[offset + 1] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATB) ? 1 : 0;
-        resultsView[nResultsPerZone * index + 2] =
+        resultsView[offset + 2] =
           matsetView.zoneContainsMaterial(zoneidsView[index], MATC) ? 1 : 0;
-        resultsView[nResultsPerZone * index + 3] =
+        // nmats in zone
+        resultsView[offset + 3] =
           matsetView.numberOfMaterials(zoneidsView[index]);
 
         typename MatsetView::IDList ids {};
         typename MatsetView::VFList vfs {};
+        // ids.size
         matsetView.zoneMaterials(zoneidsView[index], ids, vfs);
-        resultsView[nResultsPerZone * index + 4] = ids.size();
+        resultsView[offset + 4] = ids.size();
+        // mats in zone
         for(axom::IndexType i = 0; i < 3; i++)
         {
-          resultsView[nResultsPerZone * index + 5 + i] =
-            (i < ids.size()) ? ids[i] : -1;
+          resultsView[offset + 5 + i] =
+            (i < ids.size()) ? static_cast<int>(ids[i]) : -1;
         }
       });
     // Get containsView data to the host and compare results
@@ -460,6 +500,7 @@ struct test_braid2d_mat
   }
 };
 
+// Unibuffer
 TEST(mir_views, matset_unibuffer_seq)
 {
   test_braid2d_mat<seq_exec>::test("uniform",
@@ -490,6 +531,173 @@ TEST(mir_views, matset_unibuffer_hip)
                                    "uniform2d_unibuffer");
 }
 #endif
+
+// Multibuffer
+TEST(mir_views, matset_multibuffer_seq)
+{
+  test_braid2d_mat<seq_exec>::test("uniform",
+                                   "multibuffer",
+                                   "uniform2d_multibuffer");
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, matset_multibuffer_omp)
+{
+  test_braid2d_mat<omp_exec>::test("uniform",
+                                   "multibuffer",
+                                   "uniform2d_multibuffer");
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, matset_multibuffer_cuda)
+{
+  test_braid2d_mat<cuda_exec>::test("uniform",
+                                    "multibuffer",
+                                    "uniform2d_multibuffer");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, matset_multibuffer_hip)
+{
+  test_braid2d_mat<hip_exec>::test("uniform",
+                                   "multibuffer",
+                                   "uniform2d_multibuffer");
+}
+#endif
+
+// Element-dominant
+TEST(mir_views, matset_element_dominant_seq)
+{
+  test_braid2d_mat<seq_exec>::test("uniform",
+                                   "element_dominant",
+                                   "uniform2d_element_dominant");
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, matset_element_dominant_omp)
+{
+  test_braid2d_mat<omp_exec>::test("uniform",
+                                   "element_dominant",
+                                   "uniform2d_element_dominant");
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, matset_element_dominant_cuda)
+{
+  test_braid2d_mat<cuda_exec>::test("uniform",
+                                    "element_dominant",
+                                    "uniform2d_element_dominant");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, matset_element_dominant_hip)
+{
+  test_braid2d_mat<hip_exec>::test("uniform",
+                                   "element_dominant",
+                                   "uniform2d_element_dominant");
+}
+#endif
+
+// Material-dominant
+TEST(mir_views, matset_material_dominant_seq)
+{
+  test_braid2d_mat<seq_exec>::test("uniform",
+                                   "material_dominant",
+                                   "uniform2d_material_dominant");
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_views, matset_material_dominant_omp)
+{
+  test_braid2d_mat<omp_exec>::test("uniform",
+                                   "material_dominant",
+                                   "uniform2d_material_dominant");
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_views, matset_material_dominant_cuda)
+{
+  test_braid2d_mat<cuda_exec>::test("uniform",
+                                    "material_dominant",
+                                    "uniform2d_material_dominant");
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_views, matset_material_dominant_hip)
+{
+  test_braid2d_mat<hip_exec>::test("uniform",
+                                   "material_dominant",
+                                   "uniform2d_material_dominant");
+}
+#endif
+
+TEST(mir_views, matset_multibuffer)
+{
+  const char *yaml = R"(
+matsets:
+  matset:
+    topology: topology
+    volume_fractions:
+      a:
+        values: [0, 0, 0, 0.33, 0, 0.3]  # [0, 0, 0, a1, 0, a0]
+        indices: [5, 3]
+      b:
+        values: [0, 0.7, 1., 0.67, 0]    # [0, b0, b2, b1, 0]
+        indices: [1, 3, 2]
+    material_map: # (optional)
+      a: 0
+      b: 1
+)";
+  conduit::Node matsets;
+  matsets.parse(yaml);
+  const conduit::Node &n_matset = matsets["matsets/matset"];
+  axom::mir::views::dispatch_material_multibuffer(n_matset, [&](auto matsetView) {
+    using IDList = typename decltype(matsetView)::IDList;
+    using VFList = typename decltype(matsetView)::VFList;
+    using VFType = typename VFList::value_type;
+
+    EXPECT_EQ(matsetView.numberOfZones(), 3);
+    EXPECT_EQ(matsetView.numberOfMaterials(0), 2);
+    EXPECT_EQ(matsetView.numberOfMaterials(1), 2);
+    EXPECT_EQ(matsetView.numberOfMaterials(2), 1);
+
+    IDList m0, m1, m2;
+    VFList vf0, vf1, vf2;
+    matsetView.zoneMaterials(0, m0, vf0);
+    EXPECT_EQ(m0.size(), 2);
+    EXPECT_EQ(vf0.size(), 2);
+    EXPECT_EQ(m0[0], 0);
+    EXPECT_EQ(m0[1], 1);
+    EXPECT_EQ(vf0[0], 0.3);
+    EXPECT_EQ(vf0[1], 0.7);
+
+    VFType vf;
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(0, 0, vf));
+    EXPECT_EQ(vf, 0.3);
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(0, 1, vf));
+    EXPECT_EQ(vf, 0.7);
+
+    matsetView.zoneMaterials(1, m1, vf1);
+    EXPECT_EQ(m1.size(), 2);
+    EXPECT_EQ(vf1.size(), 2);
+    EXPECT_EQ(m1[0], 0);
+    EXPECT_EQ(m1[1], 1);
+    EXPECT_EQ(vf1[0], 0.33);
+    EXPECT_EQ(vf1[1], 0.67);
+
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(1, 0, vf));
+    EXPECT_EQ(vf, 0.33);
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(1, 1, vf));
+    EXPECT_EQ(vf, 0.67);
+
+    matsetView.zoneMaterials(2, m2, vf2);
+    EXPECT_EQ(m2.size(), 1);
+    EXPECT_EQ(m2[0], 1);
+    EXPECT_EQ(vf2[0], 1);
+
+    EXPECT_FALSE(matsetView.zoneContainsMaterial(2, 0, vf));
+    EXPECT_EQ(vf, 0.);
+    EXPECT_TRUE(matsetView.zoneContainsMaterial(2, 1, vf));
+    EXPECT_EQ(vf, 1.);
+  });
+}
 
 //------------------------------------------------------------------------------
 #if defined(DEBUGGING_TEST_CASES)

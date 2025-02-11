@@ -24,8 +24,10 @@ namespace blueprint
 {
 
 /*!
- * \brief This class provides a kind of schema over options, as well
- *        as default values, and some utilities functions.
+ * \brief This class creates a view containing sorted selected zones, given
+ *        an optional list of selected zones.
+ *
+ * \tparam ExecSpace The execution space where the algorithm will run.
  */
 template <typename ExecSpace>
 class SelectedZones
@@ -35,8 +37,18 @@ public:
    * \brief Constructor
    *
    * \param nzones The total number of zones in the associated topology.
-   * \param options The node that contains the clipping options.
+   * \param n_options The node that contains the clipping options.
    * \param selectionKey The name of the node with the selection data in the options.
+   *
+   * The n_options node contains options that influence how the class runs.
+   * The options can contain a "selectedZones" node that contains an array of
+   * zone ids that will be processed. The array should exist in the memory space
+   * that is appropriate for the execution space. If this node is not present
+   * then all zones will be selected.
+   *
+   * \code{.yaml}
+   *  selectedZones: [0,1,2,3...]
+   * \endcode
    */
   SelectedZones(axom::IndexType nzones,
                 const conduit::Node &n_options,

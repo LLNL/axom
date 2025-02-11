@@ -67,6 +67,30 @@ std::string joinPath(const std::string& fileDir,
 int makeDirsForPath(const std::string& path);
 
 /*!
+ * \brief Add a prefix to a path if it is relative.
+ *
+ * \param [in] path non-empty string representing an absolute or relative path
+ * \param [in] prefix string representing a directory path
+ *
+ * \return \c prefix + \c path (with delimiter) if the path is
+ * relative or \c prefix is empty, or just \c path otherwise.
+ */
+std::string prefixRelativePath(const std::string& path,
+                               const std::string& prefix);
+
+/*!
+ * \brief Get parent path name from a filesystem path.
+ *
+ * \param [in] path a non-empty absolute or relative filesystem path
+ *
+ * \return a directory path formed by removing the last part of the
+ *    input path
+ *
+ * If path is the system root, its parent is the empty string.
+ */
+std::string getParentPath(const std::string& path);
+
+/*!
  * \brief Get directory name from a path that contains a file name
  *
  * \param [out] dir  a directory path formed by removing the file name from

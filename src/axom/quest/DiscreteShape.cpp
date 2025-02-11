@@ -134,9 +134,9 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   {
     createRepresentationOfSphere();
   }
-  if(geometryFormat == "vor3D")
+  if(geometryFormat == "sor3D")
   {
-    createRepresentationOfVOR();
+    createRepresentationOfSOR();
   }
 
   if(m_meshRep)
@@ -157,7 +157,9 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
   // We handled all the non-file formats.  The rest are file formats.
   const std::string& file_format = geometryFormat;
 
-  std::string shapePath = resolvePath();
+  std::string shapePath = axom::utilities::filesystem::prefixRelativePath(
+    m_shape.getGeometry().getPath(),
+    m_prefixPath);
   SLIC_INFO("Reading file: " << shapePath << "...");
 
   // Initialize revolved volume.
@@ -406,7 +408,7 @@ void DiscreteShape::createRepresentationOfPlane()
   // clang-format on
 
   // Rotate and translate boundingHex to align with the plane.
-  numerics::Matrix<double> rotate = vorAxisRotMatrix(plane.getNormal());
+  numerics::Matrix<double> rotate = sorAxisRotMatrix(plane.getNormal());
   const auto translate = plane.getNormal() * plane.getOffset();
   for(int i = 0; i < 8; ++i)
   {
@@ -529,11 +531,11 @@ void DiscreteShape::createRepresentationOfSphere()
   applyTransforms();
 }
 
-void DiscreteShape::createRepresentationOfVOR()
+void DiscreteShape::createRepresentationOfSOR()
 {
   // Construct the tet m_meshRep from the volume-of-revolution.
-  auto& vorGeom = m_shape.getGeometry();
-  const auto& discreteFcn = vorGeom.getDiscreteFunction();
+  auto& sorGeom = m_shape.getGeometry();
+  const auto& discreteFcn = sorGeom.getDiscreteFunction();
 
   // Generate the Octahedra
   axom::Array<OctType> octs;
@@ -546,11 +548,12 @@ void DiscreteShape::createRepresentationOfVOR()
     m_shape.getGeometry().getLevelOfRefinement(),
     octs,
     octCount);
+  AXOM_UNUSED_VAR(good);
   SLIC_ASSERT(good);
 
-  // Rotate to the VOR axis direction and translate to the base location.
-  numerics::Matrix<double> rotate = vorAxisRotMatrix(vorGeom.getVorDirection());
-  const auto& translate = vorGeom.getVorBaseCoords();
+  // Rotate to the SOR axis direction and translate to the base location.
+  numerics::Matrix<double> rotate = sorAxisRotMatrix(sorGeom.getSorDirection());
+  const auto& translate = sorGeom.getSorBaseCoords();
   auto octsView = octs.view();
   axom::for_all<axom::SEQ_EXEC>(
     octCount,
@@ -568,6 +571,13 @@ void DiscreteShape::createRepresentationOfVOR()
     });
 
   // Dump discretized octs as a tet mesh
+  //
+  // NOTE: mesh_from_discretized_polyline returns a tet mesh.
+  // IntersectionShaper can handle octahedra, which may be faster
+  // because it has 8x fewer elements.  This method returns the
+  // discretization as a mesh.  But mint doesn't support octs and
+  // Blueprint support octs only as polyhedra.  We can always return
+  // an array of primal::Octahedron instead of a mesh.
   axom::mint::Mesh* mesh;
   axom::quest::mesh_from_discretized_polyline(octs.view(),
                                               octCount,
@@ -680,7 +690,7 @@ numerics::Matrix<double> DiscreteShape::getTransforms() const
 }
 
 // Return a 3x3 matrix that rotates coordinates from the x-axis to the given direction.
-numerics::Matrix<double> DiscreteShape::vorAxisRotMatrix(const Vector3D& dir)
+numerics::Matrix<double> DiscreteShape::sorAxisRotMatrix(const Vector3D& dir)
 {
   // Note that the rotation matrix is not unique.
   static const Vector3D x {1.0, 0.0, 0.0};
@@ -766,20 +776,12 @@ void DiscreteShape::setPercentError(double percent)
     clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
 }
 
-std::string DiscreteShape::resolvePath() const
+void DiscreteShape::setPrefixPath(const std::string& prefixPath)
 {
-  const std::string& geomPath = m_shape.getGeometry().getPath();
-  if(geomPath[0] == '/')
-  {
-    return geomPath;
-  }
-  if(m_prefixPath.empty())
-  {
-    throw std::logic_error("Relative geometry path requires a parent path.");
-  }
-  std::string dir;
-  utilities::filesystem::getDirName(dir, m_prefixPath);
-  return utilities::filesystem::joinPath(dir, geomPath);
+  SLIC_ERROR_IF(
+    !prefixPath.empty() && !axom::utilities::filesystem::pathExists(prefixPath),
+    "Path '" + prefixPath + "' does not exist.");
+  m_prefixPath = prefixPath;
 }
 
 void DiscreteShape::setParentGroup(axom::sidre::Group* parentGroup)

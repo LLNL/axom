@@ -14,9 +14,9 @@
 
 #include "axom/slic.hpp"
 
+#include "axom/core/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
@@ -50,7 +50,7 @@ class CurvedPolygon
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
+  using NumArrayType = axom::NumericArray<T, NDIMS>;
   using BezierCurveType = BezierCurve<T, NDIMS>;
   using BoundingBoxType = typename BezierCurveType::BoundingBoxType;
 

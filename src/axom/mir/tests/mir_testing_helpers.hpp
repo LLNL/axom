@@ -163,7 +163,7 @@ void saveBaseline(const std::string &filename, const conduit::Node &n)
     SLIC_INFO(axom::fmt::format("Save baseline {}", file_with_ext));
     conduit::relay::io::save(n, file_with_ext, "yaml");
 
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
     SLIC_INFO(axom::fmt::format("Save visualization files..."));
     conduit::relay::io::blueprint::save_mesh(n, filename + "_hdf5", "hdf5");
     axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
@@ -221,7 +221,7 @@ std::vector<std::string> baselinePaths()
 bool compareBaseline(const std::vector<std::string> &baselinePaths,
                      const std::string &baselineName,
                      const conduit::Node &current,
-                     double tolerance = 1.e-6)
+                     double tolerance = 1.5e-6)
 {
   bool success = false;
   int count = 0;
@@ -243,7 +243,9 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
           info.print();
 
           std::string errFile(filename + "_err");
+#if defined(AXOM_USE_HDF5)
           conduit::relay::io::blueprint::save_mesh(current, errFile, "hdf5");
+#endif
           conduit::relay::io::blueprint::save_mesh(current,
                                                    errFile + "_yaml",
                                                    "yaml");

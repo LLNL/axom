@@ -7,7 +7,9 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
+#include "axom/primal.hpp"
 #include <conduit/conduit.hpp>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -21,27 +23,44 @@ namespace data
 {
 //------------------------------------------------------------------------------
 
+/*!
+ * \brief Make a new radial distance field at each of the mesh coordinates and
+ *        subtract a \a dist value from it. This makes the zero value of the
+ *        field the radius in which we're interested for isosurfacing.
+ *
+ * \param mesh The node that contains the blueprint mesh and fields.
+ * \param dist The radial distance of interest.
+ */
 void add_distance(conduit::Node &mesh, float dist = 6.5f)
 {
   // Make a new distance field.
   const conduit::Node &n_coordset = mesh["coordsets"][0];
   axom::mir::views::dispatch_coordset(n_coordset, [&](auto coordsetView) {
+    using PointType = typename decltype(coordsetView)::PointType;
+    using SphereType =
+      axom::primal::Sphere<typename PointType::CoordType, PointType::DIMENSION>;
     mesh["fields/distance/topology"] = "mesh";
     mesh["fields/distance/association"] = "vertex";
     conduit::Node &n_values = mesh["fields/distance/values"];
     const auto nnodes = coordsetView.size();
     n_values.set(conduit::DataType::float32(nnodes));
     float *valuesPtr = static_cast<float *>(n_values.data_ptr());
+    SphereType s(dist);
     for(int index = 0; index < nnodes; index++)
     {
-      const auto pt = coordsetView[index];
-      float norm2 = 0.f;
-      for(int i = 0; i < pt.DIMENSION; i++) norm2 += pt[i] * pt[i];
-      valuesPtr[index] = sqrt(norm2) - dist;
+      valuesPtr[index] = s.computeSignedDistance(coordsetView[index]);
     }
   });
 }
 
+/*!
+ * \brief Creates a mesh of the desired \a type and dimensions \a dims and puts
+ *        the values into the \a mesh node. A distance field is also added.
+ *
+ * \param type The type of mesh being added. See Conduit's braid function docs.
+ * \param dims An array containing the dimensions.
+ * \param[out] mesh The node that will contain the new mesh and fields.
+ */
 template <typename Dimensions>
 void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
 {
@@ -56,6 +75,17 @@ void braid(const std::string &type, const Dimensions &dims, conduit::Node &mesh)
   add_distance(mesh);
 }
 
+/*!
+ * \brief Make a new "unibuffer" matset from the input vectors. The unibuffer
+ *        matset is a style of matset in Blueprint that combines material ids
+ *        and volume fractions from multiple materials shared arrays.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
 void make_unibuffer(const std::vector<float> &vfA,
                     const std::vector<float> &vfB,
                     const std::vector<float> &vfC,
@@ -99,11 +129,118 @@ void make_unibuffer(const std::vector<float> &vfA,
 
   matset["material_ids"].set(material_ids);
   matset["volume_fractions"].set(volume_fractions);
+  matset["indices"].set(indices);
   matset["sizes"].set(sizes);
   matset["offsets"].set(offsets);
-  matset["indices"].set(indices);
 }
 
+/*!
+ * \brief Make a new "multibuffer" matset from the input vectors.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
+void make_multibuffer(const std::vector<float> &vfA,
+                      const std::vector<float> &vfB,
+                      const std::vector<float> &vfC,
+                      const std::vector<int> &AXOM_UNUSED_PARAM(matnos),
+                      conduit::Node &matset)
+{
+  std::vector<int> indices(vfA.size());
+  std::iota(indices.begin(), indices.end(), 0);
+  matset["volume_fractions/A/values"].set(vfA);
+  matset["volume_fractions/A/indices"].set(indices);
+  matset["volume_fractions/B/values"].set(vfB);
+  matset["volume_fractions/B/indices"].set(indices);
+  matset["volume_fractions/C/values"].set(vfC);
+  matset["volume_fractions/C/indices"].set(indices);
+}
+
+/*!
+ * \brief Make a new "element_dominant" matset from the input vectors.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
+void make_element_dominant(const std::vector<float> &vfA,
+                           const std::vector<float> &vfB,
+                           const std::vector<float> &vfC,
+                           const std::vector<int> &AXOM_UNUSED_PARAM(matnos),
+                           conduit::Node &matset)
+{
+  matset["volume_fractions/A"].set(vfA);
+  matset["volume_fractions/B"].set(vfB);
+  matset["volume_fractions/C"].set(vfC);
+}
+
+/*!
+ * \brief Make a new "material_dominant" matset from the input vectors.
+ *
+ * \param vfA The volume fractions for material A over all zones in the mesh.
+ * \param vfB The volume fractions for material B over all zones in the mesh.
+ * \param vfC The volume fractions for material C over all zones in the mesh.
+ * \param matnos The material numbers to use for materials A, B, C.
+ * \param[out] matset The node that will contain the matset.
+ */
+void make_material_dominant(const std::vector<float> &vfA,
+                            const std::vector<float> &vfB,
+                            const std::vector<float> &vfC,
+                            const std::vector<int> &AXOM_UNUSED_PARAM(matnos),
+                            conduit::Node &matset)
+{
+  std::vector<float> svfA, svfB, svfC;
+  std::vector<int> ziA, ziB, ziC;
+  const size_t n = vfA.size();
+  for(size_t zi = 0; zi < n; zi++)
+  {
+    if(vfA[zi] > 0.f)
+    {
+      svfA.push_back(vfA[zi]);
+      ziA.push_back(zi);
+    }
+    if(vfB[zi] > 0.f)
+    {
+      svfB.push_back(vfB[zi]);
+      ziB.push_back(zi);
+    }
+    if(vfC[zi] > 0.f)
+    {
+      svfC.push_back(vfC[zi]);
+      ziC.push_back(zi);
+    }
+  }
+  matset["volume_fractions/A"].set(svfA);
+  matset["volume_fractions/B"].set(svfB);
+  matset["volume_fractions/C"].set(svfC);
+  matset["element_ids/A"].set(ziA);
+  matset["element_ids/B"].set(ziB);
+  matset["element_ids/C"].set(ziC);
+}
+
+/*!
+ * \brief Make a new mesh with a matset that has 3 materials.
+ *
+ * \param type The type of matset to create.
+ * \param topoName The name of mesh topology.
+ * \param dims The dimensions of the mesh
+ * \param[out] mesh The mesh node to which a matset will be added.
+ *
+ *   *--------------*
+ *   |            ==|
+ *   |    A     ==  |
+ *   |       ==     |
+ *   |=======    C  |
+ *   |       ==     |
+ *   |    B    ==   |
+ *   |           == |
+ *   *--------------*
+ */
 template <typename Dimensions>
 void make_matset(const std::string &type,
                  const std::string &topoName,
@@ -175,7 +312,6 @@ void make_matset(const std::string &type,
   matB.clear();
   matC.clear();
 
-#if 1
   // Debugging. Add the vfs as fields.
   mesh["fields/vfA/topology"] = topoName;
   mesh["fields/vfA/association"] = "element";
@@ -188,7 +324,6 @@ void make_matset(const std::string &type,
   mesh["fields/vfC/topology"] = topoName;
   mesh["fields/vfC/association"] = "element";
   mesh["fields/vfC/values"].set(vfC);
-#endif
 
   const std::vector<int> matnos {{22, 66, 33}};
   conduit::Node &matset = mesh["matsets/mat"];
@@ -202,15 +337,25 @@ void make_matset(const std::string &type,
   {
     make_unibuffer(vfA, vfB, vfC, matnos, matset);
   }
-  // TODO: write these other cases.
   else if(type == "multibuffer")
-  { }
+  {
+    make_multibuffer(vfA, vfB, vfC, matnos, matset);
+  }
   else if(type == "element_dominant")
-  { }
+  {
+    make_element_dominant(vfA, vfB, vfC, matnos, matset);
+  }
   else if(type == "material_dominant")
-  { }
+  {
+    make_material_dominant(vfA, vfB, vfC, matnos, matset);
+  }
 }
 
+/*!
+ * \brief Makes a new Blueprint 3D mesh made of mixed cell types.
+ *
+ * \param[out] mesh The node that will contain the new mesh.
+ */
 void mixed3d(conduit::Node &mesh)
 {
   // clang-format off
@@ -283,6 +428,11 @@ void mixed3d(conduit::Node &mesh)
   add_distance(mesh, 0.f);
 }
 
+/*!
+ * \brief Make a Blueprint mesh that contains one hex.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 void make_one_hex(conduit::Node &hostMesh)
 {
   hostMesh["coordsets/coords/type"] = "explicit";
@@ -305,6 +455,11 @@ void make_one_hex(conduit::Node &hostMesh)
     std::vector<float> {{1., -1., -1., -1., -1., -1., -1., -1.}});
 }
 
+/*!
+ * \brief Make a Blueprint mesh that contains one tet.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 void make_one_tet(conduit::Node &hostMesh)
 {
   hostMesh["coordsets/coords/type"] = "explicit";
@@ -322,6 +477,12 @@ void make_one_tet(conduit::Node &hostMesh)
   hostMesh["fields/distance/association"] = "vertex";
   hostMesh["fields/distance/values"].set(std::vector<float> {{-1., -1., -1., 1.}});
 }
+
+/*!
+ * \brief Make a Blueprint mesh that contains one pyramid.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 
 void make_one_pyr(conduit::Node &hostMesh)
 {
@@ -345,6 +506,11 @@ void make_one_pyr(conduit::Node &hostMesh)
     std::vector<float> {{1., 1., -1., -1., -1.}});
 }
 
+/*!
+ * \brief Make a Blueprint mesh that contains one wedge.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 void make_one_wdg(conduit::Node &hostMesh)
 {
   hostMesh["coordsets/coords/type"] = "explicit";
@@ -367,6 +533,13 @@ void make_one_wdg(conduit::Node &hostMesh)
     std::vector<float> {{1., 1., -1., -1., -1., -1.}});
 }
 
+/*!
+ * \brief Make a Blueprint with a strided structured topology.
+ *
+ * \tparam NDIMS The number of topological mesh dimensions.
+ *
+ * \param[out] hostMesh A node that contains the mesh on the host.
+ */
 template <int NDIMS = 2>
 void strided_structured(conduit::Node &hostMesh)
 {

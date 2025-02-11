@@ -165,7 +165,7 @@ private:
   {
     using value_type = typename decltype(compView)::value_type;
     using accum_type =
-      typename axom::mir::utilities::accumulation_traits<value_type>::value_type;
+      typename axom::mir::utilities::accumulation_traits<value_type>::type;
 
     // We're allowing selectedIndicesView to be used to select specific blend
     // groups. If the user did not provide that, use all blend groups.
