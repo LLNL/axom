@@ -451,21 +451,21 @@ public:
     populateHexesFromMesh<ExecSpace>();
     auto hexesView = m_hexes.view();
 
-    AXOM_ANNOTATE_BEGIN("allocate m_hex_volumes");
-    m_hex_volumes = axom::Array<double>(m_cellCount, m_cellCount, m_allocatorId);
-    AXOM_ANNOTATE_END("allocate m_hex_volumes");
-    m_hex_volumes.fill(0.0);
+    AXOM_ANNOTATE_BEGIN("allocate m_cell_volumes");
+    m_cell_volumes = axom::Array<double>(m_cellCount, m_cellCount, m_allocatorId);
+    AXOM_ANNOTATE_END("allocate m_cell_volumes");
+    m_cell_volumes.fill(0.0);
 
     SLIC_INFO(
       axom::fmt::format("{:-^80}", " Calculating hexahedron element volume "));
-    auto hexVolumesView = m_hex_volumes.view();
-    AXOM_ANNOTATE_BEGIN("hex_volume");
+    auto cellVolumesView = m_cell_volumes.view();
+    AXOM_ANNOTATE_BEGIN("cell_volume");
     axom::for_all<ExecSpace>(
       m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
-        hexVolumesView[i] = hexesView[i].volume();
+        cellVolumesView[i] = hexesView[i].volume();
       });
-    AXOM_ANNOTATE_END("hex_volume");
+    AXOM_ANNOTATE_END("cell_volume");
 
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
@@ -1236,18 +1236,18 @@ private:
     m_overlap_volumes = axom::Array<double>(NE, NE, device_allocator);
 
     // Quad volume is the volume of the quadrilateral element
-    m_hex_volumes = axom::Array<double>(NE, NE, device_allocator);
+    m_cell_volumes = axom::Array<double>(NE, NE, device_allocator);
 
     axom::ArrayView<double> overlap_volumes_device_view =
       m_overlap_volumes.view();
-    axom::ArrayView<double> hex_volumes_device_view = m_hex_volumes.view();
+    axom::ArrayView<double> cell_volumes_device_view = m_cell_volumes.view();
 
     // Set initial values to 0
     axom::for_all<ExecSpace>(
       NE,
       AXOM_LAMBDA(axom::IndexType i) {
         overlap_volumes_device_view[i] = 0;
-        hex_volumes_device_view[i] = 0;
+        cell_volumes_device_view[i] = 0;
       });
 
     SLIC_INFO(axom::fmt::format("{:-^80}",
@@ -1258,7 +1258,7 @@ private:
       axom::for_all<ExecSpace>(
         NE,
         AXOM_LAMBDA(axom::IndexType i) {
-          hex_volumes_device_view[i] = quads_device_view[i].area();
+          cell_volumes_device_view[i] = quads_device_view[i].area();
         });
     }
     SLIC_INFO(axom::fmt::format(
@@ -1324,7 +1324,7 @@ private:
       NE,
       AXOM_LAMBDA(axom::IndexType i) {
         totalOverlap += overlap_volumes_device_view[i];
-        totalQuad += hex_volumes_device_view[i];
+        totalQuad += cell_volumes_device_view[i];
       });
 
     SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
@@ -1857,14 +1857,14 @@ public:
       TempArrayView<ExecSpace> shapeVFView(shapeVolFrac, true);
 
       axom::ArrayView<double> overlap_volumes_view = m_overlap_volumes.view();
-      axom::ArrayView<double> hex_volumes_view = m_hex_volumes.view();
+      axom::ArrayView<double> cell_volumes_view = m_cell_volumes.view();
 
       axom::for_all<ExecSpace>(
         dataSize,
         AXOM_LAMBDA(axom::IndexType i) {
           // Update this material's VF and vf_subtract, which is the
           // amount to subtract from the gf's in updateVF.
-          double vf = (overlap_volumes_view[i] / hex_volumes_view[i]);
+          double vf = (overlap_volumes_view[i] / cell_volumes_view[i]);
 
           // Write at most the writable amount.
           double vf_actual = (vf <= vf_writable[i]) ? vf : vf_writable[i];
@@ -1999,10 +1999,10 @@ public:
 
   // Runs the shaping query, based on the policy member and shape format set
   // (default is sequential)
-  // Fills m_overlap_volumes and m_hex_volumes, whose data
+  // Fills m_overlap_volumes and m_cell_volumes, whose data
   // will be in the default memory space for m_execPolicy.
   // The data will be used in applyReplacementRules and can
-  // also be accessed by getOverlapVolumes() and getHexVolumes().
+  // also be accessed by getOverlapVolumes() and getCellVolumes().
   void runShapeQuery(const klee::Shape& shape) override
   {
     AXOM_ANNOTATE_SCOPE("runShapeQuery");
@@ -2093,9 +2093,9 @@ public:
     return m_overlap_volumes.view();
   }
 
-  axom::ArrayView<const double> getHexVolumes() const
+  axom::ArrayView<const double> getCellVolumes() const
   {
-    return m_hex_volumes.view();
+    return m_cell_volumes.view();
   }
 
   double sumOverlapVolumes(bool global = true) const
@@ -3122,7 +3122,7 @@ private:
   std::string m_free_mat_name;
 
   //! \brief Volumes of cells in the computational mesh.
-  axom::Array<double> m_hex_volumes;
+  axom::Array<double> m_cell_volumes;
 
   //! \brief Overlap volumes of cells in the computational mesh for the last shape.
   axom::Array<double> m_overlap_volumes;
