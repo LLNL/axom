@@ -1079,9 +1079,12 @@ private:
       });  // end of loop to initialize hexahedral elements and bounding boxes
 
     printf("\t--> CHECKPOINT 2\n");
-    for(int i = 0; i < NE; i++)
+    if(device_allocator == host_allocator)
     {
-      SLIC_INFO("\t\t--> Quad[" << i << "] is " << quads_device_view[i]);
+      for(int i = 0; i < NE; i++)
+      {
+        SLIC_INFO("\t\t--> Quad[" << i << "] is " << quads_device_view[i]);
+      }
     }
 
     // Set shape components to zero if within threshold

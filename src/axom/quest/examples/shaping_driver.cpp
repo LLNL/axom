@@ -569,7 +569,7 @@ int main(int argc, char** argv)
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
     shaper = new quest::IntersectionShaper(
       params.policy,
-      axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq),
+      axom::policyToDefaultAllocatorID(params.policy),
       params.shapeSet,
       &shapingDC);
 #else
