@@ -55,6 +55,9 @@ public:
    * \param inputs A vector of inputs to be merged.
    * \param options A Node containing algorithm options.
    * \param[out] output The node that will contain the merged mesh.
+   *
+   * The options node may contain a "topology" string that designates the name of
+   * the topology to be merged.
    */
   void execute(const std::vector<MeshInput> &inputs,
                const conduit::Node &options,
@@ -78,9 +81,9 @@ public:
     }
   }
 
-// The following members are private (unless using CUDA)
+// The following members are protected (unless using CUDA)
 #if !defined(__CUDACC__)
-private:
+protected:
 #endif
 
   /**
@@ -966,7 +969,173 @@ private:
    * \param inputs A vector of inputs to be merged.
    * \param[out] output The node that will contain the output mesh.
    */
-  void mergeMatset(const std::vector<MeshInput> &inputs, conduit::Node &output) const
+  virtual void mergeMatset(const std::vector<MeshInput> &AXOM_UNUSED_PARAM(inputs),
+                           conduit::Node &AXOM_UNUSED_PARAM(output)) const
+  {
+    // Do nothing.
+  }
+};
+
+/*!
+ * \brief Dispatches any type of data as any type of matset.
+ */
+class DispatchAnyMatset
+{
+public:
+  /*!
+   * \brief Takes input matset data as Conduit nodes whose data can be various
+   *        types and dispatches the data to array views that are passed to a
+   *        lambda function that processes them. These nodes contain data for
+   *        the merged material being created.
+   *
+   * \tparam FuncType A callable object/function/lambda.
+   *
+   * \param n_material_ids A node containing material ids.
+   * \param n_sizes A node containing sizes.
+   * \param n_offsets A node containing offsets.
+   * \param n_indices A node containing indices.
+   * \param n_volume_fractions A node containing volume fractions.
+   * \param func The function to invoke on the array views.
+   */
+  template <typename FuncType>
+  void execute(conduit::Node &n_material_ids,
+               conduit::Node &n_sizes,
+               conduit::Node &n_offsets,
+               conduit::Node &n_indices,
+               conduit::Node &n_volume_fractions,
+               FuncType &&func)
+  {
+    // Support various types of material data.
+    axom::mir::views::IndexNode_to_ArrayView_same(
+      n_material_ids,
+      n_sizes,
+      n_offsets,
+      n_indices,
+      [&](auto materialIdsView,
+          auto sizesView,
+          auto offsetsView,
+          auto indicesView) {
+        axom::mir::views::FloatNode_to_ArrayView(
+          n_volume_fractions,
+          [&](auto volumeFractionsView)
+      {
+        // Invoke a function that can use these views.
+        func(materialIdsView, sizesView, offsetsView, indicesView, volumeFractionsView);
+      });
+    });
+  }
+
+  /*!
+   * \brief Takes a node and turns it into a matset view and sends that view
+   *        to the input function.
+   *
+   * \tparam FuncType A callable object/function/lambda.
+   *
+   * \param n_matset A node containing any kind of matset.
+   * \param func The function to invoke on the matset view.
+   */
+  template <typename FuncType>
+  void dispatchMatset(conduit::Node &n_matset, FuncType &&func)
+  {
+    axom::mir::views::dispatch_material(
+      n_matset,
+      [&](auto matsetView) {
+        func(matsetView);
+    });
+  }
+};
+
+/*!
+ * \brief Dispatches data of known type to a unibuffer matset.
+ */
+template <typename IntElement, typename FloatElement, size_t MAXMATERIALS = 20>
+class DispatchTypedUnibufferMatset
+{
+public:
+  /*!
+   * \brief Takes input matset data as Conduit nodes and turn them into
+   *        specific view types since we know the types of data being used.
+   *
+   * \tparam FuncType A callable object/function/lambda.
+   *
+   * \param n_material_ids A node containing material ids.
+   * \param n_sizes A node containing sizes.
+   * \param n_offsets A node containing offsets.
+   * \param n_indices A node containing indices.
+   * \param n_volume_fractions A node containing volume fractions.
+   * \param func The function to invoke on the array views.
+   */
+  template <typename FuncType>
+  void execute(conduit::Node &n_material_ids,
+               conduit::Node &n_sizes,
+               conduit::Node &n_offsets,
+               conduit::Node &n_indices,
+               conduit::Node &n_volume_fractions,
+               FuncType &&func)
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    auto materialIdsView = bputils::make_array_view<IntElement>(n_material_ids);
+    auto sizesView = bputils::make_array_view<IntElement>(n_sizes);
+    auto offsetsView = bputils::make_array_view<IntElement>(n_offsets);
+    auto indicesView = bputils::make_array_view<IntElement>(n_indices);
+    auto volumeFractionsView = bputils::make_array_view<FloatElement>(n_volume_fractions);
+
+    func(materialIdsView, sizesView, offsetsView, indicesView, volumeFractionsView);
+  }
+
+  /*!
+   * \brief Takes a node and turns it into a matset view and sends that view
+   *        to the input function.
+   *
+   * \tparam FuncType A callable object/function/lambda.
+   *
+   * \param n_matset A node containing any kind of matset.
+   * \param func The function to invoke on the matset view.
+   */
+  template <typename FuncType>
+  void dispatchMatset(conduit::Node &n_matset, FuncType &&func)
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    // We know the types. Make views explicitly.
+    auto material_ids = bputils::make_array_view<IntElement>(n_matset["material_ids"]);
+    auto sizes = bputils::make_array_view<IntElement>(n_matset["sizes"]);
+    auto offsets = bputils::make_array_view<IntElement>(n_matset["offsets"]);
+    auto indices = bputils::make_array_view<IntElement>(n_matset["indices"]);
+    auto volume_fractions = bputils::make_array_view<FloatElement>(n_matset["volume_fractions"]);
+    // We know we're making a unibuffer matset.
+    axom::mir::views::UnibufferMaterialView<IntElement, FloatElement, MAXMATERIALS> matsetView;
+    matsetView.set(material_ids, volume_fractions, sizes, offsets, indices);
+    // Use it.
+    func(matsetView);
+  }
+};
+
+
+/**
+ * \brief Merge multiple unstructured Blueprint meshes (with matsets) through MeshInput.
+ *
+ * \tparam ExecSpace The execution space where the algorithm will run.
+ * \tparam MaterialDispatch A policy that helps determine how materials are dispatched.
+ *                          The default is to handle any type of matset but that can
+ *                          generate a lot of code.
+ *
+ * \note The input meshes must currently contain a single coordset/topology/matset.
+ */
+template <typename ExecSpace, typename MaterialDispatch = DispatchAnyMatset>
+class MergeMeshesAndMatsets : public MergeMeshes<ExecSpace>
+{
+public:
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
+private:
+#endif
+  /**
+   * \brief Merge matsets that exist on the various mesh inputs.
+   *
+   * \param inputs A vector of inputs to be merged.
+   * \param[out] output The node that will contain the output mesh.
+   */
+  virtual void mergeMatset(const std::vector<MeshInput> &inputs, conduit::Node &output) const override
   {
     AXOM_ANNOTATE_SCOPE("mergeMatset");
     namespace bputils = axom::mir::utilities::blueprint;
@@ -1003,6 +1172,9 @@ private:
 
     if(hasMatsets)
     {
+      MaterialDispatch disp;
+      auto *This = this;
+
       // One or more inputs did not have a matset.
       if(defaultMaterial) allMats["default"] = nmats++;
 
@@ -1013,7 +1185,7 @@ private:
         AXOM_ANNOTATE_SCOPE("sizes");
         for(size_t i = 0; i < inputs.size(); i++)
         {
-          const auto nzones = countZones(inputs, i);
+          const auto nzones = this->countZones(inputs, i);
           totalZones += nzones;
 
           if(inputs[i].m_input->has_path("matsets"))
@@ -1022,14 +1194,14 @@ private:
               inputs[i].m_input->fetch_existing("matsets");
             conduit::Node &n_matset = n_matsets[0];
             axom::IndexType matCount = 0;
-            axom::mir::views::dispatch_material(n_matset, [&](auto matsetView) {
+            disp.dispatchMatset(n_matset, [&](auto matsetView) {
               // Figure out the types to use for storing the data.
               using IType = typename decltype(matsetView)::IndexType;
               using FType = typename decltype(matsetView)::FloatType;
               itype = bputils::cpp2conduit<IType>::id;
               ftype = bputils::cpp2conduit<FType>::id;
 
-              matCount = mergeMatset_count(matsetView, nzones);
+              matCount = This->mergeMatset_count(matsetView, nzones);
             });
             totalMatCount += matCount;
           }
@@ -1074,23 +1246,22 @@ private:
           n_material_map[it->first] = it->second;
 
         // Populate
-        axom::mir::views::IndexNode_to_ArrayView_same(
-          n_material_ids,
-          n_sizes,
-          n_offsets,
-          n_indices,
-          [&](auto materialIdsView,
-              auto sizesView,
-              auto offsetsView,
-              auto indicesView) {
-            axom::mir::views::FloatNode_to_ArrayView(
-              n_volume_fractions,
-              [&](auto volumeFractionsView) {
+        disp.execute(n_material_ids,
+                     n_sizes,
+                     n_offsets,
+                     n_indices,
+                     n_volume_fractions,
+                     [&](auto materialIdsView,
+                         auto sizesView,
+                         auto offsetsView,
+                         auto indicesView,
+                         auto volumeFractionsView)
+        {
                 // Fill in sizes array.
                 axom::IndexType zOffset = 0;
                 for(size_t i = 0; i < inputs.size(); i++)
                 {
-                  const auto nzones = countZones(inputs, i);
+                  const auto nzones = This->countZones(inputs, i);
 
                   if(inputs[i].m_input->has_child("matsets"))
                   {
@@ -1098,15 +1269,15 @@ private:
                       inputs[i].m_input->fetch_existing("matsets");
                     conduit::Node &n_matset = n_matsets[0];
 
-                    axom::mir::views::dispatch_material(
+                    disp.dispatchMatset(
                       n_matset,
                       [&](auto matsetView) {
-                        mergeMatset_sizes(matsetView, sizesView, nzones, zOffset);
+                        This->mergeMatset_sizes(matsetView, sizesView, nzones, zOffset);
                       });
                   }
                   else
                   {
-                    mergeMatset_sizes1(sizesView, nzones, zOffset);
+                    This->mergeMatset_sizes1(sizesView, nzones, zOffset);
                   }
                   zOffset += nzones;
                 }
@@ -1114,13 +1285,13 @@ private:
                 axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
                 // Make indices.
-                mergeMatset_indices(indicesView, totalMatCount);
+                This->mergeMatset_indices(indicesView, totalMatCount);
 
                 // Fill in material info.
                 zOffset = 0;
                 for(size_t i = 0; i < inputs.size(); i++)
                 {
-                  const auto nzones = countZones(inputs, i);
+                  const auto nzones = This->countZones(inputs, i);
 
                   if(inputs[i].m_input->has_child("matsets"))
                   {
@@ -1128,9 +1299,9 @@ private:
                       inputs[i].m_input->fetch_existing("matsets");
                     conduit::Node &n_matset = n_matsets[0];
 
-                    axom::mir::views::dispatch_material(n_matset,
+                    disp.dispatchMatset(n_matset,
                                                         [&](auto matsetView) {
-                                                          mergeMatset_copy(
+                                                          This->mergeMatset_copy(
                                                             n_matset,
                                                             allMats,
                                                             materialIdsView,
@@ -1144,7 +1315,7 @@ private:
                   else
                   {
                     const int dmat = allMats["default"];
-                    mergeMatset_default(materialIdsView,
+                    This->mergeMatset_default(materialIdsView,
                                         offsetsView,
                                         volumeFractionsView,
                                         dmat,
@@ -1153,8 +1324,7 @@ private:
                   }
                   zOffset += nzones;
                 }
-              });
-          });
+        });
       }
     }  // if hasMatsets
   }

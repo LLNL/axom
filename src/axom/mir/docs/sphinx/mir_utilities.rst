@@ -178,7 +178,7 @@ supports renaming nodes using a map that converts a local mesh's node ids to the
 output node numbering, enabling meshes to be merged such that some nodes get combined.
 A derived class can also merge matsets.
 
-.. literalinclude:: ../../EquiZAlgorithm.hpp
+.. literalinclude:: ../../tests/mir_mergemeshes.cpp
    :start-after: _mir_utilities_mergemeshes_begin
    :end-before: _mir_utilities_mergemeshes_end
    :language: C++

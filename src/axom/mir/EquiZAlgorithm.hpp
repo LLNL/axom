@@ -461,8 +461,16 @@ protected:
                                                "hdf5");
   #endif
 
+      // Create a MergeMeshesAndMatsets type that will operate on the material
+      // inputs, which at this point will be unibuffer with known types. We can
+      // reduce code bloat and compile time by passing a MaterialDispatch policy.
+      using IntElement = typename MatsetView::IndexType;
+      using FloatElement = typename MatsetView::FloatType;
+      constexpr size_t MAXMATERIALS = MatsetView::MaxMaterials;
+      using DispatchPolicy = bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
+      using MergeMeshes = bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
+
       // Merge clean and MIR output.
-      // _mir_utilities_mergemeshes_begin
       std::vector<bputils::MeshInput> inputs(2);
       inputs[0].m_input = &n_cleanOutput;
 
@@ -472,9 +480,8 @@ protected:
 
       conduit::Node mmOpts, n_merged;
       mmOpts["topology"] = n_topo.name();
-      bputils::MergeMeshes<ExecSpace> mm;
+      MergeMeshes mm;
       mm.execute(inputs, mmOpts, n_merged);
-        // _mir_utilities_mergemeshes_end
 
   #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
       std::cout << "--- clean ---\n";
