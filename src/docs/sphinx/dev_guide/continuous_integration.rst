@@ -79,7 +79,7 @@ Build and Test Axom in a Docker Container
 
 		If you exit the container and attempt to restart, sometimes Docker will return a warning stating the initial container has not fully closed. Just run ``docker container prune`` command to cleanup the container and then you can reissue the run command.
 
-7. Pull axom github repository
+7. In the running Docker container, clone the axom github repository
 
 	.. code-block:: bash
 
