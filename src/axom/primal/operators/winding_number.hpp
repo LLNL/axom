@@ -759,13 +759,14 @@ double winding_number(const Point<T, 3>& query,
 
   return wn;
 }
+#endif
 
 template <typename T>
-double winding_number(primal::Point<T, 3> q, primal::NURBSPatch<T, 3> nurbs_patch)
+double winding_number(Point<T, 3> q,
+                      const NURBSPatch<T, 3>& nPatch)
 {
-  return nurbs_patch(0, 0)[0];
+  return nPatch(0, 0)[0];
 }
-#endif
 
 //@}
 

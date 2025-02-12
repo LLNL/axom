@@ -619,9 +619,6 @@ TEST(primal_integral, bezierpatch_sphere)
     }
   }
 
-  primal::NURBSPatch<double, 3> the_patch( sphere_faces[0] );
-  winding_number(Point3D {0.0, 0.0, 0.0}, the_patch);
-
   // Iterate over points of interest, i.e. axis/edge/vertex aligned
   Vector3D query_directions[12] = {Vector3D({0.0, 0.0, 1.0}).unitVector(),
                                    Vector3D({0.0, 1.0, 0.0}).unitVector(),
