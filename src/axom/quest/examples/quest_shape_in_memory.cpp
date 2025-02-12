@@ -87,13 +87,21 @@ public:
   }
   int getBoxCellCount() const
   {
-    return boxResolution[0] * boxResolution[1] * boxResolution[2];
+    if(getBoxDim() == 3)
+    {
+      return boxResolution[0] * boxResolution[1] * boxResolution[2];
+    }
+    else
+    {
+      return boxResolution[0] * boxResolution[1];
+    }
   }
 
   // The shape to run.
   std::string testShape {"tetmesh"};
   // The shapes this example is set up to run.
   const std::set<std::string> availableShapes {"tetmesh",
+                                               "tri",
                                                "sphere",
                                                "cyl",
                                                "cone",
@@ -473,16 +481,53 @@ std::shared_ptr<conduit::Node> compMeshNode;
 
 axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
-  using BBox3D = primal::BoundingBox<double, 3>;
-  using Pt3D = primal::Point<double, 3>;
-  auto res = axom::NumericArray<int, 3>(params.boxResolution.data());
-  auto bbox = BBox3D(Pt3D(params.boxMins.data()), Pt3D(params.boxMaxs.data()));
-  axom::quest::util::make_unstructured_blueprint_box_mesh(meshGrp,
-                                                          bbox,
-                                                          res,
-                                                          topoName,
-                                                          coordsetName,
-                                                          params.policy);
+  switch(params.getBoxDim())
+  {
+  case 2:
+  {
+    using BBox2D = primal::BoundingBox<double, 2>;
+    using Pt2D = primal::Point<double, 2>;
+    auto res = axom::NumericArray<int, 2>(params.boxResolution.data());
+    auto bbox = BBox2D(Pt2D(params.boxMins.data()), Pt2D(params.boxMaxs.data()));
+
+    SLIC_INFO(axom::fmt::format(
+      "Creating inline box mesh of resolution {} and bounding box {}",
+      res,
+      bbox));
+
+    axom::quest::util::make_unstructured_blueprint_box_mesh_2d(meshGrp,
+                                                               bbox,
+                                                               res,
+                                                               topoName,
+                                                               coordsetName,
+                                                               params.policy);
+  }
+  break;
+  case 3:
+  {
+    using BBox3D = primal::BoundingBox<double, 3>;
+    using Pt3D = primal::Point<double, 3>;
+    auto res = axom::NumericArray<int, 3>(params.boxResolution.data());
+    auto bbox = BBox3D(Pt3D(params.boxMins.data()), Pt3D(params.boxMaxs.data()));
+
+    SLIC_INFO(axom::fmt::format(
+      "Creating inline box mesh of resolution {} and bounding box {}",
+      res,
+      bbox));
+
+    axom::quest::util::make_unstructured_blueprint_box_mesh_3d(meshGrp,
+                                                               bbox,
+                                                               res,
+                                                               topoName,
+                                                               coordsetName,
+                                                               params.policy);
+  }
+  break;
+  default:
+    SLIC_ERROR("Only 2D and 3D meshes are currently supported.");
+    break;
+  }
+
 #if defined(AXOM_DEBUG)
   conduit::Node meshNode, info;
   meshGrp->createNativeLayout(meshNode);
@@ -915,6 +960,32 @@ double volumeOfTetMesh(
   return meshVolume;
 }
 
+double areaOfTriMesh(
+  const axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>& triMesh)
+{
+  using PolygonStaticType =
+    primal::Polygon<double, 2, axom::primal::PolygonArray::Static>;
+  using Point2D = primal::Point<double, 2>;
+  axom::StackArray<axom::IndexType, 1> nodesShape {triMesh.getNumberOfNodes()};
+  axom::ArrayView<const double> x(triMesh.getCoordinateArray(0), nodesShape);
+  axom::ArrayView<const double> y(triMesh.getCoordinateArray(1), nodesShape);
+  const axom::IndexType triCount = triMesh.getNumberOfCells();
+  axom::Array<double> triAreas(triCount, triCount);
+  double meshArea = 0.0;
+  for(axom::IndexType ic = 0; ic < triCount; ++ic)
+  {
+    const axom::IndexType* nodeIds = triMesh.getCellNodeIDs(ic);
+    PolygonStaticType tri;
+    for(int j = 0; j < 3; ++j)
+    {
+      auto cornerNodeId = nodeIds[j];
+      tri.addVertex(Point2D({x[cornerNodeId], y[cornerNodeId]}));
+    }
+    meshArea += tri.area();
+  }
+  return meshArea;
+}
+
 #if defined(AXOM_USE_MFEM)
 /*!
   @brief Return the element volumes as a sidre::View.
@@ -1024,134 +1095,262 @@ axom::sidre::View* getElementVolumes(
   const std::string& volFieldName = std::string("elementVolumes"))
 {
   using XS = axom::execution_space<ExecSpace>;
-  using HexahedronType = axom::primal::Hexahedron<double, 3>;
-
   axom::sidre::View* volSidreView = nullptr;
 
-  const auto fieldPath = axom::fmt::format("fields/{}", volFieldName);
-  if(meshGrp->hasGroup(fieldPath))
+  switch(params.getBoxDim())
   {
-    sidre::Group* fieldGrp = meshGrp->getGroup(fieldPath);
-    volSidreView = fieldGrp->getView("values");
-  }
-  else
+  case 2:
   {
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(meshGrp,
-                                                                topoName);
+    using PolygonStaticType =
+      primal::Polygon<double, 2, axom::primal::PolygonArray::Static>;
+    using Point2D = primal::Point<double, 2>;
 
-    constexpr int NUM_VERTS_PER_HEX = 8;
-    constexpr int NUM_COMPS_PER_VERT = 3;
-    constexpr double ZERO_THRESHOLD = 1.e-10;
+    const auto fieldPath = axom::fmt::format("fields/{}", volFieldName);
+    if(meshGrp->hasGroup(fieldPath))
+    {
+      sidre::Group* fieldGrp = meshGrp->getGroup(fieldPath);
+      volSidreView = fieldGrp->getView("values");
+    }
+    else
+    {
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(meshGrp,
+                                                                  topoName);
 
-    /*
-      Get vertex coordinates.  We use UnstructuredMesh for this,
-      so get it on host first then transfer to device if needed.
-    */
-    auto* connData = meshGrp->getGroup("topologies")
-                       ->getGroup(topoName)
-                       ->getGroup("elements")
-                       ->getView("connectivity");
-    SLIC_ASSERT(connData->getNode().dtype().id() ==
-                axom::quest::conduitDataIdOfAxomIndexType);
+      constexpr int NUM_VERTS_PER_QUAD = 4;
+      constexpr int NUM_COMPS_PER_VERT = 2;
 
-    conduit::Node coordNode;
-    meshGrp->getGroup("coordsets")
-      ->getGroup(coordsetName)
-      ->createNativeLayout(coordNode);
-    const conduit::Node& coordValues = coordNode.fetch_existing("values");
-    axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
-    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
-    int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
-    axom::StackArray<axom::ArrayView<const double>, 3> coordArrays {
-      axom::ArrayView<const double>(coordValues["x"].as_double_ptr(),
-                                    {vertexCount},
-                                    stride),
-      axom::ArrayView<const double>(coordValues["y"].as_double_ptr(),
-                                    {vertexCount},
-                                    stride),
-      axom::ArrayView<const double>(coordValues["z"].as_double_ptr(),
-                                    {vertexCount},
-                                    stride)};
+      /*
+          Get vertex coordinates.  We use UnstructuredMesh for this,
+          so get it on host first then transfer to device if needed.
+        */
+      auto* connData = meshGrp->getGroup("topologies")
+                         ->getGroup(topoName)
+                         ->getGroup("elements")
+                         ->getView("connectivity");
+      SLIC_ASSERT(connData->getNode().dtype().id() ==
+                  axom::quest::conduitDataIdOfAxomIndexType);
 
-    const axom::IndexType* connPtr = connData->getArray();
-    SLIC_ASSERT(connPtr != nullptr);
-    axom::ArrayView<const axom::IndexType, 2> conn(connPtr,
-                                                   cellCount,
-                                                   NUM_VERTS_PER_HEX);
-    axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
-                                    cellCount * NUM_VERTS_PER_HEX,
-                                    XS::allocatorID());
-    auto vertCoordsView = vertCoords.view();
+      conduit::Node coordNode;
+      meshGrp->getGroup("coordsets")
+        ->getGroup(coordsetName)
+        ->createNativeLayout(coordNode);
+      const conduit::Node& coordValues = coordNode.fetch_existing("values");
+      axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
+      bool isInterleaved =
+        conduit::blueprint::mcarray::is_interleaved(coordValues);
+      int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
+      axom::StackArray<axom::ArrayView<const double>, 2> coordArrays {
+        axom::ArrayView<const double>(coordValues["x"].as_double_ptr(),
+                                      {vertexCount},
+                                      stride),
+        axom::ArrayView<const double>(coordValues["y"].as_double_ptr(),
+                                      {vertexCount},
+                                      stride)};
 
-    axom::for_all<ExecSpace>(
-      cellCount,
-      AXOM_LAMBDA(axom::IndexType cellIdx) {
-        // Get the indices of this element's vertices
-        auto verts = conn[cellIdx];
+      const axom::IndexType* connPtr = connData->getArray();
+      SLIC_ASSERT(connPtr != nullptr);
+      axom::ArrayView<const axom::IndexType, 2> conn(connPtr,
+                                                     cellCount,
+                                                     NUM_VERTS_PER_QUAD);
+      axom::Array<Point2D> vertCoords(cellCount * NUM_VERTS_PER_QUAD,
+                                      cellCount * NUM_VERTS_PER_QUAD,
+                                      XS::allocatorID());
+      auto vertCoordsView = vertCoords.view();
 
-        // Get the coordinates for the vertices
-        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
-        {
-          int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
-          for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          // Get the indices of this element's vertices
+          auto verts = conn[cellIdx];
+
+          // Get the coordinates for the vertices
+          for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
           {
-            vertCoordsView[vertIdx][k] = coordArrays[k][verts[j]];
-            // vertCoordsView[vertIdx][k] = mesh.getNodeCoordinate(verts[j], k);
+            int vertIdx = cellIdx * NUM_VERTS_PER_QUAD + j;
+            for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+            {
+              vertCoordsView[vertIdx][k] = coordArrays[k][verts[j]];
+              // vertCoordsView[vertIdx][k] = mesh.getNodeCoordinate(verts[j], k);
+            }
           }
-        }
-      });
+        });
 
-    // Set vertex coords to zero if within threshold.
-    // (I don't know why we do this.  I'm following examples.)
-    axom::ArrayView<double> flatCoordsView(
-      (double*)vertCoords.data(),
-      vertCoords.size() * Point3D::dimension());
-    assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
-    axom::for_all<ExecSpace>(
-      cellCount * 3,
-      AXOM_LAMBDA(axom::IndexType i) {
-        if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
-        {
-          flatCoordsView[i] = 0.0;
-        }
-      });
+      // Initialize quad elements.
+      axom::Array<PolygonStaticType> quads(cellCount,
+                                           cellCount,
+                                           meshGrp->getDefaultAllocatorID());
+      auto quadsView = quads.view();
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          // Set each quad element vertice
+          quadsView[cellIdx] = PolygonStaticType();
+          for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
+          {
+            int vertIndex = (cellIdx * NUM_VERTS_PER_QUAD) + j;
+            auto& quad = quadsView[cellIdx];
+            quad.addVertex(vertCoordsView[vertIndex]);
+          }
+        });  // end of loop to initialize hexahedral elements and bounding boxes
 
-    // Initialize hexahedral elements.
-    axom::Array<HexahedronType> hexes(cellCount,
-                                      cellCount,
-                                      meshGrp->getDefaultAllocatorID());
-    auto hexesView = hexes.view();
-    axom::for_all<ExecSpace>(
-      cellCount,
-      AXOM_LAMBDA(axom::IndexType cellIdx) {
-        // Set each hexahedral element vertices
-        hexesView[cellIdx] = HexahedronType();
-        for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
-        {
-          int vertIndex = (cellIdx * NUM_VERTS_PER_HEX) + j;
-          auto& hex = hexesView[cellIdx];
-          hex[j] = vertCoordsView[vertIndex];
-        }
-      });  // end of loop to initialize hexahedral elements and bounding boxes
+      // Allocate and populate cell volumes.
+      axom::sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
+      fieldGrp->createViewString("topology", topoName);
+      fieldGrp->createViewString("association", "element");
+      fieldGrp->createViewString("volume_dependent", "true");
+      volSidreView =
+        fieldGrp->createViewAndAllocate("values",
+                                        axom::sidre::detail::SidreTT<double>::id,
+                                        cellCount);
+      axom::IndexType shape2d[] = {cellCount, 1};
+      volSidreView->reshapeArray(2, shape2d);
+      axom::ArrayView<double> volView(volSidreView->getData(),
+                                      volSidreView->getNumElements());
 
-    // Allocate and populate cell volumes.
-    axom::sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
-    fieldGrp->createViewString("topology", topoName);
-    fieldGrp->createViewString("association", "element");
-    fieldGrp->createViewString("volume_dependent", "true");
-    volSidreView =
-      fieldGrp->createViewAndAllocate("values",
-                                      axom::sidre::detail::SidreTT<double>::id,
-                                      cellCount);
-    axom::IndexType shape2d[] = {cellCount, 1};
-    volSidreView->reshapeArray(2, shape2d);
-    axom::ArrayView<double> volView(volSidreView->getData(),
-                                    volSidreView->getNumElements());
-    axom::for_all<ExecSpace>(
-      cellCount,
-      AXOM_LAMBDA(axom::IndexType cellIdx) {
-        volView[cellIdx] = hexesView[cellIdx].volume();
-      });
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          volView[cellIdx] = quadsView[cellIdx].area();
+        });
+    }
+  }
+  break;
+  case 3:
+  {
+    using HexahedronType = axom::primal::Hexahedron<double, 3>;
+    using Point3D = primal::Point<double, 3>;
+
+    const auto fieldPath = axom::fmt::format("fields/{}", volFieldName);
+    if(meshGrp->hasGroup(fieldPath))
+    {
+      sidre::Group* fieldGrp = meshGrp->getGroup(fieldPath);
+      volSidreView = fieldGrp->getView("values");
+    }
+    else
+    {
+      axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> mesh(meshGrp,
+                                                                  topoName);
+
+      constexpr int NUM_VERTS_PER_HEX = 8;
+      constexpr int NUM_COMPS_PER_VERT = 3;
+      constexpr double ZERO_THRESHOLD = 1.e-10;
+
+      /*
+          Get vertex coordinates.  We use UnstructuredMesh for this,
+          so get it on host first then transfer to device if needed.
+        */
+      auto* connData = meshGrp->getGroup("topologies")
+                         ->getGroup(topoName)
+                         ->getGroup("elements")
+                         ->getView("connectivity");
+      SLIC_ASSERT(connData->getNode().dtype().id() ==
+                  axom::quest::conduitDataIdOfAxomIndexType);
+
+      conduit::Node coordNode;
+      meshGrp->getGroup("coordsets")
+        ->getGroup(coordsetName)
+        ->createNativeLayout(coordNode);
+      const conduit::Node& coordValues = coordNode.fetch_existing("values");
+      axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
+      bool isInterleaved =
+        conduit::blueprint::mcarray::is_interleaved(coordValues);
+      int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
+      axom::StackArray<axom::ArrayView<const double>, 3> coordArrays {
+        axom::ArrayView<const double>(coordValues["x"].as_double_ptr(),
+                                      {vertexCount},
+                                      stride),
+        axom::ArrayView<const double>(coordValues["y"].as_double_ptr(),
+                                      {vertexCount},
+                                      stride),
+        axom::ArrayView<const double>(coordValues["z"].as_double_ptr(),
+                                      {vertexCount},
+                                      stride)};
+
+      const axom::IndexType* connPtr = connData->getArray();
+      SLIC_ASSERT(connPtr != nullptr);
+      axom::ArrayView<const axom::IndexType, 2> conn(connPtr,
+                                                     cellCount,
+                                                     NUM_VERTS_PER_HEX);
+      axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
+                                      cellCount * NUM_VERTS_PER_HEX,
+                                      XS::allocatorID());
+      auto vertCoordsView = vertCoords.view();
+
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          // Get the indices of this element's vertices
+          auto verts = conn[cellIdx];
+
+          // Get the coordinates for the vertices
+          for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+          {
+            int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
+            for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+            {
+              vertCoordsView[vertIdx][k] = coordArrays[k][verts[j]];
+              // vertCoordsView[vertIdx][k] = mesh.getNodeCoordinate(verts[j], k);
+            }
+          }
+        });
+
+      // Set vertex coords to zero if within threshold.
+      // (I don't know why we do this.  I'm following examples.)
+      axom::ArrayView<double> flatCoordsView(
+        (double*)vertCoords.data(),
+        vertCoords.size() * Point3D::dimension());
+      assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
+      axom::for_all<ExecSpace>(
+        cellCount * 3,
+        AXOM_LAMBDA(axom::IndexType i) {
+          if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
+          {
+            flatCoordsView[i] = 0.0;
+          }
+        });
+
+      // Initialize hexahedral elements.
+      axom::Array<HexahedronType> hexes(cellCount,
+                                        cellCount,
+                                        meshGrp->getDefaultAllocatorID());
+      auto hexesView = hexes.view();
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          // Set each hexahedral element vertices
+          hexesView[cellIdx] = HexahedronType();
+          for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+          {
+            int vertIndex = (cellIdx * NUM_VERTS_PER_HEX) + j;
+            auto& hex = hexesView[cellIdx];
+            hex[j] = vertCoordsView[vertIndex];
+          }
+        });  // end of loop to initialize hexahedral elements and bounding boxes
+
+      // Allocate and populate cell volumes.
+      axom::sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
+      fieldGrp->createViewString("topology", topoName);
+      fieldGrp->createViewString("association", "element");
+      fieldGrp->createViewString("volume_dependent", "true");
+      volSidreView =
+        fieldGrp->createViewAndAllocate("values",
+                                        axom::sidre::detail::SidreTT<double>::id,
+                                        cellCount);
+      axom::IndexType shape2d[] = {cellCount, 1};
+      volSidreView->reshapeArray(2, shape2d);
+      axom::ArrayView<double> volView(volSidreView->getData(),
+                                      volSidreView->getNumElements());
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          volView[cellIdx] = hexesView[cellIdx].volume();
+        });
+    }
+  }
+  break;
+  default:
+    SLIC_ERROR("Only 2D and 3D meshes are currently supported.");
+    break;
   }
 
   return volSidreView;
@@ -1438,7 +1637,7 @@ int main(int argc, char** argv)
   // Create simple ShapeSet for the example.
   //---------------------------------------------------------------------------
   axom::klee::ShapeSet shapeSet;
-  SLIC_ERROR_IF(params.getBoxDim() != 3, "This example is only in 3D.");
+
   if(params.testShape == "tetmesh")
   {
     shapeSet = createShapeSet(createShape_TetMesh(ds));
@@ -1446,6 +1645,11 @@ int main(int argc, char** argv)
   else if(params.testShape == "tet")
   {
     shapeSet = createShapeSet(createShape_Tet());
+  }
+  else if(params.testShape == "tri")
+  {
+    SLIC_ERROR_IF(params.getBoxDim() != 2, "This example is only in 2D.");
+    shapeSet = create2DShapeSet(ds);
   }
   else if(params.testShape == "hex")
   {
@@ -1847,7 +2051,8 @@ int main(int argc, char** argv)
     auto shapeMesh =
       std::dynamic_pointer_cast<axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE>>(
         dShape.createMeshRepresentation());
-    double shapeMeshVol = volumeOfTetMesh(*shapeMesh);
+    double shapeMeshVol = params.getBoxDim() == 3 ? volumeOfTetMesh(*shapeMesh)
+                                                  : areaOfTriMesh(*shapeMesh);
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       axom::fmt::format("Shape '{}' discrete geometry has {} cells",

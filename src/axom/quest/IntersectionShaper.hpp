@@ -990,7 +990,7 @@ private:
       prepareTetCells<ExecSpace>();
     }
     // 2D STL Triangle mesh
-    else if(shapeFormat == "stl")
+    else if(shapeFormat == "stl" || surfaceMeshIsTri())
     {
       prepareTriCells<ExecSpace>();
     }
@@ -1921,7 +1921,7 @@ public:
   #endif  // AXOM_USE_HIP
       }
     }
-    else if(shapeFormat == "stl")
+    else if(shapeFormat == "stl" || surfaceMeshIsTri())
     {
       switch(m_execPolicy)
       {
@@ -2721,13 +2721,12 @@ public:
       populateVertCoordsFromMFEMMesh<ExecSpace>(vertCoords, 2);
     }
   #endif
-    // TODO
-    // #if defined(AXOM_USE_CONDUIT)
-    //   if(m_bpGrp != nullptr)
-    //   {
-    //     populateVertCoordsFromBlueprintMesh<ExecSpace>(vertCoords);
-    //   }
-    // #endif
+  #if defined(AXOM_USE_CONDUIT)
+    if(m_bpGrp != nullptr)
+    {
+      populateVertCoordsFromBlueprintMesh2D<ExecSpace>(vertCoords);
+    }
+  #endif
 
     auto vertCoords_device_view = vertCoords.view();
 
@@ -2786,7 +2785,7 @@ public:
   #if defined(AXOM_USE_CONDUIT)
     if(m_bpGrp != nullptr)
     {
-      populateVertCoordsFromBlueprintMesh<ExecSpace>(vertCoords);
+      populateVertCoordsFromBlueprintMesh3D<ExecSpace>(vertCoords);
     }
   #endif
 
@@ -2867,7 +2866,91 @@ public:
 
   #if defined(AXOM_USE_CONDUIT)
   template <typename ExecSpace>
-  void populateVertCoordsFromBlueprintMesh(axom::Array<double>& vertCoords)
+  void populateVertCoordsFromBlueprintMesh2D(axom::Array<double>& vertCoords)
+  {
+    using XS = axom::execution_space<ExecSpace>;
+
+    const int allocId = m_allocatorId;
+
+    // Initialize vertices from blueprint mesh and
+    // set each shape volume fraction to 1
+    // Allocation size is:
+    // # of elements * # of vertices per quad * # of components per vertex
+    constexpr int NUM_VERTS_PER_QUAD = 4;
+    constexpr int NUM_COMPS_PER_VERT = 2;
+
+    // Put mesh in Node so we can use conduit::blueprint utilities.
+    // conduit::Node meshNode;
+    // m_bpGrp->createNativeLayout(m_bpNodeInt);
+
+    const conduit::Node& topoNode =
+      m_bpNodeInt.fetch_existing("topologies").fetch_existing(m_bpTopo);
+    const std::string coordsetName =
+      topoNode.fetch_existing("coordset").as_string();
+
+    // Assume unstructured and hexahedral
+    SLIC_ERROR_IF(topoNode["type"].as_string() != "unstructured",
+                  "topology type must be 'unstructured'");
+    SLIC_ERROR_IF(topoNode["elements/shape"].as_string() != "quad",
+                  "element shape must be 'quad'");
+
+    const auto& connNode = topoNode["elements/connectivity"];
+    SLIC_ERROR_IF(
+      !XS::usesAllocId(axom::getAllocatorIDFromPointer(connNode.data_ptr())),
+      std::string(XS::name()) +
+        axom::fmt::format(
+          " execution space cannot use the connectivity allocator id {}",
+          axom::getAllocatorIDFromPointer(connNode.data_ptr())));
+    SLIC_ERROR_IF(connNode.dtype().id() != conduitDataIdOfAxomIndexType,
+                  "IntersectionShaper error: connectivity data type must be "
+                  "axom::IndexType.");
+    const auto* connPtr =
+      static_cast<const axom::IndexType*>(connNode.data_ptr());
+    axom::ArrayView<const axom::IndexType, 2> conn(connPtr,
+                                                   m_cellCount,
+                                                   NUM_VERTS_PER_QUAD);
+
+    const conduit::Node& coordNode = m_bpNodeInt["coordsets"][coordsetName];
+    const conduit::Node& coordValues = coordNode.fetch_existing("values");
+    axom::IndexType vertexCount = coordValues["x"].dtype().number_of_elements();
+    bool isInterleaved = conduit::blueprint::mcarray::is_interleaved(coordValues);
+    int stride = isInterleaved ? NUM_COMPS_PER_VERT : 1;
+
+    axom::StackArray<axom::ArrayView<const double>, 2> coordArrays {
+      axom::ArrayView<const double>(coordValues["x"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride),
+      axom::ArrayView<const double>(coordValues["y"].as_double_ptr(),
+                                    {vertexCount},
+                                    stride)};
+
+    vertCoords =
+      axom::Array<double>(m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
+                          m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
+                          allocId);
+    auto vertCoordsView = vertCoords.view();
+
+    axom::for_all<ExecSpace>(
+      m_cellCount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        // Get the indices of this element's vertices
+        auto quadVerts = conn[i];
+
+        // Get the coordinates for the vertices
+        for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
+        {
+          auto vertId = quadVerts[j];
+          for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+          {
+            vertCoordsView[(i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
+                           (j * NUM_COMPS_PER_VERT) + k] = coordArrays[k][vertId];
+          }
+        }
+      });
+  }
+
+  template <typename ExecSpace>
+  void populateVertCoordsFromBlueprintMesh3D(axom::Array<double>& vertCoords)
   {
     using XS = axom::execution_space<ExecSpace>;
 
@@ -3056,6 +3139,15 @@ private:
       m_surfaceMesh->getDimension() == 3 && !m_surfaceMesh->hasMixedCellTypes() &&
       m_surfaceMesh->getCellType() == mint::TET;
     return isTet;
+  }
+
+  // Check that surface mesh is composed of 2D Triangles
+  bool surfaceMeshIsTri() const
+  {
+    bool isTri = m_surfaceMesh != nullptr &&
+      m_surfaceMesh->getDimension() == 2 && !m_surfaceMesh->hasMixedCellTypes() &&
+      m_surfaceMesh->getCellType() == mint::TRIANGLE;
+    return isTri;
   }
 
 private:
