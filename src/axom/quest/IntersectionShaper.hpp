@@ -2718,7 +2718,7 @@ public:
   #if defined(AXOM_USE_MFEM)
     if(m_dc != nullptr)
     {
-      populateVertCoordsFromMFEMMesh2D<ExecSpace>(vertCoords);
+      populateVertCoordsFromMFEMMesh<ExecSpace>(vertCoords, 2);
     }
   #endif
     // TODO
@@ -2780,7 +2780,7 @@ public:
   #if defined(AXOM_USE_MFEM)
     if(m_dc != nullptr)
     {
-      populateVertCoordsFromMFEMMesh3D<ExecSpace>(vertCoords);
+      populateVertCoordsFromMFEMMesh<ExecSpace>(vertCoords, 3);
     }
   #endif
   #if defined(AXOM_USE_CONDUIT)
@@ -2957,83 +2957,14 @@ public:
   #if defined(AXOM_USE_MFEM)
 
   template <typename ExecSpace>
-  void populateVertCoordsFromMFEMMesh2D(axom::Array<double>& vertCoords)
-  {
-    mfem::Mesh* mesh = getDC()->GetMesh();
-
-    // Intersection algorithm only works on linear elements
-    SLIC_ASSERT(mesh != nullptr);
-    int const NE = mesh->GetNE();
-
-    if(this->isVerbose())
-    {
-      SLIC_INFO(axom::fmt::format(
-        "{:-^80}",
-        axom::fmt::format(" Initializing {} quad elements from given mesh ", NE)));
-    }
-
-    if(NE > 0)
-    {
-      SLIC_ASSERT(mesh->GetNodes() == nullptr ||
-                  mesh->GetNodes()->FESpace()->GetOrder(0));
-    }
-
-    // Allocation size is:
-    // # of elements * # of vertices per quad * # of components per vertex
-    constexpr int NUM_VERTS_PER_QUAD = 4;
-    constexpr int NUM_COMPS_PER_VERT = 2;
-
-    axom::Array<double> tmpVertCoords;
-
-    axom::Array<double>& fillVertCoords =
-      axom::execution_space<ExecSpace>::onDevice() ? tmpVertCoords : vertCoords;
-    fillVertCoords =
-      axom::Array<double>(m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
-                          m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT);
-
-    // Initialize vertices from mfem mesh and
-    // set each shape volume fraction to 1
-    auto fillVertCoordsView = fillVertCoords.view();
-    for(int i = 0; i < m_cellCount; i++)
-    {
-      // Get the indices of this element's vertices
-      mfem::Array<int> verts;
-      mesh->GetElementVertices(i, verts);
-      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_QUAD);
-
-      // Get the coordinates for the vertices
-      for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
-      {
-        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
-        {
-          fillVertCoordsView[(i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
-                             (j * NUM_COMPS_PER_VERT) + k] =
-            (mesh->GetVertex(verts[j]))[k];
-        }
-      }
-    }
-    if(vertCoords.data() != fillVertCoords.data())
-    {
-      axom::copy(vertCoords.data(),
-                 fillVertCoords.data(),
-                 sizeof(double) * vertCoords.size());
-    }
-
-    printf("\t--> CHECKPOINT 1\n");
-    for(int i = 0; i < NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT; i++)
-    {
-      printf("%f ", fillVertCoordsView[i]);
-    }
-    printf("\n");
-
-  }  // end of populateVertCoordsFromMFEMMesh2D()
-
-  template <typename ExecSpace>
-  void populateVertCoordsFromMFEMMesh3D(axom::Array<double>& vertCoords)
+  void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords, int dim)
   {
     mfem::Mesh* mesh = getDC()->GetMesh();
     // Intersection algorithm only works on linear elements
     SLIC_ASSERT(mesh != nullptr);
+
+    // Can only construct from 2D or 3D mesh
+    SLIC_ASSERT(dim == 2 || dim == 3);
 
     if(m_cellCount > 0)
     {
@@ -3042,9 +2973,22 @@ public:
     }
 
     // Allocation size is:
-    // # of elements * # of vertices per hex * # of components per vertex
-    constexpr int NUM_VERTS_PER_HEX = 8;
-    constexpr int NUM_COMPS_PER_VERT = 3;
+    // # of elements * # of vertices per cell * # of components per vertex
+    int num_verts_per_cell;
+    int num_comps_per_vert;
+
+    // Quads
+    if(dim == 2)
+    {
+      num_verts_per_cell = 4;
+      num_comps_per_vert = 2;
+    }
+    // Hexes
+    else
+    {
+      num_verts_per_cell = 8;
+      num_comps_per_vert = 3;
+    }
 
     // The MFEM mesh interface works only on host.
     // If on device, fill temporary host array then copy to device.
@@ -3053,8 +2997,8 @@ public:
     axom::Array<double>& fillVertCoords =
       axom::execution_space<ExecSpace>::onDevice() ? tmpVertCoords : vertCoords;
     fillVertCoords =
-      axom::Array<double>(m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT,
-                          m_cellCount * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT);
+      axom::Array<double>(m_cellCount * num_verts_per_cell * num_comps_per_vert,
+                          m_cellCount * num_verts_per_cell * num_comps_per_vert);
 
     // Initialize vertices from mfem mesh and
     // set each shape volume fraction to 1
@@ -3065,15 +3009,15 @@ public:
       // Get the indices of this element's vertices
       mfem::Array<int> verts;
       mesh->GetElementVertices(i, verts);
-      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
+      SLIC_ASSERT(verts.Size() == num_verts_per_cell);
 
       // Get the coordinates for the vertices
-      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      for(int j = 0; j < num_verts_per_cell; ++j)
       {
-        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+        for(int k = 0; k < num_comps_per_vert; k++)
         {
-          fillVertCoordsView[(i * NUM_VERTS_PER_HEX * NUM_COMPS_PER_VERT) +
-                             (j * NUM_COMPS_PER_VERT) + k] =
+          fillVertCoordsView[(i * num_verts_per_cell * num_comps_per_vert) +
+                             (j * num_comps_per_vert) + k] =
             (mesh->GetVertex(verts[j]))[k];
         }
       }
