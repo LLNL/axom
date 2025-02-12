@@ -1996,7 +1996,7 @@ public:
    *
    * \param [in] sq_tol Threshold for absolute squared distances
    * \param [in] useStrictBilinear If true, require the patch be parametrically bilinear
-   * \return True if patch is bilinear
+   * \return True if patch is bilinear up to tolerance \a sq_tol
    */
   bool isBilinear(double sq_tol = 1e-8, bool useStrictBilinear = false) const
   {
