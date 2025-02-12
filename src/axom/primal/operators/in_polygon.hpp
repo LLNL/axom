@@ -53,10 +53,11 @@ bool in_polygon(const Point<T, 2>& query,
                 bool useNonzeroRule = true,
                 double edge_tol = 1e-8)
 {
+  bool isOnEdge = false;
   return useNonzeroRule
-    ? detail::polygon_winding_number(query, poly, includeBoundary, edge_tol) != 0
-    : (detail::polygon_winding_number(query, poly, includeBoundary, edge_tol) %
-       2) == 1;
+    ? detail::polygon_winding_number(query, poly, isOnEdge, includeBoundary, edge_tol) != 0
+    : (detail::polygon_winding_number(query, poly, isOnEdge, includeBoundary, edge_tol) %
+       2) != 0;
 }
 
 }  // namespace primal

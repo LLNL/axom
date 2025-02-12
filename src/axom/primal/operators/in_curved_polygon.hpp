@@ -55,7 +55,7 @@ bool in_curved_polygon(const Point<T, 2>& query,
 {
   return useNonzeroRule
     ? (std::lround(winding_number(query, cpoly, edge_tol, EPS)) != 0)
-    : (std::lround(winding_number(query, cpoly, edge_tol, EPS)) % 2) == 1;
+    : (std::lround(winding_number(query, cpoly, edge_tol, EPS)) % 2) != 0;
 }
 
 }  // namespace primal
