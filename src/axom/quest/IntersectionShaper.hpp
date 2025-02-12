@@ -401,42 +401,130 @@ public:
   #endif
 
   //!@brief Set data that depends on mesh (but not on shapes).
+  template <typename ShapeType>
   void setMeshDependentData()
   {
     AXOM_ANNOTATE_SCOPE("IntersectionShaper::setMeshDependentData");
-    switch(m_execPolicy)
+
+    // Setup 2D mesh
+    if(std::is_same<ShapeType, PolygonStaticType>::value)
     {
-    case RuntimePolicy::seq:
-      setMeshDependentDataImpl<seq_exec>();
-      break;
+      switch(m_execPolicy)
+      {
+      case RuntimePolicy::seq:
+        setMeshDependentDataImpl2D<seq_exec>();
+        break;
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
-    case RuntimePolicy::omp:
-      setMeshDependentDataImpl<omp_exec>();
-      break;
+      case RuntimePolicy::omp:
+        setMeshDependentDataImpl2D<omp_exec>();
+        break;
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
-    case RuntimePolicy::cuda:
-      setMeshDependentDataImpl<cuda_exec>();
-      break;
+      case RuntimePolicy::cuda:
+        setMeshDependentDataImpl2D<cuda_exec>();
+        break;
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
-    case RuntimePolicy::hip:
-      setMeshDependentDataImpl<hip_exec>();
-      break;
+      case RuntimePolicy::hip:
+        setMeshDependentDataImpl2D<hip_exec>();
+        break;
   #endif
-    default:
-      SLIC_ERROR("Axom Internal error: Unhandled execution policy.");
+      default:
+        SLIC_ERROR("Axom Internal error: Unhandled execution policy.");
+      }
+    }
+    // Setup 3D mesh
+    else
+    {
+      switch(m_execPolicy)
+      {
+      case RuntimePolicy::seq:
+        setMeshDependentDataImpl3D<seq_exec>();
+        break;
+  #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
+      case RuntimePolicy::omp:
+        setMeshDependentDataImpl3D<omp_exec>();
+        break;
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
+      case RuntimePolicy::cuda:
+        setMeshDependentDataImpl3D<cuda_exec>();
+        break;
+  #endif
+  #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
+      case RuntimePolicy::hip:
+        setMeshDependentDataImpl3D<hip_exec>();
+        break;
+  #endif
+      default:
+        SLIC_ERROR("Axom Internal error: Unhandled execution policy.");
+      }
     }
   }
 
   /*!
-    @brief Set mesh-dependent data, using the given ExecSpace for execution.
+    @brief Set 2D mesh-dependent data, using the given ExecSpace for execution.
 
     This method has proven to be a potential bottleneck on devices.
     The performance annotations will be removed once it is robustly fixed.
   */
   template <typename ExecSpace>
-  void setMeshDependentDataImpl()
+  void setMeshDependentDataImpl2D()
+  {
+    populateQuadsFromMesh<ExecSpace>();
+    auto quads_device_view = m_quads.view();
+
+    AXOM_ANNOTATE_BEGIN("allocate m_cell_volumes");
+    m_cell_volumes = axom::Array<double>(m_cellCount, m_cellCount, m_allocatorId);
+    AXOM_ANNOTATE_END("allocate m_cell_volumes");
+    m_cell_volumes.fill(0.0);
+
+    SLIC_INFO(axom::fmt::format("{:-^80}",
+                                " Calculating quadrilateral element volume "));
+    auto cell_volumes_device_view = m_cell_volumes.view();
+    AXOM_ANNOTATE_BEGIN("cell_volume");
+    axom::for_all<ExecSpace>(
+      m_cellCount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        cell_volumes_device_view[i] = quads_device_view[i].area();
+      });
+    AXOM_ANNOTATE_BEGIN("cell_volume");
+
+    AXOM_ANNOTATE_BEGIN("populate m_quad_bbs");
+    m_quad_bbs =
+      axom::Array<BoundingBox2D>(m_cellCount, m_cellCount, m_allocatorId);
+    axom::ArrayView<BoundingBox2D> quad_bbs_device_view = m_quad_bbs.view();
+
+    // Get bounding boxes for quadrilateral elements
+    axom::for_all<ExecSpace>(
+      m_cellCount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        BoundingBox2D res;
+
+        int num_verts = quads_device_view[i].numVertices();
+        for(int j = 0; j < num_verts; ++j)
+        {
+          res.addPoint(quads_device_view[i][j]);
+        }
+
+        quad_bbs_device_view[i] = res;
+      });
+    AXOM_ANNOTATE_END("populate m_quad_bbs");
+
+    AXOM_ANNOTATE_BEGIN("allocate m_overlap_volumes");
+    m_overlap_volumes =
+      axom::Array<double>(m_cellCount, m_cellCount, m_allocatorId);
+    AXOM_ANNOTATE_END("allocate m_overlap_volumes");
+  }
+
+  /*!
+    @brief Set 3D mesh-dependent data, using the given ExecSpace for execution.
+
+    This method has proven to be a potential bottleneck on devices.
+    The performance annotations will be removed once it is robustly fixed.
+  */
+  template <typename ExecSpace>
+  void setMeshDependentDataImpl3D()
   {
     constexpr int NUM_TETS_PER_HEX = 24;
 
@@ -918,9 +1006,13 @@ private:
                            axom::Array<PolygonStaticType>& shapes,
                            int shape_count)
   {
-    constexpr int NUM_VERTS_PER_QUAD = 4;
-    constexpr int NUM_COMPS_PER_VERT = 2;
-    constexpr double ZERO_THRESHOLD = 1.e-10;
+    AXOM_ANNOTATE_SCOPE("IntersectionShaper::runShapeQuery2DImpl");
+    AXOM_UNUSED_VAR(shape);
+
+    if(m_quads.empty())
+    {
+      setMeshDependentData<PolygonStaticType>();
+    }
 
     const int host_allocator =
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
@@ -961,243 +1053,65 @@ private:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    mfem::Mesh* mesh = getDC()->GetMesh();
-
-    // Intersection algorithm only works on linear elements
-    SLIC_ASSERT(mesh != nullptr);
-    int const NE = mesh->GetNE();
-
-    if(this->isVerbose())
-    {
-      SLIC_INFO(axom::fmt::format(
-        "{:-^80}",
-        axom::fmt::format(" Initializing {} quad elements from given mesh ", NE)));
-    }
-
-    if(NE > 0)
-    {
-      SLIC_ASSERT(mesh->GetNodes() == nullptr ||
-                  mesh->GetNodes()->FESpace()->GetOrder(0));
-    }
-
-    // Create and register a scalar field for this shape's volume fractions
-    // The Degrees of Freedom will be in correspondence with the elements
-    auto* volFrac = this->newVolFracGridFunction();
-    auto volFracName = axom::fmt::format("shape_vol_frac_{}", shape.getName());
-    this->getDC()->RegisterField(volFracName, volFrac);
-
-    // Initialize quad elements
-    m_quads = axom::Array<PolygonStaticType>(NE, NE, device_allocator);
-    axom::ArrayView<PolygonStaticType> quads_device_view = m_quads.view();
-
-    m_quad_bbs = axom::Array<BoundingBox2D>(NE, NE, device_allocator);
-    axom::ArrayView<BoundingBox2D> quad_bbs_device_view = m_quad_bbs.view();
-
-    // Initialize vertices from mfem mesh and
-    // set each shape volume fraction to 1
-    // Allocation size is:
-    // # of elements * # of vertices per hex * # of components per vertex
-    axom::Array<double> vertCoords_host(
-      NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
-      NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
-      host_allocator);
-
-    for(int i = 0; i < NE; i++)
-    {
-      // Get the indices of this element's vertices
-      mfem::Array<int> verts;
-      mesh->GetElementVertices(i, verts);
-      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_QUAD);
-
-      // Set each shape volume fraction to 1
-      double vf = 1.0;
-      (*volFrac)(i) = vf;
-
-      // Get the coordinates for the vertices
-      for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
-      {
-        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
-        {
-          vertCoords_host[(i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
-                          (j * NUM_COMPS_PER_VERT) + k] =
-            (mesh->GetVertex(verts[j]))[k];
-        }
-      }
-    }
-
-    printf("\t--> CHECKPOINT 1\n");
-    for(int i = 0; i < NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT; i++)
-    {
-      printf("%f ", vertCoords_host[i]);
-    }
-    printf("\n");
-
-    axom::Array<double> vertCoords_device =
-      axom::Array<double>(vertCoords_host, device_allocator);
-    auto vertCoords_device_view = vertCoords_device.view();
-
-    // Initialize each quad element and its bounding box
-    axom::for_all<ExecSpace>(
-      NE,
-      AXOM_LAMBDA(axom::IndexType i) {
-        // Set each hexahedral element vertices
-        quads_device_view[i] = PolygonStaticType();
-        for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
-        {
-          int vertIndex = (i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
-            j * NUM_COMPS_PER_VERT;
-          quads_device_view[i].addVertex(
-            Point2D({vertCoords_device_view[vertIndex],
-                     vertCoords_device_view[vertIndex + 1]}));
-
-          // Set hexahedra components to zero if within threshold
-          if(axom::utilities::isNearlyEqual(quads_device_view[i][j][0],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            quads_device_view[i][j][0] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(quads_device_view[i][j][1],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            quads_device_view[i][j][1] = 0.0;
-          }
-        }
-
-        // Get bounding box for quadrilateral element
-        BoundingBox2D res;
-
-        int num_verts = quads_device_view[i].numVertices();
-        for(int j = 0; j < num_verts; ++j)
-        {
-          res.addPoint(quads_device_view[i][j]);
-        }
-
-        quad_bbs_device_view[i] = res;
-      });  // end of loop to initialize hexahedral elements and bounding boxes
-
-    printf("\t--> CHECKPOINT 2\n");
-    if(device_allocator == host_allocator)
-    {
-      for(int i = 0; i < NE; i++)
-      {
-        SLIC_INFO("\t\t--> Quad[" << i << "] is " << quads_device_view[i]);
-      }
-    }
-
-    // Set shape components to zero if within threshold
-    axom::for_all<ExecSpace>(
-      shape_count,
-      AXOM_LAMBDA(axom::IndexType i) {
-        for(int j = 0; j < shapes_device_view[i].numVertices(); j++)
-        {
-          if(axom::utilities::isNearlyEqual(shapes_device_view[i][j][0],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            shapes_device_view[i][j][0] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(shapes_device_view[i][j][1],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            shapes_device_view[i][j][1] = 0.0;
-          }
-        }
-      });
-
     printf("\t--> CHECKPOINT 3\n");
+    auto quad_bbs_device_view = m_quad_bbs.view();
 
     // Find which shape bounding boxes intersect quadrilateral bounding boxes
-    SLIC_INFO(axom::fmt::format(
-      "{:-^80}",
-      " Finding shape candidates for each hexahedral element "));
+    SLIC_INFO(
+      axom::fmt::format("{:-^80}",
+                        " Finding shape candidates for each quad element "));
 
-    axom::Array<IndexType> offsets(NE, NE, device_allocator);
-    axom::Array<IndexType> counts(NE, NE, device_allocator);
+    axom::Array<IndexType> offsets(m_cellCount, m_cellCount, device_allocator);
+    axom::Array<IndexType> counts(m_cellCount, m_cellCount, device_allocator);
     axom::Array<IndexType> candidates;
-    bvh.findBoundingBoxes(offsets, counts, candidates, NE, quad_bbs_device_view);
+    bvh.findBoundingBoxes(offsets,
+                          counts,
+                          candidates,
+                          m_cellCount,
+                          quad_bbs_device_view);
 
     // Get the total number of candidates
     using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
     using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 
     const auto counts_device_view = counts.view();
+    AXOM_ANNOTATE_BEGIN("populate totalCandidates");
     RAJA::ReduceSum<REDUCE_POL, int> totalCandidates(0);
     axom::for_all<ExecSpace>(
-      NE,
+      m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
         totalCandidates += counts_device_view[i];
       });
+    AXOM_ANNOTATE_END("populate totalCandidates");
 
-    // Initialize hexahedron indices and shape candidates
-    // axom::Array<IndexType> hex_indices_device(
-    //   totalCandidates.get() * NUM_TETS_PER_HEX,
-    //   totalCandidates.get() * NUM_TETS_PER_HEX,
-    //   device_allocator);
-    // auto hex_indices_device_view = hex_indices_device.view();
-
-    // axom::Array<IndexType> shape_candidates_device(
-    //   totalCandidates.get() * NUM_TETS_PER_HEX,
-    //   totalCandidates.get() * NUM_TETS_PER_HEX,
-    //   device_allocator);
-    // auto shape_candidates_device_view = shape_candidates_device.view();
-
+    AXOM_ANNOTATE_BEGIN("allocate scratch space");
     // Initialize quadrilateral indices and shape candidates
+    AXOM_ANNOTATE_BEGIN("allocate quad_indices_device");
     axom::Array<IndexType> quad_indices_device(totalCandidates.get(),
                                                totalCandidates.get(),
                                                device_allocator);
+    AXOM_ANNOTATE_END("allocate quad_indices_device");
     auto quad_indices_device_view = quad_indices_device.view();
 
+    // Quad elements
+    auto quads_device_view = m_quads.view();
+
+    AXOM_ANNOTATE_BEGIN("allocate shape_candidates_device");
     axom::Array<IndexType> shape_candidates_device(totalCandidates.get(),
                                                    totalCandidates.get(),
                                                    device_allocator);
+    AXOM_ANNOTATE_END("allocate shape_candidates_device");
     auto shape_candidates_device_view = shape_candidates_device.view();
-
-    // Tetrahedrons from hexes (24 for each hex)
-    // axom::Array<TetrahedronType> tets_from_hexes_device(NE * NUM_TETS_PER_HEX,
-    //                                                     NE * NUM_TETS_PER_HEX,
-    //                                                     device_allocator);
-    // axom::ArrayView<TetrahedronType> tets_from_hexes_device_view =
-    //   tets_from_hexes_device.view();
-
-    // Index into 'tets'
-    // axom::Array<IndexType> tet_indices_device(
-    //   totalCandidates.get() * NUM_TETS_PER_HEX,
-    //   totalCandidates.get() * NUM_TETS_PER_HEX,
-    //   device_allocator);
-    // auto tet_indices_device_view = tet_indices_device.view();
+    AXOM_ANNOTATE_END("allocate scratch space");
 
     // New total number of candidates after omitting degenerate shapes
+    AXOM_ANNOTATE_BEGIN("newTotalCandidates memory");
     axom::Array<IndexType> newTotalCandidates_host(1, 1, host_allocator);
     newTotalCandidates_host[0] = 0;
     axom::Array<IndexType> newTotalCandidates_device =
       axom::Array<IndexType>(newTotalCandidates_host, device_allocator);
     auto newTotalCandidates_device_view = newTotalCandidates_device.view();
-
-    // SLIC_INFO(axom::fmt::format(
-    //   "{:-^80}",
-    //   " Decomposing each hexahedron element into 24 tetrahedrons "));
-
-    // using TetHexArray = axom::StackArray<TetrahedronType, NUM_TETS_PER_HEX>;
-
-    // {
-    //   AXOM_ANNOTATE_SCOPE("init_tets");
-    //   axom::for_all<ExecSpace>(
-    //     NE,
-    //     AXOM_LAMBDA(axom::IndexType i) {
-    //       TetHexArray cur_tets;
-    //       hexes_device_view[i].triangulate(cur_tets);
-
-    //       for(int j = 0; j < NUM_TETS_PER_HEX; j++)
-    //       {
-    //         tets_from_hexes_device_view[i * NUM_TETS_PER_HEX + j] = cur_tets[j];
-    //       }
-    //     });
-    // }
+    AXOM_ANNOTATE_END("newTotalCandidates memory");
 
     SLIC_INFO(
       axom::fmt::format("{:-^80}",
@@ -1208,21 +1122,12 @@ private:
     {
       AXOM_ANNOTATE_SCOPE("init_candidates");
       axom::for_all<ExecSpace>(
-        NE,
+        m_cellCount,
         AXOM_LAMBDA(axom::IndexType i) {
           for(int j = 0; j < counts_device_view[i]; j++)
           {
             int shapeIdx = candidates_device_view[offsets_device_view[i] + j];
 
-            // for(int k = 0; k < NUM_TETS_PER_HEX; k++)
-            // {
-            //   IndexType idx =
-            //     RAJA::atomicAdd<ATOMIC_POL>(&newTotalCandidates_device_view[0],
-            //                                 IndexType {1});
-            //   hex_indices_device_view[idx] = i;
-            //   shape_candidates_device_view[idx] = shapeIdx;
-            //   tet_indices_device_view[idx] = i * NUM_TETS_PER_HEX + k;
-            // }
             IndexType idx =
               RAJA::atomicAdd<ATOMIC_POL>(&newTotalCandidates_device_view[0],
                                           IndexType {1});
@@ -1232,35 +1137,11 @@ private:
         });
     }
 
-    // Overlap volume is the volume of clip(tri, quad) for stl
-    m_overlap_volumes = axom::Array<double>(NE, NE, device_allocator);
-
-    // Quad volume is the volume of the quadrilateral element
-    m_cell_volumes = axom::Array<double>(NE, NE, device_allocator);
-
+    // Overlap volume is the area of clip(tri,quad) for stl mesh
+    m_overlap_volumes.fill(0.0);
     axom::ArrayView<double> overlap_volumes_device_view =
       m_overlap_volumes.view();
-    axom::ArrayView<double> cell_volumes_device_view = m_cell_volumes.view();
 
-    // Set initial values to 0
-    axom::for_all<ExecSpace>(
-      NE,
-      AXOM_LAMBDA(axom::IndexType i) {
-        overlap_volumes_device_view[i] = 0;
-        cell_volumes_device_view[i] = 0;
-      });
-
-    SLIC_INFO(axom::fmt::format("{:-^80}",
-                                " Calculating quadrilateral element volume "));
-
-    {
-      AXOM_ANNOTATE_SCOPE("quad_volume");
-      axom::for_all<ExecSpace>(
-        NE,
-        AXOM_LAMBDA(axom::IndexType i) {
-          cell_volumes_device_view[i] = quads_device_view[i].area();
-        });
-    }
     SLIC_INFO(axom::fmt::format(
       "{:-^80}",
       " Calculating element overlap volume from each quad-shape pair "));
@@ -1269,33 +1150,14 @@ private:
     constexpr bool tryFixOrientation = true;
 
     {
+      AXOM_ANNOTATE_SCOPE("clipLoop");
       // Copy calculated total back to host
       axom::Array<IndexType> newTotalCandidates_calc_host =
         axom::Array<IndexType>(newTotalCandidates_device, host_allocator);
 
-      AXOM_ANNOTATE_SCOPE("quad_shape_volume");
       axom::for_all<ExecSpace>(
         newTotalCandidates_calc_host[0],
         AXOM_LAMBDA(axom::IndexType i) {
-          // const int index = hex_indices_device_view[i];
-          // const int shapeIndex = shape_candidates_device_view[i];
-          // const int tetIndex = tet_indices_device_view[i];
-
-          // const PolyhedronType poly =
-          //   primal::clip(shapes_device_view[shapeIndex],
-          //                tets_from_hexes_device_view[tetIndex],
-          //                EPS,
-          //                tryFixOrientation);
-
-          // // Poly is valid
-          // if(poly.numVertices() >= 4)
-          // {
-          //   // Workaround - intermediate volume variable needed for
-          //   // CUDA Pro/E test case correctness
-          //   double volume = poly.volume();
-          //   RAJA::atomicAdd<ATOMIC_POL>(overlap_volumes_device_view.data() + index,
-          //                               volume);
-          // }
           const int index = quad_indices_device_view[i];
           const int shapeIndex = shape_candidates_device_view[i];
 
@@ -1320,8 +1182,10 @@ private:
     RAJA::ReduceSum<REDUCE_POL, double> totalOverlap(0);
     RAJA::ReduceSum<REDUCE_POL, double> totalQuad(0);
 
+    auto cell_volumes_device_view = m_cell_volumes.view();
+
     axom::for_all<ExecSpace>(
-      NE,
+      m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
         totalOverlap += overlap_volumes_device_view[i];
         totalQuad += cell_volumes_device_view[i];
@@ -1359,7 +1223,7 @@ private:
 
     if(m_hexes.empty())
     {
-      setMeshDependentData();
+      setMeshDependentData<ShapeType>();
     }
 
     const int host_allocator =
@@ -2839,6 +2703,67 @@ public:
   #endif
 
   template <typename ExecSpace>
+  void populateQuadsFromMesh()
+  {
+    AXOM_ANNOTATE_SCOPE("populateQuadsFromMesh");
+    constexpr int NUM_VERTS_PER_QUAD = 4;
+    constexpr int NUM_COMPS_PER_VERT = 2;
+    const int allocId = m_allocatorId;
+
+    axom::Array<double> vertCoords(
+      m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
+      m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
+      allocId);
+
+  #if defined(AXOM_USE_MFEM)
+    if(m_dc != nullptr)
+    {
+      populateVertCoordsFromMFEMMesh2D<ExecSpace>(vertCoords);
+    }
+  #endif
+    // TODO
+    // #if defined(AXOM_USE_CONDUIT)
+    //   if(m_bpGrp != nullptr)
+    //   {
+    //     populateVertCoordsFromBlueprintMesh<ExecSpace>(vertCoords);
+    //   }
+    // #endif
+
+    auto vertCoords_device_view = vertCoords.view();
+
+    // Initialize quad elements
+    m_quads =
+      axom::Array<PolygonStaticType>(m_cellCount, m_cellCount, m_allocatorId);
+    axom::ArrayView<PolygonStaticType> quads_device_view = m_quads.view();
+
+    axom::for_all<ExecSpace>(
+      m_cellCount,
+      AXOM_LAMBDA(axom::IndexType i) {
+        // Set each quad element vertices
+        quads_device_view[i] = PolygonStaticType();
+        for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
+        {
+          int vertIndex = (i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
+            j * NUM_COMPS_PER_VERT;
+          quads_device_view[i].addVertex(
+            Point2D({vertCoords_device_view[vertIndex],
+                     vertCoords_device_view[vertIndex + 1]}));
+        }
+      });
+
+    printf("\t--> CHECKPOINT 2\n");
+    if(m_allocatorId ==
+       axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq))
+    {
+      for(int i = 0; i < m_cellCount; i++)
+      {
+        SLIC_INFO("\t\t--> Quad[" << i << "] is " << quads_device_view[i]);
+      }
+    }
+
+  }  // end of populateQuadsFromMesh()
+
+  template <typename ExecSpace>
   void populateHexesFromMesh()
   {
     AXOM_ANNOTATE_SCOPE("populateHexesFromMesh");
@@ -2855,7 +2780,7 @@ public:
   #if defined(AXOM_USE_MFEM)
     if(m_dc != nullptr)
     {
-      populateVertCoordsFromMFEMMesh<ExecSpace>(vertCoords);
+      populateVertCoordsFromMFEMMesh3D<ExecSpace>(vertCoords);
     }
   #endif
   #if defined(AXOM_USE_CONDUIT)
@@ -3030,8 +2955,81 @@ public:
   #endif  // AXOM_USE_CONDUIT
 
   #if defined(AXOM_USE_MFEM)
+
   template <typename ExecSpace>
-  void populateVertCoordsFromMFEMMesh(axom::Array<double>& vertCoords)
+  void populateVertCoordsFromMFEMMesh2D(axom::Array<double>& vertCoords)
+  {
+    mfem::Mesh* mesh = getDC()->GetMesh();
+
+    // Intersection algorithm only works on linear elements
+    SLIC_ASSERT(mesh != nullptr);
+    int const NE = mesh->GetNE();
+
+    if(this->isVerbose())
+    {
+      SLIC_INFO(axom::fmt::format(
+        "{:-^80}",
+        axom::fmt::format(" Initializing {} quad elements from given mesh ", NE)));
+    }
+
+    if(NE > 0)
+    {
+      SLIC_ASSERT(mesh->GetNodes() == nullptr ||
+                  mesh->GetNodes()->FESpace()->GetOrder(0));
+    }
+
+    // Allocation size is:
+    // # of elements * # of vertices per quad * # of components per vertex
+    constexpr int NUM_VERTS_PER_QUAD = 4;
+    constexpr int NUM_COMPS_PER_VERT = 2;
+
+    axom::Array<double> tmpVertCoords;
+
+    axom::Array<double>& fillVertCoords =
+      axom::execution_space<ExecSpace>::onDevice() ? tmpVertCoords : vertCoords;
+    fillVertCoords =
+      axom::Array<double>(m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT,
+                          m_cellCount * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT);
+
+    // Initialize vertices from mfem mesh and
+    // set each shape volume fraction to 1
+    auto fillVertCoordsView = fillVertCoords.view();
+    for(int i = 0; i < m_cellCount; i++)
+    {
+      // Get the indices of this element's vertices
+      mfem::Array<int> verts;
+      mesh->GetElementVertices(i, verts);
+      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_QUAD);
+
+      // Get the coordinates for the vertices
+      for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
+      {
+        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+        {
+          fillVertCoordsView[(i * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT) +
+                             (j * NUM_COMPS_PER_VERT) + k] =
+            (mesh->GetVertex(verts[j]))[k];
+        }
+      }
+    }
+    if(vertCoords.data() != fillVertCoords.data())
+    {
+      axom::copy(vertCoords.data(),
+                 fillVertCoords.data(),
+                 sizeof(double) * vertCoords.size());
+    }
+
+    printf("\t--> CHECKPOINT 1\n");
+    for(int i = 0; i < NE * NUM_VERTS_PER_QUAD * NUM_COMPS_PER_VERT; i++)
+    {
+      printf("%f ", fillVertCoordsView[i]);
+    }
+    printf("\n");
+
+  }  // end of populateVertCoordsFromMFEMMesh2D()
+
+  template <typename ExecSpace>
+  void populateVertCoordsFromMFEMMesh3D(axom::Array<double>& vertCoords)
   {
     mfem::Mesh* mesh = getDC()->GetMesh();
     // Intersection algorithm only works on linear elements
