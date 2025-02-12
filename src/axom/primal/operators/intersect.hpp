@@ -784,7 +784,6 @@ bool intersect(const Ray<T, 2>& r,
     {
       rp.push_back(rc[j]);
       np.push_back(axom::utilities::lerp(knot_vals[i], knot_vals[i + 1], nc[j]));
-      // knot_vals[i] + nc[j] * (knot_vals[i + 1] - knot_vals[i]));
     }
   }
 

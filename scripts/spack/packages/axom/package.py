@@ -602,6 +602,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         options.append(self.define_from_variant("BUILD_SHARED_LIBS", "shared"))
         options.append(self.define_from_variant("AXOM_ENABLE_EXAMPLES", "examples"))
         options.append(self.define_from_variant("AXOM_ENABLE_TOOLS", "tools"))
+        if "+raja" not in spec or "+umpire" not in spec:
+            options.append("-DAXOM_ENABLE_MIR:BOOL=OFF")
 
         return options
 
