@@ -7,7 +7,7 @@
  * \file winding_number.hpp
  *
  * \brief Consists of methods to compute the generalized winding number (GWN) 
- *        for points with respect to various geometric objects.
+ *        for points with respect to various 2D geometric objects.
  */
 
 #ifndef AXOM_PRIMAL_WINDING_NUMBER_HPP_
@@ -25,11 +25,13 @@
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/geometry/NURBSCurve.hpp"
 #include "axom/primal/geometry/BezierPatch.hpp"
+#include "axom/primal/geometry/NURBSPatch.hpp"
 #include "axom/primal/geometry/CurvedPolygon.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
-#include "axom/primal/operators/detail/winding_number_impl.hpp"
+#include "axom/primal/operators/detail/winding_number_2d_impl.hpp"
+#include "axom/primal/operators/detail/winding_number_3d_impl.hpp"
 
 // C++ includes
 #include <cmath>
@@ -43,9 +45,6 @@ namespace axom
 {
 namespace primal
 {
-//@{
-//! @name Winding number operations between 2D points and primitives
-
 /*
  * \brief Compute the GWN for a 2D point wrt a 2D line segment
  *
@@ -415,8 +414,6 @@ double winding_number(const Point<T, 2>& q,
 
   return ret_val;
 }
-
-//@}
 
 //@{
 //! @name Winding number operations between 3D points and primitives
