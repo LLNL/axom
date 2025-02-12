@@ -895,7 +895,7 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  * \return true iff the ray intersects the patch, otherwise false.
  */
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
+bool intersect(const Ray<T, 3>& ray,
                                 const BezierPatch<T, 3>& patch,
                                 axom::Array<T>& t,
                                 axom::Array<T>& u,
@@ -996,7 +996,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
 }
 
 template <typename T>
-AXOM_HOST_DEVICE bool intersect(const Ray<T, 3>& ray,
+bool intersect(const Ray<T, 3>& ray,
                                 const NURBSPatch<T, 3>& patch,
                                 axom::Array<T>& t,
                                 axom::Array<T>& u,

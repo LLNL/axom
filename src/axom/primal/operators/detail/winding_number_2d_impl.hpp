@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef PRIMAL_WINDING_NUMBER_IMPL_HPP_
-#define PRIMAL_WINDING_NUMBER_IMPL_HPP_
+#ifndef PRIMAL_WINDING_NUMBER_2D_IMPL_HPP_
+#define PRIMAL_WINDING_NUMBER_2D_IMPL_HPP_
 
 // Axom includes
 #include "axom/config.hpp"

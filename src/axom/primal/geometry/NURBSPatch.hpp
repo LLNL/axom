@@ -25,8 +25,11 @@
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
 #include "axom/primal/operators/squared_distance.hpp"
+#include "axom/primal/operators/detail/winding_number_2d_impl.hpp"
 
 #include <ostream>
+#include <math.h>
+
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -163,7 +166,7 @@ public:
 
     m_knotvec_u = KnotVectorType(deg_u + 1, deg_u);
     m_knotvec_v = KnotVectorType(deg_v + 1, deg_v);
-   
+
     makeUntrimmed();
   }
 
@@ -1187,6 +1190,30 @@ public:
     addTrimmingCurve(curve);
   }
 
+  /*!
+   * \brief Check if a parameter point is visible on the NURBS patch
+   *
+   * \param [in] uv The parameter point to check
+   * 
+   * Checks for containment of the parameter point in 
+   * the collection of trimming curves via an even-odd rule
+   */
+  bool isVisible(const ParameterPointType& uv) const
+  {
+    if(!isTrimmed())
+    {
+      return true;
+    }
+
+    double gwn = 0.0;
+    for(const auto& curve : m_trimmingCurves)
+    {
+      gwn += detail::nurbs_winding_number(uv, curve);
+    }
+
+    return std::lround(gwn) % 2 == 1;
+  }
+
   /// Clears the list of control points, make nonrational
   void clear()
   {
@@ -1249,7 +1276,8 @@ public:
   {
     return (lhs.m_controlPoints == rhs.m_controlPoints) &&
       (lhs.m_weights == rhs.m_weights) && (lhs.m_knotvec_u == rhs.m_knotvec_u) &&
-      (lhs.m_knotvec_v == rhs.m_knotvec_v);
+      (lhs.m_knotvec_v == rhs.m_knotvec_v) &&
+      (lhs.m_trimmingCurves == rhs.m_trimmingCurves);
   }
 
   /*!
@@ -1376,6 +1404,26 @@ public:
     }
 
     std::swap(m_knotvec_u, m_knotvec_v);
+  }
+
+  /// \brief Flip all normals of the NURBS surface by reversing the orientation of the control points
+  ///  in each direction, and mirroring the trimming curves in parameter space
+  void flipNormals()
+  {
+    reverseOrientation_u();
+
+    auto min_u = m_knotvec_u[0];
+    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      // For each trimming curve, mirror the control points over the midpoint
+      //  of the knot span
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = min_u + max_u - curve[i][0];
+      }
+    }
   }
 
   /// \brief Returns an axis-aligned bounding box containing the patch
