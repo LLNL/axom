@@ -612,7 +612,8 @@ void IOManager::loadExternalData(sidre::Group* parent_group,
   }
 
 #else
-  AXOM_UNUSED_VAR(datagroup);
+  AXOM_UNUSED_VAR(parent_group);
+  AXOM_UNUSED_VAR(load_group);
   SLIC_WARNING("Loading external data only only available "
                << "when Axom is configured with hdf5");
 #endif /* AXOM_USE_HDF5 */
