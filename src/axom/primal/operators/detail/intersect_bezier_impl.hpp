@@ -232,11 +232,6 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
 
   bool foundIntersection = false;
 
-  if(c1.isLinear(sq_tol))
-  {
-    c1.isLinear(sq_tol, true);
-  }
-
   if(c1.isLinear(sq_tol, true) && c2.isLinear(sq_tol, true))
   {
     T s, t;
