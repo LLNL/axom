@@ -59,6 +59,9 @@ std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& nPatch);
  *   and continuous (unless p = 0 or q = 0)
  * 
  * Nonrational NURBS patches are identified by an empty weights array.
+ * 
+ * Untrimmed NURBS patches are identified by an internal flag, but a nonempty
+ *  trimming curve vector should be marked as trimmed.
  */
 template <typename T, int NDIMS>
 class NURBSPatch
@@ -1111,52 +1114,64 @@ public:
     }
   }
 
-  /// Make nonrational by shrinking array of weights
+  /// \brief Make nonrational by shrinking array of weights
   void makeNonrational() { m_weights.clear(); }
 
-  /// Use array size as flag for rationality
+  /// \brief Use array size as flag for rationality
   bool isRational() const { return !m_weights.empty(); }
 
-  /// Get array of trimming curvse
+  /// \brief Get array of trimming curvse
   const TrimmingCurveVec& getTrimmingCurves() const { return m_trimmingCurves; }
 
-  /// Get mutable array of trimming curves
+  /// \brief Get mutable array of trimming curves
   TrimmingCurveVec& getTrimmingCurves() { return m_trimmingCurves; }
 
-  /// Get a trimming curve by index
+  /// \brief Get a trimming curve by index
   const TrimmingCurveType& getTrimmingCurve(int idx) const
   {
     SLIC_ASSERT(idx >= 0 && idx < m_trimmingCurves.size());
     return m_trimmingCurves[idx];
   }
 
-  /// Add a trimming curve
+  /// \brief Add a trimming curve
   void addTrimmingCurve(const TrimmingCurveType& curve)
   {
+    m_isTrimmed = true;
     m_trimmingCurves.push_back(curve);
   }
 
-  /// Add array of trimming curves
+  /// \brief Add array of trimming curves
   void addTrimmingCurves(const TrimmingCurveVec& curves)
   {
+    m_isTrimmed = true;
     m_trimmingCurves.insert(m_trimmingCurves.end(), curves.begin(), curves.end());
   }
 
-  /// Get number of trimming curves
+  /// \brief Clear trimming curves, but DON'T mark as untrimmed
+  void clearTrimmingCurves() { m_trimmingCurves.clear(); }
+
+  /// \brief Get number of trimming curves
   int getNumTrimmingCurves() const { return m_trimmingCurves.size(); }
 
-  /// use array size as flag for trimmed-ness
-  bool isTrimmed() const { return !m_trimmingCurves.empty(); }
+  /// \brief use array size as flag for trimmed-ness
+  bool isTrimmed() const { return m_isTrimmed; }
 
-  /// Delete all trimming curves
-  void makeUntrimmed() { m_trimmingCurves.clear(); }
+  /// \brief Mark as trimmed
+  void makeTrimmed() { m_isTrimmed = true; }
 
-  /// Make trimmed by adding trimming curves at each boundary
-  void makeSimpleTrimmed()
+  /// \brief Delete all trimming curves
+  void makeUntrimmed()
+  {
+    m_isTrimmed = false;
+    m_trimmingCurves.clear();
+  }
+
+  /// \brief Make trivially trimmed by adding trimming curves at each boundary
+  void makeTriviallyTrimmed()
   {
     if(isTrimmed())
     {
-      return;
+      m_trimmingCurves.clear();
     }
 
     const double min_u = m_knotvec_u[0];
@@ -1188,6 +1203,8 @@ public:
     curve[0] = ParameterPointType({max_u, min_v});
     curve[1] = ParameterPointType({max_u, max_v});
     addTrimmingCurve(curve);
+
+    m_isTrimmed = true;
   }
 
   /*!
@@ -1198,12 +1215,14 @@ public:
    * Checks for containment of the parameter point in 
    * the collection of trimming curves via an even-odd rule
    */
-  bool isVisible(const ParameterPointType& uv) const
+  bool isVisible(T u, T v) const
   {
     if(!isTrimmed())
     {
       return true;
     }
+
+    ParameterPointType uv = {u, v};
 
     double gwn = 0.0;
     for(const auto& curve : m_trimmingCurves)
@@ -1211,7 +1230,7 @@ public:
       gwn += detail::nurbs_winding_number(uv, curve);
     }
 
-    return std::lround(gwn) % 2 == 1;
+    return std::lround(gwn) % 2 != 0;
   }
 
   /// Clears the list of control points, make nonrational
@@ -1222,6 +1241,7 @@ public:
     m_knotvec_v.clear();
     m_trimmingCurves.clear();
     makeNonrational();
+    makeUntrimmed();
   }
 
   /// Retrieves the control point at index \a (idx_p, idx_q)
@@ -1404,26 +1424,6 @@ public:
     }
 
     std::swap(m_knotvec_u, m_knotvec_v);
-  }
-
-  /// \brief Flip all normals of the NURBS surface by reversing the orientation of the control points
-  ///  in each direction, and mirroring the trimming curves in parameter space
-  void flipNormals()
-  {
-    reverseOrientation_u();
-
-    auto min_u = m_knotvec_u[0];
-    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
-
-    for(auto& curve : m_trimmingCurves)
-    {
-      // For each trimming curve, mirror the control points over the midpoint
-      //  of the knot span
-      for(int i = 0; i < curve.getNumControlPoints(); ++i)
-      {
-        curve[i][0] = min_u + max_u - curve[i][0];
-      }
-    }
   }
 
   /// \brief Returns an axis-aligned bounding box containing the patch
@@ -1754,7 +1754,7 @@ public:
     axom::Array<VectorType, 2> ders;
     evaluateDerivatives(u, v, 1, ders);
 
-    eval = PointType(ders[0][0]);
+    eval = PointType(ders[0][0].array());
     Du = ders[1][0];
     Dv = ders[0][1];
   }
@@ -2962,6 +2962,8 @@ private:
   CoordsMat m_controlPoints;
   WeightsMat m_weights;
   KnotVectorType m_knotvec_u, m_knotvec_v;
+
+  bool m_isTrimmed;
   TrimmingCurveVec m_trimmingCurves;
 };
 

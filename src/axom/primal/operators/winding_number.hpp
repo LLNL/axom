@@ -411,7 +411,7 @@ double winding_number(const Point<T, 3>& q,
                       const double EPS = 1e-8)
 {
   bool isOnFace = false;
-  return winding_number(q, poly, isOnFace, edge_tol, EPS);
+  return detail::polygon_winding_number(q, poly, isOnFace, edge_tol, EPS);
 }
 
 /*!
