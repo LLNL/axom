@@ -1000,80 +1000,155 @@ axom::sidre::View* getElementVolumes(
   sidre::MFEMSidreDataCollection* dc,
   const std::string& volFieldName = std::string("elementVolumes"))
 {
-  using HexahedronType = axom::primal::Hexahedron<double, 3>;
-
   axom::sidre::View* volSidreView = dc->GetNamedBuffer(volFieldName);
-  if(volSidreView == nullptr)
+
+  switch(params.getBoxDim())
   {
-    mfem::Mesh* mesh = dc->GetMesh();
+  case 2:
+  {
+    using PolygonStaticType =
+      primal::Polygon<double, 2, axom::primal::PolygonArray::Static>;
+    using Point2D = primal::Point<double, 2>;
 
-    constexpr int NUM_VERTS_PER_HEX = 8;
-    constexpr int NUM_COMPS_PER_VERT = 3;
-    constexpr double ZERO_THRESHOLD = 1.e-10;
-
-    axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
-                                    cellCount * NUM_VERTS_PER_HEX);
-    auto vertCoordsView = vertCoords.view();
-
-    // This runs only only on host, because the mfem::Mesh only uses host memory, I think.
-    for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
+    if(volSidreView == nullptr)
     {
-      // Get the indices of this element's vertices
-      mfem::Array<int> verts;
-      mesh->GetElementVertices(cellIdx, verts);
-      SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
+      mfem::Mesh* mesh = dc->GetMesh();
 
-      // Get the coordinates for the vertices
-      for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+      constexpr int NUM_VERTS_PER_QUAD = 4;
+      constexpr int NUM_COMPS_PER_VERT = 2;
+
+      axom::Array<Point2D> vertCoords(cellCount * NUM_VERTS_PER_QUAD,
+                                      cellCount * NUM_VERTS_PER_QUAD);
+      auto vertCoordsView = vertCoords.view();
+
+      // This runs only only on host, because the mfem::Mesh only uses host memory, I think.
+      for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
       {
-        int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
-        for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+        // Get the indices of this element's vertices
+        mfem::Array<int> verts;
+        mesh->GetElementVertices(cellIdx, verts);
+        SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_QUAD);
+
+        // Get the coordinates for the vertices
+        for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
         {
-          vertCoordsView[vertIdx][k] = (mesh->GetVertex(verts[j]))[k];
+          int vertIdx = cellIdx * NUM_VERTS_PER_QUAD + j;
+          for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+          {
+            vertCoordsView[vertIdx][k] = (mesh->GetVertex(verts[j]))[k];
+          }
         }
       }
+
+      // Initialize quad elements.
+      axom::Array<PolygonStaticType> quads(cellCount, cellCount);
+      auto quadsView = quads.view();
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          // Set each quad element vertices
+          quadsView[cellIdx] = PolygonStaticType();
+          for(int j = 0; j < NUM_VERTS_PER_QUAD; ++j)
+          {
+            int vertIndex = (cellIdx * NUM_VERTS_PER_QUAD) + j;
+            auto& quad = quadsView[cellIdx];
+            quad.addVertex(vertCoordsView[vertIndex]);
+          }
+        });  // end of loop to initialize quad elements
+
+      // Allocate and populate cell volumes.
+      volSidreView = dc->AllocNamedBuffer(volFieldName, cellCount);
+      axom::ArrayView<double> volView(volSidreView->getData(),
+                                      volSidreView->getNumElements());
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          volView[cellIdx] = quadsView[cellIdx].area();
+        });
     }
+  }  // end of case 2
+  break;
+  case 3:
+  {
+    using HexahedronType = axom::primal::Hexahedron<double, 3>;
 
-    // Set vertex coords to zero if within threshold.
-    // (I don't know why we do this.  I'm following examples.)
-    axom::ArrayView<double> flatCoordsView(
-      (double*)vertCoords.data(),
-      vertCoords.size() * Point3D::dimension());
-    assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
-    axom::for_all<ExecSpace>(
-      cellCount * 3,
-      AXOM_LAMBDA(axom::IndexType i) {
-        if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
-        {
-          flatCoordsView[i] = 0.0;
-        }
-      });
+    if(volSidreView == nullptr)
+    {
+      mfem::Mesh* mesh = dc->GetMesh();
 
-    // Initialize hexahedral elements.
-    axom::Array<HexahedronType> hexes(cellCount, cellCount);
-    auto hexesView = hexes.view();
-    axom::for_all<ExecSpace>(
-      cellCount,
-      AXOM_LAMBDA(axom::IndexType cellIdx) {
-        // Set each hexahedral element vertices
-        hexesView[cellIdx] = HexahedronType();
+      constexpr int NUM_VERTS_PER_HEX = 8;
+      constexpr int NUM_COMPS_PER_VERT = 3;
+      constexpr double ZERO_THRESHOLD = 1.e-10;
+
+      axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
+                                      cellCount * NUM_VERTS_PER_HEX);
+      auto vertCoordsView = vertCoords.view();
+
+      // This runs only only on host, because the mfem::Mesh only uses host memory, I think.
+      for(axom::IndexType cellIdx = 0; cellIdx < cellCount; ++cellIdx)
+      {
+        // Get the indices of this element's vertices
+        mfem::Array<int> verts;
+        mesh->GetElementVertices(cellIdx, verts);
+        SLIC_ASSERT(verts.Size() == NUM_VERTS_PER_HEX);
+
+        // Get the coordinates for the vertices
         for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
         {
-          int vertIndex = (cellIdx * NUM_VERTS_PER_HEX) + j;
-          auto& hex = hexesView[cellIdx];
-          hex[j] = vertCoordsView[vertIndex];
+          int vertIdx = cellIdx * NUM_VERTS_PER_HEX + j;
+          for(int k = 0; k < NUM_COMPS_PER_VERT; k++)
+          {
+            vertCoordsView[vertIdx][k] = (mesh->GetVertex(verts[j]))[k];
+          }
         }
-      });  // end of loop to initialize hexahedral elements and bounding boxes
+      }
 
-    // Allocate and populate cell volumes.
-    volSidreView = dc->AllocNamedBuffer(volFieldName, cellCount);
-    axom::ArrayView<double> volView(volSidreView->getData(),
-                                    volSidreView->getNumElements());
-    axom::for_all<ExecSpace>(
-      cellCount,
-      AXOM_LAMBDA(axom::IndexType cellIdx) {
-        volView[cellIdx] = hexesView[cellIdx].volume();
-      });
+      // Set vertex coords to zero if within threshold.
+      // (I don't know why we do this.  I'm following examples.)
+      axom::ArrayView<double> flatCoordsView(
+        (double*)vertCoords.data(),
+        vertCoords.size() * Point3D::dimension());
+      assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
+      axom::for_all<ExecSpace>(
+        cellCount * 3,
+        AXOM_LAMBDA(axom::IndexType i) {
+          if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
+          {
+            flatCoordsView[i] = 0.0;
+          }
+        });
+
+      // Initialize hexahedral elements.
+      axom::Array<HexahedronType> hexes(cellCount, cellCount);
+      auto hexesView = hexes.view();
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          // Set each hexahedral element vertices
+          hexesView[cellIdx] = HexahedronType();
+          for(int j = 0; j < NUM_VERTS_PER_HEX; ++j)
+          {
+            int vertIndex = (cellIdx * NUM_VERTS_PER_HEX) + j;
+            auto& hex = hexesView[cellIdx];
+            hex[j] = vertCoordsView[vertIndex];
+          }
+        });  // end of loop to initialize hexahedral elements and bounding boxes
+
+      // Allocate and populate cell volumes.
+      volSidreView = dc->AllocNamedBuffer(volFieldName, cellCount);
+      axom::ArrayView<double> volView(volSidreView->getData(),
+                                      volSidreView->getNumElements());
+      axom::for_all<ExecSpace>(
+        cellCount,
+        AXOM_LAMBDA(axom::IndexType cellIdx) {
+          volView[cellIdx] = hexesView[cellIdx].volume();
+        });
+    }
+  }  // end of case 3
+  break;
+  default:
+    SLIC_ERROR("Only 2D and 3D meshes are currently supported.");
+    break;
   }
 
   return volSidreView;
