@@ -346,6 +346,29 @@ if((CONDUIT_FOUND OR
               endforeach()
             endforeach()
         endforeach()
+
+        # Test 2D Triangle shape
+        set(_testshapes "tri")
+        set(_testMeshTypes "bpConduit" "bpSidre")
+        blt_list_append(TO _testMeshTypes ELEMENTS "mfem" IF MFEM_FOUND)
+        foreach(_policy ${_policies})
+            foreach(_testMeshType ${_testMeshTypes})
+              foreach(_testshape ${_testshapes})
+                set(_testname "quest_shape_in_memory_${_policy}_${_testMeshType}_${_testshape}")
+                axom_add_test(
+                  NAME ${_testname}
+                  COMMAND quest_shape_in_memory_ex
+                             --policy ${_policy}
+                             --testShape ${_testshape}
+                             --refinements 2
+                             --scale 0.75 0.75 0.75
+                             --dir 0.2 0.4 0.8
+                             --meshType ${_testMeshType}
+                             inline_mesh --min -2 -2 --max 2 2 --res 2 2
+                  NUM_MPI_TASKS ${_nranks})
+              endforeach()
+            endforeach()
+        endforeach()
     endif()
 endif()
 
