@@ -1912,17 +1912,15 @@ public:
     }
     plane_normal = plane_normal.unitVector();
 
-    double sqDist = 0.0;
-
     // Check all control points for simplicity
-    for(int p = 0; p <= ord_u && sqDist <= sq_tol; ++p)
+    for(int p = 0; p <= ord_u; ++p)
     {
-      for(int q = ((p == 0) ? 1 : 0); q <= ord_v && sqDist <= sq_tol; ++q)
+      for(int q = ((p == 0) ? 1 : 0); q <= ord_v; ++q)
       {
         const double signedDist =
           plane_normal.dot(m_controlPoints(p, q) - m_controlPoints(0, 0));
 
-        if(sqDist > sq_tol)
+        if(signedDist * signedDist > sq_tol)
         {
           return false;
         }
