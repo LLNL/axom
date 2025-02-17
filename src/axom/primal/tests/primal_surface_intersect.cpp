@@ -155,7 +155,8 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // Intersect the ray and the patch, intersection parameters will be
   // in arrays (u, v) and t, for the patch and ray, respectively
   Array u, v, t;
-  bool ray_intersects = intersect(ray, patch, t, u, v, 1e-8, 1e-8, isTrimmed, isHalfOpen);
+  bool ray_intersects =
+    intersect(ray, patch, t, u, v, 1e-8, 1e-8, isTrimmed, isHalfOpen);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());
@@ -865,7 +866,8 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
                            {params_u[i]},
                            {0.0},
                            eps,
-                           eps_test, !isTrimmed,
+                           eps_test,
+                           !isTrimmed,
                            isHalfOpen);
 
         // Twice if the surface is not half-open
@@ -875,7 +877,8 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
                            {params_u[i], params_u[i]},
                            {0.0, 3.0},
                            eps,
-                           eps_test, !isTrimmed,
+                           eps_test,
+                           !isTrimmed,
                            !isHalfOpen);
       }
       else
@@ -895,7 +898,7 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
 //------------------------------------------------------------------------------
 TEST(primal_surface_inter, trimmed_surface_intersect)
 {
-      const int DIM = 3;
+  const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using VectorType = primal::Vector<CoordType, DIM>;
@@ -935,7 +938,7 @@ TEST(primal_surface_inter, trimmed_surface_intersect)
   TrimmingCurveType trimmingCurve(trimmingCurveControlPoints, 2);
   nPatch.addTrimmingCurve(trimmingCurve);
 
-  // Check intersection with a ray that intersects the patch at 
+  // Check intersection with a ray that intersects the patch at
   //  the parameter point (0.5, 0.5)
   PointType ray_origin({1.0, 1.0, -3.0});
   VectorType ray_direction(PointType {1.0, 1.0, -3.0}, nPatch.evaluate(0.5, 0.5));
@@ -969,16 +972,24 @@ TEST(primal_surface_inter, trimmed_surface_intersect)
                      isHalfOpen);
 
   // Check intersections with a ray that doesn't intersect the trimmed patch
-  ray_direction = VectorType(PointType {1.0, 1.0, -3.0}, nPatch.evaluate(0.8, 0.8));
+  ray_direction =
+    VectorType(PointType {1.0, 1.0, -3.0}, nPatch.evaluate(0.8, 0.8));
   ray = RayType(ray_origin, ray_direction);
 
   // Doesn't intersect the trimmed surface
   checkIntersections(ray, nPatch, {}, {}, {}, eps, eps_test, isTrimmed, isHalfOpen);
 
   // Does intersect the untrimmed surface
-  checkIntersections(ray, nPatch, {3.3105890}, {0.8}, {0.8}, eps, eps_test, !isTrimmed, isHalfOpen);
+  checkIntersections(ray,
+                     nPatch,
+                     {3.3105890},
+                     {0.8},
+                     {0.8},
+                     eps,
+                     eps_test,
+                     !isTrimmed,
+                     isHalfOpen);
 }
-
 
 int main(int argc, char* argv[])
 {
