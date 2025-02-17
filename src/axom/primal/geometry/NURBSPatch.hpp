@@ -762,7 +762,7 @@ public:
   }
 
   /*!
-   * \brief Evaluate a NURBS surface at a particular parameter value \a t
+   * \brief Evaluate the untrimmed NURBS surface at a particular parameter value \a t
    *
    * \param [in] u The parameter value on the first axis
    * \param [in] v The parameter value on the second axis
@@ -1323,6 +1323,9 @@ public:
   /*!
    * \brief Reverses the order of one direction of the NURBS patch's control points and weights
    *
+   * This method does not change the position of the patch in space, 
+   *  including the trimming curves. It does reverse all normal vectors.
+   * 
    * \param [in] axis orientation of patch. 0 to reverse in u, 1 for reverse in v
    */
   void reverseOrientation(int axis)
@@ -1362,6 +1365,18 @@ public:
     }
 
     m_knotvec_u.reverse();
+
+    // Mirror the trimming curves on the u-axis
+    auto min_u = m_knotvec_u[0];
+    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = min_u + max_u - curve[i][0];
+      }
+    }
   }
 
   /// \brief Reverses the order of the control points, weights, and knots on the second axis
@@ -1389,6 +1404,18 @@ public:
     }
 
     m_knotvec_v.reverse();
+
+    // Mirror the trimming curves on the u-axis
+    auto min_u = m_knotvec_u[0];
+    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][1] = min_u + max_u - curve[i][1];
+      }
+    }
   }
 
   /// \brief Swap the axes such that s(u, v) becomes s(v, u)
@@ -1424,6 +1451,14 @@ public:
     }
 
     std::swap(m_knotvec_u, m_knotvec_v);
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int j = 0; j < curve.getNumControlPoints(); ++j)
+      {
+        std::swap(curve[j][0], curve[j][1]);
+      }
+    }
   }
 
   /// \brief Returns an axis-aligned bounding box containing the patch
@@ -1596,7 +1631,7 @@ public:
   }
 
   /*!
-   * \brief Evaluate the surface and the first \a d derivatives at parameter \a u, \a v
+   * \brief Evaluate the untrimmed surface and the first \a d derivatives at parameter \a u, \a v
    *
    * \param [in] u The parameter value on the first axis
    * \param [in] v The parameter value on the second axis
@@ -1735,7 +1770,7 @@ public:
   }
 
   /*!
-   * \brief Evaluates all first derivatives of the NURBS patch at (\a u, \a v)
+   * \brief Evaluates all first derivatives of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1760,7 +1795,7 @@ public:
   }
 
   /*!
-   * \brief Evaluates all linear derivatives of the NURBS patch at (\a u, \a v)
+   * \brief Evaluates all linear derivatives of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1790,7 +1825,7 @@ public:
   }
 
   /*!
-   * \brief Evaluates all second derivatives of the NURBS patch at (\a u, \a v)
+   * \brief Evaluates all second derivatives of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1826,7 +1861,7 @@ public:
   }
 
   /*!
-   * \brief Computes a tangent in u of the NURBS patch at (\a u, \a v)
+   * \brief Computes a tangent in u of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1862,7 +1897,7 @@ public:
   }
 
   /*!
-   * \brief Computes the second derivative in u of a NURBS patch at (\a u, \a v)
+   * \brief Computes the second derivative in u of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1880,7 +1915,7 @@ public:
   }
 
   /*!
-   * \brief Computes the second derivative in v of a NURBS patch at (\a u, \a v)
+   * \brief Computes the second derivative in v of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1898,7 +1933,7 @@ public:
   }
 
   /*!
-   * \brief Computes the mixed second derivative in u and v of a NURBS patch at (\a u, \a v)
+   * \brief Computes the mixed second derivative in u and v of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1916,7 +1951,7 @@ public:
   }
 
   /*!
-   * \brief Computes the mixed second derivative in u and v of a NURBS patch at (\a u, \a v)
+   * \brief Computes the mixed second derivative in u and v of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1928,7 +1963,7 @@ public:
   VectorType dvdu(T u, T v) const { return dudv(u, v); }
 
   /*!
-   * \brief Computes the normal vector to the NURBS patch at (\a u, \a v)
+   * \brief Computes the normal vector to the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -2280,7 +2315,7 @@ public:
   }
 
   /*!
-    * \brief Splits a NURBS patch into four NURBS patches
+    * \brief Splits an untrimmed NURBS patch into four NURBS patches
     *
     * \param [in] u parameter value at which to bisect on the first axis
     * \param [in] v parameter value at which to bisect on the second axis
@@ -2301,6 +2336,7 @@ public:
     *   ---------------------- u = 1
     *
     * \pre Parameter \a u and \a v must be *strictly interior* to the knot span
+    * \pre The patch must not be trimmed
     */
   void split(T u,
              T v,
@@ -2311,6 +2347,7 @@ public:
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
+    SLIC_ASSERT(!isTrimmed())
 
     // Bisect the patch along the u direction
     split_u(u, p1, p2);
@@ -2324,11 +2361,12 @@ public:
   }
 
   /*!
-   * \brief Split the NURBS patch in two along the u direction
+   * \brief Split the untrimmed NURBS patch in two along the u direction
    */
   void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
+    SLIC_ASSERT(!isTrimmed())
 
     const bool isRationalPatch = isRational();
 
@@ -2394,11 +2432,12 @@ public:
   }
 
   /*!
-   * \brief Split the NURBS patch in two along the v direction
+   * \brief Split the untrimmed NURBS patch in two along the v direction
    */
   void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
+    SLIC_ASSERT(!isTrimmed())
 
     const bool isRationalPatch = isRational();
 
@@ -2479,7 +2518,7 @@ public:
   }
 
   /*!
-   * \brief Splits a NURBS surface (at each internal knot) into several Bezier patches
+   * \brief Splits the untrimmed NURBS surface (at each internal knot) into several Bezier patches
    *   
    * If either degree_u or degree_v is zero, the resulting Bezier patches along 
    *  that axis will be disconnected and order 0
@@ -2786,13 +2825,24 @@ public:
   {
     m_knotvec_u.normalize();
     m_knotvec_v.normalize();
+
+    rescaleTrimmingCurves_u(0.0, 1.0);
+    rescaleTrimmingCurves_v(0.0, 1.0);
   }
 
   /// \brief Normalize the knot vector in u to the span [0, 1]
-  void normalize_u() { m_knotvec_u.normalize(); }
+  void normalize_u()
+  {
+    m_knotvec_u.normalize();
+    rescaleTrimmingCurves_u(0.0, 1.0);
+  }
 
   /// \brief Normalize the knot vector in v to the span [0, 1]
-  void normalize_v() { m_knotvec_v.normalize(); }
+  void normalize_v()
+  {
+    m_knotvec_v.normalize();
+    rescaleTrimmingCurves_v(0.0, 1.0);
+  }
 
   /*!
    * \brief Rescale both knot vectors to the span of [a, b]
@@ -2807,6 +2857,9 @@ public:
     SLIC_ASSERT(a < b);
     m_knotvec_u.rescale(a, b);
     m_knotvec_v.rescale(a, b);
+
+    rescaleTrimmingCurves_u(a, b);
+    rescaleTrimmingCurves_v(a, b);
   }
 
   /*!
@@ -2821,6 +2874,8 @@ public:
   {
     SLIC_ASSERT(a < b);
     m_knotvec_u.rescale(a, b);
+
+    rescaleTrimmingCurves_u(a, b);
   }
 
   /*!
@@ -2835,6 +2890,8 @@ public:
   {
     SLIC_ASSERT(a < b);
     m_knotvec_v.rescale(a, b);
+
+    rescaleTrimmingCurves_v(a, b);
   }
 
   /*!
@@ -2889,7 +2946,21 @@ public:
       os << m_knotvec_v[i] << ((i < nkts_v - 1) ? "," : "]");
     }
 
-    if(isTrimmed) return os;
+    if(isTrimmed())
+    {
+      os << ", trimming curves [";
+      for(int i = 0; i < m_trimmingCurves.size(); ++i)
+      {
+        os << m_trimmingCurves[i];
+        if(i < m_trimmingCurves.size() - 1)
+        {
+          os << ", ";
+        }
+      }
+      os << "]";
+    }
+    
+    return os;
   }
 
   /// \brief Function to check if the NURBS surface is valid
@@ -2965,6 +3036,28 @@ private:
 
   bool m_isTrimmed;
   TrimmingCurveVec m_trimmingCurves;
+
+  void rescaleTrimmingCurves_u(T a, T b)
+  {
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = a + (b - a) * curve[i][0];
+      }
+    }
+  }
+
+  void rescaleTrimmingCurves_v(T a, T b)
+  {
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][1] = a + (b - a) * curve[i][1];
+      }
+    }
+  }
 };
 
 //------------------------------------------------------------------------------

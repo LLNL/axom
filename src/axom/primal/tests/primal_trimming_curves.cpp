@@ -157,7 +157,7 @@ TEST(primal_nurbspatch_trimming, visibility_queries)
   EXPECT_FALSE(nPatch.isVisible(0.0, 0.1));
   EXPECT_FALSE(nPatch.isVisible(0.9, 0.0));
 
-  // Remove all trimming curves, but keep it trimmed, 
+  // Remove all trimming curves, but keep it trimmed,
   //  i.e. a fully invisible patch
   nPatch.clearTrimmingCurves();
   EXPECT_TRUE(nPatch.isTrimmed());
@@ -261,9 +261,10 @@ TEST(primal_nurbspatch_trimming, trimming_curve_orientation)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch_trimming, base_surface_orientation)
+TEST(primal_nurbspatch_trimming, knot_vector_manipulation)
 {
-    SLIC_INFO("Testing queries for trimming curves");
+  SLIC_INFO(
+    "Testing position of trimming curves after changing surface orientation");
 
   const int DIM = 3;
   using CoordType = double;
@@ -291,18 +292,99 @@ TEST(primal_nurbspatch_trimming, base_surface_orientation)
                                              PointType {2.0, 2.0, 1.0}});
 
   NURBSPatchType nPatch(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
-  NURBSPatchType nPatchCopy(nPatch);
 
-  // Add a simple trimming curve from a NURBS curve
+  // Add a simple, not symmetric trimming curve from a NURBS curve
   axom::Array<ParameterPointType> trimmingCurveControlPoints {
-    ParameterPointType {0.25, 0.25},
-    ParameterPointType {0.75, 0.25},
-    ParameterPointType {0.75, 0.75},
-    ParameterPointType {0.25, 0.75},
-    ParameterPointType {0.25, 0.25}};
-
+    ParameterPointType {0.20, 0.15},
+    ParameterPointType {0.70, 0.15},
+    ParameterPointType {0.70, 0.65},
+    ParameterPointType {0.20, 0.65},
+    ParameterPointType {0.20, 0.15}};
   TrimmingCurveType trimmingCurve(trimmingCurveControlPoints, 2);
   nPatch.addTrimmingCurve(trimmingCurve);
+
+  // Copy the patch and its trimming curve
+  NURBSPatchType nPatchCopy(nPatch);
+
+  double min_u = 1.0, max_u = 2.0;
+  double min_v = -1.0, max_v = 0.5;
+
+  nPatchCopy.rescale_u(min_u, max_u);
+  nPatchCopy.rescale_v(min_v, max_v);
+
+  constexpr int npts = 11;
+  double t_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, t_pts, npts);
+
+  // Make sure that the trimming curves are in the right position after rescaling
+  for(auto t : t_pts)
+  {
+    auto parameter_pt_1 = nPatch.getTrimmingCurve(0).evaluate(t);
+    auto parameter_pt_2 = nPatchCopy.getTrimmingCurve(0).evaluate(t);
+
+    auto space_pt_1 = nPatch.evaluate(parameter_pt_1[0], parameter_pt_1[1]);
+    auto space_pt_2 = nPatchCopy.evaluate(parameter_pt_2[0], parameter_pt_2[1]);
+
+    for(int N = 0; N < DIM; ++N)
+    {
+      EXPECT_NEAR(space_pt_1[N], space_pt_2[N], 1e-10);
+    }
+  }
+
+  // Flip in the u-direction
+  nPatchCopy.reverseOrientation(0);
+
+  // Check that the trimming curve is in the right position
+  for(auto t : t_pts)
+  {
+    auto parameter_pt_1 = nPatch.getTrimmingCurve(0).evaluate(t);
+    auto parameter_pt_2 = nPatchCopy.getTrimmingCurve(0).evaluate(t);
+
+    auto space_pt_1 = nPatch.evaluate(parameter_pt_1[0], parameter_pt_1[1]);
+    auto space_pt_2 = nPatchCopy.evaluate(parameter_pt_2[0], parameter_pt_2[1]);
+
+    for(int N = 0; N < DIM; ++N)
+    {
+      EXPECT_NEAR(space_pt_1[N], space_pt_2[N], 1e-10);
+    }
+  }
+
+  // Flip in the v-direction
+  nPatchCopy.reverseOrientation(1);
+
+  // Check that the trimming curve is in the right position
+  for(auto t : t_pts)
+  {
+    auto parameter_pt_1 = nPatch.getTrimmingCurve(0).evaluate(t);
+    auto parameter_pt_2 = nPatchCopy.getTrimmingCurve(0).evaluate(t);
+
+    auto space_pt_1 = nPatch.evaluate(parameter_pt_1[0], parameter_pt_1[1]);
+    auto space_pt_2 = nPatchCopy.evaluate(parameter_pt_2[0], parameter_pt_2[1]);
+
+    for(int N = 0; N < DIM; ++N)
+    {
+      EXPECT_NEAR(space_pt_1[N], space_pt_2[N], 1e-10);
+    }
+  }
+
+  // Copy the patch, reverse the axes
+  nPatchCopy = nPatch;
+  nPatchCopy.swapAxes();
+
+  // Check that the trimming curve is in the right position
+  for(auto t : t_pts)
+  {
+    auto parameter_pt_1 = nPatch.getTrimmingCurve(0).evaluate(t);
+    auto parameter_pt_2 = nPatchCopy.getTrimmingCurve(0).evaluate(t);
+
+    auto space_pt_1 = nPatch.evaluate(parameter_pt_1[0], parameter_pt_1[1]);
+    auto space_pt_2 = nPatchCopy.evaluate(parameter_pt_2[1], parameter_pt_2[0]);
+
+    for(int N = 0; N < DIM; ++N)
+    {
+      EXPECT_NEAR(space_pt_1[N], space_pt_2[N], 1e-10);
+    }
+  }
 }
 
 int main(int argc, char* argv[])
