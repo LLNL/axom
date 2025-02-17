@@ -896,13 +896,13 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
  */
 template <typename T>
 bool intersect(const Ray<T, 3>& ray,
-                                const BezierPatch<T, 3>& patch,
-                                axom::Array<T>& t,
-                                axom::Array<T>& u,
-                                axom::Array<T>& v,
-                                double tol = 1e-8,
-                                double EPS = 1e-8,
-                                bool isHalfOpen = false)
+               const BezierPatch<T, 3>& patch,
+               axom::Array<T>& t,
+               axom::Array<T>& u,
+               axom::Array<T>& v,
+               double tol = 1e-8,
+               double EPS = 1e-8,
+               bool isHalfOpen = false)
 {
   const int order_u = patch.getOrder_u();
   const int order_v = patch.getOrder_v();
@@ -997,13 +997,14 @@ bool intersect(const Ray<T, 3>& ray,
 
 template <typename T>
 bool intersect(const Ray<T, 3>& ray,
-                                const NURBSPatch<T, 3>& patch,
-                                axom::Array<T>& t,
-                                axom::Array<T>& u,
-                                axom::Array<T>& v,
-                                double tol = 1e-8,
-                                double EPS = 1e-8,
-                                bool isHalfOpen = false)
+               const NURBSPatch<T, 3>& patch,
+               axom::Array<T>& t,
+               axom::Array<T>& u,
+               axom::Array<T>& v,
+               double tol = 1e-8,
+               double EPS = 1e-8,
+               bool isTrimmed = true,
+               bool isHalfOpen = false)
 {
   // Check a bounding box of the entire NURBS first
   Point<T, 3> ip;
@@ -1061,6 +1062,12 @@ bool intersect(const Ray<T, 3>& ray,
   {
     // Also remove any intersections on the half-interval boundaries
     if(isHalfOpen && (uc[i] >= max_u_knot - EPS || vc[i] >= max_v_knot - EPS))
+    {
+      continue;
+    }
+
+    // Also remove any intersections that are trimmed out
+    if(isTrimmed && !patch.isVisible(uc[i], vc[i]))
     {
       continue;
     }
