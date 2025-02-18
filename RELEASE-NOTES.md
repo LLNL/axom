@@ -20,6 +20,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ###  Added
+- Added a new "Mir" Axom component for accelerated Material Interface Reconstruction (MIR) algorithms.
+  MIR algorithms take Blueprint meshes with a matset and they use the matset's material information
+  to split any input zones that contain multiple materials into zones that contain a single material.
+  The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
+  oriented algorithm that produces smooth interfaces between zones and their neighbors.
 - Support in `quest::IntersectionShaper` for Blueprint mesh stored in a `conduit::Node`
   or `sidre::Group`.
 - Adds new CMake configuration options, `AXOM_ENABLE_ASAN` and `AXOM_ENABLE_UBSAN`, to enable/disable AddressSanitizer and UndefinedBehaviorSanitizer respectively in Axom. Default is OFF for both.
