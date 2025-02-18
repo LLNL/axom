@@ -678,8 +678,10 @@ private:
                                              m_tricount,
                                              host_allocator);
 
-    // Initialize 2D triangles from 3D stl Points (ignore z coordinate)
+    // Initialize 2D triangles from mesh (ignore z coordinate)
     axom::Array<IndexType> nodeIds(3);
+
+    // Buffer is 3D for stl mesh
     axom::Array<Point3D> pts(3);
 
     for(int i = 0; i < m_tricount; i++)
@@ -689,6 +691,14 @@ private:
       m_surfaceMesh->getNode(nodeIds[0], pts[0].data());
       m_surfaceMesh->getNode(nodeIds[1], pts[1].data());
       m_surfaceMesh->getNode(nodeIds[2], pts[2].data());
+
+      // Verify that z-coordinates are unused by the mesh.
+      // (0 for stl mesh, undefined by in-memory triangle mesh)
+      if(pts[0][2] != 0 || pts[1][2] != 0 || pts[2][2] != 0)
+      {
+        SLIC_ERROR(axom::fmt::format(
+          "2D triangles must have undefined or value 0 z-coordinates"));
+      }
 
       Point2D p1({pts[0][0], pts[0][1]});
       Point2D p2({pts[1][0], pts[1][1]});
