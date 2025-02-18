@@ -218,15 +218,16 @@ if(AXOM_ENABLE_MPI AND MFEM_FOUND AND MFEM_USE_MPI
                 PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 6[89][0-9].")
 
             # Tests 2D stl mesh
-            set(_testname quest_shaping_driver_ex_triangle_stl_2d)
+            set(_testname quest_shaping_driver_ex_star_stl_2d)
             axom_add_test(
                 NAME ${_testname}
                 COMMAND  quest_shaping_driver_ex
-                        -i ${AXOM_DATA_DIR}/../triangle_2d.yaml
+                        -i ${shaping_data_dir}/flat_star.yaml
                         --method intersection
-                        inline_mesh --min 0 0 --max 1 1 --res 3 3 -d 2
+                        inline_mesh --min 0 0 --max 1 1 --res 4 4 -d 2
                 NUM_MPI_TASKS ${_nranks})
-            # steel triangle: right triangle of leg length 1 has analytic volume 0.5
+            # steel triangle: star composed of 16 right triangles with
+            # leg length 0.25 has analytic volume 0.5
             set_tests_properties(${_testname} PROPERTIES
                 PASS_REGULAR_EXPRESSION  "Volume of material 'steel' is 0.5")
         endif()
