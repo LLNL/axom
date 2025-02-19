@@ -3,23 +3,25 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
+
+#include "axom/sina/core/Document.hpp"
+#include "axom/sina/core/Run.hpp"
+#include "axom/sina/tests/TestRecord.hpp"
+
+#include "conduit.hpp"
+#include "conduit_relay.hpp"
+#include "conduit_relay_io.hpp"
+
+#include "gtest/gtest.h"
+#include "gmock/gmock.h"
+
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <type_traits>
 #include <utility>
-
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-
-#include "axom/core/utilities/FileUtilities.hpp"
-#include "axom/sina/core/Document.hpp"
-#include "axom/sina/core/Run.hpp"
-
-#include "axom/sina/tests/TestRecord.hpp"
-#include "conduit.hpp"
-#include "conduit_relay.hpp"
-#include "conduit_relay_io.hpp"
 
 namespace axom
 {

@@ -3,9 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/sina/core/Document.hpp"
-#include "axom/sina/core/Record.hpp"
-#include "axom/sina/core/Run.hpp"
 #include "axom/sina.hpp"
 
 extern "C" char *Get_File_Extension(char *);

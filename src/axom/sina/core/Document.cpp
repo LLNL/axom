@@ -15,6 +15,16 @@
 
 #include "axom/sina/core/Document.hpp"
 
+#include "axom/config.hpp"
+#include "axom/core/Path.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
+
+#include "conduit.hpp"
+#ifdef AXOM_USE_HDF5
+  #include "conduit_relay.hpp"
+  #include "conduit_relay_io.hpp"
+#endif
+
 #include <cstdio>
 #include <fstream>
 #include <ios>
@@ -23,15 +33,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-#include "conduit.hpp"
-#include "axom/core/Path.hpp"
-
-#ifdef AXOM_USE_HDF5
-  #include "conduit_relay.hpp"
-  #include "conduit_relay_io.hpp"
-
-  #include "axom/core/utilities/StringUtilities.hpp"
-#endif
 
 namespace axom
 {

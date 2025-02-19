@@ -16,13 +16,14 @@
  ******************************************************************************
  */
 
-#include <memory>
-#include <vector>
+#include "axom/config.hpp"
+#include "axom/sina/core/Record.hpp"
+#include "axom/sina/core/Relationship.hpp"
 
 #include "conduit.hpp"
 
-#include "axom/sina/core/Record.hpp"
-#include "axom/sina/core/Relationship.hpp"
+#include <memory>
+#include <vector>
 
 #define SINA_FILE_FORMAT_VERSION_MAJOR 1
 #define SINA_FILE_FORMAT_VERSION_MINOR 0
