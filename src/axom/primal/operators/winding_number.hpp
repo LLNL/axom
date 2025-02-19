@@ -762,8 +762,7 @@ double winding_number(const Point<T, 3>& query,
 #endif
 
 template <typename T>
-double winding_number(Point<T, 3> q,
-                      const NURBSPatch<T, 3>& nPatch)
+double winding_number(Point<T, 3> q, const NURBSPatch<T, 3>& nPatch)
 {
   return nPatch(0, 0)[0];
 }
