@@ -411,7 +411,7 @@ double winding_number(const Point<T, 3>& q,
                       const double EPS = 1e-8)
 {
   bool isOnFace = false;
-  return detail::polygon_winding_number(q, poly, isOnFace, edge_tol, EPS);
+  return winding_number(q, poly, isOnFace, edge_tol, EPS);
 }
 
 /*!
@@ -760,13 +760,6 @@ double winding_number(const Point<T, 3>& query,
   return wn;
 }
 #endif
-
-template <typename T>
-double winding_number(Point<T, 3> q, const NURBSPatch<T, 3>& nPatch)
-{
-  return nPatch(0, 0)[0];
-}
-
 //@}
 
 }  // namespace primal

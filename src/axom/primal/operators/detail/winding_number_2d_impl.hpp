@@ -336,7 +336,8 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   if(isConvexControlPolygon)
   {
     // Bezier curves are always contained in their convex control polygon
-    if(polygon_winding_number(q, controlPolygon, isOnEdge, includeBoundary, edge_tol) == 0)
+    if(polygon_winding_number(q, controlPolygon, isOnEdge, includeBoundary, edge_tol) ==
+       0)
     {
       return;
     }
