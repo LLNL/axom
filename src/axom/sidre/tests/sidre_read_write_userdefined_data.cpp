@@ -3,8 +3,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
+#include "axom/config.hpp"
 #include "axom/sidre.hpp"
+
+#include "gtest/gtest.h"
 
 using axom::sidre::DataStore;
 using axom::sidre::Group;
@@ -332,6 +334,12 @@ void test_user_defined_data()
 template <typename T, int DIM>
 void test_external_user_defined_data()
 {
+#ifndef AXOM_USE_HDF5
+  SUCCEED() << "sidre::Group::loadExternalData() is only implemented "
+               "for the 'sidre_hdf5' protocol";
+  return;
+#endif
+
   // populate data
   constexpr IndexType size = 10;
   axom::Array<T, DIM> states(size, size);

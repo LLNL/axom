@@ -256,8 +256,16 @@ TEST(sidre_datacollection, dc_reload_gf_vdim)
   EXPECT_TRUE(sdc_reader.verifyMeshBlueprint());
 }
 
+// Note: This test use Group::loadExternalData(), which is only valid (implemented)
+// for sidre_hdf5 protocol. Let's skip the test in configs w/o hdf5
 TEST(sidre_datacollection, dc_reload_externaldata)
 {
+#ifndef AXOM_USE_HDF5
+  SUCCEED() << "sidre::Group::loadExternalData() is only implemented "
+               "for the 'sidre_hdf5' protocol";
+  return;
+#endif
+
   const std::string view_name = "external_data";
 
   // Create DC
