@@ -24,13 +24,13 @@
 # Template
 .src_build_on_ruby:
   variables:
-    ALLOC_TIME: "30"
+    ALLOC_TIME: "40"
   extends: [.src_build_script, .on_ruby, .src_workflow]
   needs: []
 
 .full_build_on_ruby:
   variables:
-    ALLOC_TIME: "60"
+    ALLOC_TIME: "70"
   extends: [.full_build_script, .on_ruby, .full_workflow]
   needs: []
 

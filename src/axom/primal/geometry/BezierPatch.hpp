@@ -1861,16 +1861,16 @@ public:
   }
 
   /*!
-   * \brief Predicate to check if the Bezier patch is approximately planar
+   * \brief Predicate to check if the Bezier patch is approximately planar (i.e. flat)
    *
    * This function checks if all control points of the BezierPatch
    * are approximately on the plane defined by its four corners
    *
    * \param [in] sq_tol Threshold for sum of squared distances
    * \param [in] EPS Threshold for nearness to zero
-   * \return True if c1 is planar up to tolerance \a sq_tol
+   * \return True if the object is planar up to tolerance \a sq_tol
    */
-  bool isPlanar(double sq_tol = 1E-8, double EPS = 1e-8) const
+  bool isPlanar(double sq_tol = 1e-8, double EPS = 1e-8) const
   {
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
@@ -1912,20 +1912,21 @@ public:
     }
     plane_normal = plane_normal.unitVector();
 
-    double sqDist = 0.0;
-
     // Check all control points for simplicity
-    for(int p = 0; p <= ord_u && sqDist <= sq_tol; ++p)
+    for(int p = 0; p <= ord_u; ++p)
     {
-      for(int q = ((p == 0) ? 1 : 0); q <= ord_v && sqDist <= sq_tol; ++q)
+      for(int q = ((p == 0) ? 1 : 0); q <= ord_v; ++q)
       {
         const double signedDist =
           plane_normal.dot(m_controlPoints(p, q) - m_controlPoints(0, 0));
-        sqDist += signedDist * signedDist;
+
+        if(signedDist * signedDist > sq_tol)
+        {
+          return false;
+        }
       }
     }
-
-    return (sqDist <= sq_tol);
+    return true;
   }
 
   /*!
@@ -1938,7 +1939,7 @@ public:
    * \param [in] EPS Threshold for nearness to zero
    * \return True if c1 is planar-polygonal up to tolerance \a sq_tol
    */
-  bool isPolygonal(double sq_tol = 1E-8, double EPS = 1e-8) const
+  bool isPolygonal(double sq_tol = 1e-8, double EPS = 1e-8) const
   {
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
@@ -1996,7 +1997,7 @@ public:
    *
    * \param [in] sq_tol Threshold for absolute squared distances
    * \param [in] useStrictBilinear If true, require the patch be parametrically bilinear
-   * \return True if patch is bilinear
+   * \return True if patch is bilinear up to tolerance \a sq_tol
    */
   bool isBilinear(double sq_tol = 1e-8, bool useStrictBilinear = false) const
   {

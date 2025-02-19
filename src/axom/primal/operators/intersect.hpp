@@ -531,9 +531,7 @@ bool intersect(const Sphere<T, DIM>& s1,
  * \param [in] bb The bounding box to check for intersection
  */
 template <typename T>
-bool intersect(const Sphere<T, 2>& circle,
-               const BoundingBox<T, 2>& bb,
-               bool useEmptyInterior = false)
+bool intersect(const Sphere<T, 2>& circle, const BoundingBox<T, 2>& bb)
 {
   auto center = circle.getCenter();
   auto radius = circle.getRadius();
@@ -786,7 +784,6 @@ bool intersect(const Ray<T, 2>& r,
     {
       rp.push_back(rc[j]);
       np.push_back(axom::utilities::lerp(knot_vals[i], knot_vals[i + 1], nc[j]));
-      // knot_vals[i] + nc[j] * (knot_vals[i + 1] - knot_vals[i]));
     }
   }
 

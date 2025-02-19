@@ -634,7 +634,7 @@ TEST(primal_integral, bezierpatch_sphere)
                                    Vector3D(sphere_faces[0].evaluate(0.6, 0))};
 
   const double quad_tol = 1e-5;
-  const double EPS = 1e-10;
+  const double EPS = 1e-11;
 
   const double edge_tol = 1e-6;
   const double edge_offset = 1e-5;
