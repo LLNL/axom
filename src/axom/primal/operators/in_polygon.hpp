@@ -55,7 +55,11 @@ bool in_polygon(const Point<T, 2>& query,
 {
   bool isOnEdge = false;
   return useNonzeroRule
-    ? detail::polygon_winding_number(query, poly, isOnEdge, includeBoundary, edge_tol) != 0
+    ? detail::polygon_winding_number(query,
+                                     poly,
+                                     isOnEdge,
+                                     includeBoundary,
+                                     edge_tol) != 0
     : (detail::polygon_winding_number(query, poly, isOnEdge, includeBoundary, edge_tol) %
        2) != 0;
 }

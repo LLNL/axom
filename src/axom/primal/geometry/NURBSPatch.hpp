@@ -2347,7 +2347,7 @@ public:
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
-    SLIC_ASSERT(!isTrimmed())
+    SLIC_ASSERT(!isTrimmed());
 
     // Bisect the patch along the u direction
     split_u(u, p1, p2);
@@ -2366,7 +2366,7 @@ public:
   void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
-    SLIC_ASSERT(!isTrimmed())
+    SLIC_ASSERT(!isTrimmed());
 
     const bool isRationalPatch = isRational();
 
@@ -2437,7 +2437,7 @@ public:
   void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
-    SLIC_ASSERT(!isTrimmed())
+    SLIC_ASSERT(!isTrimmed());
 
     const bool isRationalPatch = isRational();
 
@@ -2959,7 +2959,7 @@ public:
       }
       os << "]";
     }
-    
+
     return os;
   }
 
