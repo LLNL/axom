@@ -117,7 +117,11 @@ TEST(lumberjack_NonCollectiveRootCommunicator, multiple_communicators)
 
   if(commSize > 1 && c1.rank() == 0)
   {
-    c1.push(nullptr, receivedPackedMessages_c1);
+    while(receivedPackedMessages_c1.size() == 0)
+    {
+      c1.push(nullptr, receivedPackedMessages_c1);
+    }
+
     EXPECT_EQ(receivedPackedMessages_c1.size(), 1);
     EXPECT_TRUE(!std::strcmp(receivedPackedMessages_c1[0], "c1"));
   }
