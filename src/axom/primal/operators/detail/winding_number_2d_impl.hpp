@@ -13,7 +13,6 @@
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/NURBSCurve.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
-#include "axom/primal/operators/in_polygon.hpp"
 #include "axom/primal/operators/is_convex.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
@@ -326,7 +325,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   //  If so, all subsequent control polygons will be convex as well
   Polygon<T, 2> controlPolygon(c.getControlPoints());
   const bool includeBoundary = true;
-  const bool useNonzeroRule = true;
+  bool isOnEdge = false;
 
   if(!isConvexControlPolygon)
   {
@@ -337,7 +336,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   if(isConvexControlPolygon)
   {
     // Bezier curves are always contained in their convex control polygon
-    if(!in_polygon(q, controlPolygon, includeBoundary, useNonzeroRule, edge_tol))
+    if(polygon_winding_number(q, controlPolygon, isOnEdge, includeBoundary, edge_tol) == 0)
     {
       return;
     }
@@ -511,7 +510,7 @@ double nurbs_winding_number(const Point<T, 2>& q,
   double gwn = 0.0;
   for(int i = 0; i < beziers.size(); i++)
   {
-    gwn += detail::bezier_winding_number(q, beziers[i], edge_tol, EPS);
+    gwn += bezier_winding_number(q, beziers[i], edge_tol, EPS);
   }
 
   return gwn;
