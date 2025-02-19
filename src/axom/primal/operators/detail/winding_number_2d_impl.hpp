@@ -380,51 +380,6 @@ void construct_approximating_polygon(const Point<T, 2>& q,
 }
 
 /*!
- * \brief Computes the GWN for a 2D point wrt a 2D NURBS curve
- *
- * \param [in] query The query point to test
- * \param [in] n The NURBS curve object 
- * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
- * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
- *
- * Computes the GWN by decomposing into rational Bezier curves
- *  and summing the resulting GWNs. Far-away curves can be evaluated
- *  without decomposition using direct formula.
- * 
- * \return The GWN.
- */
-template <typename T>
-double nurbs_winding_number(const Point<T, 2>& q,
-                            const NURBSCurve<T, 2>& n,
-                            double edge_tol = 1e-8,
-                            double EPS = 1e-8)
-{
-  const int deg = n.getDegree();
-  if(deg <= 0) return 0.0;
-
-  // Early return is possible for most points + curves
-  if(!n.boundingBox().expand(edge_tol).contains(q))
-  {
-    return detail::linear_winding_number(q,
-                                         n[0],
-                                         n[n.getNumControlPoints() - 1],
-                                         edge_tol);
-  }
-
-  // Decompose the NURBS curve into Bezier segments
-  auto beziers = n.extractBezier();
-
-  // Compute the GWN for each Bezier segment
-  double gwn = 0.0;
-  for(int i = 0; i < beziers.size(); i++)
-  {
-    gwn += detail::bezier_winding_number(q, beziers[i], edge_tol, EPS);
-  }
-
-  return gwn;
-}
-
-/*!
  * \brief Computes the GWN for a 2D point wrt a 2D Bezier curve
  *
  * \param [in] query The query point to test
@@ -515,6 +470,51 @@ double bezier_winding_number(const Point<T, 2>& q,
   }
 
   return gwn + closed_curve_wn - closure_wn;
+}
+
+/*!
+ * \brief Computes the GWN for a 2D point wrt a 2D NURBS curve
+ *
+ * \param [in] query The query point to test
+ * \param [in] n The NURBS curve object 
+ * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
+ * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
+ *
+ * Computes the GWN by decomposing into rational Bezier curves
+ *  and summing the resulting GWNs. Far-away curves can be evaluated
+ *  without decomposition using direct formula.
+ * 
+ * \return The GWN.
+ */
+template <typename T>
+double nurbs_winding_number(const Point<T, 2>& q,
+                            const NURBSCurve<T, 2>& n,
+                            double edge_tol = 1e-8,
+                            double EPS = 1e-8)
+{
+  const int deg = n.getDegree();
+  if(deg <= 0) return 0.0;
+
+  // Early return is possible for most points + curves
+  if(!n.boundingBox().expand(edge_tol).contains(q))
+  {
+    return detail::linear_winding_number(q,
+                                         n[0],
+                                         n[n.getNumControlPoints() - 1],
+                                         edge_tol);
+  }
+
+  // Decompose the NURBS curve into Bezier segments
+  auto beziers = n.extractBezier();
+
+  // Compute the GWN for each Bezier segment
+  double gwn = 0.0;
+  for(int i = 0; i < beziers.size(); i++)
+  {
+    gwn += detail::bezier_winding_number(q, beziers[i], edge_tol, EPS);
+  }
+
+  return gwn;
 }
 
 }  // end namespace detail
