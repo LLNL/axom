@@ -1,3 +1,4 @@
+#if 0
 // Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for internals.
 //
@@ -7,7 +8,6 @@
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
-#include "axom/mir.hpp"
 #include "axom/slic.hpp"
 
 // Include these directly for now.
@@ -551,4 +551,5 @@ private:
 }  // end namespace mir
 }  // end namespace axom
 
+#endif
 #endif

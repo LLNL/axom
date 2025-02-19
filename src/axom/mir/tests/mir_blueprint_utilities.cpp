@@ -706,6 +706,130 @@ TEST(mir_blueprint_utilities, zonelistbuilder_hip)
 #endif
 
 //------------------------------------------------------------------------------
+
+template <typename ExecSpace>
+struct test_makezonecenters
+{
+  static void test()
+  {
+    conduit::Node hostMesh;
+    create(hostMesh);
+
+    // host->device
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+    const conduit::Node &n_rmesh = deviceMesh["topologies/rmesh"];
+    auto rmeshView = axom::mir::views::make_rectilinear<2>::view(n_rmesh);
+    testTopo(deviceMesh, rmeshView, n_rmesh);
+
+    const conduit::Node &n_umesh = deviceMesh["topologies/umesh"];
+    axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<conduit::index_t>> umeshView(
+      bputils::make_array_view<conduit::index_t>(n_umesh["elements/connectivity"]),
+      bputils::make_array_view<conduit::index_t>(n_umesh["elements/sizes"]),
+      bputils::make_array_view<conduit::index_t>(n_umesh["elements/offsets"]));
+    testTopo(deviceMesh, umeshView, n_umesh);
+  }
+
+  template <typename TopologyView>
+  static void testTopo(const conduit::Node &deviceMesh, const TopologyView &topoView, const conduit::Node &n_topo)
+  {
+    const conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
+    auto coordsetView = axom::mir::views::make_rectilinear_coordset<double, 2>::view(n_coordset);
+    using CoordsetView = decltype(coordsetView);
+
+    bputils::MakeZoneCenters<ExecSpace, TopologyView, CoordsetView> zc(topoView, coordsetView);
+    conduit::Node n_field;
+    zc.execute(n_topo, n_coordset, n_field);
+
+    // device->host
+    conduit::Node n_hostField;
+    bputils::copy<axom::SEQ_EXEC>(n_hostField, n_field);
+
+    const double eps = 1.e-9;
+    const double res_x[] = {0.5, 1.5, 2.5, 0.5, 1.5, 2.5, 0.5, 1.5, 2.5};
+    const double res_y[] = {0.5, 0.5, 0.5, 1.5, 1.5, 1.5, 2.5, 2.5, 2.5};
+    const auto x = n_hostField["values/x"].as_double_accessor();
+    const auto y = n_hostField["values/y"].as_double_accessor();
+    EXPECT_EQ(x.number_of_elements(), 9);
+    EXPECT_EQ(y.number_of_elements(), 9);
+    for(int i = 0; i < 9; i++)
+    {
+      EXPECT_NEAR(x[i], res_x[i], eps);
+      EXPECT_NEAR(y[i], res_y[i], eps);
+    }
+  }
+
+  static void create(conduit::Node &hostMesh)
+  {
+    /*
+    12------13-------14-------15
+    |       |        |        |
+    |       |        |        |
+    |z6     |z7      |z8      |
+    8-------9--------10-------11
+    |       |        |        |
+    |       |        |        |
+    |z3     |z4      |z5      |
+    4-------5--------6--------7
+    |       |        |        |
+    |       |        |        |
+    |z0     |z1      |z2      |
+    0-------1--------2--------3
+    */
+    const char *yaml = R"xx(
+coordsets:
+  coords:
+    type: rectilinear
+    values:
+      x: [0., 1., 2., 3.]
+      y: [0., 1., 2., 3.]
+topologies:
+  rmesh:
+    type: rectilinear
+    coordset: coords
+  umesh:
+    type: unstructured
+    coordset: coords
+    elements:
+      shape: "quad"
+      connectivity: [0,1,5,4, 1,2,6,5, 2,3,7,6, 4,5,9,8, 5,6,10,9, 6,7,11,10, 8,9,13,12, 9,10,14,13, 10,11,15,14]
+      sizes: [4,4,4,4,4,4,4,4,4]
+      offsets: [0,4,8,12,16,20,24,28,32]
+)xx";
+
+    hostMesh.parse(yaml);
+  }
+};
+
+TEST(mir_blueprint_utilities, makezonecenters_seq)
+{
+  AXOM_ANNOTATE_SCOPE("makezonecenters_seq");
+  test_makezonecenters<seq_exec>::test();
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_blueprint_utilities, makezonecenters_omp)
+{
+  AXOM_ANNOTATE_SCOPE("makezonecenters_omp");
+  test_makezonecenters<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_blueprint_utilities, makezonecenters_cuda)
+{
+  AXOM_ANNOTATE_SCOPE("makezonecenters_cuda");
+  test_makezonecenters<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_blueprint_utilities, makezonecenters_hip)
+{
+  AXOM_ANNOTATE_SCOPE("makezonecenters_hip");
+  test_makezonecenters<hip_exec>::test();
+}
+#endif
+
+//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
   int result = 0;

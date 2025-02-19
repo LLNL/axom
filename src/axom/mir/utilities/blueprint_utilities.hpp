@@ -23,6 +23,7 @@
 
 #include <utility>
 #include <string>
+#include <vector>
 
 namespace axom
 {
@@ -315,6 +316,16 @@ bool fillFromNode(const conduit::Node &n,
 }
 //------------------------------------------------------------------------------
 
+/*!
+ * \brief Return the names of the axes for a coordset.
+ *
+ * \param n_input A Conduit node containing a coordset.
+ *
+ * \return A vector containing the names of the coordset's axes.
+ */
+std::vector<std::string> coordsetAxes(const conduit::Node &n_input);
+
+//------------------------------------------------------------------------------
 /*!
  * \brief Returns the input index (no changes).
  */

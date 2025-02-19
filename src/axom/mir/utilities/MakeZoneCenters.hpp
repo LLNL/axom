@@ -2,8 +2,8 @@
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-#ifndef AXOM_MIR_ZONE_CENTERS_HPP_
-#define AXOM_MIR_ZONE_CENTERS_HPP_
+#ifndef AXOM_MIR_MAKE_ZONE_CENTERS_HPP_
+#define AXOM_MIR_MAKE_ZONE_CENTERS_HPP_
 
 #include "axom/core.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
@@ -46,13 +46,13 @@ public:
   }
 
   /*!
-   * \brief Create a new blended field from the \a n_input field and place it in \a n_output.
+   * \brief Create a new field from the input topology and place it in \a n_output.
    *
    * \param n_topology The node that contains the input topology.
-   * \param n_input The input coordset that we're blending.
-   * \param n_outputField The output node that will contain the new zone centers field.
+   * \param n_coordset The input coordset that we're blending.
+   * \param[out] n_outputField The output node that will contain the new zone centers field.
    *
-   * \note The coordset view must agree with the coordset in n_input. We pass both
+   * \note The coordset view must agree with the coordset in n_coordset. We pass both
    *       a view and the coordset node since the view may not be able to contain
    *       some coordset metadata and remain trivially copyable.
    */
@@ -60,23 +60,13 @@ public:
                const conduit::Node &n_coordset,
                conduit::Node &n_outputField) const
   {
-    using value_type = typename CoordsetViewType::value_type;
-    using PointType = typename CoordsetViewType::PointType;
+    using value_type = typename CoordsetView::value_type;
+    using PointType = typename CoordsetView::PointType;
     using VectorType = axom::primal::Vector<value_type, PointType::DIMENSION>;
     namespace bputils = axom::mir::utilities::blueprint;
 
-    // Get the axis names for the output coordset.
-    std::vector<std::string> axes;
-    if(n_input["type"].as_string() == "uniform")
-    {
-      if(n_input.has_path("dims/i")) axes.push_back("x");
-      if(n_input.has_path("dims/j")) axes.push_back("y");
-      if(n_input.has_path("dims/k")) axes.push_back("z");
-    }
-    else
-    {
-      axes = conduit::blueprint::mesh::utils::coordset::axes(n_input);
-    }
+    // Get the axis names for the output components.
+    std::vector<std::string> axes(bputils::coordsetAxes(n_coordset));
 
     const auto nComponents = axes.size();
     SLIC_ASSERT(PointType::DIMENSION == nComponents);
@@ -105,60 +95,38 @@ public:
       compViews[i] = bputils::make_array_view<value_type>(comp);
     }
 
-    const CoordsetViewType deviceView(view);
+    const TopologyView deviceTopoView(m_topologyView);
+    const CoordsetView deviceCoordsetView(m_coordsetView);
 
-    // Copy over some original values to the start of the array.
+    // Blend the nodes in each zone to make a center point.
     axom::for_all<ExecSpace>(
-      origSize,
-      AXOM_LAMBDA(axom::IndexType index) {
-        const auto srcIndex = deviceBlend.m_originalIdsView[index];
-        const auto pt = deviceView[srcIndex];
-
-        // Store the point into the Conduit component arrays.
-        for(int comp = 0; comp < PointType::DIMENSION; comp++)
-        {
-          compViews[comp][index] = pt[comp];
-        }
-      });
-
-    // Append blended values to the end of the array.
-    axom::for_all<ExecSpace>(
-      blendSize,
-      AXOM_LAMBDA(axom::IndexType bgid) {
-        // Get the blend group index we want.
-        const auto selectedIndex =
-          SelectionPolicy::selectedIndex(deviceBlend, bgid);
-        const auto start = deviceBlend.m_blendGroupStartView[selectedIndex];
-        const auto nValues = deviceBlend.m_blendGroupSizesView[selectedIndex];
-        const auto destIndex = bgid + origSize;
+      m_topologyView.numberOfZones(),
+      AXOM_LAMBDA(axom::IndexType zoneIndex) {
+        const auto zone = deviceTopoView.zone(zoneIndex);
+        const axom::IndexType nnodes = zone.numberOfNodes();
+        const value_type weight = static_cast<value_type>(1.) / static_cast<value_type>(nnodes);
 
         VectorType blended {};
-        if(nValues == 1)
+
+        // Blend points for this zone.
+        for(IndexType i = 0; i < nnodes; i++)
         {
-          const auto index = deviceBlend.m_blendIdsView[start];
-          blended = VectorType(deviceView[index]);
-        }
-        else
-        {
-          const auto end =
-            start + deviceBlend.m_blendGroupSizesView[selectedIndex];
-          // Blend points for this blend group.
-          for(IndexType i = start; i < end; i++)
-          {
-            const auto index = deviceBlend.m_blendIdsView[i];
-            const auto weight = deviceBlend.m_blendCoeffView[i];
+            const auto index = zone.getId(i);
             blended +=
-              (VectorType(deviceView[index]) * static_cast<value_type>(weight));
-          }
+              (VectorType(deviceCoordsetView[index]) * static_cast<value_type>(weight));
         }
 
         // Store the point into the Conduit component arrays.
         for(int comp = 0; comp < PointType::DIMENSION; comp++)
         {
-          compViews[comp][destIndex] = blended[comp];
+          compViews[comp][zoneIndex] = blended[comp];
         }
       });
   }
+
+private:
+  TopologyView m_topologyView;
+  CoordsetView m_coordsetView;
 };
 
 }  // end namespace blueprint

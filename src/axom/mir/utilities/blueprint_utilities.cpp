@@ -29,6 +29,22 @@ const char *cpp2conduit<conduit::uint64>::name = "uint64";
 const char *cpp2conduit<conduit::float32>::name = "float32";
 const char *cpp2conduit<conduit::float64>::name = "float64";
 
+std::vector<std::string> coordsetAxes(const conduit::Node &n_input)
+{
+  std::vector<std::string> axes;
+  if(n_input.fetch_existing("type").as_string() == "uniform")
+  {
+    if(n_input.has_path("dims/i")) axes.push_back("x");
+    if(n_input.has_path("dims/j")) axes.push_back("y");
+    if(n_input.has_path("dims/k")) axes.push_back("z");
+  }
+  else
+  {
+    axes = conduit::blueprint::mesh::utils::coordset::axes(n_input);
+  }
+  return axes;
+}
+
 /**
  * \brief Turns a ShapeID to a VTK cell type value.
  *

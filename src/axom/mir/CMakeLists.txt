@@ -68,6 +68,7 @@ set(mir_headers
     utilities/ExtrudeMesh.hpp
     utilities/FieldBlender.hpp
     utilities/FieldSlicer.hpp
+    utilities/MakeZoneCenters.hpp
     utilities/MakeUnstructured.hpp
     utilities/MatsetSlicer.hpp
     utilities/MergeMeshes.hpp
