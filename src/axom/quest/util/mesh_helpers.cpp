@@ -622,7 +622,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
     // }
 
     // mint::Mesh requires connectivity strides, even though Blueprint doesn't.
-    elementsGrp->createViewScalar("stride", NUM_VERTS_PER_QUAD);
+    constexpr axom::IndexType BIT_SPECIFIC_NUM_VERTS_PER_QUAD = 4;
+    elementsGrp->createViewScalar("stride", BIT_SPECIFIC_NUM_VERTS_PER_QUAD);
 
     // mint::Mesh requires field group, even though Blueprint doesn't.
     meshGrp->createGroup("fields");
