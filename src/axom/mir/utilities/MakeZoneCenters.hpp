@@ -39,11 +39,12 @@ public:
    *
    * \param topologyView The view for the input topology.
    * \param coordsetView The view for the input coordset.
-   */  
-  MakeZoneCenters(const TopologyView &topologyView, const CoordsetView &coordsetView) :
-    m_topologyView(topologyView), m_coordsetView(coordsetView)
-  {
-  }
+   */
+  MakeZoneCenters(const TopologyView &topologyView,
+                  const CoordsetView &coordsetView)
+    : m_topologyView(topologyView)
+    , m_coordsetView(coordsetView)
+  { }
 
   /*!
    * \brief Create a new field from the input topology and place it in \a n_output.
@@ -78,7 +79,7 @@ public:
     n_outputField["association"] = "element";
     n_outputField["topology"] = n_topology.name();
     conduit::Node &n_values = n_outputField["values"];
-    
+
     // Determine output size.
     const auto outputSize = m_topologyView.numberOfZones();
 
@@ -104,16 +105,17 @@ public:
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const auto zone = deviceTopoView.zone(zoneIndex);
         const axom::IndexType nnodes = zone.numberOfNodes();
-        const value_type weight = static_cast<value_type>(1.) / static_cast<value_type>(nnodes);
+        const value_type weight =
+          static_cast<value_type>(1.) / static_cast<value_type>(nnodes);
 
         VectorType blended {};
 
         // Blend points for this zone.
         for(IndexType i = 0; i < nnodes; i++)
         {
-            const auto index = zone.getId(i);
-            blended +=
-              (VectorType(deviceCoordsetView[index]) * static_cast<value_type>(weight));
+          const auto index = zone.getId(i);
+          blended += (VectorType(deviceCoordsetView[index]) *
+                      static_cast<value_type>(weight));
         }
 
         // Store the point into the Conduit component arrays.

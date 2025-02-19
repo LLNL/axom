@@ -724,21 +724,30 @@ struct test_makezonecenters
     testTopo(deviceMesh, rmeshView, n_rmesh);
 
     const conduit::Node &n_umesh = deviceMesh["topologies/umesh"];
-    axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<conduit::index_t>> umeshView(
-      bputils::make_array_view<conduit::index_t>(n_umesh["elements/connectivity"]),
-      bputils::make_array_view<conduit::index_t>(n_umesh["elements/sizes"]),
-      bputils::make_array_view<conduit::index_t>(n_umesh["elements/offsets"]));
+    axom::mir::views::UnstructuredTopologySingleShapeView<
+      axom::mir::views::QuadShape<conduit::index_t>>
+      umeshView(
+        bputils::make_array_view<conduit::index_t>(
+          n_umesh["elements/connectivity"]),
+        bputils::make_array_view<conduit::index_t>(n_umesh["elements/sizes"]),
+        bputils::make_array_view<conduit::index_t>(
+          n_umesh["elements/offsets"]));
     testTopo(deviceMesh, umeshView, n_umesh);
   }
 
   template <typename TopologyView>
-  static void testTopo(const conduit::Node &deviceMesh, const TopologyView &topoView, const conduit::Node &n_topo)
+  static void testTopo(const conduit::Node &deviceMesh,
+                       const TopologyView &topoView,
+                       const conduit::Node &n_topo)
   {
     const conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
-    auto coordsetView = axom::mir::views::make_rectilinear_coordset<double, 2>::view(n_coordset);
+    auto coordsetView =
+      axom::mir::views::make_rectilinear_coordset<double, 2>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
 
-    bputils::MakeZoneCenters<ExecSpace, TopologyView, CoordsetView> zc(topoView, coordsetView);
+    bputils::MakeZoneCenters<ExecSpace, TopologyView, CoordsetView> zc(
+      topoView,
+      coordsetView);
     conduit::Node n_field;
     zc.execute(n_topo, n_coordset, n_field);
 

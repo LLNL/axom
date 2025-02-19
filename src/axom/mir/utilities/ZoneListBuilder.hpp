@@ -367,29 +367,35 @@ public:
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
       // Fill in clean zone ids.
-      cleanIndices = axom::Array<axom::IndexType>(numCleanZones, numCleanZones, allocatorID);
+      cleanIndices =
+        axom::Array<axom::IndexType>(numCleanZones, numCleanZones, allocatorID);
       auto cleanIndicesView = cleanIndices.view();
-      axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(axom::IndexType szIndex)
-      {
-        if(maskView[szIndex] > 0)
-        {
-          cleanIndicesView[maskOffsetsView[szIndex]] = selectedZonesView[szIndex];
-        }
-        maskView[szIndex] = ~maskView[szIndex];
-      });
+      axom::for_all<ExecSpace>(
+        nzones,
+        AXOM_LAMBDA(axom::IndexType szIndex) {
+          if(maskView[szIndex] > 0)
+          {
+            cleanIndicesView[maskOffsetsView[szIndex]] =
+              selectedZonesView[szIndex];
+          }
+          maskView[szIndex] = ~maskView[szIndex];
+        });
 
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
       // Fill in mixed zone ids.
-      mixedIndices = axom::Array<axom::IndexType>(numMixedZones, numMixedZones, allocatorID);
+      mixedIndices =
+        axom::Array<axom::IndexType>(numMixedZones, numMixedZones, allocatorID);
       auto mixedIndicesView = mixedIndices.view();
-      axom::for_all<ExecSpace>(nzones, AXOM_LAMBDA(axom::IndexType szIndex)
-      {
-        if(maskView[szIndex] > 0)
-        {
-          mixedIndicesView[maskOffsetsView[szIndex]] = selectedZonesView[szIndex];
-        }
-      });
+      axom::for_all<ExecSpace>(
+        nzones,
+        AXOM_LAMBDA(axom::IndexType szIndex) {
+          if(maskView[szIndex] > 0)
+          {
+            mixedIndicesView[maskOffsetsView[szIndex]] =
+              selectedZonesView[szIndex];
+          }
+        });
     }
     else if(numCleanZones > 0)
     {
@@ -400,7 +406,9 @@ public:
       auto cleanIndicesView = cleanIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(axom::IndexType index) { cleanIndicesView[index] = selectedZonesView[index]; });
+        AXOM_LAMBDA(axom::IndexType index) {
+          cleanIndicesView[index] = selectedZonesView[index];
+        });
 
       mixedIndices = axom::Array<axom::IndexType>();
     }
@@ -415,9 +423,12 @@ public:
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(axom::IndexType index) { mixedIndicesView[index] = selectedZonesView[index]; });
+        AXOM_LAMBDA(axom::IndexType index) {
+          mixedIndicesView[index] = selectedZonesView[index];
+        });
     }
   }
+
 private:
   TopologyView m_topologyView;
   MatsetView m_matsetView;
