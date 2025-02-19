@@ -377,9 +377,12 @@ TEST(primal_nurbspatch_trimming, knot_vector_manipulation)
     auto parameter_pt_1 = nPatch.getTrimmingCurve(0).evaluate(t);
     auto parameter_pt_2 = nPatchCopy.getTrimmingCurve(0).evaluate(t);
 
-    auto space_pt_1 = nPatch.evaluate(parameter_pt_1[0], parameter_pt_1[1]);
-    auto space_pt_2 = nPatchCopy.evaluate(parameter_pt_2[1], parameter_pt_2[0]);
+    EXPECT_NEAR(parameter_pt_1[0], parameter_pt_2[1], 1e-10);
+    EXPECT_NEAR(parameter_pt_1[1], parameter_pt_2[0], 1e-10);
 
+    auto space_pt_1 = nPatch.evaluate(parameter_pt_1[0], parameter_pt_1[1]);
+    auto space_pt_2 = nPatchCopy.evaluate(parameter_pt_2[0], parameter_pt_2[1]);
+    
     for(int N = 0; N < DIM; ++N)
     {
       EXPECT_NEAR(space_pt_1[N], space_pt_2[N], 1e-10);

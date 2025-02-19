@@ -1405,15 +1405,15 @@ public:
 
     m_knotvec_v.reverse();
 
-    // Mirror the trimming curves on the u-axis
-    auto min_u = m_knotvec_u[0];
-    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+    // Mirror the trimming curves on the v-axis
+    auto min_v = m_knotvec_v[0];
+    auto max_v = m_knotvec_v[m_knotvec_v.getNumKnots() - 1];
 
     for(auto& curve : m_trimmingCurves)
     {
       for(int i = 0; i < curve.getNumControlPoints(); ++i)
       {
-        curve[i][1] = min_u + max_u - curve[i][1];
+        curve[i][1] = min_v + max_v - curve[i][1];
       }
     }
   }
