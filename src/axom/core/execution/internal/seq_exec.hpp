@@ -75,8 +75,9 @@ struct execution_space<SEQ_EXEC>
   }
   static bool usesMemorySpace(axom::MemorySpace m) noexcept
   {
-    return m == memory_space
+    return m == MemorySpace::Dynamic
 #ifdef AXOM_USE_UMPIRE
+      || m == MemorySpace::Host
       || m == MemorySpace::Unified
 #endif
       ;
