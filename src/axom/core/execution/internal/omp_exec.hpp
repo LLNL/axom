@@ -68,8 +68,7 @@ struct execution_space<OMP_EXEC>
   {
     return m == MemorySpace::Dynamic
 #ifdef AXOM_USE_UMPIRE
-      || m == MemorySpace::Host
-      || m == MemorySpace::Unified
+      || m == MemorySpace::Host || m == MemorySpace::Unified
 #endif
       ;
   }
