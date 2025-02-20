@@ -408,7 +408,8 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
     SegmentType(PointType({2, 4.1}), PointType({1, 2.1})),
     SegmentType(PointType({1, 2.1}), PointType({0, 0.1})),
     SegmentType(PointType({1, 2.1}), PointType({-1, -1.9})),
-    SegmentType(PointType({0, 0.1}), PointType({-1, -1.9}))};
+    SegmentType(PointType({0, 0.1}), PointType({-1, -1.9})),
+    SegmentType(PointType({1, 2.1}), PointType({1, 2.1}))};
 
   for(auto& seg : intersecting_segs)
   {

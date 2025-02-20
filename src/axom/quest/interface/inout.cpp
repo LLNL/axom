@@ -97,7 +97,9 @@ struct InOutHelper
 
     // load the mesh
     int rc = QUEST_INOUT_FAILED;
+#ifdef AXOM_USE_C2C
     double revolvedVolume = 0.;
+#endif
     switch(DIM)
     {
     case 2:
@@ -110,7 +112,6 @@ struct InOutHelper
                                            revolvedVolume,
                                            comm);
 #else
-      AXOM_UNUSED_VAR(revolvedVolume);
       SLIC_WARNING(fmt::format(
         "Cannot read contour file: C2C not enabled in this configuration.",
         file));

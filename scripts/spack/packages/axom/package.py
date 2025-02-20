@@ -288,9 +288,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
-        # Add optimization flag workaround for Debug builds with cray compiler or newer HIP
-        if "+rocm" in spec:
-            entries.append(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", "-O1 -g -DNDEBUG"))
+        # Add optimization flag workaround for builds with cray compiler
+        if spec.satisfies("%cce"):
+            entries.append(cmake_cache_string("CMAKE_CXX_FLAGS_DEBUG", "-O1 -g"))
 
         return entries
 
@@ -602,6 +602,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         options.append(self.define_from_variant("BUILD_SHARED_LIBS", "shared"))
         options.append(self.define_from_variant("AXOM_ENABLE_EXAMPLES", "examples"))
         options.append(self.define_from_variant("AXOM_ENABLE_TOOLS", "tools"))
+        if "+raja" not in spec or "+umpire" not in spec:
+            options.append("-DAXOM_ENABLE_MIR:BOOL=OFF")
 
         return options
 

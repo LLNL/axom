@@ -24,6 +24,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Line.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
@@ -768,7 +769,7 @@ bool intersect_tri_ray(const Triangle<T, 3>& tri,
   //find out dimension where ray direction is maximal
   int kx, ky, kz;
 
-  NumArray r = primal::abs(R.direction().array());
+  NumArray r = axom::abs(R.direction().array());
 
   //z-direction largest
   if((r[2] >= r[0]) && (r[2] >= r[1]))
@@ -1687,6 +1688,306 @@ AXOM_HOST_DEVICE bool intersect_plane_tet3d(const Plane<T, 3>& p,
   }
 
   return caseNumber > 0 && caseNumber < 15;
+}
+
+/*! \brief Determines if a line intersects a bilinear patch.
+ * \param [in] line The line to intersect with the bilinear patch.
+ * \param [in] p0 The first corner of the bilinear patch.
+ * \param [in] p1 The second corner in ccw order.
+ * \param [in] p2 The third corner.
+ * \param [in] p3 The fourth corner.
+ * \param [out] t The t parameter(s) of the intersection point wrt the ray.
+ * \param [out] u The u parameter(s) of the intersection point wrt the patch.
+ * \param [out] v The v parameter(s) of the intersection point wrt the patch.
+ * \param [in] EPS The parameter space tolerance for intersection.
+ * \param [in] isRay If true, only return intersections with t >= 0.
+ *
+ * Implements GARP algorithm from Chapter 8 of Ray Tracing Gems (2019)
+ *
+ * \note A bilinear patch is parameterized in [0 - EPS, 1 + EPS]^2 
+ * 
+ * \note There can be either 0, 1, 2 discrete intersections, or a continuous segment
+ *  of intersections, in which case the method returns the ceneter of this segment as one point.
+ * 
+ * \note Always returns false if the line is coplanar to a planar polygon
+ * 
+ * \return true iff the line intersects the bilinear patch, otherwise false.
+ */
+AXOM_HOST_DEVICE
+inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
+                                          const Point3& p00,
+                                          const Point3& p10,
+                                          const Point3& p11,
+                                          const Point3& p01,
+                                          axom::Array<double>& t,
+                                          axom::Array<double>& u,
+                                          axom::Array<double>& v,
+                                          double EPS = 1e-8,
+                                          bool isRay = false)
+{
+  Vector3 e10(p00, p10);
+  Vector3 e11(p10, p11);
+  Vector3 e00(p00, p01);
+
+  Vector3 qn = Vector3::cross_product(e10, Vector3(p11, p01));
+
+  Vector3 q00(line.origin(), p00), q10(line.origin(), p10);
+
+  // Solve a quadratic to find the parameters u0 of the B(u0, v) isocurves
+  //  that are closest to the line
+  double au = Vector3::scalar_triple_product(q00, line.direction(), e00);
+  double cu = Vector3::dot_product(qn, line.direction());
+  double bu =
+    Vector3::scalar_triple_product(q10, line.direction(), e11) - au - cu;
+
+  // Rescale the coefficients to avoid (some) numerical issues
+  double su = std::max(std::fabs(au), std::max(fabs(bu), fabs(cu)));
+  au /= su;
+  bu /= su;
+  cu /= su;
+
+  // Decide what to do based on the coefficients
+  if(!axom::utilities::isNearlyEqual(su, 0.0, primal::PRIMAL_TINY))
+  {
+    double u1, u2;
+
+    // Decide what to do based on the discriminant
+    double det = bu * bu - 4 * au * cu;
+    if(det < 0)  // No solutions
+    {
+      return false;
+    }
+    else if(axom::utilities::isNearlyEqual(cu, 0.0, EPS))  // Quadratic is a line
+    {
+      u1 = -au / bu;
+      u2 = -1;
+    }
+    else if(axom::utilities::isNearlyEqual(det, 0.0, EPS))  // One repeated solution
+    {
+      u1 = -bu / (2 * cu);
+      u2 = -1;
+    }
+    else
+    {
+      u1 = 0.5 * (-bu - std::copysign(std::sqrt(det), bu));
+      u2 = au / u1;
+      u1 /= cu;
+    }
+
+    // Find the point on the isocurve that is closest to the ray
+    for(auto u0 : {u1, u2})
+    {
+      if(u0 < -EPS || u0 > 1.0 + EPS) continue;
+
+      Vector3 pa = (1 - u0) * q00 + u0 * q10;
+      Vector3 pb = (1 - u0) * e00 + u0 * e11;  // actually stores pb - pa
+      Vector3 n = Vector3::cross_product(line.direction(), pb);
+      det = Vector3::dot_product(n, n);
+
+      // Need a separate tolerance for this for the case of small patches
+      if(!axom::utilities::isNearlyEqual(det, 0.0, primal::PRIMAL_TINY))
+      {
+        n = Vector3::cross_product(n, pa);
+        double t0 = Vector3::dot_product(n, pb) / det;
+        double v0 = Vector3::dot_product(n, line.direction()) / det;
+        if(-EPS <= v0 && v0 <= 1.0 + EPS)
+        {
+          if(t0 >= -EPS || !isRay)
+          {
+            t.push_back(t0);
+            u.push_back(u0);
+            v.push_back(v0);
+          }
+        }
+      }
+      else  // Ray is parallel to the line segment pa + v * (pb - pa)
+      {
+        // Determine if the line is colinear to the segment
+        double cross = Vector3::cross_product(pa, line.direction()).norm();
+        if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
+        {
+          // Parameters of intersection are non-unique,
+          //  so take the center of the segment the intersection
+          //  (this avoids any inclusion issues at the boundary)
+          const double t1 = Vector3::dot_product(pa, line.direction());
+          const double t2 = Vector3::dot_product(pa + pb, line.direction());
+
+          if(!isRay || std::min(t1, t2) > 0.0)
+          {
+            // Always an intersection in this case
+            t.push_back(0.5 * (t1 + t2));
+            v.push_back(0.5);
+            u.push_back(u0);
+
+            return true;
+          }
+          else if(t1 * t2 <= 0)
+          {
+            // Means the origin is inside the segment
+
+            // Switch based on orientation of segment
+            if(t1 == t2)
+            {
+              t.push_back(0.5 * t1);
+              v.push_back(0.5);
+            }
+            else if(t1 < t2)
+            {
+              t.push_back(0.5 * t2);
+              v.push_back((t1 - 0.5 * t2) / (t1 - t2));
+            }
+            else
+            {
+              t.push_back(0.5 * t1);
+              v.push_back(-0.5 * t1 / (t2 - t1));
+            }
+            u.push_back(u0);
+
+            return true;
+          }
+          else
+          {
+            // No intersection
+            return false;
+          }
+        }
+      }
+    }
+  }
+  else
+  {
+    // Switch to finding B(u, v0) isocurves instead
+    Vector3 e01(p01, p11);
+    Vector3 qm = Vector3::cross_product(e00, -e11);
+    Vector3 q01(line.origin(), p01);
+
+    // Find the analogous coefficients for B(u, v0) isocurves
+    double av = Vector3::scalar_triple_product(q00, line.direction(), e10);
+    double cv = Vector3::dot_product(qm, line.direction());
+    double bv =
+      Vector3::scalar_triple_product(q01, line.direction(), e01) - av - cv;
+
+    double sv = std::max(std::fabs(av), std::max(fabs(bv), fabs(cv)));
+    av /= sv;
+    bv /= sv;
+    cv /= sv;
+
+    // If these are also all zero, then the ray is coplanar to a polygonal patch
+    if(axom::utilities::isNearlyEqual(sv, 0.0, primal::PRIMAL_TINY))
+    {
+      // This case indicates the ray is tangent to the surface,
+      //  which we don't count as an intersection
+      return false;
+    }
+
+    double v1, v2;
+
+    // Decide what to do based on the discriminant
+    double det = bv * bv - 4 * av * cv;
+    if(det < 0)  // No solutions
+    {
+      return false;
+    }
+    else if(axom::utilities::isNearlyEqual(cv, 0.0, EPS))  // Quadratic is a line
+    {
+      v1 = -av / bv;
+      v2 = -1;
+    }
+    else if(axom::utilities::isNearlyEqual(det, 0.0, EPS))  // One repeated solution
+    {
+      v1 = -bv / (2 * cv);
+      v2 = -1;
+    }
+    else
+    {
+      v1 = 0.5 * (-bv - std::copysign(std::sqrt(det), bv));
+      v2 = av / v1;
+      v1 /= cv;
+    }
+
+    // Find the point on the isocurve that is closest to the ray
+    for(auto v0 : {v1, v2})
+    {
+      if(v0 < -EPS || v0 > 1.0 + EPS) continue;
+
+      Vector3 pa = (1.0 - v0) * q00 + v0 * q01;
+      Vector3 pb = (1.0 - v0) * e10 + v0 * e01;  // actually stores pb - pa
+      Vector3 n = Vector3::cross_product(line.direction(), pb);
+      det = Vector3::dot_product(n, n);
+
+      // Need a separate tolerance for this for the case of small patches
+      if(!axom::utilities::isNearlyEqual(det, 0.0, primal::PRIMAL_TINY))
+      {
+        n = Vector3::cross_product(n, pa);
+        double t0 = Vector3::dot_product(n, pb) / det;
+        double u0 = Vector3::dot_product(n, line.direction()) / det;
+
+        if(-EPS <= u0 && u0 <= 1.0 + EPS)
+        {
+          if(t0 >= -EPS || !isRay)
+          {
+            t.push_back(t0);
+            u.push_back(u0);
+            v.push_back(v0);
+          }
+        }
+      }
+      else  // Ray is parallel to the line segment pa + u * (pb - pa)
+      {
+        // Determine if the line is colinear to the segment
+        double cross = Vector3::cross_product(pa, line.direction()).norm();
+        if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
+        {
+          // Parameters of intersection are non-unique,
+          //  so take the center of the segment the intersection
+          //  (this avoids any inclusion issues at the boundary)
+          const double t1 = Vector3::dot_product(pa, line.direction());
+          const double t2 = Vector3::dot_product(pa + pb, line.direction());
+
+          if(!isRay || std::min(t1, t2) > 0.0)
+          {
+            // Always an intersection in this case
+            t.push_back(0.5 * (t1 + t2));
+            u.push_back(0.5);
+            v.push_back(v0);
+
+            return true;
+          }
+          else if(t1 * t2 <= 0)
+          {
+            // Means the origin is inside the segment
+
+            // Switch based on orientation of segment
+            if(t1 == t2)
+            {
+              t.push_back(0.5 * t1);
+              v.push_back(0.5);
+            }
+            else if(t1 < t2)
+            {
+              t.push_back(0.5 * t2);
+              u.push_back((t1 - 0.5 * t2) / (t1 - t2));
+            }
+            else
+            {
+              t.push_back(0.5 * t1);
+              u.push_back(-0.5 * t1 / (t2 - t1));
+            }
+            v.push_back(v0);
+
+            return true;
+          }
+          else
+          {
+            // No intersection
+            return false;
+          }
+        }
+      }
+    }
+  }
+
+  return !t.empty();
 }
 
 }  // end namespace detail

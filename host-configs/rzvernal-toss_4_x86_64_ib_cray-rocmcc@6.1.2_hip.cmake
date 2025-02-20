@@ -41,8 +41,6 @@ set(CMAKE_Fortran_FLAGS "-Mfreeform" CACHE STRING "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_CXX_FLAGS_DEBUG "-O1 -g -DNDEBUG" CACHE STRING "")
-
 #------------------------------------------------------------------------------
 # MPI
 #------------------------------------------------------------------------------

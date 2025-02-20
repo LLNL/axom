@@ -259,7 +259,7 @@ int main(int argc, char** argv)
   }
 
   // Generate a Cartesian (high order) mesh for the query points
-  const auto query_res = primal::NumericArray<int, 2>(boxResolution.data());
+  const auto query_res = axom::NumericArray<int, 2>(boxResolution.data());
   const auto query_box =
     BoundingBox2D(Point2D(boxMins.data()), Point2D(boxMaxs.data()));
 

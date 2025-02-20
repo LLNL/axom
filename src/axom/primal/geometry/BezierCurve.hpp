@@ -15,7 +15,6 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Segment.hpp"
@@ -827,9 +826,11 @@ public:
    * are approximately on the line defined by its two endpoints
    *
    * \param [in] tol Threshold for sum of squared distances
-   * \return True if c1 is near-linear
+   * \param [in] useStrictLinear If true, checks that the control points are
+   *   evenly spaced along the line
+   * \return True if curve is near-linear
    */
-  bool isLinear(double tol = 1E-8) const
+  bool isLinear(double tol = 1e-8, bool useStrictLinear = false) const
   {
     const int ord = getOrder();
     if(ord <= 1)
@@ -837,13 +838,37 @@ public:
       return true;
     }
 
-    SegmentType seg(m_controlPoints[0], m_controlPoints[ord]);
-    double sqDist = 0.0;
-    for(int p = 1; p < ord && sqDist <= tol; ++p)  // check interior control points
+    if(useStrictLinear)
     {
-      sqDist += squared_distance(m_controlPoints[p], seg);
+      // Check that the control points are not too far away from the line,
+      //  AND that they are evenly spaced along the line
+      for(int p = 1; p < ord; ++p)
+      {
+        double t = p / static_cast<T>(ord);
+        PointType the_pt =
+          PointType::lerp(m_controlPoints[0], m_controlPoints[ord], t);
+
+        if(squared_distance(m_controlPoints[p], the_pt) > tol)
+        {
+          return false;
+        }
+      }
     }
-    return (sqDist <= tol);
+    else
+    {
+      // Check that the control points are not too far away from the line between control points
+      SegmentType seg(m_controlPoints[0], m_controlPoints[ord]);
+
+      for(int p = 1; p < ord; ++p)  // check interior control points
+      {
+        if(squared_distance(m_controlPoints[p], seg) > tol)
+        {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   /*!

@@ -36,6 +36,9 @@ filesystem example snippet.
    :end-before: _timer_end
    :language: C++
 
+Axom provides the NumericArray class, which implements arithmetic
+operations on numerical tuples.
+
 There are several other utility functions.  Some are numerical functions such as
 variations on ``clamp`` (ensure a variable is restricted to a given range) and
 ``swap`` (exchange the values of two variables).  There are also functions for

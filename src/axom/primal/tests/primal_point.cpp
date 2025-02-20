@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 #include "axom/slic.hpp"
@@ -172,7 +173,7 @@ TEST(primal_point, point_numericArray_constructor)
 {
   static const int DIM = 5;
   using CoordType = int;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
   using QPoint = primal::Point<CoordType, DIM>;
 
   // Set elt i of input array to i

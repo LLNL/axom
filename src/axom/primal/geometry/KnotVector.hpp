@@ -157,8 +157,8 @@ public:
    */
   T& operator[](axom::IndexType i)
   {
-    return m_knots[i];
     SLIC_ASSERT(isValid());
+    return m_knots[i];
   }
 
   /// \brief Return the degree of the knot vector
@@ -190,6 +190,21 @@ public:
 
   /// \brief Return the number of knots in the knot vector
   axom::IndexType getNumKnots() const { return m_knots.size(); }
+
+  /// \brief Return an array of the unique knot values
+  axom::Array<T> getUniqueKnots() const
+  {
+    axom::Array<T> unique_knots;
+    for(int i = 0; i < m_knots.size(); ++i)
+    {
+      if(i == 0 || m_knots[i] != m_knots[i - 1])
+      {
+        unique_knots.push_back(m_knots[i]);
+      }
+    }
+
+    return unique_knots;
+  }
 
   /// \brief Return the number of valid knot spans
   axom::IndexType getNumKnotSpans() const

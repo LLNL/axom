@@ -20,10 +20,10 @@
 #include "axom/fmt.hpp"
 #include "axom/CLI11.hpp"
 
-// NOTE: The shaping driver requires Axom to be configured with mfem as well as
+// NOTE: The shaping driver requires Axom to be configured with conduit or mfem and
 // the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION CMake option
-#ifndef AXOM_USE_MFEM
-  #error Shaping functionality requires Axom to be configured with MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
+#if !defined(AXOM_USE_MFEM) && !defined(AXOM_USE_CONDUIT)
+  #error Shaping functionality requires Axom to be configured with Conduit or MFEM and the AXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION option
 #endif
 
 #include "mfem.hpp"
@@ -107,7 +107,7 @@ public:
     {
       using BBox2D = primal::BoundingBox<double, 2>;
       using Pt2D = primal::Point<double, 2>;
-      auto res = primal::NumericArray<int, 2>(boxResolution.data());
+      auto res = axom::NumericArray<int, 2>(boxResolution.data());
       auto bbox = BBox2D(Pt2D(boxMins.data()), Pt2D(boxMaxs.data()));
 
       SLIC_INFO(axom::fmt::format(
@@ -122,7 +122,7 @@ public:
     {
       using BBox3D = primal::BoundingBox<double, 3>;
       using Pt3D = primal::Point<double, 3>;
-      auto res = primal::NumericArray<int, 3>(boxResolution.data());
+      auto res = axom::NumericArray<int, 3>(boxResolution.data());
       auto bbox = BBox3D(Pt3D(boxMins.data()), Pt3D(boxMaxs.data()));
 
       SLIC_INFO(axom::fmt::format(
@@ -566,7 +566,16 @@ int main(int argc, char** argv)
     shaper = new quest::SamplingShaper(params.shapeSet, &shapingDC);
     break;
   case ShapingMethod::Intersection:
-    shaper = new quest::IntersectionShaper(params.shapeSet, &shapingDC);
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+    shaper = new quest::IntersectionShaper(
+      params.policy,
+      axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq),
+      params.shapeSet,
+      &shapingDC);
+#else
+    SLIC_ERROR(
+      "IntersectionShaper requires Axom to be configured with Umpire.");
+#endif
     break;
   }
   SLIC_ASSERT_MSG(shaper != nullptr, "Invalid shaping method selected!");
@@ -604,17 +613,18 @@ int main(int argc, char** argv)
     }
   }
 
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   // Set specific parameters here for IntersectionShaper
   if(auto* intersectionShaper = dynamic_cast<quest::IntersectionShaper*>(shaper))
   {
     intersectionShaper->setLevel(params.refinementLevel);
-    intersectionShaper->setExecPolicy(params.policy);
 
     if(!params.backgroundMaterial.empty())
     {
       intersectionShaper->setFreeMaterialName(params.backgroundMaterial);
     }
   }
+#endif
 
   //---------------------------------------------------------------------------
   // Project initial volume fractions, if applicable

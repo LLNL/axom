@@ -8,7 +8,6 @@
 #include "axom/core.hpp"
 
 #include "axom/primal/constants.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"

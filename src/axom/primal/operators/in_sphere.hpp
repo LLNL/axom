@@ -132,6 +132,54 @@ inline bool in_sphere(const Point<T, 3>& q,
   return in_sphere(q, tet[0], tet[1], tet[2], tet[3], EPS);
 }
 
+/*!
+ * \brief Tests whether a bounding box lies inside a 2D sphere
+ * 
+ * \param [in] bb the bounding box
+ * \param [in] circle the sphere
+ */
+template <typename T>
+inline bool in_sphere(const BoundingBox<T, 2>& bb, const Sphere<T, 2>& circle)
+{
+  // Check if any corner of the bounding box is outside the sphere.
+  //  This version requires a lot of multiplications, but no square roots
+  //  and a higher likelihood of early returns.
+  auto the_max = bb.getMax();
+  auto the_min = bb.getMin();
+  auto radius = circle.getRadius();
+  auto center = circle.getCenter();
+
+  if((center[0] - the_min[0]) * (center[0] - the_min[0]) +
+       (center[1] - the_min[1]) * (center[1] - the_min[1]) >
+     radius * radius)
+  {
+    return false;
+  }
+
+  if((center[0] - the_max[0]) * (center[0] - the_max[0]) +
+       (center[1] - the_min[1]) * (center[1] - the_min[1]) >
+     radius * radius)
+  {
+    return false;
+  }
+
+  if((center[0] - the_min[0]) * (center[0] - the_min[0]) +
+       (center[1] - the_max[1]) * (center[1] - the_max[1]) >
+     radius * radius)
+  {
+    return false;
+  }
+
+  if((center[0] - the_max[0]) * (center[0] - the_max[0]) +
+       (center[1] - the_max[1]) * (center[1] - the_max[1]) >
+     radius * radius)
+  {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace primal
 }  // namespace axom
 

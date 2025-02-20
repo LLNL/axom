@@ -20,6 +20,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ###  Added
+- Added a new "Mir" Axom component for accelerated Material Interface Reconstruction (MIR) algorithms.
+  MIR algorithms take Blueprint meshes with a matset and they use the matset's material information
+  to split any input zones that contain multiple materials into zones that contain a single material.
+  The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
+  oriented algorithm that produces smooth interfaces between zones and their neighbors.
+- Support in `quest::IntersectionShaper` for Blueprint mesh stored in a `conduit::Node`
+  or `sidre::Group`.
 - Adds new CMake configuration options, `AXOM_ENABLE_ASAN` and `AXOM_ENABLE_UBSAN`, to enable/disable AddressSanitizer and UndefinedBehaviorSanitizer respectively in Axom. Default is OFF for both.
 - A number of new `klee::Geometry` constructors are added, for the different shapes now supported.
   This is a temporary change.  The class will be subclassed in the future to support a diversity of geometries.
@@ -33,8 +40,12 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
 - Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
   of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
+- Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
 
 ###  Changed
+- `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.
+- `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
+  Changing the policy after construction is no longer supported.
 - Importing Conduit array data into `sidre::View` now allocates destination
   data using the `View`'s parent's allocator ID, instead of always using
   host memory.  This is consistent with the behavior of deep-copying data
@@ -45,6 +56,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - `MFEMSidreDataCollection::LoadExternalData` now takes two optional string parameters, one that is a
   filename (defaults to the `name` member variable) and the other is a `Group` path relative to the base of
   the Data Collection itself (defaults to the root of the `DataStore`).
+- `SLIC_ASSERT`,`SLIC_ASSERT_MSG`,`SLIC_CHECK`, and `SLIC_CHECK_MSG` macros delegate to assert() within HIP device kernels.
 
 ###  Deprecated
 
@@ -52,8 +64,9 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 
 ###  Fixed
 - Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
-This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
-as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+  This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
+  as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+- Minor bugfix to `primal::intersect(segment, ray)` to better handle cases when segment and ray overlap.
 - Fixes a memory leak in `axom::Array` copy constructor.
 - Fixes robustness issue with the `axom::primal::clip` overload for clipping a 2D polygon against another 2D polygon.
 
