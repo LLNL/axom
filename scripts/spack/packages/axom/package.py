@@ -330,7 +330,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             rocm_root = os.path.dirname(spec["llvm-amdgpu"].prefix)
             entries.append(cmake_cache_path("ROCM_PATH", rocm_root))
 
-            hip_link_flags = ""
+            hip_link_flags = "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
 
             # Recommended MPI flags
             hip_link_flags += "-lxpmem "
@@ -347,7 +347,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     hip_link_flags += "-L{0}/lib/llvm/lib -Wl,-rpath,{0}/lib/llvm/lib ".format(rocm_root)
                 else:
                     hip_link_flags += "-L{0}/llvm/lib -Wl,-rpath,{0}/llvm/lib ".format(rocm_root)
-                hip_link_flags += " -L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
                 hip_link_flags += "-lpgmath -lflang -lflangrti -lompstub "
 
             # Remove extra link library for crayftn
@@ -602,7 +601,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         options.append(self.define_from_variant("BUILD_SHARED_LIBS", "shared"))
         options.append(self.define_from_variant("AXOM_ENABLE_EXAMPLES", "examples"))
         options.append(self.define_from_variant("AXOM_ENABLE_TOOLS", "tools"))
-        if "+raja" not in spec or "+umpire" not in spec:
+        if "+raja" not in self.spec or "+umpire" not in self.spec:
             options.append("-DAXOM_ENABLE_MIR:BOOL=OFF")
 
         return options
