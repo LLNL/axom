@@ -33,7 +33,7 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
 /*!
  *****************************************************************************
  * \brief Receives any Message sent to this rank, if there are any messages 
- *  that are sent. Returns null if no messages are sent.
+ *  that have arrived. Returns null if no messages are sent.
  *
  * \param [in] comm The MPI Communicator.
  * \param [in] tag The MPI tag to use for communication.  When set to zero, 

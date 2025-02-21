@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,7 +41,7 @@ public:
    * It is required that this is called before using the Communicator.
    *
    * \param [in] comm The MPI Communicator
-   * \param [in] ranksLimit Limit on how many ranks are individually tracked per
+   * \param [in] ranksLimit Upper Limit on number of ranks that are tracked per
    *  Message.
    *****************************************************************************
    */
