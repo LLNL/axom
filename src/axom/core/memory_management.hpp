@@ -224,6 +224,8 @@ inline T* allocate(std::size_t n, int allocID) noexcept
 #endif
   // Without Umpire, only DYNAMIC_ALLOCATOR_ID is valid.
   axom::utilities::processAbort();
+
+  return nullptr;  // Silence warning.
 }
 //------------------------------------------------------------------------------
 template <typename T>
@@ -379,6 +381,8 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
     return MemorySpace::Dynamic;
   }
 #endif
+
+  return MemorySpace::Dynamic;  // Silence warning.
 }
 
 #ifdef AXOM_USE_UMPIRE
