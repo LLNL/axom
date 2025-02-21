@@ -549,6 +549,7 @@ TEST(core_memory_management, interspace_reallocation)
   {
     for(auto dstAllocId : allocIds)
     {
+      std::cout << "Testing allocator ids " << srcAllocId << " and " << dstAllocId << std::endl;
       // For each combination of srcAllocId and dstAllocId,
       // allocate src, reallocate to dst, reallocate back to src.
 
