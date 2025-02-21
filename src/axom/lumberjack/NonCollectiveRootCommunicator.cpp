@@ -14,6 +14,7 @@
  */
 
 #include <limits>
+#include <iostream>
 
 #include "axom/lumberjack/NonCollectiveRootCommunicator.hpp"
 #include "axom/lumberjack/MPIUtility.hpp"
@@ -24,6 +25,11 @@ namespace lumberjack
 {
 void NonCollectiveRootCommunicator::initialize(MPI_Comm comm, int ranksLimit)
 {
+  if(ranksLimit < 1)
+  {
+    std::cerr << "Error: Ranks limit passed to NonCollectiveRootCommunicator "
+              << "is not positive" << std::endl;
+  }
   MPI_Comm_dup(comm, &m_mpiComm);
   MPI_Comm_rank(m_mpiComm, &m_mpiCommRank);
   MPI_Comm_size(m_mpiComm, &m_mpiCommSize);
