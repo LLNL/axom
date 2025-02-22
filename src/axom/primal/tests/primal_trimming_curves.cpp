@@ -16,12 +16,12 @@
 
 namespace primal = axom::primal;
 
-//------------------------------------------------------------------------------
-TEST(primal_nurbspatch_trimming, basic_operations)
+// Test fixture to define a common untrimmed patch
+class TrimmingCurveTest : public ::testing::Test
 {
-  SLIC_INFO("Testing access of trimming curves");
+public:
+  static const int DIM = 3;
 
-  const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
   using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
@@ -29,24 +29,39 @@ TEST(primal_nurbspatch_trimming, basic_operations)
   using ParameterPointType = primal::Point<CoordType, 2>;
   using TrimmingCurveType = primal::NURBSCurve<CoordType, 2>;
 
-  const int degree_u = 1;
-  const int degree_v = 1;
+protected:
+  virtual void SetUp()
+  {
+    const int degree_u = 1;
+    const int degree_v = 1;
 
-  const int npts_u = 3;
-  const int npts_v = 3;
+    const int npts_u = 3;
+    const int npts_v = 3;
 
-  // Construct from 1D axom::Array
-  axom::Array<PointType> controlPointsArray({PointType {0.0, 0.0, 1.0},
-                                             PointType {0.0, 1.0, 0.0},
-                                             PointType {0.0, 2.0, 0.0},
-                                             PointType {1.0, 0.0, 0.0},
-                                             PointType {1.0, 1.0, -1.0},
-                                             PointType {1.0, 2.0, 0.0},
-                                             PointType {2.0, 0.0, 0.0},
-                                             PointType {2.0, 1.0, 0.0},
-                                             PointType {2.0, 2.0, 1.0}});
+    // Construct from 1D axom::Array
+    axom::Array<PointType> controlPointsArray({PointType {0.0, 0.0, 1.0},
+                                               PointType {0.0, 1.0, 0.0},
+                                               PointType {0.0, 2.0, 0.0},
+                                               PointType {1.0, 0.0, 0.0},
+                                               PointType {1.0, 1.0, -1.0},
+                                               PointType {1.0, 2.0, 0.0},
+                                               PointType {2.0, 0.0, 0.0},
+                                               PointType {2.0, 1.0, 0.0},
+                                               PointType {2.0, 2.0, 1.0}});
 
-  NURBSPatchType nPatch(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
+    nPatch =
+      NURBSPatchType(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
+  }
+
+  NURBSPatchType nPatch;
+};
+
+//------------------------------------------------------------------------------
+TEST_F(TrimmingCurveTest, basic_operations)
+{
+  SLIC_INFO("Testing access of trimming curves");
+
+  NURBSPatchType nPatch(this->nPatch);
 
   EXPECT_FALSE(nPatch.isTrimmed());
   EXPECT_EQ(nPatch.getNumTrimmingCurves(), 0);
@@ -106,36 +121,11 @@ TEST(primal_nurbspatch_trimming, basic_operations)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch_trimming, visibility_queries)
+TEST_F(TrimmingCurveTest, visibility_queries)
 {
   SLIC_INFO("Testing queries for trimming curves");
 
-  const int DIM = 3;
-  using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
-
-  using ParameterPointType = primal::Point<CoordType, 2>;
-  using TrimmingCurveType = primal::NURBSCurve<CoordType, 2>;
-
-  const int degree_u = 1;
-  const int degree_v = 1;
-
-  const int npts_u = 3;
-  const int npts_v = 3;
-
-  // Construct from 1D axom::Array
-  axom::Array<PointType> controlPointsArray({PointType {0.0, 0.0, 1.0},
-                                             PointType {0.0, 1.0, 0.0},
-                                             PointType {0.0, 2.0, 0.0},
-                                             PointType {1.0, 0.0, 0.0},
-                                             PointType {1.0, 1.0, -1.0},
-                                             PointType {1.0, 2.0, 0.0},
-                                             PointType {2.0, 0.0, 0.0},
-                                             PointType {2.0, 1.0, 0.0},
-                                             PointType {2.0, 2.0, 1.0}});
-
-  NURBSPatchType nPatch(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
+  NURBSPatchType nPatch(this->nPatch);
 
   // Check visibility on the untrimmed patch
   EXPECT_TRUE(nPatch.isVisible(0.5, 0.5));
@@ -181,36 +171,11 @@ TEST(primal_nurbspatch_trimming, visibility_queries)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch_trimming, visibility_queries_open_curves)
+TEST_F(TrimmingCurveTest, visibility_queries_open_curves)
 {
   SLIC_INFO("Testing queries with open trimming curves");
 
-  const int DIM = 3;
-  using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
-
-  using ParameterPointType = primal::Point<CoordType, 2>;
-  using TrimmingCurveType = primal::NURBSCurve<CoordType, 2>;
-
-  const int degree_u = 1;
-  const int degree_v = 1;
-
-  const int npts_u = 3;
-  const int npts_v = 3;
-
-  // Construct from 1D axom::Array
-  axom::Array<PointType> controlPointsArray({PointType {0.0, 0.0, 1.0},
-                                             PointType {0.0, 1.0, 0.0},
-                                             PointType {0.0, 2.0, 0.0},
-                                             PointType {1.0, 0.0, 0.0},
-                                             PointType {1.0, 1.0, -1.0},
-                                             PointType {1.0, 2.0, 0.0},
-                                             PointType {2.0, 0.0, 0.0},
-                                             PointType {2.0, 1.0, 0.0},
-                                             PointType {2.0, 2.0, 1.0}});
-
-  NURBSPatchType nPatch(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
+  NURBSPatchType nPatch(this->nPatch);
 
   // Check visibility on the untrimmed patch
   EXPECT_TRUE(nPatch.isVisible(0.5, 0.5));
@@ -242,36 +207,11 @@ TEST(primal_nurbspatch_trimming, visibility_queries_open_curves)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch_trimming, trimming_curve_orientation)
+TEST_F(TrimmingCurveTest, trimming_curve_orientation)
 {
   SLIC_INFO("Testing queries for trimming curves");
 
-  const int DIM = 3;
-  using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
-
-  using ParameterPointType = primal::Point<CoordType, 2>;
-  using TrimmingCurveType = primal::NURBSCurve<CoordType, 2>;
-
-  const int degree_u = 1;
-  const int degree_v = 1;
-
-  const int npts_u = 3;
-  const int npts_v = 3;
-
-  // Construct from 1D axom::Array
-  axom::Array<PointType> controlPointsArray({PointType {0.0, 0.0, 1.0},
-                                             PointType {0.0, 1.0, 0.0},
-                                             PointType {0.0, 2.0, 0.0},
-                                             PointType {1.0, 0.0, 0.0},
-                                             PointType {1.0, 1.0, -1.0},
-                                             PointType {1.0, 2.0, 0.0},
-                                             PointType {2.0, 0.0, 0.0},
-                                             PointType {2.0, 1.0, 0.0},
-                                             PointType {2.0, 2.0, 1.0}});
-
-  NURBSPatchType nPatch(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
+  NURBSPatchType nPatch(this->nPatch);
   NURBSPatchType nPatchCopy(nPatch);
 
   // Add a simple trimming curve from a NURBS curve
@@ -331,37 +271,12 @@ TEST(primal_nurbspatch_trimming, trimming_curve_orientation)
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_nurbspatch_trimming, knot_vector_manipulation)
+TEST_F(TrimmingCurveTest, knot_vector_manipulation)
 {
   SLIC_INFO(
     "Testing position of trimming curves after changing surface orientation");
 
-  const int DIM = 3;
-  using CoordType = double;
-  using PointType = primal::Point<CoordType, DIM>;
-  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
-
-  using ParameterPointType = primal::Point<CoordType, 2>;
-  using TrimmingCurveType = primal::NURBSCurve<CoordType, 2>;
-
-  const int degree_u = 1;
-  const int degree_v = 1;
-
-  const int npts_u = 3;
-  const int npts_v = 3;
-
-  // Construct from 1D axom::Array
-  axom::Array<PointType> controlPointsArray({PointType {0.0, 0.0, 1.0},
-                                             PointType {0.0, 1.0, 0.0},
-                                             PointType {0.0, 2.0, 0.0},
-                                             PointType {1.0, 0.0, 0.0},
-                                             PointType {1.0, 1.0, -1.0},
-                                             PointType {1.0, 2.0, 0.0},
-                                             PointType {2.0, 0.0, 0.0},
-                                             PointType {2.0, 1.0, 0.0},
-                                             PointType {2.0, 2.0, 1.0}});
-
-  NURBSPatchType nPatch(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
+  NURBSPatchType nPatch(this->nPatch);
 
   // Add a simple, not symmetric trimming curve from a NURBS curve
   axom::Array<ParameterPointType> trimmingCurveControlPoints {
