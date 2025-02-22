@@ -36,14 +36,12 @@ namespace sina
 enum class Protocol
 {
   JSON,
-#ifdef AXOM_USE_HDF5
   HDF5
-#endif
 };
 
-const std::string supported_types[] = {"JSON",
+const std::vector<std::string> supported_types = {"JSON",
 #ifdef AXOM_USE_HDF5
-                                       "HDF5"
+                                                  "HDF5"
 #endif
 };
 
@@ -224,6 +222,13 @@ public:
                      const std::string &pad = "",
                      const std::string &eoe = "") const;
 
+  /**
+    * \brief Get the list of file types currently supported by the implementation.
+    * 
+    * \return a string of supported file types
+    */
+  std::string get_supported_file_types();
+
 private:
   /**
      * Constructor helper method, extracts info from a conduit Node.
@@ -237,11 +242,12 @@ private:
 /**
  * \brief Save the given Document to the specified location. If the given file exists,
  *        it will be overwritten.
- *
+ * 
  * \param document the Document to save
  * \param fileName the location of which to save the file
  * \param protocol the file type requested to save as contained in supported_types, default = JSON
  * \throws std::ios::failure if there are any IO errors
+ *         std::invalid_argument if the protocol given is an undefined, optional protocol
  */
 void saveDocument(Document const &document,
                   std::string const &fileName,
@@ -276,6 +282,7 @@ Document loadDocument(std::string const &path,
  * \param recordLoader the RecordLoader to use to load the different types
  *                     of records
  * \param protocol the type of file being loaded, default = JSON
+ * \throws std::invalid_argument if the protocol given is an undefined, optional protocol
  * \return the loaded Document
  */
 Document loadDocument(std::string const &path,

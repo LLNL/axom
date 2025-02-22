@@ -410,7 +410,6 @@ TEST(Document, saveDocument_json)
   EXPECT_EQ("the type", readRecord["type"].as_string());
 }
 
-#ifdef AXOM_USE_HDF5
 TEST(Document, load_specifiedRecordLoader)
 {
   using RecordType = TestRecord<int>;
@@ -463,6 +462,7 @@ TEST(Document, load_defaultRecordLoaders)
   EXPECT_NE(nullptr, loadedRun);
 }
 
+#ifdef AXOM_USE_HDF5
 TEST(Document, create_fromJson_roundtrip_hdf5)
 {
   std::string orig_json =

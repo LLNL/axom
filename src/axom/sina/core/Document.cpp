@@ -12,7 +12,6 @@
  *
  ******************************************************************************
  */
-
 #include "axom/sina/core/Document.hpp"
 
 #include "axom/config.hpp"
@@ -64,6 +63,21 @@ void protocolWarn(std::string const protocol, std::string const &name)
       std::cerr << messageIt->second;
     }
   }
+}
+
+std::string get_supported_file_types()
+{
+  std::string types = "[";
+  for(size_t i = 0; i < supported_types.size(); ++i)
+  {
+    types += supported_types[i];
+    if(i < supported_types.size() - 1)
+    {
+      types += ", ";
+    }
+  }
+  types += "]";
+  return types;
 }
 
 void Document::add(std::unique_ptr<Record> record)
@@ -313,8 +327,11 @@ void saveDocument(Document const &document,
 #endif
   else
   {
-    throw std::invalid_argument(
-      "Invalid format choice. Please enter 'json' or 'hdf5'.");
+    std::ostringstream message;
+    message << "Invalid format choice. Please choose from one of the supported "
+               "protocols: "
+            << get_supported_file_types();
+    throw std::invalid_argument(message.str());
   }
 
   if(rename(tmpFileName.c_str(), fileName.c_str()) != 0)
@@ -347,7 +364,6 @@ Document loadDocument(std::string const &path,
     file_in.close();
     node.parse(file_contents.str(), "json");
     return Document {node, recordLoader};
-
 #ifdef AXOM_USE_HDF5
   case Protocol::HDF5:
     file_in.close();
@@ -355,8 +371,12 @@ Document loadDocument(std::string const &path,
     restoreSlashes(node, modifiedNode);
     return Document {modifiedNode, recordLoader};
 #endif
-
   default:
+    std::ostringstream message;
+    message << "Invalid format choice. Please choose from one of the supported "
+               "protocols: "
+            << get_supported_file_types();
+    throw std::invalid_argument(message.str());
     break;
   }
 }
