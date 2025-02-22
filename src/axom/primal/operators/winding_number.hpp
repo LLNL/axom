@@ -7,7 +7,7 @@
  * \file winding_number.hpp
  *
  * \brief Consists of methods to compute the generalized winding number (GWN) 
- *        for points with respect to various 2D geometric objects.
+ *        for points with respect to various geometric objects.
  */
 
 #ifndef AXOM_PRIMAL_WINDING_NUMBER_HPP_

@@ -1157,7 +1157,7 @@ public:
   bool isTrimmed() const { return m_isTrimmed; }
 
   /// \brief Mark as trimmed
-  void makeTrimmed() { m_isTrimmed = true; }
+  void markAsTrimmed() { m_isTrimmed = true; }
 
   /// \brief Delete all trimming curves
   void makeUntrimmed()
@@ -1215,13 +1215,17 @@ public:
    * \param [in] uv The parameter point to check
    * 
    * Checks for containment of the parameter point in 
-   * the collection of trimming curves via an even-odd rule
+   *  the collection of trimming curves via an even-odd rule.
+   * 
+   * If the collection of trimming curves does not form closed loops, 
+   *  then the (now fractional) generalized winding number is rounded to the
+   *  nearest integer before the even-odd rule is applied.
    */
   bool isVisible(T u, T v) const
   {
-    if(m_knotvec_u.isValidParameter(u) && m_knotvec_v.isValidParameter(v))
+    if(!isTrimmed())
     {
-      return true;
+      return (m_knotvec_u.isValidParameter(u) && m_knotvec_v.isValidParameter(v));
     }
 
     ParameterPointType uv = {u, v};
