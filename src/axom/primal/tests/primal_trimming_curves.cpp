@@ -136,6 +136,13 @@ TEST(primal_nurbspatch_trimming, visibility_queries)
 
   NURBSPatchType nPatch(controlPointsArray, npts_u, npts_v, degree_u, degree_v);
 
+  // Check visibility on the untrimmed patch
+  EXPECT_TRUE(nPatch.isVisible(0.5, 0.5));
+  EXPECT_FALSE(nPatch.isVisible(-0.5, 0.5));
+  EXPECT_FALSE(nPatch.isVisible(0.5, -0.5));
+  EXPECT_FALSE(nPatch.isVisible(1.5, 0.5));
+  EXPECT_FALSE(nPatch.isVisible(0.5, 1.5));
+
   // Add a simple trimming curve from a NURBS curve
   axom::Array<ParameterPointType> trimmingCurveControlPoints {
     ParameterPointType {0.25, 0.25},

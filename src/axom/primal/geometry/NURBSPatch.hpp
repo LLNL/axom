@@ -1182,7 +1182,9 @@ public:
 
     // For each min/max u/v, add a straight trimming curve along the boundary
     TrimmingCurveType curve;
-    curve.setParameters(2, 1);
+    constexpr int num_points = 2;
+    constexpr int degree = 1;
+    curve.setParameters(num_points, degree);
 
     // Bottom
     curve[0] = ParameterPointType({min_u, min_v});
@@ -1217,7 +1219,7 @@ public:
    */
   bool isVisible(T u, T v) const
   {
-    if(!isTrimmed())
+    if(m_knotvec_u.isValidParameter(u) && m_knotvec_v.isValidParameter(v))
     {
       return true;
     }

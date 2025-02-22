@@ -35,8 +35,8 @@ namespace detail
  *
  * \param [in] R The query point to test
  * \param [in] P The Polygon object to test for containment
- * \param [in] includeBoundary If true, points on the boundary are considered interior
  * \param [in] isOnEdge An optional return parameter if the point is on the boundary
+ * \param [in] includeBoundary If true, points on the boundary are considered interior
  * \param [in] edge_tol The distance at which a point is considered on the boundary
  * 
  * Uses an adapted ray-casting approach that counts quarter-rotation
