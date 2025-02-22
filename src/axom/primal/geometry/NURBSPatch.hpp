@@ -1299,6 +1299,7 @@ public:
     return (lhs.m_controlPoints == rhs.m_controlPoints) &&
       (lhs.m_weights == rhs.m_weights) && (lhs.m_knotvec_u == rhs.m_knotvec_u) &&
       (lhs.m_knotvec_v == rhs.m_knotvec_v) &&
+      (lhs.m_isTrimmed == rhs.m_isTrimmed) &&
       (lhs.m_trimmingCurves == rhs.m_trimmingCurves);
   }
 
@@ -1325,8 +1326,8 @@ public:
   /*!
    * \brief Reverses the order of one direction of the NURBS patch's control points and weights
    *
-   * This method does not change the position of the patch in space, 
-   *  including the trimming curves. It does reverse all normal vectors.
+   * This method does not affect the position of the patch in space, or its 
+   *  trimming curves, but it does reverse the patch's normal vectors. 
    * 
    * \param [in] axis orientation of patch. 0 to reverse in u, 1 for reverse in v
    */
@@ -1420,7 +1421,12 @@ public:
     }
   }
 
-  /// \brief Swap the axes such that s(u, v) becomes s(v, u)
+  /*!
+   * \brief Swap the axes such that s(u, v) becomes s(v, u)
+   *
+   * This method does not affect the position of the patch in space,
+   *  or its trimming curves.
+   */
   void swapAxes()
   {
     auto patch_shape = m_controlPoints.shape();
@@ -2338,7 +2344,7 @@ public:
     *   ---------------------- u = 1
     *
     * \pre Parameter \a u and \a v must be *strictly interior* to the knot span
-    * \pre The patch must not be trimmed
+    * \pre The patch must be untrimmed
     */
   void split(T u,
              T v,
@@ -2349,7 +2355,8 @@ public:
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
-    SLIC_ASSERT(!isTrimmed());
+    SLIC_ASSERT_MSG(!isTrimmed(),
+                    "Splitting a trimmed patch is not yet supported");
 
     // Bisect the patch along the u direction
     split_u(u, p1, p2);
@@ -2364,11 +2371,14 @@ public:
 
   /*!
    * \brief Split the untrimmed NURBS patch in two along the u direction
+   *
+   * \pre The patch must be untrimmed
    */
   void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
-    SLIC_ASSERT(!isTrimmed());
+    SLIC_ASSERT_MSG(!isTrimmed(),
+                    "Splitting a trimmed patch is not yet supported");
 
     const bool isRationalPatch = isRational();
 
@@ -2435,11 +2445,14 @@ public:
 
   /*!
    * \brief Split the untrimmed NURBS patch in two along the v direction
+   *
+   * \pre The patch must be untrimmed
    */
   void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
-    SLIC_ASSERT(!isTrimmed());
+    SLIC_ASSERT_MSG(!isTrimmed(),
+                    "Splitting a trimmed patch is not yet supported");
 
     const bool isRationalPatch = isRational();
 
@@ -2521,9 +2534,12 @@ public:
 
   /*!
    * \brief Splits the untrimmed NURBS surface (at each internal knot) into several Bezier patches
-   *   
+   * 
    * If either degree_u or degree_v is zero, the resulting Bezier patches along 
    *  that axis will be disconnected and order 0
+   * 
+   * This method ignores any trimming curves in the patch, 
+   *  and returns all extracted patches of the untrimmed patch.
    * 
    * Algorithm A5.7 on p. 177 of "The NURBS Book"
    * 
