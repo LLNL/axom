@@ -2537,6 +2537,183 @@ public:
   }
 
   /*!
+   * \brief Split a NURBS surface into two by cutting out a disk of radius r centered at (u, v)
+   *
+   * \param [in] u The x-coordinate of the center of the disk
+   * \param [in] v The y-coordinate of the center of the disk
+   * \param [in] r The radius of the disk 
+   * \param [out] n1 The NURBS surface inside the disk
+   * \param [out] n2 The NURBS surface outside the disk
+   */
+  void diskSplit(T u, T v, T r, NURBSPatch& n1, NURBSPatch& n2) const
+  {
+    ParameterPointType uv_param({u, v});
+
+    // Copy the control points and weights of the original patch, but not the trimming curves
+    n1 = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
+    n2 = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
+
+    // n1 needs trimming curves from the original patch, if any
+    if(!isTrimmed())
+    {
+      n1.makeTriviallyTrimmed();
+    }
+    else
+    {
+      n1.m_trimming_curves = m_trimming_curves;
+    }
+
+    // Intersect all trimming curves with a circle of radius r, centered at (u, v).
+    //  Record each intersection with the circle, and split the trimming curve at each intersection
+    primal::Sphere<T, 2> circle_obj(uv_param, r);
+    TrimmingCurveVec split_trimming_curves;
+
+    axom::Array<T> circle_params;
+    for(const auto& curve : n1.m_trimming_curves)
+    {
+      axom::Array<T> curve_params;
+      intersect(curve, circle_obj, curve_params, circle_params);
+
+      // Split all trimming curves at the intersection points
+      if(curve_params.size() > 0)
+      {
+        // Sorting this keeps the splitting logic simpler
+        std::sort(curve_params.begin(), curve_params.end());
+
+        TrimmingCurveType c1, c2(curve);
+        for(const auto& param : curve_params)
+        {
+          c2.split(param, c1, c2);
+          split_trimming_curves.push_back(c1);
+        }
+        split_trimming_curves.push_back(c2);
+      }
+      else
+      {
+        split_trimming_curves.push_back(curve);
+      }
+    }
+
+    if(circle_params.size() % 2 != 0)
+    {
+      std::cout << std::endl
+                << "Robustness issue: Not an even number of circle parameters"
+                << std::endl;
+
+      // If this is the case, do the closest thing you can to doing nothing.
+      circle_params.clear();
+    }
+
+    // Handle special cases where 0 intersections are recorded
+    if(circle_params.size() == 0)
+    {
+      // If the circle is entirely inside the trimming curves,
+      //  n2 is a complete disk
+      if(isVisible(u, v))
+      {
+        if(ignoreInteriorDisk)
+        {
+          n2.m_trimming_curves.clear();
+          n2.addTrimmingCurve(
+            TrimmingCurveType(1, 0));  // Adds a single, degenerate trimming curve
+          return;
+        }
+
+        TrimmingCurveType c1;
+        c1.constructCircularArc(0, 2 * M_PI, uv_param, r);
+
+        n2.m_trimming_curves.clear();
+        n2.addTrimmingCurve(c1);
+        n2.clip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+
+        c1.reverseOrientation();
+        n1.addTrimmingCurve(c1);
+
+        return;
+      }
+      else
+      {
+        // If the circle is entirely outside the trimming curves,
+        //  n1 is unchanged and n2 is empty
+        n2.m_trimming_curves.clear();
+        n2.addTrimmingCurve(
+          TrimmingCurveType(1, 0));  // Adds a single, degenerate trimming curve
+
+        return;
+      }
+    }
+
+    // Sort the circle parameters
+    std::sort(circle_params.begin(), circle_params.end());
+
+    // Determine if the first circle arc is kept by the original surface
+    ParameterPointType mid_arc_point {
+      u + r * std::cos(0.5 * (circle_params[0] + circle_params[1])),
+      v + r * std::sin(0.5 * (circle_params[0] + circle_params[1]))};
+
+    // If the midpoint of the first arc is visible, keep the first arc
+    int start_idx = isVisible(mid_arc_point[0], mid_arc_point[1]) ? 0 : 1;
+
+    // Define circular arcs for each *other* trimming curve
+    TrimmingCurveVec circle_trimming_curves;
+    TrimmingCurveType c1;
+
+    for(int i = start_idx; i < circle_params.size() - 1; i += 2)
+    {
+      c1.constructCircularArc(circle_params[i], circle_params[i + 1], uv_param, r);
+      circle_trimming_curves.push_back(c1);
+    }
+
+    // If we skipped the first segment, add it back here
+    if(start_idx == 1)
+    {
+      // Handle periodicity by adding 2pi to the smaller parameter
+      circle_params[0] += 2.0 * M_PI;
+
+      c1.constructCircularArc(circle_params[circle_params.size() - 1],
+                              circle_params[0],
+                              uv_param,
+                              r);
+
+      circle_trimming_curves.push_back(c1);
+    }
+
+    // Clear the trimming curves from each patch.
+    //  Let n1 be the "big" patch, and n2 be the "small" patch
+    //  n1 gets all trimming curves *outside* the circle, and the reverse of all circle curves
+    //  n2 gets all trimming curves *inside* the circle, and all circle curves
+
+    n1.m_trimming_curves.clear();
+    n2.m_trimming_curves.clear();
+
+    for(const auto& curve : split_trimming_curves)
+    {
+      if(squared_distance(
+           curve.evaluate(0.5 * (curve.getMinKnot() + curve.getMaxKnot())),
+           uv_param) -
+           r * r >
+         0)
+      {
+        n1.addTrimmingCurve(curve);
+      }
+      else
+      {
+        n2.addTrimmingCurve(curve);
+      }
+    }
+
+    for(auto& curve : circle_trimming_curves)
+    {
+      n2.addTrimmingCurve(curve);
+      curve.reverseOrientation();
+      n1.addTrimmingCurve(curve);
+    }
+
+    // Clip n2 according to the width of the disk
+    n2.clip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+  }
+
+  /*!
    * \brief Splits the untrimmed NURBS surface (at each internal knot) into several Bezier patches
    * 
    * If either degree_u or degree_v is zero, the resulting Bezier patches along 
