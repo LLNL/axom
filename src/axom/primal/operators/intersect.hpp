@@ -566,6 +566,7 @@ bool intersect(const Sphere<T, 2>& circle,
                double EPS = 1e-8)
 {
   const double sq_tol = tol * tol;
+  bool foundIntersection = false;
 
   // Extract the Bezier curves of the NURBS curve
   auto beziers = curve.extractBezier();
@@ -586,6 +587,8 @@ bool intersect(const Sphere<T, 2>& circle,
                                     0.,
                                     1.);
 
+    foundIntersection |= temp_curve_p.size() > 0;
+
     // Scale the intersection parameters back into the span of the NURBS curve
     for(int j = 0; j < temp_curve_p.size(); ++j)
     {
@@ -595,7 +598,7 @@ bool intersect(const Sphere<T, 2>& circle,
     }
   }
 
-  return curve_params.size() > 0;
+  return foundIntersection;
 }
 /// @}
 
@@ -768,6 +771,8 @@ bool intersect(const Ray<T, 2>& r,
     return false;
   }
 
+  bool foundIntersection = false;
+
   // Decompose the NURBS curve into Bezier segments
   auto beziers = n.extractBezier();
   axom::Array<T> knot_vals = n.getKnots().getUniqueKnots();
@@ -779,6 +784,8 @@ bool intersect(const Ray<T, 2>& r,
     axom::Array<T> rc, nc;
     intersect(r, beziers[i], rc, nc, tol, EPS);
 
+    foundIntersection |= !rc.empty();
+
     // Scale the intersection parameters back into the span of the NURBS curve
     for(int j = 0; j < rc.size(); ++j)
     {
@@ -787,7 +794,7 @@ bool intersect(const Ray<T, 2>& r,
     }
   }
 
-  return !rp.empty();
+  return foundIntersection;
 }
 /// @}
 
