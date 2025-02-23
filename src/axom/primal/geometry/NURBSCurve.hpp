@@ -27,6 +27,8 @@
 
 #include <vector>
 #include <ostream>
+#include <math.h>
+
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -406,6 +408,9 @@ public:
    * \param [in] theta_1 The ending angle of the arc
    * \param [in] center The center of the circle
    * \param [in] radius The radius of the circle
+   * 
+   * The curve's knots will span [0, 1], but the parameterization is not
+   *  uniform with respect to the arc length
    * 
    * \pre Requires a 2D NURBS curve, theta_0 < theta_1, and the arc is less than a full circle
    */

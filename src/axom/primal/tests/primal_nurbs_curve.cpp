@@ -13,6 +13,7 @@
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NURBSCurve.hpp"
+#include <math.h>
 
 namespace primal = axom::primal;
 
@@ -857,6 +858,62 @@ TEST(primal_nurbscurve, nurbs_knot_normalization)
     for(int i = 0; i < DIM; ++i)
     {
       EXPECT_NEAR(p[i], p_scaled[i], 1e-13);
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, circular_arc_constructor)
+{
+  // Define a nurbs curve that represents a circle
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  PointType center {1.0, 2.0};
+  double radius = 2.3;
+
+  // clang-format off
+  double start_theta[] = {0.0,     -1.0, 1.0,            2.0,            2.0};
+  double end_theta[]   = {2.0*M_PI, 1.0, 1.0 + 2*M_PI/3, 2.0 + 4*M_PI/3, 5.0};
+  // clang-format on
+
+  constexpr int npts = 11;
+  double t_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, t_pts, npts);
+
+  for(int i = 0; i < 5; ++i)
+  {
+    NURBSCurveType circle;
+    circle.constructCircularArc(start_theta[i], end_theta[i], center, radius);
+
+    // Check the first endpoint of the curve
+    PointType start = circle.evaluate(0.0);
+    PointType start_ex =
+      PointType {center[0] + radius * std::cos(start_theta[i]),
+                 center[1] + radius * std::sin(start_theta[i])};
+
+    EXPECT_NEAR(start[0], start_ex[0], 1e-13);
+    EXPECT_NEAR(start[1], start_ex[1], 1e-13);
+
+    // Check the second endpoint of the curve
+    PointType end = circle.evaluate(1.0);
+    PointType end_ex = PointType {center[0] + radius * std::cos(end_theta[i]),
+                                  center[1] + radius * std::sin(end_theta[i])};
+
+    EXPECT_NEAR(end[0], end_ex[0], 1e-13);
+    EXPECT_NEAR(end[1], end_ex[1], 1e-13);
+
+    // Check the magnitude of the points elsewhere along the curve
+    for(int j = 0; j < npts; ++j)
+    {
+      PointType p = circle.evaluate(t_pts[j]);
+
+      double distance = std::sqrt((p[0] - center[0]) * (p[0] - center[0]) +
+                                  (p[1] - center[1]) * (p[1] - center[1]));
+
+      EXPECT_NEAR(distance, radius, 1e-13);
     }
   }
 }
