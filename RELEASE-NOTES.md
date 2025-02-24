@@ -40,6 +40,7 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
 - Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
   of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
+- Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
 
 ###  Changed
 - `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.
@@ -63,8 +64,9 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 
 ###  Fixed
 - Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
-This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
-as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+  This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
+  as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+- Minor bugfix to `primal::intersect(segment, ray)` to better handle cases when segment and ray overlap.
 - Fixes a memory leak in `axom::Array` copy constructor.
 - Fixes robustness issue with the `axom::primal::clip` overload for clipping a 2D polygon against another 2D polygon.
 

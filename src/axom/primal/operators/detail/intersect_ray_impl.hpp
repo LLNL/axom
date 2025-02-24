@@ -12,6 +12,7 @@
 // primal includes
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Line.hpp"
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
@@ -30,7 +31,7 @@ namespace detail
  * \a ray_param returns the parametric coordinate of the intersection point along \a R
  * and \a seg_param returns the parametric coordinate of the intersection point along \a S.
  * If the intersection point is nonunique, \a seg_param and \a ray_param return only
- * a single point of intersection
+ * a single point of intersection at the center of the region.
  * \return status true iff R intersects with S, otherwise, false.
  */
 template <typename T>
@@ -55,24 +56,57 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
   const double denom =
     numerics::determinant(ray_dir[0], -seg_dir[0], ray_dir[1], -seg_dir[1]);
 
-  // If denom is (nearly) zero (within tolerance EPS), the ray and segment are parallel
+  // If denom is (nearly) zero (within a numerical tolerance), the ray and segment are parallel
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
   {
     // Check if ray and segment are collinear
-    const auto col = S.source().array() - R.origin().array();
+    const primal::Vector<T, 2> col(R.origin(), S.source());
+    const double col_norm = col.norm();
 
     const double cross =
       numerics::determinant(col[0], ray_dir[0], col[1], ray_dir[1]);
 
-    if(axom::utilities::isNearlyEqual(cross, 0.0, EPS))
+    // Normalize the cross product by the norm of col
+    if(axom::utilities::isNearlyEqual(col_norm, 0.0, primal::PRIMAL_TINY) ||
+       axom::utilities::isNearlyEqual(cross / col_norm, 0.0, EPS))
     {
       // Check orientation of segment relative to ray
-      const double t0 = col[0] * ray_dir[0] + col[1] * ray_dir[1];
-      const double t1 = t0 + seg_dir.dot(ray_dir);
+      const double t1 = col[0] * ray_dir[0] + col[1] * ray_dir[1];
+      const double t2 = t1 + seg_dir.dot(ray_dir);
 
-      // Assign (nonunique) parameters
-      ray_param = (t1 > t0) ? t1 : t0;
-      seg_param = (t1 > t0) ? 1.0 : 0.0;
+      if(std::min(t1, t2) > 0.0)
+      {
+        // The origin is outside the segment,
+        //  but the ray intersects
+        ray_param = 0.5 * (t1 + t2);
+        seg_param = 0.5;
+      }
+      else if(t1 * t2 <= 0)
+      {
+        // Means the origin is inside the segment
+
+        // Switch based on orientation of segment
+        if(t1 == t2)
+        {
+          ray_param = 0.5 * t1;
+          seg_param = 0.5;
+        }
+        else if(t1 < t2)
+        {
+          ray_param = 0.5 * t2;
+          seg_param = (t1 - 0.5 * t2) / (t1 - t2);
+        }
+        else
+        {
+          ray_param = 0.5 * t1;
+          seg_param = -0.5 * t1 / (t2 - t1);
+        }
+      }
+      else
+      {
+        // No intersection
+        return false;
+      }
 
       return ((ray_param >= tlow) && (seg_param >= tlow) && (seg_param <= thigh));
     }
@@ -318,6 +352,39 @@ AXOM_HOST_DEVICE inline bool intersect_ray(
   if(intersects)
   {
     ip = R.at(tmin);
+  }
+
+  return intersects;
+}
+
+template <typename T, int DIM>
+AXOM_HOST_DEVICE inline bool intersect_line(
+  const primal::Line<T, DIM>& L,
+  const primal::BoundingBox<T, DIM>& bb,
+  primal::Point<T, DIM>& ip,
+  T EPS = numerics::floating_point_limits<T>::epsilon())
+{
+  AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
+
+  T tmin = -axom::numerics::floating_point_limits<T>::max();
+  T tmax = axom::numerics::floating_point_limits<T>::max();
+
+  bool intersects = true;
+  for(int d = 0; d < DIM; ++d)
+  {
+    intersects = intersects &&
+      intersect_ray_bbox_test(L.origin()[d],
+                              L.direction()[d],
+                              bb.getMin()[d],
+                              bb.getMax()[d],
+                              tmin,
+                              tmax,
+                              EPS);
+  }
+
+  if(intersects)
+  {
+    ip = L.at(tmin);
   }
 
   return intersects;

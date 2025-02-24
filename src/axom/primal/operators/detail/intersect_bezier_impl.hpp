@@ -7,7 +7,7 @@
  * \file intersect_bezier_impl.hpp
  *
  * This file provides helper functions for testing the intersection
- * of Bezier curves
+ * of Bezier curves with other Bezier curves and other geometric objects
  */
 
 #ifndef AXOM_PRIMAL_INTERSECT_BEZIER_IMPL_HPP_
@@ -17,10 +17,12 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 
+#include "axom/primal/operators/in_sphere.hpp"
 #include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 
 #include <vector>
+#include <math.h>
 
 namespace axom
 {
@@ -60,8 +62,8 @@ namespace detail
 template <typename T>
 bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                              const BezierCurve<T, 2> &c2,
-                             std::vector<T> &sp,
-                             std::vector<T> &tp,
+                             axom::Array<T> &sp,
+                             axom::Array<T> &tp,
                              double sq_tol,
                              int order1,
                              int order2,
@@ -96,7 +98,6 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
  *
  * \note This function does not properly handle collinear lines
  */
-
 template <typename T>
 bool intersect_2d_linear(const Point<T, 2> &a,
                          const Point<T, 2> &b,
@@ -105,13 +106,114 @@ bool intersect_2d_linear(const Point<T, 2> &a,
                          T &s,
                          T &t);
 
+/*!
+ * \brief Recursive function to find intersections between a ray and a Bezier curve
+ *
+ * \param [in] r The input ray
+ * \param [in] c The input curve
+ * \param [out] cp Parametric coordinates of intersections in \a c [0, 1)
+ * \param [out] rp Parametric coordinates of intersections in \a r [0, inf)
+ * \param [in] sq_tol The squared tolerance parameter for distances in physical space
+ * \param [in] EPS The tolerance parameter for distances in parameter space
+ * \param [in] order The order of \a c
+ * \param c_offset The offset in parameter space for \a c
+ * \param c_scale The scale in parameter space for \a c
+ *
+ * A ray can only intersect a Bezier curve if it intersects its bounding box
+ * The base case of the recursion is when we can approximate the curves parametrically with
+ * line segments, where we directly find their intersection with the ray. Otherwise,
+ * check for intersections recursively after bisecting the curve.
+ *
+ * \note A BezierCurve is parametrized in [0,1). The scale and offset parameters
+ * are used to track the local curve parameters during subdivisions
+ *
+ * \note This function assumes the all intersections have multiplicity
+ * one, i.e. there are no points at which the curves and their derivatives
+ * both intersect. Thus, the function does not find tangencies.
+ * 
+ * \return True if the two curves intersect, False otherwise
+ * \sa intersect_bezier
+ */
+template <typename T>
+bool intersect_ray_bezier(const Ray<T, 2> &r,
+                          const BezierCurve<T, 2> &c,
+                          axom::Array<T> &rp,
+                          axom::Array<T> &cp,
+                          double sq_tol,
+                          double EPS,
+                          int order,
+                          double c_offset,
+                          double c_scale);
+
+/*!
+ * \brief Recursive function to find intersections between a 2D sphere (circle)
+ *  and a Bezier curve
+ *
+ * \param [in] circle The input circle
+ * \param [in] curve The input curve
+ * \param [out] circle_params Parametric coordinates of intersections in \a circle [0, 2pi)
+ * \param [out] curve_params Parametric coordinates of intersections in \a curve [0, 1)
+ * \param [in] sq_tol The squared tolerance parameter for distances in physical space
+ * \param [in] EPS The tolerance parameter for distances in parameter space
+ * \param [in] order The order of \a c
+ * \param c_offset The offset in parameter space for \a c
+ * \param c_scale The scale in parameter space for \a c
+ *
+ * A circle can only intersect a Bezier curve if it intersects its bounding box
+ * The base case of the recursion is when we can approximate the curve parametrically with
+ * a line segment, where we directly find its intersection with the circle. Otherwise,
+ * check for intersections recursively after bisecting the curve.
+ *
+ * \note A BezierCurve is parametrized in [0,1). The scale and offset parameters
+ * are used to track the local curve parameters during subdivisions
+ *
+ * \note This function assumes the all intersections have multiplicity
+ * one, i.e. there are no points at which the curves and their derivatives
+ * both intersect. Thus, this function does not find tangencies.
+ * 
+ * \return True if the two curves intersect, False otherwise
+ * \sa intersect_bezier
+ */
+template <typename T>
+bool intersect_circle_bezier(const Ray<T, 2> &r,
+                             const BezierCurve<T, 2> &c,
+                             axom::Array<T> &rp,
+                             axom::Array<T> &cp,
+                             double sq_tol,
+                             double EPS,
+                             int order,
+                             double c_offset,
+                             double c_scale);
+
+/*!
+ * \brief Tests intersection of a line and a cirlce
+ *
+ * \param [in] a,d,c,b the endpoints of a segment which defines the line
+ * \param [out] The parametrized curve values (c) and line values (t) at 
+ *  which intersection occurs.
+ * Range of output values for \a c is [0, 2pi) and \a t is [-inf, inf).
+ *
+ * \return True, if the line segment intersects, false otherwise.
+ *
+ * \note This function assumes the all intersections have multiplicity
+ * one, i.e. there are no points at which the curves and their derivatives
+ * both intersect. Thus, the function does not find tangencies.
+ */
+template <typename T>
+bool intersect_2d_circle_line(const Sphere<T, 2> &circ,
+                              const Point<T, 2> &a,
+                              const Point<T, 2> &b,
+                              T &c1,
+                              T &c2,
+                              T &t1,
+                              T &t2);
 //------------------------------ IMPLEMENTATIONS ------------------------------
 
 template <typename T>
 bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
                              const BezierCurve<T, 2> &c2,
-                             std::vector<T> &sp,
-                             std::vector<T> &tp,
+                             axom::Array<T> &sp,
+                             axom::Array<T> &tp,
                              double sq_tol,
                              int order1,
                              int order2,
@@ -130,7 +232,7 @@ bool intersect_bezier_curves(const BezierCurve<T, 2> &c1,
 
   bool foundIntersection = false;
 
-  if(c1.isLinear(sq_tol) && c2.isLinear(sq_tol))
+  if(c1.isLinear(sq_tol, true) && c2.isLinear(sq_tol, true))
   {
     T s, t;
     if(intersect_2d_linear(c1[0], c1[order1], c2[0], c2[order2], s, t))
@@ -223,6 +325,209 @@ bool intersect_2d_linear(const Point<T, 2> &a,
   // Divisions are safe due to early return conditions
   s = area3 / (area3 - area4);
   t = area1 / (area1 - area2);
+
+  return true;
+}
+
+template <typename T>
+bool intersect_ray_bezier(const Ray<T, 2> &r,
+                          const BezierCurve<T, 2> &c,
+                          axom::Array<T> &rp,
+                          axom::Array<T> &cp,
+                          double sq_tol,
+                          double EPS,
+                          int order,
+                          double c_offset,
+                          double c_scale)
+{
+  using BCurve = BezierCurve<T, 2>;
+
+  // Check bounding box to short-circuit the intersection
+  T r0, s0;
+  constexpr T factor = 1e-8;
+
+  // Need to expand the bounding box, since this ray-bb intersection routine
+  //  only parameterizes the ray on (0, inf)
+  if(!intersect(r, c.boundingBox().expand(factor)))
+  {
+    return false;
+  }
+
+  bool foundIntersection = false;
+
+  // For the base case, represent the Bezier curve as a line segment
+  if(c.isLinear(sq_tol, true))
+  {
+    Segment<T, 2> seg(c[0], c[order]);
+
+    // Need to check intersection with zero tolerance
+    //  to handle cases where `intersect` treats the ray as collinear
+    intersect(r, seg, r0, s0, 0.0);
+    if(r0 > 0.0 - EPS && s0 > 0.0 - EPS && s0 < 1.0 - EPS)
+    {
+      rp.push_back(r0);
+      cp.push_back(c_offset + c_scale * s0);
+      foundIntersection = true;
+    }
+  }
+  else
+  {
+    constexpr double splitVal = 0.5;
+    constexpr double scaleFac = 0.5;
+
+    BCurve c1(order);
+    BCurve c2(order);
+    c.split(splitVal, c1, c2);
+    c_scale *= scaleFac;
+
+    // Note: we want to find all intersections, so don't short-circuit
+    if(intersect_ray_bezier(r, c1, rp, cp, sq_tol, EPS, order, c_offset, c_scale))
+    {
+      foundIntersection = true;
+    }
+    if(intersect_ray_bezier(r, c2, rp, cp, sq_tol, EPS, order, c_offset + c_scale, c_scale))
+    {
+      foundIntersection = true;
+    }
+  }
+
+  return foundIntersection;
+}
+
+template <typename T>
+bool intersect_circle_bezier(const Sphere<T, 2> &circle,
+                             const BezierCurve<T, 2> &curve,
+                             axom::Array<T> &circle_p,
+                             axom::Array<T> &curve_p,
+                             double sq_tol,
+                             double EPS,
+                             int order,
+                             double c_offset,
+                             double c_scale)
+{
+  using BCurve = BezierCurve<T, 2>;
+
+  // Other function put here to avoid circular dependency
+  primal::BoundingBox<T, 2> bb = curve.boundingBox().scale(1.1);
+  if(!intersect(circle, bb) || in_sphere(bb, circle))
+  {
+    return false;
+  }
+
+  bool foundIntersection = false;
+
+  if(curve.isLinear(sq_tol))
+  {
+    T c1, c2, t1, t2;
+    if(intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2))
+    {
+      if(t1 >= -EPS && t1 < 1.0 - EPS)
+      {
+        circle_p.push_back(
+          axom::utilities::isNearlyEqual(c1, 2.0 * M_PI, EPS) ? 0.0 : c1);
+        curve_p.push_back(c_offset + c_scale * t1);
+        foundIntersection = true;
+      }
+
+      if(t2 >= -EPS && t2 < 1.0 - EPS)
+      {
+        circle_p.push_back(
+          axom::utilities::isNearlyEqual(c2, 2.0 * M_PI, EPS) ? 0.0 : c2);
+        curve_p.push_back(c_offset + c_scale * t2);
+        foundIntersection = true;
+      }
+    }
+  }
+  else
+  {
+    constexpr double splitVal = 0.5;
+    constexpr double scaleFac = 0.5;
+
+    BCurve c1(order);
+    BCurve c2(order);
+    curve.split(splitVal, c1, c2);
+    c_scale *= scaleFac;
+
+    // Note: we want to find all intersections, so don't short-circuit
+    if(intersect_circle_bezier(circle,
+                               c1,
+                               circle_p,
+                               curve_p,
+                               sq_tol,
+                               EPS,
+                               order,
+                               c_offset,
+                               c_scale))
+    {
+      foundIntersection = true;
+    }
+    if(intersect_circle_bezier(circle,
+                               c2,
+                               circle_p,
+                               curve_p,
+                               sq_tol,
+                               EPS,
+                               order,
+                               c_offset + c_scale,
+                               c_scale))
+    {
+      foundIntersection = true;
+    }
+  }
+
+  return foundIntersection;
+}
+
+template <typename T>
+bool intersect_2d_circle_line(const Sphere<T, 2> &circ,
+                              const Point<T, 2> &a,
+                              const Point<T, 2> &b,
+                              T &c1,
+                              T &c2,
+                              T &t1,
+                              T &t2)
+{
+  T dx = b[0] - a[0];
+  T dy = b[1] - a[1];
+  T dr = std::sqrt(dx * dx + dy * dy);
+
+  T D = (a[0] - circ.getCenter()[0]) * (b[1] - circ.getCenter()[1]) -
+    (b[0] - circ.getCenter()[0]) * (a[1] - circ.getCenter()[1]);
+
+  T disc = circ.getRadius() * circ.getRadius() * dr * dr - D * D;
+
+  // Treat tangencies as *not* intersecting
+  if(disc <= 0.0)
+  {
+    return false;
+  }
+
+  disc = std::sqrt(disc);
+
+  T x1 = (D * dy + (dy < 0 ? -1 : 1) * dx * disc) / (dr * dr);
+  T x2 = (D * dy - (dy < 0 ? -1 : 1) * dx * disc) / (dr * dr);
+
+  T y1 = (-D * dx + std::abs(dy) * disc) / (dr * dr);
+  T y2 = (-D * dx - std::abs(dy) * disc) / (dr * dr);
+
+  // Find the parameter values for the circle
+  c1 = std::atan2(y1, x1);
+  c1 = (c1 < 0.0) ? c1 + 2.0 * M_PI : c1;
+
+  c2 = std::atan2(y2, x2);
+  c2 = (c2 < 0.0) ? c2 + 2.0 * M_PI : c2;
+
+  // Find the parameter values for the line
+  if(std::abs(dx) > std::abs(dy))
+  {
+    t1 = (x1 - a[0] + circ.getCenter()[0]) / dx;
+    t2 = (x2 - a[0] + circ.getCenter()[0]) / dx;
+  }
+  else
+  {
+    t1 = (y1 - a[1] + circ.getCenter()[1]) / dy;
+    t2 = (y2 - a[1] + circ.getCenter()[1]) / dy;
+  }
 
   return true;
 }
