@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,6 +13,15 @@
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Sina
                         TPLS       Conduit )
+
+#------------------------------------------------------------------------------
+# Set sina version
+#------------------------------------------------------------------------------
+set(SINA_VERSION_MAJOR 1)
+set(SINA_VERSION_MINOR 14)
+set(SINA_VERSION_PATCH 0)
+axom_configure_file ( config.hpp.in
+                      ${PROJECT_BINARY_DIR}/include/axom/sina/config.hpp )
 
 #------------------------------------------------------------------------------
 # Specify the sina headers/sources
@@ -49,11 +58,18 @@ set(sina_sources
 blt_list_append( TO sina_headers ELEMENTS core/AdiakWriter.hpp IF AXOM_USE_ADIAK )
 blt_list_append( TO sina_sources ELEMENTS core/AdiakWriter.cpp IF AXOM_USE_ADIAK )
 
+if(AXOM_USE_HDF5 AND ENABLE_FORTRAN)
+  set(AXOM_USE_HDF5_FORTRAN ".true.")
+else()
+  set(AXOM_USE_HDF5_FORTRAN ".false.")
+endif()
+
 # Add fortran interface for Sina
 if (ENABLE_FORTRAN)
   blt_list_append( TO sina_headers ELEMENTS interface/sina_fortran_interface.h)
   blt_list_append( TO sina_sources
-                   ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f)
+                   ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f90.in)
+  configure_file(interface/sina_fortran_interface.f90.in interface/sina_fortran_interface.f90 @ONLY)
 endif()
 
 #------------------------------------------------------------------------------

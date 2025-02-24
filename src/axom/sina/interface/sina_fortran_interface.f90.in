@@ -145,3 +145,8 @@ contains
   end subroutine save_without_protocol
 
 end module 
+
+module hdf5_config
+  implicit none
+  logical, parameter :: use_hdf5 = @AXOM_USE_HDF5_FORTRAN@
+end module hdf5_config

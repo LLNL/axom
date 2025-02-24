@@ -21,7 +21,7 @@ def parse_args():
 
 # JSON Tests: Will always run
 class TestFortranExampleIntegrationJSON(unittest.TestCase):
-    
+     
     @classmethod
     def setUpClass(cls):
         """
