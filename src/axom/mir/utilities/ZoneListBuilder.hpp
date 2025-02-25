@@ -378,7 +378,7 @@ public:
             cleanIndicesView[maskOffsetsView[szIndex]] =
               selectedZonesView[szIndex];
           }
-          maskView[szIndex] = ~maskView[szIndex];
+          maskView[szIndex] = (maskView[szIndex] > 0) ? 0 : 1;
         });
 
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
