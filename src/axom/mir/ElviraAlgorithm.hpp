@@ -960,53 +960,131 @@ constexpr int getStencilSize(int ndims)
  * \param szIndex The index of the zone in the selected, sorted zones list. We probably can remove this...
  * \param matCount The number of materials in the current zone.
  * \param offset An offset for the current zone, used to index into the material and vector fragment data.
- * \param zoneMatStencilView The material volume fraction stencil data for all fragments.
+ * \param fragmentVFStencilView The material volume fraction stencil data for all fragments.
  * \param fragmentVectorsView The normals for all fragments.
  *
  * \note Calling this function will update some vectors in the \a fragmentVectorsView.
  */
-AXOM_HOST_DEVICE
-void elvira(axom::IndexType szIndex,
-            int matCount,
-            int offset,
-            axom::ArrayView<double> zoneMatStencilView,
-            axom::ArrayView<double> fragmentVectorsView,
-            int iskip,
-            int ndims)
+template <int NDIMS>
+struct elvira {};
+
+/*!
+ * \brief 2D specialization that calls elvira2xy to make normals.
+ */
+template <>
+struct elvira<2>
 {
-  constexpr int StencilSize = getStencilSize(ndims);
-  constexpr int numVectorComponents = 3;
+  static constexpr int NDIMS = 2;
 
-  for(int m = 0; m < matCount; m++)
+  AXOM_HOST_DEVICE
+  static void execute(int matCount,
+                      const double *fragmentVFStencilStart,
+                      double *fragmentVectorsStart,
+                      int iskip)
   {
-    const auto fragmentIndex = offset + m;
+    constexpr int StencilSize = getStencilSize(NDIMS);
+    constexpr int numVectorComponents = 3;
 
-    // Get the pointer for this interface's normal
-    double *normal =
-      fragmentVectorsView.data() + fragmentIndex * numVectorComponents;
+    const double *vol_fracs = fragmentVFStencilStart;
+    double *normal = fragmentVectorsStart;
 
-    // Get the pointer for this material's volume fraction stencil.
-    double *vol_fracs = zoneMatStencilView.data() + fragmentIndex * StencilSize;
-
-    if(m != iskip)
+    for(int m = 0; m < matCount; m++)
     {
-      if(ndims == 2)
+      if(m != iskip)
       {
         elvira2xy(vol_fracs, normal);
       }
       else
       {
-        // elvira3d(vol_fracs, normal);
+        normal[0] = 1.;
+        normal[1] = 0.;
+        normal[2] = 0.;
       }
-    }
-    else
-    {
-      normal[0] = 1.;
-      normal[1] = 0.;
-      normal[2] = 0.;
+
+      // Advance to next fragment.
+      vol_fracs += StencilSize;
+      normal += numVectorComponents;
     }
   }
-}
+};
+
+/*!
+ * \brief 3D specialization that calls elvira3d to make normals.
+ */
+template <>
+struct elvira<3>
+{
+  static constexpr int NDIMS = 3;
+
+  AXOM_HOST_DEVICE
+  static void execute(int matCount,
+                      const double *fragmentVFStencilStart,
+                      double *fragmentVectorsStart,
+                      int iskip)
+  {
+#if 0
+    constexpr int StencilSize = getStencilSize(NDIMS);
+    constexpr int numVectorComponents = 3;
+
+    const double *vol_fracs = fragmentVFStencilStart;
+    double *normal = fragmentVectorsStart;
+
+    for(int m = 0; m < matCount; m++)
+    {
+      if(m != iskip)
+      {
+        elvira3d(vol_fracs, normal);
+      }
+      else
+      {
+        normal[0] = 1.;
+        normal[1] = 0.;
+        normal[2] = 0.;
+      }
+
+      // Advance to next fragment.
+      vol_fracs += StencilSize;
+      normal += numVectorComponents;
+    }
+#endif
+  }
+#if 0
+  AXOM_HOST_DEVICE
+  static void execute(axom::IndexType szIndex,
+                      int matCount,
+                      int offset,
+                      axom::ArrayView<double> fragmentVFStencilView,
+                      axom::ArrayView<double> fragmentVectorsView,
+                      int iskip)
+  {
+    constexpr int StencilSize = getStencilSize(NDIMS);
+    constexpr int numVectorComponents = 3;
+
+    for(int m = 0; m < matCount; m++)
+    {
+      const auto fragmentIndex = offset + m;
+
+      // Get the pointer for this interface's normal
+      double *normal =
+        fragmentVectorsView.data() + fragmentIndex * numVectorComponents;
+
+      // Get the pointer for this material's volume fraction stencil.
+      double *vol_fracs = fragmentVFStencilView.data() + fragmentIndex * StencilSize;
+
+      if(m != iskip)
+      {
+        //elvira3d(vol_fracs, normal);
+      }
+      else
+      {
+        normal[0] = 1.;
+        normal[1] = 0.;
+        normal[2] = 0.;
+      }
+    }
+  }
+#endif
+};
 
 }  // namespace elvira
 
@@ -1014,16 +1092,13 @@ void elvira(axom::IndexType szIndex,
  * \brief Implements Elvira algorithm for 2D structured meshes.
  */
 template <typename ExecSpace, typename IndexPolicy, typename CoordsetView, typename MatsetView>
-class ElviraAlgorithm2D : public axom::mir::MIRAlgorithm
+class ElviraAlgorithm : public axom::mir::MIRAlgorithm
 {
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
 public:
   using TopologyView = axom::mir::views::StructuredTopologyView<IndexPolicy>;
   using ConnectivityType = typename TopologyView::ConnectivityType;
-
-  // Make sure we only instantiate this algorithm for 2D meshes.
-  static_assert(IndexPolicy::dimension() == 2, "IndexPolicy must be 2D");
 
   /*!
    * \brief Constructor
@@ -1032,9 +1107,9 @@ public:
    * \param coordsetView The coordset view to use for the input data.
    * \param matsetView The matset view to use for the input data.
    */
-  ElviraAlgorithm2D(const TopologyView &topoView,
-                    const CoordsetView &coordsetView,
-                    const MatsetView &matsetView)
+  ElviraAlgorithm(const TopologyView &topoView,
+                  const CoordsetView &coordsetView,
+                  const MatsetView &matsetView)
     : axom::mir::MIRAlgorithm()
     , m_topologyView(topoView)
     , m_coordsetView(coordsetView)
@@ -1042,7 +1117,7 @@ public:
   { }
 
   /// Destructor
-  virtual ~ElviraAlgorithm2D() = default;
+  virtual ~ElviraAlgorithm() = default;
 
   /*!
    * \brief Perform material interface reconstruction on a single domain.
@@ -1070,10 +1145,8 @@ public:
                              conduit::Node &n_newMatset) override
   {
     namespace bputils = axom::mir::utilities::blueprint;
-    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-    //const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
-    AXOM_ANNOTATE_SCOPE("ElviraAlgorithm2D");
+    AXOM_ANNOTATE_SCOPE("ElviraAlgorithm");
 
     // Copy the options to make sure they are in the right memory space.
     conduit::Node n_options_copy;
@@ -1193,10 +1266,10 @@ public:
     constexpr int StencilSize = elvira::getStencilSize(ndims);
     const auto numFragmentsStencil = numFragments * StencilSize;
 
-    axom::Array<double> zoneMatStencil(numFragmentsStencil,
-                                       numFragmentsStencil,
-                                       allocatorID);
-    auto zoneMatStencilView = zoneMatStencil.view();
+    axom::Array<double> fragmentVFStencil(numFragmentsStencil,
+                                          numFragmentsStencil,
+                                          allocatorID);
+    auto fragmentVFStencilView = fragmentVFStencil.view();
 
     // Sorted material ids for each zone.
     axom::Array<typename MatsetView::IndexType> sortedMaterialIds(numFragments,
@@ -1268,7 +1341,7 @@ public:
 
               // Store the vf into the stencil for the current material.
               const auto destIndex = fragmentIndex * StencilSize + si;
-              zoneMatStencilView[destIndex] = vf;
+              fragmentVFStencilView[destIndex] = vf;
             }
 
             // coord stencil
@@ -1284,7 +1357,7 @@ public:
               // Store the vf into the stencil for the current material.
               const auto fragmentIndex = offset + m;
               const auto destIndex = fragmentIndex * StencilSize + si;
-              zoneMatStencilView[destIndex] = 0.;
+              fragmentVFStencilView[destIndex] = 0.;
             }
 
             // coord stencil
@@ -1321,21 +1394,23 @@ public:
         const double *zcStencil = zcStencilView.data() + coordIndex;
         elvira::computeJacobian(xcStencil, ycStencil, zcStencil, ndims, jac);
 
+        // The starting addresses for fragments in the current zone.
+        const double *fragmentVFStencilStart = fragmentVFStencilView.data() + offset * StencilSize;
+        double *fragmentVectorsStart = fragmentVectorsView.data() + offset * numVectorComponents;
+
         // Produce normal for each material in this zone.
         int iskip = 0;
-        axom::mir::elvira::elvira(zoneIndex,
+        axom::mir::elvira::elvira<ndims>::execute(
                matCount,
-               offset,
-               zoneMatStencilView,
-               fragmentVectorsView,
-               iskip,
-               ndims);
+               fragmentVFStencilStart,
+               fragmentVectorsStart,
+               iskip);
 
         // Transform the normals.
-        for(axom::IndexType i = 0; i < matCount; i++)
+        for(axom::IndexType m = 0; m < matCount; m++)
         {
           double *normal =
-            fragmentVectorsView.data() + ((offset + i) * numVectorComponents);
+            fragmentVectorsView.data() + ((offset + m) * numVectorComponents);
           elvira::transform(normal, jac);
         }
       });
