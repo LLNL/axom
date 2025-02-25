@@ -291,7 +291,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         else:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", False))
 
-        if "+cpp14" in spec and spec.satisfies("@:0.6.1"):
+        if self.satisfies("+cpp14") and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
         # Add optimization flag workaround for builds with cray compiler
@@ -384,7 +384,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             )
         )
 
-        if "+fortran" in spec and self.is_fortran_compiler("xlf"):
+        if spec.satisfies("+fortran") and self.is_fortran_compiler("xlf"):
             # Grab lib directory for the current fortran compiler
             libdir = pjoin(os.path.dirname(os.path.dirname(self.compiler.fc)), "lib")
             description = (
@@ -409,9 +409,9 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             )
 
         if (
-            "+openmp" in spec
+            spec.satisfies("+openmp")
             and "clang" in self.compiler.cxx
-            and "+fortran" in spec
+            and spec.satisfies("+fortran")
             and self.is_fortran_compiler("xlf")
         ):
             openmp_gen_exp = (
@@ -501,7 +501,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
         # optional tpls
         for dep in ("c2c", "mfem", "hdf5", "lua", "raja", "umpire", "opencascade"):
-            if "+%s" % dep in spec:
+            if spec.satisfies("+%s" % dep):
                 dep_dir = get_spec_path(spec, dep, path_replacements)
                 entries.append(cmake_cache_path("%s_DIR" % dep.upper(), dep_dir))
             else:
@@ -565,7 +565,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append("# ClangFormat disabled due to llvm and devtools not in spec\n")
             entries.append(cmake_cache_option("ENABLE_CLANGFORMAT", False))
 
-        if spec.satisfies("+python") in spec or spec.satisfies("+devtools"):
+        if spec.satisfies("+python") or spec.satisfies("+devtools"):
             python_path = os.path.realpath(spec["python"].command.path)
             for key in path_replacements:
                 python_path = python_path.replace(key, path_replacements[key])
