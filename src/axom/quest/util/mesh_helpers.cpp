@@ -611,15 +611,6 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
     auto* connView = elementsGrp->getView("connectivity");
     curDim = connView->getShape(2, curShape);
     SLIC_ASSERT(curDim == 2);
-    // Is this code necessary? Not reached in example, and accesses out-of-bounds index
-    // constexpr axom::IndexType NUM_VERTS_PER_HEX = 8;
-    // if(curDim == 1)
-    // {
-    //   SLIC_ASSERT(curShape[0] % NUM_VERTS_PER_HEX == 0);
-    //   axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX,
-    //                                   NUM_VERTS_PER_HEX};
-    //   connView->reshapeArray(2, connShape);
-    // }
 
     // mint::Mesh requires connectivity strides, even though Blueprint doesn't.
     constexpr axom::IndexType BIT_SPECIFIC_NUM_VERTS_PER_QUAD = 4;

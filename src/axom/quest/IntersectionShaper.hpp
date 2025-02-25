@@ -668,11 +668,9 @@ private:
     const int host_allocator =
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
     const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
-    printf("ooo ooo INSIDE prepareTriCells ooo ooo\n");
 
     // Number of triangles in mesh
     m_tricount = m_surfaceMesh->getNumberOfCells();
-    printf("\t --> m_tricount is %d\n", m_tricount);
 
     axom::Array<PolygonStaticType> tris_host(m_tricount,
                                              m_tricount,
@@ -705,12 +703,6 @@ private:
       Point2D p3({pts[2][0], pts[2][1]});
 
       tris_host[i] = PolygonStaticType({p1, p2, p3});
-
-      SLIC_INFO("\t --> tris_host[" << i << "] is " << tris_host[i]);
-      SLIC_INFO("\t\t --> Full pts[" << 0 << "] is " << pts[0]);
-      SLIC_INFO("\t\t --> Full pts[" << 1 << "] is " << pts[1]);
-      SLIC_INFO("\t\t --> Full pts[" << 2 << "] is " << pts[2]);
-      slic::flushStreams();
     }
 
     // Copy triangles to device
@@ -1027,7 +1019,6 @@ private:
     const int host_allocator =
       axom::execution_space<axom::SEQ_EXEC>::allocatorID();
     const int device_allocator = axom::execution_space<ExecSpace>::allocatorID();
-    printf("xxx xxx INSIDE runShapeQuery2DImpl xxx xxx\n");
 
     SLIC_INFO(axom::fmt::format("{:-^80}",
                                 " Inserting shapes' bounding boxes into BVH "));
@@ -1063,7 +1054,6 @@ private:
 
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
-    printf("\t--> CHECKPOINT 3\n");
     auto quad_bbs_device_view = m_quad_bbs.view();
 
     // Find which shape bounding boxes intersect quadrilateral bounding boxes
@@ -2759,17 +2749,6 @@ public:
                      vertCoords_device_view[vertIndex + 1]}));
         }
       });
-
-    printf("\t--> CHECKPOINT 2\n");
-    if(m_allocatorId ==
-       axom::policyToDefaultAllocatorID(axom::runtime_policy::Policy::seq))
-    {
-      for(int i = 0; i < m_cellCount; i++)
-      {
-        SLIC_INFO("\t\t--> Quad[" << i << "] is " << quads_device_view[i]);
-      }
-    }
-
   }  // end of populateQuadsFromMesh()
 
   template <typename ExecSpace>
