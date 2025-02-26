@@ -9,6 +9,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
+#include "axom/mir/views/Shapes.hpp"
 #include "axom/mir/views/dispatch_material.hpp"
 
 #include <conduit/conduit.hpp>
