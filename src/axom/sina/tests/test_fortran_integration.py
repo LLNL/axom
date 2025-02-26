@@ -4,7 +4,7 @@ import json
 import os
 import subprocess
 import unittest
-import numpy as np
+
 try:
     import h5py
     AXOM_USE_HDF5 = True
