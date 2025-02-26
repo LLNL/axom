@@ -157,24 +157,30 @@ class TestFortranExampleIntegrationHDF5(unittest.TestCase):
         os.remove(self.dump_file)
 
     def extract_hdf5_value(self, value):
+        # If the value is an h5py.Dataset, retrieve its underlying data.
         if isinstance(value, h5py.Dataset):
             value = value[()]
-
+            
+        # If the value is a bytes instance, decode it.
         if isinstance(value, bytes):
             return value.decode("utf-8").strip("\0").strip()
+        
+        # If the value is a list or tuple of bytes, join them into a single bytes object and decode.
+        if isinstance(value, (list, tuple)) and value and all(isinstance(item, bytes) for item in value):
+            joined = b"".join(value)
+            return joined.decode("utf-8").strip("\0").strip()
+        
+        # If the value has a 'tolist' method (e.g., from an array-like object), convert it and process.
+        if hasattr(value, "tolist"):
+            converted = value.tolist()
+            if isinstance(converted, (list, tuple)) and converted and all(isinstance(item, bytes) for item in converted):
+                joined = b"".join(converted)
+                return joined.decode("utf-8").strip("\0").strip()
+            if isinstance(converted, list) and len(converted) == 1:
+                return converted[0]
+            return converted
 
-        if isinstance(value, np.ndarray):
-            if value.dtype.kind in {'U', 'S'}:
-                result = b"".join(value.astype("S")).decode("utf-8").strip("\0").strip()
-            else:
-                result = value.tolist()
-                if isinstance(result, list) and len(result) == 1:
-                    result = result[0]
-            return result
-
-        if isinstance(value, (np.integer, np.floating)):
-            return value.item()
-
+        # Otherwise, return the value as-is.
         return value
 
     def test_validate_contents_of_record(self):
