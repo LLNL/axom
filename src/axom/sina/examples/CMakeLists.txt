@@ -30,7 +30,7 @@ set(sina_example_sources
 set(sina_example_depends sina conduit::conduit slic)
 
 if (ENABLE_FORTRAN)
-    blt_list_append( TO sina_example_sources ELEMENTS sina_fortran.f90)
+    blt_list_append( TO sina_example_sources ELEMENTS sina_fortran.f)
 endif()
 
 #------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ foreach(src ${sina_example_sources})
     get_filename_component(exe_name ${src} NAME_WE)
 
     if (exe_name STREQUAL "sina_fortran")
-        set(sina_mod_src ${CMAKE_CURRENT_BINARY_DIR}/../interface/sina_fortran_interface.f90)
+        set(sina_mod_src ${CMAKE_CURRENT_BINARY_DIR}/../interface/sina_fortran_interface.f)
     else()
         set(sina_mod_src "")
     endif()

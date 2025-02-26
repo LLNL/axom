@@ -59,8 +59,8 @@ endif()
 if (ENABLE_FORTRAN)
   blt_list_append( TO sina_headers ELEMENTS interface/sina_fortran_interface.h)
   blt_list_append( TO sina_sources
-  ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f90.in)
-  configure_file(interface/sina_fortran_interface.f90.in interface/sina_fortran_interface.f90 @ONLY)
+  ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f.in)
+  configure_file(interface/sina_fortran_interface.f.in interface/sina_fortran_interface.f @ONLY)
 endif()
 
 #------------------------------------------------------------------------------

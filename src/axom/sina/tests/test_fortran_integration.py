@@ -21,7 +21,7 @@ def parse_args():
 
 # JSON Tests: Will always run
 class TestFortranExampleIntegrationJSON(unittest.TestCase):
-     
+    
     @classmethod
     def setUpClass(cls):
         """
@@ -33,20 +33,19 @@ class TestFortranExampleIntegrationJSON(unittest.TestCase):
         args = parse_args()
         cls.binary_dir = args.binary_dir
         if cls.binary_dir is None:
-            # Assume we're at /path/to/build_dir/axom/sina/tests so move up to build_dir
-            cls.binary_dir = f"{cwd}/../../../"
-        
+            # Move up three levels and resolve an absolute path
+            cls.binary_dir = os.path.abspath(os.path.join(cwd, "../"))
+
         os.chdir(cls.binary_dir)
 
-        if not os.path.exists(f"{cls.binary_dir}/examples/sina_fortran_ex"):
+        if not os.path.exists(os.path.join(cls.binary_dir, "examples/sina_fortran_ex")):
             subprocess.run(["make", "sina_fortran_ex"])
 
         os.chdir(cwd)
 
-
     def setUp(self):
         """ Invoke example Fortran application to dump a sina file """
-        subprocess.run([f"{self.binary_dir}/examples/sina_fortran_ex"])
+        subprocess.run([os.path.join(self.binary_dir, "examples/sina_fortran_ex")])
         self.dump_file = "sina_dump.json"
         
     def tearDown(self):
@@ -130,16 +129,28 @@ class TestFortranExampleIntegrationHDF5(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        """
+        Obtain the binary directory from the CLI and compile the sina fortran
+        example needed for these tests if necessary.
+        """
         cwd = os.getcwd()
+
         args = parse_args()
-        cls.binary_dir = args.binary_dir or f"{cwd}/../../../"
+        cls.binary_dir = args.binary_dir
+        if cls.binary_dir is None:
+            # Move up three levels and resolve an absolute path
+            cls.binary_dir = os.path.abspath(os.path.join(cwd, "../"))
+
         os.chdir(cls.binary_dir)
-        if not os.path.exists(f"{cls.binary_dir}/examples/sina_fortran_ex"):
+
+        if not os.path.exists(os.path.join(cls.binary_dir, "examples/sina_fortran_ex")):
             subprocess.run(["make", "sina_fortran_ex"])
+
         os.chdir(cwd)
 
     def setUp(self):
-        subprocess.run([f"{self.binary_dir}/examples/sina_fortran_ex"])
+        """ Invoke example Fortran application to dump a sina file """
+        subprocess.run([os.path.join(self.binary_dir, "examples/sina_fortran_ex")])
         self.dump_file = "sina_dump.hdf5"
 
     def tearDown(self):
