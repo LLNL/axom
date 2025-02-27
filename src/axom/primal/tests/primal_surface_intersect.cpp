@@ -137,7 +137,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
                         const axom::Array<CoordType>& exp_v,
                         double eps,
                         double test_eps,
-                        bool isTrimmed = true,
+                        bool countUntrimmed = true,
                         bool isHalfOpen = false,
                         bool shouldPrintIntersections = false)
 {
@@ -156,7 +156,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // in arrays (u, v) and t, for the patch and ray, respectively
   Array u, v, t;
   bool ray_intersects =
-    intersect(ray, patch, t, u, v, 1e-8, 1e-8, isTrimmed, isHalfOpen);
+    intersect(ray, patch, t, u, v, 1e-8, 1e-8, countUntrimmed, isHalfOpen);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());
@@ -843,7 +843,7 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
   //  with as much precision as the base bilinear case
   const double eps = 1E-5;
   const double eps_test = 1E-5;
-  const bool isTrimmed = true;
+  const bool countUntrimmed = true;
   const bool isHalfOpen = true;
 
   PointType ray_origin({0.0, 0.0, 0.0});
@@ -867,7 +867,7 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
                            {0.0},
                            eps,
                            eps_test,
-                           !isTrimmed,
+                           countUntrimmed,
                            isHalfOpen);
 
         // Twice if the surface is not half-open
@@ -878,7 +878,7 @@ TEST(primal_surface_inter, NURBS_surface_intersect)
                            {0.0, 3.0},
                            eps,
                            eps_test,
-                           !isTrimmed,
+                           countUntrimmed,
                            !isHalfOpen);
       }
       else
@@ -946,7 +946,7 @@ TEST(primal_surface_inter, trimmed_surface_intersect)
 
   const double eps = 1E-5;
   const double eps_test = 1E-5;
-  const bool isTrimmed = true;
+  const bool countUntrimmed = true;
   const bool isHalfOpen = true;
 
   // Intersects the trimmed surface
@@ -957,7 +957,7 @@ TEST(primal_surface_inter, trimmed_surface_intersect)
                      {0.5},
                      eps,
                      eps_test,
-                     isTrimmed,
+                     !countUntrimmed,
                      isHalfOpen);
 
   // Also intersects the untrimmed surface
@@ -968,7 +968,7 @@ TEST(primal_surface_inter, trimmed_surface_intersect)
                      {0.5},
                      eps,
                      eps_test,
-                     !isTrimmed,
+                     countUntrimmed,
                      isHalfOpen);
 
   // Check intersections with a ray that doesn't intersect the trimmed patch
@@ -977,7 +977,7 @@ TEST(primal_surface_inter, trimmed_surface_intersect)
   ray = RayType(ray_origin, ray_direction);
 
   // Doesn't intersect the trimmed surface
-  checkIntersections(ray, nPatch, {}, {}, {}, eps, eps_test, isTrimmed, isHalfOpen);
+  checkIntersections(ray, nPatch, {}, {}, {}, eps, eps_test, !countUntrimmed, isHalfOpen);
 
   // Does intersect the untrimmed surface
   checkIntersections(ray,
@@ -987,7 +987,7 @@ TEST(primal_surface_inter, trimmed_surface_intersect)
                      {0.8},
                      eps,
                      eps_test,
-                     !isTrimmed,
+                     countUntrimmed,
                      isHalfOpen);
 }
 
