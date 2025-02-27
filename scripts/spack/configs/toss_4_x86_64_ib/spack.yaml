@@ -324,6 +324,8 @@ spack:
       require: "@4.6.0"
     opencascade:
       require: "@7.8.1+data_exchange~draw"
+    py-jsonschema:
+      require: "@:4.17" #Anything after this requires py-rpds which requires rust and adds 40 minutes
     raja:
       require: "@2024.07.0~shared~examples~exercises"
     scr:
