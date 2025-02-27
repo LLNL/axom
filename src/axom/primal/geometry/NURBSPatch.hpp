@@ -26,6 +26,7 @@
 
 #include "axom/primal/operators/squared_distance.hpp"
 #include "axom/primal/operators/detail/winding_number_2d_impl.hpp"
+#include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
 
 #include <ostream>
 #include <math.h>
@@ -1079,11 +1080,23 @@ public:
   /// \brief Return an array of knot values on the first axis
   axom::Array<T> getKnotsArray_u() const { return m_knotvec_u.getArray(); }
 
+  /// \brief Get the minimum knot value in the u-axis
+  T getMinKnot_u() const { return m_knotvec_u[0]; }
+
+  /// \brief Get the maximum knot value in the u-axis
+  T getMaxKnot_u() const { return m_knotvec_u[m_knotvec_u.getNumKnots() - 1]; }
+
   /// \brief Return a copy of the KnotVector instance on the second axis
   KnotVectorType getKnots_v() const { return m_knotvec_v; }
 
   /// \brief Return an array of knot values on the second axis
   axom::Array<T> getKnotsArray_v() const { return m_knotvec_v.getArray(); }
+
+  /// \brief Get the minimum knot value in the v-axis
+  T getMinKnot_v() const { return m_knotvec_v[0]; }
+
+  /// \brief Get the maximum knot value in the v-axis
+  T getMaxKnot_v() const { return m_knotvec_v[m_knotvec_v.getNumKnots() - 1]; }
 
   /// \brief Returns the number of control points in the NURBS Patch on the first axis
   int getNumControlPoints_u() const
@@ -1122,6 +1135,23 @@ public:
 
   /// \brief Get array of trimming curvse
   const TrimmingCurveVec& getTrimmingCurves() const { return m_trimmingCurves; }
+
+  /// \brief Print the trimming curves
+  void printTrimmingCurves(std::string filename) const
+  {
+    std::ofstream ofs(filename);
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      auto bezier = curve.extractBezier();
+
+      for(auto& patch : bezier)
+      {
+        patch.print(ofs);
+        ofs << std::endl;
+      }
+    }
+  }
 
   /// \brief Get mutable array of trimming curves
   TrimmingCurveVec& getTrimmingCurves() { return m_trimmingCurves; }
@@ -1229,14 +1259,17 @@ public:
     }
 
     ParameterPointType uv = {u, v};
+    bool isOnCurve;
 
     double gwn = 0.0;
     for(const auto& curve : m_trimmingCurves)
     {
-      gwn += detail::nurbs_winding_number(uv, curve);
+      bool isOnThisCurve = false;
+      gwn += detail::nurbs_winding_number(uv, curve, isOnThisCurve);
+      isOnCurve = isOnCurve || isOnThisCurve;
     }
 
-    return std::lround(gwn) % 2 != 0;
+    return isOnCurve || (std::lround(gwn) % 2 != 0);
   }
 
   /// Clears the list of control points, make nonrational
@@ -2542,25 +2575,34 @@ public:
    * \param [in] u The x-coordinate of the center of the disk
    * \param [in] v The y-coordinate of the center of the disk
    * \param [in] r The radius of the disk 
-   * \param [out] n1 The NURBS surface inside the disk
-   * \param [out] n2 The NURBS surface outside the disk
+   * \param [out] the_disk The NURBS surface inside the disk
+   * \param [out] the_rest The NURBS surface outside the disk
+   * \param [in] clipDisk If true, the returned disk is clipped to the disk boundary
    */
-  void diskSplit(T u, T v, T r, NURBSPatch& n1, NURBSPatch& n2) const
+  void diskSplit(T u,
+                 T v,
+                 T r,
+                 NURBSPatch& the_disk,
+                 NURBSPatch& the_rest,
+                 bool clipDisk = true) const
   {
     ParameterPointType uv_param({u, v});
 
     // Copy the control points and weights of the original patch, but not the trimming curves
-    n1 = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
-    n2 = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
+    the_disk = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
+    the_disk.markAsTrimmed();
 
-    // n1 needs trimming curves from the original patch, if any
+    the_rest = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
+    the_rest.markAsTrimmed();
+
+    // the_rest needs trimming curves from the original patch, if any
     if(!isTrimmed())
     {
-      n1.makeTriviallyTrimmed();
+      the_rest.makeTriviallyTrimmed();
     }
     else
     {
-      n1.m_trimming_curves = m_trimming_curves;
+      the_rest.m_trimmingCurves = m_trimmingCurves;
     }
 
     // Intersect all trimming curves with a circle of radius r, centered at (u, v).
@@ -2569,10 +2611,44 @@ public:
     TrimmingCurveVec split_trimming_curves;
 
     axom::Array<T> circle_params;
-    for(const auto& curve : n1.m_trimming_curves)
+    for(const auto& curve : the_rest.m_trimmingCurves)
     {
       axom::Array<T> curve_params;
-      intersect(curve, circle_obj, curve_params, circle_params);
+      // Compute intersections for each subcurve individually to avoid
+      //  a circular dependency with intersect.hpp
+      {
+        // Default parameters for intersection routine
+        const double sq_tol = 1e-16;
+        const double EPS = 1e-8;
+
+        // Extract the Bezier curves of the NURBS curve
+        auto beziers = curve.extractBezier();
+        axom::Array<T> knot_vals = curve.getKnots().getUniqueKnots();
+
+        // Check each Bezier segment for intersection
+        for(int i = 0; i < beziers.size(); ++i)
+        {
+          axom::Array<T> temp_curve_p;
+          axom::Array<T> temp_circle_p;
+          detail::intersect_circle_bezier(circle_obj,
+                                          beziers[i],
+                                          temp_circle_p,
+                                          temp_curve_p,
+                                          sq_tol,
+                                          EPS,
+                                          beziers[i].getOrder(),
+                                          0.,
+                                          1.);
+
+          // Scale the intersection parameters back into the span of the NURBS curve
+          for(int j = 0; j < temp_curve_p.size(); ++j)
+          {
+            curve_params.push_back(
+              knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
+            circle_params.push_back(temp_circle_p[j]);
+          }
+        }
+      }
 
       // Split all trimming curves at the intersection points
       if(curve_params.size() > 0)
@@ -2608,36 +2684,26 @@ public:
     if(circle_params.size() == 0)
     {
       // If the circle is entirely inside the trimming curves,
-      //  n2 is a complete disk
+      //  the_disk is a complete disk
       if(isVisible(u, v))
       {
-        if(ignoreInteriorDisk)
-        {
-          n2.m_trimming_curves.clear();
-          n2.addTrimmingCurve(
-            TrimmingCurveType(1, 0));  // Adds a single, degenerate trimming curve
-          return;
-        }
-
         TrimmingCurveType c1;
         c1.constructCircularArc(0, 2 * M_PI, uv_param, r);
 
-        n2.m_trimming_curves.clear();
-        n2.addTrimmingCurve(c1);
-        n2.clip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+        the_disk.m_trimmingCurves.clear();
+        the_disk.addTrimmingCurve(c1);
+        the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
 
         c1.reverseOrientation();
-        n1.addTrimmingCurve(c1);
+        the_rest.addTrimmingCurve(c1);
 
         return;
       }
       else
       {
         // If the circle is entirely outside the trimming curves,
-        //  n1 is unchanged and n2 is empty
-        n2.m_trimming_curves.clear();
-        n2.addTrimmingCurve(
-          TrimmingCurveType(1, 0));  // Adds a single, degenerate trimming curve
+        //  the_rest is unchanged and the_disk is empty
+        the_disk.m_trimmingCurves.clear();
 
         return;
       }
@@ -2679,12 +2745,12 @@ public:
     }
 
     // Clear the trimming curves from each patch.
-    //  Let n1 be the "big" patch, and n2 be the "small" patch
-    //  n1 gets all trimming curves *outside* the circle, and the reverse of all circle curves
-    //  n2 gets all trimming curves *inside* the circle, and all circle curves
+    //  Let the_rest be the "big" patch, and the_disk be the "small" patch
+    //  the_rest gets all trimming curves *outside* the circle, and the reverse of all circle curves
+    //  the_disk gets all trimming curves *inside* the circle, and all circle curves
 
-    n1.m_trimming_curves.clear();
-    n2.m_trimming_curves.clear();
+    the_rest.m_trimmingCurves.clear();
+    the_disk.m_trimmingCurves.clear();
 
     for(const auto& curve : split_trimming_curves)
     {
@@ -2694,23 +2760,23 @@ public:
            r * r >
          0)
       {
-        n1.addTrimmingCurve(curve);
+        the_rest.addTrimmingCurve(curve);
       }
       else
       {
-        n2.addTrimmingCurve(curve);
+        the_disk.addTrimmingCurve(curve);
       }
     }
 
     for(auto& curve : circle_trimming_curves)
     {
-      n2.addTrimmingCurve(curve);
+      the_disk.addTrimmingCurve(curve);
       curve.reverseOrientation();
-      n1.addTrimmingCurve(curve);
+      the_rest.addTrimmingCurve(curve);
     }
 
-    // Clip n2 according to the width of the disk
-    n2.clip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+    // Clip the_disk according to the width of the disk
+    the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
   }
 
   /*!
@@ -3256,6 +3322,20 @@ private:
         curve[i][1] = a + (b - a) * curve[i][1];
       }
     }
+  }
+
+  /// \brief Clip the edges of the patch to be in the domain, if necessary,
+  ///  but do so *without* checking any of the existing trimming curves for efficiency
+  void uncheckedClip(T min_u, T max_u, T min_v, T max_v)
+  {
+    SLIC_ASSERT(min_u < max_u);
+    SLIC_ASSERT(min_v < max_v);
+    NURBSPatch dummy_patch;
+
+    if(min_u > getMinKnot_u()) this->split_u(min_u, dummy_patch, *this);
+    if(min_v > getMinKnot_v()) this->split_v(min_v, dummy_patch, *this);
+    if(max_u < getMaxKnot_u()) this->split_u(max_u, *this, dummy_patch);
+    if(max_v < getMaxKnot_v()) this->split_v(max_v, *this, dummy_patch);
   }
 };
 
