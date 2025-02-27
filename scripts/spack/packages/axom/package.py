@@ -291,7 +291,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         else:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", False))
 
-        if self.satisfies("+cpp14") and spec.satisfies("@:0.6.1"):
+        if spec.satisfies("+cpp14") and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
 
         # Add optimization flag workaround for builds with cray compiler
