@@ -205,6 +205,11 @@ spack:
       externals:
       - spec: ghostscript@9.27
         prefix: /usr
+    git:
+      buildable: false
+      externals:
+      - spec: git@2.45.0
+        prefix: /collab/usr/global/tools/tce4/opt/git-2.45.0
     gmake:
       buildable: false
       externals:
@@ -276,6 +281,11 @@ spack:
       externals:
       - spec: readline@7.0
         prefix: /usr
+    slurm:
+      buildable: false
+      externals:
+      - spec: slurm@24.05.5
+        prefix: /usr
     swig:
       buildable: false
       externals:
@@ -312,14 +322,16 @@ spack:
       version: [2.24.0]
     mfem:
       require: "@4.6.0"
+    opencascade:
+      require: "@7.8.1+data_exchange~draw"
     raja:
       require: "@2024.07.0~shared~examples~exercises"
     scr:
       require: "@3.0.1~shared~tests~examples"
     umpire:
       require: "@2024.07.0~shared~examples~werror"
-    opencascade:
-      require: "@7.8.1+data_exchange~draw"
+    libyogrt:
+      require: "scheduler=slurm"
 
   # Lock in versions of Devtools
     cmake:
