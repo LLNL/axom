@@ -992,6 +992,24 @@ bool intersect(const Ray<T, 3>& ray,
   return !t.empty();
 }
 
+/*! 
+ * \brief Determines if a ray intersects a NURBS patch.
+ * \param [in] patch The Bezier patch to intersect with the ray.
+ * \param [in] ray The ray to intersect with the patch.
+ * \param [out] u The u parameter(s) of intersection point(s).
+ * \param [out] v The v parameter(s) of intersection point(s).
+ * \param [out] t The t parameter(s) of intersection point(s).
+ * \param [in] tol The tolerance for intersection (for physical distances).
+ * \param [in] EPS The tolerance for intersection (for parameter distances).
+ * \param [in] countUntrimmed True if intersections with the untrimmed patch should also be recorded.
+ * \param [in] isHalfOpen True if the patch is parameterized in [0,1)^2.
+ * 
+ * Perform Bezier extraction and record intersections with each patch.
+ * After intersections are recorded, parameter points located outside the trimming
+ *  curves are pruned from the list (unless specified by `countUntrimmed`).
+ *  
+ * \return true iff the ray intersects the patch, otherwise false.
+ */
 template <typename T>
 bool intersect(const Ray<T, 3>& ray,
                const NURBSPatch<T, 3>& patch,
@@ -1000,7 +1018,7 @@ bool intersect(const Ray<T, 3>& ray,
                axom::Array<T>& v,
                double tol = 1e-8,
                double EPS = 1e-8,
-               bool isTrimmed = true,
+               bool countUntrimmed = true,
                bool isHalfOpen = false)
 {
   // Check a bounding box of the entire NURBS first
@@ -1064,7 +1082,7 @@ bool intersect(const Ray<T, 3>& ray,
     }
 
     // Also remove any intersections that are trimmed out
-    if(isTrimmed && !patch.isVisible(uc[i], vc[i]))
+    if(!countUntrimmed && !patch.isVisible(uc[i], vc[i]))
     {
       continue;
     }
