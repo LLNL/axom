@@ -6,13 +6,15 @@
 #ifndef AXOM_MIR_TOPOLOGY_MAPPER_HPP_
 #define AXOM_MIR_TOPOLOGY_MAPPER_HPP_
 
-#include <axom/config.hpp>
-#include <axom/CLI11.hpp>
-#include <axom/core.hpp>
-#include <axom/mir.hpp>
-#include <axom/primal.hpp>
-#include <axom/slic.hpp>
-#include <axom/spin.hpp>
+#include "axom/config.hpp"
+#include "axom/CLI11.hpp"
+#include "axom/core.hpp"
+#include "axom/primal.hpp"
+#include "axom/slic.hpp"
+#include "axom/spin.hpp"
+
+#include "axom/mir/utilities/PrimalAdaptor.hpp"
+#include "axom/mir/utilities/VariableShape.hpp"
 
 #include <conduit.hpp>
 #include <conduit_blueprint.hpp>
@@ -22,6 +24,7 @@
 
 // Uncomment to emit debugging messages
 //#define AXOM_DEBUG_TOPOLOGY_MAPPER
+
 namespace axom
 {
 namespace mir
@@ -52,161 +55,6 @@ void fill(axom::ArrayView<T> view, T fillValue)
 }
 
 //------------------------------------------------------------------------------
-/**
- * \brief Represent various shapes that consist of points.
- *
- * \tparam T The coordinate precision type.
- * \tparam NDIMS The spatial coordinate dimension.
- * \tparam N The max number of points that the shape can contain.
- */
-template <typename T, int NDIMS, int N = 8>
-class VariableShape
-{
-public:
-  using PointType = axom::primal::Point<T, NDIMS>;
-
-  /*!
-   * \brief Return the shape id type.
-   * \return The shape id type.
-   */
-  AXOM_HOST_DEVICE int id() const { return m_shapeId; }
-
-  /*!
-   * \brief Return the number of points in the shape.
-   * \return The number of points in the shape.
-   */
-  AXOM_HOST_DEVICE axom::IndexType size() const { return m_points.size(); }
-
-  /*!
-   * \brief Add a point to the shape.
-   * \param pt The point to add.
-   */
-  AXOM_HOST_DEVICE void push_back(const PointType &pt)
-  {
-    m_points.push_back(pt);
-  }
-
-  /*!
-   * \brief Return the \a index'th point.
-   * \param index The index of the point to return.
-   * \return The desired point.
-   */
-  AXOM_HOST_DEVICE const PointType &operator[](axom::IndexType index) const
-  {
-    return m_points[index];
-  }
-
-  /*!
-   * \brief Return unsigned shape volume.
-   * \return Unsigned shape volume.
-   */
-  AXOM_HOST_DEVICE double volume() const
-  {
-    double retval = 0.;
-    if(m_shapeId == axom::mir::views::Tet_ShapeID)
-    {
-      axom::primal::Tetrahedron<T, 3> tet(m_points[0],
-                                          m_points[1],
-                                          m_points[2],
-                                          m_points[3]);
-      retval = tet.volume();
-    }
-    else if(m_shapeId == axom::mir::views::Pyramid_ShapeID)
-    {
-      axom::primal::Tetrahedron<T, 3> tets[2];
-      splitPyramid(tets);
-      for(int i = 0; i < 2; i++)
-      {
-        retval += tets[i].volume();
-      }
-    }
-    else if(m_shapeId == axom::mir::views::Wedge_ShapeID)
-    {
-      axom::primal::Tetrahedron<T, 3> tets[3];
-      splitWedge(tets);
-      for(int i = 0; i < 3; i++)
-      {
-        retval += tets[i].volume();
-      }
-    }
-    else if(m_shapeId == axom::mir::views::Hex_ShapeID)
-    {
-      axom::primal::Hexahedron<T, 3> hex(m_points[0],
-                                         m_points[1],
-                                         m_points[2],
-                                         m_points[3],
-                                         m_points[4],
-                                         m_points[5],
-                                         m_points[6],
-                                         m_points[7]);
-      retval = hex.volume();
-    }
-    else
-    {
-      assert("Unsupported shape type");
-    }
-    return retval;
-  }
-
-  /*!
-   * \brief Split the shape into tets.
-   * \param[out] tets The output array of tets that make up the shape.
-   */
-  AXOM_HOST_DEVICE void splitPyramid(axom::primal::Tetrahedron<T, NDIMS> tets[2]) const
-  {
-    assert(m_shapeId == axom::mir::views::Pyramid_ShapeID);
-    tets[0] = axom::primal::Tetrahedron<T, NDIMS>(m_points[0],
-                                                  m_points[1],
-                                                  m_points[3],
-                                                  m_points[4]);
-    tets[1] = axom::primal::Tetrahedron<T, NDIMS>(m_points[1],
-                                                  m_points[2],
-                                                  m_points[3],
-                                                  m_points[4]);
-  }
-
-  /*!
-   * \brief Split the shape into tets.
-   * \param[out] tets The output array of tets that make up the shape.
-   */
-  AXOM_HOST_DEVICE void splitWedge(axom::primal::Tetrahedron<T, NDIMS> tets[3]) const
-  {
-    assert(m_shapeId == axom::mir::views::Wedge_ShapeID);
-    tets[0] = axom::primal::Tetrahedron<T, NDIMS>(m_points[0],
-                                                  m_points[1],
-                                                  m_points[2],
-                                                  m_points[3]);
-    tets[1] = axom::primal::Tetrahedron<T, NDIMS>(m_points[3],
-                                                  m_points[1],
-                                                  m_points[2],
-                                                  m_points[5]);
-    tets[2] = axom::primal::Tetrahedron<T, NDIMS>(m_points[3],
-                                                  m_points[4],
-                                                  m_points[1],
-                                                  m_points[5]);
-  }
-
-  int m_shapeId;
-  axom::StaticArray<PointType, N> m_points;
-};
-
-template <typename T, int NDIMS, int N = 8>
-std::ostream &operator<<(std::ostream &os, const VariableShape<T, NDIMS, N> &obj)
-{
-  os << "{shapeId=" << obj.m_shapeId << ", points={";
-  for(int i = 0; i < obj.m_points.size(); i++)
-  {
-    if(i > 0)
-    {
-      os << ", ";
-    }
-    os << obj.m_points[i];
-  }
-  os << "}}";
-  return os;
-}
-
-//------------------------------------------------------------------------------
 /*!
  * \brief Return area where 2 polygons overlap.
  * \param shape1 The subject polygon.
@@ -221,16 +69,8 @@ AXOM_HOST_DEVICE double shapeOverlap(
   double eps = 1.e-10)
 {
   constexpr bool tryFixOrientation = false;
-
-#if defined(DIFFERENT_CLIPPER)
-  using Polygon = axom::primal::Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>;
-  Polygon overlapPoly;
-  Clipper<Polygon>::Clip(shape1, shape2, overlapPoly, eps);
-  return overlapPoly.area();
-#else
   const auto p = axom::primal::clip(shape1, shape2, eps, tryFixOrientation);
   return p.area();
-#endif
 }
 
 /*!
@@ -524,166 +364,8 @@ public:
   static_assert(SrcCoordsetView::dimension() == TargetCoordsetView::dimension(),
                 "coordset dimension mismatch");
 
-  /**
-   * \brief This class is a view that exposes shapes in MIR topology and
-   *        coordset views as primal shapes. SFINAE is used for the getShape()
-   *        method.
-   */
-  template <typename TopologyView, typename CoordsetView>
-  struct PrimalAdaptor
-  {
-    using value_type = typename CoordsetView::value_type;
-    using Polygon = axom::primal::Polygon<value_type,
-                                          CoordsetView::dimension(),
-                                          axom::primal::PolygonArray::Static>;
-    using Tetrahedron =
-      axom::primal::Tetrahedron<value_type, CoordsetView::dimension()>;
-    using Hexahedron =
-      axom::primal::Hexahedron<value_type, CoordsetView::dimension()>;
-    using BoundingBox =
-      axom::primal::BoundingBox<value_type, CoordsetView::dimension()>;
-
-    /**
-     * \brief Return the number of zones in the associated topology view.
-     * \return The number of zones in the associated topology view.
-     */
-    AXOM_HOST_DEVICE axom::IndexType numZones() const
-    {
-      return m_topoView.numberOfZones();
-    }
-
-    /**
-     * \brief Return the bounding box for the zi'th zone.
-     *
-     * \param zi The index of the zone whose bounding box we want.
-     *
-     * \return The bounding box of the zi'th zone.
-     */
-    AXOM_HOST_DEVICE BoundingBox getBoundingBox(axom::IndexType zi) const
-    {
-      const auto zone = m_topoView.zone(zi);
-      const auto nnodes = zone.numberOfNodes();
-      BoundingBox b;
-      for(axom::IndexType i = 0; i < nnodes; i++)
-      {
-        b.addPoint(m_coordsetView[zone.getId(i)]);
-      }
-      return b;
-    }
-
-    // SFINAE methods for returning a zone as a primal shape (or VariableShape
-    // if primal lacks the shape type).
-
-    /**
-     * \brief Get the zone \a zi as a polygon. This is enabled when the input topology is 2D.
-     *
-     * \param zi The index of the zone we want to return.
-     *
-     * \return A Polygon that represents the zone from the input topology.
-     */
-    template <int TDIM = CoordsetView::dimension()>
-    AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, Polygon>::type getShape(
-      axom::IndexType zi) const
-    {
-      const auto zone = m_topoView.zone(zi);
-      Polygon p;
-      for(axom::IndexType i = 0; i < zone.numberOfNodes(); i++)
-      {
-        p.addVertex(m_coordsetView[zone.getId(i)]);
-      }
-      return p;
-    }
-
-    /**
-     * \brief Get the zone \a zi as a Tetrahedron. This is enabled when the input topology contains tets.
-     *
-     * \param zi The index of the zone we want to return.
-     *
-     * \return A Tetrahedron that represents the zone from the input topology.
-     */
-    template <int TDIM = CoordsetView::dimension(),
-              typename ShapeType = typename TopologyView::ShapeType>
-    AXOM_HOST_DEVICE typename std::enable_if<
-      TDIM == 3 &&
-        std::is_same<ShapeType,
-                     axom::mir::views::TetShape<typename ShapeType::ConnectivityStorage>>::value,
-      Tetrahedron>::type
-    getShape(axom::IndexType zi) const
-    {
-      const auto zone = m_topoView.zone(zi);
-      return Tetrahedron(m_coordsetView[zone.getId(0)],
-                         m_coordsetView[zone.getId(1)],
-                         m_coordsetView[zone.getId(2)],
-                         m_coordsetView[zone.getId(3)]);
-    }
-
-    /**
-     * \brief Get the zone \a zi as a Hexahedron. This is enabled when the input topology contains hexs.
-     *
-     * \param zi The index of the zone we want to return.
-     *
-     * \return A Hexahedron that represents the zone from the input topology.
-     */
-    template <int TDIM = CoordsetView::dimension(),
-              typename ShapeType = typename TopologyView::ShapeType>
-    AXOM_HOST_DEVICE typename std::enable_if<
-      TDIM == 3 &&
-        std::is_same<ShapeType,
-                     axom::mir::views::HexShape<typename ShapeType::ConnectivityStorage>>::value,
-      Hexahedron>::type
-    getShape(axom::IndexType zi) const
-    {
-      const auto zone = m_topoView.zone(zi);
-      return Hexahedron(m_coordsetView[zone.getId(0)],
-                        m_coordsetView[zone.getId(1)],
-                        m_coordsetView[zone.getId(2)],
-                        m_coordsetView[zone.getId(3)],
-                        m_coordsetView[zone.getId(4)],
-                        m_coordsetView[zone.getId(5)],
-                        m_coordsetView[zone.getId(6)],
-                        m_coordsetView[zone.getId(7)]);
-    }
-
-    /**
-     * \brief Get the zone \a zi as a VariableShape. This is enabled when the input
-     *        topology contains wedges, pyramids, or mixed shapes.
-     *
-     * \param zi The index of the zone we want to return.
-     *
-     * \return A VariableShape that represents the zone from the input topology.
-     *         VariableShape is used because primal lacks Pyramid, Wedge classes and
-     *         because if we're using this, we might have a mesh with mixed zone types.
-     */
-    template <int TDIM = CoordsetView::dimension(),
-              typename ShapeType = typename TopologyView::ShapeType>
-    AXOM_HOST_DEVICE typename std::enable_if<
-      (TDIM == 3) &&
-        (std::is_same<ShapeType,
-                      axom::mir::views::PyramidShape<typename ShapeType::ConnectivityType>>::value ||
-         std::is_same<ShapeType,
-                      axom::mir::views::WedgeShape<typename ShapeType::ConnectivityType>>::value ||
-         std::is_same<ShapeType,
-                      axom::mir::views::VariableShape<
-                        typename ShapeType::ConnectivityType>>::value),
-      detail::VariableShape<value_type, 3>>::type
-    getShape(axom::IndexType zi) const
-    {
-      const auto zone = m_topoView.zone(zi);
-      detail::VariableShape<value_type, 3> shape;
-      shape.m_shapeId = zone.id();
-      for(int i = 0; i < zone.numberOfNodes(); i++)
-      {
-        shape.push_back(m_coordsetView[zone.getId(i)]);
-      }
-      return shape;
-    }
-
-    TopologyView m_topoView;
-    CoordsetView m_coordsetView;
-  };
-
-  using SrcShapeView = PrimalAdaptor<SrcTopologyView, SrcCoordsetView>;
-  using TargetShapeView = PrimalAdaptor<TargetTopologyView, TargetCoordsetView>;
+  using SrcShapeView = axom::mir::utilities::blueprint::PrimalAdaptor<SrcTopologyView, SrcCoordsetView>;
+  using TargetShapeView = axom::mir::utilities::blueprint::PrimalAdaptor<TargetTopologyView, TargetCoordsetView>;
 
   /**
    * \brief Constructor
@@ -772,7 +454,7 @@ public:
     using src_value_type = typename SrcCoordsetView::value_type;
     AXOM_ANNOTATE_BEGIN("bbox");
     const auto srcView = m_srcView;
-    bputils::SelectedZones<ExecSpace> srcSelection(srcView.numZones(),
+    bputils::SelectedZones<ExecSpace> srcSelection(srcView.numberOfZones(),
                                                    n_options,
                                                    SRC_SELECTED_ZONES);
     srcSelection.setSorted(false);
@@ -819,7 +501,7 @@ public:
     n_sizes.set_allocator(c2a.getConduitAllocatorID());
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
 
-    const axom::IndexType nTargetZones = m_targetView.numZones();
+    const axom::IndexType nTargetZones = m_targetView.numberOfZones();
     n_volume_fractions.set(conduit::DataType::float64(nmats * nTargetZones));
     n_material_ids.set(conduit::DataType::int32(nmats * nTargetZones));
     n_sizes.set(conduit::DataType::int32(nTargetZones));
@@ -843,7 +525,7 @@ public:
     const auto srcMatIds =
       bputils::make_array_view<std::int64_t>(n_matset["material_ids"]);
     const auto bvh_device = bvh.getTraverser();
-    bputils::SelectedZones<ExecSpace> targetSelection(targetView.numZones(),
+    bputils::SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
                                                       n_options,
                                                       TARGET_SELECTED_ZONES);
     targetSelection.setSorted(false);
@@ -962,7 +644,7 @@ public:
     auto indices = bputils::make_array_view<int>(n_indices);
     detail::fill<ExecSpace>(indices, -1);
     axom::for_all<ExecSpace>(
-      targetView.numZones(),
+      targetView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zi) {
         const auto start = offsets[zi];
         for(int i = 0; i < sizes[zi]; i++)
