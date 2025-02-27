@@ -18,7 +18,6 @@
 #include "axom/primal/geometry/BezierCurve.hpp"
 
 #include "axom/primal/operators/in_sphere.hpp"
-#include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 
 #include <vector>
@@ -409,7 +408,7 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
 
   // Other function put here to avoid circular dependency
   primal::BoundingBox<T, 2> bb = curve.boundingBox().scale(1.1);
-  if(!intersect(circle, bb) || in_sphere(bb, circle))
+  if(!detail::intersect_circle_bbox(circle, bb) || in_sphere(bb, circle))
   {
     return false;
   }
