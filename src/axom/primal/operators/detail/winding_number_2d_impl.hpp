@@ -138,7 +138,7 @@ template <typename T>
 double linear_winding_number(const Point<T, 2>& q,
                              const Point<T, 2>& c0,
                              const Point<T, 2>& c1,
-                             bool isOnEdge&,
+                             bool& isOnEdge,
                              double edge_tol)
 {
   Vector<T, 2> V1(q, c0);
@@ -150,13 +150,28 @@ double linear_winding_number(const Point<T, 2>& q,
                                                 V1[1] - V2[1], V2[1]);
   // clang-format on
 
+  double segment_sq_len = (V1 - V2).squared_norm();
+
   // Compute distance from line connecting endpoints to query
-  if(tri_area * tri_area <= edge_tol * edge_tol * (V1 - V2).squared_norm())
+  isOnEdge = false;
+  if(tri_area * tri_area <= edge_tol * edge_tol * segment_sq_len)
   {
-    isOnEdge = true;
+    // Project the query point onto the line segment to see if they're coincident
+    if(axom::utilities::isNearlyEqual(segment_sq_len, 0.0))
+    {
+      isOnEdge = (V1.squared_norm() <= edge_tol * edge_tol);
+    }
+    else
+    {
+      double proj_val = Vector<T, 2>::dot_product(V1, V2 - V1) / segment_sq_len;
+      if((proj_val >= 0) && (proj_val <= 1))
+      {
+        isOnEdge = true;
+      }
+    }
+
     return 0;
   }
-  isOnEdge = false;
 
   // Compute signed angle between vectors
   double dotprod = axom::utilities::clampVal(
@@ -411,7 +426,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
 template <typename T>
 double bezier_winding_number(const Point<T, 2>& q,
                              const BezierCurve<T, 2>& c,
-                             bool isOnCurve&,
+                             bool& isOnCurve,
                              double edge_tol = 1e-8,
                              double EPS = 1e-8)
 {
@@ -502,7 +517,7 @@ double bezier_winding_number(const Point<T, 2>& q,
 template <typename T>
 double nurbs_winding_number(const Point<T, 2>& q,
                             const NURBSCurve<T, 2>& n,
-                            bool isOnEdge&,
+                            bool& isOnEdge,
                             double edge_tol = 1e-8,
                             double EPS = 1e-8)
 {
@@ -521,14 +536,13 @@ double nurbs_winding_number(const Point<T, 2>& q,
 
   // Decompose the NURBS curve into Bezier segments
   auto beziers = n.extractBezier();
-  bool isOnEdge = false;
 
   // Compute the GWN for each Bezier segment
   double gwn = 0.0;
   for(int i = 0; i < beziers.size(); i++)
   {
     bool isOnThisEdge = false;
-    gwn += bezier_winding_number(q, beziers[i], edge_tol, isOnThisEdge, EPS);
+    gwn += bezier_winding_number(q, beziers[i], isOnThisEdge, edge_tol, EPS);
     isOnEdge |= isOnThisEdge;
   }
 
