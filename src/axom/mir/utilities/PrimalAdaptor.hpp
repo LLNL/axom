@@ -45,7 +45,7 @@ struct PrimalAdaptor
    */
   AXOM_HOST_DEVICE axom::IndexType numberOfZones() const
   {
-    return m_topoView.numberOfZones();
+    return m_topologyView.numberOfZones();
   }
 
   /*!
@@ -57,7 +57,7 @@ struct PrimalAdaptor
    */
   AXOM_HOST_DEVICE BoundingBox getBoundingBox(axom::IndexType zi) const
   {
-    const auto zone = m_topoView.zone(zi);
+    const auto zone = m_topologyView.zone(zi);
     const auto nnodes = zone.numberOfNodes();
     BoundingBox b;
     for(axom::IndexType i = 0; i < nnodes; i++)
@@ -81,7 +81,7 @@ struct PrimalAdaptor
   AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, Polygon>::type getShape(
     axom::IndexType zi) const
   {
-    const auto zone = m_topoView.zone(zi);
+    const auto zone = m_topologyView.zone(zi);
     Polygon p;
     for(axom::IndexType i = 0; i < zone.numberOfNodes(); i++)
     {
@@ -106,7 +106,7 @@ struct PrimalAdaptor
     Tetrahedron>::type
   getShape(axom::IndexType zi) const
   {
-    const auto zone = m_topoView.zone(zi);
+    const auto zone = m_topologyView.zone(zi);
     return Tetrahedron(m_coordsetView[zone.getId(0)],
                        m_coordsetView[zone.getId(1)],
                        m_coordsetView[zone.getId(2)],
@@ -129,7 +129,7 @@ struct PrimalAdaptor
     Hexahedron>::type
   getShape(axom::IndexType zi) const
   {
-    const auto zone = m_topoView.zone(zi);
+    const auto zone = m_topologyView.zone(zi);
     return Hexahedron(m_coordsetView[zone.getId(0)],
                       m_coordsetView[zone.getId(1)],
                       m_coordsetView[zone.getId(2)],
@@ -164,7 +164,7 @@ struct PrimalAdaptor
     VariableShape<value_type, 3>>::type
   getShape(axom::IndexType zi) const
   {
-    const auto zone = m_topoView.zone(zi);
+    const auto zone = m_topologyView.zone(zi);
     VariableShape<value_type, 3> shape;
     shape.m_shapeId = zone.id();
     for(int i = 0; i < zone.numberOfNodes(); i++)
@@ -174,7 +174,7 @@ struct PrimalAdaptor
     return shape;
   }
 
-  TopologyView m_topoView;
+  TopologyView m_topologyView;
   CoordsetView m_coordsetView;
 };
 

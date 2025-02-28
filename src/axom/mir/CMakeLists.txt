@@ -69,14 +69,17 @@ set(mir_headers
     utilities/FieldBlender.hpp
     utilities/FieldSlicer.hpp
     utilities/MakeZoneCenters.hpp
+    utilities/MakeZoneVolumes.hpp
     utilities/MakeUnstructured.hpp
     utilities/MatsetSlicer.hpp
     utilities/MergeMeshes.hpp
     utilities/NodeToZoneRelationBuilder.hpp
+    utilities/PrimalAdaptor.hpp
     utilities/RecenterField.hpp
     utilities/SelectedZones.hpp
     utilities/TopologyMapper.hpp
     utilities/utilities.hpp
+    utilities/VariableShape.hpp
     utilities/ZoneListBuilder.hpp
     views/dispatch_coordset.hpp
     views/dispatch_material.hpp

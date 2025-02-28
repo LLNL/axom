@@ -5,6 +5,8 @@
 
 #include "axom/mir/ElviraAlgorithm.hpp"
 
+#include <iostream>
+
 namespace axom
 {
 namespace mir
@@ -848,13 +850,18 @@ void computeJacobian(const double *xcst,
                      int ndims,
                      double jac[3][3])
 {
-  double del[3][3], det;
+  double del[3][3] = {{1., 0., 0.},
+                      {0., 1., 0.},
+                      {0., 0., 1.}}, det;
   int f, f0, f1, f2, g0, g1, g2;
   int perm1[3] = {1, 2, 0};
   int perm2[3] = {2, 0, 1};
 
-  int idx_2D[6] = {4, 4, 1, 7, 3, 5};
-  int idx_3D[6] = {4, 22, 10, 16, 12, 14};
+//  int idx_2D[6] = {4, 4, 1, 7, 3, 5};     // Z, Y, X
+//  int idx_3D[6] = {4, 22, 10, 16, 12, 14};
+
+  int idx_2D[6] = {3, 5, 1, 7, 4, 4}; // X, Y, Z
+  int idx_3D[6] = {12, 14, 10, 16, 4, 22};
 
   int *idx = (ndims == 3) ? idx_3D : idx_2D;
 
@@ -863,14 +870,17 @@ void computeJacobian(const double *xcst,
   *  a left handed orientation so that det is negative for uniform
   *  positively oriented meshes.
   */
-  for(f = 0; f < 3; f++)
+  for(f = 0; f < ndims; f++)
   {
     f1 = idx[f * 2];
     f2 = idx[f * 2 + 1];
 
     del[0][f] = 0.5 * (xcst[f2] - xcst[f1]);
     del[1][f] = 0.5 * (ycst[f2] - ycst[f1]);
-    del[2][f] = 0.5 * (zcst[f2] - zcst[f1]);
+    if(ndims == 3)
+    {
+      del[2][f] = 0.5 * (zcst[f2] - zcst[f1]);
+    }
   }  // END for all face pairs
 
   /* Construct the Left Jacobian matrix. */
@@ -907,6 +917,42 @@ void computeJacobian(const double *xcst,
     }
 
   }  // END if negative determinant
+
+#if 1
+  std::cout << "xcst={";
+  for(int i = 0; i < 9; i++)
+  {
+    std::cout << xcst[i] << ", ";
+  }
+  std::cout << "}, ycst={";
+  for(int i = 0; i < 9; i++)
+  {
+    std::cout << ycst[i] << ", ";
+  }
+  std::cout << "}, zcst={";
+  for(int i = 0; i < 9; i++)
+  {
+    std::cout << zcst[i] << ", ";
+  }
+  
+  std::cout << "}, del={";
+  for(int row = 0; row < 3; row++)
+  {
+    for(int col = 0; col < 3; col++)
+    {
+      std::cout << del[row][col] << ", ";
+    }
+  }
+  std::cout << "}, jac={";
+  for(int row = 0; row < 3; row++)
+  {
+    for(int col = 0; col < 3; col++)
+    {
+      std::cout << jac[row][col] << ", ";
+    }
+  }
+  std::cout << "}, ndims=" << ndims << ", det=" << det << std::endl;
+#endif
 
   /* Fix 2D stencil */
   if(ndims == 2)

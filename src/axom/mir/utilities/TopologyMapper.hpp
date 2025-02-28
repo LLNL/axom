@@ -301,39 +301,6 @@ AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
   return retval;
 }
 
-/*!
- * \brief Base template for computing a shape's area or volume.
- */
-template <int NDIMS>
-struct ComputeShapeAmount
-{ };
-
-/*!
- * \brief 2D specialization for shapes to compute area.
- */
-template <>
-struct ComputeShapeAmount<2>
-{
-  template <typename ShapeType>
-  static inline AXOM_HOST_DEVICE double execute(const ShapeType &shape)
-  {
-    return shape.area();
-  }
-};
-
-/*!
- * \brief 3D specialization for shapes to compute volume.
- */
-template <>
-struct ComputeShapeAmount<3>
-{
-  template <typename ShapeType>
-  static inline AXOM_HOST_DEVICE double execute(const ShapeType &shape)
-  {
-    return shape.volume();
-  }
-};
-
 }  // end namespace detail
 
 //------------------------------------------------------------------------------
@@ -364,8 +331,8 @@ public:
   static_assert(SrcCoordsetView::dimension() == TargetCoordsetView::dimension(),
                 "coordset dimension mismatch");
 
-  using SrcShapeView = axom::mir::utilities::blueprint::PrimalAdaptor<SrcTopologyView, SrcCoordsetView>;
-  using TargetShapeView = axom::mir::utilities::blueprint::PrimalAdaptor<TargetTopologyView, TargetCoordsetView>;
+  using SrcShapeView = PrimalAdaptor<SrcTopologyView, SrcCoordsetView>;
+  using TargetShapeView = PrimalAdaptor<TargetTopologyView, TargetCoordsetView>;
 
   /**
    * \brief Constructor
@@ -413,7 +380,7 @@ public:
                conduit::Node &n_targetMesh)
   {
     AXOM_ANNOTATE_SCOPE("TopologyMapper::execute");
-    namespace bputils = axom::mir::utilities::blueprint;
+
     using reduce_policy =
       typename axom::execution_space<ExecSpace>::reduce_policy;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -454,7 +421,7 @@ public:
     using src_value_type = typename SrcCoordsetView::value_type;
     AXOM_ANNOTATE_BEGIN("bbox");
     const auto srcView = m_srcView;
-    bputils::SelectedZones<ExecSpace> srcSelection(srcView.numberOfZones(),
+    SelectedZones<ExecSpace> srcSelection(srcView.numberOfZones(),
                                                    n_options,
                                                    SRC_SELECTED_ZONES);
     srcSelection.setSorted(false);
@@ -483,7 +450,7 @@ public:
     // -------------------------------------------------------------------------
     // Set up storage for a new matset.
     AXOM_ANNOTATE_BEGIN("allocation");
-    bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
+    ConduitAllocateThroughAxom<ExecSpace> c2a;
 
     conduit::Node &n_targetMatset = n_targetMesh["matsets/" + targetMatsetName];
     n_targetMatset["material_map"].set(n_materialMap);
@@ -507,10 +474,10 @@ public:
     n_sizes.set(conduit::DataType::int32(nTargetZones));
     n_offsets.set(conduit::DataType::int32(nTargetZones));
 
-    auto material_ids = bputils::make_array_view<int>(n_material_ids);
-    auto volume_fractions = bputils::make_array_view<double>(n_volume_fractions);
-    auto sizes = bputils::make_array_view<int>(n_sizes);
-    auto offsets = bputils::make_array_view<int>(n_offsets);
+    auto material_ids = make_array_view<int>(n_material_ids);
+    auto volume_fractions = make_array_view<double>(n_volume_fractions);
+    auto sizes = make_array_view<int>(n_sizes);
+    auto offsets = make_array_view<int>(n_offsets);
     detail::fill<ExecSpace>(volume_fractions, 0.);
     constexpr int MaterialEmpty = -1;
     detail::fill<ExecSpace>(material_ids, MaterialEmpty);
@@ -523,9 +490,9 @@ public:
     const auto targetView = m_targetView;
     RAJA::ReduceSum<reduce_policy, int> reduceSize(0);
     const auto srcMatIds =
-      bputils::make_array_view<std::int64_t>(n_matset["material_ids"]);
+      make_array_view<std::int64_t>(n_matset["material_ids"]);
     const auto bvh_device = bvh.getTraverser();
-    bputils::SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
+    SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
                                                       n_options,
                                                       TARGET_SELECTED_ZONES);
     targetSelection.setSorted(false);
@@ -543,7 +510,7 @@ public:
 #endif
         // Get the area or volume of the target shape (depends on the dimension).
         double targetAmount =
-          detail::ComputeShapeAmount<TargetCoordsetView::dimension()>::execute(
+          ComputeShapeAmount<TargetCoordsetView::dimension()>::execute(
             targetShape);
 
         // Handle intersection in-depth of the bounding boxes intersected.
@@ -641,7 +608,7 @@ public:
     axom::exclusive_scan<ExecSpace>(sizes, offsets);
     const auto totalSize = reduceSize.get();
     n_indices.set(conduit::DataType::int32(totalSize));
-    auto indices = bputils::make_array_view<int>(n_indices);
+    auto indices = make_array_view<int>(n_indices);
     detail::fill<ExecSpace>(indices, -1);
     axom::for_all<ExecSpace>(
       targetView.numberOfZones(),

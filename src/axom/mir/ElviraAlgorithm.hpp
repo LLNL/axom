@@ -13,6 +13,7 @@
 #include "axom/mir/MIRAlgorithm.hpp"
 #include "axom/mir/utilities/ExtractZones.hpp"
 #include "axom/mir/utilities/MakeZoneCenters.hpp"
+#include "axom/mir/utilities/MakeZoneVolumes.hpp"
 #include "axom/mir/utilities/MergeMeshes.hpp"
 #include "axom/mir/utilities/NodeToZoneRelationBuilder.hpp"
 #include "axom/mir/utilities/RecenterField.hpp"
@@ -360,7 +361,7 @@ public:
 #endif
 
     //--------------------------------------------------------------------------
-    // NOTE: this makes zone centers for all zones.
+    // NOTE: this makes zone centers for all zones. TODO: make it for a subset of zones.
     AXOM_ANNOTATE_BEGIN("centroids");
     bputils::MakeZoneCenters<ExecSpace, TopologyView, CoordsetView> zc(
       m_topologyView,
@@ -376,11 +377,25 @@ public:
       zview = bputils::make_array_view<zc_value>(n_zcfield["values/z"]);
     }
     AXOM_ANNOTATE_END("centroids");
+
+    //--------------------------------------------------------------------------
+    // NOTE: this makes zone volumes for all zones. TODO: make it for a subset of zones.
+    AXOM_ANNOTATE_BEGIN("volumes");
+    bputils::MakeZoneVolumes<ExecSpace, TopologyView, CoordsetView> zv(
+      m_topologyView,
+      m_coordsetView);
+    conduit::Node n_zvfield;
+    zv.execute(n_topo, n_coordset, n_zvfield);
+    using zv_value = typename decltype(zv)::value_type;
+    auto zoneVolume = bputils::make_array_view<zv_value>(n_zvfield["values"]);
+    AXOM_ANNOTATE_END("volumes");
+
 #ifdef AXOM_ELVIRA_DEBUG
     conduit::Node &n_group3 = n_result->operator[]("group3");
     n_group3["xview"].set(xview.data(), xview.size());
     n_group3["yview"].set(yview.data(), yview.size());
     n_group3["zview"].set(zview.data(), zview.size());
+    n_group3["volume"].set(zoneVolume.data(), zoneVolume.size());
 #endif
 
     //--------------------------------------------------------------------------
@@ -471,7 +486,7 @@ public:
             // coord stencil
             xcStencilView[coordIndex] = xview[neighborIndex];
             ycStencilView[coordIndex] = yview[neighborIndex];
-            zcStencilView[coordIndex] = zview.empty() ? 0. : zview[neighborIndex];
+            zcStencilView[coordIndex] = zview.empty() ? 1. : zview[neighborIndex];
           }
           else
           {
@@ -483,11 +498,17 @@ public:
               const auto destIndex = fragmentIndex * StencilSize + si;
               fragmentVFStencilView[destIndex] = 0.;
             }
-
+#if 1
+            // The neighbor zone is out of bounds, give it the same centroid as zoneIndex.
+            xcStencilView[coordIndex] = xview[zoneIndex];
+            ycStencilView[coordIndex] = yview[zoneIndex];
+            zcStencilView[coordIndex] = zview.empty() ? 1. : zview[zoneIndex];
+#else
             // coord stencil
             xcStencilView[coordIndex] = 0.;
             ycStencilView[coordIndex] = 0.;
             zcStencilView[coordIndex] = 0.;
+#endif
           }
         }
       });
@@ -535,7 +556,6 @@ public:
                iskip);
 
 #if defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
-        {
         conduit::Node &n_thisZone = n_group4->append();
         n_thisZone["szIndex"] = szIndex;
         n_thisZone["zone"] = zoneIndex;
@@ -557,7 +577,6 @@ public:
           vf += StencilSize;
           n += numVectorComponents;
         }
-        }
 #endif
 
         // Transform the normals.
@@ -566,6 +585,9 @@ public:
           double *normal =
             fragmentVectorsView.data() + ((offset + m) * numVectorComponents);
           elvira::transform(normal, jac);
+#if defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
+          n_thisZone["mats"][m]["transformed_normal"].set(normal, 3);
+#endif
         }
       });
     AXOM_ANNOTATE_END("vectors");

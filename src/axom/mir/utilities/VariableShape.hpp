@@ -9,6 +9,8 @@
 #include <axom/config.hpp>
 #include <axom/core.hpp>
 #include <axom/primal.hpp>
+#include <axom/slic.hpp>
+#include "axom/mir/views/Shapes.hpp"
 
 #include <iostream>
 
@@ -112,7 +114,7 @@ public:
     }
     else
     {
-      assert("Unsupported shape type");
+      SLIC_ASSERT("Unsupported shape type");
     }
     return retval;
   }
