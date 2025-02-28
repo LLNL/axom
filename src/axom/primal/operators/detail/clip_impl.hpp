@@ -831,6 +831,36 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   return uniqueList;
 }
 
+/*!
+ * \brief Clips a 2D subject polygon against a 2D plane (line), returning
+ *        their geometric intersection as a polygon.
+ *
+ * \sa axom::primal::clip()
+ */
+template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPlane(
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
+  const Plane<T, 2>& clipPlane,
+  double eps = 1.e-10,
+  bool tryFixOrientation = false)
+{
+  const auto n3 = Vector<T, 3>::make_vector(plane.getNormal()[0],
+                                            plane.getNormal()[1],
+                                             T(0));
+  const auto right = Vector<T, 3>::cross_product(n3, Vector<T, 3>(T(0), T(0), T(1)));
+  const auto r2 = Vector<T, 2>::make_vector(right[0], right[1]);
+
+  Point<T, 2> origin(plane.getNormal()[0] * plane.getOffset(),
+                     plane.getNormal()[1] * plane.getOffset());
+
+  // Make a clip polygon for the plane.
+  ShapeType clipPolygon;
+  clipPolygon.addVertex(origin + r2);
+  clipPolygon.addVertex(origin + (-r2));
+
+  return clipPolygonPolygon(subjectPolygon, clipPolygon, eps, tryFixOrientation);
+}
+
 }  // namespace detail
 }  // namespace primal
 }  // namespace axom

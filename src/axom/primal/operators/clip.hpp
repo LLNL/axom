@@ -157,6 +157,38 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
 }
 
 /*!
+ * \brief Clips a 2D subject polygon against a clip plane in 2D, returning
+ *        their geometric intersection as a polygon.
+ *
+ *  This function makes a clip polygon line segment from the plane and
+ *  delegates clipping to the polygon-polygon clipper.
+ *
+ *
+ * \param [in] subjectPolygon The subject polygon
+ * \param [in] clipPlane The clip plane
+ * \param [in] eps The tolerance for plane point orientation.
+ *                 Defaults to 1.e-10.
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed area and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed area.
+ *             Defaults to false.
+ *
+ * \return A polygon of the subject polygon clipped against the clip plane.
+ */
+template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
+AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
+  const Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>& subjectPolygon,
+  const Plane<T, 2>& clipPlane,
+  double eps = 1.e-10,
+  bool tryFixOrientation = false)
+{
+  return detail::clipPolygonPlane(subjectPolygon,
+                                  clipPlane,
+                                  eps,
+                                  tryFixOrientation);
+}
+
+/*!
  * \brief Clips a 3D hexahedron against a tetrahedron in 3D, returning
  *        the geometric intersection of the hexahedron and the tetrahedron
  *        as a polyhedron
