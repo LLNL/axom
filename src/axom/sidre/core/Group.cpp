@@ -1094,7 +1094,9 @@ const Group* Group::getGroup(const std::string& path) const
  *
  *************************************************************************
  */
-Group* Group::createGroup(const std::string& path, bool is_list)
+Group* Group::createGroup(const std::string& path,
+                          bool is_list,
+                          bool accept_existing)
 {
   std::string intpath(path);
   bool create_groups_in_path = true;
@@ -1118,7 +1120,7 @@ Group* Group::createGroup(const std::string& path, bool is_list)
     }
     return nullptr;
   }
-  else if(intpath.empty() || group->hasChildGroup(intpath) ||
+  else if(intpath.empty() || (group->hasChildGroup(intpath) && !accept_existing) ||
           group->hasChildView(intpath))
   {
     SLIC_CHECK_MSG(
@@ -1136,17 +1138,22 @@ Group* Group::createGroup(const std::string& path, bool is_list)
     return nullptr;
   }
 
-  Group* new_group =
-    new(std::nothrow) Group(intpath, group->getDataStore(), is_list);
-  if(new_group == nullptr)
+  if(!group->hasGroup(intpath))
   {
-    return nullptr;
-  }
+    Group* new_group =
+      new(std::nothrow) Group(intpath, group->getDataStore(), is_list);
+    if(new_group == nullptr)
+    {
+      return nullptr;
+    }
 
 #ifdef AXOM_USE_UMPIRE
-  new_group->setDefaultAllocator(group->getDefaultAllocator());
+    new_group->setDefaultAllocator(group->getDefaultAllocator());
 #endif
-  return group->attachGroup(new_group);
+    return group->attachGroup(new_group);
+  }
+
+  return group->getGroup(intpath);
 }
 
 Group* Group::createUnnamedGroup(bool is_list)
@@ -1480,6 +1487,66 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
     const Group* group = getGroup(gidx);
     conduit::Node& child_node = m_is_list ? n.append() : n[group->getName()];
     if(group->createNativeLayout(child_node, attr))
+    {
+      hasSavedViews = true;
+    }
+    else
+    {
+      if(m_is_list)
+      {
+        n.remove(group->getName());
+      }
+      else
+      {
+        n.remove(n.number_of_children() - 1);
+      }
+    }
+    gidx = getNextValidGroupIndex(gidx);
+  }
+
+  return hasSavedViews;
+}
+
+/*
+ *************************************************************************
+ *
+ * Deep-copy Group's native layout to given Conduit node.
+ *
+ *************************************************************************
+ */
+bool Group::deepCopyToConduit(Node& n, const Attribute* attr) const
+{
+  n.set(DataType::object());
+  bool hasSavedViews = false;
+
+  // Dump the group's views
+  IndexType vidx = getFirstValidViewIndex();
+  while(indexIsValid(vidx))
+  {
+    const View* view = getView(vidx);
+
+    // Check that the view's name is not also a child group name
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
+                   SIDRE_GROUP_LOG_PREPEND
+                     << "'" << view->getName()
+                     << "' is the name of both a group and a view.");
+
+    if(attr == nullptr || view->hasAttributeValue(attr))
+    {
+      conduit::Node& child_node = m_is_list ? n.append() : n[view->getName()];
+      view->deepCopyToConduit(child_node);
+      hasSavedViews = true;
+    }
+    vidx = getNextValidViewIndex(vidx);
+  }
+
+  // Recursively dump the child groups
+  IndexType gidx = getFirstValidGroupIndex();
+  while(indexIsValid(gidx))
+  {
+    const Group* group = getGroup(gidx);
+    conduit::Node& child_node = m_is_list ? n.append() : n[group->getName()];
+    if(group->deepCopyToConduit(child_node, attr))
     {
       hasSavedViews = true;
     }

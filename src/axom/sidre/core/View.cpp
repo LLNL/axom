@@ -13,6 +13,7 @@
 #include "Attribute.hpp"
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/WhereMacro.hpp"
 
 namespace axom
 {
@@ -943,6 +944,41 @@ void View::createNativeLayout(Node& n) const
   // Note: const_cast the pointer to satisfy conduit's interface
   void* data_ptr = const_cast<void*>(m_node.data_ptr());
   n.set_external(m_node.schema(), data_ptr);
+}
+
+/*
+ *************************************************************************
+ *
+ * Deep-copy data to given Conduit node.
+ *
+ *************************************************************************
+ */
+void View::deepCopyToConduit(Node& dst) const
+{
+  // see ATK-726 - Handle undescribed and unallocated views in Sidre's
+  // createNativeLayout()
+  // TODO: Need to handle cases where the view is not described
+  // TODO: Need to handle cases where the view is not allocated
+  // TODO: Need to handle cases where the view is not applied
+
+  // Note: We are using conduit's pointer rather than the View pointer
+  //    since the conduit pointer handles offsetting
+  // Note: const_cast the pointer to satisfy conduit's interface
+
+  const conduit::DataType& srcDtype = m_node.dtype();
+  dst.set(srcDtype);
+  if(isAllocated())
+  {
+    // Using set_node to set dst: would reset dst's allocator id to
+    // the Conduit default (not what we want) if dst is an object or
+    // list.  Fortunately, Sidre never uses a Conduit node in those
+    // modes.
+#ifdef AXOM_DEBUG
+    const auto oldAllocatorId = dst.allocator();
+#endif
+    dst.set_node(m_node);
+    SLIC_ASSERT(dst.allocator() == oldAllocatorId);
+  }
 }
 
 /*

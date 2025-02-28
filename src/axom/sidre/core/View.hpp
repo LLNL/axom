@@ -961,6 +961,11 @@ public:
   void createNativeLayout(Node& n) const;
 
   /*!
+   * \brief Deep copy View into the given conduit::Node.
+   */
+  void deepCopyToConduit(Node& n) const;
+
+  /*!
    * \brief Copy metadata of the View to the given Conduit node
    *
    * The View's datatype schema and state information will be copied into the

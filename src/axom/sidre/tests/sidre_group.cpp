@@ -6,6 +6,7 @@
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
 #include "axom/core.hpp"
 #include "axom/sidre.hpp"
+#include "axom/sidre/core/SidreTypes.hpp"
 
 #include "gtest/gtest.h"
 
@@ -1802,6 +1803,85 @@ TEST(sidre_group, copy_to_conduit_node)
 
   delete ds1;
 }
+
+//------------------------------------------------------------------------------
+TEST(sidre_group, copy_array_to_conduit_node)
+{
+  DataStore ds1;
+
+  const axom::IndexType count = 5;
+
+  // group_a uses map format, group_b uses list format.
+  Group* group_a = ds1.getRoot()->createGroup("group_a", false);
+  Group* group_b = ds1.getRoot()->createGroup("group_b", true);
+
+  // add child groups and views to group_a
+  View* view_a = group_a->createViewAndAllocate(
+    "i0",
+    axom::sidre::detail::SidreTT<std::int32_t>::id,
+    count);
+  View* view_b = group_b->createViewAndAllocate(
+    "d0",
+    axom::sidre::detail::SidreTT<axom::float64>::id,
+    count);
+
+  std::int32_t* v_a = view_a->getArray();
+  axom::float64* v_b = view_b->getArray();
+
+  for(IndexType i = 0; i < count; ++i)
+  {
+    v_a[i] = 100 + i;
+    v_b[i] = 10 + i;
+  }
+  EXPECT_NE(v_a, nullptr);
+  EXPECT_NE(v_b, nullptr);
+
+  conduit::Node shallowDst;
+  ds1.getRoot()->createNativeLayout(shallowDst);
+  EXPECT_TRUE(shallowDst.has_path("group_a/i0"));
+  EXPECT_TRUE(shallowDst.has_path("group_b"));
+  EXPECT_TRUE(shallowDst.fetch_existing("group_b").number_of_children() == 1);
+
+  {
+    std::int32_t* n_a = shallowDst.fetch_existing("group_a/i0").value();
+    axom::float64* n_b = shallowDst.fetch_existing("group_b").child(0).value();
+    EXPECT_NE(n_a, nullptr);
+    EXPECT_NE(n_b, nullptr);
+    EXPECT_EQ(n_a, v_a);
+    EXPECT_EQ(n_b, v_b);
+  }
+
+  conduit::Node deepDst;
+  ds1.getRoot()->deepCopyToConduit(deepDst);
+  EXPECT_TRUE(deepDst.has_path("group_a/i0"));
+  EXPECT_TRUE(deepDst.has_path("group_b"));
+  EXPECT_TRUE(deepDst.fetch_existing("group_b").number_of_children() == 1);
+
+  {
+    std::int32_t* n_a = deepDst.fetch_existing("group_a/i0").value();
+    axom::float64* n_b = deepDst.fetch_existing("group_b").child(0).value();
+    EXPECT_NE(n_a, nullptr);
+    EXPECT_NE(n_b, nullptr);
+    EXPECT_NE(n_a, v_a);
+    EXPECT_NE(n_b, v_b);
+    // Verify correct deep-copy values
+    const int hostAllocId = axom::DYNAMIC_ALLOCATOR_ID;
+    axom::Array<std::int32_t> n_a_host {
+      axom::ArrayView<std::int32_t> {n_a, {count}},
+      hostAllocId};
+    axom::Array<axom::float64> n_b_host {
+      axom::ArrayView<axom::float64> {n_b, {count}},
+      hostAllocId};
+    axom::IndexType errCount = 0;
+    for(IndexType i = 0; i < count; ++i)
+    {
+      errCount += n_a_host[i] != v_a[i];
+      errCount += n_b_host[i] != v_b[i];
+    }
+    EXPECT_EQ(errCount, 0);
+  }
+}
+
 //------------------------------------------------------------------------------
 TEST(sidre_group, save_restore_empty_datastore)
 {

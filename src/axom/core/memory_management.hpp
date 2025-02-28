@@ -9,6 +9,7 @@
 // Axom includes
 #include "axom/config.hpp"  // for AXOM compile-time definitions
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 // Umpire includes
 #ifdef AXOM_USE_UMPIRE
@@ -133,6 +134,15 @@ inline int getAllocatorIDFromPointer(const void* ptr)
   return DYNAMIC_ALLOCATOR_ID;
 }
 
+MemorySpace getAllocatorSpace(int allocatorId);
+
+inline MemorySpace getMemorySpaceFromPointer(const void* ptr)
+{
+  auto allocId = getAllocatorIDFromPointer(ptr);
+  MemorySpace memSpace = getAllocatorSpace(allocId);
+  return memSpace;
+}
+
 /*!
  * \brief Allocates a chunk of memory of type T.
  *
@@ -209,16 +219,22 @@ inline T* allocate(std::size_t n, int allocID) noexcept
 {
   const std::size_t numbytes = n * sizeof(T);
 
+  if(allocID == DYNAMIC_ALLOCATOR_ID)
+  {
+    return static_cast<T*>(std::malloc(numbytes));
+  }
+
 #ifdef AXOM_USE_UMPIRE
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator allocator = rm.getAllocator(allocID);
   return static_cast<T*>(allocator.allocate(numbytes));
 
-#else
-  AXOM_UNUSED_VAR(allocID);
-  return static_cast<T*>(std::malloc(numbytes));
 #endif
+  // Without Umpire, only DYNAMIC_ALLOCATOR_ID is valid.
+  axom::utilities::processAbort();
+
+  return nullptr;  // Silence warning.
 }
 //------------------------------------------------------------------------------
 template <typename T>
@@ -232,14 +248,16 @@ inline void deallocate(T*& pointer) noexcept
 #ifdef AXOM_USE_UMPIRE
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  rm.deallocate(pointer);
-
-#else
-
-  std::free(pointer);
+  if(rm.hasAllocator(pointer))
+  {
+    rm.deallocate(pointer);
+    pointer = nullptr;
+    return;
+  }
 
 #endif
 
+  std::free(pointer);
   pointer = nullptr;
 }
 
@@ -258,8 +276,26 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
   }
   else
   {
-    pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
+    if(rm.hasAllocator(pointer))
+    {
+      pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
+    }
+    else
+    {
+      /*
+        Reallocate from non-Umpire to Umpire, manually, using
+        allocate, copy and deallocate.  Because we don't know the
+        current size, we first do a (extra) reallocate within the
+        current space just so we have the size for the copy.
+        Is there a better way?
+      */
+      auto tmpPointer = std::realloc(pointer, numbytes);
+      pointer = axom::allocate<T>(n, allocID);
+      copy(pointer, tmpPointer, numbytes);
+      deallocate(tmpPointer);
+    }
   }
+  return pointer;
 
 #else
 
@@ -354,6 +390,8 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
     return MemorySpace::Dynamic;
   }
 #endif
+
+  return MemorySpace::Dynamic;  // Silence warning.
 }
 
 #ifdef AXOM_USE_UMPIRE
