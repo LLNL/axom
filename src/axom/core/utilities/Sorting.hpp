@@ -38,9 +38,7 @@ AXOM_HOST_DEVICE inline void ifswap(T &a, T &b)
  * \brief This method is called when there are no more values to swap.
  */
 AXOM_HOST_DEVICE
-inline void internal_swap(int, int)
-{
-}
+inline void internal_swap(int, int) { }
 
 /*!
  * \brief Swap one set of values, move to next ones.
@@ -51,16 +49,17 @@ inline void internal_swap(int, int)
  * \param args A parameter pack of additional arrays that need to be swapped.
  */
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-inline void internal_swap(int idx1, int idx2, T values, Args... args)
+AXOM_HOST_DEVICE inline void internal_swap(int idx1, int idx2, T values, Args... args)
 {
   axom::utilities::swap(values[idx1], values[idx2]);
   internal_swap(idx1, idx2, args...);
 }
 
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-inline void ifswap_multiple(int idx1, int idx2, T values, Args... args)
+AXOM_HOST_DEVICE inline void ifswap_multiple(int idx1,
+                                             int idx2,
+                                             T values,
+                                             Args... args)
 {
   if(values[idx2] < values[idx1])
   {
@@ -78,8 +77,10 @@ inline void ifswap_multiple(int idx1, int idx2, T values, Args... args)
  * \return A new pivot.
  */
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-static int partitionMultiple(int low, int high, T values, Args... args)
+AXOM_HOST_DEVICE static int partitionMultiple(int low,
+                                              int high,
+                                              T values,
+                                              Args... args)
 {
   const auto pivot = values[high];
   int i = low - 1;
@@ -102,8 +103,7 @@ static int partitionMultiple(int low, int high, T values, Args... args)
  * \param n The number of values in the array.
  */
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-static void qsortMultiple(int n, T values, Args... args)
+AXOM_HOST_DEVICE static void qsortMultiple(int n, T values, Args... args)
 {
   constexpr size_t StackSize = sizeof(int) * 8;
   if(n <= 1) return;
@@ -141,8 +141,7 @@ static void qsortMultiple(int n, T values, Args... args)
  * \param args The rest of the arrays to be sorted the same way.
  */
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-static void insertionSortMultiple(int n, T values, Args... args)
+AXOM_HOST_DEVICE static void insertionSortMultiple(int n, T values, Args... args)
 {
   for(int i = 1; i < n; i++)
   {
@@ -157,14 +156,17 @@ static void insertionSortMultiple(int n, T values, Args... args)
 }
 
 // This struct is used in shifting template arguments.
-struct Delimiter {};
+struct Delimiter
+{ };
 
 /*!
  * \brief Shift args to end until the array length is at the desired position.
  */
 template <typename T, typename S, typename... Args>
-AXOM_HOST_DEVICE
-inline static void sort_multiple_internal(T first, Delimiter d, S second, Args... args)
+AXOM_HOST_DEVICE inline static void sort_multiple_internal(T first,
+                                                           Delimiter d,
+                                                           S second,
+                                                           Args... args)
 {
   sort_multiple_internal(first, d, args..., second);
 }
@@ -179,8 +181,10 @@ inline static void sort_multiple_internal(T first, Delimiter d, S second, Args..
  * \param args A parameter pack containing all other arrays to be sorted.
  */
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-inline static void sort_multiple_internal(T first, Delimiter, int n, Args... args)
+AXOM_HOST_DEVICE inline static void sort_multiple_internal(T first,
+                                                           Delimiter,
+                                                           int n,
+                                                           Args... args)
 {
   constexpr int SortingCutoffSize = 11;
   if(n < SortingCutoffSize)
@@ -211,10 +215,9 @@ inline static void sort_multiple_internal(T first, Delimiter, int n, Args... arg
  *       like variadic templates on member functions.
  */
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-inline static void sort_multiple(T first, Args... args)
+AXOM_HOST_DEVICE inline static void sort_multiple(T first, Args... args)
 {
-  detail::sort_multiple_internal(first, detail::Delimiter{}, args...);
+  detail::sort_multiple_internal(first, detail::Delimiter {}, args...);
 }
 #endif
 
