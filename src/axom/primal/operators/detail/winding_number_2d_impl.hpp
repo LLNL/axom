@@ -141,16 +141,16 @@ double linear_winding_number(const Point<T, 2>& q,
                              bool& isOnEdge,
                              double edge_tol)
 {
-  Vector<T, 2> V1(q, c0);
-  Vector<T, 2> V2(q, c1);
+  Vector<T, 2> V0(q, c0);
+  Vector<T, 2> V1(q, c1);
 
   // clang-format off
   // Measures the signed area of the triangle with vertices q, c0, c1
-  double tri_area = axom::numerics::determinant(V1[0] - V2[0], V2[0], 
-                                                V1[1] - V2[1], V2[1]);
+  double tri_area = axom::numerics::determinant(V0[0] - V1[0], V1[0], 
+                                                V0[1] - V1[1], V1[1]);
   // clang-format on
 
-  double segment_sq_len = (V1 - V2).squared_norm();
+  double segment_sq_len = (V0 - V1).squared_norm();
 
   // Compute distance from line connecting endpoints to query
   isOnEdge = false;
@@ -159,11 +159,11 @@ double linear_winding_number(const Point<T, 2>& q,
     // Project the query point onto the line segment to see if they're coincident
     if(axom::utilities::isNearlyEqual(segment_sq_len, 0.0))
     {
-      isOnEdge = (V1.squared_norm() <= edge_tol * edge_tol);
+      isOnEdge = (V0.squared_norm() <= edge_tol * edge_tol);
     }
     else
     {
-      double proj_val = Vector<T, 2>::dot_product(V1, V2 - V1) / segment_sq_len;
+      double proj_val = Vector<T, 2>::dot_product(V0, V0 - V1) / segment_sq_len;
       if((proj_val >= 0) && (proj_val <= 1))
       {
         isOnEdge = true;
@@ -175,7 +175,7 @@ double linear_winding_number(const Point<T, 2>& q,
 
   // Compute signed angle between vectors
   double dotprod = axom::utilities::clampVal(
-    Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()),
+    Vector<T, 2>::dot_product(V0.unitVector(), V1.unitVector()),
     -1.0,
     1.0);
 

@@ -2242,7 +2242,7 @@ public:
     axom::IndexType L;
 
     // Compute the alphas, which depend only on the knot vector
-    axom::Array<T, 2> alpha(p - s, r + 1);
+    axom::Array<T, 2> alpha(q - s, r + 1);
     for(int j = 1; j <= r; ++j)
     {
       L = k - q + j;
@@ -2592,17 +2592,12 @@ public:
     the_disk = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
     the_disk.markAsTrimmed();
 
-    the_rest = NURBSPatch(m_controlPoints, m_weights, m_knotvec_u, m_knotvec_v);
-    the_rest.markAsTrimmed();
+    the_rest = *this;
 
     // the_rest needs trimming curves from the original patch, if any
     if(!isTrimmed())
     {
       the_rest.makeTriviallyTrimmed();
-    }
-    else
-    {
-      the_rest.m_trimmingCurves = m_trimmingCurves;
     }
 
     // Intersect all trimming curves with a circle of radius r, centered at (u, v).
@@ -2659,6 +2654,11 @@ public:
         TrimmingCurveType c1, c2(curve);
         for(const auto& param : curve_params)
         {
+          if(param <= curve.getMinKnot() || param >= curve.getMaxKnot())
+          {
+            continue;
+          }
+          
           c2.split(param, c1, c2);
           split_trimming_curves.push_back(c1);
         }
@@ -2692,7 +2692,10 @@ public:
 
         the_disk.m_trimmingCurves.clear();
         the_disk.addTrimmingCurve(c1);
-        the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+        if(clipDisk)
+        {
+          the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+        }
 
         c1.reverseOrientation();
         the_rest.addTrimmingCurve(c1);
@@ -2776,7 +2779,10 @@ public:
     }
 
     // Clip the_disk according to the width of the disk
-    the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+    if(clipDisk)
+    {
+      the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+    }
   }
 
   /*!

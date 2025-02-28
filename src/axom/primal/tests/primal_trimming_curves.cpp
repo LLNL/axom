@@ -378,57 +378,95 @@ TEST_F(TrimmingCurveTest, knot_vector_manipulation)
 //------------------------------------------------------------------------------
 TEST_F(TrimmingCurveTest, trimming_disk_subdivision)
 {
-  SLIC_INFO(
-    "Testing disk subdivision of the curve");
+  SLIC_INFO("Testing disk subdivision of the curve");
 
   NURBSPatchType nPatch(this->nPatch);
   NURBSPatchType the_disk, the_rest;
 
-  // // Apply the simplest subdivision strategy
-  // nPatch.diskSplit(0.5, 0.5, 0.25, the_disk, the_rest, false);
+  // Apply the simplest subdivision strategy
+  bool clipDisk = true;
+  nPatch.diskSplit(0.5, 0.5, 0.25, the_disk, the_rest, !clipDisk);
 
-  // constexpr int npts = 11;
-  // double u_pts[npts], v_pts[npts];
-  // axom::numerics::linspace(the_disk.getMinKnot_u(), the_disk.getMaxKnot_u(), u_pts, npts);
-  // axom::numerics::linspace(the_disk.getMinKnot_v(), the_disk.getMaxKnot_v(), v_pts, npts);
+  constexpr int npts = 10;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(the_disk.getMinKnot_u(),
+                           the_disk.getMaxKnot_u(),
+                           u_pts,
+                           npts);
+  axom::numerics::linspace(the_disk.getMinKnot_v(),
+                           the_disk.getMaxKnot_v(),
+                           v_pts,
+                           npts);
 
-  // for(auto u : u_pts)
-  // {
-  //   for(auto v : v_pts)
-  //   {
-  //     bool isPointVisible = the_disk.isVisible(u, v);
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      if((u - 0.5) * (u - 0.5) + (v - 0.5) * (v - 0.5) < 0.25 * 0.25)
+      {
+        EXPECT_TRUE(the_disk.isVisible(u, v));
+        EXPECT_FALSE(the_rest.isVisible(u, v));
+      }
+      else
+      {
+        EXPECT_FALSE(the_disk.isVisible(u, v));
+        EXPECT_TRUE(the_rest.isVisible(u, v));
+      }
+    }
+  }
 
-  //     if( ( u - 0.5 ) * ( u - 0.5 ) + ( v - 0.5 ) * ( v - 0.5 ) < 0.25 * 0.25 )
-  //     {
-  //       EXPECT_TRUE(isPointVisible);
-  //     }
-  //     else
-  //     {
-  //       EXPECT_FALSE(isPointVisible);
-  //     }
-  //   }
-  // }
+  // Punch out several nested disks from the surface, in order, 
+  //  and check for visibility in each of them
+  NURBSPatchType disk1, disk2, disk3;
+  the_rest = NURBSPatchType();
+  nPatch.diskSplit(0.3, 0.6, 0.2, disk1, the_rest, !clipDisk);
+  the_rest.diskSplit(0.6, 0.7, 0.2, disk2, the_rest, !clipDisk);
+  the_rest.diskSplit(0.5, 0.4, 0.2, disk3, the_rest, !clipDisk);
 
-  // axom::numerics::linspace(the_rest.getMinKnot_u(), the_rest.getMaxKnot_u(), u_pts, npts);
-  // axom::numerics::linspace(the_rest.getMinKnot_v(), the_rest.getMaxKnot_v(), v_pts, npts);
-
-  // for(auto u : u_pts)
-  // {
-  //   for(auto v : v_pts)
-  //   {
-  //     bool isPointVisible = the_rest.isVisible(u, v);
-  //     std::cout << u << " " << v << " " << isPointVisible << std::endl;
-
-  //     if( ( u - 0.5 ) * ( u - 0.5 ) + ( v - 0.5 ) * ( v - 0.5 ) < 0.25 * 0.25 )
-  //     {
-  //       EXPECT_FALSE(isPointVisible);
-  //     }
-  //     else
-  //     {
-  //       EXPECT_TRUE(isPointVisible);
-  //     }
-  //   }
-  // }
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      // Check points inside the first circle
+      if((u - 0.3) * (u - 0.3) + (v - 0.6) * (v - 0.6) < 0.2 * 0.2)
+      {
+        EXPECT_FALSE(the_rest.isVisible(u, v));
+        EXPECT_TRUE(disk1.isVisible(u, v));
+        EXPECT_FALSE(disk2.isVisible(u, v));
+        EXPECT_FALSE(disk3.isVisible(u, v));
+      }
+      else
+      {
+        // Check points inside the second circle, but not the first
+        if((u - 0.6) * (u - 0.6) + (v - 0.7) * (v - 0.7) < 0.2 * 0.2)
+        {
+          EXPECT_FALSE(the_rest.isVisible(u, v));
+          EXPECT_FALSE(disk1.isVisible(u, v));
+          EXPECT_TRUE(disk2.isVisible(u, v));
+          EXPECT_FALSE(disk3.isVisible(u, v));
+        }
+        else
+        {
+          // Check points inside the third, but not the first or second
+          if((u - 0.5) * (u - 0.5) + (v - 0.4) * (v - 0.4) < 0.2 * 0.2)
+          {
+            EXPECT_FALSE(the_rest.isVisible(u, v));
+            EXPECT_FALSE(disk1.isVisible(u, v));
+            EXPECT_FALSE(disk2.isVisible(u, v));
+            EXPECT_TRUE(disk3.isVisible(u, v));
+          }
+          // Check points inside none of the circles
+          else
+          {
+            EXPECT_TRUE(the_rest.isVisible(u, v));
+            EXPECT_FALSE(disk1.isVisible(u, v));
+            EXPECT_FALSE(disk2.isVisible(u, v));
+            EXPECT_FALSE(disk3.isVisible(u, v));
+          }
+        }
+      }
+    }
+  }
 }
 
 int main(int argc, char* argv[])
