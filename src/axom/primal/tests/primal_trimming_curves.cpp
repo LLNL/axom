@@ -534,14 +534,10 @@ TEST_F(TrimmingCurveTest, trimming_edge_subdivision)
 
       // The point should only be in the patch if it's in the right parameter space,
       //  and isn't inside either disk
-      EXPECT_EQ((u < 0.5) && (v < 0.5) && !inDisks,
-                bottomleft.isVisible(u, v));
-      EXPECT_EQ((u < 0.5) && (v > 0.5) && !inDisks,
-                topleft.isVisible(u, v));
-      EXPECT_EQ((u > 0.5) && (v < 0.5) && !inDisks,
-                bottomright.isVisible(u, v));
-      EXPECT_EQ((u > 0.5) && (v > 0.5) && !inDisks,
-                topright.isVisible(u, v));
+      EXPECT_EQ((u < 0.5) && (v < 0.5) && !inDisks, bottomleft.isVisible(u, v));
+      EXPECT_EQ((u < 0.5) && (v > 0.5) && !inDisks, topleft.isVisible(u, v));
+      EXPECT_EQ((u > 0.5) && (v < 0.5) && !inDisks, bottomright.isVisible(u, v));
+      EXPECT_EQ((u > 0.5) && (v > 0.5) && !inDisks, topright.isVisible(u, v));
     }
   }
 }

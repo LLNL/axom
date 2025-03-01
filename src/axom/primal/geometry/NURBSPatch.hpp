@@ -2442,7 +2442,10 @@ public:
    *
    * \pre The patch must be untrimmed
    */
-  void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalizeParameters = false) const
+  void split_u(T u,
+               NURBSPatch& p1,
+               NURBSPatch& p2,
+               bool normalizeParameters = false) const
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
 
@@ -2468,7 +2471,10 @@ public:
    *
    * \pre The patch must be untrimmed
    */
-  void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalizeParameters = false) const
+  void split_v(T v,
+               NURBSPatch& p1,
+               NURBSPatch& p2,
+               bool normalizeParameters = false) const
   {
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
 
@@ -3258,10 +3264,14 @@ private:
     SLIC_ASSERT(min_v < max_v);
     NURBSPatch dummy_patch;
 
-    if(min_u > getMinKnot_u()) this->uncheckedSplit_u(min_u, dummy_patch, *this);
-    if(min_v > getMinKnot_v()) this->uncheckedSplit_v(min_v, dummy_patch, *this);
-    if(max_u < getMaxKnot_u()) this->uncheckedSplit_u(max_u, *this, dummy_patch);
-    if(max_v < getMaxKnot_v()) this->uncheckedSplit_v(max_v, *this, dummy_patch);
+    if(min_u > getMinKnot_u())
+      this->uncheckedSplit_u(min_u, dummy_patch, *this);
+    if(min_v > getMinKnot_v())
+      this->uncheckedSplit_v(min_v, dummy_patch, *this);
+    if(max_u < getMaxKnot_u())
+      this->uncheckedSplit_u(max_u, *this, dummy_patch);
+    if(max_v < getMaxKnot_v())
+      this->uncheckedSplit_v(max_v, *this, dummy_patch);
   }
 
   /// \brief Private function to split patch geometry at a given u parameter
