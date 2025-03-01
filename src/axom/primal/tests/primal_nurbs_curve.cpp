@@ -918,6 +918,51 @@ TEST(primal_nurbscurve, circular_arc_constructor)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST(primal_nurbscurve, linear_segment_constructor)
+{
+  // Define a nurbs curve that represents a circle
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSCurveType = primal::NURBSCurve<CoordType, DIM>;
+
+  NURBSCurveType line;
+
+  constexpr int npts = 11;
+  double t_pts[npts];
+  axom::numerics::linspace(0.0, 1.0, t_pts, npts);
+
+  PointType start {1.0, 2.0};
+  PointType end {3.0, 4.0};
+  line.constructLinearSegment(start, end);
+
+  // Check points along the curve
+  for(int j = 0; j < npts; ++j)
+  {
+    PointType p = line.evaluate(t_pts[j]);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], start[i] + t_pts[j] * (end[i] - start[i]), 1e-13);
+    }
+  }
+
+  // Check a curve with start == end
+  end = start;
+  line.constructLinearSegment(start, end);
+
+  for(int j = 0; j < npts; ++j)
+  {
+    PointType p = line.evaluate(t_pts[j]);
+
+    for(int i = 0; i < DIM; ++i)
+    {
+      EXPECT_NEAR(p[i], start[i], 1e-13);
+    }
+  }
+}
+
 int main(int argc, char* argv[])
 {
   int result = 0;

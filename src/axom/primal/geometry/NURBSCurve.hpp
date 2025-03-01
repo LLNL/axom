@@ -468,6 +468,27 @@ public:
   }
 
   /*!
+   * \brief Construct a NURBS curve from the endpoints of a line segment
+   *
+   * \param [in] start The starting point of the arc
+   * \param [in] end The ending point of the arc
+   *  
+   * \pre Requires a 2D NURBS curve
+   */
+  void constructLinearSegment(const PointType& start, const PointType& end)
+  {
+    SLIC_ASSERT(NDIMS == 2);
+
+    setParameters(2, 1);
+    m_weights.clear();
+
+    m_controlPoints[0] = start;
+    m_controlPoints[1] = end;
+
+    m_knotvec = KnotVectorType(2, 1);
+  }
+
+  /*!
    * \brief Evaluate a NURBS Curve at a particular parameter value \a t
    *
    * \param [in] t The parameter value at which to evaluate
