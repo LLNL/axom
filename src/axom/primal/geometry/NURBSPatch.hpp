@@ -1212,31 +1212,24 @@ public:
 
     // For each min/max u/v, add a straight trimming curve along the boundary
     TrimmingCurveType curve;
-    constexpr int num_points = 2;
-    constexpr int degree = 1;
-    curve.setParameters(num_points, degree);
 
     // Bottom
-    curve[0] = ParameterPointType({min_u, min_v});
-    curve[1] = ParameterPointType({max_u, min_v});
+    curve.constructLinearSegment({min_u, min_v}, {max_u, min_v});
     addTrimmingCurve(curve);
 
     // Top
-    curve[0] = ParameterPointType({max_u, max_v});
-    curve[1] = ParameterPointType({min_u, max_v});
+    curve.constructLinearSegment({max_u, max_v}, {min_u, max_v});
     addTrimmingCurve(curve);
 
     // Left
-    curve[0] = ParameterPointType({min_u, max_v});
-    curve[1] = ParameterPointType({min_u, min_v});
+    curve.constructLinearSegment({min_u, max_v}, {min_u, min_v});
     addTrimmingCurve(curve);
 
     // Right
-    curve[0] = ParameterPointType({max_u, min_v});
-    curve[1] = ParameterPointType({max_u, max_v});
+    curve.constructLinearSegment({max_u, min_v}, {max_u, max_v});
     addTrimmingCurve(curve);
 
-    m_isTrimmed = true;
+    markAsTrimmed();
   }
 
   /*!
@@ -2360,6 +2353,37 @@ public:
   }
 
   /*!
+   * \brief Retract the edges of the patch to the given parameter values, if necessary
+   *
+   * \param [in] min_u The minimum value of the u parameter
+   * \param [in] max_u The maximum value of the u parameter
+   * \param [in] min_v The minimum value of the v parameter
+   * \param [in] max_v The maximum value of the v parameter
+   * \param [in] normalize If true, normalize the patch to the range [0, 1]^2
+   * 
+   * If a given parameter is less/greater than the minimum/maximum knot value,
+   *  then the patch is not changed along that direction and axis
+   * 
+   * \pre Requires that min_u < max_u and min_v < max_v  
+   */
+  void clip(T min_u, T max_u, T min_v, T max_v, bool normalizeParameters = false)
+  {
+    SLIC_ASSERT(min_u < max_u);
+    SLIC_ASSERT(min_v < max_v);
+    NURBSPatch dummy_patch;
+
+    if(min_u > getMinKnot_u()) this->split_u(min_u, dummy_patch, *this);
+    if(min_v > getMinKnot_v()) this->split_v(min_v, dummy_patch, *this);
+    if(max_u < getMaxKnot_u()) this->split_u(max_u, *this, dummy_patch);
+    if(max_v < getMaxKnot_v()) this->split_v(max_v, *this, dummy_patch);
+
+    if(normalizeParameters)
+    {
+      normalize();
+    }
+  }
+
+  /*!
     * \brief Splits an untrimmed NURBS patch into four NURBS patches
     *
     * \param [in] u parameter value at which to bisect on the first axis
@@ -2368,6 +2392,7 @@ public:
     * \param [out] p2 Second output NURBS patch
     * \param [out] p3 Third output NURBS patch
     * \param [out] p4 Fourth output NURBS patch
+    * \param [in] normalizeParameters If true, normalize output patches to the range [0, 1]^2
     *
     *   v = 1
     *   ----------------------
@@ -2381,29 +2406,35 @@ public:
     *   ---------------------- u = 1
     *
     * \pre Parameter \a u and \a v must be *strictly interior* to the knot span
-    * \pre The patch must be untrimmed
     */
   void split(T u,
              T v,
              NURBSPatch& p1,
              NURBSPatch& p2,
              NURBSPatch& p3,
-             NURBSPatch& p4) const
+             NURBSPatch& p4,
+             bool normalizeParameters = false) const
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
-    SLIC_ASSERT_MSG(!isTrimmed(),
-                    "Splitting a trimmed patch is not yet supported");
 
     // Bisect the patch along the u direction
-    split_u(u, p1, p2);
+    split_u(u, p1, p2, false);
 
     // Temporarily store the result in each half and split again
     NURBSPatch p0(p1);
-    p0.split_v(v, p1, p2);
+    p0.split_v(v, p1, p3, false);
 
     p0 = p2;
-    p0.split_v(v, p3, p4);
+    p0.split_v(v, p2, p4, false);
+
+    if(normalizeParameters)
+    {
+      p1.normalize();
+      p2.normalize();
+      p3.normalize();
+      p4.normalize();
+    }
   }
 
   /*!
@@ -2411,72 +2442,24 @@ public:
    *
    * \pre The patch must be untrimmed
    */
-  void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
+  void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalizeParameters = false) const
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
-    SLIC_ASSERT_MSG(!isTrimmed(),
-                    "Splitting a trimmed patch is not yet supported");
 
-    const bool isRationalPatch = isRational();
+    // Split the untrimmed geometry
+    uncheckedSplit_u(u, p1, p2);
 
-    const int p = getDegree_u();
-    const int nq = getNumControlPoints_v() - 1;
+    // Split the trimming curves
+    constexpr bool splitByU = true;
+    splitTrimmingCurves(u,
+                        splitByU,
+                        p1.getTrimmingCurves(),
+                        p2.getTrimmingCurves());
 
-    p1 = *this;
-
-    // Will make the multiplicity of the knot at u equal to p
-    const auto k = p1.insertKnot_u(u, p);
-    auto nkts1 = p1.getNumKnots_u();
-    auto npts1 = p1.getNumControlPoints_u();
-
-    // Split the knot vector, add to the returned curves
-    KnotVectorType k1, k2;
-    p1.getKnots_u().splitBySpan(k, k1, k2);
-
-    p1.m_knotvec_u = k1;
-    p1.m_knotvec_v = m_knotvec_v;
-
-    p2.m_knotvec_u = k2;
-    p2.m_knotvec_v = m_knotvec_v;
-
-    // Copy the control points
-    p2.m_controlPoints.resize(nkts1 - k - 1, nq + 1);
-    if(isRationalPatch)
+    if(normalizeParameters)
     {
-      p2.m_weights.resize(nkts1 - k - 1, nq + 1);
-    }
-    else
-    {
-      p2.m_weights.resize(0, 0);
-    }
-
-    for(int i = 0; i < p2.m_controlPoints.shape()[0]; ++i)
-    {
-      for(int j = 0; j < p2.m_controlPoints.shape()[1]; ++j)
-      {
-        p2.m_controlPoints(nkts1 - k - 2 - i, j) = p1(npts1 - 1 - i, j);
-        if(isRationalPatch)
-        {
-          p2.m_weights(nkts1 - k - 2 - i, j) = p1.getWeight(npts1 - 1 - i, j);
-        }
-      }
-    }
-
-    // Assumes that the resizing is done on the *flattened* array
-    p1.m_controlPoints.resize(k - p + 1, nq + 1);
-    if(isRationalPatch)
-    {
-      p1.m_weights.resize(k - p + 1, nq + 1);
-    }
-    else
-    {
-      p1.m_weights.resize(0, 0);
-    }
-
-    if(normalize)
-    {
-      p1.normalize();
-      p2.normalize();
+      p1.normalize_u();
+      p2.normalize_u();
     }
   }
 
@@ -2485,87 +2468,24 @@ public:
    *
    * \pre The patch must be untrimmed
    */
-  void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
+  void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalizeParameters = false) const
   {
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
-    SLIC_ASSERT_MSG(!isTrimmed(),
-                    "Splitting a trimmed patch is not yet supported");
 
-    const bool isRationalPatch = isRational();
+    // Split the untrimmed geometry
+    uncheckedSplit_v(v, p1, p2);
 
-    const int np = getNumControlPoints_u() - 1;
-    const int q = getDegree_v();
+    // Split the trimming curves
+    constexpr bool splitByU = false;
+    splitTrimmingCurves(v,
+                        splitByU,
+                        p1.getTrimmingCurves(),
+                        p2.getTrimmingCurves());
 
-    p1 = *this;
-
-    // Will make the multiplicity of the knot at v equal to q
-    const auto k = p1.insertKnot_v(v, q);
-    auto nkts1 = p1.getNumKnots_v();
-    auto npts1 = p1.getNumControlPoints_v();
-
-    // Split the knot vector, add to the returned curves
-    KnotVectorType k1, k2;
-    p1.getKnots_v().splitBySpan(k, k1, k2);
-
-    p1.m_knotvec_u = m_knotvec_u;
-    p1.m_knotvec_v = k1;
-
-    p2.m_knotvec_u = m_knotvec_u;
-    p2.m_knotvec_v = k2;
-
-    // Copy the control points
-    p2.m_controlPoints.resize(np + 1, nkts1 - k - 1);
-    if(isRationalPatch)
+    if(normalizeParameters)
     {
-      p2.m_weights.resize(np + 1, nkts1 - k - 1);
-    }
-    else
-    {
-      p2.m_weights.resize(0, 0);
-    }
-
-    for(int i = 0; i < p2.m_controlPoints.shape()[0]; ++i)
-    {
-      for(int j = 0; j < p2.m_controlPoints.shape()[1]; ++j)
-      {
-        p2.m_controlPoints(i, nkts1 - k - 2 - j) = p1(i, npts1 - 1 - j);
-        if(isRationalPatch)
-        {
-          p2.m_weights(i, nkts1 - k - 2 - j) = p1.getWeight(i, npts1 - 1 - j);
-        }
-      }
-    }
-
-    // Rearrange the control points and weights by their flat index
-    //  so that the `resize` method takes the correct submatrix
-    for(int i = 0; i < np + 1; ++i)
-    {
-      for(int j = 0; j < k - q + 1; ++j)
-      {
-        p1.m_controlPoints.flatIndex(j + i * (k - q + 1)) =
-          p1.m_controlPoints(i, j);
-        if(isRationalPatch)
-        {
-          p1.m_weights.flatIndex(j + i * (k - q + 1)) = p1.m_weights(i, j);
-        }
-      }
-    }
-
-    // Resize the 2D arrays
-    p1.m_controlPoints.resize(np + 1, k - q + 1);
-    if(isRationalPatch)
-    {
-      p1.m_weights.resize(np + 1, k - q + 1);
-    }
-    else
-    {
-      p1.m_weights.resize(0, 0);
-    }
-
-    if(normalize)
-    {
-      p1.normalize();
-      p2.normalize();
+      p1.normalize_v();
+      p2.normalize_v();
     }
   }
 
@@ -2658,7 +2578,7 @@ public:
           {
             continue;
           }
-          
+
           c2.split(param, c1, c2);
           split_trimming_curves.push_back(c1);
         }
@@ -2694,7 +2614,7 @@ public:
         the_disk.addTrimmingCurve(c1);
         if(clipDisk)
         {
-          the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+          the_disk.uncheckedClip(u - r, u + r, v - r, v + r);
         }
 
         c1.reverseOrientation();
@@ -2781,7 +2701,7 @@ public:
     // Clip the_disk according to the width of the disk
     if(clipDisk)
     {
-      the_disk.uncheckedClip(u - 2 * r, u + 2 * r, v - 2 * r, v + 2 * r);
+      the_disk.uncheckedClip(u - r, u + r, v - r, v + r);
     }
   }
 
@@ -3330,7 +3250,7 @@ private:
     }
   }
 
-  /// \brief Clip the edges of the patch to be in the domain, if necessary,
+  /// \brief Clip the edges of the patch along the given knot values, if necessary
   ///  but do so *without* checking any of the existing trimming curves for efficiency
   void uncheckedClip(T min_u, T max_u, T min_v, T max_v)
   {
@@ -3338,10 +3258,292 @@ private:
     SLIC_ASSERT(min_v < max_v);
     NURBSPatch dummy_patch;
 
-    if(min_u > getMinKnot_u()) this->split_u(min_u, dummy_patch, *this);
-    if(min_v > getMinKnot_v()) this->split_v(min_v, dummy_patch, *this);
-    if(max_u < getMaxKnot_u()) this->split_u(max_u, *this, dummy_patch);
-    if(max_v < getMaxKnot_v()) this->split_v(max_v, *this, dummy_patch);
+    if(min_u > getMinKnot_u()) this->uncheckedSplit_u(min_u, dummy_patch, *this);
+    if(min_v > getMinKnot_v()) this->uncheckedSplit_v(min_v, dummy_patch, *this);
+    if(max_u < getMaxKnot_u()) this->uncheckedSplit_u(max_u, *this, dummy_patch);
+    if(max_v < getMaxKnot_v()) this->uncheckedSplit_v(max_v, *this, dummy_patch);
+  }
+
+  /// \brief Private function to split patch geometry at a given u parameter
+  ///   without checking the trimming curves or normalizing the resulting knot vectors
+  void uncheckedSplit_u(T u, NURBSPatch& p1, NURBSPatch& p2) const
+  {
+    SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
+
+    const bool isRationalPatch = isRational();
+
+    const int p = getDegree_u();
+    const int nq = getNumControlPoints_v() - 1;
+
+    p1 = *this;
+    p2.m_isTrimmed = m_isTrimmed;
+
+    // Will make the multiplicity of the knot at u equal to p
+    const auto k = p1.insertKnot_u(u, p);
+    auto nkts1 = p1.getNumKnots_u();
+    auto npts1 = p1.getNumControlPoints_u();
+
+    // Split the knot vector, add to the returned curves
+    KnotVectorType k1, k2;
+    p1.getKnots_u().splitBySpan(k, k1, k2);
+
+    p1.m_knotvec_u = k1;
+    p1.m_knotvec_v = m_knotvec_v;
+
+    p2.m_knotvec_u = k2;
+    p2.m_knotvec_v = m_knotvec_v;
+
+    // Copy the control points
+    p2.m_controlPoints.resize(nkts1 - k - 1, nq + 1);
+    if(isRationalPatch)
+    {
+      p2.m_weights.resize(nkts1 - k - 1, nq + 1);
+    }
+    else
+    {
+      p2.m_weights.resize(0, 0);
+    }
+
+    for(int i = 0; i < p2.m_controlPoints.shape()[0]; ++i)
+    {
+      for(int j = 0; j < p2.m_controlPoints.shape()[1]; ++j)
+      {
+        p2.m_controlPoints(nkts1 - k - 2 - i, j) = p1(npts1 - 1 - i, j);
+        if(isRationalPatch)
+        {
+          p2.m_weights(nkts1 - k - 2 - i, j) = p1.getWeight(npts1 - 1 - i, j);
+        }
+      }
+    }
+
+    // Assumes that the resizing is done on the *flattened* array
+    p1.m_controlPoints.resize(k - p + 1, nq + 1);
+    if(isRationalPatch)
+    {
+      p1.m_weights.resize(k - p + 1, nq + 1);
+    }
+    else
+    {
+      p1.m_weights.resize(0, 0);
+    }
+  }
+
+  /// \brief Private function to split patch geometry at a given v parameter
+  ///   without checking the trimming curves or normalizing the resulting knot vectors
+  void uncheckedSplit_v(T v, NURBSPatch& p1, NURBSPatch& p2) const
+  {
+    SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
+
+    const bool isRationalPatch = isRational();
+
+    const int np = getNumControlPoints_u() - 1;
+    const int q = getDegree_v();
+
+    p1 = *this;
+    p2.m_isTrimmed = m_isTrimmed;
+
+    // Will make the multiplicity of the knot at v equal to q
+    const auto k = p1.insertKnot_v(v, q);
+    auto nkts1 = p1.getNumKnots_v();
+    auto npts1 = p1.getNumControlPoints_v();
+
+    // Split the knot vector, add to the returned curves
+    KnotVectorType k1, k2;
+    p1.getKnots_v().splitBySpan(k, k1, k2);
+
+    p1.m_knotvec_u = m_knotvec_u;
+    p1.m_knotvec_v = k1;
+
+    p2.m_knotvec_u = m_knotvec_u;
+    p2.m_knotvec_v = k2;
+
+    // Copy the control points
+    p2.m_controlPoints.resize(np + 1, nkts1 - k - 1);
+    if(isRationalPatch)
+    {
+      p2.m_weights.resize(np + 1, nkts1 - k - 1);
+    }
+    else
+    {
+      p2.m_weights.resize(0, 0);
+    }
+
+    for(int i = 0; i < p2.m_controlPoints.shape()[0]; ++i)
+    {
+      for(int j = 0; j < p2.m_controlPoints.shape()[1]; ++j)
+      {
+        p2.m_controlPoints(i, nkts1 - k - 2 - j) = p1(i, npts1 - 1 - j);
+        if(isRationalPatch)
+        {
+          p2.m_weights(i, nkts1 - k - 2 - j) = p1.getWeight(i, npts1 - 1 - j);
+        }
+      }
+    }
+
+    // Rearrange the control points and weights by their flat index
+    //  so that the `resize` method takes the correct submatrix
+    for(int i = 0; i < np + 1; ++i)
+    {
+      for(int j = 0; j < k - q + 1; ++j)
+      {
+        p1.m_controlPoints.flatIndex(j + i * (k - q + 1)) =
+          p1.m_controlPoints(i, j);
+        if(isRationalPatch)
+        {
+          p1.m_weights.flatIndex(j + i * (k - q + 1)) = p1.m_weights(i, j);
+        }
+      }
+    }
+
+    // Resize the 2D arrays
+    p1.m_controlPoints.resize(np + 1, k - q + 1);
+    if(isRationalPatch)
+    {
+      p1.m_weights.resize(np + 1, k - q + 1);
+    }
+    else
+    {
+      p1.m_weights.resize(0, 0);
+    }
+  }
+
+  /// \brief Private function to split the trimming curves at a given u parameter
+  void splitTrimmingCurves(T uv,
+                           bool splitByU,
+                           TrimmingCurveVec& outCurvesFirst,
+                           TrimmingCurveVec& outCurvesSecond) const
+  {
+    // Clear the output vectors
+    outCurvesFirst.clear();
+    outCurvesSecond.clear();
+
+    // Store a ray that is used as the splitting line
+    primal::Ray<T, 2> ray_obj(Point<T, 2> {getMinKnot_u() - 1.0, uv},
+                              Vector<T, 2> {1.0, 0.0});
+    if(splitByU)
+    {
+      ray_obj = primal::Ray<T, 2>(Point<T, 2> {uv, getMinKnot_v() - 1.0},
+                                  Vector<T, 2> {0.0, 1.0});
+    }
+    TrimmingCurveVec split_trimming_curves;
+
+    axom::Array<T> ray_params;
+    for(const auto& curve : m_trimmingCurves)
+    {
+      axom::Array<T> curve_params;
+
+      // Compute intersections for each subcurve individually to avoid
+      //  a circular dependency with intersect.hpp
+      {
+        // Default parameters for intersection routine
+        const double sq_tol = 1e-16;
+        const double EPS = 1e-8;
+
+        // Extract the Bezier curves of the NURBS curve
+        auto beziers = curve.extractBezier();
+        axom::Array<T> knot_vals = curve.getKnots().getUniqueKnots();
+
+        // Check each Bezier segment for intersection
+        for(int i = 0; i < beziers.size(); ++i)
+        {
+          axom::Array<T> temp_curve_p;
+          axom::Array<T> temp_ray_p;
+          detail::intersect_ray_bezier(ray_obj,
+                                       beziers[i],
+                                       temp_ray_p,
+                                       temp_curve_p,
+                                       sq_tol,
+                                       EPS,
+                                       beziers[i].getOrder(),
+                                       0.,
+                                       1.);
+
+          // Scale the intersection parameters back into the span of the NURBS curve
+          for(int j = 0; j < temp_curve_p.size(); ++j)
+          {
+            curve_params.push_back(
+              knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
+            ray_params.push_back(temp_ray_p[j]);
+          }
+        }
+      }
+
+      // Split all trimming curves at the intersection points
+      if(curve_params.size() > 0)
+      {
+        // Sorting this keeps the splitting logic simpler
+        std::sort(curve_params.begin(), curve_params.end());
+
+        TrimmingCurveType c1, c2(curve);
+        for(const auto& param : curve_params)
+        {
+          if(param <= curve.getMinKnot() || param >= curve.getMaxKnot())
+          {
+            continue;
+          }
+
+          c2.split(param, c1, c2);
+          split_trimming_curves.push_back(c1);
+        }
+        split_trimming_curves.push_back(c2);
+      }
+      else
+      {
+        split_trimming_curves.push_back(curve);
+      }
+    }
+
+    // If the ray intersects an odd number of times, this indicates some robustness issue
+    if(ray_params.size() % 2 != 0)
+    {
+      std::cout << std::endl
+                << "Robustness issue: Not an even number of ray parameters"
+                << std::endl;
+
+      // If this is the case, do the closest thing you can to doing nothing.
+      ray_params.clear();
+    }
+
+    if(ray_params.size() != 0)
+    {
+      // Sort the ray parameters
+      std::sort(ray_params.begin(), ray_params.end());
+
+      // Determine if the first ray segment is kept by the original surface
+      ParameterPointType mid_ray_point(
+        ray_obj.at(0.5 * (ray_params[0] + ray_params[1])));
+
+      // If the midpoint of the first arc is visible, keep the first arc
+      int start_idx = isVisible(mid_ray_point[0], mid_ray_point[1]) ? 0 : 1;
+
+      TrimmingCurveType c1;
+      for(int i = start_idx; i < ray_params.size() - 1; i += 2)
+      {
+        c1.constructLinearSegment(ray_obj.at(ray_params[i]),
+                                  ray_obj.at(ray_params[i + 1]));
+
+        splitByU ? outCurvesFirst.push_back(c1) : outCurvesSecond.push_back(c1);
+
+        c1.reverseOrientation();
+
+        splitByU ? outCurvesSecond.push_back(c1) : outCurvesFirst.push_back(c1);
+      }
+    }
+
+    // For the rest of the trimming curves, add them to the right or left depending on the side of the ray
+    for(auto& curve : split_trimming_curves)
+    {
+      auto eval_pt =
+        curve.evaluate(0.5 * (curve.getMinKnot() + curve.getMaxKnot()));
+      if(eval_pt[splitByU ? 0 : 1] < uv)
+      {
+        outCurvesFirst.push_back(curve);
+      }
+      else
+      {
+        outCurvesSecond.push_back(curve);
+      }
+    }
   }
 };
 

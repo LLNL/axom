@@ -19,6 +19,7 @@
 
 #include "axom/primal/operators/in_sphere.hpp"
 #include "axom/primal/operators/detail/intersect_impl.hpp"
+#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 #include <vector>
 #include <math.h>
@@ -347,7 +348,10 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
 
   // Need to expand the bounding box, since this ray-bb intersection routine
   //  only parameterizes the ray on (0, inf)
-  if(!intersect(r, c.boundingBox().expand(factor)))
+  T tmin = axom::numerics::floating_point_limits<T>::min();
+  T tmax = axom::numerics::floating_point_limits<T>::max();
+
+  if(!detail::intersect_ray(r, c.boundingBox().expand(factor), tmin, tmax, EPS))
   {
     return false;
   }
@@ -361,7 +365,7 @@ bool intersect_ray_bezier(const Ray<T, 2> &r,
 
     // Need to check intersection with zero tolerance
     //  to handle cases where `intersect` treats the ray as collinear
-    intersect(r, seg, r0, s0, 0.0);
+    detail::intersect_ray(r, seg, r0, s0, 0.0);
     if(r0 > 0.0 - EPS && s0 > 0.0 - EPS && s0 < 1.0 - EPS)
     {
       rp.push_back(r0);

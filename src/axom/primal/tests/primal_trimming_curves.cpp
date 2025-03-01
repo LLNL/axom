@@ -155,6 +155,12 @@ TEST_F(TrimmingCurveTest, visibility_queries)
   EXPECT_FALSE(nPatch.isVisible(0.0, 0.1));
   EXPECT_FALSE(nPatch.isVisible(0.9, 0.0));
 
+  // Check that points outside the parameter space of the patch are invisible too
+  EXPECT_FALSE(nPatch.isVisible(1.5, 0.5));
+  EXPECT_FALSE(nPatch.isVisible(0.5, 1.5));
+  EXPECT_FALSE(nPatch.isVisible(-0.5, 0.5));
+  EXPECT_FALSE(nPatch.isVisible(0.5, -0.5));
+
   // Remove all trimming curves, but keep it trimmed,
   //  i.e. a fully invisible patch
   nPatch.clearTrimmingCurves();
@@ -415,7 +421,7 @@ TEST_F(TrimmingCurveTest, trimming_disk_subdivision)
     }
   }
 
-  // Punch out several nested disks from the surface, in order, 
+  // Punch out several nested disks from the surface, in order,
   //  and check for visibility in each of them
   NURBSPatchType disk1, disk2, disk3;
   the_rest = NURBSPatchType();
@@ -465,6 +471,77 @@ TEST_F(TrimmingCurveTest, trimming_disk_subdivision)
           }
         }
       }
+    }
+  }
+
+  // Check that the disk is correctly clipped when clipDisk is true
+  nPatch = this->nPatch;
+  nPatch.diskSplit(0.5, 0.5, 0.25, the_disk, the_rest, clipDisk);
+
+  EXPECT_NEAR(nPatch.getMinKnot_u(), the_rest.getMinKnot_u(), 1e-10);
+  EXPECT_NEAR(nPatch.getMinKnot_v(), the_rest.getMinKnot_v(), 1e-10);
+  EXPECT_NEAR(nPatch.getMaxKnot_u(), the_rest.getMaxKnot_u(), 1e-10);
+  EXPECT_NEAR(nPatch.getMaxKnot_v(), the_rest.getMaxKnot_v(), 1e-10);
+
+  EXPECT_NEAR(the_disk.getMinKnot_u(), 0.5 - 0.25, 1e-10);
+  EXPECT_NEAR(the_disk.getMinKnot_v(), 0.5 - 0.25, 1e-10);
+  EXPECT_NEAR(the_disk.getMaxKnot_u(), 0.5 + 0.25, 1e-10);
+  EXPECT_NEAR(the_disk.getMaxKnot_v(), 0.5 + 0.25, 1e-10);
+}
+
+//------------------------------------------------------------------------------
+TEST_F(TrimmingCurveTest, trimming_edge_subdivision)
+{
+  SLIC_INFO("Testing disk subdivision of the curve");
+
+  NURBSPatchType nPatch(this->nPatch);
+  NURBSPatchType the_disk, the_rest;
+
+  bool clipDisk = true, normalize = true;
+  nPatch.diskSplit(0.65, 0.35, 0.18, the_disk, the_rest, !clipDisk);
+  the_rest.diskSplit(0.35, 0.65, 0.18, the_disk, the_rest, !clipDisk);
+
+  NURBSPatchType bottomleft, bottomright, topleft, topright;
+  the_rest.split(0.5, 0.5, bottomleft, bottomright, topleft, topright, !normalize);
+
+  constexpr int npts = 10;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(the_rest.getMinKnot_u(),
+                           the_rest.getMaxKnot_u(),
+                           u_pts,
+                           npts);
+
+  axom::numerics::linspace(the_rest.getMinKnot_v(),
+                           the_rest.getMaxKnot_v(),
+                           v_pts,
+                           npts);
+
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      // Figure out if a point is inside either of the disks
+      bool inDisks;
+      if((u - 0.65) * (u - 0.65) + (v - 0.35) * (v - 0.35) < 0.18 * 0.18 ||
+         (u - 0.35) * (u - 0.35) + (v - 0.65) * (v - 0.65) < 0.18 * 0.18)
+      {
+        inDisks = true;
+      }
+      else
+      {
+        inDisks = false;
+      }
+
+      // The point should only be in the patch if it's in the right parameter space,
+      //  and isn't inside either disk
+      EXPECT_EQ((u < 0.5) && (v < 0.5) && !inDisks,
+                bottomleft.isVisible(u, v));
+      EXPECT_EQ((u < 0.5) && (v > 0.5) && !inDisks,
+                topleft.isVisible(u, v));
+      EXPECT_EQ((u > 0.5) && (v < 0.5) && !inDisks,
+                bottomright.isVisible(u, v));
+      EXPECT_EQ((u > 0.5) && (v > 0.5) && !inDisks,
+                topright.isVisible(u, v));
     }
   }
 }

@@ -874,6 +874,69 @@ TEST(primal_nurbspatch, patch_split)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_nurbspatch, patch_clip)
+{
+  SLIC_INFO("Testing NURBS Patch clipping");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using NURBSPatchType = primal::NURBSPatch<CoordType, DIM>;
+
+  const int npts_u = 5;
+  const int npts_v = 4;
+
+  const int degree_u = 3;
+  const int degree_v = 2;
+
+  // clang-format off
+  PointType controlPoints[5 * 4] = {
+    PointType {0, 0, 0}, PointType {0, 4,  0}, PointType {0, 8, -3}, PointType {0, 12, 0},
+    PointType {2, 0, 6}, PointType {2, 4,  0}, PointType {2, 8,  0}, PointType {2, 12, 0},
+    PointType {4, 0, 0}, PointType {4, 4,  0}, PointType {4, 8,  3}, PointType {4, 12, 0},
+    PointType {6, 0, 0}, PointType {6, 4, -3}, PointType {6, 8,  0}, PointType {6, 12, 0},
+    PointType {8, 0, 0}, PointType {8, 4,  0}, PointType {8, 8,  0}, PointType {8, 12, 0}};
+
+  double weights[5 * 4] = {
+    1.0, 2.0, 3.0, 2.0,
+    2.0, 3.0, 4.0, 3.0,
+    3.0, 4.0, 5.0, 4.0,
+    4.0, 5.0, 6.0, 5.0,
+    5.0, 6.0, 7.0, 6.0};
+  // clang-format on
+
+  NURBSPatchType nPatch(controlPoints, weights, npts_u, npts_v, degree_u, degree_v);
+  NURBSPatchType subPatch(nPatch);
+
+  // Clip the patch to the region 0.3 <= u <= 0.7, 0.4 <= v <= 0.6
+  subPatch.clip(0.3, 0.7, 0.4, 0.6);
+
+  EXPECT_NEAR(subPatch.getMinKnot_u(), 0.3, 1e-10);
+  EXPECT_NEAR(subPatch.getMaxKnot_u(), 0.7, 1e-10);
+  EXPECT_NEAR(subPatch.getMinKnot_v(), 0.4, 1e-10);
+  EXPECT_NEAR(subPatch.getMaxKnot_v(), 0.6, 1e-10);
+
+  constexpr int npts = 11;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(0.3, 0.7, u_pts, npts);
+  axom::numerics::linspace(0.4, 0.6, v_pts, npts);
+
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      auto pt1 = nPatch.evaluate(u, v);
+      auto pt2 = subPatch.evaluate(u, v);
+
+      for(int N = 0; N < DIM; ++N)
+      {
+        EXPECT_NEAR(pt1[N], pt2[N], 1e-10);
+      }
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_nurbspatch, bezier_extraction)
 {
   SLIC_INFO("Testing NURBS Patch Bezier extraction");
