@@ -23,6 +23,12 @@
 #include "axom/mir/views/MaterialView.hpp"
 #include "axom/mir/views/StructuredTopologyView.hpp"
 
+#include "axom/primal/operators/compute_bounding_box.hpp"
+#include "axom/primal/operators/clip.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Plane.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+
 #include <conduit/conduit.hpp>
 
 // RAJA
@@ -282,13 +288,13 @@ public:
   void processMixedZones(const axom::ArrayView<axom::IndexType> mixedZonesView,
                          const conduit::Node &n_topo,
                          const conduit::Node &n_coordset,
-                         const conduit::Node &n_fields,
-                         const conduit::Node &n_matset,
-                         const conduit::Node &n_options,
-                         conduit::Node &n_newTopo,
-                         conduit::Node &n_newCoordset,
-                         conduit::Node &n_newFields,
-                         conduit::Node &n_newMatset)
+                         const conduit::Node &AXOM_UNUSED_PARAM(n_fields),
+                         const conduit::Node &AXOM_UNUSED_PARAM(n_matset),
+                         const conduit::Node &AXOM_UNUSED_PARAM(n_options),
+                         conduit::Node &AXOM_UNUSED_PARAM(n_newTopo),
+                         conduit::Node &AXOM_UNUSED_PARAM(n_newCoordset),
+                         conduit::Node &AXOM_UNUSED_PARAM(n_newFields),
+                         conduit::Node &AXOM_UNUSED_PARAM(n_newMatset))
   {
     AXOM_ANNOTATE_SCOPE("processMixedZones");
     namespace bputils = axom::mir::utilities::blueprint;
@@ -440,8 +446,9 @@ public:
         typename MatsetView::VFList vfs;
         matsetView.zoneMaterials(zoneIndex, ids, vfs);
 
-        // Sort the materials by the volume fraction. Save sorted ids in sortedMaterialIdsView.
-        axom::utilities::sort_multiple(vfs.data(), ids.data());
+        // Reverse the materials by the volume fraction so the larger VFs are first.
+        // Save sorted ids in sortedMaterialIdsView.
+        axom::utilities::reverse_sort_multiple(vfs.data(), ids.data(), static_cast<axom::IndexType>(vfs.size()));
         for(axom::IndexType m = 0; m < matCount; m++)
         {
           const auto fragmentIndex = offset + m;
@@ -498,17 +505,11 @@ public:
               const auto destIndex = fragmentIndex * StencilSize + si;
               fragmentVFStencilView[destIndex] = 0.;
             }
-#if 1
+
             // The neighbor zone is out of bounds, give it the same centroid as zoneIndex.
             xcStencilView[coordIndex] = xview[zoneIndex];
             ycStencilView[coordIndex] = yview[zoneIndex];
             zcStencilView[coordIndex] = zview.empty() ? 1. : zview[zoneIndex];
-#else
-            // coord stencil
-            xcStencilView[coordIndex] = 0.;
-            ycStencilView[coordIndex] = 0.;
-            zcStencilView[coordIndex] = 0.;
-#endif
           }
         }
       });
@@ -548,7 +549,7 @@ public:
         double *fragmentVectorsStart = fragmentVectorsView.data() + offset * numVectorComponents;
 
         // Produce normal for each material in this zone.
-        int iskip = 0;
+        int iskip = matCount - 1;
         elvira::elvira<ndims>::execute(
                matCount,
                fragmentVFStencilStart,
@@ -595,6 +596,130 @@ public:
 #ifdef AXOM_ELVIRA_DEBUG
     conduit::relay::io::save(*n_result, "elvira.yaml", "yaml");
     delete n_result;
+#endif
+
+#if 1
+    // Free stencil data we no longer need.
+    xcStencil.clear();
+    ycStencil.clear();
+    zcStencil.clear();
+
+    AXOM_ANNOTATE_BEGIN("fragments");
+    using VectorType = axom::primal::Vector<double, ndims>;
+    using PointType = axom::primal::Point<double, ndims>;
+    using PlaneType = axom::primal::Plane<double, ndims>;
+    using ShapeView = bputils::PrimalAdaptor<TopologyView, CoordsetView>;
+    const ShapeView deviceShapeView{m_topologyView, m_coordsetView};
+    axom::for_all<ExecSpace>(
+      matZoneView.size(),
+      AXOM_LAMBDA(axom::IndexType szIndex) {
+        // The selected zone index in the whole mesh.
+        const auto zoneIndex = matZoneView[szIndex];
+        const auto matCount = matCountView[szIndex];
+        // Where this zone's fragment data starts.
+        const auto offset = matOffsetView[szIndex];
+
+        // Get the starting shape.
+        auto shape = deviceShapeView.getShape(zoneIndex);
+
+#if 1
+        // Get the zone's actual volume.
+        double zoneVol = zoneVolume[zoneIndex];
+#else
+        // Get the zone's actual volume. (We could do this on the fly)
+        double zoneVol = bputils::ComputeShapeAmount<ndims>::execute(shape);
+#endif
+
+        // NOTE: When we make fragments, we want to make the biggest ones first.
+        //       With that in mind, we should probably reverse sort the materials based on VF above.
+        //       If I do it there, I don't have to think about going backwards in loops, etc.
+        for(axom::IndexType m = 0; m < matCount - 1; m++)
+        {
+          const auto fragmentIndex = offset + m;
+          // Get this material fragment's normal and material id.
+          const auto matId = sortedMaterialIdsView[fragmentIndex];
+          const double *normalPtr = fragmentVectorsView.data() + (fragmentIndex * numVectorComponents);
+
+          // Compute the desired fragment volume.
+          // Get current material vf from the stencil. (should be faster than material view)
+          constexpr int StencilCenter = (ndims == 3) ? 13 : ((ndims == 2) ? 4 : 1);
+          const auto si = fragmentIndex * StencilSize + StencilCenter;
+          const auto matVolume = zoneVol * fragmentVFStencilView[si];
+
+          // Compute the shape bounding box.
+          const auto bbox = axom::primal::compute_bounding_box(shape);
+
+          // Make a plane situated at the bbox origin.
+          VectorType normal(normalPtr, ndims);
+          PlaneType P(normal, bbox.getCentroid(), false);
+
+          // Compute distances from all points in shape to plane.
+          PointType range[2];
+          double dist[2] = {axom::numeric_limits<double>::max(),
+                            -axom::numeric_limits<double>::max()};
+          for(axom::IndexType ip = 0; ip < shape.numVertices(); ip++)
+          {
+            double d = P.signedDistance(shape[ip]);
+            if(d < dist[0])
+            {
+              dist[0] = d;
+              range[0] = shape[ip];
+            }
+            if(d > dist[1])
+            {
+              dist[1] = d;
+              range[1] = shape[ip];
+            }
+          }
+
+          constexpr double volumeTolerance = 1.e-15;
+          bool keepGoing = true;
+          int iterations = 0;
+          do
+          {
+            // Pick the middle of the range and position the plane there.
+            const auto pt = PointType::lerp(range[0], range[1], 0.5);
+            P = PlaneType(normal, pt, false);
+
+            // Clip the shape at the current plane.
+            auto clippedShape = axom::primal::clip(shape, P);
+
+            // Find the volume of the clipped shape.
+            const double fragmentVolume = bputils::ComputeShapeAmount<ndims>::execute(clippedShape);
+
+            if(axom::utilities::abs(matVolume - fragmentVolume) < volumeTolerance)
+            {
+              keepGoing = false;
+
+              // Emit clippedShape as material matId
+              std::cout << "zone=" << zoneIndex << ", mat=" << matId << ", iterations=" << iterations << ", clipped=" << clippedShape << std::endl;
+
+              // Clip in the other direction to get the remaining fragment for the next material.
+              P = PlaneType(normal * -1., pt, false);
+              shape = axom::primal::clip(shape, P);
+            }
+            else if(fragmentVolume < matVolume)
+            {
+              // Drive forward by moving the floor of the range.
+              range[0] = pt;
+            }
+            else
+            {
+              // Drive backward by moving the ceiling of the range.
+              range[1] = pt;
+            }
+            iterations++;
+          } while(keepGoing);
+        }
+
+        // Emit the last leftover fragment.
+        {
+          const auto fragmentIndex = offset + matCount - 1;
+          const auto matId = sortedMaterialIdsView[fragmentIndex];
+          std::cout << "zone=" << zoneIndex << ", mat=" << matId << ", clipped=" << shape << std::endl;
+        }
+      });
+    AXOM_ANNOTATE_END("fragments");
 #endif
 
     // intermediate...

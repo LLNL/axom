@@ -997,10 +997,10 @@ void elvira<2>::execute(int matCount,
  * \brief 3D specialization that calls elvira3d to make normals.
  */
 AXOM_HOST_DEVICE
-void elvira<3>::execute(int matCount,
-                        const double *fragmentVFStencilStart,
-                        double *fragmentVectorsStart,
-                        int iskip)
+void elvira<3>::execute(int AXOM_UNUSED_PARAM(matCount),
+                        const double *AXOM_UNUSED_PARAM(fragmentVFStencilStart),
+                        double *AXOM_UNUSED_PARAM(fragmentVectorsStart),
+                        int AXOM_UNUSED_PARAM(iskip))
 {
 #if 0
     constexpr int StencilSize = getStencilSize(NDIMS);
