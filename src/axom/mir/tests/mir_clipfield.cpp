@@ -261,6 +261,14 @@ bool increasing(const ArrayType &arr)
   return retval;
 }
 
+template <typename ArrayType>
+bool decreasing(const ArrayType &arr)
+{
+  bool retval = true;
+  for(size_t i = 1; i < arr.size(); i++) retval &= (arr[i] <= arr[i - 1]);
+  return retval;
+}
+
 std::vector<int> permute(const std::vector<int> &input)
 {
   std::vector<int> values, indices;
@@ -330,10 +338,10 @@ TEST(mir_clipfield, sort_values)
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, sort_multiple_values)
 {
-  constexpr int MaxSize = 15;
-  for(int n = 1; n < MaxSize; n++)
+  constexpr axom::IndexType MaxSize = 15;
+  for(axom::IndexType n = 1; n < MaxSize; n++)
   {
-    for(int trial = 1; trial <= n; trial++)
+    for(axom::IndexType trial = 1; trial <= n; trial++)
     {
       auto vec0 = makeRandomDoubleArray(n);
       std::vector<int> vec1(n);
@@ -353,6 +361,14 @@ TEST(mir_clipfield, sort_multiple_values)
       // Make sure both vectors are the same as the initial vectors.
       EXPECT_EQ(vec0, vec0Copy);
       EXPECT_EQ(vec1, vec1Copy);
+
+      // Reverse values based on vec0.
+      axom::utilities::reverse_sort_multiple(vec0.data(), vec1.data(), n);
+      EXPECT_TRUE(decreasing(vec0));
+
+      // Reverse back based on vec1.
+      axom::utilities::reverse_sort_multiple(vec1.data(), vec0.data(), n);
+      EXPECT_TRUE(decreasing(vec1));
     }
   }
 }
