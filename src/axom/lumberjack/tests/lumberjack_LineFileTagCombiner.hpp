@@ -45,14 +45,14 @@ inline void verifyMessage(const axom::lumberjack::Message& message,
 // Struct to hold test parameters
 struct TestParams
 {
-  std::string caseName;
-  int lineNumber1;
-  int lineNumber2;
-  std::string fileName1;
-  std::string fileName2;
-  std::string tag1;
-  std::string tag2;
-  bool shouldCombine;
+  std::string caseName{""};
+  int lineNumber1{-1};
+  int lineNumber2{-1};
+  std::string fileName1{""};
+  std::string fileName2{""};
+  std::string tag1{""};
+  std::string tag2{""};
+  bool shouldCombine{false};
 };
 
 // Parameterized Test Fixture
