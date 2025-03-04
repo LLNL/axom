@@ -797,9 +797,13 @@ void transform(double *normal, const double jac[3][3])
   double dfvsum = 0.0;  // stores nx^2 + ny^2 + nz^2
   double dfv[3], delfv[3];
 
-  dfv[0] = normal[2];  // BJW: Why switch components? Rotation?
+//  dfv[0] = normal[2];  // BJW: Why switch components? Rotation?
+//  dfv[1] = normal[1];  // I think the code was doing this because of the old face order in computeJacobian.
+//  dfv[2] = normal[0];
+
+  dfv[0] = normal[0]; // Put the normals in x,y,z order
   dfv[1] = normal[1];
-  dfv[2] = normal[0];
+  dfv[2] = normal[2];
 
   for(int f = 0; f < 3; f++)
   {
