@@ -135,16 +135,33 @@ static void save_unstructured_vtk(const conduit::Node &mesh,
   size_t total_num_indices = connectivity.dtype().number_of_elements();
 
   fprintf(file, "CELLS %zu %zu\n", num_cells, total_num_indices + num_cells);
-  size_t index = 0;
-  for(size_t i = 0; i < num_cells; ++i)
+  if(elements.has_path("offsets"))
   {
-    size_t cell_size = elements["sizes"].as_int32_array()[i];
-    fprintf(file, "%zu", cell_size);
-    for(size_t j = 0; j < cell_size; ++j)
+    for(size_t i = 0; i < num_cells; ++i)
     {
-      fprintf(file, " %d", connectivity.as_int32_array()[index++]);
+      size_t cell_size = elements["sizes"].as_int32_array()[i];
+      size_t index = elements["offsets"].as_int32_array()[i];
+      fprintf(file, "%zu", cell_size);
+      for(size_t j = 0; j < cell_size; ++j)
+      {
+        fprintf(file, " %d", connectivity.as_int32_array()[index++]);
+      }
+      fprintf(file, "\n");
     }
-    fprintf(file, "\n");
+  }
+  else
+  {
+    size_t index = 0;
+    for(size_t i = 0; i < num_cells; ++i)
+    {
+      size_t cell_size = elements["sizes"].as_int32_array()[i];
+      fprintf(file, "%zu", cell_size);
+      for(size_t j = 0; j < cell_size; ++j)
+      {
+        fprintf(file, " %d", connectivity.as_int32_array()[index++]);
+      }
+      fprintf(file, "\n");
+    }
   }
 
   // Write the cell types

@@ -1007,7 +1007,7 @@ inline int shapeNameToID(const std::string &name)
     id = Tri_ShapeID;
   else if(name == QuadTraits::name())
     id = Quad_ShapeID;
-  else if(name == PolygonTraits::name())
+  else if(name == PolygonTraits::name() || name == "polygonal")
     id = Polygon_ShapeID;
   else if(name == TetTraits::name())
     id = Tet_ShapeID;
