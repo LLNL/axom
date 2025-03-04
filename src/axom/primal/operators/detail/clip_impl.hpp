@@ -725,6 +725,93 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
 }
 
 /*!
+ * \brief Clips a 2D subject polygon against a clipping plane in 2D, returning
+ *        their geometric intersection as a polygon.
+ *
+ * \param inputList The input polygon to be clipped.
+ * \param plane The plane being used for clipping.
+ * \param eps The tolerance used for intersection.
+ *
+ * \return A clipped polygon.
+ */
+template <typename PolygonType, typename PlaneType>
+AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType &inputList, const PlaneType &plane, double eps)
+{
+  using T = typename PolygonType::PointType::CoordType;
+  using SegmentType = Segment<T, 2>;
+  using PointType = Point<T, 2>;
+
+  PolygonType outputList;
+
+  for(int iVert = 0; iVert < inputList.numVertices(); iVert++)
+  {
+    const int prevVert = (iVert - 1) == -1 ? (inputList.numVertices() - 1) : (iVert - 1);
+    const PointType &current_point = inputList[iVert];
+    const PointType &prev_point = inputList[prevVert];
+
+    T seg_param;
+    PointType intersecting_point;
+    SegmentType subject_edge(prev_point, current_point);
+
+    if(intersect(plane, subject_edge, seg_param, eps))
+    {
+      intersecting_point = subject_edge.at(seg_param);
+    }
+
+    const int cur_p_orientation = plane.getOrientation(current_point, eps);
+    const int prev_p_orientation = plane.getOrientation(prev_point, eps);
+
+    if(cur_p_orientation == ON_POSITIVE_SIDE)
+    {
+      if(prev_p_orientation != ON_POSITIVE_SIDE)
+      {
+        outputList.addVertex(intersecting_point);
+      }
+      outputList.addVertex(current_point);
+    }
+    else if(prev_p_orientation == ON_POSITIVE_SIDE)
+    {
+      outputList.addVertex(intersecting_point);
+    }
+  }
+
+  return outputList;
+}
+
+/*!
+ * \brief Remove duplicate points in a polygon.
+ *
+ * \param poly The polygon to filter.
+ * \param eps The tolerance for filtering.
+ *
+ * \note Handles edge cases such as 3 consecutive vertices with orientations
+ *       ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE where point on the boundary
+ *       is added twice.
+ *
+ * \return A new polygon that has unique points.
+ */
+template <typename PolygonType>
+PolygonType makeUniquePoints(const PolygonType &poly, double eps)
+{
+  PolygonType uniqueList;
+  for(int i = 0; i < poly.numVertices(); i++)
+  {
+    int prevIndex = ((i - 1) == -1) ? (poly.numVertices() - 1) : (i - 1);
+
+    if(!axom::utilities::isNearlyEqual(poly[i][0],
+                                       poly[prevIndex][0],
+                                       eps) ||
+       !axom::utilities::isNearlyEqual(poly[i][1],
+                                       poly[prevIndex][1],
+                                       eps))
+    {
+      uniqueList.addVertex(poly[i]);
+    }
+  }
+  return uniqueList;
+}
+
+/*!
  * \brief Clips a 2D subject polygon against a clip polygon in 2D, returning
  *        their geometric intersection as a polygon.
  *
@@ -744,8 +831,6 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
      MAX_VERTS >= (subjectPolygon.numVertices() + clipPolygon.numVertices())));
 
   using PlaneType = Plane<T, 2>;
-  using PointType = Point<T, 2>;
-  using SegmentType = Segment<T, 2>;
   using PolygonType = Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>;
 
   PolygonType outputList = subjectPolygon;
@@ -772,63 +857,11 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
     PlaneType plane =
       make_plane(planePoints[iEdge], planePoints[(iEdge + 1) % numClipEdges]);
 
-    PolygonType inputList = outputList;
-    outputList.clear();
-
-    for(int iVert = 0; iVert < inputList.numVertices(); iVert++)
-    {
-      PointType current_point = inputList[iVert];
-      PointType prev_point =
-        inputList[(iVert - 1) == -1 ? (inputList.numVertices() - 1) : (iVert - 1)];
-
-      T seg_param;
-      PointType intersecting_point;
-      SegmentType subject_edge(prev_point, current_point);
-
-      if(intersect(plane, subject_edge, seg_param, eps))
-      {
-        intersecting_point = subject_edge.at(seg_param);
-      }
-
-      int cur_p_orientation = plane.getOrientation(current_point, eps);
-      int prev_p_orientation = plane.getOrientation(prev_point, eps);
-
-      if(cur_p_orientation == ON_POSITIVE_SIDE)
-      {
-        if(prev_p_orientation != ON_POSITIVE_SIDE)
-        {
-          outputList.addVertex(intersecting_point);
-        }
-        outputList.addVertex(current_point);
-      }
-      else if(prev_p_orientation == ON_POSITIVE_SIDE)
-      {
-        outputList.addVertex(intersecting_point);
-      }
-    }
+    outputList = clipPolygonPlaneSimple(outputList, plane, eps);
   }  // end of iteration through edges of clip polygon
 
   // Remove duplicate points.
-  // Handles edge cases such as 3 consecutive vertices with orientations
-  // ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE where point on the boundary
-  // is added twice.
-  PolygonType uniqueList;
-  for(int i = 0; i < outputList.numVertices(); i++)
-  {
-    int prevIndex = ((i - 1) == -1) ? (outputList.numVertices() - 1) : (i - 1);
-
-    if(!axom::utilities::isNearlyEqual(outputList[i][0],
-                                       outputList[prevIndex][0],
-                                       eps) ||
-       !axom::utilities::isNearlyEqual(outputList[i][1],
-                                       outputList[prevIndex][1],
-                                       eps))
-    {
-      uniqueList.addVertex(outputList[i]);
-    }
-  }
-
-  return uniqueList;
+  return makeUniquePoints(outputList, eps);
 }
 
 /*!
@@ -844,21 +877,19 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPlane(
   double eps = 1.e-10,
   bool tryFixOrientation = false)
 {
-  const auto n3 = Vector<T, 3>::make_vector(clipPlane.getNormal()[0],
-                                            clipPlane.getNormal()[1],
-                                            T(0));
-  const auto right = Vector<T, 3>::cross_product(n3, Vector<T, 3>::make_vector(T(0), T(0), T(1)));
-  const auto r2 = Vector<T, 2>::make_vector(right[0], right[1]);
+  using PolygonType = Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>;
 
-  Point<T, 2> origin(clipPlane.getNormal()[0] * clipPlane.getOffset(),
-                     clipPlane.getNormal()[1] * clipPlane.getOffset());
+  PolygonType outputList = subjectPolygon;
+  if(tryFixOrientation)
+  {
+    if(outputList.signedArea() < 0)
+    {
+      outputList.reverseOrientation();
+    }
+  }
 
-  // Make a clip polygon for the plane.
-  Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygon;
-  clipPolygon.addVertex(origin + r2);
-  clipPolygon.addVertex(origin + (-r2));
-
-  return clipPolygonPolygon(subjectPolygon, clipPolygon, eps, tryFixOrientation);
+  // Clip the plane.
+  return makeUniquePoints(clipPolygonPlaneSimple(outputList, clipPlane, eps), eps);
 }
 
 }  // namespace detail
