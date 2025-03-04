@@ -354,6 +354,11 @@ spack:
       externals:
       - spec: ghostscript@9.25
         prefix: /usr
+    git:
+      buildable: false
+      externals:
+      - spec: git@2.45.0
+        prefix: /collab/usr/global/tools/tce4/opt/git-2.45.0
     gmake:
       buildable: false
       externals:
@@ -486,6 +491,8 @@ spack:
       version: [2.24.0]
     mfem:
       require: "@4.6.0"
+    py-jsonschema:
+      require: "@:4.17" #Anything after this requires py-rpds which requires rust and adds 40 minutes
     raja:
       require: "@2024.07.0~shared~examples~exercises"
     scr:
