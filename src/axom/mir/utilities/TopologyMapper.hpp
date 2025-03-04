@@ -15,6 +15,7 @@
 
 #include "axom/mir/utilities/PrimalAdaptor.hpp"
 #include "axom/mir/utilities/VariableShape.hpp"
+#include "axom/mir/utilities/utilities.hpp"
 
 #include <conduit.hpp>
 #include <conduit_blueprint.hpp>
@@ -35,24 +36,6 @@ namespace blueprint
 {
 namespace detail
 {
-
-//------------------------------------------------------------------------------
-/**
- * \brief Fill an ArrayView with a value.
- *
- * \tparam ExecSpace The execution space where the fill will be done.
- * \tparam T The data type of the values in the ArrayView.
- *
- * \param view The ArrayView being filled.
- * \param fillValue The value to be used for filling the ArrayView.
- */
-template <typename ExecSpace, typename T>
-void fill(axom::ArrayView<T> view, T fillValue)
-{
-  axom::for_all<ExecSpace>(
-    view.size(),
-    AXOM_LAMBDA(axom::IndexType index) { view[index] = fillValue; });
-}
 
 //------------------------------------------------------------------------------
 /*!
@@ -478,10 +461,10 @@ public:
     auto volume_fractions = make_array_view<double>(n_volume_fractions);
     auto sizes = make_array_view<int>(n_sizes);
     auto offsets = make_array_view<int>(n_offsets);
-    detail::fill<ExecSpace>(volume_fractions, 0.);
+    axom::mir::utilities::fill<ExecSpace>(volume_fractions, 0.);
     constexpr int MaterialEmpty = -1;
-    detail::fill<ExecSpace>(material_ids, MaterialEmpty);
-    detail::fill<ExecSpace>(sizes, 0);
+    axom::mir::utilities::fill<ExecSpace>(material_ids, MaterialEmpty);
+    axom::mir::utilities::fill<ExecSpace>(sizes, 0);
     AXOM_ANNOTATE_END("allocation");
 
     // -------------------------------------------------------------------------
@@ -609,7 +592,7 @@ public:
     const auto totalSize = reduceSize.get();
     n_indices.set(conduit::DataType::int32(totalSize));
     auto indices = make_array_view<int>(n_indices);
-    detail::fill<ExecSpace>(indices, -1);
+    axom::mir::utilities::fill<ExecSpace>(indices, -1);
     axom::for_all<ExecSpace>(
       targetView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zi) {

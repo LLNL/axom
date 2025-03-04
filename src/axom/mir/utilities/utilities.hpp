@@ -59,6 +59,24 @@ struct accumulation_traits<unsigned long>
 
 //------------------------------------------------------------------------------
 /*!
+ * \brief Fill an ArrayView with a value.
+ *
+ * \tparam ExecSpace The execution space where the fill will be done.
+ * \tparam T The data type of the values in the ArrayView.
+ *
+ * \param view The ArrayView being filled.
+ * \param fillValue The value to be used for filling the ArrayView.
+ */
+template <typename ExecSpace, typename T>
+void fill(axom::ArrayView<T> view, T fillValue)
+{
+  axom::for_all<ExecSpace>(
+    view.size(),
+    AXOM_LAMBDA(axom::IndexType index) { view[index] = fillValue; });
+}
+
+//------------------------------------------------------------------------------
+/*!
  * \brief Use binary search to find the index of the \a value in the supplied
  *        sorted view.
  *
