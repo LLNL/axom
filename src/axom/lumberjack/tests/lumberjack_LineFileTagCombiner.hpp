@@ -1,401 +1,161 @@
-// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level LICENSE file for details.
-//
-// SPDX-License-Identifier: (BSD-3-Clause)
-
-#include "gtest/gtest.h"
-
+#include <gtest/gtest.h>
+#include <string>
+#include <sstream>
+#include "axom/lumberjack/Message.hpp"
 #include "axom/lumberjack/LineFileTagCombiner.hpp"
 
-TEST(lumberjack_LineFileTagCombiner, case01)
+// Helper function to create a Message
+inline axom::lumberjack::Message createMessage(const std::string& text,
+                                               int rank,
+                                               int rankCount,
+                                               const std::string& fileName,
+                                               int lineNumber,
+                                               const std::string& tag)
 {
-  //Test positive case: two equal line numbers, filenames, and tags
-  std::string text1 =
-    "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(154);
-  m1.tag("myTag");
-
-  std::string text2 =
-    "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("foo.cpp");
-  m2.lineNumber(154);
-  m2.tag("myTag");
-
-  axom::lumberjack::LineFileTagCombiner c;
-
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
-
-  if(shouldMessagesBeCombined == true)
-  {
-    c.combine(m1, m2, 5);
-  }
-
-  EXPECT_EQ(shouldMessagesBeCombined, true);
-
-  EXPECT_EQ(m1.lineNumber(), 154);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 2);
-  EXPECT_EQ(m1.ranks().size(), 2);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.ranks()[1], 14);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
-
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myTag"), 0);
+  axom::lumberjack::Message message;
+  message.text(text);
+  message.addRank(rank, rankCount);
+  message.fileName(fileName);
+  message.lineNumber(lineNumber);
+  message.tag(tag);
+  return message;
 }
 
-TEST(lumberjack_LineFileTagCombiner, case02)
+// Helper function to verify Message attributes
+inline void verifyMessage(const axom::lumberjack::Message& message,
+                          const std::string& expectedText,
+                          int expectedLineNumber,
+                          const std::string& expectedFileName,
+                          int expectedCount,
+                          const std::vector<int>& expectedRanks,
+                          const std::string& expectedTag)
 {
-  //Test negative case: two not equal line numbers, equal filenames, and equal tags
-  std::string text1 =
-    "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(12000);
-  m1.tag("myTag");
-
-  std::string text2 =
-    "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("foo.cpp");
-  m2.lineNumber(154);
-  m2.tag("myTag");
-
-  axom::lumberjack::LineFileTagCombiner c;
-
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
-
-  if(shouldMessagesBeCombined == true)
+  EXPECT_EQ(message.text().compare(expectedText), 0);
+  EXPECT_EQ(message.lineNumber(), expectedLineNumber);
+  EXPECT_EQ(message.fileName().compare(expectedFileName), 0);
+  EXPECT_EQ(message.count(), expectedCount);
+  EXPECT_EQ(message.ranks().size(), expectedRanks.size());
+  for(size_t i = 0; i < expectedRanks.size(); ++i)
   {
-    c.combine(m1, m2, 5);
+    EXPECT_EQ(message.ranks()[i], expectedRanks[i]);
   }
-
-  EXPECT_EQ(shouldMessagesBeCombined, false);
-
-  EXPECT_EQ(m1.lineNumber(), 12000);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 1);
-  EXPECT_EQ(m1.ranks().size(), 1);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
-
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myTag"), 0);
+  EXPECT_EQ(message.tag().compare(expectedTag), 0);
 }
 
-TEST(lumberjack_LineFileTagCombiner, case03)
+// Struct to hold test parameters
+struct TestParams
 {
-  //Test negative case: two equal line numbers, not equal filenames, and equal tags
+  std::string caseName;
+  int lineNumber1;
+  int lineNumber2;
+  std::string fileName1;
+  std::string fileName2;
+  std::string tag1;
+  std::string tag2;
+  bool shouldCombine;
+};
+
+// Parameterized Test Fixture
+class LumberjackLineFileTagCombinerTest
+  : public ::testing::TestWithParam<TestParams>
+{ };
+
+TEST_P(LumberjackLineFileTagCombinerTest, CombineMessages)
+{
+  // Arrange
+  TestParams params = GetParam();
   std::string text1 =
     "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(154);
-  m1.tag("myTag");
-
   std::string text2 =
     "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("bar.cpp");
-  m2.lineNumber(154);
-  m2.tag("myTag");
 
-  axom::lumberjack::LineFileTagCombiner c;
+  axom::lumberjack::Message m1 =
+    createMessage(text1, 13, 5, params.fileName1, params.lineNumber1, params.tag1);
+  axom::lumberjack::Message m2 =
+    createMessage(text2, 14, 5, params.fileName2, params.lineNumber2, params.tag2);
 
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
+  axom::lumberjack::LineFileTagCombiner combiner;
 
-  if(shouldMessagesBeCombined == true)
+  // Act
+  bool shouldMessagesBeCombined = combiner.shouldMessagesBeCombined(m1, m2);
+  if(shouldMessagesBeCombined)
   {
-    c.combine(m1, m2, 5);
+    combiner.combine(m1, m2, 5);
   }
 
-  EXPECT_EQ(shouldMessagesBeCombined, false);
-
-  EXPECT_EQ(m1.lineNumber(), 154);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 1);
-  EXPECT_EQ(m1.ranks().size(), 1);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
-
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("bar.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myTag"), 0);
+  // Assert
+  EXPECT_EQ(shouldMessagesBeCombined, params.shouldCombine);
+  if(params.shouldCombine)
+  {
+    verifyMessage(m1,
+                  text1,
+                  params.lineNumber1,
+                  params.fileName1,
+                  2,
+                  {13, 14},
+                  params.tag1);
+    verifyMessage(m2,
+                  text2,
+                  params.lineNumber2,
+                  params.fileName2,
+                  1,
+                  {14},
+                  params.tag2);
+  }
+  else
+  {
+    verifyMessage(m1,
+                  text1,
+                  params.lineNumber1,
+                  params.fileName1,
+                  1,
+                  {13},
+                  params.tag1);
+    verifyMessage(m2,
+                  text2,
+                  params.lineNumber2,
+                  params.fileName2,
+                  1,
+                  {14},
+                  params.tag2);
+  }
 }
 
-TEST(lumberjack_LineFileTagCombiner, case04)
+// Custom Name Generator for Parameterized Tests
+inline std::string CustomNameGenerator(
+  const ::testing::TestParamInfo<TestParams>& info)
 {
-  //Test negative case: two equal line numbers, equal filenames, and not equal tags
-  std::string text1 =
-    "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(154);
-  m1.tag("myTag");
-
-  std::string text2 =
-    "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("foo.cpp");
-  m2.lineNumber(154);
-  m2.tag("myOtherTag");
-
-  axom::lumberjack::LineFileTagCombiner c;
-
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
-
-  if(shouldMessagesBeCombined == true)
-  {
-    c.combine(m1, m2, 5);
-  }
-
-  EXPECT_EQ(shouldMessagesBeCombined, false);
-
-  EXPECT_EQ(m1.lineNumber(), 154);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 1);
-  EXPECT_EQ(m1.ranks().size(), 1);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
-
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myOtherTag"), 0);
+  const TestParams& params = info.param;
+  return params.caseName;
 }
 
-TEST(lumberjack_LineFileTagCombiner, case05)
-{
-  //Test negative case: two not equal line numbers, not equal filenames, and equal tags
-  std::string text1 =
-    "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(12000);
-  m1.tag("myTag");
+// Define test cases
+INSTANTIATE_TEST_SUITE_P(
+  LumberjackTests,
+  LumberjackLineFileTagCombinerTest,
+  ::testing::Values(
+    // Positive case: Equal line numbers, filenames, and tags
+    TestParams {"case1", 154, 154, "foo.cpp", "foo.cpp", "myTag", "myTag", true},
 
-  std::string text2 =
-    "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("bar.cpp");
-  m2.lineNumber(154);
-  m2.tag("myTag");
+    // Negative case: Different line numbers, same filenames, same tags
+    TestParams {"case2", 12000, 154, "foo.cpp", "foo.cpp", "myTag", "myTag", false},
 
-  axom::lumberjack::LineFileTagCombiner c;
+    // Negative case: Same line numbers, different filenames, same tags
+    TestParams {"case3", 154, 154, "foo.cpp", "bar.cpp", "myTag", "myTag", false},
 
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
+    // Negative case: Same line numbers, same filenames, different tags
+    TestParams {"case4", 154, 154, "foo.cpp", "foo.cpp", "myTag", "myOtherTag", false},
 
-  if(shouldMessagesBeCombined == true)
-  {
-    c.combine(m1, m2, 5);
-  }
+    // Negative case: Different line numbers, different filenames, same tags
+    TestParams {"case5", 12000, 154, "foo.cpp", "bar.cpp", "myTag", "myTag", false},
 
-  EXPECT_EQ(shouldMessagesBeCombined, false);
+    // Negative case: Different line numbers, same filenames, different tags
+    TestParams {"case6", 12000, 154, "foo.cpp", "foo.cpp", "myTag", "myOtherTag", false},
 
-  EXPECT_EQ(m1.lineNumber(), 12000);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 1);
-  EXPECT_EQ(m1.ranks().size(), 1);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
+    // Negative case: Same line numbers, different filenames, different tags
+    TestParams {"case7", 154, 154, "foo.cpp", "bar.cpp", "myTag", "myOtherTag", false},
 
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("bar.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myTag"), 0);
-}
-
-TEST(lumberjack_LineFileTagCombiner, case06)
-{
-  //Test negative case: two not equal line numbers, equal filenames, and not equal tags
-  std::string text1 =
-    "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(12000);
-  m1.tag("myTag");
-
-  std::string text2 =
-    "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("foo.cpp");
-  m2.lineNumber(154);
-  m2.tag("myOtherTag");
-
-  axom::lumberjack::LineFileTagCombiner c;
-
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
-
-  if(shouldMessagesBeCombined == true)
-  {
-    c.combine(m1, m2, 5);
-  }
-
-  EXPECT_EQ(shouldMessagesBeCombined, false);
-
-  EXPECT_EQ(m1.lineNumber(), 12000);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 1);
-  EXPECT_EQ(m1.ranks().size(), 1);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
-
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myOtherTag"), 0);
-}
-
-TEST(lumberjack_LineFileTagCombiner, case07)
-{
-  //Test negative case: two equal line numbers, not equal filenames, and not equal tags
-  std::string text1 =
-    "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(154);
-  m1.tag("myTag");
-
-  std::string text2 =
-    "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("bar.cpp");
-  m2.lineNumber(154);
-  m2.tag("myOtherTag");
-
-  axom::lumberjack::LineFileTagCombiner c;
-
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
-
-  if(shouldMessagesBeCombined == true)
-  {
-    c.combine(m1, m2, 5);
-  }
-
-  EXPECT_EQ(shouldMessagesBeCombined, false);
-
-  EXPECT_EQ(m1.lineNumber(), 154);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 1);
-  EXPECT_EQ(m1.ranks().size(), 1);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
-
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("bar.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myOtherTag"), 0);
-}
-
-TEST(lumberjack_LineFileTagCombiner, case08)
-{
-  //Test negative case: two not equal line numbers, not equal filenames, and not equal tags
-  std::string text1 =
-    "This message does not matter because we do not filter by text";
-  axom::lumberjack::Message m1;
-  m1.text(text1);
-  m1.addRank(13, 5);
-  m1.fileName("foo.cpp");
-  m1.lineNumber(12000);
-  m1.tag("myTag");
-
-  std::string text2 =
-    "This message ALSO does not matter because we do not filter by text";
-  axom::lumberjack::Message m2;
-  m2.text(text2);
-  m2.addRank(14, 5);
-  m2.fileName("bar.cpp");
-  m2.lineNumber(154);
-  m2.tag("myOtherTag");
-
-  axom::lumberjack::LineFileTagCombiner c;
-
-  bool shouldMessagesBeCombined = c.shouldMessagesBeCombined(m1, m2);
-
-  if(shouldMessagesBeCombined == true)
-  {
-    c.combine(m1, m2, 5);
-  }
-
-  EXPECT_EQ(shouldMessagesBeCombined, false);
-
-  EXPECT_EQ(m1.lineNumber(), 12000);
-  EXPECT_EQ(m1.fileName().compare("foo.cpp"), 0);
-  EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.count(), 1);
-  EXPECT_EQ(m1.ranks().size(), 1);
-  EXPECT_EQ(m1.ranks()[0], 13);
-  EXPECT_EQ(m1.tag().compare("myTag"), 0);
-
-  EXPECT_EQ(m2.lineNumber(), 154);
-  EXPECT_EQ(m2.fileName().compare("bar.cpp"), 0);
-  EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.count(), 1);
-  EXPECT_EQ(m2.ranks().size(), 1);
-  EXPECT_EQ(m2.ranks()[0], 14);
-  EXPECT_EQ(m2.tag().compare("myOtherTag"), 0);
-}
+    // Negative case: Different line numbers, different filenames, different tags
+    TestParams {"case8", 12000, 154, "foo.cpp", "bar.cpp", "myTag", "myOtherTag", false}),
+  CustomNameGenerator  // Use the custom name generator
+);
