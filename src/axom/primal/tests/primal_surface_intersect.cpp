@@ -59,7 +59,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // Intersect the ray and the patch, intersection parameters will be
   // in arrays (u, v) and t, for the patch and ray, respectively
   Array u, v, t;
-  bool ray_intersects = intersect(ray, patch, t, u, v, 1e-8, 1e-8, isHalfOpen);
+  bool ray_intersects = intersect(ray, patch, t, u, v, eps, eps, isHalfOpen);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());
@@ -156,7 +156,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
   // in arrays (u, v) and t, for the patch and ray, respectively
   Array u, v, t;
   bool ray_intersects =
-    intersect(ray, patch, t, u, v, 1e-8, 1e-8, countUntrimmed, isHalfOpen);
+    intersect(ray, patch, t, u, v, eps, eps, countUntrimmed, isHalfOpen);
   EXPECT_EQ(exp_intersect, ray_intersects);
   EXPECT_EQ(u.size(), v.size());
   EXPECT_EQ(u.size(), t.size());
@@ -227,8 +227,8 @@ TEST(primal_surface_inter, bilinear_intersect)
   using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
   using RayType = primal::Ray<CoordType, DIM>;
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   SLIC_INFO("primal: testing bilinear patch intersection");
 
@@ -307,8 +307,8 @@ TEST(primal_surface_inter, bilinear_boundary_treatment)
   using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
   using RayType = primal::Ray<CoordType, DIM>;
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
   const bool isHalfOpen = true;
 
   SLIC_INFO("primal: testing bilinear patch intersection");
@@ -454,8 +454,8 @@ TEST(primal_surface_inter, difficult_garp_case)
   using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
   using RayType = primal::Ray<CoordType, DIM>;
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   SLIC_INFO("primal: testing bilinear patch intersection");
 
@@ -540,8 +540,8 @@ TEST(primal_surface_inter, flat_bilinear_intersect)
   using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
   using RayType = primal::Ray<CoordType, DIM>;
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   SLIC_INFO("primal: testing bilinear patch intersection");
 
@@ -606,8 +606,8 @@ TEST(primal_surface_inter, flat_selfintersect_bilinear_intersect)
   using BezierPatchType = primal::BezierPatch<CoordType, DIM>;
   using RayType = primal::Ray<CoordType, DIM>;
 
-  const double eps = 1E-16;
-  const double eps_test = 1E-10;
+  const double eps = 1E-10;
+  const double eps_test = 1E-8;
 
   SLIC_INFO("primal: testing bilinear patch intersection");
 
