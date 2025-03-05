@@ -411,7 +411,7 @@ void test_external_user_defined_data()
   check_array(loaded_states);
 }
 
-#ifdef AXOM_USE_MFEM
+#if defined(AXOM_USE_MFEM) && defined(AXOM_USE_HDF5)
 
 template <typename T, int DIM>
 void test_MFEMSidreDataCollection_user_defined_data()
@@ -500,7 +500,7 @@ void test_MFEMSidreDataCollection_user_defined_data()
   check_array(loaded_states);
 }
 
-#endif  // AXOM_USE_MFEM
+#endif  // defined(AXOM_USE_MFEM) && defined(AXOM_USE_HDF5)
 
 //------------------------------------------------------------------------------
 
@@ -626,7 +626,7 @@ TEST(sidre, TwoD_StateTensorLarge_external_readandwrite)
 
 //-------------------------
 
-#ifdef AXOM_USE_MFEM
+#if defined(AXOM_USE_MFEM) && defined(AXOM_USE_HDF5)
 
 TEST(sidre, OneD_double_MFEMSidreDataCollection_readandwrite)
 {
@@ -690,7 +690,7 @@ TEST(sidre, TwoD_StateTensorLarge_MFEMSidreDataCollection_readandwrite)
   test_MFEMSidreDataCollection_user_defined_data<StateTensorLarge, 2>();
 }
 
-#endif  // AXOM_USE_MFEM
+#endif  // defined(AXOM_USE_MFEM) && defined(AXOM_USE_HDF5)
 
 //----------------------------------------------------------------------
 int main(int argc, char* argv[])

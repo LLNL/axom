@@ -184,6 +184,13 @@ TEST(sidre_datacollection, dc_reload_gf)
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
 
+#ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+#endif
+
   // No mesh is used here
   MFEMSidreDataCollection sdc_reader(testName());
 
@@ -235,6 +242,13 @@ TEST(sidre_datacollection, dc_reload_gf_vdim)
 
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
+
+#ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+#endif
 
   // No mesh is used here
   MFEMSidreDataCollection sdc_reader(testName());
@@ -344,6 +358,13 @@ TEST(sidre_datacollection, dc_reload_mesh)
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
 
+#ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+#endif
+
   // No mesh is used here to construct as it will be read in
   MFEMSidreDataCollection sdc_reader(testName());
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -407,6 +428,13 @@ TEST(sidre_datacollection, dc_reload_qf)
   sdc_writer.SetCycle(5);
   sdc_writer.SetTime(8.0);
   sdc_writer.Save();
+
+#ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+#endif
 
   MFEMSidreDataCollection sdc_reader(testName());
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
@@ -901,6 +929,13 @@ TEST(sidre_datacollection, dc_par_reload_gf)
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
 
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   MFEMSidreDataCollection sdc_reader(testName());
 
   // Needs to be set "manually" in order for everything to be loaded in properly
@@ -971,6 +1006,13 @@ TEST(sidre_datacollection, dc_par_reload_gf_ordering)
 
   sdc_writer.SetCycle(0);
   sdc_writer.Save();
+
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
 
   MFEMSidreDataCollection sdc_reader(testName());
 
@@ -1071,6 +1113,13 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
   second_sdc_writer.SetCycle(0);
   second_sdc_writer.Save();
 
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   axom::sidre::DataStore ds_read;
 
   first_global_grp = ds_read.getRoot()->createGroup(first_coll_name + "_global");
@@ -1135,6 +1184,13 @@ TEST(sidre_datacollection, dc_par_reload_multi_datastore)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_1D_small)
 {
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   // 1D mesh divided into segments
   auto mesh = mfem::Mesh::MakeCartesian1D(10);
   testParallelMeshReloadAllPartitionings(mesh);
@@ -1142,6 +1198,13 @@ TEST(sidre_datacollection, dc_par_reload_mesh_1D_small)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_small)
 {
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   // 2D mesh divided into triangles
   auto mesh = mfem::Mesh::MakeCartesian2D(10, 10, mfem::Element::TRIANGLE);
   testParallelMeshReloadAllPartitionings(mesh);
@@ -1149,6 +1212,13 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_small)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
 {
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   // 2D mesh divided into triangles
   auto mesh = mfem::Mesh::MakeCartesian2D(100, 100, mfem::Element::TRIANGLE);
   testParallelMeshReloadAllPartitionings(mesh);
@@ -1158,6 +1228,13 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_large)
   #if(MFEM_VERSION >= 40300)
 TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
 {
+    #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+    #endif
+
   // periodic 2D mesh divided into triangles
   auto base_mesh = mfem::Mesh::MakeCartesian2D(10,
                                                10,
@@ -1175,6 +1252,13 @@ TEST(sidre_datacollection, dc_par_reload_mesh_2D_periodic)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 {
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   // 3D mesh divided into tetrahedra
   auto mesh = mfem::Mesh::MakeCartesian3D(2, 2, 2, mfem::Element::TETRAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
@@ -1182,6 +1266,13 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_tet)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_tet)
 {
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   // 3D mesh divided into tetrahedra
   auto mesh = mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::TETRAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
@@ -1189,6 +1280,13 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_tet)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_hex)
 {
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   // 3D mesh divided into hexahedra
   auto mesh = mfem::Mesh::MakeCartesian3D(3, 3, 3, mfem::Element::HEXAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
@@ -1196,6 +1294,13 @@ TEST(sidre_datacollection, dc_par_reload_mesh_3D_small_hex)
 
 TEST(sidre_datacollection, dc_par_reload_mesh_3D_medium_hex)
 {
+  #ifndef AXOM_USE_HDF5
+  SUCCEED()
+    << "sidre::MFEMSidreDataCollection::load(<cycle>) is only implemented "
+       "for the 'sidre_hdf5' protocol";
+  return;
+  #endif
+
   // 3D mesh divided into hexahedra
   auto mesh = mfem::Mesh::MakeCartesian3D(10, 10, 10, mfem::Element::HEXAHEDRON);
   testParallelMeshReloadAllPartitionings(mesh);
