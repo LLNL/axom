@@ -160,8 +160,8 @@ inline void norm2d(double n2[2], double n3[3])
  * \brief Return sorted, positive components of vector length 3.
  */
 AXOM_HOST_DEVICE
-inline void n_sort(const double n[3],   // input vector
-                   double na[3])  // output vector
+inline void n_sort(const double n[3],  // input vector
+                   double na[3])       // output vector
 {
   na[0] = axom::utilities::abs(n[0]);
   na[1] = axom::utilities::abs(n[1]);
@@ -797,11 +797,11 @@ void transform(double *normal, const double jac[3][3])
   double dfvsum = 0.0;  // stores nx^2 + ny^2 + nz^2
   double dfv[3], delfv[3];
 
-//  dfv[0] = normal[2];  // BJW: Why switch components? Rotation?
-//  dfv[1] = normal[1];  // I think the code was doing this because of the old face order in computeJacobian.
-//  dfv[2] = normal[0];
+  //  dfv[0] = normal[2];  // BJW: Why switch components? Rotation?
+  //  dfv[1] = normal[1];  // I think the code was doing this because of the old face order in computeJacobian.
+  //  dfv[2] = normal[0];
 
-  dfv[0] = normal[0]; // Put the normals in x,y,z order
+  dfv[0] = normal[0];  // Put the normals in x,y,z order
   dfv[1] = normal[1];
   dfv[2] = normal[2];
 
@@ -854,17 +854,15 @@ void computeJacobian(const double *xcst,
                      int ndims,
                      double jac[3][3])
 {
-  double del[3][3] = {{1., 0., 0.},
-                      {0., 1., 0.},
-                      {0., 0., 1.}}, det;
+  double del[3][3] = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}}, det;
   int f, f0, f1, f2, g0, g1, g2;
   int perm1[3] = {1, 2, 0};
   int perm2[3] = {2, 0, 1};
 
-//  int idx_2D[6] = {4, 4, 1, 7, 3, 5};     // Z, Y, X
-//  int idx_3D[6] = {4, 22, 10, 16, 12, 14};
+  //  int idx_2D[6] = {4, 4, 1, 7, 3, 5};     // Z, Y, X
+  //  int idx_3D[6] = {4, 22, 10, 16, 12, 14};
 
-  int idx_2D[6] = {3, 5, 1, 7, 4, 4}; // X, Y, Z
+  int idx_2D[6] = {3, 5, 1, 7, 4, 4};  // X, Y, Z
   int idx_3D[6] = {12, 14, 10, 16, 4, 22};
 
   int *idx = (ndims == 3) ? idx_3D : idx_2D;
@@ -938,7 +936,7 @@ void computeJacobian(const double *xcst,
   {
     std::cout << zcst[i] << ", ";
   }
-  
+
   std::cout << "}, del={";
   for(int row = 0; row < 3; row++)
   {
@@ -971,31 +969,31 @@ void elvira<2>::execute(int matCount,
                         const double *fragmentVFStencilStart,
                         double *fragmentVectorsStart,
                         int iskip)
+{
+  constexpr int StencilSize = getStencilSize(NDIMS);
+  constexpr int numVectorComponents = 3;
+
+  const double *vol_fracs = fragmentVFStencilStart;
+  double *normal = fragmentVectorsStart;
+
+  for(int m = 0; m < matCount; m++)
   {
-    constexpr int StencilSize = getStencilSize(NDIMS);
-    constexpr int numVectorComponents = 3;
-
-    const double *vol_fracs = fragmentVFStencilStart;
-    double *normal = fragmentVectorsStart;
-
-    for(int m = 0; m < matCount; m++)
+    if(m != iskip)
     {
-      if(m != iskip)
-      {
-        elvira2xy(vol_fracs, normal);
-      }
-      else
-      {
-        normal[0] = 1.;
-        normal[1] = 0.;
-        normal[2] = 0.;
-      }
-
-      // Advance to next fragment.
-      vol_fracs += StencilSize;
-      normal += numVectorComponents;
+      elvira2xy(vol_fracs, normal);
     }
+    else
+    {
+      normal[0] = 1.;
+      normal[1] = 0.;
+      normal[2] = 0.;
+    }
+
+    // Advance to next fragment.
+    vol_fracs += StencilSize;
+    normal += numVectorComponents;
   }
+}
 
 /*!
  * \brief 3D specialization that calls elvira3d to make normals.
@@ -1033,7 +1031,6 @@ void elvira<3>::execute(int AXOM_UNUSED_PARAM(matCount),
 #endif
 }
 
-} // namespace elvira
-} // namespace mir
-} // namespace axom
-
+}  // namespace elvira
+}  // namespace mir
+}  // namespace axom

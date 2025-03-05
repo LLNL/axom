@@ -158,9 +158,9 @@ struct PrimalAdaptor
                     axom::mir::views::PyramidShape<typename ShapeType::ConnectivityType>>::value ||
        std::is_same<ShapeType,
                     axom::mir::views::WedgeShape<typename ShapeType::ConnectivityType>>::value ||
-       std::is_same<ShapeType,
-                    axom::mir::views::VariableShape<
-                      typename ShapeType::ConnectivityType>>::value),
+       std::is_same<
+         ShapeType,
+         axom::mir::views::VariableShape<typename ShapeType::ConnectivityType>>::value),
     VariableShape<value_type, 3>>::type
   getShape(axom::IndexType zi) const
   {

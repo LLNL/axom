@@ -73,13 +73,11 @@ public:
     n_outputField["topology"] = n_topology.name();
     conduit::Node &n_values = n_outputField["values"];
     n_values.set_allocator(c2a.getConduitAllocatorID());
-    n_values.set(conduit::DataType(
-        cpp2conduit<value_type>::id,
-        outputSize));
+    n_values.set(conduit::DataType(cpp2conduit<value_type>::id, outputSize));
     auto valuesView = make_array_view<value_type>(n_values);
 
     // Get the zone as a primal shape and compute area or volume, as needed.
-    const ShapeView deviceShapeView{m_topologyView, m_coordsetView};
+    const ShapeView deviceShapeView {m_topologyView, m_coordsetView};
     axom::for_all<ExecSpace>(
       m_topologyView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
@@ -87,8 +85,7 @@ public:
 
         // Get the area or volume of the target shape (depends on the dimension).
         double amount =
-          ComputeShapeAmount<CoordsetView::dimension()>::execute(
-            shape);
+          ComputeShapeAmount<CoordsetView::dimension()>::execute(shape);
 
         valuesView[zoneIndex] = amount;
       });

@@ -735,7 +735,9 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  * \return A clipped polygon.
  */
 template <typename PolygonType, typename PlaneType>
-AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType &inputList, const PlaneType &plane, double eps)
+AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList,
+                                                    const PlaneType& plane,
+                                                    double eps)
 {
   using T = typename PolygonType::PointType::CoordType;
   using SegmentType = Segment<T, 2>;
@@ -745,9 +747,10 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType &inputList
 
   for(int iVert = 0; iVert < inputList.numVertices(); iVert++)
   {
-    const int prevVert = (iVert - 1) == -1 ? (inputList.numVertices() - 1) : (iVert - 1);
-    const PointType &current_point = inputList[iVert];
-    const PointType &prev_point = inputList[prevVert];
+    const int prevVert =
+      (iVert - 1) == -1 ? (inputList.numVertices() - 1) : (iVert - 1);
+    const PointType& current_point = inputList[iVert];
+    const PointType& prev_point = inputList[prevVert];
 
     T seg_param;
     PointType intersecting_point;
@@ -791,19 +794,15 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType &inputList
  * \return A new polygon that has unique points.
  */
 template <typename PolygonType>
-PolygonType makeUniquePoints(const PolygonType &poly, double eps)
+PolygonType makeUniquePoints(const PolygonType& poly, double eps)
 {
   PolygonType uniqueList;
   for(int i = 0; i < poly.numVertices(); i++)
   {
     int prevIndex = ((i - 1) == -1) ? (poly.numVertices() - 1) : (i - 1);
 
-    if(!axom::utilities::isNearlyEqual(poly[i][0],
-                                       poly[prevIndex][0],
-                                       eps) ||
-       !axom::utilities::isNearlyEqual(poly[i][1],
-                                       poly[prevIndex][1],
-                                       eps))
+    if(!axom::utilities::isNearlyEqual(poly[i][0], poly[prevIndex][0], eps) ||
+       !axom::utilities::isNearlyEqual(poly[i][1], poly[prevIndex][1], eps))
     {
       uniqueList.addVertex(poly[i]);
     }
@@ -889,7 +888,8 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPlane(
   }
 
   // Clip the plane.
-  return makeUniquePoints(clipPolygonPlaneSimple(outputList, clipPlane, eps), eps);
+  return makeUniquePoints(clipPolygonPlaneSimple(outputList, clipPlane, eps),
+                          eps);
 }
 
 }  // namespace detail

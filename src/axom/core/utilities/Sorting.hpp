@@ -49,8 +49,10 @@ inline void internal_swap(axom::IndexType, axom::IndexType) { }
  * \param args A parameter pack of additional arrays that need to be swapped.
  */
 template <typename T, typename... Args>
-AXOM_HOST_DEVICE
-inline void internal_swap(axom::IndexType idx1, axom::IndexType idx2, T values, Args... args)
+AXOM_HOST_DEVICE inline void internal_swap(axom::IndexType idx1,
+                                           axom::IndexType idx2,
+                                           T values,
+                                           Args... args)
 {
   axom::utilities::swap(values[idx1], values[idx2]);
   internal_swap(idx1, idx2, args...);
@@ -106,7 +108,10 @@ AXOM_HOST_DEVICE static axom::IndexType partitionMultiple(Predicate &&predicate,
  * \param n The number of values in the array.
  */
 template <typename T, typename Predicate, typename... Args>
-AXOM_HOST_DEVICE static void qsortMultiple(Predicate &&predicate, axom::IndexType n, T values, Args... args)
+AXOM_HOST_DEVICE static void qsortMultiple(Predicate &&predicate,
+                                           axom::IndexType n,
+                                           T values,
+                                           Args... args)
 {
   constexpr size_t StackSize = sizeof(axom::IndexType) * 8;
   if(n <= 1) return;
@@ -123,7 +128,8 @@ AXOM_HOST_DEVICE static void qsortMultiple(Predicate &&predicate, axom::IndexTyp
 
     if(low < high)
     {
-      const auto pivot_index = partitionMultiple(predicate, low, high, values, args...);
+      const auto pivot_index =
+        partitionMultiple(predicate, low, high, values, args...);
 
       stack[stack_count][0] = low;
       stack[stack_count][1] = pivot_index - 1;
@@ -144,7 +150,10 @@ AXOM_HOST_DEVICE static void qsortMultiple(Predicate &&predicate, axom::IndexTyp
  * \param args The rest of the arrays to be sorted the same way.
  */
 template <typename T, typename Predicate, typename... Args>
-AXOM_HOST_DEVICE static void insertionSortMultiple(Predicate &&predicate, axom::IndexType n, T values, Args... args)
+AXOM_HOST_DEVICE static void insertionSortMultiple(Predicate &&predicate,
+                                                   axom::IndexType n,
+                                                   T values,
+                                                   Args... args)
 {
   for(axom::IndexType i = 1; i < n; i++)
   {
@@ -262,7 +271,10 @@ template <typename T, typename... Args>
 AXOM_HOST_DEVICE inline static void sort_multiple(T first, Args... args)
 {
   using ElementType = typename std::remove_pointer<T>::type;
-  detail::sort_multiple_internal(detail::less_than<ElementType>{}, first, detail::Delimiter {}, args...);
+  detail::sort_multiple_internal(detail::less_than<ElementType> {},
+                                 first,
+                                 detail::Delimiter {},
+                                 args...);
 }
 
 /*!
@@ -282,7 +294,10 @@ template <typename T, typename... Args>
 AXOM_HOST_DEVICE inline static void reverse_sort_multiple(T first, Args... args)
 {
   using ElementType = typename std::remove_pointer<T>::type;
-  detail::sort_multiple_internal(detail::greater_than<ElementType>{}, first, detail::Delimiter {}, args...);
+  detail::sort_multiple_internal(detail::greater_than<ElementType> {},
+                                 first,
+                                 detail::Delimiter {},
+                                 args...);
 }
 #endif
 

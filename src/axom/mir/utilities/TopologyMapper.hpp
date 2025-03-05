@@ -405,8 +405,8 @@ public:
     AXOM_ANNOTATE_BEGIN("bbox");
     const auto srcView = m_srcView;
     SelectedZones<ExecSpace> srcSelection(srcView.numberOfZones(),
-                                                   n_options,
-                                                   SRC_SELECTED_ZONES);
+                                          n_options,
+                                          SRC_SELECTED_ZONES);
     srcSelection.setSorted(false);
     const auto srcSelectionView = srcSelection.view();
     const axom::IndexType nSrcZones = srcSelectionView.size();
@@ -476,8 +476,8 @@ public:
       make_array_view<std::int64_t>(n_matset["material_ids"]);
     const auto bvh_device = bvh.getTraverser();
     SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
-                                                      n_options,
-                                                      TARGET_SELECTED_ZONES);
+                                             n_options,
+                                             TARGET_SELECTED_ZONES);
     targetSelection.setSorted(false);
     const auto targetSelectionView = targetSelection.view();
     axom::for_all<ExecSpace>(

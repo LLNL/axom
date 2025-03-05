@@ -182,10 +182,7 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clip(
   double eps = 1.e-10,
   bool tryFixOrientation = false)
 {
-  return detail::clipPolygonPlane(subjectPolygon,
-                                  clipPlane,
-                                  eps,
-                                  tryFixOrientation);
+  return detail::clipPolygonPlane(subjectPolygon, clipPlane, eps, tryFixOrientation);
 }
 
 /*!

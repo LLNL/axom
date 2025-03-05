@@ -106,7 +106,8 @@ constexpr int getStencilSize(int ndims)
  * \brief Base template for a class that invokes ELVIRA on various dimension data.
  */
 template <int NDIMS>
-struct elvira {};
+struct elvira
+{ };
 
 /*!
  * \brief 2D specialization that calls elvira2xy to make normals.
@@ -165,10 +166,14 @@ struct elvira<3>
 /*!
  * \brief Base template for building a new Conduit mesh.
  */
-template <typename ExecSpace, typename CoordsetView, typename TopologyView, typename MatsetView, typename PolygonShape, int NDIMS>
+template <typename ExecSpace,
+          typename CoordsetView,
+          typename TopologyView,
+          typename MatsetView,
+          typename PolygonShape,
+          int NDIMS>
 struct TopologyBuilder
-{
-};
+{ };
 
 /*!
  * \brief Template specialization for making a new 2D Conduit polygon mesh.
@@ -179,7 +184,11 @@ struct TopologyBuilder
  * \tparam MatsetView The view that wraps the matset data.
  * \tparam PolygonShape An axom::primal::Polygon (with various template args filled in).
  */
-template <typename ExecSpace, typename CoordsetView, typename TopologyView, typename MatsetView, typename PolygonShape>
+template <typename ExecSpace,
+          typename CoordsetView,
+          typename TopologyView,
+          typename MatsetView,
+          typename PolygonShape>
 class TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, PolygonShape, 2>
 {
   // The way we build fragments from quads, we should not get any with more than 5 sides.
@@ -198,7 +207,11 @@ public:
    *       connectivity that will have gaps that consumers will need to skip over using
    *       the provided sizes/offsets.
    */
-  void allocate(axom::IndexType numFragments, conduit::Node &n_coordset, conduit::Node &n_topology, conduit::Node &n_fields, conduit::Node &n_matset)
+  void allocate(axom::IndexType numFragments,
+                conduit::Node &n_coordset,
+                conduit::Node &n_topology,
+                conduit::Node &n_fields,
+                conduit::Node &n_matset)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -225,21 +238,22 @@ public:
     n_topology["elements/shape"] = "polygonal";
     conduit::Node &n_conn = n_topology["elements/connectivity"];
     n_conn.set_allocator(c2a.getConduitAllocatorID());
-    n_conn.set(
-      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, numFragments * MAX_POINTS_PER_FRAGMENT));
+    n_conn.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                                 numFragments * MAX_POINTS_PER_FRAGMENT));
     m_view.m_connectivity = bputils::make_array_view<ConnectivityType>(n_conn);
-    axom::mir::utilities::fill<ExecSpace>(m_view.m_connectivity, ConnectivityType(0));
+    axom::mir::utilities::fill<ExecSpace>(m_view.m_connectivity,
+                                          ConnectivityType(0));
 
     conduit::Node &n_sizes = n_topology["elements/sizes"];
     n_sizes.set_allocator(c2a.getConduitAllocatorID());
-    n_sizes.set(
-      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, numFragments));
+    n_sizes.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                                  numFragments));
     m_view.m_sizes = bputils::make_array_view<ConnectivityType>(n_sizes);
 
     conduit::Node &n_offsets = n_topology["elements/offsets"];
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
-    n_offsets.set(
-      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, numFragments));
+    n_offsets.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                                    numFragments));
     m_view.m_offsets = bputils::make_array_view<ConnectivityType>(n_offsets);
 
     // Make new fields.
@@ -247,9 +261,10 @@ public:
     n_fields["originalZones/association"] = "element";
     conduit::Node &n_orig_zones = n_fields["originalZones/values"];
     n_orig_zones.set_allocator(c2a.getConduitAllocatorID());
-    n_orig_zones.set(
-      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, numFragments));
-    m_view.m_original_zones = bputils::make_array_view<ConnectivityType>(n_orig_zones);
+    n_orig_zones.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                                       numFragments));
+    m_view.m_original_zones =
+      bputils::make_array_view<ConnectivityType>(n_orig_zones);
 
     conduit::Node &n_normal = n_fields["normal"];
     n_normal["topology"] = n_topology.name();
@@ -257,12 +272,10 @@ public:
     conduit::Node &n_x = n_normal["values/x"];
     conduit::Node &n_y = n_normal["values/y"];
     n_x.set_allocator(c2a.getConduitAllocatorID());
-    n_x.set(
-      conduit::DataType(bputils::cpp2conduit<double>::id, numFragments));
+    n_x.set(conduit::DataType(bputils::cpp2conduit<double>::id, numFragments));
     m_view.m_norm_x = bputils::make_array_view<double>(n_x);
     n_y.set_allocator(c2a.getConduitAllocatorID());
-    n_y.set(
-      conduit::DataType(bputils::cpp2conduit<double>::id, numFragments));
+    n_y.set(conduit::DataType(bputils::cpp2conduit<double>::id, numFragments));
     m_view.m_norm_y = bputils::make_array_view<double>(n_y);
 
     // Set up new matset. All of the sizes are numFragments because we're making clean zones.
@@ -271,7 +284,8 @@ public:
     n_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
     n_volume_fractions.set(
       conduit::DataType(bputils::cpp2conduit<MaterialVF>::id, numFragments));
-    m_view.m_volume_fractions = bputils::make_array_view<MaterialVF>(n_volume_fractions);
+    m_view.m_volume_fractions =
+      bputils::make_array_view<MaterialVF>(n_volume_fractions);
 
     conduit::Node &n_material_ids = n_matset["material_ids"];
     n_material_ids.set_allocator(c2a.getConduitAllocatorID());
@@ -314,7 +328,11 @@ public:
      * \param normal The normal for the fragment.
      */
     AXOM_HOST_DEVICE
-    void addShape(axom::IndexType zoneIndex, axom::IndexType fragmentOffset, const PolygonShape &shape, int matId, const double *normal) const
+    void addShape(axom::IndexType zoneIndex,
+                  axom::IndexType fragmentOffset,
+                  const PolygonShape &shape,
+                  int matId,
+                  const double *normal) const
     {
       const int nverts = shape.numVertices();
       SLIC_ASSERT(nverts <= MAX_POINTS_PER_FRAGMENT);
@@ -353,18 +371,20 @@ public:
     // These ArrayView objects expose data that we've allocated in Conduit nodes to represent the new mesh.
 
     // New coordset data.
-    axom::ArrayView<CoordType> m_x{}, m_y{}; //!< X,Y coordinates
+    axom::ArrayView<CoordType> m_x {}, m_y {};  //!< X,Y coordinates
 
     // New topology data.
-    axom::ArrayView<ConnectivityType> m_connectivity{}, m_sizes{}, m_offsets{}; //!< Connectivity data.
+    axom::ArrayView<ConnectivityType> m_connectivity {}, m_sizes {},
+      m_offsets {};  //!< Connectivity data.
 
     // New field data.
-    axom::ArrayView<axom::IndexType> m_original_zones{}; //!< View for originalZone field data.
-    axom::ArrayView<double> m_norm_x{}, m_norm_y{};      //!< Fragment normals
+    axom::ArrayView<axom::IndexType> m_original_zones {};  //!< View for originalZone field data.
+    axom::ArrayView<double> m_norm_x {}, m_norm_y {};  //!< Fragment normals
 
     // New matset data
-    axom::ArrayView<MaterialVF> m_volume_fractions{};
-    axom::ArrayView<MaterialID> m_material_ids{}, m_mat_indices, m_mat_sizes{}, m_mat_offsets{};
+    axom::ArrayView<MaterialVF> m_volume_fractions {};
+    axom::ArrayView<MaterialID> m_material_ids {}, m_mat_indices,
+      m_mat_sizes {}, m_mat_offsets {};
   };
 
   /*!
@@ -372,10 +392,7 @@ public:
    *
    * \return A view that be used to store data.
    */
-  View view()
-  {
-    return m_view;
-  }
+  View view() { return m_view; }
 
 private:
   View m_view;
@@ -462,7 +479,8 @@ public:
 
 #if 1
     conduit::Node n_result;
-    n_result["selectedZonesView"].set(selectedZonesView.data(), selectedZonesView.size());
+    n_result["selectedZonesView"].set(selectedZonesView.data(),
+                                      selectedZonesView.size());
     n_result["cleanZones"].set(cleanZones.data(), cleanZones.size());
     n_result["mixedZones"].set(mixedZones.data(), mixedZones.size());
     conduit::relay::io::save(n_result, "zonelist.yaml", "yaml");
@@ -534,12 +552,14 @@ public:
     constexpr double DEFAULT_TOLERANCE = 1.e-10;
     constexpr int DEFAULT_MAX_ITERATIONS = 50;
     double tolerance = DEFAULT_TOLERANCE;
-    if(n_options.has_child("tolerance") && n_options["tolerance"].dtype().is_number())
+    if(n_options.has_child("tolerance") &&
+       n_options["tolerance"].dtype().is_number())
     {
       tolerance = n_options["tolerance"].to_double();
     }
     int max_iterations = DEFAULT_MAX_ITERATIONS;
-    if(n_options.has_child("max_iterations") && n_options["max_iterations"].dtype().is_number())
+    if(n_options.has_child("max_iterations") &&
+       n_options["max_iterations"].dtype().is_number())
     {
       max_iterations = n_options["max_iterations"].to_int();
     }
@@ -683,14 +703,17 @@ public:
         }
 
         // Retrieve the stencil data from neighbor zones.
-        auto logical = deviceTopologyView.indexing().IndexToLogicalIndex(zoneIndex);
+        auto logical =
+          deviceTopologyView.indexing().IndexToLogicalIndex(zoneIndex);
         for(int si = 0; si < StencilSize; si++)
         {
           // Stencil neighbor logical index.
           typename TopologyView::LogicalIndex neighbor(logical);
 
           // Neighbor offsets are in (-1, 0, 1) that get added to current zone's logical coordinate.
-          const int neighborOffset[3] = {(si % 3) - 1, ((si % 9) / 3) - 1, (si / 9) - 1};
+          const int neighborOffset[3] = {(si % 3) - 1,
+                                         ((si % 9) / 3) - 1,
+                                         (si / 9) - 1};
           for(int d = 0; d < ndims; d++)
           {
             neighbor[d] += neighborOffset[d];
@@ -699,7 +722,7 @@ public:
           // Clamp the neighbor to a zone that is inside the indexing space.
           neighbor = deviceTopologyView.indexing().clamp(neighbor);
           const auto neighborIndex = static_cast<typename MatsetView::ZoneIndex>(
-              deviceTopologyView.indexing().LogicalIndexToIndex(neighbor));
+            deviceTopologyView.indexing().LogicalIndexToIndex(neighbor));
 
           // Copy material vfs into the stencil.
           for(axom::IndexType m = 0; m < matCount; m++)
@@ -707,10 +730,9 @@ public:
             // Ask the neighbor zone for vf.
             const auto fragmentIndex = offset + m;
             typename MatsetView::FloatType vf = 0;
-            matsetView.zoneContainsMaterial(
-              neighborIndex,
-              sortedMaterialIdsView[fragmentIndex],
-              vf);
+            matsetView.zoneContainsMaterial(neighborIndex,
+                                            sortedMaterialIdsView[fragmentIndex],
+                                            vf);
 
             // Store the vf into the stencil for the current material.
             const auto destIndex = fragmentIndex * StencilSize + si;
@@ -759,16 +781,17 @@ public:
         elvira::computeJacobian(xcStencil, ycStencil, zcStencil, ndims, jac);
 
         // The starting addresses for fragments in the current zone.
-        const double *fragmentVFStencilStart = fragmentVFStencilView.data() + offset * StencilSize;
-        double *fragmentVectorsStart = fragmentVectorsView.data() + offset * numVectorComponents;
+        const double *fragmentVFStencilStart =
+          fragmentVFStencilView.data() + offset * StencilSize;
+        double *fragmentVectorsStart =
+          fragmentVectorsView.data() + offset * numVectorComponents;
 
         // Produce normal for each material in this zone.
         int iskip = matCount - 1;
-        elvira::elvira<ndims>::execute(
-               matCount,
-               fragmentVFStencilStart,
-               fragmentVectorsStart,
-               iskip);
+        elvira::elvira<ndims>::execute(matCount,
+                                       fragmentVFStencilStart,
+                                       fragmentVectorsStart,
+                                       iskip);
 
 #if defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
         conduit::Node &n_thisZone = n_group4->append();
@@ -822,10 +845,12 @@ public:
     // Determine the output type from the clip operations. Those are the shape
     // types that we're emitting into the MIR output. Create the builder.
     using CoordType = typename CoordsetView::value_type;
-    using ClipResultType = typename std::conditional<ndims == 2,
+    using ClipResultType = typename std::conditional<
+      ndims == 2,
       axom::primal::Polygon<CoordType, 2, axom::primal::PolygonArray::Static>,
       axom::primal::Polyhedron<CoordType, 3>>::type;
-    using Builder = TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, ClipResultType, ndims>;
+    using Builder =
+      TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, ClipResultType, ndims>;
     Builder build;
     build.allocate(numFragments, n_newCoordset, n_newTopo, n_newFields, n_newMatset);
     if(n_matset.has_path("material_map"))
@@ -841,7 +866,7 @@ public:
     using PointType = axom::primal::Point<CoordType, ndims>;
     using PlaneType = axom::primal::Plane<CoordType, ndims>;
     using ShapeView = bputils::PrimalAdaptor<TopologyView, CoordsetView>;
-    const ShapeView deviceShapeView{m_topologyView, m_coordsetView};
+    const ShapeView deviceShapeView {m_topologyView, m_coordsetView};
     axom::for_all<ExecSpace>(
       matZoneView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
@@ -865,11 +890,13 @@ public:
           const auto fragmentIndex = offset + m;
           // Get this material fragment's normal and material id.
           const auto matId = sortedMaterialIdsView[fragmentIndex];
-          const double *normalPtr = fragmentVectorsView.data() + (fragmentIndex * numVectorComponents);
+          const double *normalPtr =
+            fragmentVectorsView.data() + (fragmentIndex * numVectorComponents);
 
           // Compute the desired fragment volume.
           // Get current material vf from the stencil. (should be faster than material view)
-          constexpr int StencilCenter = (ndims == 3) ? 13 : ((ndims == 2) ? 4 : 1);
+          constexpr int StencilCenter =
+            (ndims == 3) ? 13 : ((ndims == 2) ? 4 : 1);
           const auto si = fragmentIndex * StencilSize + StencilCenter;
           const auto matVolume = zoneVol * fragmentVFStencilView[si];
 
@@ -879,30 +906,30 @@ public:
           // Make a plane situated at the bbox origin.
           VectorType normal(normalPtr, ndims);
           PlaneType P(normal, bbox.getCentroid(), false);
-//std::cout << "===================================================================\n";
-//std::cout << "Zone: " << zoneIndex << ", m=" << m << ", matId=" << matId << std::endl;
-//std::cout << "P=" << P << std::endl;
+          //std::cout << "===================================================================\n";
+          //std::cout << "Zone: " << zoneIndex << ", m=" << m << ", matId=" << matId << std::endl;
+          //std::cout << "P=" << P << std::endl;
           // Compute distances from all points in shape to plane.
           PointType range[2];
           range[0] = range[1] = bbox.getCentroid();
-//std::cout << "range[0]=" << range[0] << std::endl;
-//std::cout << "range[1]=" << range[1] << std::endl;
+          //std::cout << "range[0]=" << range[0] << std::endl;
+          //std::cout << "range[1]=" << range[1] << std::endl;
           double dist[2] = {0., 0.};
           for(axom::IndexType ip = 0; ip < shape.numVertices(); ip++)
           {
             double d = P.signedDistance(shape[ip]);
-//std::cout << "ip=" << ip << ", shape[ip]=" << shape[ip] << ", " << d << std::endl;
+            //std::cout << "ip=" << ip << ", shape[ip]=" << shape[ip] << ", " << d << std::endl;
             if(d < dist[0])
             {
               dist[0] = d;
               range[0] = bbox.getCentroid() + (normal * d);
-//std::cout << "dist[0]=" << d << ", range[0]=" << range[0] << std::endl;
+              //std::cout << "dist[0]=" << d << ", range[0]=" << range[0] << std::endl;
             }
             if(d > dist[1])
             {
               dist[1] = d;
               range[1] = bbox.getCentroid() + (normal * d);
-//std::cout << "dist[1]=" << d << ", range[1]=" << range[1] << std::endl;
+              //std::cout << "dist[1]=" << d << ", range[1]=" << range[1] << std::endl;
             }
           }
 
@@ -922,16 +949,22 @@ public:
             auto clippedShape = axom::primal::clip(shape, P);
 
             // Find the volume of the clipped shape.
-            const double fragmentVolume = bputils::ComputeShapeAmount<ndims>::execute(clippedShape);
-            const double volumeError = axom::utilities::abs(matVolume - fragmentVolume);
-//std::cout << "\titerations=" << iterations << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
+            const double fragmentVolume =
+              bputils::ComputeShapeAmount<ndims>::execute(clippedShape);
+            const double volumeError =
+              axom::utilities::abs(matVolume - fragmentVolume);
+            //std::cout << "\titerations=" << iterations << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
             if((volumeError <= tolerance) || (iterations >= max_iterations))
             {
               searching = false;
 
               // Emit clippedShape as material matId
-//std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", iterations=" << iterations << ", clipped=" << clippedShape << std::endl;
-              buildView.addShape(zoneIndex, fragmentIndex, clippedShape, matId, normalPtr);
+              //std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", iterations=" << iterations << ", clipped=" << clippedShape << std::endl;
+              buildView.addShape(zoneIndex,
+                                 fragmentIndex,
+                                 clippedShape,
+                                 matId,
+                                 normalPtr);
 
               // Clip in the other direction to get the remaining fragment for the next material.
               P = PlaneType(normal, pt, false);
@@ -953,8 +986,9 @@ public:
         {
           const auto fragmentIndex = offset + matCount - 1;
           const auto matId = sortedMaterialIdsView[fragmentIndex];
-          const double *normalPtr = fragmentVectorsView.data() + (fragmentIndex * numVectorComponents);
-//std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", clipped=" << shape << std::endl;
+          const double *normalPtr =
+            fragmentVectorsView.data() + (fragmentIndex * numVectorComponents);
+          //std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", clipped=" << shape << std::endl;
           buildView.addShape(zoneIndex, fragmentIndex, shape, matId, normalPtr);
         }
       });

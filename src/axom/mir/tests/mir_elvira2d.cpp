@@ -115,7 +115,9 @@ TEST(mir_elvira, elvira_uniform_unibuffer_seq)
 TEST(mir_elvira, elvira_uniform_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_cuda");
-  braid2d_mat_test<cuda_exec>("uniform", "unibuffer", "elvira_uniform_unibuffer");
+  braid2d_mat_test<cuda_exec>("uniform",
+                              "unibuffer",
+                              "elvira_uniform_unibuffer");
 }
 #endif
 

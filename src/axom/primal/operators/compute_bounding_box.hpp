@@ -194,7 +194,8 @@ AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
  *
  * \param [in] poly The polygon
  */
-template <typename T, int NDIMS,
+template <typename T,
+          int NDIMS,
           PolygonArray ARRAY_TYPE = PolygonArray::Dynamic,
           int MAX_VERTS = DEFAULT_MAX_NUM_VERTICES>
 AXOM_HOST_DEVICE BoundingBox<T, NDIMS> compute_bounding_box(
