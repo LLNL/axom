@@ -8,6 +8,7 @@
 
 #include "axom/core/StackArray.hpp"
 #include "axom/core/ArrayView.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 namespace axom
 {
@@ -381,6 +382,35 @@ struct StridedStructuredIndexing
     return retval;
   }
 
+  /// @}
+
+  /*!
+   * \brief Given a logical index that may or may not be in the index space,
+   *        return a clamped logical index that is in the index space. The
+   *        logical indices are clamped to [0, dimensions-1] in each dimension.
+   *
+   * \param logical The input logical index being clamped.
+   *
+   * \retval A new LogicalIndex that is in the index space.
+   */
+  /// @{
+  AXOM_HOST_DEVICE
+  LogicalIndex clamp(const LogicalIndex &logical) const
+  {
+    LogicalIndex retval;
+    const IndexType lower(0);
+    for(int i = 0; i < dimension(); i++)
+    {
+      const IndexType upper(m_dimensions[i] - 1);
+      retval[i] = axom::utilities::clampVal(logical[i], lower, upper);
+    }
+    return retval;
+  }
+
+  IndexType clamp(const IndexType index) const
+  {
+    return LogicalIndexToIndex(clamp(IndexToLogicalIndex(index)));
+  }
   /// @}
 
   LogicalIndex m_dimensions {};
