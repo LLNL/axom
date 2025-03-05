@@ -1078,7 +1078,6 @@ axom::sidre::View* getElementVolumes(
 
       constexpr int NUM_VERTS_PER_HEX = 8;
       constexpr int NUM_COMPS_PER_VERT = 3;
-      constexpr double ZERO_THRESHOLD = 1.e-10;
 
       axom::Array<Point3D> vertCoords(cellCount * NUM_VERTS_PER_HEX,
                                       cellCount * NUM_VERTS_PER_HEX);
@@ -1102,21 +1101,6 @@ axom::sidre::View* getElementVolumes(
           }
         }
       }
-
-      // Set vertex coords to zero if within threshold.
-      // (I don't know why we do this.  I'm following examples.)
-      axom::ArrayView<double> flatCoordsView(
-        (double*)vertCoords.data(),
-        vertCoords.size() * Point3D::dimension());
-      assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
-      axom::for_all<ExecSpace>(
-        cellCount * 3,
-        AXOM_LAMBDA(axom::IndexType i) {
-          if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
-          {
-            flatCoordsView[i] = 0.0;
-          }
-        });
 
       // Initialize hexahedral elements.
       axom::Array<HexahedronType> hexes(cellCount, cellCount);
@@ -1308,7 +1292,6 @@ axom::sidre::View* getElementVolumes(
 
       constexpr int NUM_VERTS_PER_HEX = 8;
       constexpr int NUM_COMPS_PER_VERT = 3;
-      constexpr double ZERO_THRESHOLD = 1.e-10;
 
       /*
           Get vertex coordinates.  We use UnstructuredMesh for this,
@@ -1366,21 +1349,6 @@ axom::sidre::View* getElementVolumes(
               vertCoordsView[vertIdx][k] = coordArrays[k][verts[j]];
               // vertCoordsView[vertIdx][k] = mesh.getNodeCoordinate(verts[j], k);
             }
-          }
-        });
-
-      // Set vertex coords to zero if within threshold.
-      // (I don't know why we do this.  I'm following examples.)
-      axom::ArrayView<double> flatCoordsView(
-        (double*)vertCoords.data(),
-        vertCoords.size() * Point3D::dimension());
-      assert(flatCoordsView.size() == cellCount * NUM_VERTS_PER_HEX * 3);
-      axom::for_all<ExecSpace>(
-        cellCount * 3,
-        AXOM_LAMBDA(axom::IndexType i) {
-          if(axom::utilities::isNearlyEqual(flatCoordsView[i], 0.0, ZERO_THRESHOLD))
-          {
-            flatCoordsView[i] = 0.0;
           }
         });
 

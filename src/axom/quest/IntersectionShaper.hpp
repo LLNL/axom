@@ -1231,7 +1231,6 @@ private:
     const int device_allocator = m_allocatorId;
 
     constexpr int NUM_TETS_PER_HEX = 24;
-    constexpr double ZERO_THRESHOLD = 1.e-10;
 
     SLIC_INFO(axom::fmt::format("{:-^80}",
                                 " Inserting shapes' bounding boxes into BVH "));
@@ -1259,11 +1258,6 @@ private:
     SLIC_INFO(axom::fmt::format("{:-^80}", " Querying the BVH tree "));
 
     axom::ArrayView<const BoundingBox3D> hex_bbs_device_view = m_hex_bbs.view();
-
-    // Set shape components to zero if within threshold
-    snapShapeVerticesToZero<ExecSpace, ShapeType>(shapes,
-                                                  shape_count,
-                                                  ZERO_THRESHOLD);
 
     // Find which shape bounding boxes intersect hexahedron bounding boxes
     SLIC_INFO(axom::fmt::format(
@@ -2782,7 +2776,6 @@ public:
 
     m_hexes = axom::Array<HexahedronType>(m_cellCount, m_cellCount, allocId);
     axom::ArrayView<HexahedronType> hexes_device_view = m_hexes.view();
-    constexpr double ZERO_THRESHOLD = 1.e-10;
     axom::for_all<ExecSpace>(
       m_cellCount,
       AXOM_LAMBDA(axom::IndexType i) {
@@ -2796,61 +2789,8 @@ public:
             Point3D({vertCoords_device_view[vertIndex],
                      vertCoords_device_view[vertIndex + 1],
                      vertCoords_device_view[vertIndex + 2]});
-
-          // Set hexahedra components to zero if within threshold
-          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][0],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            hexes_device_view[i][j][0] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][1],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            hexes_device_view[i][j][1] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(hexes_device_view[i][j][2],
-                                            0.0,
-                                            ZERO_THRESHOLD))
-          {
-            hexes_device_view[i][j][2] = 0.0;
-          }
         }
       });  // end of loop to initialize hexahedral elements and bounding boxes
-  }
-
-  //!\brief Set shape vertices to zero of within threshold.
-  template <typename ExecSpace, typename ShapeType>
-  void snapShapeVerticesToZero(axom::Array<ShapeType>& shapes,
-                               axom::IndexType shapeCount,
-                               double zeroThreshold)
-  {
-    AXOM_ANNOTATE_SCOPE("snapShapeVerticesToZero");
-    axom::ArrayView<ShapeType> shapesView = shapes.view();
-    axom::for_all<ExecSpace>(
-      shapeCount,
-      AXOM_LAMBDA(axom::IndexType i) {
-        for(int j = 0; j < ShapeType::NUM_VERTS; j++)
-        {
-          if(axom::utilities::isNearlyEqual(shapesView[i][j][0], 0.0, zeroThreshold))
-          {
-            shapesView[i][j][0] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(shapesView[i][j][1], 0.0, zeroThreshold))
-          {
-            shapesView[i][j][1] = 0.0;
-          }
-
-          if(axom::utilities::isNearlyEqual(shapesView[i][j][2], 0.0, zeroThreshold))
-          {
-            shapesView[i][j][2] = 0.0;
-          }
-        }
-      });
   }
 
   #if defined(AXOM_USE_CONDUIT)
