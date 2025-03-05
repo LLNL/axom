@@ -177,10 +177,13 @@ void IOManager::write(sidre::Group* datagroup,
 
   std::string test_file_base(broadcastString(file_base, m_mpi_comm, m_my_rank));
 
-  SLIC_WARNING_IF(test_file_base != file_base,
-                  "IOManager::write() file_base argument is not identical "
-                    << "on all ranks. This may cause the output files to be "
-                    << "incompatible with a call to IOManager::read().");
+  SLIC_WARNING_IF(
+    test_file_base != file_base,
+    "IOManager::write() file_base argument is not identical "
+      << "on all ranks. This may cause the output files to be "
+      << "incompatible with a call to IOManager::read()."
+      << axom::fmt::format("\n\tfile_base: '{}'", file_base)
+      << axom::fmt::format("\n\ttest_file_base: '{}'", test_file_base));
 
   std::string output_base =
     createRootFile(file_base, num_files, protocol, tree_pattern);
