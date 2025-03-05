@@ -408,12 +408,13 @@ private:
     }
 
     // Output some information
-    SLIC_DEBUG("Mesh nodes fec -- "
-               << nodalFEColl->Name() << " with ordering "
-               << nodalFESpace->GetOrdering()
-               << "\n\t -- Positive nodes are fec -- "
-               << positiveNodes->FESpace()->FEColl()->Name()
-               << " with ordering " << positiveNodes->FESpace()->GetOrdering());
+    SLIC_DEBUG_ROOT("Mesh nodes fec -- "
+                    << nodalFEColl->Name() << " with ordering "
+                    << nodalFESpace->GetOrdering()
+                    << "\n\t -- Positive nodes are fec -- "
+                    << positiveNodes->FESpace()->FEColl()->Name()
+                    << " with ordering "
+                    << positiveNodes->FESpace()->GetOrdering());
 
     /// For each element, compute bounding box, and overall mesh bbox
     mfem::Array<int> dofIndices;
