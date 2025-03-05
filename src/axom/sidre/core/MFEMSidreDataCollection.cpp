@@ -1220,7 +1220,7 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
       // Root file support only available in hdf5.
       else
       {
-        writer.write(blueprint_indicies_grp, 1, file_path + ".root", protocol);
+        blueprint_indicies_grp->save(file_path + ".root", protocol);
       }
     }
   }
