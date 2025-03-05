@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 #include "axom/core/Types.hpp"
+#include "axom/core/ConduitMemCallbacks.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
@@ -1850,145 +1851,6 @@ TEST(sidre_view, deep_copy_shape)
   delete ds;
 }
 
-#ifdef AXOM_USE_CONDUIT
-/*!
-  @brief Registry for objects to handle Conduit memory
-  operations by delegating to Axom.
-*/
-class AxomConduitAllocId
-{
-  //!@brief Axom's allocator id.
-  int m_axomId;
-  //!@brief Conduit's allocator id equivalent to m_axomId.
-  conduit::index_t m_conduitId;
-
-public:
-  //!@brief Return the Axom allocator id.
-  int axomId() const { return m_axomId; }
-  //!@brief Return the Conduit allocator id.
-  conduit::index_t conduitId() const { return m_conduitId; }
-  //!@brief Return the instance for the given Axom allocator id.
-  static AxomConduitAllocId& getInstance(int axomAllocId)
-  {
-    // This method is not thread safe.
-    bool firstTime = true;
-    if(firstTime)
-    {
-      static auto axomMemcopy = [](void* dst, const void* src, size_t byteCount) {
-                                  axom::copy(dst, src, byteCount);
-                                };
-      static auto axomMemset = [](void* ptr, int value, size_t count) {
-                                 if (axom::getAllocatorIDFromPointer(ptr) == axom::DYNAMIC_ALLOCATOR_ID) {
-                                   std::memset(ptr, value, count);
-                                 } else {
-                                   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-                                   rm.memset(ptr, value, count);
-                                 }
-                               };
-      conduit::utils::set_memcpy_handler(axomMemcopy);
-      conduit::utils::set_memset_handler(axomMemset);
-      firstTime = false;
-    }
-    // Mapping from Axom allocator and AxomConduitAllocId.
-    static std::map<int, std::shared_ptr<AxomConduitAllocId>> s_handlers;
-
-    auto it = s_handlers.find(axomAllocId);
-    if(it == s_handlers.end())
-    {
-      it =
-        s_handlers.emplace(axomAllocId, new AxomConduitAllocId(axomAllocId)).first;
-    }
-    SLIC_ASSERT(it->first == axomAllocId);
-    return *it->second;
-  }
-  //!@brief Set a Node's allocator id by first converting an Axom id to the Conduit equivalent.
-  static void setAxomAllocIdForConduitNode(int axomAllocId, conduit::Node& node)
-  {
-    auto& instance = getInstance(axomAllocId);
-    node.set_allocator(instance.m_conduitId);
-  }
-
-private:
-  typedef void*(AllocatorCallback)(size_t, size_t);
-  typedef void(DeallocCallback)(void*);
-  AllocatorCallback* m_allocCallback;
-  DeallocCallback* m_deallocCallback;
-  AxomConduitAllocId() = delete;
-  /*!
-    @brief Constructor creates allocator/deallocator function and registers
-    them with Conduit.
-  */
-  AxomConduitAllocId(int axomAllocId) : m_axomId(axomAllocId)
-  {
-    using conduit::utils::register_allocator;
-    auto deallocator = [](void* ptr) {
-      char* cPtr = (char*)(ptr);
-      axom::deallocate<char>(cPtr);
-    };
-    m_deallocCallback = deallocator;
-    /*
-      Note: Once Conduit allows the callbacks as std::function types,
-      we can use a single allocator, eliminating the need for these
-      if-else blocks.
-    */
-    if(axomAllocId == 0)
-    {
-      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
-        void* ptr = axom::allocate<char>(itemCount * itemByteSize, 0);
-        return ptr;
-      };
-      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
-    }
-    else if(axomAllocId == 1)
-    {
-      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
-        void* ptr = axom::allocate<char>(itemCount * itemByteSize, 1);
-        return ptr;
-      };
-      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
-    }
-    else if(axomAllocId == 2)
-    {
-      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
-        void* ptr = axom::allocate<char>(itemCount * itemByteSize, 2);
-        return ptr;
-      };
-      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
-    }
-    else if(axomAllocId == 3)
-    {
-      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
-        void* ptr = axom::allocate<char>(itemCount * itemByteSize, 3);
-        return ptr;
-      };
-      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
-    }
-    else if(axomAllocId == 4)
-    {
-      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
-        void* ptr = axom::allocate<char>(itemCount * itemByteSize, 4);
-        return ptr;
-      };
-      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
-    }
-    else if(axomAllocId == 5)
-    {
-      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
-        void* ptr = axom::allocate<char>(itemCount * itemByteSize, 5);
-        return ptr;
-      };
-      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
-    }
-    else
-    {
-      SLIC_ERROR(
-        "Work-around for conduit::utils::register_allocator needs case for "
-        "axomAllocId = " +
-        std::to_string(axomAllocId));
-    }
-  }
-};
-
 //------------------------------------------------------------------------------
 
 TEST(sidre_view, deep_copy_to_conduit)
@@ -2000,12 +1862,11 @@ TEST(sidre_view, deep_copy_to_conduit)
     #ifdef AXOM_USE_GPU
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
-      // Does it make sense to check Pinned and Constant memory spaces?
+  // Does it make sense to check Pinned and Constant memory spaces?
     #endif
   #endif
 
   DataStore ds;
-  Group* root = ds.getRoot();
 
   constexpr int N = 5;
   auto dtypeDouble = conduit::DataType::float64(1);
@@ -2013,38 +1874,54 @@ TEST(sidre_view, deep_copy_to_conduit)
 
   const double doubleValue = 10.13456;
   axom::Array<std::int32_t> intArray(N, N);
-  axom::ArrayView<std::int32_t> intArrayView = intArray.view();
-  axom::for_all<axom::SEQ_EXEC>(N, [=](int i) { intArrayView[i] = 1001.5 + i; });
+  for(int i = 0; i < N; ++i) { intArray[i] = 1001.5 + i; }
+  std::string stringValue = "a string";
 
   double tmpDoubleValue = doubleValue;
   axom::Array<std::int32_t> tmpIntArray(N, N);
+  axom::Array<char> tmpCharArray;
+
+  // For each combination of srcAllocId and dstAllocId,
+  // allocate src and copy to dst.
 
   for(auto srcAllocId : allocIds)
   {
-    // For each combination of srcAllocId and dstAllocId,
-    // allocate src and copy to dst.
-
-    Group* src = root->createGroup("src");
+    Group* src = ds.getRoot()->createGroup("src");
     src->setDefaultAllocator(srcAllocId);
 
-    // View* srcString = src->createViewString("aString", "a string");
+    //
+    // Create, initialize and sanity-check src objects to test.
+    //
+
+    View* srcString = src->createViewString("aString", stringValue);
+    const char* srcStringPtr = (char*)srcString->getNode().data_ptr();
+    if(srcAllocId == axom::DYNAMIC_ALLOCATOR_ID)
+    {
+      // Skip this check if srcAllocId is non-DYNAMIC_ALLOCATOR_ID,
+      // because a current sidre issue results in always
+      // placing strings on Conduit's default alloc id.
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(srcStringPtr), srcAllocId);
+    }
 
     View* srcScalar = src->createViewAndAllocate("aDouble", dtypeDouble);
-    View* srcArray = src->createViewAndAllocate("aIntArray", dtypeIntArray);
-
     double* srcScalarPtr = (double*)srcScalar->getNode().data_ptr();
     EXPECT_EQ(axom::getAllocatorIDFromPointer(srcScalarPtr), srcAllocId);
+    axom::copy(srcScalarPtr, &doubleValue, sizeof(double));
 
+    View* srcArray = src->createViewAndAllocate("aIntArray", dtypeIntArray);
     std::int32_t* srcArrayPtr = (std::int32_t*)srcArray->getNode().data_ptr();
     EXPECT_EQ(axom::getAllocatorIDFromPointer(srcArrayPtr), srcAllocId);
-
-    axom::copy(srcScalarPtr, &doubleValue, sizeof(double));
     axom::copy(srcArrayPtr, intArray.data(), N * sizeof(std::int32_t));
+
     if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(srcAllocId))
     {
       std::cout << "src group:" << std::endl;
       src->print();
     }
+
+    //
+    // Copy the source into destinations of different alloc ids
+    //
 
     for(auto dstAllocId : allocIds)
     {
@@ -2052,7 +1929,7 @@ TEST(sidre_view, deep_copy_to_conduit)
                 << dstAllocId << std::endl;
 
       auto dstAllocIdConduit =
-        AxomConduitAllocId::getInstance(dstAllocId).conduitId();
+        axom::ConduitMemCallbacks::getInstance(dstAllocId).conduitId();
 
       conduit::Node dst;
       dst.set_allocator(dstAllocIdConduit);
@@ -2077,12 +1954,23 @@ TEST(sidre_view, deep_copy_to_conduit)
       {
         EXPECT_EQ(tmpIntArray[i], intArray[i]);
       }
+
+      char* dstStringPtr =
+        (char*)dst.fetch_existing(srcString->getName()).data_ptr();
+      EXPECT_NE(dstStringPtr, nullptr);
+      EXPECT_NE(dstStringPtr, srcStringPtr);
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(dstStringPtr), dstAllocId);
+      tmpCharArray.resize(srcString->getNumElements());
+      axom::copy(tmpCharArray.data(), srcStringPtr, srcString->getNumElements());
+      for(int i = 0; i < N; ++i)
+      {
+        EXPECT_EQ(tmpCharArray[i], stringValue[i]);
+      }
     }
 
-    root->destroyGroup("src");
+    ds.getRoot()->destroyGroup("src");
   }
 }
-#endif
 
 //------------------------------------------------------------------------------
 

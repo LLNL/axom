@@ -56,6 +56,7 @@ set(core_headers
     ArrayBase.hpp
     ArrayIteratorBase.hpp
     ArrayView.hpp
+    ConduitMemCallbacks.hpp
     MDMapping.hpp
     IndexedCollection.hpp
     ItemCollection.hpp
