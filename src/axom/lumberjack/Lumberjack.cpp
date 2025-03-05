@@ -19,15 +19,22 @@ namespace axom
 {
 namespace lumberjack
 {
-void Lumberjack::initialize(Communicator* communicator, int ranksLimit)
+void Lumberjack::initialize(Communicator* communicator,
+                            int ranksLimit,
+                            bool isCommunicatorOwned)
 {
   m_communicator = communicator;
+  m_isCommunicatorOwned = isCommunicatorOwned;
   m_ranksLimit = ranksLimit;
   m_combiners.push_back(new TextTagCombiner);
 }
 
 void Lumberjack::finalize()
 {
+  if(m_isCommunicatorOwned)
+  {
+    delete m_communicator;
+  }
   m_communicator = nullptr;
   clearCombiners();
   clearMessages();
