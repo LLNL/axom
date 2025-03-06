@@ -106,15 +106,14 @@ struct array_view_traits
     }                                                   \
   };
 
-AXOM_MAKE_TRAIT(signed char)
-AXOM_MAKE_TRAIT(char)
-AXOM_MAKE_TRAIT(short)
-AXOM_MAKE_TRAIT(long)
-AXOM_MAKE_TRAIT(int)
-AXOM_MAKE_TRAIT(unsigned char)
-AXOM_MAKE_TRAIT(unsigned short)
-AXOM_MAKE_TRAIT(unsigned long)
-AXOM_MAKE_TRAIT(unsigned int)
+AXOM_MAKE_TRAIT(std::uint8_t)
+AXOM_MAKE_TRAIT(std::uint16_t)
+AXOM_MAKE_TRAIT(std::uint32_t)
+AXOM_MAKE_TRAIT(std::uint64_t)
+AXOM_MAKE_TRAIT(std::int8_t)
+AXOM_MAKE_TRAIT(std::int16_t)
+AXOM_MAKE_TRAIT(std::int32_t)
+AXOM_MAKE_TRAIT(std::int64_t)
 AXOM_MAKE_TRAIT(float)
 AXOM_MAKE_TRAIT(double)
 #undef AXOM_MAKE_TRAIT
