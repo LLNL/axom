@@ -112,12 +112,24 @@ TEST_F(TrimmingCurveTest, basic_operations)
   EXPECT_TRUE(nPatchCopy.isTrimmed());
   EXPECT_EQ(nPatchCopy.getNumTrimmingCurves(), 1);
 
-  // Delete all trimming curves from the copy
+  // Mark the copy as untrimmed
   nPatchCopy.makeUntrimmed();
   EXPECT_FALSE(nPatchCopy.isTrimmed());
 
   // Check that the two patches are not equal
   EXPECT_NE(nPatchCopy, nPatch);
+
+  // Remove trimming curves from the original
+  nPatch.clearTrimmingCurves();
+
+  // Check that the two patches are still not equal
+  EXPECT_NE(nPatchCopy, nPatch);
+
+  // Mark the original one as untrimmed
+  nPatch.makeUntrimmed();
+
+  // Check that the two patches are now equal
+  EXPECT_EQ(nPatchCopy, nPatch);
 }
 
 //------------------------------------------------------------------------------
