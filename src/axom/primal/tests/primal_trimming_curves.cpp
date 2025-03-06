@@ -490,6 +490,62 @@ TEST_F(TrimmingCurveTest, trimming_disk_subdivision)
 }
 
 //------------------------------------------------------------------------------
+TEST_F(TrimmingCurveTest, trimming_disk_subdivision_edge_cases)
+{
+  SLIC_INFO("Testing edge cases for disk subdivision");
+
+  NURBSPatchType nPatch(this->nPatch);
+  NURBSPatchType the_rest, disk1, disk2, disk3, disk4;
+
+  // Punch out some surfaces that are tangent to each other
+  bool clipDisk = true;
+  nPatch.diskSplit(0.5, 0.5, 0.1, disk1, the_rest, !clipDisk);
+  the_rest.diskSplit(0.7, 0.5, 0.1, disk2, the_rest, !clipDisk);
+  the_rest.diskSplit(0.5, 0.3, 0.1, disk3, the_rest, !clipDisk);
+  
+  double uc = 0.5
+  the_rest.diskSplit(0.5, 0.3, 0.1, disk3, the_rest, !clipDisk);
+
+  constexpr int npts = 10;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(the_rest.getMinKnot_u(),
+                           the_rest.getMaxKnot_u(),
+                           u_pts,
+                           npts);
+
+  axom::numerics::linspace(the_rest.getMinKnot_v(),
+                           the_rest.getMaxKnot_v(),
+                           v_pts,
+                           npts);
+
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      // Figure out if a point is inside either of the disks
+      if((u - 0.5) * (u - 0.5) + (v - 0.5) * (v - 0.5) < 0.1 * 0.1 ||
+         (u - 0.7) * (u - 0.7) + (v - 0.5) * (v - 0.5) < 0.1 * 0.1 ||
+         (u - 0.5) * (u - 0.5) + (v - 0.3) * (v - 0.3) < 0.1 * 0.1)
+      {
+        EXPECT_TRUE(disk1.isVisible(u, v) || disk2.isVisible(u, v) || disk3.isVisible(u, v));
+        EXPECT_FALSE(the_rest.isVisible(u, v));
+      }
+      else
+      {
+        EXPECT_FALSE(disk1.isVisible(u, v));
+        EXPECT_FALSE(disk2.isVisible(u, v));
+        EXPECT_FALSE(disk3.isVisible(u, v));
+        EXPECT_TRUE(the_rest.isVisible(u, v));
+      }
+    }
+  }
+
+  the_rest.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//original.txt");
+  disk1.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//left.txt");
+  disk2.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//right.txt");
+}
+
+//------------------------------------------------------------------------------
 TEST_F(TrimmingCurveTest, trimming_edge_subdivision)
 {
   SLIC_INFO("Testing disk subdivision of the curve");
