@@ -2539,8 +2539,8 @@ public:
       //  a circular dependency with intersect.hpp
       {
         // Default parameters for intersection routine
-        const double sq_tol = 1e-16;
-        const double EPS = 1e-8;
+        const double sq_tol = 1e-14;
+        const double EPS = 1e-6;
 
         // Extract the Bezier curves of the NURBS curve
         auto beziers = curve.extractBezier();
@@ -2564,6 +2564,12 @@ public:
           // Scale the intersection parameters back into the span of the NURBS curve
           for(int j = 0; j < temp_curve_p.size(); ++j)
           {
+            // Skip any intersection point recorded at an endpoint
+            if(temp_curve_p[j] <= 0.0 || temp_curve_p[j] >= 1.0)
+            {
+              continue;
+            }
+
             curve_params.push_back(
               knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
             circle_params.push_back(temp_circle_p[j]);
@@ -3446,8 +3452,8 @@ private:
       //  a circular dependency with intersect.hpp
       {
         // Default parameters for intersection routine
-        const double sq_tol = 1e-16;
-        const double EPS = 1e-8;
+        const double sq_tol = 1e-14;
+        const double EPS = 1e-6;
 
         // Extract the Bezier curves of the NURBS curve
         auto beziers = curve.extractBezier();
@@ -3471,6 +3477,12 @@ private:
           // Scale the intersection parameters back into the span of the NURBS curve
           for(int j = 0; j < temp_curve_p.size(); ++j)
           {
+            // Skip any intersection point recorded at an endpoint
+            if(temp_curve_p[j] <= 0.0 || temp_curve_p[j] >= 1.0)
+            {
+              continue;
+            }
+
             curve_params.push_back(
               knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
             ray_params.push_back(temp_ray_p[j]);

@@ -494,17 +494,35 @@ TEST_F(TrimmingCurveTest, trimming_disk_subdivision_edge_cases)
 {
   SLIC_INFO("Testing edge cases for disk subdivision");
 
+  // Punch out some disks that are tangent to each other
+  //  and the original patch boundaries
   NURBSPatchType nPatch(this->nPatch);
-  NURBSPatchType the_rest, disk1, disk2, disk3, disk4;
+  NURBSPatchType the_rest, disks[7];
 
-  // Punch out some surfaces that are tangent to each other
+  double radius = 0.1;
+  double centers[][2] = {{0.5, 0.5},
+                         {0.7, 0.5},
+                         {0.5, 0.3},
+                         {0.4, 0.5 + 0.1 * std::sqrt(3.0)},
+                         {0.1, 0.1},
+                         {0.5, 0.9},
+                         {0.9, 0.7}};
+
   bool clipDisk = true;
-  nPatch.diskSplit(0.5, 0.5, 0.1, disk1, the_rest, !clipDisk);
-  the_rest.diskSplit(0.7, 0.5, 0.1, disk2, the_rest, !clipDisk);
-  the_rest.diskSplit(0.5, 0.3, 0.1, disk3, the_rest, !clipDisk);
-  
-  double uc = 0.5
-  the_rest.diskSplit(0.5, 0.3, 0.1, disk3, the_rest, !clipDisk);
+
+  // Get the first disk
+  nPatch.diskSplit(centers[0][0], centers[0][1], radius, disks[0], the_rest, !clipDisk);
+
+  // Get the rest of the disks
+  for(int i = 1; i < 7; ++i)
+  {
+    the_rest.diskSplit(centers[i][0],
+                       centers[i][1],
+                       radius,
+                       disks[i],
+                       the_rest,
+                       !clipDisk);
+  }
 
   constexpr int npts = 10;
   double u_pts[npts], v_pts[npts];
@@ -522,27 +540,60 @@ TEST_F(TrimmingCurveTest, trimming_disk_subdivision_edge_cases)
   {
     for(auto v : v_pts)
     {
-      // Figure out if a point is inside either of the disks
-      if((u - 0.5) * (u - 0.5) + (v - 0.5) * (v - 0.5) < 0.1 * 0.1 ||
-         (u - 0.7) * (u - 0.7) + (v - 0.5) * (v - 0.5) < 0.1 * 0.1 ||
-         (u - 0.5) * (u - 0.5) + (v - 0.3) * (v - 0.3) < 0.1 * 0.1)
+      bool inADisk = false;
+      for(int i = 0; i < 7; ++i)
       {
-        EXPECT_TRUE(disk1.isVisible(u, v) || disk2.isVisible(u, v) || disk3.isVisible(u, v));
+        // Ensure it's in the disk that was punctured out
+        if((u - centers[i][0]) * (u - centers[i][0]) +
+             (v - centers[i][1]) * (v - centers[i][1]) <
+           radius * radius)
+        {
+          EXPECT_TRUE(disks[i].isVisible(u, v));
+          EXPECT_FALSE(the_rest.isVisible(u, v));
+
+          inADisk = true;
+          break;
+        }
+      }
+
+      // If it's not in any disk, then it should be in the rest of the patch
+      if(!inADisk)
+      {
+        EXPECT_TRUE(the_rest.isVisible(u, v));
+        for(int i = 0; i < 7; ++i)
+        {
+          EXPECT_FALSE(disks[i].isVisible(u, v));
+        }
+      }
+    }
+  }
+
+  // Check very degenerate case, when two disks are punctured on top of each other
+  nPatch = this->nPatch;
+  NURBSPatchType disk1, disk2;
+
+  nPatch.diskSplit(0.5, 0.5, radius, disk1, the_rest, !clipDisk);
+  the_rest.diskSplit(0.5, 0.5, radius, disk2, the_rest, !clipDisk);
+
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      // The second disk punctured out, disk2, should be empty
+      if((u - 0.5) * (u - 0.5) + (v - 0.5) * (v - 0.5) < radius * radius)
+      {
+        EXPECT_TRUE(disk1.isVisible(u, v));
+        EXPECT_FALSE(disk2.isVisible(u, v));
         EXPECT_FALSE(the_rest.isVisible(u, v));
       }
       else
       {
         EXPECT_FALSE(disk1.isVisible(u, v));
         EXPECT_FALSE(disk2.isVisible(u, v));
-        EXPECT_FALSE(disk3.isVisible(u, v));
         EXPECT_TRUE(the_rest.isVisible(u, v));
       }
     }
   }
-
-  the_rest.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//original.txt");
-  disk1.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//left.txt");
-  disk2.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//right.txt");
 }
 
 //------------------------------------------------------------------------------
@@ -594,6 +645,80 @@ TEST_F(TrimmingCurveTest, trimming_edge_subdivision)
       EXPECT_EQ((u < 0.5) && (v > 0.5) && !inDisks, topleft.isVisible(u, v));
       EXPECT_EQ((u > 0.5) && (v < 0.5) && !inDisks, bottomright.isVisible(u, v));
       EXPECT_EQ((u > 0.5) && (v > 0.5) && !inDisks, topright.isVisible(u, v));
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST_F(TrimmingCurveTest, trimming_edge_subdivision_edge_cases)
+{
+  SLIC_INFO("Testing edge cases of disk subdivision of the curve");
+
+  NURBSPatchType nPatch(this->nPatch);
+  NURBSPatchType the_disk, the_rest;
+  NURBSPatchType leftpatch, rightpatch;
+  NURBSPatchType bottomleft, topleft;
+
+  bool clipDisk = true, normalize = true;
+  nPatch.diskSplit(0.5, 0.5, 0.2, the_disk, the_rest, !clipDisk);
+
+  the_rest.split_u(0.7, leftpatch, rightpatch, !normalize);
+  leftpatch.split_v(0.3, bottomleft, topleft, !normalize);
+
+  constexpr int npts = 10;
+  double u_pts[npts], v_pts[npts];
+  axom::numerics::linspace(the_rest.getMinKnot_u(),
+                           the_rest.getMaxKnot_u(),
+                           u_pts,
+                           npts);
+
+  axom::numerics::linspace(the_rest.getMinKnot_v(),
+                           the_rest.getMaxKnot_v(),
+                           v_pts,
+                           npts);
+
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      // Figure out if a point is inside either of the disks
+      bool inDisk = (u - 0.5) * (u - 0.5) + (v - 0.5) * (v - 0.5) < 0.2 * 0.2;
+
+      // The point should only be in the patch if it's in the right parameter space,
+      //  and isn't inside the disk
+      EXPECT_EQ((u < 0.7) && !inDisk, leftpatch.isVisible(u, v));
+      EXPECT_EQ((u > 0.7) && !inDisk, rightpatch.isVisible(u, v));
+      EXPECT_EQ((u < 0.7) && (v > 0.3) && !inDisk, topleft.isVisible(u, v));
+      EXPECT_EQ((u < 0.7) && (v < 0.3) && !inDisk, bottomleft.isVisible(u, v));
+    }
+  }
+
+  nPatch = this->nPatch;
+  TrimmingCurveType the_curve;
+
+  // Add trimming curves to the patch with a straight edge at u=0.5
+  the_curve.constructLinearSegment({0.5, 0.75}, {0.5, 0.25});
+  nPatch.addTrimmingCurve(the_curve);
+
+  the_curve.constructCircularArc(-M_PI / 2.0, M_PI / 2.0, {0.5, 0.5}, 0.25);
+  nPatch.addTrimmingCurve(the_curve);
+
+  // Split the patch along the same edge
+  NURBSPatchType leftpatch2, rightpatch2;
+  nPatch.split_u(0.5, leftpatch2, rightpatch2, !normalize);
+
+  for(auto u : u_pts)
+  {
+    for(auto v : v_pts)
+    {
+      // Figure out if a point is inside either of the disks
+      bool inHalfDisk = (u > 0.5) &&
+        (u - 0.5) * (u - 0.5) + (v - 0.5) * (v - 0.5) < 0.25 * 0.25;
+
+      // The point should only be in the right patch if it's in the half disk,
+      //  and should never be in the left patch
+      EXPECT_EQ(inHalfDisk, rightpatch2.isVisible(u, v));
+      EXPECT_FALSE(leftpatch2.isVisible(u, v));
     }
   }
 }
