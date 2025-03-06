@@ -9,6 +9,8 @@
 
 #include <conduit_blueprint_mesh.hpp>
 #include <conduit_blueprint_mesh_utils.hpp>
+#include <conduit_relay_io.hpp>
+#include <conduit_relay_io_blueprint.hpp>
 
 namespace axom
 {
@@ -119,6 +121,14 @@ void MIRAlgorithm::printNode(const conduit::Node &n) const
   options["num_children_threshold"] = 10000;
   options["num_elements_threshold"] = 10000;
   n.to_summary_string_stream(std::cout, options);
+}
+
+void MIRAlgorithm::saveMesh(const conduit::Node &n_mesh, const std::string &filebase) const
+{
+  conduit::relay::io::save(n_mesh, filebase + ".yaml", "yaml");
+  #if defined(AXOM_USE_HDF5)
+  conduit::relay::io::blueprint::save_mesh(n_mesh, filebase, "hdf5");
+  #endif
 }
 
 }  // namespace mir

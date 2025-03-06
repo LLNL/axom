@@ -348,16 +348,14 @@ protected:
     bputils::copy<ExecSpace>(n_options_copy, n_options);
     n_options_copy["topology"] = n_topo.name();
 
-#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
+#if defined(AXOM_EQUIZ_DEBUG)
     // Save the MIR input.
     conduit::Node n_tmpInput;
     n_tmpInput[n_topo.path()].set_external(n_topo);
     n_tmpInput[n_coordset.path()].set_external(n_coordset);
     n_tmpInput[n_fields.path()].set_external(n_fields);
     n_tmpInput[n_matset.path()].set_external(n_matset);
-    conduit::relay::io::blueprint::save_mesh(n_tmpInput,
-                                             "debug_equiz_input",
-                                             "hdf5");
+    saveMesh(n_tmpInput, "debug_equiz_input");
 #endif
 
 #if defined(AXOM_EQUIZ_SPLIT_PROCESSING)
@@ -423,28 +421,24 @@ protected:
       n_mirOutput[n_coordset.path()].set_external(n_newCoordset);
       n_mirOutput[n_fields.path()].set_external(n_newFields);
       n_mirOutput[n_matset.path()].set_external(n_newMatset);
-  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
+  #if defined(AXOM_EQUIZ_DEBUG)
       printNode(n_mirOutput);
-      conduit::relay::io::blueprint::save_mesh(n_mirOutput,
-                                               "debug_equiz_mir",
-                                               "hdf5");
+      saveMesh(n_mirOutput, "debug_equiz_mir");
   #endif
 
       // Merge the clean zones and MIR output
       conduit::Node n_merged;
       merge(n_topo.name(), n_cleanOutput, n_mirOutput, n_merged);
-  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
+  #if defined(AXOM_EQUIZ_DEBUG)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
       std::cout << "--- MIR ---\n";
       printNode(n_mirOutput);
       std::cout << "--- merged ---\n";
+      printNode(n_merged);
 
       // Save merged output.
-      printNode(n_merged);
-      conduit::relay::io::blueprint::save_mesh(n_merged,
-                                               "debug_equiz_merged",
-                                               "hdf5");
+      saveMesh(n_merged, "debug_equiz_merged");
   #endif
 
       // Move the merged output into the output variables.
@@ -634,9 +628,9 @@ protected:
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 0;
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
-  #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
+  #if defined(AXOM_EQUIZ_DEBUG)
     AXOM_ANNOTATE_BEGIN("saveClean");
-    conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "debug_equiz_clean", "hdf5");
+    saveMesh(n_cleanOutput, "debug_equiz_clean");
     AXOM_ANNOTATE_END("saveClean");
   #endif
   }
@@ -880,7 +874,7 @@ protected:
       n_newFields.remove(zonalMaterialIDName());
     }
 
-#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
+#if defined(AXOM_EQUIZ_DEBUG)
     //--------------------------------------------------------------------------
     //
     // Save the MIR output.
@@ -891,10 +885,7 @@ protected:
     n_output[n_newCoordset.path()].set_external(n_newCoordset);
     n_output[n_newFields.path()].set_external(n_newFields);
     n_output[n_newMatset.path()].set_external(n_newMatset);
-    conduit::relay::io::blueprint::save_mesh(n_output,
-                                             "debug_equiz_output",
-                                             "hdf5");
-      //printNode(n_output);
+    saveMesh(n_output, "debug_equiz_output");
 #endif
   }
 
@@ -1155,7 +1146,7 @@ protected:
 
     const std::string colorField("__equiz__colors");
 
-#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
+#if defined(AXOM_EQUIZ_DEBUG)
     //--------------------------------------------------------------------------
     //
     // Save the iteration inputs.
@@ -1171,7 +1162,7 @@ protected:
       // save
       std::stringstream ss1;
       ss1 << "debug_equiz_input_iter." << iter;
-      conduit::relay::io::blueprint::save_mesh(n_mesh_input, ss1.str(), "hdf5");
+      saveMesh(n_mesh_input, ss1.str());
     }
 #else
     AXOM_UNUSED_VAR(iter);
@@ -1311,7 +1302,7 @@ protected:
         });
     }
 
-#if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
+#if defined(AXOM_EQUIZ_DEBUG)
     //--------------------------------------------------------------------------
     //
     // Save the clip results.
@@ -1327,7 +1318,7 @@ protected:
       // save
       std::stringstream ss;
       ss << "debug_equiz_output_iter." << iter;
-      conduit::relay::io::blueprint::save_mesh(mesh, ss.str(), "hdf5");
+      saveMesh(mesh, ss.str());
     }
 #endif
 

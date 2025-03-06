@@ -146,10 +146,7 @@ int main(int argc, char *argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // Define command line options.
-  bool handler = false;
   axom::CLI::App app;
-  app.add_option("--handler", handler)
-    ->description("Install a custom error handler that loops forever.");
 #if defined(AXOM_USE_CALIPER)
   std::string annotationMode("none");
   app.add_option("--caliper", annotationMode)
@@ -168,10 +165,7 @@ int main(int argc, char *argv[])
 #endif
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
-  if(handler)
-  {
-    conduit::utils::set_error_handler(conduit_debug_err_handler);
-  }
+  conduit::utils::set_error_handler(conduit_debug_err_handler);
 
   result = RUN_ALL_TESTS();
   return result;

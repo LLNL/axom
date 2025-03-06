@@ -117,6 +117,15 @@ protected:
    * \param n The Conduit node to print.
    */
   void printNode(const conduit::Node &n) const;
+
+  /*!
+   * \brief Save a Blueprint mesh to disk (YAML and HDF5, if available).
+   *
+   * \param n_mesh The mesh to save.
+   * \param filebase The base filename to use when writing files. Extensions may be added.
+   */
+  void saveMesh(const conduit::Node &n_mesh, const std::string &filebase) const;
+
 };
 
 }  // end namespace mir

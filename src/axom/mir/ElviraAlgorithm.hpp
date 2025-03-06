@@ -28,8 +28,7 @@
 #include "axom/primal/geometry/Vector.hpp"
 
 #include <conduit/conduit.hpp>
-#include <conduit/conduit_relay_io.hpp>
-#include <conduit/conduit_relay_io_blueprint.hpp>
+
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
@@ -529,28 +528,23 @@ protected:
       n_mirOutput[n_coordset.path()].set_external(n_newCoordset);
       n_mirOutput[n_fields.path()].set_external(n_newFields);
       n_mirOutput[n_matset.path()].set_external(n_newMatset);
-  #if defined(AXOM_ELVIRA_DEBUG) && defined(AXOM_USE_HDF5)
-      printNode(n_mirOutput);
-      conduit::relay::io::blueprint::save_mesh(n_mirOutput,
-                                               "debug_elvira_mir",
-                                               "hdf5");
+  #if defined(AXOM_ELVIRA_DEBUG)
+      saveMesh(n_mirOutput, "debug_elvira_mir");
   #endif
 
       // Merge the clean zones and MIR output
       conduit::Node n_merged;
       merge(n_topo.name(), n_cleanOutput, n_mirOutput, n_merged);
-  #if defined(AXOM_ELVIRA_DEBUG) && defined(AXOM_USE_HDF5)
+  #if defined(AXOM_ELVIRA_DEBUG)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
       std::cout << "--- MIR ---\n";
       printNode(n_mirOutput);
       std::cout << "--- merged ---\n";
+      printNode(n_merged);
 
       // Save merged output.
-      printNode(n_merged);
-      conduit::relay::io::blueprint::save_mesh(n_merged,
-                                               "debug_elvira_merged",
-                                               "hdf5");
+      saveMesh(n_merged, "debug_elvira_merged");
   #endif
 
       // Move the merged output into the output variables.
@@ -685,9 +679,9 @@ protected:
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 1;
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
-  #if defined(AXOM_ELVIRA_DEBUG) && defined(AXOM_USE_HDF5)
+  #if defined(AXOM_ELVIRA_DEBUG)
     AXOM_ANNOTATE_BEGIN("saveClean");
-    conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "debug_elvira_clean", "hdf5");
+    saveMesh(n_cleanOutput, "debug_elvira_clean");
     AXOM_ANNOTATE_END("saveClean");
   #endif
   }
@@ -1190,8 +1184,7 @@ protected:
     }
 
     // Save the MIR output.
-    conduit::relay::io::save(n_mesh, "elvira_output.yaml", "yaml");
-    conduit::relay::io::blueprint::save_mesh(n_mesh, "elvira_output", "hdf5");
+    saveMesh(n_mesh, "elvira_output");
     AXOM_ANNOTATE_END("save");
 #endif
   }

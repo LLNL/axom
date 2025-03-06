@@ -504,7 +504,7 @@ struct PolygonTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
   AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 1; }
   AXOM_HOST_DEVICE constexpr static IndexType maxNodesInFace() { return 20; }
-  AXOM_HOST_DEVICE constexpr static const char *name() { return "polygon"; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "polygonal"; }
 };
 
 /*!
@@ -1007,7 +1007,7 @@ inline int shapeNameToID(const std::string &name)
     id = Tri_ShapeID;
   else if(name == QuadTraits::name())
     id = Quad_ShapeID;
-  else if(name == PolygonTraits::name() || name == "polygonal")
+  else if(name == PolygonTraits::name())
     id = Polygon_ShapeID;
   else if(name == TetTraits::name())
     id = Tet_ShapeID;
