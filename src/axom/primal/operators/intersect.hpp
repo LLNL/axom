@@ -552,6 +552,8 @@ bool intersect(const Sphere<T, 2>& circle, const BoundingBox<T, 2>& bb)
  * 
  * \param [in] circle The sphere to check for intersection
  * \param [in] curve The NURBS curve to check for intersection
+ * \param [out] circle_params The parameter values of the sphere at the intersection points
+ * \param [out] curve_params The parameter values of the curve at the intersection points
  * \param [in] tol Tolerance parameter for physical distances
  * \param [in] EPS Tolerance parameter for parameter-space distances
  * 
@@ -872,11 +874,11 @@ AXOM_HOST_DEVICE bool intersect(const Plane<T, 3>& p,
 /// @}
 
 /*! \brief Determines if a ray intersects a Bezier patch.
- * \param [in] patch The Bezier patch to intersect with the ray.
  * \param [in] ray The ray to intersect with the patch.
+ * \param [in] patch The Bezier patch to intersect with the ray.
+ * \param [out] t The t parameter(s) of intersection point(s).
  * \param [out] u The u parameter(s) of intersection point(s).
  * \param [out] v The v parameter(s) of intersection point(s).
- * \param [out] t The t parameter(s) of intersection point(s).
  * \param [in] tol The tolerance for intersection (for physical distances).
  * \param [in] EPS The tolerance for intersection (for parameter distances).
  * \param [in] isHalfOpen True if the patch is parameterized in [0,1)^2.
@@ -994,11 +996,11 @@ bool intersect(const Ray<T, 3>& ray,
 
 /*! 
  * \brief Determines if a ray intersects a NURBS patch.
- * \param [in] patch The Bezier patch to intersect with the ray.
  * \param [in] ray The ray to intersect with the patch.
+ * \param [in] patch The Bezier patch to intersect with the ray.
+ * \param [out] t The t parameter(s) of intersection point(s).
  * \param [out] u The u parameter(s) of intersection point(s).
  * \param [out] v The v parameter(s) of intersection point(s).
- * \param [out] t The t parameter(s) of intersection point(s).
  * \param [in] tol The tolerance for intersection (for physical distances).
  * \param [in] EPS The tolerance for intersection (for parameter distances).
  * \param [in] countUntrimmed True if intersections with the untrimmed patch should also be recorded.

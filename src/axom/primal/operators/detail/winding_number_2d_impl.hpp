@@ -285,6 +285,8 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
  *   has the same integer winding number as the original closed curve
  * \param [out] endpoint_gwn A running sum for the exact GWN if the point is at the 
  *   endpoint of a subcurve
+ * \param [out] isCoincident A flag to indicate if the query point is coincident with
+ *   the curve (i.e., is on a vertex of the approximating polygon)
  *
  * By the termination of the recursive algorithm, `approximating_polygon` contains
  *  a polygon that has the same *integer* winding number as the original curve.
@@ -382,7 +384,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
 /*!
  * \brief Computes the GWN for a 2D point wrt a 2D Bezier curve
  *
- * \param [in] query The query point to test
+ * \param [in] q The query point to test
  * \param [in] c The Bezier curve object 
  * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances
@@ -475,7 +477,7 @@ double bezier_winding_number(const Point<T, 2>& q,
 /*!
  * \brief Computes the GWN for a 2D point wrt a 2D NURBS curve
  *
- * \param [in] query The query point to test
+ * \param [in] q The query point to test
  * \param [in] n The NURBS curve object 
  * \param [in] edge_tol The physical distance level at which objects are considered indistinguishable
  * \param [in] EPS Miscellaneous numerical tolerance level for nonphysical distances

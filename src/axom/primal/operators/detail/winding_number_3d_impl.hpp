@@ -43,7 +43,7 @@ enum class SingularityAxis
  * \brief Evaluates the integral of the "anti-curl" of the GWN integrand
  *        (via Stokes' theorem) at a point wrt to a 3D Bezier curve
  *
- * \param [in] query The query point to test
+ * \param [in] q The query point to test
  * \param [in] curve The BezierCurve object
  * \param [in] ax The axis (relative to query) denoting which anti-curl we use
  * \param [in] npts The number of points used in each Gaussian quadrature
@@ -60,7 +60,7 @@ enum class SingularityAxis
  * \return The value of the integral
  */
 template <typename T>
-double stokes_winding_number(const Point<T, 3>& query,
+double stokes_winding_number(const Point<T, 3>& q,
                              const BezierCurve<T, 3>& curve,
                              const SingularityAxis ax,
                              int npts,
@@ -75,7 +75,7 @@ double stokes_winding_number(const Point<T, 3>& query,
   for(int q = 0; q < quad_rule.GetNPoints(); ++q)
   {
     // Get quadrature points in space (shifted by the query)
-    const Vector<T, 3> node(query, curve.evaluate(quad_rule.IntPoint(q).x));
+    const Vector<T, 3> node(q, curve.evaluate(quad_rule.IntPoint(q).x));
     const Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(q).x));
     const double node_norm = node.norm();
 
@@ -111,18 +111,18 @@ double stokes_winding_number(const Point<T, 3>& query,
   switch(ax)
   {
   case(SingularityAxis::x):
-    needs_adapt = (query[1] - centroid[1]) * (query[1] - centroid[1]) +
-        (query[2] - centroid[2]) * (query[2] - centroid[2]) <=
+    needs_adapt = (q[1] - centroid[1]) * (q[1] - centroid[1]) +
+        (q[2] - centroid[2]) * (q[2] - centroid[2]) <=
       cBox.range().squared_norm();
     break;
   case(SingularityAxis::y):
-    needs_adapt = (query[0] - centroid[0]) * (query[0] - centroid[0]) +
-        (query[2] - centroid[2]) * (query[2] - centroid[2]) <=
+    needs_adapt = (q[0] - centroid[0]) * (q[0] - centroid[0]) +
+        (q[2] - centroid[2]) * (q[2] - centroid[2]) <=
       cBox.range().squared_norm();
     break;
   case(SingularityAxis::z):
-    needs_adapt = (query[0] - centroid[0]) * (query[0] - centroid[0]) *
-        (query[1] - centroid[1]) * (query[1] - centroid[1]) <=
+    needs_adapt = (q[0] - centroid[0]) * (q[0] - centroid[0]) *
+        (q[1] - centroid[1]) * (q[1] - centroid[1]) <=
       cBox.range().squared_norm();
     break;
   case(SingularityAxis::rotated):
@@ -132,7 +132,7 @@ double stokes_winding_number(const Point<T, 3>& query,
 
   if(needs_adapt)
   {
-    return stokes_winding_number_adaptive(query,
+    return stokes_winding_number_adaptive(q,
                                           curve,
                                           ax,
                                           quad_rule,
@@ -149,7 +149,7 @@ double stokes_winding_number(const Point<T, 3>& query,
  * \brief Accurately evaluates the integral of the "anti-curl" of the GWN integrand
  *        (via Stokes' theorem) at a point wrt to a 3D Bezier curve via recursion
  *
- * \param [in] query The query point to test
+ * \param [in] q The query point to test
  * \param [in] curve The BezierCurve object
  * \param [in] ax The axis (relative to query) denoting which anti-curl we use
  * \param [in] quad_rule The mfem quadrature rule object
@@ -167,7 +167,7 @@ double stokes_winding_number(const Point<T, 3>& query,
  * \return The value of the integral
  */
 template <typename T>
-double stokes_winding_number_adaptive(const Point<T, 3>& query,
+double stokes_winding_number_adaptive(const Point<T, 3>& q,
                                       const BezierCurve<T, 3>& curve,
                                       const SingularityAxis ax,
                                       const mfem::IntegrationRule& quad_rule,
@@ -185,8 +185,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
     for(int q = 0; q < quad_rule.GetNPoints(); ++q)
     {
       // Get quad_rulerature points in space (shifted by the query)
-      const Vector<T, 3> node(query,
-                              subcurves[i].evaluate(quad_rule.IntPoint(q).x));
+      const Vector<T, 3> node(q, subcurves[i].evaluate(quad_rule.IntPoint(q).x));
       const Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
       const double node_norm = node.norm();
 
@@ -225,14 +224,14 @@ double stokes_winding_number_adaptive(const Point<T, 3>& query,
   }
   else
   {
-    return stokes_winding_number_adaptive(query,
+    return stokes_winding_number_adaptive(q,
                                           subcurves[0],
                                           ax,
                                           quad_rule,
                                           quad_fine[0],
                                           quad_tol,
                                           depth + 1) +
-      stokes_winding_number_adaptive(query,
+      stokes_winding_number_adaptive(q,
                                      subcurves[1],
                                      ax,
                                      quad_rule,
