@@ -9,7 +9,6 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-// Include these directly for now.
 #include "axom/mir/MIRAlgorithm.hpp"
 #include "axom/mir/utilities/ExtractZones.hpp"
 #include "axom/mir/utilities/MergeMeshes.hpp"
@@ -316,16 +315,6 @@ public:
 protected:
 #endif
 
-#if defined(AXOM_EQUIZ_DEBUG)
-  void printNode(const conduit::Node &n) const
-  {
-    conduit::Node options;
-    options["num_children_threshold"] = 10000;
-    options["num_elements_threshold"] = 10000;
-    n.to_summary_string_stream(std::cout, options);
-  }
-#endif
-
   /*!
    * \brief Perform material interface reconstruction on a single domain.
    *
@@ -372,26 +361,9 @@ protected:
 #endif
 
 #if defined(AXOM_EQUIZ_SPLIT_PROCESSING)
-    // _mir_utilities_zlb_begin
     // Come up with lists of clean/mixed zones.
     axom::Array<axom::IndexType> cleanZones, mixedZones;
-    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(
-      m_topologyView,
-      m_matsetView);
-    if(n_options.has_child("selectedZones"))
-    {
-      auto selectedZonesView = bputils::make_array_view<axom::IndexType>(
-        n_options.fetch_existing("selectedZones"));
-      zlb.execute(m_coordsetView.numberOfNodes(),
-                  selectedZonesView,
-                  cleanZones,
-                  mixedZones);
-    }
-    else
-    {
-      zlb.execute(m_coordsetView.numberOfNodes(), cleanZones, mixedZones);
-    }
-    // _mir_utilities_zlb_end
+    makeZoneLists(n_options_copy, cleanZones, mixedZones);
     SLIC_ASSERT((cleanZones.size() + mixedZones.size()) ==
                 m_topologyView.numberOfZones());
     SLIC_INFO(axom::fmt::format("cleanZones: {}, mixedZones: {}",
@@ -419,15 +391,17 @@ protected:
       conduit::Node n_cleanOutput;
       makeCleanOutput(n_root, n_topo.name(), cleanZones.view(), n_cleanOutput);
 
-      // Add a original nodes field.
+      // Add an original nodes field on the root mesh.
       addOriginal(n_root_fields[originalNodesFieldName()],
                   n_topo.name(),
                   "vertex",
                   m_coordsetView.numberOfNodes());
       // If there are fields in the options, make sure the new field is handled too.
       if(n_options_copy.has_child("fields"))
+      {
         n_options_copy["fields/" + originalNodesFieldName()] =
           originalNodesFieldName();
+      }
 
       // Process the mixed part of the mesh. We select just the mixed zones.
       n_options_copy["selectedZones"].set_external(mixedZones.data(),
@@ -443,10 +417,6 @@ protected:
                         n_newFields,
                         n_newMatset);
 
-      // Make node map and slice info for merging.
-      axom::Array<axom::IndexType> nodeMap, nodeSlice;
-      createNodeMapAndSlice(n_newFields, nodeMap, nodeSlice);
-
       // Gather the MIR output into a single node.
       conduit::Node n_mirOutput;
       n_mirOutput[n_topo.path()].set_external(n_newTopo);
@@ -460,30 +430,9 @@ protected:
                                                "hdf5");
   #endif
 
-      // Create a MergeMeshesAndMatsets type that will operate on the material
-      // inputs, which at this point will be unibuffer with known types. We can
-      // reduce code bloat and compile time by passing a MaterialDispatch policy.
-      using IntElement = typename MatsetView::IndexType;
-      using FloatElement = typename MatsetView::FloatType;
-      constexpr size_t MAXMATERIALS = MatsetView::MaxMaterials;
-      using DispatchPolicy =
-        bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
-      using MergeMeshes =
-        bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
-
-      // Merge clean and MIR output.
-      std::vector<bputils::MeshInput> inputs(2);
-      inputs[0].m_input = &n_cleanOutput;
-
-      inputs[1].m_input = &n_mirOutput;
-      inputs[1].m_nodeMapView = nodeMap.view();
-      inputs[1].m_nodeSliceView = nodeSlice.view();
-
-      conduit::Node mmOpts, n_merged;
-      mmOpts["topology"] = n_topo.name();
-      MergeMeshes mm;
-      mm.execute(inputs, mmOpts, n_merged);
-
+      // Merge the clean zones and MIR output
+      conduit::Node n_merged;
+      merge(n_topo.name(), n_cleanOutput, n_mirOutput, n_merged);
   #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
@@ -550,6 +499,80 @@ protected:
 
 #if defined(AXOM_EQUIZ_SPLIT_PROCESSING)
   /*!
+   * \brief Examine the zones and make separate lists of clean and mixed zones
+   *        so we can process them specially since mixed zones require much
+   *        more work.
+   */
+  void makeZoneLists(const conduit::Node &n_options, axom::Array<axom::IndexType> &cleanZones, axom::Array<axom::IndexType> &mixedZones) const
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+
+    // Call variants of the ZoneListBuilder methods that take into account adjacent
+    // zones materials when determining if a zone should be mixed.
+
+    // _mir_utilities_zlb_begin
+    bputils::ZoneListBuilder<ExecSpace, TopologyView, MatsetView> zlb(
+      m_topologyView,
+      m_matsetView);
+    if(n_options.has_child("selectedZones"))
+    {
+      auto selectedZonesView = bputils::make_array_view<axom::IndexType>(
+        n_options.fetch_existing("selectedZones"));
+      zlb.execute(m_coordsetView.numberOfNodes(),
+                  selectedZonesView,
+                  cleanZones,
+                  mixedZones);
+    }
+    else
+    {
+      zlb.execute(m_coordsetView.numberOfNodes(), cleanZones, mixedZones);
+    }
+    // _mir_utilities_zlb_end
+  }
+
+  /*!
+   * \brief Merge meshes for clean and MIR outputs.
+   *
+   * \param topoName The name of the topology.
+   * \param n_cleanOutput The mesh that contains the clean zones.
+   * \param n_mirOutput The mesh that contains the MIR output.
+   * \param[out] n_merged The output node for the merged mesh.
+   */
+  void merge(const std::string &topoName, conduit::Node &n_cleanOutput, conduit::Node &n_mirOutput, conduit::Node &n_merged) const
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+
+    // Make node map and slice info for merging.
+    axom::Array<axom::IndexType> nodeMap, nodeSlice;
+    conduit::Node &n_mir_fields = n_mirOutput["fields"];
+    createNodeMapAndSlice(n_mir_fields, nodeMap, nodeSlice);
+
+    // Create a MergeMeshesAndMatsets type that will operate on the material
+    // inputs, which at this point will be unibuffer with known types. We can
+    // reduce code bloat and compile time by passing a MaterialDispatch policy.
+    using IntElement = typename MatsetView::IndexType;
+    using FloatElement = typename MatsetView::FloatType;
+    constexpr size_t MAXMATERIALS = MatsetView::MaxMaterials;
+    using DispatchPolicy =
+      bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
+    using MergeMeshes =
+      bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
+
+    // Merge clean and MIR output.
+    std::vector<bputils::MeshInput> inputs(2);
+    inputs[0].m_input = &n_cleanOutput;
+
+    inputs[1].m_input = &n_mirOutput;
+    inputs[1].m_nodeMapView = nodeMap.view();
+    inputs[1].m_nodeSliceView = nodeSlice.view();
+
+    conduit::Node mmOpts;
+    mmOpts["topology"] = topoName;
+    MergeMeshes mm;
+    mm.execute(inputs, mmOpts, n_merged);
+  }
+
+  /*!
    * \brief Adds original ids field to supplied fields node.
    *
    * \param n_field The new field node.
@@ -613,7 +636,7 @@ protected:
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
   #if defined(AXOM_EQUIZ_DEBUG) && defined(AXOM_USE_HDF5)
     AXOM_ANNOTATE_BEGIN("saveClean");
-    conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "clean", "hdf5");
+    conduit::relay::io::blueprint::save_mesh(n_cleanOutput, "debug_equiz_clean", "hdf5");
     AXOM_ANNOTATE_END("saveClean");
   #endif
   }
@@ -700,7 +723,7 @@ protected:
 #endif
 
   /*!
-   * \brief Perform material interface reconstruction on a mixed zones.
+   * \brief Perform material interface reconstruction on mixed zones.
    *
    * \param[in] n_topo The Conduit node containing the topology that will be used for MIR.
    * \param[in] n_coordset The Conduit node containing the coordset.

@@ -113,5 +113,13 @@ void MIRAlgorithm::copyState(const conduit::Node &srcState,
     destState[srcState[i].name()].set(srcState[i]);
 }
 
+void MIRAlgorithm::printNode(const conduit::Node &n) const
+{
+  conduit::Node options;
+  options["num_children_threshold"] = 10000;
+  options["num_elements_threshold"] = 10000;
+  n.to_summary_string_stream(std::cout, options);
+}
+
 }  // namespace mir
 }  // namespace axom

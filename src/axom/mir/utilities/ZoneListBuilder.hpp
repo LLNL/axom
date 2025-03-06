@@ -399,7 +399,7 @@ public:
     }
     else if(numCleanZones > 0)
     {
-      AXOM_ANNOTATE_SCOPE("mixedIndices");
+      AXOM_ANNOTATE_SCOPE("cleanIndices");
 
       // There were no mixed, so it must all be clean.
       cleanIndices = axom::Array<axom::IndexType>(nzones, nzones, allocatorID);

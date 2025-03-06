@@ -134,7 +134,7 @@ public:
       conduit::Node &n_newFields = n_output["fields"];
       SliceData zSlice;
       zSlice.m_indicesView = zoneSliceView(selectedZonesView, extra);
-      makeOriginalZones = !n_fields.has_child("originalZones");
+      makeOriginalZones = !n_fields.has_child("originalElements");
       makeFields(nSlice, zSlice, n_fields, n_newFields);
     }
 
@@ -143,13 +143,13 @@ public:
     {
       bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
-      conduit::Node &n_origZones = n_output["fields/originalElements"];
-      n_origZones["topology"] = topoName;
-      n_origZones["association"] = "element";
-      n_origZones["values"].set_allocator(c2a.getConduitAllocatorID());
-      n_origZones["values"].set(conduit::DataType(cpp2conduit<axom::IndexType>::id,
-                                                  selectedZonesView.size()));
-      axom::copy(n_origZones["values"].data_ptr(),
+      conduit::Node &n_origElements = n_output["fields/originalElements"];
+      n_origElements["topology"] = topoName;
+      n_origElements["association"] = "element";
+      n_origElements["values"].set_allocator(c2a.getConduitAllocatorID());
+      n_origElements["values"].set(conduit::DataType(cpp2conduit<axom::IndexType>::id,
+                                                     selectedZonesView.size()));
+      axom::copy(n_origElements["values"].data_ptr(),
                  selectedZonesView.data(),
                  sizeof(axom::IndexType) * selectedZonesView.size());
     }
