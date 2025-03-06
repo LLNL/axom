@@ -723,6 +723,40 @@ TEST_F(TrimmingCurveTest, trimming_edge_subdivision_edge_cases)
   }
 }
 
+//------------------------------------------------------------------------------
+TEST_F(TrimmingCurveTest, trimming_edge_subdivision_unworked_edge_case)
+{
+  SLIC_INFO("Testing edge cases of disk subdivision of the curve");
+
+  NURBSPatchType nPatch(this->nPatch);
+
+  // This is a case where the trimming curve is tangent to the subdivision edge,
+  //  and so the current intersection routines won't record them
+  
+  axom::Array<ParameterPointType> trimmingCurveControlPoints {
+    ParameterPointType {1.0, 1.0},
+    ParameterPointType {0.75, 0.0},
+    ParameterPointType {0.25, 1.0},
+    ParameterPointType {0.0, 0.0}};
+
+  TrimmingCurveType trimmingCurve(trimmingCurveControlPoints, 3);
+  nPatch.addTrimmingCurve(trimmingCurve);
+
+  trimmingCurve.constructLinearSegment({1.0, 0.0}, {1.0, 1.0});
+  nPatch.addTrimmingCurve(trimmingCurve);
+
+  trimmingCurve.constructLinearSegment({0.0, 0.0}, {1.0, 0.0});
+  nPatch.addTrimmingCurve(trimmingCurve);
+
+  bool normalize = true;
+  NURBSPatchType toppatch, bottompatch;
+  nPatch.split_v(0.5, toppatch, bottompatch, !normalize);
+
+  nPatch.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//original.txt");
+  toppatch.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//left.txt");
+  bottompatch.printTrimmingCurves("C://Users//Fireh//Code//winding_number_code//trimming_examples//right.txt");
+}
+
 int main(int argc, char* argv[])
 {
   int result = 0;
