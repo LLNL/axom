@@ -22,6 +22,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "conduit_node.hpp"
 #include "conduit_utils.hpp"
 
@@ -145,7 +146,25 @@ private:
       we can use a single allocator, eliminating the need for these
       if-else blocks.
     */
-    if(axomAllocId == 0)
+    if(axomAllocId == DYNAMIC_ALLOCATOR_ID)
+    {
+      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
+        void* ptr =
+          axom::allocate<char>(itemCount * itemByteSize, DYNAMIC_ALLOCATOR_ID);
+        return ptr;
+      };
+      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
+    }
+    else if(axomAllocId == MALLOC_ALLOCATOR_ID)
+    {
+      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
+        void* ptr =
+          axom::allocate<char>(itemCount * itemByteSize, MALLOC_ALLOCATOR_ID);
+        return ptr;
+      };
+      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
+    }
+    else if(axomAllocId == 0)
     {
       m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
         void* ptr = axom::allocate<char>(itemCount * itemByteSize, 0);
@@ -200,6 +219,7 @@ private:
                    "axomAllocId = "
                 << std::to_string(axomAllocId)
                 << ".  Please add it to ConduitMemCallbacks.hpp.";
+      axom::utilities::processAbort();
     }
   }
 };
