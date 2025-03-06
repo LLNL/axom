@@ -72,11 +72,11 @@ double stokes_winding_number(const Point<T, 3>& q,
     my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
   double quadrature = 0.0;
-  for(int q = 0; q < quad_rule.GetNPoints(); ++q)
+  for(int qi = 0; qi < quad_rule.GetNPoints(); ++qi)
   {
     // Get quadrature points in space (shifted by the query)
-    const Vector<T, 3> node(q, curve.evaluate(quad_rule.IntPoint(q).x));
-    const Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(q).x));
+    const Vector<T, 3> node(q, curve.evaluate(quad_rule.IntPoint(qi).x));
+    const Vector<T, 3> node_dt(curve.dt(quad_rule.IntPoint(qi).x));
     const double node_norm = node.norm();
 
     // Compute one of three vector field line integrals depending on
@@ -84,18 +84,18 @@ double stokes_winding_number(const Point<T, 3>& q,
     switch(ax)
     {
     case(SingularityAxis::x):
-      quadrature += quad_rule.IntPoint(q).weight *
+      quadrature += quad_rule.IntPoint(qi).weight *
         (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
         (node[1] * node[1] + node[2] * node[2]) / node_norm;
       break;
     case(SingularityAxis::y):
-      quadrature += quad_rule.IntPoint(q).weight *
+      quadrature += quad_rule.IntPoint(qi).weight *
         (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
         (node[0] * node[0] + node[2] * node[2]) / node_norm;
       break;
     case(SingularityAxis::z):
     case(SingularityAxis::rotated):
-      quadrature += quad_rule.IntPoint(q).weight *
+      quadrature += quad_rule.IntPoint(qi).weight *
         (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
         (node[0] * node[0] + node[1] * node[1]) / node_norm;
       break;
@@ -182,11 +182,11 @@ double stokes_winding_number_adaptive(const Point<T, 3>& q,
   double quad_fine[2] = {0.0, 0.0};
   for(int i = 0; i < 2; ++i)
   {
-    for(int q = 0; q < quad_rule.GetNPoints(); ++q)
+    for(int qi = 0; qi < quad_rule.GetNPoints(); ++qi)
     {
       // Get quad_rulerature points in space (shifted by the query)
-      const Vector<T, 3> node(q, subcurves[i].evaluate(quad_rule.IntPoint(q).x));
-      const Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(q).x));
+      const Vector<T, 3> node(q, subcurves[i].evaluate(quad_rule.IntPoint(qi).x));
+      const Vector<T, 3> node_dt(subcurves[i].dt(quad_rule.IntPoint(qi).x));
       const double node_norm = node.norm();
 
       // Compute one of three vector field line integrals depending on
@@ -194,18 +194,18 @@ double stokes_winding_number_adaptive(const Point<T, 3>& q,
       switch(ax)
       {
       case(SingularityAxis::x):
-        quad_fine[i] += quad_rule.IntPoint(q).weight *
+        quad_fine[i] += quad_rule.IntPoint(qi).weight *
           (node[2] * node[0] * node_dt[1] - node[1] * node[0] * node_dt[2]) /
           (node[1] * node[1] + node[2] * node[2]) / node_norm;
         break;
       case(SingularityAxis::y):
-        quad_fine[i] += quad_rule.IntPoint(q).weight *
+        quad_fine[i] += quad_rule.IntPoint(qi).weight *
           (node[0] * node[1] * node_dt[2] - node[2] * node[1] * node_dt[0]) /
           (node[0] * node[0] + node[2] * node[2]) / node_norm;
         break;
       case(SingularityAxis::z):
       case(SingularityAxis::rotated):
-        quad_fine[i] += quad_rule.IntPoint(q).weight *
+        quad_fine[i] += quad_rule.IntPoint(qi).weight *
           (node[1] * node[2] * node_dt[0] - node[0] * node[2] * node_dt[1]) /
           (node[0] * node[0] + node[1] * node[1]) / node_norm;
         break;
