@@ -469,7 +469,7 @@ void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
   conduit::Node deviceMesh;
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
-  // _mir_utilities_clipfield_start
+  // _mir_utilities_clipfield_begin
   // Make views for the device mesh.
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
   conduit::Node &n_y = deviceMesh.fetch_existing("coordsets/coords/values/y");

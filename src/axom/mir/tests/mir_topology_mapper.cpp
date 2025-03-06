@@ -379,7 +379,7 @@ private:
       bputils::make_array_view<int>(n_targetTopo["elements/sizes"]),
       bputils::make_array_view<int>(n_targetTopo["elements/offsets"]));
 
-    //_mir_utilities_extrudemesh_start
+    //_mir_utilities_extrudemesh_begin
     // Make new VFs via mapper.
     const int coarseNodesInZ = 4;
     using SrcExtruder =

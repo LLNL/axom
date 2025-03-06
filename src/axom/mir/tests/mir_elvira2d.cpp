@@ -46,6 +46,7 @@ void braid2d_mat_test(const std::string &type,
   conduit::relay::io::save(hostMesh, name + "_orig.yaml", "yaml");
 #endif
 
+  // _elvira_mir_start
   // Make views.
   auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(
     deviceMesh["coordsets/coords"]);
@@ -68,15 +69,14 @@ void braid2d_mat_test(const std::string &type,
                    bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
     // clang-format on
 
-    // _elvira_mir_start
     using MIR =
       axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
     options["matset"] = "mat";
     m.execute(deviceMesh, options, deviceMIRMesh);
-    // _elvira_mir_end
   }
+  // _elvira_mir_end
 
   // device->host
   conduit::Node hostMIRMesh;

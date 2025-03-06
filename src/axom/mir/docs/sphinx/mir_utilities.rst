@@ -73,7 +73,7 @@ based intersection method, though other intersectors could be created to perform
 or sphere intersections.
 
 .. literalinclude:: ../../tests/mir_clipfield.cpp
-   :start-after: _mir_utilities_clipfield_start
+   :start-after: _mir_utilities_clipfield_begin
    :end-before: _mir_utilities_clipfield_end
    :language: C++
 
@@ -91,7 +91,7 @@ and summing them together to produce the new point for the output coordset. Clas
 combination of multiple points in the input coordset.
 
 .. literalinclude:: ../../clipping/ClipField.hpp
-   :start-after: _mir_utilities_coordsetblender_start
+   :start-after: _mir_utilities_coordsetblender_begin
    :end-before: _mir_utilities_coordsetblender_end
    :language: C++
 
