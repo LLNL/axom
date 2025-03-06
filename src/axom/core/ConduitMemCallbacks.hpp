@@ -49,7 +49,8 @@ namespace axom
     }
   @endcode
 */
-struct ConduitMemCallbacks {
+struct ConduitMemCallbacks
+{
   //!@brief Return the Axom allocator id.
   int axomId() const { return m_axomId; }
 
@@ -77,18 +78,19 @@ struct ConduitMemCallbacks {
     {
       // Required one-time actions
       static auto axomMemcopy = [](void* dst, const void* src, size_t byteCount) {
-                                  axom::copy(dst, src, byteCount);
-                                };
+        axom::copy(dst, src, byteCount);
+      };
       static auto axomMemset = [](void* ptr, int value, size_t count) {
-                                 if (axom::getAllocatorIDFromPointer(ptr)
-                                     == axom::DYNAMIC_ALLOCATOR_ID) {
-                                   std::memset(ptr, value, count);
-                                 } else {
-                                   umpire::ResourceManager& rm =
-                                     umpire::ResourceManager::getInstance();
-                                   rm.memset(ptr, value, count);
-                                 }
-                               };
+        if(axom::getAllocatorIDFromPointer(ptr) == axom::DYNAMIC_ALLOCATOR_ID)
+        {
+          std::memset(ptr, value, count);
+        }
+        else
+        {
+          umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+          rm.memset(ptr, value, count);
+        }
+      };
       conduit::utils::set_memcpy_handler(axomMemcopy);
       conduit::utils::set_memset_handler(axomMemset);
     }
@@ -117,12 +119,12 @@ private:
   using AllocatorCallback = std::function<void*(size_t, size_t)>;
   using DeallocCallback = std::function<void(void*)>;
 #else
-  typedef void* (AllocatorCallback)(size_t, size_t);
-  typedef void (DeallocCallback)(void *);
+  typedef void*(AllocatorCallback)(size_t, size_t);
+  typedef void(DeallocCallback)(void*);
 #endif
 
-  AllocatorCallback *m_allocCallback;
-  DeallocCallback *m_deallocCallback;
+  AllocatorCallback* m_allocCallback;
+  DeallocCallback* m_deallocCallback;
 
   ConduitMemCallbacks() = delete;
 
@@ -130,8 +132,7 @@ private:
     @brief Constructor creates allocator/deallocator function and registers
     them with Conduit.
   */
-  ConduitMemCallbacks(int axomAllocId)
-    : m_axomId(axomAllocId)
+  ConduitMemCallbacks(int axomAllocId) : m_axomId(axomAllocId)
   {
     using conduit::utils::register_allocator;
     auto deallocator = [](void* ptr) {
@@ -194,13 +195,13 @@ private:
     }
     else
     {
-      std::cerr<<
-        "*** Work-around for conduit::utils::register_allocator needs case for "
-        "axomAllocId = " << std::to_string(axomAllocId) <<
-        ".  Please add it to ConduitMemCallbacks.hpp.";
+      std::cerr << "*** Work-around for conduit::utils::register_allocator "
+                   "needs case for "
+                   "axomAllocId = "
+                << std::to_string(axomAllocId)
+                << ".  Please add it to ConduitMemCallbacks.hpp.";
     }
   }
-
 };
 
 } /* end namespace axom */

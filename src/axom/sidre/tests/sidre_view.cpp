@@ -1857,14 +1857,14 @@ TEST(sidre_view, deep_copy_to_conduit)
 {
   // Allocator ids to test.
   std::vector<int> allocIds(1, axom::DYNAMIC_ALLOCATOR_ID);
-  #ifdef AXOM_USE_UMPIRE
+#ifdef AXOM_USE_UMPIRE
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
-    #ifdef AXOM_USE_GPU
+  #ifdef AXOM_USE_GPU
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
-  // Does it make sense to check Pinned and Constant memory spaces?
-    #endif
+    // Does it make sense to check Pinned and Constant memory spaces?
   #endif
+#endif
 
   DataStore ds;
 
@@ -1874,7 +1874,10 @@ TEST(sidre_view, deep_copy_to_conduit)
 
   const double doubleValue = 10.13456;
   axom::Array<std::int32_t> intArray(N, N);
-  for(int i = 0; i < N; ++i) { intArray[i] = 1001.5 + i; }
+  for(int i = 0; i < N; ++i)
+  {
+    intArray[i] = 1001.5 + i;
+  }
   std::string stringValue = "a string";
 
   double tmpDoubleValue = doubleValue;

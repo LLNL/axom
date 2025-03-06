@@ -314,10 +314,10 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
   }
   else
   {
-    std::cerr << "*** Unrecognized allocator id " << allocID <<
-              ".  Axom was NOT built with Umpire, so the only valid allocator ids are MALLOC_ALLOCATOR_ID ("
-              << MALLOC_ALLOCATOR_ID << ") and DYNAMIC_ALLOCATOR_ID (" << DYNAMIC_ALLOCATOR_ID << ")."
-              << std::endl;
+    std::cerr << "*** Unrecognized allocator id "
+              << allocID << ".  Axom was NOT built with Umpire, so the only valid allocator ids are MALLOC_ALLOCATOR_ID ("
+              << MALLOC_ALLOCATOR_ID << ") and DYNAMIC_ALLOCATOR_ID ("
+              << DYNAMIC_ALLOCATOR_ID << ")." << std::endl;
     axom::utilities::processAbort();
   }
 
