@@ -59,8 +59,6 @@ public:
                const conduit::Node &AXOM_UNUSED_PARAM(n_coordset),
                conduit::Node &n_outputField) const
   {
-    using ShapeView = PrimalAdaptor<TopologyView, CoordsetView>;
-
     // Get the ID of a Conduit allocator that will allocate through Axom with device allocator allocatorID.
     ConduitAllocateThroughAxom<ExecSpace> c2a;
 
@@ -76,7 +74,9 @@ public:
     n_values.set(conduit::DataType(cpp2conduit<value_type>::id, outputSize));
     auto valuesView = make_array_view<value_type>(n_values);
 
+    // _mir_utilities_makezonevolumes_begin
     // Get the zone as a primal shape and compute area or volume, as needed.
+    using ShapeView = PrimalAdaptor<TopologyView, CoordsetView>;
     const ShapeView deviceShapeView {m_topologyView, m_coordsetView};
     axom::for_all<ExecSpace>(
       m_topologyView.numberOfZones(),
@@ -89,6 +89,7 @@ public:
 
         valuesView[zoneIndex] = amount;
       });
+    // _mir_utilities_makezonevolumes_end
   }
 
 private:

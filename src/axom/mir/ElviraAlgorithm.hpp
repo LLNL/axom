@@ -462,11 +462,13 @@ protected:
     bputils::copy<ExecSpace>(n_options_copy, n_options);
     n_options_copy["topology"] = n_topo.name();
 
+    // _mir_utilities_selectedzones_begin
     // Get selected zones from the options.
     bputils::SelectedZones<ExecSpace> selectedZones(
       m_topologyView.numberOfZones(),
       n_options_copy);
     const auto selectedZonesView = selectedZones.view();
+    // _mir_utilities_selectedzones_end
 
     // Partition the selected zones into clean, mixed lists.
     axom::Array<axom::IndexType> cleanZones, mixedZones;
@@ -802,11 +804,13 @@ protected:
     // NOTE: This makes zone centers for all zones. That's okay since we use
     //       these values in making stencils.
     AXOM_ANNOTATE_BEGIN("centroids");
+    // _mir_utilities_makezonecenters_begin
     bputils::MakeZoneCenters<ExecSpace, TopologyView, CoordsetView> zc(
       m_topologyView,
       m_coordsetView);
     conduit::Node n_zcfield;
     zc.execute(n_topo, n_coordset, n_zcfield);
+    // _mir_utilities_makezonecenters_end
     using zc_value = typename CoordsetView::value_type;
     axom::ArrayView<zc_value> xview, yview, zview;
     xview = bputils::make_array_view<zc_value>(n_zcfield["values/x"]);

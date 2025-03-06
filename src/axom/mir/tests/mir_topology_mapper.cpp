@@ -379,6 +379,7 @@ private:
       bputils::make_array_view<int>(n_targetTopo["elements/sizes"]),
       bputils::make_array_view<int>(n_targetTopo["elements/offsets"]));
 
+    //_mir_utilities_extrudemesh_start
     // Make new VFs via mapper.
     const int coarseNodesInZ = 4;
     using SrcExtruder =
@@ -393,6 +394,7 @@ private:
     n_opts["outputCoordsetName"] = "epm_coords";
     n_opts["outputMatsetName"] = "epm_matset";
     srcExt.execute(n_dev, n_opts, n_dev);
+    //_mir_utilities_extrudemesh_end
 
     using TargetExtruder =
       bputils::ExtrudeMesh<ExecSpace, TargetTopologyView, TargetCoordsetView>;
@@ -450,6 +452,7 @@ private:
       bputils::make_array_view<int>(n_targetTopo["elements/sizes"]),
       bputils::make_array_view<int>(n_targetTopo["elements/offsets"]));
 
+    // _mir_utilities_topologymapper_begin
     // Make new VFs via mapper.
     using Mapper = bputils::TopologyMapper<ExecSpace,
                                            SrcTopologyView,
@@ -462,6 +465,7 @@ private:
     n_opts["target/topologyName"] = "fine";
     n_opts["target/matsetName"] = "fine_matset";
     mapper.execute(n_dev, n_opts, n_dev);
+    // _mir_utilities_topologymapper_end
   }
 
   static void mapping3D(conduit::Node &n_dev)

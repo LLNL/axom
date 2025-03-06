@@ -68,12 +68,14 @@ void braid2d_mat_test(const std::string &type,
                    bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
     // clang-format on
 
+    // _elvira_mir_start
     using MIR =
       axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
     options["matset"] = "mat";
     m.execute(deviceMesh, options, deviceMIRMesh);
+    // _elvira_mir_end
   }
 
   // device->host
