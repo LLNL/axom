@@ -182,7 +182,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test TOP (+z)
@@ -207,7 +207,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test LEFT (-y)
@@ -232,7 +232,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test RIGHT (+y)
@@ -257,7 +257,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test BACK (-x)
@@ -282,7 +282,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // test FRONT (+x)
@@ -307,7 +307,7 @@ TEST(primal_ray_intersect, ray_aabb_intersection_3D)
         EXPECT_FALSE(
           intersect_ray(sx, -nx, sy, -ny, sz, -nz, TEST_BOX3D, tmin, tmax));
       }  // END for all j
-    }    // END for all i
+    }  // END for all i
   }
 
   // Test a bunch of rays emitted from the box center
@@ -398,6 +398,10 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
   double ray_param = -1, seg_param = -1;
   const double EPS = 1e-8;
 
+  // Method should return isParallel if true,
+  //  even if an intersection isn't recorded
+  bool isParallel;
+
   // Check segments oriented in same direction as ray
   //  and in opposite direction
   SegmentType intersecting_segs[] = {
@@ -413,7 +417,9 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
 
   for(auto& seg : intersecting_segs)
   {
-    EXPECT_TRUE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
+    EXPECT_TRUE(
+      intersect_ray(the_ray, seg, ray_param, seg_param, EPS, isParallel));
+    EXPECT_TRUE(isParallel);
     EXPECT_NEAR(the_ray.at(ray_param)[0], seg.at(seg_param)[0], EPS);
     EXPECT_NEAR(the_ray.at(ray_param)[1], seg.at(seg_param)[1], EPS);
   }
@@ -429,7 +435,9 @@ TEST(primal_ray_intersect, ray_segment_edge_cases)
 
   for(auto& seg : not_intersecting_segs)
   {
-    EXPECT_FALSE(intersect_ray(the_ray, seg, ray_param, seg_param, EPS));
+    EXPECT_FALSE(
+      intersect_ray(the_ray, seg, ray_param, seg_param, EPS, isParallel));
+    EXPECT_TRUE(isParallel);
   }
 }
 

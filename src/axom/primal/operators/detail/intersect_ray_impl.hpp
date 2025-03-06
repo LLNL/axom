@@ -26,7 +26,7 @@ namespace detail
 {
 /*!
  * \brief Computes the intersection of the given ray \a R with the segment \a S.
- *
+ * 
  * When there is a valid intersection (within tolerance \a EPS), 
  * \a ray_param returns the parametric coordinate of the intersection point along \a R
  * and \a seg_param returns the parametric coordinate of the intersection point along \a S.
@@ -40,6 +40,29 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
                           T& ray_param,
                           T& seg_param,
                           const double EPS)
+{
+  bool isParallel = false;
+  return intersect_ray(R, S, ray_param, seg_param, EPS, isParallel);
+}
+
+/*!
+ * \brief Computes the intersection of the given ray \a R with the segment \a S,
+ *   and returns a flag if the segment and ray are parallel.
+ *
+ * When there is a valid intersection (within tolerance \a EPS), 
+ * \a ray_param returns the parametric coordinate of the intersection point along \a R
+ * and \a seg_param returns the parametric coordinate of the intersection point along \a S.
+ * If the intersection point is nonunique, \a seg_param and \a ray_param return only
+ * a single point of intersection at the center of the region.
+ * \return status true iff R intersects with S, otherwise, false.
+ */
+template <typename T>
+inline bool intersect_ray(const primal::Ray<T, 2>& R,
+                          const primal::Segment<T, 2>& S,
+                          T& ray_param,
+                          T& seg_param,
+                          const double EPS,
+                          bool& isParallel)
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
@@ -57,8 +80,11 @@ inline bool intersect_ray(const primal::Ray<T, 2>& R,
     numerics::determinant(ray_dir[0], -seg_dir[0], ray_dir[1], -seg_dir[1]);
 
   // If denom is (nearly) zero (within a numerical tolerance), the ray and segment are parallel
+  isParallel = false;
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
   {
+    isParallel = true;
+
     // Check if ray and segment are collinear
     const primal::Vector<T, 2> col(R.origin(), S.source());
     const double col_norm = col.norm();
