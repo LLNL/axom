@@ -97,11 +97,10 @@ if (CONDUIT_FOUND AND RAJA_FOUND AND UMPIRE_FOUND)
         FOLDER      axom/quest/examples
         )
 
-    # Add unit tests
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+    # Add unit tests; the (current) input meshes are in the hdf5 format
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND HDF5_FOUND)
 
-        # Run the candidates example with the different spatial indices
-        # and raja policies
+        # Run the candidates example with the different spatial indices and raja policies
 
         # Use same file for input and query
         set(input_file "${AXOM_DATA_DIR}/quest/ucart10.cycle_000000.root")
@@ -423,7 +422,8 @@ if(CONDUIT_FOUND)
             )
 
     # These examples currently segfault on windows without MPI when loading the test data into conduit
-    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND NOT WIN32)
+    # Also, the input files are hdf5
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR AND NOT WIN32 AND HDF5_FOUND)
         if (ENABLE_MPI)
             set(_nranks 3)
         endif()
