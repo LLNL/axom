@@ -2571,7 +2571,8 @@ public:
       }
     }
 
-    axom::Array<T> alphas(axom::utilities::max(0, axom::utilities::max(p - 1, q - 1)));
+    axom::Array<T> alphas(
+      axom::utilities::max(0, axom::utilities::max(p - 1, q - 1)));
 
     // Do Bezier extraction on the u-axis, which returns a collection of Bezier strips
     if(p == 0)
