@@ -1186,24 +1186,24 @@ public:
     constexpr int degree = 1;
     curve.setParameters(num_points, degree);
 
-    // Bottom
-    curve[0] = ParameterPointType({min_u, min_v});
-    curve[1] = ParameterPointType({max_u, min_v});
-    addTrimmingCurve(curve);
-
     // Top
     curve[0] = ParameterPointType({max_u, max_v});
     curve[1] = ParameterPointType({min_u, max_v});
     addTrimmingCurve(curve);
 
-    // Left
-    curve[0] = ParameterPointType({min_u, max_v});
-    curve[1] = ParameterPointType({min_u, min_v});
-    addTrimmingCurve(curve);
-
     // Right
     curve[0] = ParameterPointType({max_u, min_v});
     curve[1] = ParameterPointType({max_u, max_v});
+    addTrimmingCurve(curve);
+
+    // Bottom
+    curve[0] = ParameterPointType({min_u, min_v});
+    curve[1] = ParameterPointType({max_u, min_v});
+    addTrimmingCurve(curve);
+
+    // Left
+    curve[0] = ParameterPointType({min_u, max_v});
+    curve[1] = ParameterPointType({min_u, min_v});
     addTrimmingCurve(curve);
 
     m_isTrimmed = true;
@@ -1462,13 +1462,13 @@ public:
       m_weights = new_weights;
     }
 
-    std::swap(m_knotvec_u, m_knotvec_v);
+    axom::utilities::swap(m_knotvec_u, m_knotvec_v);
 
     for(auto& curve : m_trimmingCurves)
     {
       for(int j = 0; j < curve.getNumControlPoints(); ++j)
       {
-        std::swap(curve[j][0], curve[j][1]);
+        axom::utilities::swap(curve[j][0], curve[j][1]);
       }
     }
   }
@@ -1673,10 +1673,10 @@ public:
                                   m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
 
     const int deg_u = getDegree_u();
-    const int du = std::min(d, deg_u);
+    const int du = axom::utilities::min(d, deg_u);
 
     const int deg_v = getDegree_v();
-    const int dv = std::min(d, deg_v);
+    const int dv = axom::utilities::min(d, deg_v);
 
     // Matrix for derivatives
     ders.resize(d + 1, d + 1);
@@ -1720,7 +1720,7 @@ public:
         }
       }
 
-      int dd = std::min(d - k, dv);
+      int dd = axom::utilities::min(d - k, dv);
       for(int l = 0; l <= dd; ++l)
       {
         for(int s = 0; s <= deg_v; ++s)
@@ -2032,7 +2032,7 @@ public:
     const auto k = m_knotvec_u.findSpan(u, s);
 
     // Find how many knots we need to insert
-    int r = std::min(target_multiplicity - s, p - s);
+    int r = axom::utilities::min(target_multiplicity - s, p - s);
     if(r <= 0)
     {
       return k;
@@ -2199,7 +2199,7 @@ public:
     const auto k = m_knotvec_v.findSpan(v, s);
 
     // Find how many knots we need to insert
-    int r = std::min(target_multiplicity - s, q - s);
+    int r = axom::utilities::min(target_multiplicity - s, q - s);
     if(r <= 0)
     {
       return k;
@@ -2571,7 +2571,7 @@ public:
       }
     }
 
-    axom::Array<T> alphas(std::max(0, std::max(p - 1, q - 1)));
+    axom::Array<T> alphas(axom::utilities::max(0, axom::utilities::max(p - 1, q - 1)));
 
     // Do Bezier extraction on the u-axis, which returns a collection of Bezier strips
     if(p == 0)
