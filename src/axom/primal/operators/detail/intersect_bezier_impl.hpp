@@ -422,7 +422,7 @@ bool intersect_circle_bezier(const Sphere<T, 2> &circle,
   if(curve.isLinear(sq_tol))
   {
     T c1, c2, t1, t2;
-    if(intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2))
+    if(intersect_2d_circle_line(circle, curve[0], curve[order], c1, c2, t1, t2, EPS))
     {
       if(t1 >= -EPS && t1 < 1.0 - EPS)
       {
@@ -488,7 +488,8 @@ bool intersect_2d_circle_line(const Sphere<T, 2> &circ,
                               T &c1,
                               T &c2,
                               T &t1,
-                              T &t2)
+                              T &t2,
+                              double EPS)
 {
   T dx = b[0] - a[0];
   T dy = b[1] - a[1];
@@ -500,7 +501,7 @@ bool intersect_2d_circle_line(const Sphere<T, 2> &circ,
   T disc = circ.getRadius() * circ.getRadius() * dr * dr - D * D;
 
   // Treat tangencies as *not* intersecting
-  if(disc <= 0.0)
+  if(disc <= EPS * EPS)
   {
     return false;
   }
