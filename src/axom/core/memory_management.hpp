@@ -25,8 +25,10 @@
 
 namespace axom
 {
+// To co-exist with Umpire allocator ids, use negative values here.
 constexpr int INVALID_ALLOCATOR_ID = -1;
-constexpr int DYNAMIC_ALLOCATOR_ID = 0;
+constexpr int DYNAMIC_ALLOCATOR_ID = -2;
+constexpr int MALLOC_ALLOCATOR_ID = -3;
 
 // _memory_space_start
 /*! 
@@ -39,6 +41,7 @@ constexpr int DYNAMIC_ALLOCATOR_ID = 0;
 enum class MemorySpace
 {
   Dynamic,
+  Malloc,
 #ifdef AXOM_USE_UMPIRE
   Host,
   Device,
@@ -116,7 +119,7 @@ inline int getDefaultAllocatorID()
  * \brief Get the allocator id from which data has been allocated.
  * \return Allocator id.  If Umpire doesn't have an allocator for
  * the pointer, or Axom wasn't configured with Umpire, return
- * \c axom::DYNAMIC_ALLOCATOR_ID.
+ * \c axom::MALLOC_ALLOCATOR_ID.
  *
  * \pre ptr has a valid pointer value.
  */
@@ -130,6 +133,8 @@ inline int getAllocatorIDFromPointer(const void* ptr)
     return allocator.getId();
   }
 #endif
+  // TODO: How to distinguish between dynamic and malloc allocators?
+  // Can they coexist?
   AXOM_UNUSED_VAR(ptr);
   return DYNAMIC_ALLOCATOR_ID;
 }
@@ -210,19 +215,27 @@ inline T* allocate(std::size_t n, int allocID) noexcept
 {
   const std::size_t numbytes = n * sizeof(T);
 
-  if(allocID == DYNAMIC_ALLOCATOR_ID)
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  if(rm.isAllocator(allocID))
+  {
+    umpire::Allocator allocator = rm.getAllocator(allocID);
+    return static_cast<T*>(allocator.allocate(numbytes));
+  }
+#endif
+
+  if(allocID == MALLOC_ALLOCATOR_ID)
   {
     return static_cast<T*>(std::malloc(numbytes));
   }
 
-#ifdef AXOM_USE_UMPIRE
+  if(allocID == DYNAMIC_ALLOCATOR_ID)
+  {
+    // TODO: Is this the correct behavior for Dynamic?
+    return static_cast<T*>(std::malloc(numbytes));
+  }
 
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator(allocID);
-  return static_cast<T*>(allocator.allocate(numbytes));
-
-#endif
-  // Without Umpire, only DYNAMIC_ALLOCATOR_ID is valid.
+  std::cerr << "Unrecognized allocator id " << allocID << std::endl;
   axom::utilities::processAbort();
 
   return nullptr;  // Silence warning.
@@ -256,41 +269,54 @@ inline void deallocate(T*& pointer) noexcept
 template <typename T>
 inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
 {
+  assert(allocID != INVALID_ALLOCATOR_ID);
+
   const std::size_t numbytes = n * sizeof(T);
 
 #if defined(AXOM_USE_UMPIRE)
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-  if(pointer == nullptr)
+  if(rm.isAllocator(allocID))
   {
-    pointer = axom::allocate<T>(n, allocID);
-  }
-  else
-  {
-    if(rm.hasAllocator(pointer))
+    if(pointer == nullptr)
     {
-      pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
+      pointer = axom::allocate<T>(n, allocID);
     }
     else
     {
-      /*
-        Reallocate from non-Umpire to Umpire, manually, using
-        allocate, copy and deallocate.  Because we don't know the
-        current size, we first do a (extra) reallocate within the
-        current space just so we have the size for the copy.
-        Is there a better way?
-      */
-      auto tmpPointer = std::realloc(pointer, numbytes);
-      pointer = axom::allocate<T>(n, allocID);
-      copy(pointer, tmpPointer, numbytes);
-      deallocate(tmpPointer);
+      if(rm.hasAllocator(pointer))
+      {
+        pointer = static_cast<T*>(rm.reallocate(pointer, numbytes));
+      }
+      else
+      {
+        /*
+          Reallocate from non-Umpire to Umpire, manually, using
+          allocate, copy and deallocate.  Because we don't know the
+          current size, we first do a (extra) reallocate within the
+          current space just so we have the size for the copy.
+          Is there a better way?
+        */
+        auto tmpPointer = std::realloc(pointer, numbytes);
+        pointer = axom::allocate<T>(n, allocID);
+        copy(pointer, tmpPointer, numbytes);
+        deallocate(tmpPointer);
+      }
     }
+    return pointer;
   }
-  return pointer;
 
 #else
 
-  pointer = static_cast<T*>(std::realloc(pointer, numbytes));
+  if(allocID == MALLOC_ALLOCATOR_ID || allocID == DYNAMIC_ALLOCATOR_ID)
+  {
+    pointer = static_cast<T*>(std::realloc(pointer, numbytes));
+  }
+  else
+  {
+    std::cerr << "Unrecognized allocator id " << allocID << std::endl;
+    axom::utilities::processAbort();
+  }
 
   // Consistently handle realloc(0) for std::realloc to match Umpire's behavior
   if(n == 0 && pointer == nullptr)
@@ -298,7 +324,6 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
     pointer = axom::allocate<T>(0);
   }
 
-  AXOM_UNUSED_VAR(allocID);
 #endif
 
   return pointer;
@@ -357,6 +382,7 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
   // throws exception if given a non-Umpire id.
   assert(allocatorId != INVALID_ALLOCATOR_ID);
   if(allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
+  if(allocatorId == MALLOC_ALLOCATOR_ID) return MemorySpace::Malloc;
 
 #ifdef AXOM_USE_UMPIRE
   using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;

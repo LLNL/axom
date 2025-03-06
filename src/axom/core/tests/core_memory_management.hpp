@@ -511,7 +511,7 @@ TEST(core_memory_management, allocator_id_from_pointer)
 TEST(core_memory_management, interspace_reallocation)
 {
   // Allocator ids to test.
-  std::vector<int> allocIds(1, axom::DYNAMIC_ALLOCATOR_ID);
+  std::vector<int> allocIds(1, axom::MALLOC_ALLOCATOR_ID);
 #ifdef AXOM_USE_UMPIRE
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
   #ifdef AXOM_USE_GPU
@@ -528,12 +528,12 @@ TEST(core_memory_management, interspace_reallocation)
   constexpr std::size_t minNK = std::min(N, K);
 
   // origOnHost and tempOnHost are for initialization and results-checking on host.
-  int* origOnHost = axom::allocate<int>(maxNK, axom::DYNAMIC_ALLOCATOR_ID);
+  int* origOnHost = axom::allocate<int>(maxNK, axom::MALLOC_ALLOCATOR_ID);
   for(std::size_t i = 0; i < maxNK; ++i)
   {
     origOnHost[i] = 100 + i;
   }
-  int* tempOnHost = axom::allocate<int>(maxNK, axom::DYNAMIC_ALLOCATOR_ID);
+  int* tempOnHost = axom::allocate<int>(maxNK, axom::MALLOC_ALLOCATOR_ID);
 
   // Count differences between origOnHost and tempOnHost.
   auto countDiffs = [=]() {
