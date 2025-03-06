@@ -408,8 +408,7 @@ protected:
       // array, we sum the sizes. This is needed because connectivity might
       // have unused elements in it.
       axom::IndexType connLength = 0;
-      axom::mir::views::IndexNode_to_ArrayView(n_size, [&](auto sizesView)
-      {
+      axom::mir::views::IndexNode_to_ArrayView(n_size, [&](auto sizesView) {
         connLength = sumArrayView(sizesView);
       });
       totalConnLength += connLength;
@@ -431,10 +430,9 @@ protected:
       typename axom::execution_space<ExecSpace>::reduce_policy;
     using value_type = typename ViewType::value_type;
     RAJA::ReduceSum<reduce_policy, value_type> sum(0);
-    axom::for_all<ExecSpace>(view.size(), AXOM_LAMBDA(axom::IndexType index)
-    {
-      sum += view[index];
-    });
+    axom::for_all<ExecSpace>(
+      view.size(),
+      AXOM_LAMBDA(axom::IndexType index) { sum += view[index]; });
     return static_cast<axom::IndexType>(sum.get());
   }
 
@@ -484,8 +482,7 @@ protected:
 
     // If there are polygon shapes then assume that the rest of the shapes
     // are 2D and should be promoted to polygons.
-    if(shape_map.find("polygonal") != shape_map.end() &&
-       shape_map.size() > 1)
+    if(shape_map.find("polygonal") != shape_map.end() && shape_map.size() > 1)
     {
       shape_map.clear();
       shape_map["polygonal"] = axom::mir::views::shapeNameToID("polygonal");
@@ -551,25 +548,29 @@ protected:
       }
 
       // Copy this input's connectivity into the new topology.
-      axom::mir::views::IndexNode_to_ArrayView_same(n_srcConn, n_srcSizes, n_srcOffsets, [&](auto srcConnView, auto srcSizesView, auto srcOffsetsView) {
-        using ConnType = typename decltype(srcConnView)::value_type;
-        conduit::Node &n_newConn =
-          n_newTopoPtr->fetch_existing("elements/connectivity");
-        auto connView = bputils::make_array_view<ConnType>(n_newConn);
+      axom::mir::views::IndexNode_to_ArrayView_same(
+        n_srcConn,
+        n_srcSizes,
+        n_srcOffsets,
+        [&](auto srcConnView, auto srcSizesView, auto srcOffsetsView) {
+          using ConnType = typename decltype(srcConnView)::value_type;
+          conduit::Node &n_newConn =
+            n_newTopoPtr->fetch_existing("elements/connectivity");
+          auto connView = bputils::make_array_view<ConnType>(n_newConn);
 
-        // Copy the relevant connectivity from srcConnView. Also compute how
-        // many elements were used.
-        mergeTopology_copy(inputs[i].m_nodeMapView,
-                           connOffset,
-                           coordOffset,
-                           connView,
-                           srcConnView,
-                           srcSizesView,
-                           srcOffsetsView);
+          // Copy the relevant connectivity from srcConnView. Also compute how
+          // many elements were used.
+          mergeTopology_copy(inputs[i].m_nodeMapView,
+                             connOffset,
+                             coordOffset,
+                             connView,
+                             srcConnView,
+                             srcSizesView,
+                             srcOffsetsView);
 
-        connOffset += srcConnView.size();
-        coordOffset += countNodes(inputs, static_cast<size_t>(i));
-      });
+          connOffset += srcConnView.size();
+          coordOffset += countNodes(inputs, static_cast<size_t>(i));
+        });
 
       // Copy this input's sizes into the new topology.
       axom::mir::views::IndexNode_to_ArrayView(n_srcSizes, [&](auto srcSizesView) {
@@ -661,7 +662,9 @@ protected:
 
     // Compress out any gaps in the offsets by making new offsets from the sizes.
     // This makes the code able to handle meshes that have gaps in its connectivity array.
-    axom::Array<value_type> actualOffsets(srcSizesView.size(), srcSizesView.size(), allocatorID);
+    axom::Array<value_type> actualOffsets(srcSizesView.size(),
+                                          srcSizesView.size(),
+                                          allocatorID);
     auto actualOffsetsView = actualOffsets.view();
     axom::exclusive_scan<ExecSpace>(srcSizesView, actualOffsetsView);
 
@@ -670,29 +673,31 @@ protected:
       // Copy all zones from the input but map the nodes to new values.
       // The supplied nodeMap is assumed to be a mapping from the current
       // node connectivity to the merged node connectivity.
-      axom::for_all<ExecSpace>(srcSizesView.size(), AXOM_LAMBDA(axom::IndexType index)
-      {
-        const auto destOffset = connOffset + actualOffsetsView[index];
-        const auto srcOffset = srcOffsetsView[index];
-        for(value_type j = 0; j < srcSizesView[index]; j++)
-        {
-          const auto nodeId = srcConnView[srcOffset + j];
-          const auto newNodeId = nodeMapView[nodeId];
-          connView[destOffset + j] = newNodeId;
-        }
-      });
+      axom::for_all<ExecSpace>(
+        srcSizesView.size(),
+        AXOM_LAMBDA(axom::IndexType index) {
+          const auto destOffset = connOffset + actualOffsetsView[index];
+          const auto srcOffset = srcOffsetsView[index];
+          for(value_type j = 0; j < srcSizesView[index]; j++)
+          {
+            const auto nodeId = srcConnView[srcOffset + j];
+            const auto newNodeId = nodeMapView[nodeId];
+            connView[destOffset + j] = newNodeId;
+          }
+        });
     }
     else
     {
-      axom::for_all<ExecSpace>(srcSizesView.size(), AXOM_LAMBDA(axom::IndexType index)
-      {
-        const auto destOffset = connOffset + actualOffsetsView[index];
-        const auto srcOffset = srcOffsetsView[index];
-        for(value_type j = 0; j < srcSizesView[index]; j++)
-        {
-          connView[destOffset + j] = coordOffset + srcConnView[srcOffset + j];
-        }
-      });
+      axom::for_all<ExecSpace>(
+        srcSizesView.size(),
+        AXOM_LAMBDA(axom::IndexType index) {
+          const auto destOffset = connOffset + actualOffsetsView[index];
+          const auto srcOffset = srcOffsetsView[index];
+          for(value_type j = 0; j < srcSizesView[index]; j++)
+          {
+            connView[destOffset + j] = coordOffset + srcConnView[srcOffset + j];
+          }
+        });
     }
   }
 

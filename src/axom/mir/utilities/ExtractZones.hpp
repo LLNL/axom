@@ -147,8 +147,9 @@ public:
       n_origElements["topology"] = topoName;
       n_origElements["association"] = "element";
       n_origElements["values"].set_allocator(c2a.getConduitAllocatorID());
-      n_origElements["values"].set(conduit::DataType(cpp2conduit<axom::IndexType>::id,
-                                                     selectedZonesView.size()));
+      n_origElements["values"].set(
+        conduit::DataType(cpp2conduit<axom::IndexType>::id,
+                          selectedZonesView.size()));
       axom::copy(n_origElements["values"].data_ptr(),
                  selectedZonesView.data(),
                  sizeof(axom::IndexType) * selectedZonesView.size());

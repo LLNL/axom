@@ -123,12 +123,13 @@ void MIRAlgorithm::printNode(const conduit::Node &n) const
   n.to_summary_string_stream(std::cout, options);
 }
 
-void MIRAlgorithm::saveMesh(const conduit::Node &n_mesh, const std::string &filebase) const
+void MIRAlgorithm::saveMesh(const conduit::Node &n_mesh,
+                            const std::string &filebase) const
 {
   conduit::relay::io::save(n_mesh, filebase + ".yaml", "yaml");
-  #if defined(AXOM_USE_HDF5)
+#if defined(AXOM_USE_HDF5)
   conduit::relay::io::blueprint::save_mesh(n_mesh, filebase, "hdf5");
-  #endif
+#endif
 }
 
 }  // namespace mir

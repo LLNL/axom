@@ -125,7 +125,6 @@ protected:
    * \param filebase The base filename to use when writing files. Extensions may be added.
    */
   void saveMesh(const conduit::Node &n_mesh, const std::string &filebase) const;
-
 };
 
 }  // end namespace mir

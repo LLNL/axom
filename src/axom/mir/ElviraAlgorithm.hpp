@@ -29,7 +29,6 @@
 
 #include <conduit/conduit.hpp>
 
-
 // RAJA
 #if defined(AXOM_USE_RAJA)
   #include "RAJA/RAJA.hpp"
@@ -528,14 +527,14 @@ protected:
       n_mirOutput[n_coordset.path()].set_external(n_newCoordset);
       n_mirOutput[n_fields.path()].set_external(n_newFields);
       n_mirOutput[n_matset.path()].set_external(n_newMatset);
-  #if defined(AXOM_ELVIRA_DEBUG)
+#if defined(AXOM_ELVIRA_DEBUG)
       saveMesh(n_mirOutput, "debug_elvira_mir");
-  #endif
+#endif
 
       // Merge the clean zones and MIR output
       conduit::Node n_merged;
       merge(n_topo.name(), n_cleanOutput, n_mirOutput, n_merged);
-  #if defined(AXOM_ELVIRA_DEBUG)
+#if defined(AXOM_ELVIRA_DEBUG)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
       std::cout << "--- MIR ---\n";
@@ -545,7 +544,7 @@ protected:
 
       // Save merged output.
       saveMesh(n_merged, "debug_elvira_merged");
-  #endif
+#endif
 
       // Move the merged output into the output variables.
       n_newCoordset.move(n_merged[n_coordset.path()]);
@@ -594,7 +593,10 @@ protected:
    * \param n_mirOutput The mesh that contains the MIR output.
    * \param[out] n_merged The output node for the merged mesh.
    */
-  void merge(const std::string &topoName, conduit::Node &n_cleanOutput, conduit::Node &n_mirOutput, conduit::Node &n_merged) const
+  void merge(const std::string &topoName,
+             conduit::Node &n_cleanOutput,
+             conduit::Node &n_mirOutput,
+             conduit::Node &n_merged) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
 
@@ -606,8 +608,7 @@ protected:
     constexpr size_t MAXMATERIALS = MatsetView::MaxMaterials;
     using DispatchPolicy =
       bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
-    using MergeMeshes =
-      bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
+    using MergeMeshes = bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
 
     // Merge clean and MIR output.
     std::vector<bputils::MeshInput> inputs(2);
@@ -679,11 +680,11 @@ protected:
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 1;
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
-  #if defined(AXOM_ELVIRA_DEBUG)
+#if defined(AXOM_ELVIRA_DEBUG)
     AXOM_ANNOTATE_BEGIN("saveClean");
     saveMesh(n_cleanOutput, "debug_elvira_clean");
     AXOM_ANNOTATE_END("saveClean");
-  #endif
+#endif
   }
 
   /*!

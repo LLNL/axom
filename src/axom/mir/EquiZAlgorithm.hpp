@@ -497,7 +497,9 @@ protected:
    *        so we can process them specially since mixed zones require much
    *        more work.
    */
-  void makeZoneLists(const conduit::Node &n_options, axom::Array<axom::IndexType> &cleanZones, axom::Array<axom::IndexType> &mixedZones) const
+  void makeZoneLists(const conduit::Node &n_options,
+                     axom::Array<axom::IndexType> &cleanZones,
+                     axom::Array<axom::IndexType> &mixedZones) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
 
@@ -532,7 +534,10 @@ protected:
    * \param n_mirOutput The mesh that contains the MIR output.
    * \param[out] n_merged The output node for the merged mesh.
    */
-  void merge(const std::string &topoName, conduit::Node &n_cleanOutput, conduit::Node &n_mirOutput, conduit::Node &n_merged) const
+  void merge(const std::string &topoName,
+             conduit::Node &n_cleanOutput,
+             conduit::Node &n_mirOutput,
+             conduit::Node &n_merged) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
 
@@ -549,8 +554,7 @@ protected:
     constexpr size_t MAXMATERIALS = MatsetView::MaxMaterials;
     using DispatchPolicy =
       bputils::DispatchTypedUnibufferMatset<IntElement, FloatElement, MAXMATERIALS>;
-    using MergeMeshes =
-      bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
+    using MergeMeshes = bputils::MergeMeshesAndMatsets<ExecSpace, DispatchPolicy>;
 
     // Merge clean and MIR output.
     std::vector<bputils::MeshInput> inputs(2);
