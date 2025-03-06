@@ -1929,12 +1929,16 @@ TEST(sidre_view, deep_copy_to_conduit)
                 << dstAllocId << std::endl;
 
       auto dstAllocIdConduit =
-        axom::ConduitMemCallbacks::getInstance(dstAllocId).conduitId();
+        axom::ConduitMemCallbacks::axomAllocIdToConduit(dstAllocId);
 
       conduit::Node dst;
       dst.set_allocator(dstAllocIdConduit);
 
       src->deepCopyToConduit(dst);
+
+      //
+      // Check pointers.  Copy data to temporary host buffers and check data.
+      //
 
       double* dstScalarPtr =
         (double*)dst.fetch_existing(srcScalar->getName()).data_ptr();

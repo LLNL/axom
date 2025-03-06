@@ -36,15 +36,16 @@ namespace axom
   registers the appropriate callbacks with Conduit, including the required
   memset and memcopy callbacks.
 
-  Two examples for setting Conduit allocator ids using Axom allocator ids.
+  Examples for setting Conduit allocator ids when you have Axom allocator ids.
   @code{.cpp}
     void foo(conduit::Node& n, int axomAllocId) {
-      setAxomAllocIdForConduitNode(n, axomAllocId);
+      n.set_allocator(axomAllocIdToConduit(axomAllocId));
     }
 
     void bar(conduit::Node& n, int axomAllocId) {
-      const auto& instance = getInstance(axomAllocIdA);
-      n.set_allocator(instance.getAxomAllocId());
+      const auto& instance = getInstance(axomAllocId);
+      assert(instance.axomId() == axomAllocId);
+      n.set_allocator(instance.conduitId());
     }
   @endcode
 */
@@ -55,13 +56,26 @@ struct ConduitMemCallbacks {
   //!@brief Return the Conduit allocator id coresponding to axomId().
   conduit::index_t conduitId() const { return m_conduitId; }
 
+  /*!
+    @brief Convert an Axom allocator id to Conduit, registering
+    a new Conduit allocator if needed.
+  */
+  static conduit::index_t axomAllocIdToConduit(int axomAllocId)
+  {
+    return getInstance(axomAllocId).conduitId();
+  }
+
   //!@brief Return the instance for the given Axom allocator id.
   static const ConduitMemCallbacks& getInstance(int axomAllocId)
   {
     // This method is not thread safe.
-    static bool firstTime = true;
-    if(firstTime)
+
+    // Mapping from Axom allocator to an instance.
+    static std::map<int, std::shared_ptr<ConduitMemCallbacks>> s_handlers;
+
+    if(s_handlers.empty())
     {
+      // Required one-time actions
       static auto axomMemcopy = [](void* dst, const void* src, size_t byteCount) {
                                   axom::copy(dst, src, byteCount);
                                 };
@@ -77,11 +91,7 @@ struct ConduitMemCallbacks {
                                };
       conduit::utils::set_memcpy_handler(axomMemcopy);
       conduit::utils::set_memset_handler(axomMemset);
-      firstTime = false;
     }
-
-    // Mapping from Axom allocator to an instance.
-    static std::map<int, std::shared_ptr<ConduitMemCallbacks>> s_handlers;
 
     auto it = s_handlers.find(axomAllocId);
     if(it == s_handlers.end())
@@ -92,13 +102,6 @@ struct ConduitMemCallbacks {
     assert(it->first == axomAllocId);
 
     return *it->second;
-  }
-
-  //!@brief Set a Node's allocator to the Conduit equivalent of an Axom allocator.
-  static void setAxomAllocIdForConduitNode(conduit::Node& node, int axomAllocId)
-  {
-    auto& instance = getInstance(axomAllocId);
-    node.set_allocator(instance.m_conduitId);
   }
 
   ~ConduitMemCallbacks() { }
