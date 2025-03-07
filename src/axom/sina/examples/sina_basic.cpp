@@ -18,8 +18,9 @@ int main(void)
   // Add the run to the document
   document.add(std::move(run));
   // Save the document directly to a file.
-  // since we gave saveDocument no protocol parameter, it will default to JSON
-  axom::sina::saveDocument(document, "MySinaData.json");
+  // by specifying Protocol::JSON, we set the file to save as a JSON.
+  // if we wished, we could provide no third argument since saveDocument defaults to JSON.
+  axom::sina::saveDocument(document, "MySinaData.json", axom::sina::Protocol::JSON);
 
 #ifdef AXOM_USE_HDF5
   // by specifying Protocol::HDF5, we also save a copy as an HDF5 file.

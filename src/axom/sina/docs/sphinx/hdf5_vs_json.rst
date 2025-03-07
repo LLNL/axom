@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,7 @@ Why You Should Use HDF5
 
 * HDF5 offers better size and speed efficiency when dealing with larger files/curve sets 
 and only outperforms more dramatically as size increases
-* Hierarchal structure leads to being 2.5x more size efficient and 5x faster at our largest
+* Hierarchical structure leads to being 2.5x more size efficient and 5x faster at our largest
 tested files
 
 ==========

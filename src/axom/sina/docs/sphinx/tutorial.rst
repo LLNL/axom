@@ -148,10 +148,10 @@ Input and Output
 
 Once you have a document, it is easy to save it to a file. To save to a JSON, we
 run the saveDocument() with the optional argument Protocol set to JSON or set as
-nothing. Alternatively, if you wish to save the document to an HDF5 file, you must set 
-saveDocument()'s optional Protocol parameter to HDF5. After executing the below, you 
-will output a file named "my_output.json" and a file named "my_output.hdf5", both of
-which you can ingest into a Sina datastore.
+nothing. Alternatively if you wish to save the document to an HDF5 file: Configure 
+axom for HDF5 support then you can set saveDocument()'s optional Protocol parameter 
+to HDF5. After executing the below, you will output a file named "my_output.json" 
+and a file named "my_output.hdf5", both of which you can ingest into a Sina datastore.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
@@ -161,8 +161,8 @@ which you can ingest into a Sina datastore.
 If needed, you can also load a document from a file. This can be useful,
 for example, if you wrote a document when writing a restart and you want to
 continue from where you left off.  To load from a JSON file simply run loadDocument()
-with the optional argument Protocol set to JSON or set as nothing, and to load from
-an HDF5 set the Protocol to HDF5.
+with the optional argument Protocol set to JSON or set as nothing. If you've configured 
+for, and wish to load from an HDF5 simply set the Protocol to HDF5.
 
 Note that due to HDF5's handling of '/' as indicators for nested structures,
 parent nodes will have '/' changed to the ``slashSubstitute`` variable located in 

@@ -4,12 +4,11 @@ import json
 import os
 import subprocess
 import unittest
+import config
 
-try:
+if (config.AXOM_USE_HDF5):
     import h5py
-    AXOM_USE_HDF5 = True
-except ImportError:
-    AXOM_USE_HDF5 = False
+
 
 def parse_args():
     """Helper function to obtain the binary directory path of Axom from CLI"""
@@ -124,7 +123,7 @@ class TestFortranExampleIntegrationJSON(unittest.TestCase):
 
 
 #HDF5 Test
-@unittest.skipUnless(AXOM_USE_HDF5, "Requires h5py for HDF5-dependent tests")
+@unittest.skipUnless(config.AXOM_USE_HDF5, "Requires h5py for HDF5-dependent tests")
 class TestFortranExampleIntegrationHDF5(unittest.TestCase):
 
     @classmethod
@@ -269,7 +268,7 @@ if __name__ == "__main__":
     # Doing the below instead of unittest.main() so that we can print to stdout
     suite = unittest.TestSuite()
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(TestFortranExampleIntegrationJSON))
-    if AXOM_USE_HDF5:
+    if config.AXOM_USE_HDF5:
         suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(TestFortranExampleIntegrationHDF5))
     runner = unittest.TextTestRunner(buffer=False)
     runner.run(suite)

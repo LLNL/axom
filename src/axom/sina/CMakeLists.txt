@@ -45,6 +45,9 @@ set(sina_sources
     core/Run.cpp
     )
 
+# Set CMake Policy
+cmake_policy(SET CMP0115 NEW)
+
 # Add Adiak header and source
 blt_list_append( TO sina_headers ELEMENTS core/AdiakWriter.hpp IF AXOM_USE_ADIAK )
 blt_list_append( TO sina_sources ELEMENTS core/AdiakWriter.cpp IF AXOM_USE_ADIAK )
@@ -57,10 +60,15 @@ else()
 endif()
 
 if (ENABLE_FORTRAN)
-  blt_list_append( TO sina_headers ELEMENTS interface/sina_fortran_interface.h)
-  blt_list_append( TO sina_sources
-  ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f.in)
-  configure_file(interface/sina_fortran_interface.f.in interface/sina_fortran_interface.f @ONLY)
+  blt_list_append(TO sina_headers 
+    ELEMENTS interface/sina_fortran_interface.h)
+  blt_list_append(TO sina_sources 
+    ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f)
+  configure_file(interface/sina_fortran_interface.f.in 
+                 interface/sina_fortran_interface.f 
+                 @ONLY)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/interface/sina_fortran_interface.f
+        DESTINATION interface)
 endif()
 
 #------------------------------------------------------------------------------
