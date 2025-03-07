@@ -1493,6 +1493,40 @@ TEST(sidre_group, groups_move_copy)
 }
 
 //------------------------------------------------------------------------------
+TEST(sidre_group, scalar_memory_allocator)
+{
+  // Allocator ids to test.
+  std::vector<int> allocIds(1, axom::DYNAMIC_ALLOCATOR_ID);
+  #ifdef AXOM_USE_UMPIRE
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
+    #ifdef AXOM_USE_GPU
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
+  // Does it make sense to check Pinned and Constant memory spaces?
+    #endif
+  #endif
+
+  DataStore ds;
+  Group* grp = ds.getRoot()->createGroup("grp");
+
+  for(auto allocId : allocIds)
+  {
+    grp->setDefaultAllocator(allocId);
+
+    std::int32_t scalarInt = 12345;
+    grp->createViewScalar("scalarInt", scalarInt);
+
+    std::int32_t* scalarIntPtr = (std::int32_t*)grp->getView("scalarInt")->getVoidPtr();
+    auto allocIdScalarInt = axom::getAllocatorIDFromPointer(scalarIntPtr);
+    EXPECT_EQ(allocIdScalarInt, allocId);
+
+    std::int32_t scalarIntTmp;
+    axom::copy(&scalarIntTmp, scalarIntPtr, sizeof(scalarInt));
+    EXPECT_EQ(scalarIntTmp, scalarInt);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(sidre_group, group_deep_copy)
 {
   DataStore* ds = new DataStore();
@@ -1616,6 +1650,138 @@ TEST(sidre_group, group_deep_copy)
   }
 
   delete ds;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group, deep_copy_interspace)
+{
+  // Test deep copies with a change in memory space.
+
+  // Allocator ids to test.
+  std::vector<int> allocIds(1, axom::DYNAMIC_ALLOCATOR_ID);
+  #ifdef AXOM_USE_UMPIRE
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
+    #ifdef AXOM_USE_GPU
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
+  // Does it make sense to check Pinned and Constant memory spaces?
+    #endif
+  #endif
+
+  DataStore ds;
+
+  constexpr int N = 5;
+  auto dtypeDouble = conduit::DataType::float64(1);
+  auto dtypeIntArray = conduit::DataType::int32(N);
+
+  // Original values on host
+  const double doubleValue = 10.13456;
+  axom::Array<std::int32_t> intArray(N, N);
+  for(int i = 0; i < N; ++i) { intArray[i] = 1001.5 + i; }
+  std::string stringValue = "a string";
+
+  // Temporary space for correctness checks
+  double tmpDoubleValue = doubleValue;
+  axom::Array<std::int32_t> tmpIntArray(N, N);
+  axom::Array<char> tmpCharArray;
+
+  // For each combination of srcAllocId and dstAllocId,
+  // allocate src and copy to dst.
+
+  for(auto srcAllocId : allocIds)
+  {
+    Group* srcParent = ds.getRoot()->createGroup("srcParent");
+    srcParent->setDefaultAllocator(srcAllocId);
+    Group* src = srcParent->createGroup("src");
+    EXPECT_EQ(srcParent->getDefaultAllocatorID(), srcAllocId);
+    EXPECT_EQ(src->getDefaultAllocatorID(), srcAllocId);
+
+    //
+    // Create, initialize and sanity-check src objects to test.
+    //
+
+    View* srcString = src->createViewString("aString", stringValue);
+    const char* srcStringPtr = (char*)srcString->getNode().data_ptr();
+    if(srcAllocId == axom::DYNAMIC_ALLOCATOR_ID)
+    {
+      // Skip this check if srcAllocId is non-DYNAMIC_ALLOCATOR_ID,
+      // because a current sidre issue results in always
+      // placing strings on Conduit's default alloc id.
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(srcStringPtr), srcAllocId);
+    }
+
+    View* srcScalar = src->createViewAndAllocate("aDouble", dtypeDouble);
+    double* srcScalarPtr = (double*)srcScalar->getNode().data_ptr();
+    EXPECT_EQ(axom::getAllocatorIDFromPointer(srcScalarPtr), srcAllocId);
+    axom::copy(srcScalarPtr, &doubleValue, sizeof(double));
+
+    View* srcArray = src->createViewAndAllocate("aIntArray", dtypeIntArray);
+    std::int32_t* srcArrayPtr = (std::int32_t*)srcArray->getNode().data_ptr();
+    EXPECT_EQ(axom::getAllocatorIDFromPointer(srcArrayPtr), srcAllocId);
+    axom::copy(srcArrayPtr, intArray.data(), N * sizeof(std::int32_t));
+
+    if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(srcAllocId))
+    {
+      std::cout << "srcParent group:" << std::endl;
+      srcParent->print();
+    }
+
+    //
+    // Copy the source into destinations of different alloc ids
+    //
+
+    for(auto dstAllocId : allocIds)
+    {
+      std::cout << "Testing copying allocator id " << srcAllocId << " to "
+                << dstAllocId << std::endl;
+
+      axom::sidre::Group* dstParent = ds.getRoot()->createGroup("dstParent");
+      dstParent->setDefaultAllocator(dstAllocId);
+
+      dstParent->deepCopyGroup(srcParent);
+
+      Group* dst = dstParent->getGroup("dst");
+
+      //
+      // Check pointers.  Copy data to temporary host buffers and check.
+      //
+
+      double* dstScalarPtr =
+        (double*)dst->getView(srcScalar->getName())->getVoidPtr();
+      EXPECT_NE(dstScalarPtr, nullptr);
+      EXPECT_NE(dstScalarPtr, srcScalarPtr);
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(dstScalarPtr), dstAllocId);
+      axom::copy(&tmpDoubleValue, dstScalarPtr, sizeof(double));
+      EXPECT_EQ(tmpDoubleValue, doubleValue);
+
+      std::int32_t* dstArrayPtr =
+        (std::int32_t*)dst->getView(srcArray->getName())->getVoidPtr();
+      EXPECT_NE(dstArrayPtr, nullptr);
+      EXPECT_NE(dstArrayPtr, srcArrayPtr);
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(dstArrayPtr), dstAllocId);
+      axom::copy(tmpIntArray.data(), srcArrayPtr, N * sizeof(std::int32_t));
+      for(int i = 0; i < N; ++i)
+      {
+        EXPECT_EQ(tmpIntArray[i], intArray[i]);
+      }
+
+      char* dstStringPtr =
+        (char*)dst->getView(srcString->getName())->getVoidPtr();
+      EXPECT_NE(dstStringPtr, nullptr);
+      EXPECT_NE(dstStringPtr, srcStringPtr);
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(dstStringPtr), dstAllocId);
+      tmpCharArray.resize(srcString->getNumElements());
+      axom::copy(tmpCharArray.data(), srcStringPtr, srcString->getNumElements());
+      for(int i = 0; i < N; ++i)
+      {
+        EXPECT_EQ(tmpCharArray[i], stringValue[i]);
+      }
+
+      ds.getRoot()->destroyGroup("dstParent");
+    }
+
+    ds.getRoot()->destroyGroup("srcParent");
+  }
 }
 
 //------------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/MapCollection.hpp"
 #include "axom/core/Path.hpp"
+#include "axom/core/ConduitMemCallbacks.hpp"
 
 // Sidre headers
 #include "Buffer.hpp"
@@ -1534,6 +1535,7 @@ bool Group::deepCopyToConduit(Node& n, const Attribute* attr) const
     if(attr == nullptr || view->hasAttributeValue(attr))
     {
       conduit::Node& child_node = m_is_list ? n.append() : n[view->getName()];
+      child_node.set_allocator(axom::ConduitMemCallbacks::axomAllocIdToConduit(m_default_allocator_id));
       view->deepCopyToConduit(child_node);
       hasSavedViews = true;
     }
