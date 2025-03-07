@@ -13,7 +13,6 @@
 #include "Attribute.hpp"
 
 #include "axom/core/Macros.hpp"
-#include "axom/core/WhereMacro.hpp"
 
 namespace axom
 {

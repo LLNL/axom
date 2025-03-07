@@ -23,6 +23,8 @@
   #include <cstdlib>  // for std::malloc, std::realloc, std::free
 #endif
 
+#include <iostream>
+
 namespace axom
 {
 // To co-exist with Umpire allocator ids, use negative values here.
