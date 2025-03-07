@@ -106,7 +106,8 @@ void test_last_clip()
   using PointType = axom::primal::Point<value_type, 2>;
   using VectorType = axom::primal::Vector<value_type, 2>;
   using PlaneType = axom::primal::Plane<value_type, 2>;
-  using PolygonType = axom::primal::Polygon<value_type, 2, axom::primal::PolygonArray::Static, MAX_VERTS>;
+  using PolygonType =
+    axom::primal::Polygon<value_type, 2, axom::primal::PolygonArray::Static, MAX_VERTS>;
 
   // Make the zone to clip.
   PolygonType shape;
@@ -121,19 +122,20 @@ void test_last_clip()
   auto polygonsView = polygons.view();
 
   // Clip the polygons in the kernel
-  axom::for_all<ExecSpace>(1, AXOM_LAMBDA(axom::IndexType index)
-  {
-    const VectorType normal({0.371391, 0.928477});
-    const PointType pt({9.24395,-3.55679});
+  axom::for_all<ExecSpace>(
+    1,
+    AXOM_LAMBDA(axom::IndexType index) {
+      const VectorType normal({0.371391, 0.928477});
+      const PointType pt({9.24395, -3.55679});
 
-    // Clip one side.
-    auto P = PlaneType(-normal, pt, false);
-    polygonsView[0] = axom::primal::clip(shape, P);
+      // Clip one side.
+      auto P = PlaneType(-normal, pt, false);
+      polygonsView[0] = axom::primal::clip(shape, P);
 
-    // Clip the other side. This is the one that I was having problems with on CUDA.
-    P = PlaneType(normal, pt, false);
-    polygonsView[1] = axom::primal::clip(shape, P);
-  });
+      // Clip the other side. This is the one that I was having problems with on CUDA.
+      P = PlaneType(normal, pt, false);
+      polygonsView[1] = axom::primal::clip(shape, P);
+    });
 
   // Get polygons back on host.
   axom::Array<PolygonType> hostPolygons;
@@ -165,7 +167,7 @@ TEST(mir_elvira, elvira_uniform_unibuffer_seq)
 TEST(mir_elvira, elvira_uniform_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_cuda");
-//  test_last_clip<cuda_exec>();
+  //  test_last_clip<cuda_exec>();
   braid2d_mat_test<cuda_exec>("uniform",
                               "unibuffer",
                               "elvira_uniform_unibuffer");
@@ -207,6 +209,9 @@ int main(int argc, char *argv[])
     ->capture_default_str()
     ->check(axom::utilities::ValidCaliperMode);
 #endif
+  bool handlerEnabled = false;
+  app.add_flag("--handler", handlerEnabled, "Enable Conduit handler.");
+
   // Parse command line options.
   app.parse(argc, argv);
 
@@ -216,7 +221,10 @@ int main(int argc, char *argv[])
 #endif
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
-  conduit::utils::set_error_handler(conduit_debug_err_handler);
+  if(handlerEnabled)
+  {
+    conduit::utils::set_error_handler(conduit_debug_err_handler);
+  }
 
   result = RUN_ALL_TESTS();
   return result;

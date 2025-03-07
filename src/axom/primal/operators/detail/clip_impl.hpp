@@ -796,8 +796,7 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList
  */
 AXOM_SUPPRESS_HD_WARN
 template <typename PolygonType>
-AXOM_HOST_DEVICE
-PolygonType makeUniquePoints(const PolygonType& poly, double eps)
+AXOM_HOST_DEVICE PolygonType makeUniquePoints(const PolygonType& poly, double eps)
 {
   PolygonType uniqueList;
   for(int i = 0; i < poly.numVertices(); i++)

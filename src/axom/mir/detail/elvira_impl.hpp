@@ -65,8 +65,10 @@ struct Result2D
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-void elvira2d(Result2D<value_type> &result, const value_type *vf, const int *ivf, Direction direction)
+AXOM_HOST_DEVICE void elvira2d(Result2D<value_type> &result,
+                               const value_type *vf,
+                               const int *ivf,
+                               Direction direction)
 {
   const value_type jb = vf[ivf[0]] + vf[ivf[1]] + vf[ivf[2]];  // bottom row
   const value_type jm = vf[ivf[3]] + vf[ivf[4]] + vf[ivf[5]];  // middle row
@@ -130,11 +132,10 @@ void elvira2d(Result2D<value_type> &result, const value_type *vf, const int *ivf
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-inline value_type elvira_chisq(const value_type *vf,
-                           const value_type *vfs,
-                           const int *ivf,
-                           int k)
+AXOM_HOST_DEVICE inline value_type elvira_chisq(const value_type *vf,
+                                                const value_type *vfs,
+                                                const int *ivf,
+                                                int k)
 {
   value_type chisq = 0.0;
   for(; k--;)
@@ -153,8 +154,7 @@ inline value_type elvira_chisq(const value_type *vf,
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-inline void norm2d(value_type n2[2], value_type n3[3])
+AXOM_HOST_DEVICE inline void norm2d(value_type n2[2], value_type n3[3])
 {
   constexpr value_type PTINY = 1.e-15;
   // Compute 2D vector magnitude.
@@ -171,9 +171,8 @@ inline void norm2d(value_type n2[2], value_type n3[3])
  * \brief Return sorted, positive components of vector length 3.
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-inline void n_sort(const value_type n[3],  // input vector
-                   value_type na[3])       // output vector
+AXOM_HOST_DEVICE inline void n_sort(const value_type n[3],  // input vector
+                                    value_type na[3])       // output vector
 {
   na[0] = axom::utilities::abs(n[0]);
   na[1] = axom::utilities::abs(n[1]);
@@ -209,11 +208,8 @@ inline void n_sort(const value_type n[3],  // input vector
  *       Cross section formulas from Youngs (1987).
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-value_type vf_1cube(value_type d,
-                value_type n1,
-                value_type n2,
-                value_type n3)
+AXOM_HOST_DEVICE value_type
+vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
 {
   value_type vf = 0.0, dd1, dd2, dd3;
   enum
@@ -332,8 +328,7 @@ value_type vf_1cube(value_type d,
  *
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-value_type cub4p(const value_type *x, const value_type *y)
+AXOM_HOST_DEVICE value_type cub4p(const value_type *x, const value_type *y)
 {
   value_type dstar;
   value_type e0 = 0.0, e1 = 0.0, e2 = 0.0, ep, em, ea, eb;
@@ -556,8 +551,7 @@ value_type cub4p(const value_type *x, const value_type *y)
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-value_type d_3cube(const value_type n[3], value_type vf13)
+AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
 {
   int i, ik, ifdhi;
   value_type d[5], vc[5], v[4], x[4];
@@ -694,12 +688,11 @@ value_type d_3cube(const value_type n[3], value_type vf13)
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-void vf_3cube(value_type n[3],
-              value_type pd,
-              value_type *vfs,
-              const int *ivf,
-              int k)
+AXOM_HOST_DEVICE void vf_3cube(value_type n[3],
+                               value_type pd,
+                               value_type *vfs,
+                               const int *ivf,
+                               int k)
 {
   /* find node of lowest d */
   /* as 0 or 1 offset for each coord.  */
@@ -738,8 +731,7 @@ void vf_3cube(value_type n[3],
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-void elvira2xy(const value_type *vf, value_type n[3])
+AXOM_HOST_DEVICE void elvira2xy(const value_type *vf, value_type n[3])
 {
   // These are indices into the volume fractions that pull out values in the XY plane.
   const int ivf[9] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -806,8 +798,7 @@ void elvira2xy(const value_type *vf, value_type n[3])
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-void transform(value_type *normal, const value_type jac[3][3])
+AXOM_HOST_DEVICE void transform(value_type *normal, const value_type jac[3][3])
 {
   SLIC_ASSERT(normal != nullptr);
 
@@ -862,12 +853,11 @@ void transform(value_type *normal, const value_type jac[3][3])
  * \note  Adapted from J. Grandy's BasicStencil.cc:52 
  */
 template <typename value_type>
-AXOM_HOST_DEVICE
-void computeJacobian(const value_type *xcst,
-                     const value_type *ycst,
-                     const value_type *zcst,
-                     int ndims,
-                     value_type jac[3][3])
+AXOM_HOST_DEVICE void computeJacobian(const value_type *xcst,
+                                      const value_type *ycst,
+                                      const value_type *zcst,
+                                      int ndims,
+                                      value_type jac[3][3])
 {
   value_type del[3][3] = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}}, det;
   int f, f0, f1, f2, g0, g1, g2;

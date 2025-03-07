@@ -306,23 +306,23 @@ protected:
   using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
   using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
 
-    // Determine the output type from the clip operations. Those are the shape
-    // types that we're emitting into the MIR output. Create the builder.
-    using CoordType = typename CoordsetView::value_type;
-    using ClipResultType = typename std::conditional<
-      NDIMS == 2,
-      axom::primal::Polygon<CoordType, 2, axom::primal::PolygonArray::Static>,
-      axom::primal::Polyhedron<CoordType, 3>>::type;
-    using VectorType = axom::primal::Vector<CoordType, NDIMS>;
-    using PointType = axom::primal::Point<CoordType, NDIMS>;
-    using PlaneType = axom::primal::Plane<CoordType, NDIMS>;
-    using ShapeView = axom::mir::utilities::blueprint::PrimalAdaptor<TopologyView, CoordsetView>;
-    using Builder =
-      TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, ClipResultType, NDIMS>;
-    using BuilderView = typename Builder::View;
+  // Determine the output type from the clip operations. Those are the shape
+  // types that we're emitting into the MIR output. Create the builder.
+  using CoordType = typename CoordsetView::value_type;
+  using ClipResultType = typename std::conditional<
+    NDIMS == 2,
+    axom::primal::Polygon<CoordType, 2, axom::primal::PolygonArray::Static>,
+    axom::primal::Polyhedron<CoordType, 3>>::type;
+  using VectorType = axom::primal::Vector<CoordType, NDIMS>;
+  using PointType = axom::primal::Point<CoordType, NDIMS>;
+  using PlaneType = axom::primal::Plane<CoordType, NDIMS>;
+  using ShapeView =
+    axom::mir::utilities::blueprint::PrimalAdaptor<TopologyView, CoordsetView>;
+  using Builder =
+    TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, ClipResultType, NDIMS>;
+  using BuilderView = typename Builder::View;
 
 public:
-
   /*!
    * \brief Constructor
    *
@@ -951,7 +951,6 @@ protected:
     ycStencil.clear();
     zcStencil.clear();
 
-
     AXOM_ANNOTATE_END("allocate");
     //--------------------------------------------------------------------------
     Builder build;
@@ -960,8 +959,15 @@ protected:
     {
       n_newMatset["material_map"].set(n_matset["material_map"]);
     }
-    makeFragments(build.view(), matZoneView, matCountView, matOffsetView, sortedMaterialIdsView,
-                  fragmentVectorsView, fragmentVFStencilView, max_iterations, tolerance);
+    makeFragments(build.view(),
+                  matZoneView,
+                  matCountView,
+                  matOffsetView,
+                  sortedMaterialIdsView,
+                  fragmentVectorsView,
+                  fragmentVFStencilView,
+                  max_iterations,
+                  tolerance);
 
     //--------------------------------------------------------------------------
 #if defined(AXOM_ELVIRA_DEBUG)
@@ -982,19 +988,18 @@ protected:
 #endif
   }
 
-
-  void makeFragments(BuilderView buildView,
-                     axom::ArrayView<axom::IndexType> matZoneView,
-                     axom::ArrayView<axom::IndexType> matCountView,
-                     axom::ArrayView<axom::IndexType> matOffsetView,
-                     axom::ArrayView<typename MatsetView::IndexType> sortedMaterialIdsView,
-                     axom::ArrayView<double> fragmentVectorsView,
-                     axom::ArrayView<double> fragmentVFStencilView,
-                     int max_iterations,
-                     double tolerance)
+  void makeFragments(
+    BuilderView buildView,
+    axom::ArrayView<axom::IndexType> matZoneView,
+    axom::ArrayView<axom::IndexType> matCountView,
+    axom::ArrayView<axom::IndexType> matOffsetView,
+    axom::ArrayView<typename MatsetView::IndexType> sortedMaterialIdsView,
+    axom::ArrayView<double> fragmentVectorsView,
+    axom::ArrayView<double> fragmentVFStencilView,
+    int max_iterations,
+    double tolerance)
   {
     namespace bputils = axom::mir::utilities::blueprint;
-
 
     AXOM_ANNOTATE_SCOPE("fragments");
 
