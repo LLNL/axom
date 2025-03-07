@@ -2,8 +2,9 @@
 // other Axom Project Developers. See the top-level LICENSE file for internals.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-#if 0
-#include "axom/mir/ElviraAlgorithm.hpp"
+
+// NOTE: This file is meant to be included by ElviraAlgorithm.hpp after its
+//       other includes so we do not include much here.
 
 #include <iostream>
 
@@ -14,18 +15,25 @@ namespace mir
 namespace elvira
 {
 
+// NOTE: Many of the functions below were adapted from Overlink but have been
+//       templated on "value_type" instead of using double. This was done so
+//       we can generate host and device code for HIP without resulting in
+//       multiple function definitions at link time.
+
 enum class Direction
 {
   VERTICAL = 0,
   HORIZONTAL = 1
 };
 
+/// This struct stores the normal computed for a plane of stencil data.
+template <typename value_type>
 struct Result2D
 {
   int plane {2};
   int difference_used {0};
-  double columns[3] {0., 0., 0.};
-  double normal[3][2] {{0., 0.}, {0., 0.}, {0., 0.}};
+  value_type columns[3] {0., 0., 0.};
+  value_type normal[3][2] {{0., 0.}, {0., 0.}, {0., 0.}};
 };
 
 /*!
@@ -56,19 +64,20 @@ struct Result2D
  *
  * \note Adapted from J. Grandy's Overlink code
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-void elvira2d(Result2D &result, const double *vf, const int *ivf, Direction direction)
+void elvira2d(Result2D<value_type> &result, const value_type *vf, const int *ivf, Direction direction)
 {
-  const double jb = vf[ivf[0]] + vf[ivf[1]] + vf[ivf[2]];  // bottom row
-  const double jm = vf[ivf[3]] + vf[ivf[4]] + vf[ivf[5]];  // middle row
-  const double jt = vf[ivf[6]] + vf[ivf[7]] + vf[ivf[8]];  // top row
+  const value_type jb = vf[ivf[0]] + vf[ivf[1]] + vf[ivf[2]];  // bottom row
+  const value_type jm = vf[ivf[3]] + vf[ivf[4]] + vf[ivf[5]];  // middle row
+  const value_type jt = vf[ivf[6]] + vf[ivf[7]] + vf[ivf[8]];  // top row
 
-  const double il = vf[ivf[0]] + vf[ivf[3]] + vf[ivf[6]];  // left column
-  const double im = vf[ivf[1]] + vf[ivf[4]] + vf[ivf[7]];  // middle column
-  const double ir = vf[ivf[2]] + vf[ivf[5]] + vf[ivf[8]];  // right column
+  const value_type il = vf[ivf[0]] + vf[ivf[3]] + vf[ivf[6]];  // left column
+  const value_type im = vf[ivf[1]] + vf[ivf[4]] + vf[ivf[7]];  // middle column
+  const value_type ir = vf[ivf[2]] + vf[ivf[5]] + vf[ivf[8]];  // right column
 
-  double slope[3] {0., 0., 0.};  // backward, cent, and forward differencing
-  double slopev = 0.;            // Sets overall sign of normal.
+  value_type slope[3] {0., 0., 0.};  // backward, cent, and forward differencing
+  value_type slopev = 0.;            // Sets overall sign of normal.
   int ihv;
   if(direction == Direction::VERTICAL)
   {
@@ -97,7 +106,7 @@ void elvira2d(Result2D &result, const double *vf, const int *ivf, Direction dire
     ihv = 1;
   }
 
-  const double sign = (slopev > 0.0) ? (1.) : (-1.);
+  const value_type sign = (slopev > 0.0) ? (1.) : (-1.);
 
   // return the normal in the direction away from the material
   // i = loop over three difference schemes.
@@ -120,16 +129,17 @@ void elvira2d(Result2D &result, const double *vf, const int *ivf, Direction dire
  *
  * \note Adapted from J. Grandy's Overlink code
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-inline double elvira_chisq(const double *vf,
-                           const double *vfs,
+inline value_type elvira_chisq(const value_type *vf,
+                           const value_type *vfs,
                            const int *ivf,
                            int k)
 {
-  double chisq = 0.0;
+  value_type chisq = 0.0;
   for(; k--;)
   {
-    const double c = vf[ivf[k]] - vfs[ivf[k]];
+    const value_type c = vf[ivf[k]] - vfs[ivf[k]];
     chisq += c * c;
   }
   return chisq;
@@ -142,14 +152,15 @@ inline double elvira_chisq(const double *vf,
  *
  * \note Adapted from J. Grandy's Overlink code
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-inline void norm2d(double n2[2], double n3[3])
+inline void norm2d(value_type n2[2], value_type n3[3])
 {
-  constexpr double PTINY = 1.e-15;
+  constexpr value_type PTINY = 1.e-15;
   // Compute 2D vector magnitude.
-  double magnitude = sqrt(n2[0] * n2[0] + n2[1] * n2[1]);
-  double magnitude2 = magnitude * magnitude;
-  double magnitudeReciprocal = magnitude / (magnitude2 + PTINY);
+  value_type magnitude = sqrt(n2[0] * n2[0] + n2[1] * n2[1]);
+  value_type magnitude2 = magnitude * magnitude;
+  value_type magnitudeReciprocal = magnitude / (magnitude2 + PTINY);
   // normalize vector, make it 3D
   n3[0] = n2[0] * magnitudeReciprocal;
   n3[1] = n2[1] * magnitudeReciprocal;
@@ -159,9 +170,10 @@ inline void norm2d(double n2[2], double n3[3])
 /*!
  * \brief Return sorted, positive components of vector length 3.
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-inline void n_sort(const double n[3],  // input vector
-                   double na[3])       // output vector
+inline void n_sort(const value_type n[3],  // input vector
+                   value_type na[3])       // output vector
 {
   na[0] = axom::utilities::abs(n[0]);
   na[1] = axom::utilities::abs(n[1]);
@@ -196,13 +208,14 @@ inline void n_sort(const double n[3],  // input vector
  * \note Plane equation is (n,x) + d = 0.
  *       Cross section formulas from Youngs (1987).
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-double vf_1cube(double d,   // plane displacement
-                double n1,  // sorted positive normal components of plane
-                double n2,  // sorted positive normal components of plane
-                double n3)  // sorted positive normal components of plane
+value_type vf_1cube(value_type d,
+                value_type n1,
+                value_type n2,
+                value_type n3)
 {
-  double vf = 0.0, dd1, dd2, dd3;
+  value_type vf = 0.0, dd1, dd2, dd3;
   enum
   {
     cut_triangle,
@@ -211,8 +224,8 @@ double vf_1cube(double d,   // plane displacement
     cut_hex,
     cut_quadb
   } xsec;
-  constexpr double one6 = 1. / 6.;
-  double nbd = n1 + n2 + n3;
+  constexpr value_type one6 = 1. / 6.;
+  value_type nbd = n1 + n2 + n3;
 
   int ifdhi = 0;
   if(d > 0.5 * nbd)
@@ -297,9 +310,9 @@ double vf_1cube(double d,   // plane displacement
   {
     vf = 1.0 - vf;
   } /* vf=0.5 symmetry.   */
-  constexpr double eps = 1.0e-15;
-  constexpr double lower = eps;
-  constexpr double upper = 1. - eps;
+  constexpr value_type eps = 1.0e-15;
+  constexpr value_type lower = eps;
+  constexpr value_type upper = 1. - eps;
   if(vf < lower) vf = 0.0; /* Truncate. */
   if(vf > upper) vf = 1.0; /* Truncate. */
   return (vf);
@@ -318,18 +331,19 @@ double vf_1cube(double d,   // plane displacement
  *   y[1], y[2] are function at 2/3x[0] + 1/3x[3] and 1/3x[0] + 2/3x[3].
  *
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-double cub4p(const double *x, const double *y)
+value_type cub4p(const value_type *x, const value_type *y)
 {
-  double dstar;
-  double e0 = 0.0, e1 = 0.0, e2 = 0.0, ep, em, ea, eb;
-  double de0, dde0, de0sq, dde0sq;
-  double de1, dde1, de1sq, dde1sq, demin, ddemax;
-  double y0, y1, y2, y3;
-  double w0 = 0.0, w1 = 0.0, w2;
-  double b, y30, y12, a, tol2;
-  double tolsec = 1.0e-28;
-  double one6 = 0.16666666666666667;
+  value_type dstar;
+  value_type e0 = 0.0, e1 = 0.0, e2 = 0.0, ep, em, ea, eb;
+  value_type de0, dde0, de0sq, dde0sq;
+  value_type de1, dde1, de1sq, dde1sq, demin, ddemax;
+  value_type y0, y1, y2, y3;
+  value_type w0 = 0.0, w1 = 0.0, w2;
+  value_type b, y30, y12, a, tol2;
+  value_type tolsec = 1.0e-28;
+  value_type one6 = 0.16666666666666667;
   int ifsec, ifbis;
 
   y0 = y[0];
@@ -541,14 +555,15 @@ double cub4p(const double *x, const double *y)
  *
  * \note Adapted from J. Grandy's Overlink code
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-double d_3cube(const double n[3], double vf13)
+value_type d_3cube(const value_type n[3], value_type vf13)
 {
   int i, ik, ifdhi;
-  double d[5], vc[5], v[4], x[4];
-  double na[3], n1, n2, n3, nbd, dstar;
-  double one3 = 0.3333333333333333;
-  double two3 = 2.0 * one3;
+  value_type d[5], vc[5], v[4], x[4];
+  value_type na[3], n1, n2, n3, nbd, dstar;
+  value_type one3 = 0.3333333333333333;
+  value_type two3 = 2.0 * one3;
 
   /* Get sorted positive normal components.   */
   n_sort(n, na);
@@ -668,8 +683,8 @@ double d_3cube(const double n[3], double vf13)
  *        inside half space away from which normal points ("below" normal)
  *        for the zones that are center, face, edges. 
  *
- * \param n The normal to use.
- * \param pd The displacement from the lower left corner of the zone.
+ * \param n The plane normal (pointing outward).
+ * \param pd The -displacement from the lower left corner of the zone.
  * \param[out] vfs An array of volume fractions for the ivf zone ids.
  * \param ivf A list of stencil indices.
  * \param k The number of stencil indices in \a ivf.
@@ -678,36 +693,37 @@ double d_3cube(const double n[3], double vf13)
  *
  * \note Adapted from J. Grandy's Overlink code
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-void vf_3cube(double n[3],  // plane normal (pointing outward).
-              double pd,    // -displacement.
-              double *vfs,
+void vf_3cube(value_type n[3],
+              value_type pd,
+              value_type *vfs,
               const int *ivf,
               int k)
 {
   /* find node of lowest d */
   /* as 0 or 1 offset for each coord.  */
-  const double delx0 = (n[0] < 0.0) ? 1.0 : 0.0;
-  const double dely0 = (n[1] < 0.0) ? 1.0 : 0.0;
-  const double delz0 = (n[2] < 0.0) ? 1.0 : 0.0;
+  const value_type delx0 = (n[0] < 0.0) ? 1.0 : 0.0;
+  const value_type dely0 = (n[1] < 0.0) ? 1.0 : 0.0;
+  const value_type delz0 = (n[2] < 0.0) ? 1.0 : 0.0;
 
-  double na[3];
+  value_type na[3];
   n_sort(n, na);
 
   for(int i = 0; i < k; i++)
   {
     // Compute lower left coordinate of stencil box.
     // The values are 0,1,2
-    const double sx = static_cast<double>(ivf[i] % 3);
-    const double sy = static_cast<double>((ivf[i] % 9) / 3);
-    const double sz = static_cast<double>(ivf[i] / 9);
+    const value_type sx = static_cast<value_type>(ivf[i] % 3);
+    const value_type sy = static_cast<value_type>((ivf[i] % 9) / 3);
+    const value_type sz = static_cast<value_type>(ivf[i] / 9);
 
-    const double x0 = sx + delx0;
-    const double y0 = sy + dely0;
-    const double z0 = sz + delz0;
-    const double d = -(pd + (n[0] * x0 + n[1] * y0 + n[2] * z0));
+    const value_type x0 = sx + delx0;
+    const value_type y0 = sy + dely0;
+    const value_type z0 = sz + delz0;
+    const value_type d = -(pd + (n[0] * x0 + n[1] * y0 + n[2] * z0));
 
-    const double vf = vf_1cube(d, na[0], na[1], na[2]);
+    const value_type vf = vf_1cube(d, na[0], na[1], na[2]);
 
     vfs[ivf[i]] = vf;
   }
@@ -721,8 +737,9 @@ void vf_3cube(double n[3],  // plane normal (pointing outward).
  *
  * \note Adapted from J. Grandy's Overlink code
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-void elvira2xy(const double *vf, double n[3])
+void elvira2xy(const value_type *vf, value_type n[3])
 {
   // These are indices into the volume fractions that pull out values in the XY plane.
   const int ivf[9] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -734,7 +751,7 @@ void elvira2xy(const double *vf, double n[3])
   constexpr int right = 5;
 
   // Pick a direction.
-  double variance[2];
+  value_type variance[2];
   variance[0] = ((vf[center] - vf[bottom]) * (vf[center] - vf[bottom]) +
                  (vf[center] - vf[top]) * (vf[center] - vf[top]));
   variance[1] = ((vf[center] - vf[left]) * (vf[center] - vf[left]) +
@@ -743,29 +760,29 @@ void elvira2xy(const double *vf, double n[3])
     (variance[0] < variance[1]) ? Direction::HORIZONTAL : Direction::VERTICAL;
 
   // Compute normals
-  Result2D result;
+  Result2D<value_type> result;
   elvira2d(result, vf, ivf, direction);
   result.plane = 2;
 
-  double chmin = 0.0;
-  double vfs[9];
-  const double chfac[3] = {1.0, 0.25, 1.0};
+  value_type chmin = 0.0;
+  value_type vfs[9];
+  const value_type chfac[3] = {1.0, 0.25, 1.0};
 
   // Choose difference schemes.
   for(int diff = 0; diff < 3; diff++)
   {
     // Turn the normal into normalized 3D vector.
-    double n3[3];
+    value_type n3[3];
     norm2d(result.normal[diff], n3);
 
     // Compute displacement for center stencil for this normal.
-    double d = d_3cube(n3, vf[center]);
+    value_type d = d_3cube(n3, vf[center]);
 
     // Compute the vfs for the various boxes in the stencil using current n3.
     vf_3cube(n3, d, vfs, ivf, 9);
 
     // Compute diffs between computed, actual vf's.
-    double chisq = elvira_chisq(vf, vfs, ivf, 9);
+    value_type chisq = elvira_chisq(vf, vfs, ivf, 9);
     // Prefer central difference (since a low value will lower the error)
     chisq *= chfac[diff];
 
@@ -788,20 +805,17 @@ void elvira2xy(const double *vf, double n[3])
  *
  * \note Adapted from J. Grandy's Overlink code
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-void transform(double *normal, const double jac[3][3])
+void transform(value_type *normal, const value_type jac[3][3])
 {
   SLIC_ASSERT(normal != nullptr);
 
-  double norm = 0.0;
-  double dfvsum = 0.0;  // stores nx^2 + ny^2 + nz^2
-  double dfv[3], delfv[3];
+  value_type norm = 0.0;
+  value_type dfvsum = 0.0;  // stores nx^2 + ny^2 + nz^2
+  value_type dfv[3], delfv[3];
 
-  //  dfv[0] = normal[2];  // BJW: Why switch components? Rotation?
-  //  dfv[1] = normal[1];  // I think the code was doing this because of the old face order in computeJacobian.
-  //  dfv[2] = normal[0];
-
-  dfv[0] = normal[0];  // Put the normals in x,y,z order
+  dfv[0] = normal[0];
   dfv[1] = normal[1];
   dfv[2] = normal[2];
 
@@ -847,25 +861,24 @@ void transform(double *normal, const double jac[3][3])
  *
  * \note  Adapted from J. Grandy's BasicStencil.cc:52 
  */
+template <typename value_type>
 AXOM_HOST_DEVICE
-void computeJacobian(const double *xcst,
-                     const double *ycst,
-                     const double *zcst,
+void computeJacobian(const value_type *xcst,
+                     const value_type *ycst,
+                     const value_type *zcst,
                      int ndims,
-                     double jac[3][3])
+                     value_type jac[3][3])
 {
-  double del[3][3] = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}}, det;
+  value_type del[3][3] = {{1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}}, det;
   int f, f0, f1, f2, g0, g1, g2;
-  int perm1[3] = {1, 2, 0};
-  int perm2[3] = {2, 0, 1};
+  const int perm1[3] = {1, 2, 0};
+  const int perm2[3] = {2, 0, 1};
 
-  //  int idx_2D[6] = {4, 4, 1, 7, 3, 5};     // Z, Y, X
-  //  int idx_3D[6] = {4, 22, 10, 16, 12, 14};
+  // Stencil index pairs in X, X, Y, Y, Z, Z order.
+  const int idx_2D[6] = {3, 5, 1, 7, 4, 4};
+  const int idx_3D[6] = {12, 14, 10, 16, 4, 22};
 
-  int idx_2D[6] = {3, 5, 1, 7, 4, 4};  // X, Y, Z
-  int idx_3D[6] = {12, 14, 10, 16, 4, 22};
-
-  int *idx = (ndims == 3) ? idx_3D : idx_2D;
+  const int *idx = (ndims == 3) ? idx_3D : idx_2D;
 
   /*
   *  Note face convention : opposite face pairs (01), (23), (45) form
@@ -956,7 +969,7 @@ void computeJacobian(const double *xcst,
   std::cout << "}, ndims=" << ndims << ", det=" << det << std::endl;
 #endif
 
-  /* Fix 2D stencil */
+  // Fix jacobian matrix elements that should be identity for 2D.
   if(ndims == 2)
   {
     jac[2][0] = jac[2][1] = jac[0][2] = jac[1][2] = 0.0;
@@ -964,46 +977,102 @@ void computeJacobian(const double *xcst,
   }
 }
 
+/*!
+ * \brief Get the size of the stencil based on dimension.
+ *
+ * \param NDIMS The stencil size.
+ *
+ * \return The stencil size for dimension \a NDIMS.
+ */
 AXOM_HOST_DEVICE
-void elvira<2>::execute(int matCount,
-                        const double *fragmentVFStencilStart,
-                        double *fragmentVectorsStart,
-                        int iskip)
+constexpr int getStencilSize(int NDIMS)
 {
-  constexpr int StencilSize = getStencilSize(NDIMS);
-  constexpr int numVectorComponents = 3;
-
-  const double *vol_fracs = fragmentVFStencilStart;
-  double *normal = fragmentVectorsStart;
-
-  for(int m = 0; m < matCount; m++)
-  {
-    if(m != iskip)
-    {
-      elvira2xy(vol_fracs, normal);
-    }
-    else
-    {
-      normal[0] = 1.;
-      normal[1] = 0.;
-      normal[2] = 0.;
-    }
-
-    // Advance to next fragment.
-    vol_fracs += StencilSize;
-    normal += numVectorComponents;
-  }
+  return (NDIMS == 3) ? 27 : ((NDIMS == 2) ? 9 : 3);
 }
+
+/*! 
+ * \brief Base template for a class that invokes ELVIRA on various dimension data.
+ */
+template <int NDIMS>
+struct elvira
+{ };
+
+/*!
+ * \brief 2D specialization that calls elvira2xy to make normals.
+ */
+template <>
+struct elvira<2>
+{
+  static constexpr int NDIMS = 2;
+
+  /*!
+   * \brief Create normals for the material interface fragments in the selected zone.
+   *
+   * \param matCount The number of materials in the current zone.
+   * \param fragmentVFStencilStart The start of the material volume fraction stencil data for all fragments in a zone.
+   * \param fragmentVectorsStart The start of the normals for all fragments in a zone.
+   * \param iskip The material index to skip.
+   *
+   * \note Calling this function will update some vectors in the \a fragmentVectorsStart.
+   */
+  AXOM_HOST_DEVICE
+  static void execute(int matCount,
+                      const double *fragmentVFStencilStart,
+                      double *fragmentVectorsStart,
+                      int iskip)
+  {
+    constexpr int StencilSize = getStencilSize(NDIMS);
+    constexpr int numVectorComponents = 3;
+
+    const double *vol_fracs = fragmentVFStencilStart;
+    double *normal = fragmentVectorsStart;
+
+    for(int m = 0; m < matCount; m++)
+    {
+      if(m != iskip)
+      {
+        elvira2xy(vol_fracs, normal);
+      }
+      else
+      {
+        // The last fragment does not use its normal for slicing so fill
+        // in a value.
+        normal[0] = 1.;
+        normal[1] = 0.;
+        normal[2] = 0.;
+      }
+
+      // Advance to next fragment.
+      vol_fracs += StencilSize;
+      normal += numVectorComponents;
+    }
+  }
+};
 
 /*!
  * \brief 3D specialization that calls elvira3d to make normals.
  */
-AXOM_HOST_DEVICE
-void elvira<3>::execute(int AXOM_UNUSED_PARAM(matCount),
-                        const double *AXOM_UNUSED_PARAM(fragmentVFStencilStart),
-                        double *AXOM_UNUSED_PARAM(fragmentVectorsStart),
-                        int AXOM_UNUSED_PARAM(iskip))
+template <>
+struct elvira<3>
 {
+  static constexpr int NDIMS = 3;
+
+  /*!
+   * \brief Create normals for the material interface fragments in the selected zone.
+   *
+   * \param matCount The number of materials in the current zone.
+   * \param fragmentVFStencilStart The start of the material volume fraction stencil data for all fragments in a zone.
+   * \param fragmentVectorsStart The start of the normals for all fragments in a zone.
+   * \param iskip The material index to skip.
+   *
+   * \note Calling this function will update some vectors in the \a fragmentVectorsStart.
+   */
+  AXOM_HOST_DEVICE
+  static void execute(int AXOM_UNUSED_PARAM(matCount),
+                      const double *AXOM_UNUSED_PARAM(fragmentVFStencilStart),
+                      double *AXOM_UNUSED_PARAM(fragmentVectorsStart),
+                      int AXOM_UNUSED_PARAM(iskip))
+  {
 #if 0
     constexpr int StencilSize = getStencilSize(NDIMS);
     constexpr int numVectorComponents = 3;
@@ -1029,9 +1098,9 @@ void elvira<3>::execute(int AXOM_UNUSED_PARAM(matCount),
       normal += numVectorComponents;
     }
 #endif
-}
+  }
+};
 
 }  // namespace elvira
 }  // namespace mir
 }  // namespace axom
-#endif

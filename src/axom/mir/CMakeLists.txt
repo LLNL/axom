@@ -55,6 +55,7 @@ set(mir_headers
     clipping/ClipField.hpp
     clipping/ClipOptions.hpp
     clipping/ClipTableManager.hpp
+    detail/elvira_impl.hpp
     ElviraAlgorithm.hpp
     EquiZAlgorithm.hpp
     MIRAlgorithm.hpp
@@ -113,7 +114,6 @@ set(mir_sources
     clipping/ClipCasesTet.cpp
     clipping/ClipCasesTri.cpp
     clipping/ClipCasesWdg.cpp
-    ElviraAlgorithm.cpp
     MeshTester.cpp
     MIRAlgorithm.cpp
     utilities/blueprint_utilities.cpp

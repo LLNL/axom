@@ -539,6 +539,7 @@ protected:
              conduit::Node &n_mirOutput,
              conduit::Node &n_merged) const
   {
+    AXOM_ANNOTATE_SCOPE("merge");
     namespace bputils = axom::mir::utilities::blueprint;
 
     // Make node map and slice info for merging.

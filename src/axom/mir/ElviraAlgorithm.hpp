@@ -45,10 +45,13 @@
   #include <conduit/conduit_relay_io_blueprint.hpp>
 #endif
 
+#include "axom/mir/detail/elvira_impl.hpp"
+
 namespace axom
 {
 namespace mir
 {
+#if 0
 namespace elvira
 {
 
@@ -56,10 +59,10 @@ namespace elvira
  * \brief Compute the jacobian from an input stencil of x,y,z coordinates derived
  *        from zone centroids.
  *
- * \param xcst A stencil of X coordinate values. 9 values if ndims == 2, 27 values if ndims == 3.
- * \param ycst A stencil of Y coordinate values. 9 values if ndims == 2, 27 values if ndims == 3.
- * \param zcst A stencil of Z coordinate values. 9 values if ndims == 2, 27 values if ndims == 3.
- * \param ndims The number of dimensions (2 or 3).
+ * \param xcst A stencil of X coordinate values. 9 values if NDIMS == 2, 27 values if NDIMS == 3.
+ * \param ycst A stencil of Y coordinate values. 9 values if NDIMS == 2, 27 values if NDIMS == 3.
+ * \param zcst A stencil of Z coordinate values. 9 values if NDIMS == 2, 27 values if NDIMS == 3.
+ * \param NDIMS The number of dimensions (2 or 3).
  * \param[out] jac A 3x3 Jacobian matrix.
  *
  * \note  Adapted from J. Grandy's BasicStencil.cc:52 
@@ -68,7 +71,7 @@ AXOM_HOST_DEVICE
 void computeJacobian(const double *xcst,
                      const double *ycst,
                      const double *zcst,
-                     int ndims,
+                     int NDIMS,
                      double jac[3][3]);
 
 /*!
@@ -85,14 +88,14 @@ void transform(double *normal, const double jac[3][3]);
 /*!
  * \brief Get the size of the stencil based on dimension.
  *
- * \param ndims The stencil size.
+ * \param NDIMS The stencil size.
  *
- * \return The stencil size for dimension \a ndims.
+ * \return The stencil size for dimension \a NDIMS.
  */
 AXOM_HOST_DEVICE
-constexpr int getStencilSize(int ndims)
+constexpr int getStencilSize(int NDIMS)
 {
-  return (ndims == 3) ? 27 : ((ndims == 2) ? 9 : 3);
+  return (NDIMS == 3) ? 27 : ((NDIMS == 2) ? 9 : 3);
 }
 
 /*! 
@@ -153,7 +156,7 @@ struct elvira<3>
 };
 
 }  // namespace elvira
-
+#endif
 //------------------------------------------------------------------------------
 
 /*!
@@ -398,11 +401,34 @@ private:
 template <typename ExecSpace, typename IndexPolicy, typename CoordsetView, typename MatsetView>
 class ElviraAlgorithm : public axom::mir::MIRAlgorithm
 {
-  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
-
 public:
   using TopologyView = axom::mir::views::StructuredTopologyView<IndexPolicy>;
   using ConnectivityType = typename TopologyView::ConnectivityType;
+
+protected:
+  static constexpr int NDIMS = CoordsetView::dimension();
+  static constexpr int StencilSize = elvira::getStencilSize(NDIMS);
+  static constexpr int numVectorComponents = 3;
+
+  using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
+  using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
+
+    // Determine the output type from the clip operations. Those are the shape
+    // types that we're emitting into the MIR output. Create the builder.
+    using CoordType = typename CoordsetView::value_type;
+    using ClipResultType = typename std::conditional<
+      NDIMS == 2,
+      axom::primal::Polygon<CoordType, 2, axom::primal::PolygonArray::Static>,
+      axom::primal::Polyhedron<CoordType, 3>>::type;
+    using VectorType = axom::primal::Vector<CoordType, NDIMS>;
+    using PointType = axom::primal::Point<CoordType, NDIMS>;
+    using PlaneType = axom::primal::Plane<CoordType, NDIMS>;
+    using ShapeView = axom::mir::utilities::blueprint::PrimalAdaptor<TopologyView, CoordsetView>;
+    using Builder =
+      TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, ClipResultType, NDIMS>;
+    using BuilderView = typename Builder::View;
+
+public:
 
   /*!
    * \brief Constructor
@@ -600,6 +626,7 @@ protected:
              conduit::Node &n_mirOutput,
              conduit::Node &n_merged) const
   {
+    AXOM_ANNOTATE_SCOPE("merge");
     namespace bputils = axom::mir::utilities::blueprint;
 
     // Create a MergeMeshesAndMatsets type that will operate on the material
@@ -683,9 +710,10 @@ protected:
     n_ezopts["compact"] = 1;
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
 #if defined(AXOM_ELVIRA_DEBUG)
-    AXOM_ANNOTATE_BEGIN("saveClean");
-    saveMesh(n_cleanOutput, "debug_elvira_clean");
-    AXOM_ANNOTATE_END("saveClean");
+    {
+      AXOM_ANNOTATE_SCOPE("saveClean");
+      saveMesh(n_cleanOutput, "debug_elvira_clean");
+    }
 #endif
   }
 
@@ -718,11 +746,8 @@ protected:
   {
     AXOM_ANNOTATE_SCOPE("processMixedZones");
     namespace bputils = axom::mir::utilities::blueprint;
-    using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    constexpr int ndims = TopologyView::dimension();
+    constexpr int NDIMS = TopologyView::dimension();
 
     // Handle options.
     constexpr double DEFAULT_TOLERANCE = 1.e-10;
@@ -740,7 +765,8 @@ protected:
       max_iterations = n_options["max_iterations"].to_int();
     }
 
-#ifdef AXOM_ELVIRA_DEBUG
+//#define AXOM_ELVIRA_GATHER_INFO
+#if defined(AXOM_ELVIRA_GATHER_INFO)
     // Let's output the normals
     conduit::Node *n_result = new conduit::Node;
 #endif
@@ -766,12 +792,15 @@ protected:
         num_reduce += nmats;
       });
     const auto numFragments = num_reduce.get();
-#ifdef AXOM_ELVIRA_DEBUG
-    conduit::Node &n_group1 = n_result->operator[]("group1");
-    n_group1["mixedZones"].set(mixedZonesView.data(), mixedZonesView.size());
-    n_group1["matZone"].set(matZoneView.data(), matZoneView.size());
-    n_group1["matCount"].set(matCountView.data(), matCountView.size());
-    n_group1["numFragments"].set(numFragments);
+#if defined(AXOM_ELVIRA_GATHER_INFO)
+    if(!ExecSpace::onDevice())
+    {
+      conduit::Node &n_group1 = n_result->operator[]("group1");
+      n_group1["mixedZones"].set(mixedZonesView.data(), mixedZonesView.size());
+      n_group1["matZone"].set(matZoneView.data(), matZoneView.size());
+      n_group1["matCount"].set(matCountView.data(), matCountView.size());
+      n_group1["numFragments"].set(numFragments);
+    }
 #endif
     AXOM_ANNOTATE_END("counting");
 
@@ -792,11 +821,14 @@ protected:
     axom::Array<axom::IndexType> matOffset(nzones, nzones, allocatorID);
     auto matOffsetView = matOffset.view();
     axom::exclusive_scan<ExecSpace>(matCountView, matOffsetView);
-#ifdef AXOM_ELVIRA_DEBUG
-    conduit::Node &n_group2 = n_result->operator[]("group2");
-    n_group2["matZone"].set(matZoneView.data(), matZoneView.size());
-    n_group2["matCount"].set(matCountView.data(), matCountView.size());
-    n_group2["offsets"].set(matOffsetView.data(), matOffsetView.size());
+#if defined(AXOM_ELVIRA_GATHER_INFO)
+    if(!ExecSpace::onDevice())
+    {
+      conduit::Node &n_group2 = n_result->operator[]("group2");
+      n_group2["matZone"].set(matZoneView.data(), matZoneView.size());
+      n_group2["matCount"].set(matCountView.data(), matCountView.size());
+      n_group2["offsets"].set(matOffsetView.data(), matOffsetView.size());
+    }
 #endif
     AXOM_ANNOTATE_END("offsets");
 
@@ -819,18 +851,20 @@ protected:
     {
       zview = bputils::make_array_view<zc_value>(n_zcfield["values/z"]);
     }
-#ifdef AXOM_ELVIRA_DEBUG
-    conduit::Node &n_group3 = n_result->operator[]("group3");
-    n_group3["xview"].set(xview.data(), xview.size());
-    n_group3["yview"].set(yview.data(), yview.size());
-    n_group3["zview"].set(zview.data(), zview.size());
+#if defined(AXOM_ELVIRA_GATHER_INFO)
+    if(!ExecSpace::onDevice())
+    {
+      conduit::Node &n_group3 = n_result->operator[]("group3");
+      n_group3["xview"].set(xview.data(), xview.size());
+      n_group3["yview"].set(yview.data(), yview.size());
+      n_group3["zview"].set(zview.data(), zview.size());
+    }
 #endif
     AXOM_ANNOTATE_END("centroids");
 
     //--------------------------------------------------------------------------
     // Retrieve stencil data for each zone material.
     AXOM_ANNOTATE_BEGIN("stencil");
-    constexpr int StencilSize = elvira::getStencilSize(ndims);
     const auto numFragmentsStencil = numFragments * StencilSize;
 
     axom::Array<double> fragmentVFStencil(numFragmentsStencil,
@@ -892,7 +926,7 @@ protected:
           const int neighborOffset[3] = {(si % 3) - 1,
                                          ((si % 9) / 3) - 1,
                                          (si / 9) - 1};
-          for(int d = 0; d < ndims; d++)
+          for(int d = 0; d < NDIMS; d++)
           {
             neighbor[d] += neighborOffset[d];
           }
@@ -935,7 +969,7 @@ protected:
     axom::Array<double> fragmentVectors(vecSize, vecSize, allocatorID);
     auto fragmentVectorsView = fragmentVectors.view();
 
-#if defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
+#if defined(AXOM_ELVIRA_GATHER_INFO)
     conduit::Node *n_group4 = &(n_result->operator[]("group4"));
 #endif
 
@@ -956,7 +990,7 @@ protected:
         const double *xcStencil = xcStencilView.data() + coordIndex;
         const double *ycStencil = ycStencilView.data() + coordIndex;
         const double *zcStencil = zcStencilView.data() + coordIndex;
-        elvira::computeJacobian(xcStencil, ycStencil, zcStencil, ndims, jac);
+        elvira::computeJacobian(xcStencil, ycStencil, zcStencil, NDIMS, jac);
 
         // The starting addresses for fragments in the current zone.
         const double *fragmentVFStencilStart =
@@ -966,12 +1000,12 @@ protected:
 
         // Produce normal for each material in this zone.
         int iskip = matCount - 1;
-        elvira::elvira<ndims>::execute(matCount,
+        elvira::elvira<NDIMS>::execute(matCount,
                                        fragmentVFStencilStart,
                                        fragmentVectorsStart,
                                        iskip);
 
-#if defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
+#if defined(AXOM_ELVIRA_GATHER_INFO) && !defined(AXOM_DEVICE_CODE)
         conduit::Node &n_thisZone = n_group4->append();
         n_thisZone["szIndex"] = szIndex;
         n_thisZone["zone"] = zoneIndex;
@@ -1001,13 +1035,17 @@ protected:
           double *normal =
             fragmentVectorsView.data() + ((offset + m) * numVectorComponents);
           elvira::transform(normal, jac);
-#if defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
+#if defined(AXOM_ELVIRA_GATHER_INFO) && !defined(AXOM_DEVICE_CODE)
           n_thisZone["mats"][m]["transformed_normal"].set(normal, 3);
 #endif
         }
       });
-#if defined(AXOM_ELVIRA_DEBUG)
-    conduit::relay::io::save(*n_result, "elvira.yaml", "yaml");
+
+#if defined(AXOM_ELVIRA_GATHER_INFO)
+    if(!ExecSpace::onDevice())
+    {
+      conduit::relay::io::save(*n_result, "elvira.yaml", "yaml");
+    }
     delete n_result;
 #endif
     AXOM_ANNOTATE_END("vectors");
@@ -1020,31 +1058,55 @@ protected:
     ycStencil.clear();
     zcStencil.clear();
 
-    // Determine the output type from the clip operations. Those are the shape
-    // types that we're emitting into the MIR output. Create the builder.
-    using CoordType = typename CoordsetView::value_type;
-    using ClipResultType = typename std::conditional<
-      ndims == 2,
-      axom::primal::Polygon<CoordType, 2, axom::primal::PolygonArray::Static>,
-      axom::primal::Polyhedron<CoordType, 3>>::type;
-    using Builder =
-      TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, ClipResultType, ndims>;
+
+    AXOM_ANNOTATE_END("allocate");
+    //--------------------------------------------------------------------------
     Builder build;
     build.allocate(numFragments, n_newCoordset, n_newTopo, n_newFields, n_newMatset);
     if(n_matset.has_path("material_map"))
     {
       n_newMatset["material_map"].set(n_matset["material_map"]);
     }
-    auto buildView = build.view();
-    AXOM_ANNOTATE_END("allocate");
-    //--------------------------------------------------------------------------
+    makeFragments(build.view(), matZoneView, matCountView, matOffsetView, sortedMaterialIdsView,
+                  fragmentVectorsView, fragmentVFStencilView, max_iterations, tolerance);
 
-    AXOM_ANNOTATE_BEGIN("fragments");
-    using VectorType = axom::primal::Vector<CoordType, ndims>;
-    using PointType = axom::primal::Point<CoordType, ndims>;
-    using PlaneType = axom::primal::Plane<CoordType, ndims>;
-    using ShapeView = bputils::PrimalAdaptor<TopologyView, CoordsetView>;
+    //--------------------------------------------------------------------------
+#if defined(AXOM_ELVIRA_DEBUG)
+    AXOM_ANNOTATE_BEGIN("verify");
+    conduit::Node n_mesh;
+    n_mesh[n_newCoordset.path()].set_external(n_newCoordset);
+    n_mesh[n_newTopo.path()].set_external(n_newTopo);
+    n_mesh[n_newFields.path()].set_external(n_newFields);
+    n_mesh[n_newMatset.path()].set_external(n_newMatset);
+
+    // Verify the MIR output.
+    conduit::Node info;
+    if(!conduit::blueprint::mesh::verify(n_mesh, info))
+    {
+      info.print();
+    }
+    AXOM_ANNOTATE_END("verify");
+#endif
+  }
+
+
+  void makeFragments(BuilderView buildView,
+                     axom::ArrayView<axom::IndexType> matZoneView,
+                     axom::ArrayView<axom::IndexType> matCountView,
+                     axom::ArrayView<axom::IndexType> matOffsetView,
+                     axom::ArrayView<typename MatsetView::IndexType> sortedMaterialIdsView,
+                     axom::ArrayView<double> fragmentVectorsView,
+                     axom::ArrayView<double> fragmentVFStencilView,
+                     int max_iterations,
+                     double tolerance)
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+
+
+    AXOM_ANNOTATE_SCOPE("fragments");
+
     const ShapeView deviceShapeView {m_topologyView, m_coordsetView};
+#if 1
     axom::for_all<ExecSpace>(
       matZoneView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
@@ -1058,7 +1120,7 @@ protected:
         auto shape = deviceShapeView.getShape(zoneIndex);
 
         // Get the zone's actual volume.
-        double zoneVol = bputils::ComputeShapeAmount<ndims>::execute(shape);
+        double zoneVol = bputils::ComputeShapeAmount<NDIMS>::execute(shape);
 
         // NOTE: When we make fragments, we want to make the biggest ones first.
         //       With that in mind, we should probably reverse sort the materials based on VF above.
@@ -1074,7 +1136,7 @@ protected:
           // Compute the desired fragment volume.
           // Get current material vf from the stencil. (should be faster than material view)
           constexpr int StencilCenter =
-            (ndims == 3) ? 13 : ((ndims == 2) ? 4 : 1);
+            (NDIMS == 3) ? 13 : ((NDIMS == 2) ? 4 : 1);
           const auto si = fragmentIndex * StencilSize + StencilCenter;
           const auto matVolume = zoneVol * fragmentVFStencilView[si];
 
@@ -1082,7 +1144,7 @@ protected:
           const auto bbox = axom::primal::compute_bounding_box(shape);
 
           // Make a plane situated at the bbox origin.
-          VectorType normal(normalPtr, ndims);
+          VectorType normal(normalPtr, NDIMS);
           PlaneType P(normal, bbox.getCentroid(), false);
           //std::cout << "===================================================================\n";
           //std::cout << "Zone: " << zoneIndex << ", m=" << m << ", matId=" << matId << std::endl;
@@ -1128,7 +1190,7 @@ protected:
 
             // Find the volume of the clipped shape.
             const double fragmentVolume =
-              bputils::ComputeShapeAmount<ndims>::execute(clippedShape);
+              bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
             const double volumeError =
               axom::utilities::abs(matVolume - fragmentVolume);
             //std::cout << "\titerations=" << iterations << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
@@ -1137,7 +1199,7 @@ protected:
               searching = false;
 
               // Emit clippedShape as material matId
-              //std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", iterations=" << iterations << ", clipped=" << clippedShape << std::endl;
+              //std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", iterations=" << iterations << ", pt=" << pt << ", clipped=" << clippedShape << std::endl;
               buildView.addShape(zoneIndex,
                                  fragmentIndex,
                                  clippedShape,
@@ -1170,27 +1232,6 @@ protected:
           buildView.addShape(zoneIndex, fragmentIndex, shape, matId, normalPtr);
         }
       });
-    AXOM_ANNOTATE_END("fragments");
-
-    //--------------------------------------------------------------------------
-#if defined(AXOM_ELVIRA_DEBUG)
-    AXOM_ANNOTATE_BEGIN("save");
-    conduit::Node n_mesh;
-    n_mesh[n_newCoordset.path()].set_external(n_newCoordset);
-    n_mesh[n_newTopo.path()].set_external(n_newTopo);
-    n_mesh[n_newFields.path()].set_external(n_newFields);
-    n_mesh[n_newMatset.path()].set_external(n_newMatset);
-
-    // Verify the MIR output.
-    conduit::Node info;
-    if(!conduit::blueprint::mesh::verify(n_mesh, info))
-    {
-      info.print();
-    }
-
-    // Save the MIR output.
-    saveMesh(n_mesh, "elvira_output");
-    AXOM_ANNOTATE_END("save");
 #endif
   }
 

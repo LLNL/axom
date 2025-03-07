@@ -98,6 +98,54 @@ void braid2d_mat_test(const std::string &type,
   }
 }
 
+template <typename ExecSpace>
+void test_last_clip()
+{
+  constexpr int MAX_VERTS = 6;
+  using value_type = double;
+  using PointType = axom::primal::Point<value_type, 2>;
+  using VectorType = axom::primal::Vector<value_type, 2>;
+  using PlaneType = axom::primal::Plane<value_type, 2>;
+  using PolygonType = axom::primal::Polygon<value_type, 2, axom::primal::PolygonArray::Static, MAX_VERTS>;
+
+  // Make the zone to clip.
+  PolygonType shape;
+  shape.addVertex(PointType({-7.7777777777, -5.5555555555}));
+  shape.addVertex(PointType({10., -5.5555555555}));
+  shape.addVertex(PointType({10., -3.3333333333}));
+  shape.addVertex(PointType({-7.7777777777, -3.3333333333}));
+
+  // Make return data.
+  const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+  axom::Array<PolygonType> polygons(2, 2, allocatorID);
+  auto polygonsView = polygons.view();
+
+  // Clip the polygons in the kernel
+  axom::for_all<ExecSpace>(1, AXOM_LAMBDA(axom::IndexType index)
+  {
+    const VectorType normal({0.371391, 0.928477});
+    const PointType pt({9.24395,-3.55679});
+
+    // Clip one side.
+    auto P = PlaneType(-normal, pt, false);
+    polygonsView[0] = axom::primal::clip(shape, P);
+
+    // Clip the other side. This is the one that I was having problems with on CUDA.
+    P = PlaneType(normal, pt, false);
+    polygonsView[1] = axom::primal::clip(shape, P);
+  });
+
+  // Get polygons back on host.
+  axom::Array<PolygonType> hostPolygons;
+  hostPolygons.resize(2);
+  axom::copy(hostPolygons.data(), polygons.data(), 2 * sizeof(PolygonType));
+
+  for(int i = 0; i < 2; i++)
+  {
+    std::cout << "hostPolygons[" << i << "]=" << hostPolygons[i] << std::endl;
+  }
+}
+
 //------------------------------------------------------------------------------
 TEST(mir_elvira, elvira_uniform_unibuffer_seq)
 {
@@ -117,19 +165,20 @@ TEST(mir_elvira, elvira_uniform_unibuffer_seq)
 TEST(mir_elvira, elvira_uniform_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_cuda");
+//  test_last_clip<cuda_exec>();
   braid2d_mat_test<cuda_exec>("uniform",
                               "unibuffer",
                               "elvira_uniform_unibuffer");
 }
 #endif
 
-//#if defined(AXOM_USE_HIP)
-//TEST(mir_elvira, elvira_uniform_unibuffer_hip)
-//{
-//  AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_hip");
-//  braid2d_mat_test<hip_exec>("uniform", "unibuffer", "elvira_uniform_unibuffer");
-//}
-//#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_elvira, elvira_uniform_unibuffer_hip)
+{
+  AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_hip");
+  braid2d_mat_test<hip_exec>("uniform", "unibuffer", "elvira_uniform_unibuffer");
+}
+#endif
 
 //------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)

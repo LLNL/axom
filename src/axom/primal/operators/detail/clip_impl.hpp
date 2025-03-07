@@ -734,6 +734,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *
  * \return A clipped polygon.
  */
+AXOM_SUPPRESS_HD_WARN
 template <typename PolygonType, typename PlaneType>
 AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList,
                                                     const PlaneType& plane,
@@ -793,7 +794,9 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList
  *
  * \return A new polygon that has unique points.
  */
+AXOM_SUPPRESS_HD_WARN
 template <typename PolygonType>
+AXOM_HOST_DEVICE
 PolygonType makeUniquePoints(const PolygonType& poly, double eps)
 {
   PolygonType uniqueList;

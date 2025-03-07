@@ -5,6 +5,7 @@
 
 #include "axom/mir/MIRAlgorithm.hpp"
 #include "axom/mir/MIROptions.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 #include "axom/slic.hpp"
 
 #include <conduit_blueprint_mesh.hpp>
@@ -120,15 +121,23 @@ void MIRAlgorithm::printNode(const conduit::Node &n) const
   conduit::Node options;
   options["num_children_threshold"] = 10000;
   options["num_elements_threshold"] = 10000;
-  n.to_summary_string_stream(std::cout, options);
+
+  // Make sure data are on host.
+  conduit::Node n_host;
+  axom::mir::utilities::blueprint::copy<axom::SEQ_EXEC>(n_host, n);
+  n_host.to_summary_string_stream(std::cout, options);
 }
 
 void MIRAlgorithm::saveMesh(const conduit::Node &n_mesh,
                             const std::string &filebase) const
 {
-  conduit::relay::io::save(n_mesh, filebase + ".yaml", "yaml");
+  // Make sure data are on host.
+  conduit::Node n_mesh_host;
+  axom::mir::utilities::blueprint::copy<axom::SEQ_EXEC>(n_mesh_host, n_mesh);
+
+  conduit::relay::io::save(n_mesh_host, filebase + ".yaml", "yaml");
 #if defined(AXOM_USE_HDF5)
-  conduit::relay::io::blueprint::save_mesh(n_mesh, filebase, "hdf5");
+  conduit::relay::io::blueprint::save_mesh(n_mesh_host, filebase, "hdf5");
 #endif
 }
 
