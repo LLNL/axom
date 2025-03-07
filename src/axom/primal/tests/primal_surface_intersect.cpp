@@ -187,7 +187,7 @@ void checkIntersections(const primal::Ray<CoordType, 3>& ray,
          << "\n\t" << ray << "\n\t" << patch;
 
     sstr << "\ns (" << u.size() << "): ";
-    for(auto i = 0u; i < u.size(); ++i)
+    for(auto i = 0; i < u.size(); ++i)
     {
       sstr << std::setprecision(16) << "(" << u[i] << "," << v[i] << "),";
     }
