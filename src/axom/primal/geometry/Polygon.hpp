@@ -414,7 +414,7 @@ public:
   bool isValid() const { return m_vertices.size() >= 3; }
 
 private:
-  ArrayType m_vertices;
+  ArrayType m_vertices{};
 };
 
 //------------------------------------------------------------------------------
