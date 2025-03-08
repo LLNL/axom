@@ -30,7 +30,6 @@ class StaticArray : public StackArray<T, N>
 {
 public:
 
-#if defined(AXOM_USE_CUDA)
   /*!
    * \brief Constructor
    */
@@ -94,7 +93,7 @@ public:
     m_size = obj.m_size;
     return *this;
   }
-#endif
+
   /*!
    * \brief Returns the capacity of the static array
    *
