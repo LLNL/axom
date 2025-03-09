@@ -59,7 +59,7 @@ bool in_polyhedron(const Point<T, 3>& query,
 {
   return useNonzeroRule
     ? (winding_number(query, poly, includeBoundary, edge_tol, EPS) != 0)
-    : (winding_number(query, poly, includeBoundary, edge_tol, EPS) % 2) == 1;
+    : (winding_number(query, poly, includeBoundary, edge_tol, EPS) % 2) != 0;
 }
 
 }  // namespace primal
