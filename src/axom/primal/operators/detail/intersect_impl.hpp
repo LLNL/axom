@@ -1741,7 +1741,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     Vector3::scalar_triple_product(q10, line.direction(), e11) - au - cu;
 
   // Rescale the coefficients to avoid (some) numerical issues
-  double su = std::max(std::fabs(au), std::max(fabs(bu), fabs(cu)));
+  double su = utilities::max(std::fabs(au), utilities::max(fabs(bu), fabs(cu)));
   au /= su;
   bu /= su;
   cu /= su;
@@ -1812,7 +1812,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
           const double t1 = Vector3::dot_product(pa, line.direction());
           const double t2 = Vector3::dot_product(pa + pb, line.direction());
 
-          if(!isRay || std::min(t1, t2) > 0.0)
+          if(!isRay || utilities::min(t1, t2) > 0.0)
           {
             // Always an intersection in this case
             t.push_back(0.5 * (t1 + t2));
@@ -1867,7 +1867,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     double bv =
       Vector3::scalar_triple_product(q01, line.direction(), e01) - av - cv;
 
-    double sv = std::max(std::fabs(av), std::max(fabs(bv), fabs(cv)));
+    double sv = utilities::max(std::fabs(av), utilities::max(fabs(bv), fabs(cv)));
     av /= sv;
     bv /= sv;
     cv /= sv;
@@ -1944,7 +1944,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
           const double t1 = Vector3::dot_product(pa, line.direction());
           const double t2 = Vector3::dot_product(pa + pb, line.direction());
 
-          if(!isRay || std::min(t1, t2) > 0.0)
+          if(!isRay || utilities::min(t1, t2) > 0.0)
           {
             // Always an intersection in this case
             t.push_back(0.5 * (t1 + t2));
