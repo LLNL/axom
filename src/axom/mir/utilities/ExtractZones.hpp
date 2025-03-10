@@ -11,6 +11,8 @@
 #include "axom/mir/utilities/CoordsetSlicer.hpp"
 #include "axom/mir/utilities/FieldSlicer.hpp"
 #include "axom/mir/utilities/MatsetSlicer.hpp"
+#include "axom/mir/Options.hpp"
+#include "axom/mir/MIROptions.hpp"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
@@ -103,11 +105,14 @@ public:
       dataSizes = nodeMap(selectedZonesView, extra, old2new, nodeSlice);
     }
 
+    Options opts(n_options);
+
     // Make a new output topology.
     const conduit::Node &n_topologies = n_input.fetch_existing("topologies");
     const std::string topoName = topologyName(n_input, n_options);
     const conduit::Node &n_topo = n_topologies.fetch_existing(topoName);
-    conduit::Node &n_newTopo = n_output["topologies/" + topoName];
+    const std::string newTopoName = opts.topologyName(topoName);
+    conduit::Node &n_newTopo = n_output["topologies/" + newTopoName];
     makeTopology(selectedZonesView,
                  dataSizes,
                  extra,
@@ -123,8 +128,12 @@ public:
       n_topo.fetch_existing("coordset").as_string();
     const conduit::Node &n_coordset =
       n_input.fetch_existing("coordsets/" + coordsetName);
-    conduit::Node &n_newCoordset = n_output["coordsets/" + coordsetName];
+    const std::string newCoordsetName = opts.coordsetName(coordsetName);
+    conduit::Node &n_newCoordset = n_output["coordsets/" + newCoordsetName];
     makeCoordset(nSlice, n_coordset, n_newCoordset);
+
+    // Update the coordset name in the topo.
+    n_newTopo["coordset"] = newCoordsetName;
 
     // Make new fields. If originalZones are present, they'll be sliced there.
     bool makeOriginalZones = true;
@@ -135,7 +144,7 @@ public:
       SliceData zSlice;
       zSlice.m_indicesView = zoneSliceView(selectedZonesView, extra);
       makeOriginalZones = !n_fields.has_child("originalElements");
-      makeFields(nSlice, zSlice, n_fields, n_newFields);
+      makeFields(nSlice, zSlice, newTopoName, n_fields, n_newFields);
     }
 
     // Make originalElements.
@@ -144,7 +153,7 @@ public:
       bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
       conduit::Node &n_origElements = n_output["fields/originalElements"];
-      n_origElements["topology"] = topoName;
+      n_origElements["topology"] = newTopoName;
       n_origElements["association"] = "element";
       n_origElements["values"].set_allocator(c2a.getConduitAllocatorID());
       n_origElements["values"].set(
@@ -552,11 +561,13 @@ protected:
    *
    * \param nodeSlice Node slice information.
    * \param zoneSlice Zone slice information.
+   * \param newTopoName The name of the new topology for the field.
    * \param n_fields The input fields.
    * \param n_newFields The output fields.
    */
   void makeFields(const SliceData &nodeSlice,
                   const SliceData &zoneSlice,
+                  const std::string &newTopoName,
                   const conduit::Node &n_fields,
                   conduit::Node &n_newFields) const
   {
@@ -575,6 +586,7 @@ protected:
       {
         fs.execute(nodeSlice, n_field, n_newField);
       }
+      n_newField["topology"] = newTopoName;
     }
   }
 
@@ -723,8 +735,15 @@ public:
     if(!mname.empty())
     {
       const conduit::Node &n_matset = n_input.fetch_existing("matsets/" + mname);
-      conduit::Node &n_newMatset = n_output["matsets/" + mname];
+      MIROptions opts(n_options);
+
+      const std::string newMatsetName = opts.matsetName(mname);
+      conduit::Node &n_newMatset = n_output["matsets/" + newMatsetName];
       makeMatset(selectedZonesView, n_matset, n_newMatset);
+
+      // Update the topology name in the matset.
+      const std::string newTopoName = opts.topologyName(topoName);
+      n_newMatset["topology"] = newTopoName;
     }
   }
 

@@ -387,7 +387,7 @@ protected:
 
       // Make the clean mesh.
       conduit::Node n_cleanOutput;
-      makeCleanOutput(n_root, n_topo.name(), cleanZones.view(), n_cleanOutput);
+      makeCleanOutput(n_root, n_topo.name(), n_options_copy, cleanZones.view(), n_cleanOutput);
 
       // Add an original nodes field on the root mesh.
       addOriginal(n_root_fields[originalNodesFieldName()],
@@ -417,23 +417,22 @@ protected:
 
       // Gather the MIR output into a single node.
       conduit::Node n_mirOutput;
-      n_mirOutput[n_topo.path()].set_external(n_newTopo);
-      n_mirOutput[n_coordset.path()].set_external(n_newCoordset);
-      n_mirOutput[n_fields.path()].set_external(n_newFields);
-      n_mirOutput[n_matset.path()].set_external(n_newMatset);
+      n_mirOutput[n_newTopo.path()].set_external(n_newTopo);
+      n_mirOutput[n_newCoordset.path()].set_external(n_newCoordset);
+      n_mirOutput[n_newFields.path()].set_external(n_newFields);
+      n_mirOutput[n_newMatset.path()].set_external(n_newMatset);
   #if defined(AXOM_EQUIZ_DEBUG)
-      printNode(n_mirOutput);
       saveMesh(n_mirOutput, "debug_equiz_mir");
-  #endif
-
-      // Merge the clean zones and MIR output
-      conduit::Node n_merged;
-      merge(n_topo.name(), n_cleanOutput, n_mirOutput, n_merged);
-  #if defined(AXOM_EQUIZ_DEBUG)
       std::cout << "--- clean ---\n";
       printNode(n_cleanOutput);
       std::cout << "--- MIR ---\n";
       printNode(n_mirOutput);
+  #endif
+
+      // Merge the clean zones and MIR output
+      conduit::Node n_merged;
+      merge(n_newTopo.name(), n_cleanOutput, n_mirOutput, n_merged);
+  #if defined(AXOM_EQUIZ_DEBUG)
       std::cout << "--- merged ---\n";
       printNode(n_merged);
 
@@ -442,10 +441,10 @@ protected:
   #endif
 
       // Move the merged output into the output variables.
-      n_newCoordset.move(n_merged[n_coordset.path()]);
-      n_newTopo.move(n_merged[n_topo.path()]);
-      n_newFields.move(n_merged[n_fields.path()]);
-      n_newMatset.move(n_merged[n_matset.path()]);
+      n_newCoordset.move(n_merged[n_newCoordset.path()]);
+      n_newTopo.move(n_merged[n_newTopo.path()]);
+      n_newFields.move(n_merged[n_newFields.path()]);
+      n_newMatset.move(n_merged[n_newMatset.path()]);
     }
     else if(cleanZones.size() == 0 && mixedZones.size() > 0)
     {
@@ -613,6 +612,7 @@ protected:
    *
    * \param n_root The input mesh from which zones are being extracted.
    * \param topoName The name of the topology.
+   * \param n_options Options to forward.
    * \param cleanZones An array of clean zone ids.
    * \param[out] n_cleanOutput The node that will contain the clean mesh output.
    *
@@ -620,6 +620,7 @@ protected:
    */
   void makeCleanOutput(const conduit::Node &n_root,
                        const std::string &topoName,
+                       const conduit::Node &n_options,
                        const axom::ArrayView<axom::IndexType> &cleanZones,
                        conduit::Node &n_cleanOutput) const
   {
@@ -632,6 +633,15 @@ protected:
     conduit::Node n_ezopts;
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 0;
+    // Forward some options involved in naming the objects.
+    const std::vector<std::string> keys{"topologyName", "coordsetName", "matsetName"};
+    for(const auto &key : keys)
+    {
+      if(n_options.has_path(key))
+      {
+        n_ezopts[key].set(n_options[key]);
+      }
+    }
     ez.execute(cleanZones, n_root, n_ezopts, n_cleanOutput);
   #if defined(AXOM_EQUIZ_DEBUG)
     AXOM_ANNOTATE_BEGIN("saveClean");

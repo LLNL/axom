@@ -51,9 +51,9 @@ coarse
 %28-------%29------%30#######%31#######%32#######%33-------%34
 |         |         #\ (2)    |\   (3)  |    (3)  #   (3)   |
 |         |         #  \      |  \      |         #         |
-|         |         #    \    |(2) - - -|- - - - -#- - - - -|
-|         |         #      \  |  /      |         #         |
-|   (1)   |   (1)   #  (1)   \|/   (2)  |    (2)  #   (2)   |
+|         |         #    \    |    - - -|- - - - -#- - - - -|
+|         |         #      \  |         |         #         |
+|   (1)   |   (1)   #  (1)   \|    (2)  |    (2)  #   (2)   |
 %21-------%22-------%23#######%24#######%25#######%26-------%27
 |         |   (0)   #\ (1)    |\   (2)  |    (2)  #   (2)   |
 |         |         #  \      |(1)\     |         #         |
@@ -145,7 +145,7 @@ coordsets:
       x: 0.5
       y: 0.5
 topologies:
-  coarse:
+  coarse_strided:
     type: structured
     coordset: coarse_coords
     elements:
@@ -154,9 +154,16 @@ topologies:
        j: 3
        offsets: [2, 2]
        strides: [1, 7]
-  fine:
+  coarse:
     type: structured
     coordset: coarse_coords
+    elements:
+      dims:
+       i: 6
+       j: 6
+  fine:
+    type: structured
+    coordset: fine_coords
     elements:
       dims:
        i: 12
@@ -169,9 +176,9 @@ matsets:
      mat1: 1
      mat2: 2
      mat3: 3
-   material_ids: [0, 0, 0, 0, 0, 0,      0, 0, 0, 0, 0, 0,     0, 0, 0,1, 0,1,2, 0,2, 0,2,     1, 1, 1,2, 2,3, 2,3, 2,3,    2, 2, 2,3, 3, 3, 3,     3, 3, 3, 3, 3, 3]
+   material_ids: [0, 0, 0, 0, 0, 0,               0, 0, 0, 0, 0, 0,           0, 0, 0,1, 0,1,2, 0,2, 0,2,                                 1, 1, 1,2, 2,3, 2,3, 2,3,                           2, 2, 2,3, 3, 3, 3,             3, 3, 3, 3, 3, 3]
    volume_fractions: [1., 1., 1., 1., 1., 1.,     1., 1., 1., 1., 1., 1.,     1., 1., 0.625,0.375, 0.5,0.125,0.375, 0.5,0.5, 0.5,0.5,     1., 1., 0.5,0.5, 0.625,0.375, 0.5,0.5, 0.5,0.5,     1., 1., 0.5,0.5, 1., 1., 1.,    1., 1., 1., 1., 1., 1.]
-   indices: [0, 1, 2, 3, 4, 5,    6, 7, 8, 9, 10, 11,      12, 13, 14,15, 17,18,19, 20,21, 22,23,     24, 25, 26,27, 28,29, 30,32, 32,33,    34, 35, 36,37, 38, 39, 40,   41, 42, 43, 44, 45, 46]
+   indices: [0, 1, 2, 3, 4, 5,                    6, 7, 8, 9, 10, 11,         12, 13, 14,15, 16,17,18, 19,20, 21,22,                      23, 24, 25,26, 27,28, 29,30, 31,32,                 33, 34, 35,36, 37, 38, 39,      40, 41, 42, 43, 44, 45]
    sizes: [1, 1, 1, 1, 1, 1,     1, 1, 1, 1, 1, 1,     1, 1, 2, 3, 2, 2,    1, 1, 2, 2, 2, 2,    1, 1, 2, 1, 1, 1,    1, 1, 1, 1, 1, 1]
    offsets: [0, 1, 2, 3, 4, 5,     6, 7, 8, 9, 10, 11,     12, 13, 14, 16, 19, 21,     23, 24, 25, 27, 29, 31,     33, 34, 35, 37, 38, 39,     40, 41, 42, 43, 44, 45]
 )";
@@ -236,7 +243,8 @@ private:
     auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
 
-    auto topologyView = axom::mir::views::make_strided_structured<2>::view(n_topology);
+//    auto topologyView = axom::mir::views::make_strided_structured<2>::view(n_topology);
+    auto topologyView = axom::mir::views::make_structured<2>::view(n_topology);
     using TopologyView = decltype(topologyView);
     using IndexingPolicy = typename TopologyView::IndexingPolicy;
 
@@ -250,9 +258,10 @@ private:
     options["matset"] = "coarse_matset";
     options["topologyName"] = "postmir";
     options["coordsetName"] = "postmir_coords";
-
+    options["matsetName"] = "postmir_matset";
     m.execute(n_input, options, n_output);
 
+    std::cout << "------ MIR output ------\n";
     printNode(n_output);
   }
 
@@ -264,7 +273,7 @@ private:
     const conduit::Node &n_matset = n_input["matsets/coarse_matset"];
 
     // Wrap the coarse mesh in views.
-    make_explicit_coordset<DataType, 3>::view(
+    make_explicit_coordset<DataType, 3>::view(n_coordset);
 
     // Wrap coarse/post_mir mesh in views.
     using SrcCoordsetView = axom::mir::views::ExplicitCoordsetView<double, 2>;
