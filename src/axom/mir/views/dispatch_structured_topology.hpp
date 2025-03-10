@@ -54,9 +54,9 @@ struct make_strided_structured<3>
     const std::string stridesKey("elements/dims/strides");
 
     LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
-    zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").to_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").to_int();
+    zoneDims[2] = topo.fetch_existing("elements/dims/k").to_int();
 
     LogicalIndex offsets {{0, 0, 0}}, strides {{1, 1, 1}};
     bputils::fillFromNode(topo, offsetsKey, offsets, true);
@@ -107,8 +107,8 @@ struct make_strided_structured<2>
     const std::string offsetsKey("elements/dims/offsets");
     const std::string stridesKey("elements/dims/strides");
     LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").to_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").to_int();
 
     LogicalIndex offsets {{0, 0}}, strides {{1, 1}};
     bputils::fillFromNode(topo, offsetsKey, offsets, true);
@@ -158,7 +158,7 @@ struct make_strided_structured<1>
     const std::string stridesKey("elements/dims/strides");
 
     LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").to_int();
 
     LogicalIndex offsets {0}, strides {1};
     bputils::fillFromNode(topo, offsetsKey, offsets, true);
@@ -203,9 +203,9 @@ struct make_structured<3>
   static Indexing indexing(const conduit::Node &topo)
   {
     LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
-    zoneDims[2] = topo.fetch_existing("elements/dims/k").as_int();
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").to_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").to_int();
+    zoneDims[2] = topo.fetch_existing("elements/dims/k").to_int();
 
     return Indexing(zoneDims);
   }
@@ -239,8 +239,8 @@ struct make_structured<2>
   static Indexing indexing(const conduit::Node &topo)
   {
     LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
-    zoneDims[1] = topo.fetch_existing("elements/dims/j").as_int();
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").to_int();
+    zoneDims[1] = topo.fetch_existing("elements/dims/j").to_int();
     return Indexing(zoneDims);
   }
 
@@ -273,7 +273,7 @@ struct make_structured<1>
   static Indexing indexing(const conduit::Node &topo)
   {
     LogicalIndex zoneDims;
-    zoneDims[0] = topo.fetch_existing("elements/dims/i").as_int();
+    zoneDims[0] = topo.fetch_existing("elements/dims/i").to_int();
 
     return Indexing(zoneDims);
   }
