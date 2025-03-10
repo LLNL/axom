@@ -34,7 +34,7 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm);
 /*!
  *****************************************************************************
  * \brief Receives any Message sent to this rank, if there are any messages 
- *  that have arrived. Returns null if no messages are sent. Caller is 
+ *  that have arrived. Returns null if no messages have arrived. Caller is 
  *  responsible for deallocating memory returned from this function.
  *
  * \param [in] comm The MPI Communicator.
