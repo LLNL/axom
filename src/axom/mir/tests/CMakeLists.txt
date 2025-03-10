@@ -13,6 +13,7 @@
 
 set(gtest_mir_tests
     mir_clipfield.cpp
+    mir_coupling.cpp
     mir_blueprint_utilities.cpp
     mir_views_indexing.cpp
     mir_views.cpp
