@@ -1908,7 +1908,7 @@ TEST(sidre_view, deep_copy_to_conduit)
       EXPECT_EQ(axom::getAllocatorIDFromPointer(srcStringPtr), srcAllocId);
     }
 
-    View* srcScalar = src->createViewAndAllocate("aDouble", dtypeDouble);
+    View* srcScalar = src->createViewScalar("aDouble", dtypeDouble);
     double* srcScalarPtr = (double*)srcScalar->getNode().data_ptr();
     EXPECT_EQ(axom::getAllocatorIDFromPointer(srcScalarPtr), srcAllocId);
     axom::copy(srcScalarPtr, &doubleValue, sizeof(double));
