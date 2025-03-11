@@ -1450,6 +1450,69 @@ Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
 /*
  *************************************************************************
  *
+ * Deep copy another Group into this Group.
+ *
+ * All contents in this group and their data are destroyed before the copy.
+ * The deep copy of a Group will copy the group hierarchy and deep copy
+ * all Views within the hierarchy.
+ *
+ *************************************************************************
+ */
+Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
+{
+  SLIC_ERROR_IF(m_is_list && !srcGroup->m_is_list,
+                "Group::deepCopyToSelf cannot copy from a list Group to a non-list Group.");
+
+  destroyGroupsAndData();
+  destroyViewsAndData();
+
+  // copy child Groups to new Group
+  for(auto& grp : srcGroup->groups())
+  {
+#if 1
+    deepCopyGroup(&grp);
+#else
+    Group* dst = nullptr;
+    if(m_is_list)
+    {
+      dst = createUnnamedGroup(grp.m_is_list);
+    }
+    else
+    {
+      const std::string& grpName = srcGroup->getName();
+      dst = createGroup(grpName, grp.m_is_list);
+    }
+    dst->deepCopyGroupToSelf(&grp);
+#endif
+  }
+
+  // copy Views to new Group
+  for(auto& view : srcGroup->views())
+  {
+#if 1
+    deepCopyView(&view);
+#else
+    View* dst = nullptr;
+    if(m_is_list)
+    {
+      dst = createUnnamedGroup(grp.m_is_list);
+    }
+    else
+    {
+      const std::string& grpName = srcGroup->getName();
+      dst = createGroup(grpName, grp.m_is_list);
+    }
+    dst->deepCopyGroupToSelf(&grp);
+    deepCopyView(&view, allocID);
+#endif
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Copy Group native layout to given Conduit node.
  *
  *************************************************************************

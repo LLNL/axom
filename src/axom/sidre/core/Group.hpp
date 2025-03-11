@@ -1326,6 +1326,26 @@ public:
    */
   Group* deepCopyGroup(const Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
 
+  /*!
+   * \brief Create a deep copy of Group hierarchy rooted at given Group
+   *        directly to this group.
+   * \param [in] srcGroup Source for copy
+   *
+   * Note that all Views in the Group hierarchy are deep-copied as well.
+   *
+   * The deep copy of the Group creates a duplicate of the entire Group
+   * hierarchy and performs a deep copy of the data described by the Views
+   * in the hierarchy.
+   *
+   * The Views in the new Group hierarchy will each allocate and use
+   * new Buffers to hold their copied data. Each Buffer will be sized to
+   * receive only the data values seen by the description of the original
+   * View and will have zero offset and a strid of one.
+   *
+   * \return pointer to this.
+   */
+  Group* deepCopyGroupToSelf(const Group* srcGroup);
+
   //@}
 
   //@{
