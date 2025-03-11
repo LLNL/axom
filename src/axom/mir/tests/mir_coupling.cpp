@@ -209,17 +209,17 @@ public:
     axom::mir::utilities::blueprint::copy<ExecSpace>(n_dev, n_mesh);
 
     // Do 2D MIR on the coarse mesh. The new objects will be added to n_mesh.
-    mir2D("coarse", n_mesh, "postmir", n_mesh);
+    mir2D("coarse", n_dev, "postmir", n_dev);
 
     // Map MIR output in n_mesh onto the fine mesh as a new matset.
-    mapping2D(n_mesh, n_mesh);
+    mapping2D(n_dev, n_dev);
 
     // As a check, run the generated fine matset through elvira again to make clean zones.
-    mir2D("fine", n_mesh, "check", n_mesh);
+    mir2D("fine", n_dev, "check", n_dev);
 
     // device->host
     conduit::Node hostResult;
-    bputils::copy<seq_exec>(hostResult, n_mesh);
+    bputils::copy<seq_exec>(hostResult, n_dev);
 
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
     printNode(hostResult);
