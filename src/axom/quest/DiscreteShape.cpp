@@ -172,7 +172,11 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       axom::fmt::format(" '{}' format requires .stl file type", file_format));
 
     axom::mint::Mesh* meshRep = nullptr;
+#ifdef AXOM_USE_MPI
     quest::internal::read_stl_mesh(shapePath, meshRep, m_comm);
+#else
+    quest::internal::read_stl_mesh(shapePath, meshRep);
+#endif
     m_meshRep.reset(meshRep);
     // Transform the coordinates of the linearized mesh.
     applyTransforms();
@@ -184,7 +188,11 @@ std::shared_ptr<mint::Mesh> DiscreteShape::createMeshRepresentation()
       axom::fmt::format(" '{}' format requires .proe file type", file_format));
 
     axom::mint::Mesh* meshRep = nullptr;
+#ifdef AXOM_USE_MPI
     quest::internal::read_pro_e_mesh(shapePath, meshRep, m_comm);
+#else
+    quest::internal::read_pro_e_mesh(shapePath, meshRep);
+#endif
     m_meshRep.reset(meshRep);
   }
 #ifdef AXOM_USE_C2C
@@ -486,8 +494,10 @@ void DiscreteShape::createRepresentationOfSphere()
   int octCount = 0;
   axom::quest::discretize(sphere, geometry.getLevelOfRefinement(), octs, octCount);
 
-  constexpr int TETS_PER_OCT = 8;
-  constexpr int NODES_PER_TET = 4;
+  // Note: MSVC required `static` to pass TETS_PER_OCT to the axom::for_all w/ C++14
+  // this restriction might be lifted w/ C++17
+  static constexpr int TETS_PER_OCT = 8;
+  static constexpr int NODES_PER_TET = 4;
   const axom::IndexType tetCount = octCount * TETS_PER_OCT;
   const axom::IndexType nodeCount = tetCount * NODES_PER_TET;
 
