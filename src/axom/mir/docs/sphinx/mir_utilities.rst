@@ -13,6 +13,14 @@ for Blueprint meshes.
  * Structured as classes with an ``execute()`` method
  * Often templated on execution space and views
 
+Blueprint meshes consist of various parts such as coordsets, topologies, fields, and matsets.
+These constructs are organized as various paths within a root Conduit node. Elements such
+as strings and scalar values can be stored as usual within a Conduit node in host memory.
+Conduit nodes that contain bulk data such as coordinate or field data should point to
+memory blocks that are valid for the execution environment in which algorithms will run.
+To achieve this, entire Conduit node hierarchies can be copied to the proper memory space
+or they can be constructed by forcing Conduit to allocate memory in the proper memory space.
+
 #######################
 Copying Blueprint Data
 #######################
