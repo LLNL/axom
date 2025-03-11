@@ -242,6 +242,11 @@ void make_fine(conduit::Node &n_mesh,
 }
 
 //------------------------------------------------------------------------------
+/*!
+ * \brief Tests the TopologyMapper.
+ *
+ * \note TODO: Test selected zone lists on source and target.
+ */
 template <typename ExecSpace>
 class test_TopologyMapper
 {

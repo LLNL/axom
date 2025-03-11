@@ -375,7 +375,7 @@ public:
       typename axom::execution_space<ExecSpace>::reduce_policy;
     // Pick output matset types (use input types)
     using MatIntType = typename SrcMatsetView::IndexType;
-    using MatFloatType = typename SrcMatsetView::IndexType;
+    using MatFloatType = typename SrcMatsetView::FloatType;
 
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
@@ -422,6 +422,7 @@ public:
     }
     const auto MaterialEmpty = static_cast<MatIntType>(maxMatId + 1);
 
+    // -------------------------------------------------------------------------
     // Build up BVH that contains the src polygon bounding boxes.
     using SrcBoundingBox = typename SrcShapeView::BoundingBox;
     using src_value_type = typename SrcCoordsetView::value_type;
@@ -447,6 +448,19 @@ public:
       });
     AXOM_ANNOTATE_END("bbox");
 
+    // -------------------------------------------------------------------------
+    // Build the list of selected zones in the target.
+    AXOM_ANNOTATE_BEGIN("target");
+    const auto targetView = m_targetView;
+    SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
+                                             n_options,
+                                             TARGET_SELECTED_ZONES);
+    targetSelection.setSorted(false);
+    const auto targetSelectionView = targetSelection.view();
+    const auto nTargetZones = targetSelectionView.size();
+    AXOM_ANNOTATE_END("target");
+
+    // -------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("build");
     axom::spin::BVH<SrcCoordsetView::dimension(), ExecSpace, src_value_type> bvh;
     bvh.setAllocatorID(allocatorID);
@@ -476,7 +490,6 @@ public:
     n_sizes.set_allocator(c2a.getConduitAllocatorID());
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
 
-    const axom::IndexType nTargetZones = m_targetView.numberOfZones();
     n_volume_fractions.set(conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, nmats * nTargetZones));
     n_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nmats * nTargetZones));
     n_sizes.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
@@ -495,17 +508,10 @@ public:
     // -------------------------------------------------------------------------
     // Iterate over the target zones and intersect them with source zones.
     AXOM_ANNOTATE_BEGIN("intersection");
-    const auto targetView = m_targetView;
-    RAJA::ReduceSum<reduce_policy, MatIntType> reduceSize(0);
-    SrcMatsetView srcMatsetView(m_srcMatsetView);
+    const SrcMatsetView srcMatsetView(m_srcMatsetView);
     const auto bvh_device = bvh.getTraverser();
-    SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
-                                             n_options,
-                                             TARGET_SELECTED_ZONES);
-    targetSelection.setSorted(false);
-    const auto targetSelectionView = targetSelection.view();
     axom::for_all<ExecSpace>(
-      targetSelectionView.size(),
+      nTargetZones,
       AXOM_LAMBDA(axom::IndexType index) {
         // Get the target zone as a primal shape.
         const axom::IndexType zi = targetSelectionView[index];
@@ -562,8 +568,8 @@ public:
 #endif
 
             // Add the src material contribution into the target material.
-            MatIntType *matids = material_ids.data() + zi * nmats;
-            MatFloatType *vfs = volume_fractions.data() + zi * nmats;
+            MatIntType *matids = material_ids.data() + index/*zi*/ * nmats;
+            MatFloatType *vfs = volume_fractions.data() + index/*zi*/ * nmats;
             for(int m = 0; m < nmats; m++)
             {
               if(matids[m] == mat)
@@ -582,12 +588,10 @@ public:
 #endif
                 matids[m] = mat;
                 vfs[m] = vf;
-                sizes[zi]++;
+                sizes[index/*zi*/]++;
                 break;
               }
             }
-
-            reduceSize += sizes[zi];
           }
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
           else
@@ -614,28 +618,49 @@ public:
     AXOM_ANNOTATE_END("intersection");
 
     // -------------------------------------------------------------------------
+    // Make a pass through the new material to see if any zones have no materials.
+    // If there are such zones, make sure the empty material is used.
+    axom::IndexType totalSize = 0;
+    {
+      AXOM_ANNOTATE_SCOPE("sizes");
+      RAJA::ReduceSum<reduce_policy, int> reduceSize(0), emptyCount(0);
+      axom::for_all<ExecSpace>(
+        nTargetZones,
+        AXOM_LAMBDA(axom::IndexType index) {
+          if(sizes[index] == 0)
+          {
+            sizes[index] = 1;
+            emptyCount += 1;
+          }
+          reduceSize += sizes[index];
+        });
+      if(emptyCount.get() > 0)
+      {
+        // Add an empty material entry to the material map in case some of the slots did
+        // not get covered.
+        n_targetMatset["material_map"]["empty"] = MaterialEmpty;
+      }
+      totalSize = reduceSize.get();
+    }
+
+    // -------------------------------------------------------------------------
     // All the contributions have been added to the target matset. Finish building it.
     AXOM_ANNOTATE_BEGIN("finish");
     axom::exclusive_scan<ExecSpace>(sizes, offsets);
-    const auto totalSize = reduceSize.get();
     n_indices.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
     auto indices = make_array_view<MatIntType>(n_indices);
     constexpr auto UnusedIndexSlot = MatIntType(-1);
     axom::mir::utilities::fill<ExecSpace>(indices, UnusedIndexSlot);
     axom::for_all<ExecSpace>(
-      targetView.numberOfZones(),
-      AXOM_LAMBDA(axom::IndexType zi) {
-        const auto start = offsets[zi];
-        for(int i = 0; i < sizes[zi]; i++)
+      nTargetZones,
+      AXOM_LAMBDA(axom::IndexType index) {
+        const auto start = offsets[index];
+        for(int i = 0; i < sizes[index]; i++)
         {
-          indices[start + i] = zi * nmats + i;
+          indices[start + i] = index * nmats + i;
         }
       });
     AXOM_ANNOTATE_END("finish");
-
-    // Add an empty material entry to the material map in case some of the slots did
-    // not get covered.
-    n_targetMatset["material_map"]["empty"] = MaterialEmpty;
   }
 
   SrcShapeView m_srcView;

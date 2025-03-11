@@ -18,10 +18,10 @@ namespace bputils = axom::mir::utilities::blueprint;
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-#define AXOM_TESTING_GENERATE_BASELINES
+//#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-#define AXOM_TESTING_SAVE_VISUALIZATION
+//#define AXOM_TESTING_SAVE_VISUALIZATION
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
@@ -33,6 +33,8 @@ std::string baselineDirectory()
 
 //------------------------------------------------------------------------------
 /*!
+
+The area defined with '#' characters is meant to be a strided structured mesh.
 
 coarse
 
@@ -78,8 +80,6 @@ coarse
 
 fine - refines coarse with equal sized quads.
 
-If fine has 2x2 refinement, it looks like this:
-
 %----%----%----%----%----%----%----%----%----%----%----%----%
 |    |    |    |    |    |    |    |    |    |    |    |    |
 |    |    |    |    |    |    |    |    |    |    |    |    |
@@ -120,6 +120,7 @@ If fine has 2x2 refinement, it looks like this:
 0    1    2    3    4    5    6    7    8    9    10   11   12
 
 */
+// NOTE: uniform coordsets used here for simplicity. Other coordset types can be used too.
 const char *yaml = R"(
 coordsets:
   coarse_coords:
@@ -185,6 +186,14 @@ matsets:
 
 
 //------------------------------------------------------------------------------
+/*!
+ * \brief Test coupling Elvira MIR to TopologyMapper to reconstruct material zones
+ *        on a coarse mesh and then make a new material that indicates the overlap
+ *        on a finer mesh.
+ *
+ * \note TODO: - test strided structured
+ *             - test 3D via extrude
+ */
 template <typename ExecSpace>
 class test_coupling
 {
@@ -200,10 +209,13 @@ public:
     axom::mir::utilities::blueprint::copy<ExecSpace>(n_dev, n_mesh);
 
     // Do 2D MIR on the coarse mesh. The new objects will be added to n_mesh.
-    mir2D(n_mesh, n_mesh);
+    mir2D("coarse", n_mesh, "postmir", n_mesh);
 
     // Map MIR output in n_mesh onto the fine mesh as a new matset.
     mapping2D(n_mesh, n_mesh);
+
+    // As a check, run the generated fine matset through elvira again to make clean zones.
+    mir2D("fine", n_mesh, "check", n_mesh);
 
     // device->host
     conduit::Node hostResult;
@@ -233,14 +245,15 @@ private:
     n_mesh.parse(yaml);
   }
 
-  static void mir2D(conduit::Node &n_input, conduit::Node &n_output)
+  static void mir2D(const std::string &input_prefix, conduit::Node &n_input,
+                    const std::string &output_prefix, conduit::Node &n_output)
   {
     namespace bputils = axom::mir::utilities::blueprint;
 
     // Wrap the coarse mesh in views.   
-    const conduit::Node &n_coordset = n_input["coordsets/coarse_coords"];
-    const conduit::Node &n_topology = n_input["topologies/coarse"];
-    const conduit::Node &n_matset = n_input["matsets/coarse_matset"];
+    const conduit::Node &n_coordset = n_input[axom::fmt::format("coordsets/{}_coords", input_prefix)];
+    const conduit::Node &n_topology = n_input[axom::fmt::format("topologies/{}", input_prefix)];
+    const conduit::Node &n_matset = n_input[axom::fmt::format("matsets/{}_matset", input_prefix)];
 
     auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
@@ -258,11 +271,11 @@ private:
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
     // Select that matset we'll operate on.
-    options["matset"] = "coarse_matset";
+    options["matset"] = axom::fmt::format("{}_matset", input_prefix);
     // Change the names of the topology, coordset, and matset in the output.
-    options["topologyName"] = "postmir";
-    options["coordsetName"] = "postmir_coords";
-    options["matsetName"] = "postmir_matset";
+    options["topologyName"] = output_prefix;
+    options["coordsetName"] = axom::fmt::format("{}_coords", output_prefix);
+    options["matsetName"] = axom::fmt::format("{}_matset", output_prefix);
     // NOTE: One can also add "selectedZones" to the options to limit the operation to a list of zones.
     m.execute(n_input, options, n_output);
 
@@ -282,6 +295,7 @@ private:
     auto srcCoordsetView = axom::mir::views::make_explicit_coordset<double, 2>::view(n_src_coordset);
     using SrcCoordsetView = decltype(srcCoordsetView);
 
+    // 2D Elvira makes polygonal meshes
     using SrcShapeType = axom::mir::views::PolygonShape<axom::IndexType>;
     auto srcTopologyView = axom::mir::views::make_unstructured_single_shape<SrcShapeType>::view(n_src_topology);
     using SrcTopologyView = decltype(srcTopologyView);
@@ -327,7 +341,7 @@ TEST(mir_coupling, coupling_2D_seq)
   AXOM_ANNOTATE_SCOPE("coupling_2D_seq");
   test_coupling<seq_exec>::test2D();
 }
-/*#if defined(AXOM_USE_OPENMP)
+#if defined(AXOM_USE_OPENMP)
 TEST(mir_coupling, coupling_2D_omp)
 {
   AXOM_ANNOTATE_SCOPE("coupling_2D_omp");
@@ -348,7 +362,6 @@ TEST(mir_coupling, coupling_2D_hip)
   test_coupling<hip_exec>::test2D();
 }
 #endif
-*/
 
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[])

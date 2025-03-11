@@ -121,6 +121,9 @@ clipToVolume(const ShapeType &shape,
   namespace bputils = axom::mir::utilities::blueprint;
   axom::primal::Point<T, NDIMS> range[2] = {_range[0], _range[1]};
 
+  // IDEA: While iterations are low, if we have a really small matVolume, skew
+  //       the lerp value toward the extremes so we hopefully converge faster.
+
   ClipResultType clippedShape{};
   for(int iterations = 0; iterations < max_iterations; iterations++)
   {
@@ -986,7 +989,7 @@ protected:
       matZoneView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         // The selected zone index in the whole mesh.
-        const auto zoneIndex = matZoneView[szIndex];
+        //const auto zoneIndex = matZoneView[szIndex];
         const auto matCount = matCountView[szIndex];
         // Where to begin writing this zone's fragment data.
         const auto offset = matOffsetView[szIndex];
