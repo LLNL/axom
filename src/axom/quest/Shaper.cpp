@@ -119,13 +119,31 @@ Shaper::Shaper(RuntimePolicy execPolicy,
                                  .fetch_existing(m_bpTopo)
                                  .fetch_existing("type")
                                  .as_string();
+
   if(topoType == "structured")
   {
     AXOM_ANNOTATE_SCOPE("Shaper::convertStructured");
-    axom::quest::util::convert_blueprint_structured_explicit_to_unstructured(
-      m_bpGrp,
-      m_bpTopo,
-      m_execPolicy);
+    const std::string shapeType =
+      bpNode.fetch_existing("topologies/mesh/elements/shape").as_string();
+
+    if(shapeType == "hex")
+    {
+      axom::quest::util::convert_blueprint_structured_explicit_to_unstructured_3d(
+        m_bpGrp,
+        m_bpTopo,
+        m_execPolicy);
+    }
+    else if(shapeType == "quad")
+    {
+      axom::quest::util::convert_blueprint_structured_explicit_to_unstructured_2d(
+        m_bpGrp,
+        m_bpTopo,
+        m_execPolicy);
+    }
+    else
+    {
+      SLIC_ERROR("Axom Internal error: Unhandled shape type.");
+    }
   }
 
   m_bpGrp->createNativeLayout(m_bpNodeInt);
@@ -274,8 +292,8 @@ bool Shaper::verifyInputMesh(std::string& whyBad) const
     {
       std::string elemShape =
         m_bpNodeInt.fetch("topologies")[m_bpTopo]["elements"]["shape"].as_string();
-      rval = elemShape == "hex";
-      info[0].set_string("Topology elements are not hex.");
+      rval = (elemShape == "hex") || (elemShape == "quad");
+      info[0].set_string("Topology elements are not hex or quad.");
     }
     whyBad = info.to_summary_string();
   }
