@@ -414,7 +414,7 @@ public:
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 2, void>::type triangulate(
-    const axom::ArrayView<T>& tris)
+    axom::ArrayView<T>& tris) const
   {
     using Segment2D = axom::primal::Segment<T, 2>;
 

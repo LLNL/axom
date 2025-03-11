@@ -868,103 +868,6 @@ void check_polygon_policy()
   EXPECT_TRUE(poly_2d_host[0].isValid());
 }
 
-TEST(primal_polygon, triangulate)
-{
-  using Point2D = axom::primal::Point<double, 2>;
-  using Polygon2D = axom::primal::Polygon<double, 2>;
-  using Triangle2D = axom::primal::Triangle<double, 2>;
-
-  const int NUM_INDICES_PER_TRI = 3;
-
-  Point2D A({0, 0});
-  Point2D B({1, 0});
-  Point2D C({1, 2});
-  Point2D D({0.5, 2});
-  Point2D E({0.5, 1});
-  Point2D F({0, 1});
-
-  Polygon2D poly({A, B, C, D, E, F});
-  axom::Array<double> tris((poly.numVertices() - 2) * NUM_INDICES_PER_TRI,
-                           (poly.numVertices() - 2) * NUM_INDICES_PER_TRI);
-
-  poly.triangulate(tris.view());
-
-  double tri_area_sum = 0.0;
-  SLIC_INFO("Polygon coordinates are: " << poly);
-  SLIC_INFO("tris is size of " << tris.size());
-  for(int i = 0; i < tris.size() / NUM_INDICES_PER_TRI; i++)
-  {
-    Point2D vert_0 = poly[tris[i * NUM_INDICES_PER_TRI]];
-    Point2D vert_1 = poly[tris[(i * NUM_INDICES_PER_TRI) + 1]];
-    Point2D vert_2 = poly[tris[(i * NUM_INDICES_PER_TRI) + 2]];
-
-    Triangle2D tri(vert_0, vert_1, vert_2);
-    tri_area_sum += tri.signedArea();
-    SLIC_INFO("Triangle " << i << " is " << tri);
-  }
-
-  EXPECT_NEAR(poly.signedArea(), tri_area_sum, EPS);
-}
-
-// template<typename T>
-// T orient2d(axom::primal::Point<T,2>& pa,
-//            axom::primal::Point<T,2>& pb,
-//            axom::primal::Point<T,2>& pc)
-// {
-//     T acx = pa[0] - pc[0];
-//     T bcx = pb[0] - pc[0];
-//     T acy = pa[1] - pc[1];
-//     T bcy = pb[1] - pc[1];
-
-//     return acx * bcy - acy * bcx;
-// }
-
-// TEST(primal_split, test_orientation_equations)
-// {
-//   using Point2D = axom::primal::Point<double, 2>;
-//   using Segment2D = axom::primal::Segment<double, 2>;
-
-// //   * C
-// //   **
-// //   ***
-// //   ****
-// // A ***** B
-//   Point2D A({0,0});
-//   Point2D B({1,0});
-//   Point2D C({0,1});
-
-//   printf("orient ABC is %f\n", orient2d<double>(A,B,C));
-//   printf("orient ACB is %f\n", orient2d<double>(A,C,B));
-//   printf("orient BAC is %f\n", orient2d<double>(B,A,C));
-//   printf("orient BCA is %f\n", orient2d<double>(B,C,A));
-//   printf("orient CAB is %f\n", orient2d<double>(C,A,B));
-//   printf("orient CBA is %f\n", orient2d<double>(C,B,A));
-
-//   // det < 0. ? primal::ON_POSITIVE_SIDE : primal::ON_NEGATIVE_SIDE;
-//   printf("orientation A, {B,C} is %f\n", axom::primal::orientation(A, Segment2D(B,C)));
-//   printf("orientation A, {C,B} is %f\n", axom::primal::orientation(A, Segment2D(C,B)));
-//   printf("orientation B, {A,C} is %f\n", axom::primal::orientation(B, Segment2D(A,C)));
-//   printf("orientation B, {C,A} is %f\n", axom::primal::orientation(B, Segment2D(C,A)));
-//   printf("orientation C, {A,B} is %f\n", axom::primal::orientation(C, Segment2D(A,B)));
-//   printf("orientation C, {B,A} is %f\n", axom::primal::orientation(C, Segment2D(B,A)));
-
-// Result:
-// orient ABC is 1.000000
-// orient ACB is -1.000000
-// orient BAC is -1.000000
-// orient BCA is 1.000000
-// orient CAB is 1.000000
-// orient CBA is -1.000000
-//
-// orientation A, {B,C} is 1.000000
-// orientation A, {C,B} is -1.000000
-// orientation B, {A,C} is -1.000000
-// orientation B, {C,A} is 1.000000
-// orientation C, {A,B} is 1.000000
-// orientation C, {B,A} is -1.000000
-
-// }
-
 //------------------------------------------------------------------------------
 TEST(primal_polygon, polygon_check_seq)
 {
@@ -994,6 +897,66 @@ TEST(primal_clip, polygon_check_hip)
   #endif /* AXOM_USE_HIP */
 
 #endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */
+
+//------------------------------------------------------------------------------
+TEST(primal_polygon, triangulate)
+{
+  using Point2D = axom::primal::Point<double, 2>;
+  using Polygon2D = axom::primal::Polygon<double, 2>;
+  using Triangle2D = axom::primal::Triangle<double, 2>;
+
+  auto testTriangulation = [](const Polygon2D& poly) {
+    const int NUM_INDICES_PER_TRI = 3;
+
+    axom::Array<double> tris((poly.numVertices() - 2) * NUM_INDICES_PER_TRI,
+                             (poly.numVertices() - 2) * NUM_INDICES_PER_TRI);
+    auto tris_view = tris.view();
+
+    poly.triangulate(tris_view);
+
+    double tri_area_sum = 0.0;
+    SLIC_INFO("Polygon coordinates are: " << poly);
+    SLIC_INFO("tris is size of " << tris.size());
+    for(int i = 0; i < tris.size() / NUM_INDICES_PER_TRI; i++)
+    {
+      Point2D vert_0 = poly[tris[i * NUM_INDICES_PER_TRI]];
+      Point2D vert_1 = poly[tris[(i * NUM_INDICES_PER_TRI) + 1]];
+      Point2D vert_2 = poly[tris[(i * NUM_INDICES_PER_TRI) + 2]];
+
+      Triangle2D tri(vert_0, vert_1, vert_2);
+      tri_area_sum += tri.signedArea();
+      SLIC_INFO("Triangle " << i << " is " << tri);
+    }
+
+    EXPECT_NEAR(poly.signedArea(), tri_area_sum, EPS);
+  };
+
+  Polygon2D unit_tri({Point2D({0, 0}), Point2D({1, 0}), Point2D({0, 1})});
+  testTriangulation(unit_tri);
+
+  //   []
+  // [][][]
+  Polygon2D t_block({Point2D({0, 0}),
+                     Point2D({1, 0}),
+                     Point2D({1, 1. / 3.}),
+                     Point2D({2. / 3., 1. / 3.}),
+                     Point2D({2. / 3., 2. / 3.}),
+                     Point2D({1. / 3., 2. / 3.}),
+                     Point2D({1. / 3., 1. / 3.}),
+                     Point2D({0, 1. / 3.})});
+  testTriangulation(t_block);
+
+  // Square with collinear points along edges
+  Polygon2D colinear_square({Point2D({0, 0}),
+                             Point2D({2. / 7., 0}),
+                             Point2D({1, 0}),
+                             Point2D({1, 1. / 3.}),
+                             Point2D({1, 1}),
+                             Point2D({2. / 3., 1}),
+                             Point2D({0, 1}),
+                             Point2D({0, 5. / 7.})});
+  testTriangulation(colinear_square);
+}
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
