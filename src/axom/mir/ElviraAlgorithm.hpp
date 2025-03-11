@@ -66,10 +66,9 @@ namespace detail
  *                   make a clipping plane for the shape.
  */
 template <typename ShapeType, typename T, int NDIMS>
-AXOM_HOST_DEVICE
-inline void computeRange(const ShapeType &shape,
-                         const axom::primal::Vector<T, NDIMS> &normal,
-                         axom::primal::Point<T, NDIMS> range[2])
+AXOM_HOST_DEVICE inline void computeRange(const ShapeType &shape,
+                                          const axom::primal::Vector<T, NDIMS> &normal,
+                                          axom::primal::Point<T, NDIMS> range[2])
 {
   // Compute the shape bounding box.
   const auto bbox = axom::primal::compute_bounding_box(shape);
@@ -109,14 +108,14 @@ inline void computeRange(const ShapeType &shape,
  * \param[out] pt The origin of the clipping plane that was used.
  */
 template <typename ClipResultType, typename ShapeType, typename T, int NDIMS>
-AXOM_HOST_DEVICE inline ClipResultType
-clipToVolume(const ShapeType &shape,
-             const axom::primal::Vector<T, NDIMS> &normal,
-             const axom::primal::Point<T, NDIMS> _range[2],
-             double matVolume,
-             int max_iterations,
-             double tolerance,
-             axom::primal::Point<T, NDIMS> &pt)
+AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
+  const ShapeType &shape,
+  const axom::primal::Vector<T, NDIMS> &normal,
+  const axom::primal::Point<T, NDIMS> _range[2],
+  double matVolume,
+  int max_iterations,
+  double tolerance,
+  axom::primal::Point<T, NDIMS> &pt)
 {
   namespace bputils = axom::mir::utilities::blueprint;
   axom::primal::Point<T, NDIMS> range[2] = {_range[0], _range[1]};
@@ -124,7 +123,7 @@ clipToVolume(const ShapeType &shape,
   // IDEA: While iterations are low, if we have a really small matVolume, skew
   //       the lerp value toward the extremes so we hopefully converge faster.
 
-  ClipResultType clippedShape{};
+  ClipResultType clippedShape {};
   for(int iterations = 0; iterations < max_iterations; iterations++)
   {
     // Pick the middle of the range and position the plane there.
@@ -139,7 +138,8 @@ clipToVolume(const ShapeType &shape,
     clippedShape = axom::primal::clip(shape, P);
 
     // Find the volume of the clipped shape.
-    const double fragmentVolume = bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
+    const double fragmentVolume =
+      bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
     const double volumeError = axom::utilities::abs(matVolume - fragmentVolume);
 
     //std::cout << "\titerations=" << iterations << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
@@ -395,7 +395,7 @@ private:
   View m_view;
 };
 
-} // end namespace detail
+}  // end namespace detail
 
 //------------------------------------------------------------------------------
 /*!
@@ -538,7 +538,11 @@ protected:
 
       // Make the clean mesh.
       conduit::Node n_cleanOutput;
-      makeCleanOutput(n_root, n_topo.name(), n_options_copy, cleanZones.view(), n_cleanOutput);
+      makeCleanOutput(n_root,
+                      n_topo.name(),
+                      n_options_copy,
+                      cleanZones.view(),
+                      n_cleanOutput);
 
       // Process the mixed part of the mesh.
       processMixedZones(mixedZones.view(),
@@ -714,7 +718,9 @@ protected:
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 1;
     // Forward some options involved in naming the objects.
-    const std::vector<std::string> keys{"topologyName", "coordsetName", "matsetName"};
+    const std::vector<std::string> keys {"topologyName",
+                                         "coordsetName",
+                                         "matsetName"};
     for(const auto &key : keys)
     {
       if(n_options.has_path(key))
@@ -823,8 +829,9 @@ protected:
     // Sort the zones by the mat count. This should make adjacent zones in the
     // list more likely to have the same number of materials.
     AXOM_ANNOTATE_BEGIN("sorting");
-    RAJA::stable_sort_pairs<loop_policy>(RAJA::make_span(matCountView.data(), nzones),
-                                         RAJA::make_span(matZoneView.data(), nzones));
+    RAJA::stable_sort_pairs<loop_policy>(
+      RAJA::make_span(matCountView.data(), nzones),
+      RAJA::make_span(matZoneView.data(), nzones));
     AXOM_ANNOTATE_END("sorting");
 
     //--------------------------------------------------------------------------
@@ -1178,8 +1185,15 @@ protected:
           detail::computeRange(shape, normal, range);
 
           // Figure out the clipped shape that has the desired volume.
-          PointType pt{};
-          const auto clippedShape = detail::clipToVolume<ClipResultType>(shape, normal, range, matVolume, max_iterations, tolerance, pt);
+          PointType pt {};
+          const auto clippedShape =
+            detail::clipToVolume<ClipResultType>(shape,
+                                                 normal,
+                                                 range,
+                                                 matVolume,
+                                                 max_iterations,
+                                                 tolerance,
+                                                 pt);
 
           // Emit clippedShape as material matId
           //std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", iterations=" << iterations << ", pt=" << pt << ", clipped=" << clippedShape << std::endl;

@@ -490,10 +490,15 @@ public:
     n_sizes.set_allocator(c2a.getConduitAllocatorID());
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
 
-    n_volume_fractions.set(conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, nmats * nTargetZones));
-    n_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nmats * nTargetZones));
-    n_sizes.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
-    n_offsets.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
+    n_volume_fractions.set(
+      conduit::DataType(bputils::cpp2conduit<MatFloatType>::id,
+                        nmats * nTargetZones));
+    n_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id,
+                                         nmats * nTargetZones));
+    n_sizes.set(
+      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
+    n_offsets.set(
+      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
 
     // Wrap the output matset data in some array views.
     auto material_ids = make_array_view<MatIntType>(n_material_ids);
@@ -568,8 +573,8 @@ public:
 #endif
 
             // Add the src material contribution into the target material.
-            MatIntType *matids = material_ids.data() + index/*zi*/ * nmats;
-            MatFloatType *vfs = volume_fractions.data() + index/*zi*/ * nmats;
+            MatIntType *matids = material_ids.data() + index /*zi*/ * nmats;
+            MatFloatType *vfs = volume_fractions.data() + index /*zi*/ * nmats;
             for(int m = 0; m < nmats; m++)
             {
               if(matids[m] == mat)
@@ -588,7 +593,7 @@ public:
 #endif
                 matids[m] = mat;
                 vfs[m] = vf;
-                sizes[index/*zi*/]++;
+                sizes[index /*zi*/]++;
                 break;
               }
             }
@@ -602,9 +607,8 @@ public:
         };
 
         // This predicate determines whether 2 bboxes intersect.
-        auto bbIsect = [](
-                         const SrcBoundingBox &queryBbox,
-                         const SrcBoundingBox &bvhBbox) -> bool {
+        auto bbIsect = [](const SrcBoundingBox &queryBbox,
+                          const SrcBoundingBox &bvhBbox) -> bool {
           bool rv = queryBbox.intersectsWith(bvhBbox);
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
           std::cout << "bbIsect: rv=" << rv << ", q=" << queryBbox
@@ -647,7 +651,8 @@ public:
     // All the contributions have been added to the target matset. Finish building it.
     AXOM_ANNOTATE_BEGIN("finish");
     axom::exclusive_scan<ExecSpace>(sizes, offsets);
-    n_indices.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
+    n_indices.set(
+      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
     auto indices = make_array_view<MatIntType>(n_indices);
     constexpr auto UnusedIndexSlot = MatIntType(-1);
     axom::mir::utilities::fill<ExecSpace>(indices, UnusedIndexSlot);

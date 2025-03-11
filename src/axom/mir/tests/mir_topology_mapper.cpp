@@ -444,7 +444,9 @@ private:
       shapeMap);
 
     const conduit::Node &n_srcMatset = n_dev["matsets/postmir_matset"];
-    auto srcMatset = axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_srcMatset);
+    auto srcMatset =
+      axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(
+        n_srcMatset);
     using SrcMatsetView = decltype(srcMatset);
 
     // Wrap fine mesh in views.
@@ -507,7 +509,9 @@ private:
       shapeMap);
 
     const conduit::Node &n_srcMatset = n_dev["matsets/epm_matset"];
-    auto srcMatset = axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_srcMatset);
+    auto srcMatset =
+      axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(
+        n_srcMatset);
     using SrcMatsetView = decltype(srcMatset);
 
     // Wrap fine mesh in views.

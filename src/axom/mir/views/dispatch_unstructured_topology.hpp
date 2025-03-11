@@ -53,13 +53,16 @@ struct make_unstructured_single_shape
     SLIC_ASSERT(shape == ShapeType::name());
 
     // Connectivity must exist.
-    auto connView = bputils::make_array_view<ConnectivityType>(n_topo["elements/connectivity"]);
+    auto connView = bputils::make_array_view<ConnectivityType>(
+      n_topo["elements/connectivity"]);
 
     // Use sizes and offsets if they are present.
     if(n_topo.has_path("elements/sizes") && n_topo.has_path("elements/offsets"))
     {
-      auto sizesView = bputils::make_array_view<ConnectivityType>(n_topo["elements/sizes"]); 
-      auto offsetsView = bputils::make_array_view<ConnectivityType>(n_topo["elements/offsets"]);
+      auto sizesView =
+        bputils::make_array_view<ConnectivityType>(n_topo["elements/sizes"]);
+      auto offsetsView =
+        bputils::make_array_view<ConnectivityType>(n_topo["elements/offsets"]);
       return TopologyView(connView, sizesView, offsetsView);
     }
 

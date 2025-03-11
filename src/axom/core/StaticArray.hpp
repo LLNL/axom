@@ -29,17 +29,18 @@ template <typename T, int N>
 class StaticArray : public StackArray<T, N>
 {
 public:
-
   /*!
    * \brief Constructor
    */
-  AXOM_HOST_DEVICE StaticArray() : StackArray<T, N>(), m_size(0) {}
+  AXOM_HOST_DEVICE StaticArray() : StackArray<T, N>(), m_size(0) { }
 
   /*!
    * \brief Copy Constructor
    * \param obj The object to be copied.
    */
-  AXOM_HOST_DEVICE StaticArray(const StaticArray &obj) : StackArray<T, N>(obj), m_size(obj.m_size)
+  AXOM_HOST_DEVICE StaticArray(const StaticArray &obj)
+    : StackArray<T, N>(obj)
+    , m_size(obj.m_size)
   {
     for(int i = 0; i < obj.m_size; i++)
     {
@@ -52,7 +53,9 @@ public:
    * \brief Move Constructor
    * \param obj The object to be moved.
    */
-  AXOM_HOST_DEVICE StaticArray(StaticArray &&obj) : StackArray<T, N>(obj), m_size(obj.m_size)
+  AXOM_HOST_DEVICE StaticArray(StaticArray &&obj)
+    : StackArray<T, N>(obj)
+    , m_size(obj.m_size)
   {
     for(int i = 0; i < obj.m_size; i++)
     {
@@ -64,13 +67,13 @@ public:
   /*!
    * \brief Destructor.
    */
-  AXOM_HOST_DEVICE ~StaticArray() {}
+  AXOM_HOST_DEVICE ~StaticArray() { }
 
   /*!
    * \brief Copy assignment operator.
    * \param obj The object to be copied.
    */
-  AXOM_HOST_DEVICE StaticArray operator = (const StaticArray &obj)
+  AXOM_HOST_DEVICE StaticArray operator=(const StaticArray &obj)
   {
     for(int i = 0; i < obj.m_size; i++)
     {
@@ -84,7 +87,7 @@ public:
    * \brief Move assignment operator.
    * \param obj The object to be moved.
    */
-  AXOM_HOST_DEVICE StaticArray operator = (StaticArray &&obj)
+  AXOM_HOST_DEVICE StaticArray operator=(StaticArray &&obj)
   {
     for(int i = 0; i < obj.m_size; i++)
     {

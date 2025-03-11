@@ -387,7 +387,11 @@ protected:
 
       // Make the clean mesh.
       conduit::Node n_cleanOutput;
-      makeCleanOutput(n_root, n_topo.name(), n_options_copy, cleanZones.view(), n_cleanOutput);
+      makeCleanOutput(n_root,
+                      n_topo.name(),
+                      n_options_copy,
+                      cleanZones.view(),
+                      n_cleanOutput);
 
       // Add an original nodes field on the root mesh.
       addOriginal(n_root_fields[originalNodesFieldName()],
@@ -634,7 +638,9 @@ protected:
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 0;
     // Forward some options involved in naming the objects.
-    const std::vector<std::string> keys{"topologyName", "coordsetName", "matsetName"};
+    const std::vector<std::string> keys {"topologyName",
+                                         "coordsetName",
+                                         "matsetName"};
     for(const auto &key : keys)
     {
       if(n_options.has_path(key))
