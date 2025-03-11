@@ -222,6 +222,7 @@ public:
     bputils::copy<seq_exec>(hostResult, n_mesh);
 
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+    printNode(hostResult);
 #if defined(AXOM_USE_HDF5)
     conduit::relay::io::blueprint::save_mesh(hostResult, "test2D", "hdf5");
 #endif
@@ -278,9 +279,6 @@ private:
     options["matsetName"] = axom::fmt::format("{}_matset", output_prefix);
     // NOTE: One can also add "selectedZones" to the options to limit the operation to a list of zones.
     m.execute(n_input, options, n_output);
-
-    std::cout << "------ MIR output ------\n";
-    printNode(n_output);
   }
 
   static void mapping2D(conduit::Node &n_src, conduit::Node &n_target)
@@ -329,9 +327,6 @@ private:
     // Set the name of the matset to create on the target mesh.
     n_opts["target/matsetName"] = "fine_matset";
     mapper.execute(n_src, n_opts, n_target);
-
-    std::cout << "------ Mapper output ------\n";
-    printNode(n_target["matsets/fine_matset"]);
   }
 };
 
