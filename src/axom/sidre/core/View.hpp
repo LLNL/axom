@@ -420,6 +420,17 @@ public:
   View* reallocate(const DataType& dtype);
 
   /*!
+   * \brief Reallocate data to a new allocator.
+   *
+   * If the state is EMPTY or allocId is the same as that of
+   * the parent Group's default allocator id, this is a no-op.
+   * If the state is EXTERNAL, it's an error.
+   *
+   * \return pointer to this View object.
+   */
+  View* transfer_allocator(int newAllocId);
+
+  /*!
    * \brief  Deallocate data for view.
    *
    * \note Deallocation from a view is only allowed under the conditions

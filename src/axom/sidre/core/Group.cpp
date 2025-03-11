@@ -1513,6 +1513,34 @@ Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
 /*
  *************************************************************************
  *
+ * Reallocate data to a different allocator.
+ *
+ *************************************************************************
+ */
+Group* Group::transfer_allocator(int newAllocId)
+{
+  SLIC_ASSERT(newAllocId != INVALID_ALLOCATOR_ID);
+
+  // copy child Groups to new Group
+  for(auto& grp : groups())
+  {
+    grp.transfer_allocator(newAllocId);
+  }
+
+  // copy Views to new Group
+  for(auto& view : views())
+  {
+    view.transfer_allocator(newAllocId);
+  }
+
+  m_default_allocator_id = newAllocId;
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Copy Group native layout to given Conduit node.
  *
  *************************************************************************

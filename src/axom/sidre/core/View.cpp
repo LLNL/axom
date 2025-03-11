@@ -299,6 +299,50 @@ View* View::reallocate(const DataType& dtype)
 /*
  *************************************************************************
  *
+ * Reallocate data to a different allocator.
+ *
+ * Data must not be external.
+ * If the new allocator is the same as the current, it's a no-op.
+ *
+ *************************************************************************
+ */
+View* View::transfer_allocator(int newAllocId)
+{
+  SLIC_ERROR_IF(m_state == EXTERNAL,
+                "View::transfer_allocator doesn't work on external data.");
+
+  if(m_state == EMPTY) { return this; }
+
+  int currentAllocId = getOwningGroup()->getDefaultAllocatorID();
+
+  if(newAllocId == currentAllocId) { return this; }
+
+  if(m_state == STRING || m_state == SCALAR)
+  {
+    const auto& conduitMemOp = axom::ConduitMemCallbacks::getInstance(newAllocId);
+    conduit::Node tmpNode;
+    m_node.swap(tmpNode);
+    m_node.set_allocator(conduitMemOp.conduitId());
+    m_node.set_node(tmpNode);
+  }
+  else if(m_state == BUFFER)
+  {
+    Buffer* oldBuffer = detachBuffer();
+    allocate(newAllocId);
+    m_data_buffer->copyBytesIntoBuffer(oldBuffer->getVoidPtr(),
+                                       oldBuffer->getTotalBytes());
+    m_data_buffer->attachToView(this);
+    apply();
+    // Delete oldBuffer?
+  }
+
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
  * Reshape an array View.
  *
  *************************************************************************

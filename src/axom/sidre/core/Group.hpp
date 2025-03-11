@@ -325,6 +325,13 @@ public:
 #endif
 
   /*!
+   * \brief Reallocate data to a new allocator.
+   *
+   * \return pointer to this Group object.
+   */
+  Group* transfer_allocator(int newAllocId);
+
+  /*!
    * \brief Insert information about data associated with Group subtree with
    *        this Group at root of tree (default 'recursive' is true), or for 
    *        this Group only ('recursive' is false) in fields of given 
