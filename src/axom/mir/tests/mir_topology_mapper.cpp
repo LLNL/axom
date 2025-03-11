@@ -412,6 +412,8 @@ private:
 
   static void mapping2D(conduit::Node &n_dev)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
+
     // Wrap coarse/post_mir mesh in views.
     using SrcCoordsetView = axom::mir::views::ExplicitCoordsetView<double, 2>;
     using SrcTopologyView =
@@ -436,6 +438,10 @@ private:
       bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/offsets"]),
       shapeMap);
 
+    const conduit::Node &n_srcMatset = n_dev["matsets/postmir_matset"];
+    auto srcMatset = axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_srcMatset);
+    using SrcMatsetView = decltype(srcMatset);
+
     // Wrap fine mesh in views.
     using TargetCoordsetView = axom::mir::views::ExplicitCoordsetView<double, 2>;
     using TargetShapeType = axom::mir::views::QuadShape<int>;
@@ -457,9 +463,10 @@ private:
     using Mapper = bputils::TopologyMapper<ExecSpace,
                                            SrcTopologyView,
                                            SrcCoordsetView,
+                                           SrcMatsetView,
                                            TargetTopologyView,
                                            TargetCoordsetView>;
-    Mapper mapper(srcTopo, srcCoordset, targetTopo, targetCoordset);
+    Mapper mapper(srcTopo, srcCoordset, srcMatset, targetTopo, targetCoordset);
     conduit::Node n_opts;
     n_opts["source/matsetName"] = "postmir_matset";
     n_opts["target/topologyName"] = "fine";
@@ -494,6 +501,10 @@ private:
       bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/offsets"]),
       shapeMap);
 
+    const conduit::Node &n_srcMatset = n_dev["matsets/epm_matset"];
+    auto srcMatset = axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_srcMatset);
+    using SrcMatsetView = decltype(srcMatset);
+
     // Wrap fine mesh in views.
     using TargetCoordsetView = axom::mir::views::ExplicitCoordsetView<double, 3>;
     using TargetShapeType = axom::mir::views::HexShape<int>;
@@ -514,9 +525,10 @@ private:
     using Mapper = bputils::TopologyMapper<ExecSpace,
                                            SrcTopologyView,
                                            SrcCoordsetView,
+                                           SrcMatsetView,
                                            TargetTopologyView,
                                            TargetCoordsetView>;
-    Mapper mapper(srcTopo, srcCoordset, targetTopo, targetCoordset);
+    Mapper mapper(srcTopo, srcCoordset, srcMatset, targetTopo, targetCoordset);
     conduit::Node n_opts;
     n_opts["source/matsetName"] = "epm_matset";
     n_opts["target/topologyName"] = "efm";

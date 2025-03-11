@@ -16,6 +16,44 @@ namespace mir
 {
 namespace views
 {
+namespace detail
+{
+
+// Base template
+template <typename ShapeType, bool VariableSize>
+struct NumberOfZones
+{
+};
+
+// Specialization for fixed-size shapes (user might not provide sizes, offsets)
+template <typename ShapeType>
+struct NumberOfZones<ShapeType, false>
+{
+  /*!
+   * \brief Compute number of zones using either sizes or connSize and knowledge
+   *        of a shape with a static number of nodes per zone.
+   */
+  AXOM_HOST_DEVICE static axom::IndexType execute(axom::IndexType sizesSize, axom::IndexType connSize)
+  {
+    return (sizesSize != 0) ? sizesSize : (connSize / ShapeType::numberOfNodes());
+  }
+};
+
+// Specialization for variable-size shapes.
+template <typename ShapeType>
+struct NumberOfZones<ShapeType, true>
+{
+  /*!
+   * \brief Compute number of zones using sizes. A variable-sized shape must have provided sizes.
+   */
+  AXOM_HOST_DEVICE static axom::IndexType execute(axom::IndexType sizesSize, axom::IndexType AXOM_UNUSED_PARAM(connSize))
+  {
+    return sizesSize;
+  }
+};
+
+}// end namespace detail
+
 /*!
  * \brief This class provides a view for Conduit/Blueprint single shape unstructured grids.
  *
@@ -40,7 +78,9 @@ public:
     : m_connectivityView(conn)
     , m_sizesView()
     , m_offsetsView()
-  { }
+  {
+    SLIC_ASSERT(!ShapeType::is_variable_size());
+  }
 
   /*!
    * \brief Constructor
@@ -67,7 +107,7 @@ public:
    */
   AXOM_HOST_DEVICE static constexpr int dimension()
   {
-    return ShapeT::dimension();
+    return ShapeType::dimension();
   }
 
   /*!
@@ -77,9 +117,7 @@ public:
    */
   AXOM_HOST_DEVICE IndexType numberOfZones() const
   {
-    return (m_sizesView.size() != 0)
-      ? m_sizesView.size()
-      : (m_connectivityView.size() / ShapeType::numberOfNodes());
+    return detail::NumberOfZones<ShapeType, ShapeType::is_variable_size()>::execute(m_sizesView.size(), m_connectivityView.size());
   }
 
   /*!

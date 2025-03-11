@@ -166,7 +166,7 @@ void saveBaseline(const std::string &filename, const conduit::Node &n)
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
     SLIC_INFO(axom::fmt::format("Save visualization files..."));
     conduit::relay::io::blueprint::save_mesh(n, filename + "_hdf5", "hdf5");
-    axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
+    //axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
 #endif
   }
   catch(...)

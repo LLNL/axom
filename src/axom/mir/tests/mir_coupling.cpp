@@ -18,10 +18,10 @@ namespace bputils = axom::mir::utilities::blueprint;
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
+#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
+#define AXOM_TESTING_SAVE_VISUALIZATION
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
@@ -128,22 +128,22 @@ coordsets:
       i: 7
       j: 7
     origin:
-      x: 0
-      y: 0
+      x: 0.
+      y: 0.
     spacing:
-      x: 1
-      y: 1
+      dx: 1.
+      dy: 1.
   fine_coords:
     type: uniform
     dims:
       i: 13
       j: 13
     origin:
-      x: 0
-      y: 0
+      x: 0.
+      y: 0.
     spacing:
-      x: 0.5
-      y: 0.5
+      dx: 0.5
+      dy: 0.5
 topologies:
   coarse_strided:
     type: structured
@@ -199,13 +199,15 @@ public:
     conduit::Node n_dev;
     axom::mir::utilities::blueprint::copy<ExecSpace>(n_dev, n_mesh);
 
-    conduit::Node n_mir, n_map;
-    mir2D(n_dev, n_mir);
-    mapping2D(n_mir, n_map);
+    // Do 2D MIR on the coarse mesh. The new objects will be added to n_mesh.
+    mir2D(n_mesh, n_mesh);
+
+    // Map MIR output in n_mesh onto the fine mesh as a new matset.
+    mapping2D(n_mesh, n_mesh);
 
     // device->host
     conduit::Node hostResult;
-    bputils::copy<seq_exec>(hostResult, n_map);
+    bputils::copy<seq_exec>(hostResult, n_mesh);
 
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
 #if defined(AXOM_USE_HDF5)
@@ -225,8 +227,6 @@ public:
   }
 
 private:
-  static constexpr int refinement = 2;
-
   static void initialize(conduit::Node &n_mesh)
   {
     // Make the 2D input mesh.
@@ -235,11 +235,13 @@ private:
 
   static void mir2D(conduit::Node &n_input, conduit::Node &n_output)
   {
+    namespace bputils = axom::mir::utilities::blueprint;
+
+    // Wrap the coarse mesh in views.   
     const conduit::Node &n_coordset = n_input["coordsets/coarse_coords"];
     const conduit::Node &n_topology = n_input["topologies/coarse"];
     const conduit::Node &n_matset = n_input["matsets/coarse_matset"];
 
-    // Wrap the coarse mesh in views.
     auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
 
@@ -248,109 +250,101 @@ private:
     using TopologyView = decltype(topologyView);
     using IndexingPolicy = typename TopologyView::IndexingPolicy;
 
-    auto matsetView = axom::mir::views::make_unibuffer_matset<std::int64_t, double, 3>::view(n_matset);
+    auto matsetView = axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_matset);
     using MatsetView = decltype(matsetView);
 
     // Do MIR on the mesh.
     using MIR = axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
+    // Select that matset we'll operate on.
     options["matset"] = "coarse_matset";
+    // Change the names of the topology, coordset, and matset in the output.
     options["topologyName"] = "postmir";
     options["coordsetName"] = "postmir_coords";
     options["matsetName"] = "postmir_matset";
+    // NOTE: One can also add "selectedZones" to the options to limit the operation to a list of zones.
     m.execute(n_input, options, n_output);
 
     std::cout << "------ MIR output ------\n";
     printNode(n_output);
   }
 
-  static void mapping2D(conduit::Node &n_input, conduit::Node &n_output)
+  static void mapping2D(conduit::Node &n_src, conduit::Node &n_target)
   {
-#if 0
-    const conduit::Node &n_coordset = n_input["coordsets/coarse_coordset"];
-    const conduit::Node &n_topology = n_input["topologies/coarse"];
-    const conduit::Node &n_matset = n_input["matsets/coarse_matset"];
+    namespace bputils = axom::mir::utilities::blueprint;
 
-    // Wrap the coarse mesh in views.
-    make_explicit_coordset<DataType, 3>::view(n_coordset);
+    // Wrap the source mesh from (coarse MIR output).
+    const conduit::Node &n_src_coordset = n_src["coordsets/postmir_coords"];
+    const conduit::Node &n_src_topology = n_src["topologies/postmir"];
+    const conduit::Node &n_src_matset = n_src["matsets/postmir_matset"];
 
-    // Wrap coarse/post_mir mesh in views.
-    using SrcCoordsetView = axom::mir::views::ExplicitCoordsetView<double, 2>;
-    using SrcTopologyView =
-      axom::mir::views::UnstructuredTopologyMixedShapeView<conduit::index_t>;
-    SrcCoordsetView srcCoordset(bputils::make_array_view<double>(
-                                  n_dev["coordsets/postmir_coords/values/x"]),
-                                bputils::make_array_view<double>(
-                                  n_dev["coordsets/postmir_coords/values/y"]));
+    auto srcCoordsetView = axom::mir::views::make_explicit_coordset<double, 2>::view(n_src_coordset);
+    using SrcCoordsetView = decltype(srcCoordsetView);
 
-    axom::Array<axom::IndexType> shapeValues, shapeIds;
-    const conduit::Node &n_srcTopo = n_dev["topologies/postmir"];
-    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    auto shapeMap = axom::mir::views::buildShapeMap(n_srcTopo,
-                                                    shapeValues,
-                                                    shapeIds,
-                                                    allocatorID);
-    SrcTopologyView srcTopo(
-      bputils::make_array_view<conduit::index_t>(
-        n_srcTopo["elements/connectivity"]),
-      bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/shapes"]),
-      bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/sizes"]),
-      bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/offsets"]),
-      shapeMap);
+    using SrcShapeType = axom::mir::views::PolygonShape<axom::IndexType>;
+    auto srcTopologyView = axom::mir::views::make_unstructured_single_shape<SrcShapeType>::view(n_src_topology);
+    using SrcTopologyView = decltype(srcTopologyView);
 
-    // Wrap fine mesh in views.
-    using TargetCoordsetView = axom::mir::views::ExplicitCoordsetView<double, 2>;
-    using TargetShapeType = axom::mir::views::QuadShape<int>;
-    using TargetTopologyView =
-      axom::mir::views::UnstructuredTopologySingleShapeView<TargetShapeType>;
+    auto srcMatsetView = axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_src_matset);
+    using SrcMatsetView = decltype(srcMatsetView);
 
-    TargetCoordsetView targetCoordset(
-      bputils::make_array_view<double>(n_dev["coordsets/fine_coords/values/x"]),
-      bputils::make_array_view<double>(
-        n_dev["coordsets/fine_coords/values/y"]));
-    const conduit::Node &n_targetTopo = n_dev["topologies/fine"];
-    TargetTopologyView targetTopo(
-      bputils::make_array_view<int>(n_targetTopo["elements/connectivity"]),
-      bputils::make_array_view<int>(n_targetTopo["elements/sizes"]),
-      bputils::make_array_view<int>(n_targetTopo["elements/offsets"]));
+    // Wrap the target mesh (fine)
+    const conduit::Node &n_target_coordset = n_target["coordsets/fine_coords"];
+    const conduit::Node &n_target_topology = n_target["topologies/fine"];
 
-    // Make new VFs via mapper.
+    auto targetCoordsetView = axom::mir::views::make_uniform_coordset<2>::view(n_target_coordset);
+    using TargetCoordsetView = decltype(targetCoordsetView);
+
+    auto targetTopologyView = axom::mir::views::make_structured<2>::view(n_target_topology);
+    using TargetTopologyView = decltype(targetTopologyView);
+
+    // Make new a new matset on the target topology to record material overlaps.
     using Mapper = bputils::TopologyMapper<ExecSpace,
                                            SrcTopologyView,
                                            SrcCoordsetView,
+                                           SrcMatsetView,
                                            TargetTopologyView,
                                            TargetCoordsetView>;
-    Mapper mapper(srcTopo, srcCoordset, targetTopo, targetCoordset);
+    Mapper mapper(srcTopologyView, srcCoordsetView, srcMatsetView, targetTopologyView, targetCoordsetView);
     conduit::Node n_opts;
+    // Select the matset on the post-MIR mesh.
     n_opts["source/matsetName"] = "postmir_matset";
+    // Set the name of the topology to use for the target mesh.
     n_opts["target/topologyName"] = "fine";
+    // Set the name of the matset to create on the target mesh.
     n_opts["target/matsetName"] = "fine_matset";
-    mapper.execute(n_dev, n_opts, n_dev);
-#endif
+    mapper.execute(n_src, n_opts, n_target);
+
+    std::cout << "------ Mapper output ------\n";
+    printNode(n_target["matsets/fine_matset"]);
   }
 };
 
 //------------------------------------------------------------------------------
 TEST(mir_coupling, coupling_2D_seq)
 {
+  AXOM_ANNOTATE_SCOPE("coupling_2D_seq");
   test_coupling<seq_exec>::test2D();
 }
 /*#if defined(AXOM_USE_OPENMP)
 TEST(mir_coupling, coupling_2D_omp)
 {
+  AXOM_ANNOTATE_SCOPE("coupling_2D_omp");
   test_coupling<omp_exec>::test2D();
 }
 #endif
 #if defined(AXOM_USE_CUDA)
 TEST(mir_coupling, coupling_2D_cuda)
 {
+  AXOM_ANNOTATE_SCOPE("coupling_2D_cuda");
   test_coupling<cuda_exec>::test2D();
 }
 #endif
 #if defined(AXOM_USE_HIP)
 TEST(mir_coupling, coupling_2D_hip)
 {
+  AXOM_ANNOTATE_SCOPE("coupling_2D_hip");
   test_coupling<hip_exec>::test2D();
 }
 #endif

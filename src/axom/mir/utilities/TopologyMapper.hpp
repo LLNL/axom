@@ -296,16 +296,19 @@ AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
  * \tparam ExecSpace The execution space where the algorithm will execute.
  * \tparam SrcTopologyView The view type for the source topology.
  * \tparam SrcCoordsetView The view type for the source coordset.
+ * \tparam SrcMatsetView The view type for the source matset.
  * \tparam TargetTopologyView The view type for the target topology.
  * \tparam TargetCoordsetView The view type for the target coordset.
  *
  * \note The use of topology and coordset views as template parameters allows
  *       this class to be instantiated for use with various topology and coordset
- *       types.
+ *       types. We also use the source matsetview so we can make an output matset
+ *       with the same types.
  */
 template <typename ExecSpace,
           typename SrcTopologyView,
           typename SrcCoordsetView,
+          typename SrcMatsetView,
           typename TargetTopologyView,
           typename TargetCoordsetView>
 class TopologyMapper
@@ -322,14 +325,17 @@ public:
    *
    * \param srcTopoView The source topology view.
    * \param srcCoordsetView The source coordset view.
+   * \param srcMatsetView The source matset view.
    * \param targetTopoView The target topology view.
    * \param targetCoordsetView The target coordset view.
    */
   TopologyMapper(const SrcTopologyView &srcTopoView,
                  const SrcCoordsetView &srcCoordsetView,
+                 const SrcMatsetView &srcMatsetView,
                  const TargetTopologyView &targetTopoView,
                  const TargetCoordsetView &targetCoordsetView)
     : m_srcView({srcTopoView, srcCoordsetView})
+    , m_srcMatsetView(srcMatsetView)
     , m_targetView({targetTopoView, targetCoordsetView})
   { }
 
@@ -363,9 +369,14 @@ public:
                conduit::Node &n_targetMesh)
   {
     AXOM_ANNOTATE_SCOPE("TopologyMapper::execute");
+    namespace bputils = axom::mir::utilities::blueprint;
 
     using reduce_policy =
       typename axom::execution_space<ExecSpace>::reduce_policy;
+    // Pick output matset types (use input types)
+    using MatIntType = typename SrcMatsetView::IndexType;
+    using MatFloatType = typename SrcMatsetView::IndexType;
+
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     const char *SRC_MATSET_NAME = "source/matsetName";
@@ -398,6 +409,18 @@ public:
     const conduit::Node &n_materialMap =
       n_matset.fetch_existing("material_map");
     const auto nmats = n_materialMap.number_of_children();
+
+    // Look through the material map to get the largest matId in use.
+    int maxMatId = 0;
+    for(conduit::index_t i = 0; i < nmats; i++)
+    {
+      int matId = n_materialMap[i].to_int();
+      if(i == 0 || matId > maxMatId)
+      {
+        maxMatId = matId;
+      }
+    }
+    const auto MaterialEmpty = static_cast<MatIntType>(maxMatId + 1);
 
     // Build up BVH that contains the src polygon bounding boxes.
     using SrcBoundingBox = typename SrcShapeView::BoundingBox;
@@ -435,6 +458,7 @@ public:
     AXOM_ANNOTATE_BEGIN("allocation");
     ConduitAllocateThroughAxom<ExecSpace> c2a;
 
+    // Make target matset.
     conduit::Node &n_targetMatset = n_targetMesh["matsets/" + targetMatsetName];
     n_targetMatset["material_map"].set(n_materialMap);
     n_targetMatset["topology"].set(targetTopologyName);
@@ -445,6 +469,7 @@ public:
     conduit::Node &n_sizes = n_targetMatset["sizes"];
     conduit::Node &n_offsets = n_targetMatset["offsets"];
 
+    // Allocate memory for the output matset.
     n_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
     n_material_ids.set_allocator(c2a.getConduitAllocatorID());
     n_indices.set_allocator(c2a.getConduitAllocatorID());
@@ -452,28 +477,27 @@ public:
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
 
     const axom::IndexType nTargetZones = m_targetView.numberOfZones();
-    n_volume_fractions.set(conduit::DataType::float64(nmats * nTargetZones));
-    n_material_ids.set(conduit::DataType::int32(nmats * nTargetZones));
-    n_sizes.set(conduit::DataType::int32(nTargetZones));
-    n_offsets.set(conduit::DataType::int32(nTargetZones));
+    n_volume_fractions.set(conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, nmats * nTargetZones));
+    n_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nmats * nTargetZones));
+    n_sizes.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
+    n_offsets.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
 
-    auto material_ids = make_array_view<int>(n_material_ids);
-    auto volume_fractions = make_array_view<double>(n_volume_fractions);
-    auto sizes = make_array_view<int>(n_sizes);
-    auto offsets = make_array_view<int>(n_offsets);
-    axom::mir::utilities::fill<ExecSpace>(volume_fractions, 0.);
-    constexpr int MaterialEmpty = -1;
+    // Wrap the output matset data in some array views.
+    auto material_ids = make_array_view<MatIntType>(n_material_ids);
+    auto volume_fractions = make_array_view<MatFloatType>(n_volume_fractions);
+    auto sizes = make_array_view<MatIntType>(n_sizes);
+    auto offsets = make_array_view<MatIntType>(n_offsets);
+    axom::mir::utilities::fill<ExecSpace>(volume_fractions, MatFloatType(0.));
     axom::mir::utilities::fill<ExecSpace>(material_ids, MaterialEmpty);
-    axom::mir::utilities::fill<ExecSpace>(sizes, 0);
+    axom::mir::utilities::fill<ExecSpace>(sizes, MatIntType(0));
     AXOM_ANNOTATE_END("allocation");
 
     // -------------------------------------------------------------------------
     // Iterate over the target zones and intersect them with source zones.
     AXOM_ANNOTATE_BEGIN("intersection");
     const auto targetView = m_targetView;
-    RAJA::ReduceSum<reduce_policy, int> reduceSize(0);
-    const auto srcMatIds =
-      make_array_view<std::int64_t>(n_matset["material_ids"]);
+    RAJA::ReduceSum<reduce_policy, MatIntType> reduceSize(0);
+    SrcMatsetView srcMatsetView(m_srcMatsetView);
     const auto bvh_device = bvh.getTraverser();
     SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
                                              n_options,
@@ -512,15 +536,19 @@ public:
           constexpr double eps = 1.e-3;
 
           // Determine the overlap of the src and target shapes.
-          double srcOverlapsTarget =
+          const double srcOverlapsTarget =
             detail::shapeOverlap(srcShape, targetShape, eps);
 
           if(srcOverlapsTarget > 0.)
           {
-            double vf = srcOverlapsTarget / targetAmount;
+            MatFloatType vf = srcOverlapsTarget / targetAmount;
 
-            // Get the src material
-            int mat = srcMatIds[srcZone];
+            // Get the src material - there should just be one!
+            typename SrcMatsetView::IDList zids;
+            typename SrcMatsetView::VFList zvfs;
+            srcMatsetView.zoneMaterials(srcZone, zids, zvfs);
+            SLIC_ASSERT(zids.size() == 1);
+            const auto mat = zids[0];
 
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
             std::cout << "\tintersection:" << std::endl
@@ -533,9 +561,9 @@ public:
                       << "\t\tvf=" << vf << std::endl;
 #endif
 
-            // Add the src material into the target material.
-            int *matids = material_ids.data() + zi * nmats;
-            double *vfs = volume_fractions.data() + zi * nmats;
+            // Add the src material contribution into the target material.
+            MatIntType *matids = material_ids.data() + zi * nmats;
+            MatFloatType *vfs = volume_fractions.data() + zi * nmats;
             for(int m = 0; m < nmats; m++)
             {
               if(matids[m] == mat)
@@ -570,7 +598,7 @@ public:
         };
 
         // This predicate determines whether 2 bboxes intersect.
-        auto bbIsect = [] /*AXOM_HOST_DEVICE*/ (
+        auto bbIsect = [](
                          const SrcBoundingBox &queryBbox,
                          const SrcBoundingBox &bvhBbox) -> bool {
           bool rv = queryBbox.intersectsWith(bvhBbox);
@@ -590,9 +618,10 @@ public:
     AXOM_ANNOTATE_BEGIN("finish");
     axom::exclusive_scan<ExecSpace>(sizes, offsets);
     const auto totalSize = reduceSize.get();
-    n_indices.set(conduit::DataType::int32(totalSize));
-    auto indices = make_array_view<int>(n_indices);
-    axom::mir::utilities::fill<ExecSpace>(indices, -1);
+    n_indices.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
+    auto indices = make_array_view<MatIntType>(n_indices);
+    constexpr auto UnusedIndexSlot = MatIntType(-1);
+    axom::mir::utilities::fill<ExecSpace>(indices, UnusedIndexSlot);
     axom::for_all<ExecSpace>(
       targetView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zi) {
@@ -603,9 +632,14 @@ public:
         }
       });
     AXOM_ANNOTATE_END("finish");
+
+    // Add an empty material entry to the material map in case some of the slots did
+    // not get covered.
+    n_targetMatset["material_map"]["empty"] = MaterialEmpty;
   }
 
   SrcShapeView m_srcView;
+  SrcMatsetView m_srcMatsetView;
   TargetShapeView m_targetView;
 };
 
