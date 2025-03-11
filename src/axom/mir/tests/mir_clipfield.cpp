@@ -390,14 +390,18 @@ struct test_unique
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     axom::Array<int> ids {{0, 1, 5, 4, 1, 2, 6,  5, 2, 3, 7,  6,
                            4, 5, 9, 8, 5, 6, 10, 9, 6, 7, 11, 10}};
+    EXPECT_EQ(ids.size(), 24);
+    EXPECT_EQ(ids.view().size(), 24);
+
     // host->device
     axom::Array<int> deviceIds(ids.size(), ids.size(), allocatorID);
     axom::copy(deviceIds.data(), ids.data(), sizeof(int) * ids.size());
+    EXPECT_EQ(deviceIds.size(), 24);
 
     // Make unique ids.
     axom::Array<int> uIds;
     axom::Array<axom::IndexType> uIndices;
-    axom::mir::utilities::Unique<ExecSpace, int>::execute(ids.view(),
+    axom::mir::utilities::Unique<ExecSpace, int>::execute(deviceIds.view(),
                                                           uIds,
                                                           uIndices);
     // _mir_utilities_unique_end
