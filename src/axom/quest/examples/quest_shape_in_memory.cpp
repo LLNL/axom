@@ -2017,7 +2017,7 @@ int main(int argc, char** argv)
   }
 
   // For error checking, work on host.
-  using ExecSpace = typename axom::SEQ_EXEC;
+  using ExecSpace = axom::SEQ_EXEC;
   using ReducePolicy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
   //---------------------------------------------------------------------------
