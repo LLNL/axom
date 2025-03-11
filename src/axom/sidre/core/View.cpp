@@ -13,6 +13,7 @@
 #include "Attribute.hpp"
 
 #include "axom/core/Macros.hpp"
+#include "axom/core/ConduitMemCallbacks.hpp"
 
 namespace axom
 {
@@ -1208,7 +1209,8 @@ void View::deepCopyView(View* copy, int allocID) const
     break;
   case STRING:
   case SCALAR:
-    copy->m_node = m_node;
+    copy->m_node.set_allocator(axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID));
+    copy->m_node.set_node(m_node);
     copy->m_state = m_state;
     copy->m_is_applied = true;
     break;

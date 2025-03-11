@@ -1148,9 +1148,8 @@ Group* Group::createGroup(const std::string& path,
       return nullptr;
     }
 
-#ifdef AXOM_USE_UMPIRE
-    new_group->setDefaultAllocator(group->getDefaultAllocator());
-#endif
+    SLIC_ASSERT(group->getDefaultAllocatorID() == m_default_allocator_id);
+    new_group->setDefaultAllocator(m_default_allocator_id);
     return group->attachGroup(new_group);
   }
 
@@ -1535,7 +1534,6 @@ bool Group::deepCopyToConduit(Node& n, const Attribute* attr) const
     if(attr == nullptr || view->hasAttributeValue(attr))
     {
       conduit::Node& child_node = m_is_list ? n.append() : n[view->getName()];
-      child_node.set_allocator(axom::ConduitMemCallbacks::axomAllocIdToConduit(m_default_allocator_id));
       view->deepCopyToConduit(child_node);
       hasSavedViews = true;
     }

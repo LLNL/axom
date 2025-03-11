@@ -1523,6 +1523,8 @@ TEST(sidre_group, scalar_memory_allocator)
     std::int32_t scalarIntTmp;
     axom::copy(&scalarIntTmp, scalarIntPtr, sizeof(scalarInt));
     EXPECT_EQ(scalarIntTmp, scalarInt);
+
+    grp->destroyViewsAndData();
   }
 }
 
@@ -1658,7 +1660,7 @@ TEST(sidre_group, deep_copy_interspace)
   // Test deep copies with a change in memory space.
 
   // Allocator ids to test.
-  std::vector<int> allocIds(1, axom::DYNAMIC_ALLOCATOR_ID);
+  std::vector<int> allocIds;
   #ifdef AXOM_USE_UMPIRE
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
     #ifdef AXOM_USE_GPU
@@ -1666,6 +1668,8 @@ TEST(sidre_group, deep_copy_interspace)
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
   // Does it make sense to check Pinned and Constant memory spaces?
     #endif
+  #else
+  allocIds.push_back(axom::DYNAMIC_ALLOCATOR_ID);
   #endif
 
   DataStore ds;
@@ -1685,14 +1689,17 @@ TEST(sidre_group, deep_copy_interspace)
   axom::Array<std::int32_t> tmpIntArray(N, N);
   axom::Array<char> tmpCharArray;
 
+  Group* srcGrandparent = ds.getRoot()->createGroup("srcGrandparent");
+  Group* dstGrandparent = ds.getRoot()->createGroup("dstGrandparent");
+
   // For each combination of srcAllocId and dstAllocId,
   // allocate src and copy to dst.
 
   for(auto srcAllocId : allocIds)
   {
-    Group* srcParent = ds.getRoot()->createGroup("srcParent");
+    Group* srcParent = srcGrandparent->createGroup("testParent");
     srcParent->setDefaultAllocator(srcAllocId);
-    Group* src = srcParent->createGroup("src");
+    Group* src = srcParent->createGroup("testGrp");
     EXPECT_EQ(srcParent->getDefaultAllocatorID(), srcAllocId);
     EXPECT_EQ(src->getDefaultAllocatorID(), srcAllocId);
 
@@ -1722,8 +1729,8 @@ TEST(sidre_group, deep_copy_interspace)
 
     if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(srcAllocId))
     {
-      std::cout << "srcParent group:" << std::endl;
-      srcParent->print();
+      std::cout << "srcGrandparent group:" << std::endl;
+      srcGrandparent->print();
     }
 
     //
@@ -1735,12 +1742,11 @@ TEST(sidre_group, deep_copy_interspace)
       std::cout << "Testing copying allocator id " << srcAllocId << " to "
                 << dstAllocId << std::endl;
 
-      axom::sidre::Group* dstParent = ds.getRoot()->createGroup("dstParent");
-      dstParent->setDefaultAllocator(dstAllocId);
+      dstGrandparent->setDefaultAllocator(dstAllocId);
+      dstGrandparent->deepCopyGroup(srcParent);
 
-      dstParent->deepCopyGroup(srcParent);
-
-      Group* dst = dstParent->getGroup("dst");
+      axom::sidre::Group* dstParent = dstGrandparent->getGroup(srcParent->getName());
+      Group* dst = dstParent->getGroup(src->getName());
 
       //
       // Check pointers.  Copy data to temporary host buffers and check.
@@ -1777,10 +1783,10 @@ TEST(sidre_group, deep_copy_interspace)
         EXPECT_EQ(tmpCharArray[i], stringValue[i]);
       }
 
-      ds.getRoot()->destroyGroup("dstParent");
+      dstGrandparent->destroyGroupAndData(srcParent->getName());
     }
 
-    ds.getRoot()->destroyGroup("srcParent");
+    srcGrandparent->destroyGroupAndData(srcParent->getName());
   }
 }
 

@@ -1856,7 +1856,7 @@ TEST(sidre_view, deep_copy_shape)
 TEST(sidre_view, deep_copy_to_conduit)
 {
   // Allocator ids to test.
-  std::vector<int> allocIds(1, axom::DYNAMIC_ALLOCATOR_ID);
+  std::vector<int> allocIds;
 #ifdef AXOM_USE_UMPIRE
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
   #ifdef AXOM_USE_GPU
@@ -1864,6 +1864,8 @@ TEST(sidre_view, deep_copy_to_conduit)
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
     // Does it make sense to check Pinned and Constant memory spaces?
   #endif
+#else
+  allocIds.push_back(axom::DYNAMIC_ALLOCATOR_ID);
 #endif
 
   DataStore ds;
@@ -1931,8 +1933,8 @@ TEST(sidre_view, deep_copy_to_conduit)
       std::cout << "Testing copying allocator id " << srcAllocId << " to "
                 << dstAllocId << std::endl;
 
-      auto dstAllocIdConduit =
-        axom::ConduitMemCallbacks::axomAllocIdToConduit(dstAllocId);
+      const auto& idConverter = axom::ConduitMemCallbacks::getInstance(dstAllocId);
+      auto dstAllocIdConduit = idConverter.conduitId();
 
       conduit::Node dst;
       dst.set_allocator(dstAllocIdConduit);
@@ -1947,7 +1949,8 @@ TEST(sidre_view, deep_copy_to_conduit)
         (double*)dst.fetch_existing(srcScalar->getName()).data_ptr();
       EXPECT_NE(dstScalarPtr, nullptr);
       EXPECT_NE(dstScalarPtr, srcScalarPtr);
-      EXPECT_EQ(axom::getAllocatorIDFromPointer(dstScalarPtr), dstAllocId);
+      auto dstScalarAllocId = axom::getAllocatorIDFromPointer(dstScalarPtr);
+      EXPECT_EQ(dstScalarAllocId, dstAllocId);
       axom::copy(&tmpDoubleValue, dstScalarPtr, sizeof(double));
       EXPECT_EQ(tmpDoubleValue, doubleValue);
 
@@ -1955,7 +1958,8 @@ TEST(sidre_view, deep_copy_to_conduit)
         (std::int32_t*)dst.fetch_existing(srcArray->getName()).data_ptr();
       EXPECT_NE(dstArrayPtr, nullptr);
       EXPECT_NE(dstArrayPtr, srcArrayPtr);
-      EXPECT_EQ(axom::getAllocatorIDFromPointer(dstArrayPtr), dstAllocId);
+      auto dstArrayAllocId = axom::getAllocatorIDFromPointer(dstArrayPtr);
+      EXPECT_EQ(dstArrayAllocId, dstAllocId);
       axom::copy(tmpIntArray.data(), srcArrayPtr, N * sizeof(std::int32_t));
       for(int i = 0; i < N; ++i)
       {
@@ -1966,7 +1970,8 @@ TEST(sidre_view, deep_copy_to_conduit)
         (char*)dst.fetch_existing(srcString->getName()).data_ptr();
       EXPECT_NE(dstStringPtr, nullptr);
       EXPECT_NE(dstStringPtr, srcStringPtr);
-      EXPECT_EQ(axom::getAllocatorIDFromPointer(dstStringPtr), dstAllocId);
+      auto dstStringAllocId = axom::getAllocatorIDFromPointer(dstStringPtr);
+      EXPECT_EQ(dstStringAllocId, dstAllocId);
       tmpCharArray.resize(srcString->getNumElements());
       axom::copy(tmpCharArray.data(), srcStringPtr, srcString->getNumElements());
       for(int i = 0; i < N; ++i)

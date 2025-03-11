@@ -18,6 +18,7 @@
 
 // axom headers
 #include "axom/config.hpp"
+#include "axom/core/ConduitMemCallbacks.hpp"
 #include "axom/core/ItemCollection.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/MapCollection.hpp"
@@ -833,7 +834,7 @@ public:
     View* view = createView(path);
     if(view != nullptr)
     {
-      view->setScalar(value);
+      view->setScalar(value, m_default_allocator_id);
     }
 
     return view;

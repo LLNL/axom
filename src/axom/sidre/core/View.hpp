@@ -24,6 +24,7 @@
 #include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/ConduitMemCallbacks.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic.hpp"
 
@@ -609,7 +610,7 @@ public:
    * \return pointer to this View object.
    */
   template <typename ScalarType>
-  View* setScalar(ScalarType value)
+  View* setScalar(ScalarType value, int allocID = INVALID_ALLOCATOR_ID)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -631,6 +632,9 @@ public:
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == SCALAR)
     {
+      allocID = getValidAllocatorID(allocID);
+      auto conduitAllocId = axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID);
+      m_node.set_allocator(conduitAllocId);
       m_node.set(value);
       m_schema.set(m_node.schema());
       m_state = SCALAR;
@@ -652,7 +656,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* setScalar(Node& value)
+  View* setScalar(Node& value, int allocID = INVALID_ALLOCATOR_ID)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -674,6 +678,9 @@ public:
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == SCALAR)
     {
+      allocID = getValidAllocatorID(allocID);
+      auto conduitAllocId = axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID);
+      m_node.set_allocator(conduitAllocId);
       m_node.set(value);
       m_schema.set(m_node.schema());
       m_state = SCALAR;
