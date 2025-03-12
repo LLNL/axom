@@ -243,7 +243,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief get communicator instance stored in object
+   * \brief get communicator pointer stored in object
    *
    * \return Communicator pointer
    *****************************************************************************

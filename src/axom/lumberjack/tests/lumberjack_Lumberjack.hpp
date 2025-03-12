@@ -438,7 +438,7 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   communicator.finalize();
 }
 
-TEST(lumberjack_Lumberjack, swapUnownedCommunicator)
+TEST(lumberjack_Lumberjack, swapNonOwnedCommunicator)
 {
   int ranksLimit = 5;
   auto communicator1 = new TestCommunicator();
