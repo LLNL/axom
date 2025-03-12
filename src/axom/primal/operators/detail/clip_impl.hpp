@@ -798,13 +798,15 @@ AXOM_SUPPRESS_HD_WARN
 template <typename PolygonType>
 AXOM_HOST_DEVICE PolygonType makeUniquePoints(const PolygonType& poly, double eps)
 {
+  // Cast eps in case we are not working with doubles.
+  const auto typedEPS = static_cast<typename PolygonType::PointType::CoordType>(eps);
   PolygonType uniqueList;
   for(int i = 0; i < poly.numVertices(); i++)
   {
     int prevIndex = ((i - 1) == -1) ? (poly.numVertices() - 1) : (i - 1);
 
-    if(!axom::utilities::isNearlyEqual(poly[i][0], poly[prevIndex][0], eps) ||
-       !axom::utilities::isNearlyEqual(poly[i][1], poly[prevIndex][1], eps))
+    if(!axom::utilities::isNearlyEqual(poly[i][0], poly[prevIndex][0], typedEPS) ||
+       !axom::utilities::isNearlyEqual(poly[i][1], poly[prevIndex][1], typedEPS))
     {
       uniqueList.addVertex(poly[i]);
     }
