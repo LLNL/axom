@@ -2129,6 +2129,47 @@ TEST(primal_clip, polygon_intersect_robustness)
   }
 }
 
+TEST(primal_clip, polygon_clip_failure)
+{
+  // Use float
+  using Polygon2D = axom::primal::Polygon<float, 2, axom::primal::PolygonArray::Dynamic, 5>;
+  using Point2D = axom::primal::Point<float, 2>;
+  using Vector2D = axom::primal::Vector<float, 2>;
+  using Plane2D = axom::primal::Plane<float, 2>;
+
+  // Shape to clip
+  Polygon2D poly;
+  poly.addVertex(Point2D {148.f, 141.f});
+  poly.addVertex(Point2D {149.f, 141.f});
+  poly.addVertex(Point2D {149.f, 142.f});
+  poly.addVertex(Point2D {148.f, 142.f});
+
+  // Clipping plane
+  const float normal[] = {-0.7599482f, -0.6499836f};
+  const float pt[] = {148.5418f, 141.5357f};
+  constexpr bool normalize = false;
+  Plane2D plane(Vector2D(normal, 2), Point2D(pt, 2), normalize);
+
+  // Clip the shape
+  auto clippedShape = axom::primal::clip(poly, plane);
+
+  // Expected polygon.
+  Polygon2D expectedPoly;
+  expectedPoly.addVertex(Point2D {148.f, 141.f});
+  expectedPoly.addVertex(Point2D {149.f, 141.f});
+  expectedPoly.addVertex(Point2D {148.144683f, 142.f});
+  expectedPoly.addVertex(Point2D {148.f, 142.f});
+
+  // Comparisons
+  constexpr float EPS = 1.6e-5;
+  EXPECT_EQ(clippedShape.numVertices(), 4);
+  for(int i = 0; i < 4; i++)
+  {
+    EXPECT_NEAR(clippedShape[i][0], expectedPoly[i][0], EPS);
+    EXPECT_NEAR(clippedShape[i][1], expectedPoly[i][1], EPS);
+  }
+}
+
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {

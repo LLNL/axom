@@ -746,10 +746,11 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList
 
   PolygonType outputList;
 
-  for(int iVert = 0; iVert < inputList.numVertices(); iVert++)
+  const int numVertices = inputList.numVertices();
+  for(int iVert = 0; iVert < numVertices; iVert++)
   {
     const int prevVert =
-      (iVert - 1) == -1 ? (inputList.numVertices() - 1) : (iVert - 1);
+      ((iVert - 1) == -1) ? (numVertices - 1) : (iVert - 1);
     const PointType& current_point = inputList[iVert];
     const PointType& prev_point = inputList[prevVert];
 
@@ -757,7 +758,8 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList
     PointType intersecting_point;
     SegmentType subject_edge(prev_point, current_point);
 
-    if(intersect(plane, subject_edge, seg_param, eps))
+    const bool intersected = intersect(plane, subject_edge, seg_param, eps);
+    if(intersected)
     {
       intersecting_point = subject_edge.at(seg_param);
     }
@@ -775,7 +777,18 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList
     }
     else if(prev_p_orientation == ON_POSITIVE_SIDE)
     {
-      outputList.addVertex(intersecting_point);
+      // In this branch, there has been a plane crossing from positive to negative.
+      if(intersected)
+      {
+        outputList.addVertex(intersecting_point);
+      }
+      else
+      {
+        // If there was not an intersection point then it was close but not
+        // within eps tolerance. It would have been really close to current_point.
+        // Since there was a plane crossing, add current_point.
+        outputList.addVertex(current_point);
+      }
     }
   }
 
@@ -798,19 +811,23 @@ AXOM_SUPPRESS_HD_WARN
 template <typename PolygonType>
 AXOM_HOST_DEVICE PolygonType makeUniquePoints(const PolygonType& poly, double eps)
 {
-  // Cast eps in case we are not working with doubles.
-  const auto typedEPS = static_cast<typename PolygonType::PointType::CoordType>(eps);
   PolygonType uniqueList;
-  for(int i = 0; i < poly.numVertices(); i++)
+  const int numVertices = poly.numVertices();
+  for(int i = 0; i < numVertices; i++)
   {
-    int prevIndex = ((i - 1) == -1) ? (poly.numVertices() - 1) : (i - 1);
-
-    if(!axom::utilities::isNearlyEqual(poly[i][0], poly[prevIndex][0], typedEPS) ||
-       !axom::utilities::isNearlyEqual(poly[i][1], poly[prevIndex][1], typedEPS))
+    int prevIndex = ((i - 1) == -1) ? (numVertices - 1) : (i - 1);
+    const auto &curPoint = poly[i];
+    const auto &prevPoint = poly[prevIndex];
+    // Check whether curPoint and prevPoint are far enough apart to be different.
+    // If so, add the point. NOTE: casts are needed to match eps when the polygon
+    // does not use double precision coordinates.
+    if(!axom::utilities::isNearlyEqual(static_cast<double>(curPoint[0]), static_cast<double>(prevPoint[0]), eps) ||
+       !axom::utilities::isNearlyEqual(static_cast<double>(curPoint[1]), static_cast<double>(prevPoint[1]), eps))
     {
       uniqueList.addVertex(poly[i]);
     }
   }
+
   return uniqueList;
 }
 
