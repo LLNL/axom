@@ -36,7 +36,7 @@ TEST(mir_views, shape2conduitName)
 {
   EXPECT_STREQ(axom::mir::views::LineShape<int>::name(), "line");
   EXPECT_STREQ(axom::mir::views::LineShape<long>::name(), "line");
-  
+
   EXPECT_STREQ(axom::mir::views::TriShape<int>::name(), "tri");
   EXPECT_STREQ(axom::mir::views::TriShape<long>::name(), "tri");
 

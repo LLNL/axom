@@ -273,7 +273,7 @@ std::vector<int> permute(const std::vector<int> &input)
   std::iota(indices.begin(), indices.end(), 0);
   for(size_t i = 0; i < input.size(); i++)
   {
-    order[i] = axom::utilities::random_real(0.,1.);
+    order[i] = axom::utilities::random_real(0., 1.);
   }
   std::sort(indices.begin(), indices.end(), [&](int a, int b) {
     return order[a] < order[b];

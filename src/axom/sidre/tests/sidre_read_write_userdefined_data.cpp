@@ -406,8 +406,7 @@ void test_external_user_defined_data()
     EXPECT_EQ(total_size, loaded_total_size);
 
     EXPECT_TRUE(loaded_group->hasView("states"));
-    auto loaded_states_size =
-      loaded_group->getView("states")->getNumElements();
+    auto loaded_states_size = loaded_group->getView("states")->getNumElements();
     EXPECT_EQ(num_uint8s, loaded_states_size);
 
     // Create new array to fill with loaded data

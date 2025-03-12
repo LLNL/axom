@@ -96,7 +96,7 @@ TEST(core_utilities, qsort_sort_double)
       std::generate_n(vec.data(), n, []() -> double {
         return axom::utilities::random_real(0., 1024.);
       });
-      
+
       // sort the first two iterations in descending/ascending order
       if(iter == 0)
       {
@@ -106,7 +106,7 @@ TEST(core_utilities, qsort_sort_double)
       {
         std::sort(vec.begin(), vec.end(), [](int a, int b) { return a < b; });
       }
-      
+
       axom::utilities::Sorting<double, MAX_SIZE>::qsort(vec.data(), n);
     }
 
