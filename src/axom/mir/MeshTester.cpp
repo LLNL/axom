@@ -749,7 +749,7 @@ void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& m
 {
   // Generate the mesh topology
   generateGrid(gridSize, mesh);
-mesh.print();
+
   Point2 circleCenter(
     {gridSize / 2.f,
      gridSize / 2.f});  // all circles are centered around the same point

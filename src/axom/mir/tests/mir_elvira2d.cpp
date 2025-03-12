@@ -59,15 +59,10 @@ void braid2d_mat_test(const std::string &type,
   conduit::Node deviceMIRMesh;
   if(mattype == "unibuffer")
   {
-    // clang-format off
-    using MatsetView = axom::mir::views::UnibufferMaterialView<int, float, 3>;
-    MatsetView matsetView;
-    matsetView.set(bputils::make_array_view<int>(deviceMesh["matsets/mat/material_ids"]),
-                   bputils::make_array_view<float>(deviceMesh["matsets/mat/volume_fractions"]),
-                   bputils::make_array_view<int>(deviceMesh["matsets/mat/sizes"]),
-                   bputils::make_array_view<int>(deviceMesh["matsets/mat/offsets"]),
-                   bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
-    // clang-format on
+    auto matsetView =
+      axom::mir::views::make_unibuffer_matset<int, float, 3>::view(
+        deviceMesh["matsets/mat"]);
+    using MatsetView = decltype(matsetView);
 
     using MIR =
       axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;

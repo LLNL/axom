@@ -38,7 +38,7 @@
 #include <string>
 
 // Uncomment to save inputs and outputs.
-#define AXOM_ELVIRA_DEBUG
+//#define AXOM_ELVIRA_DEBUG
 
 #if defined(AXOM_ELVIRA_DEBUG)
   #include <conduit/conduit_relay_io.hpp>
@@ -80,7 +80,7 @@ AXOM_HOST_DEVICE inline void computeRange(const ShapeType &shape,
   double dist[2] = {0., 0.};
   for(axom::IndexType ip = 0; ip < shape.numVertices(); ip++)
   {
-    double d = P.signedDistance(shape[ip]);
+    const auto d = static_cast<T>(P.signedDistance(shape[ip]));
     if(d < dist[0])
     {
       dist[0] = d;
@@ -423,9 +423,11 @@ protected:
     NDIMS == 2,
     axom::primal::Polygon<CoordType, 2, axom::primal::PolygonArray::Static>,
     axom::primal::Polyhedron<CoordType, 3>>::type;
+
   using VectorType = axom::primal::Vector<CoordType, NDIMS>;
   using PointType = axom::primal::Point<CoordType, NDIMS>;
   using PlaneType = axom::primal::Plane<CoordType, NDIMS>;
+
   using ShapeView =
     axom::mir::utilities::blueprint::PrimalAdaptor<TopologyView, CoordsetView>;
   using Builder =
@@ -1177,8 +1179,12 @@ protected:
           const auto si = fragmentIndex * StencilSize + StencilCenter;
           const auto matVolume = zoneVol * fragmentVFStencilView[si];
 
-          // Make the normal.
-          const VectorType normal(normalPtr, NDIMS);
+          // Make the normal
+          VectorType normal;
+          for(int d = 0; d < NDIMS; d++)
+          {
+            normal[d] = static_cast<CoordType>(normalPtr[d]);
+          }
 
           // Compute start and end points along which to move the plane origin.
           PointType range[2];
