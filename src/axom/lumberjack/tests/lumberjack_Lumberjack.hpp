@@ -437,3 +437,52 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   lumberjack.finalize();
   communicator.finalize();
 }
+
+TEST(lumberjack_Lumberjack, swapUnownedCommunicator)
+{
+  int ranksLimit = 5;
+  auto communicator1 =  new TestCommunicator();
+  communicator1->initialize(MPI_COMM_NULL, ranksLimit);
+
+  auto communicator2 =  new TestCommunicator();
+  communicator2->initialize(MPI_COMM_NULL, ranksLimit);
+
+  axom::lumberjack::Lumberjack lumberjack_communicator;
+
+  lumberjack_communicator.initialize(communicator1, ranksLimit);
+
+  EXPECT_EQ(communicator1, lumberjack_communicator.getCommunicator());
+
+  lumberjack_communicator.swapCommunicator(communicator2);
+
+  /* communicator1 should still be valid after swap 
+     because it's not owned by Lumberjack*/
+  EXPECT_NE(communicator1, nullptr);
+  EXPECT_EQ(communicator2, lumberjack_communicator.getCommunicator());
+
+  lumberjack_communicator.finalize();
+  communicator1->finalize();
+  communicator2->finalize();
+  delete communicator1;
+  delete communicator2;
+}
+
+TEST(lumberjack_Lumberjack, swapOwnedCommunicator)
+{
+  int ranksLimit = 5;
+  auto communicator =  new TestCommunicator();
+  communicator->initialize(MPI_COMM_NULL, ranksLimit);
+
+  axom::lumberjack::Lumberjack lumberjack;
+
+  lumberjack.initialize(new TestCommunicator(), ranksLimit, true);
+
+  EXPECT_NE(lumberjack.getCommunicator(), nullptr);
+
+  lumberjack.swapCommunicator(communicator);
+
+  EXPECT_EQ(lumberjack.getCommunicator(), communicator);
+
+  lumberjack.finalize();
+
+}

@@ -233,6 +233,33 @@ public:
    */
   bool isOutputNode();
 
+  /*!
+   *****************************************************************************
+   * \brief swap communicator pointer stored in object
+   *
+   *****************************************************************************
+   */
+   void swapCommunicator(Communicator* communicator);
+
+  /*!
+   *****************************************************************************
+   * \brief get communicator pointer stored in object
+   *
+   * \return Communicator pointer
+   *****************************************************************************
+   */
+   Communicator* getCommunicator();
+
+  /*!
+   *****************************************************************************
+   * \brief get boolean flag controlling whether commmunictor stored in object
+   * is owned
+   *
+   * \return Communicator pointer
+   *****************************************************************************
+   */
+   bool isCommunicatorOwned();
+
 private:
   /*!
    *****************************************************************************
@@ -241,6 +268,8 @@ private:
    *****************************************************************************
    */
   void combineMessages();
+
+  bool m_isInitialized = false;
 
   Communicator* m_communicator;
   bool m_isCommunicatorOwned;
