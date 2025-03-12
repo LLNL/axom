@@ -239,26 +239,26 @@ public:
    *
    *****************************************************************************
    */
-   void swapCommunicator(Communicator* communicator);
+  void swapCommunicator(Communicator* communicator);
 
   /*!
    *****************************************************************************
-   * \brief get communicator pointer stored in object
+   * \brief get communicator instance stored in object
    *
    * \return Communicator pointer
    *****************************************************************************
    */
-   Communicator* getCommunicator();
+  Communicator* getCommunicator();
 
   /*!
    *****************************************************************************
-   * \brief get boolean flag controlling whether commmunictor stored in object
-   * is owned
+   * \brief Returns Boolean flag that controls whether communicator instance is 
+   * owned by Lumberjack
    *
    * \return Communicator pointer
    *****************************************************************************
    */
-   bool isCommunicatorOwned();
+  bool isCommunicatorOwned();
 
 private:
   /*!

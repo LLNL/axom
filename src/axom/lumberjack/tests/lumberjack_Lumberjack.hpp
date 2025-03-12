@@ -441,10 +441,10 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
 TEST(lumberjack_Lumberjack, swapUnownedCommunicator)
 {
   int ranksLimit = 5;
-  auto communicator1 =  new TestCommunicator();
+  auto communicator1 = new TestCommunicator();
   communicator1->initialize(MPI_COMM_NULL, ranksLimit);
 
-  auto communicator2 =  new TestCommunicator();
+  auto communicator2 = new TestCommunicator();
   communicator2->initialize(MPI_COMM_NULL, ranksLimit);
 
   axom::lumberjack::Lumberjack lumberjack_communicator;
@@ -470,7 +470,7 @@ TEST(lumberjack_Lumberjack, swapUnownedCommunicator)
 TEST(lumberjack_Lumberjack, swapOwnedCommunicator)
 {
   int ranksLimit = 5;
-  auto communicator =  new TestCommunicator();
+  auto communicator = new TestCommunicator();
   communicator->initialize(MPI_COMM_NULL, ranksLimit);
 
   axom::lumberjack::Lumberjack lumberjack;
@@ -484,5 +484,4 @@ TEST(lumberjack_Lumberjack, swapOwnedCommunicator)
   EXPECT_EQ(lumberjack.getCommunicator(), communicator);
 
   lumberjack.finalize();
-
 }
