@@ -906,10 +906,8 @@ TEST(primal_polygon, triangulate)
   using Triangle2D = axom::primal::Triangle<double, 2>;
 
   auto testTriangulation = [](const Polygon2D& poly) {
-    const int NUM_INDICES_PER_TRI = 3;
-
-    axom::Array<double> tris((poly.numVertices() - 2) * NUM_INDICES_PER_TRI,
-                             (poly.numVertices() - 2) * NUM_INDICES_PER_TRI);
+    axom::Array<Triangle2D> tris((poly.numVertices() - 2),
+                                 (poly.numVertices() - 2));
     auto tris_view = tris.view();
 
     poly.triangulate(tris_view);
@@ -917,15 +915,12 @@ TEST(primal_polygon, triangulate)
     double tri_area_sum = 0.0;
     SLIC_INFO("Polygon coordinates are: " << poly);
     SLIC_INFO("tris is size of " << tris.size());
-    for(int i = 0; i < tris.size() / NUM_INDICES_PER_TRI; i++)
+    for(int i = 0; i < tris.size(); i++)
     {
-      Point2D vert_0 = poly[tris[i * NUM_INDICES_PER_TRI]];
-      Point2D vert_1 = poly[tris[(i * NUM_INDICES_PER_TRI) + 1]];
-      Point2D vert_2 = poly[tris[(i * NUM_INDICES_PER_TRI) + 2]];
-
-      Triangle2D tri(vert_0, vert_1, vert_2);
-      tri_area_sum += tri.signedArea();
-      SLIC_INFO("Triangle " << i << " is " << tri);
+      double tri_area = tris[i].signedArea();
+      EXPECT_GT(tri_area, 0.0);
+      tri_area_sum += tri_area;
+      SLIC_INFO("Triangle " << i << " is " << tris[i]);
     }
 
     EXPECT_NEAR(poly.signedArea(), tri_area_sum, EPS);
@@ -956,6 +951,20 @@ TEST(primal_polygon, triangulate)
                              Point2D({0, 1}),
                              Point2D({0, 5. / 7.})});
   testTriangulation(colinear_square);
+
+  // []  []
+  // [][][]
+  Polygon2D horseshoe({Point2D({4, 0}),
+                       Point2D({6, 0}),
+                       Point2D({6, 4}),
+                       Point2D({4, 4}),
+                       Point2D({4, 2}),
+                       Point2D({2, 2}),
+                       Point2D({2, 4}),
+                       Point2D({0, 4}),
+                       Point2D({0, 0}),
+                       Point2D({2, 0})});
+  testTriangulation(horseshoe);
 }
 
 //------------------------------------------------------------------------------

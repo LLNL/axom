@@ -15,6 +15,7 @@
 #include "axom/core/Array.hpp"
 #include "axom/core/StaticArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
 #include "axom/primal/operators/orientation.hpp"
@@ -400,64 +401,64 @@ public:
   }
 
   /**
-   * \brief Triangulates the polygon, returning an array of triangle indices.
+   * \brief Triangulates the polygon, returning an array of triangles.
    *
-   * \param [out] tris the array of indices that form triangles
+   * \param [out] tris the array of Triangles
    *
    * \pre This function is only valid when NDIMS = 2, tris is pre-allocated
-   *      to be (numVertices() - 2) * 3, and the polygon is simple.
+   *      to be (numVertices() - 2), and the polygon is simple.
    *
    * \note Implementation is based on the following paper:
    *       M. Livesu, G. Cherchi, R. Scateni and M. Attene, "Deterministic Linear
    *       Time Constrained Triangulation Using Simplified Earcut," in IEEE
    *       Transactions on Visualization and Computer Graphics, 2022
+   *
+   *       And the corresponding code implementation:
+   *       https://github.com/mlivesu/cinolib/blob/master/include/cinolib/segment_insertion_linear_earcut.cpp
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 2, void>::type triangulate(
-    axom::ArrayView<T>& tris) const
+    axom::ArrayView<Triangle<T, TDIM>>& tris) const
   {
     using Segment2D = axom::primal::Segment<T, 2>;
 
     const int NUM_INDICES_PER_TRI = 3;
+    const int size = numVertices();
 
-    SLIC_ASSERT_MSG(tris.size() == (numVertices() - 2) * NUM_INDICES_PER_TRI,
+    SLIC_ASSERT(isValid());
+    SLIC_ASSERT_MSG(tris.size() == (size - 2),
                     "triangulate() expects size of "
-                      << (numVertices() - 2) * NUM_INDICES_PER_TRI
-                      << " for triangle indices, but found size of "
+                      << (size - 2) << " for triangles, but found size of "
                       << tris.size());
 
     int triIndex = 0;
-    int size = numVertices();
-    std::vector<int> prev(size);
-    std::vector<int> next(size);
-    // std::iota(prev.begin(), prev.end(),-1);
-    // std::iota(next.begin(), next.end(), 1);
+
+    // adjacencies
+    axom::Array<int> prev(size, size);
+    axom::Array<int> next(size, size);
+
+    // keep a list of the ears to be cut
+    axom::Array<int> ears(size, size);
+
+    // keeps track of ears
+    // (corners that were not ears at the beginning may become so later on)
+    axom::Array<bool> is_ear(size, size);
+
+    // default initialization
     for(int i = 0; i < size; i++)
     {
       prev[i] = -1 + i;
       next[i] = 1 + i;
+      is_ear[i] = false;
     }
-    prev.front() = size - 1;
-    next.back() = 0;
+    prev[0] = size - 1;
+    next[size - 1] = 0;
 
-    // keep a list of the ears to be cut
-    std::vector<int> ears;
-    ears.reserve(size);
-
-    // this always has size |poly|, and keeps track of ears
-    // (corners that were not ears at the beginning may become so later on)
-    std::vector<bool> is_ear(size, false);
-
-    printf("AAAAA\n");
-    // detect all safe ears in O(n).
-    // This amounts to finding all convex vertices but the endpoints of the constrained edge
+    // precompute internal ears
     for(int curr = 1; curr < size - 1; ++curr)
     {
-      // NOTE: the polygon may contain dangling edges,
-      // clause prev!=next avoids to even do the ear test for them
-      // if(prev!=next && orient2d(poly.at(prev[curr]).ptr(),
-      //                           poly.at(curr).ptr(),
-      //                           poly.at(next[curr]).ptr())>0)
+      // check if vertex is convex
+      // (prev != next to avoid ear test for dangling edges)
       if(prev != next &&
          axom::primal::orientation(
            m_vertices[prev[curr]],
@@ -465,34 +466,31 @@ public:
            primal::ON_NEGATIVE_SIDE)
       {
         ears.emplace_back(curr);
-        is_ear.at(curr) = true;
+        is_ear[curr] = true;
       }
     }
 
-    printf("BBBBB\n");
-
-    // progressively delete all ears, also updating the data structure
+    // process internal ears
     int length = size;
     while(true)
     {
+      // make new triangle (extract one ear)
       int curr = ears.back();
-      ears.pop_back();
-
-      // make new tri
-      tris[triIndex * NUM_INDICES_PER_TRI] = prev[curr];
-      tris[(triIndex * NUM_INDICES_PER_TRI) + 1] = curr;
-      tris[(triIndex * NUM_INDICES_PER_TRI) + 2] = next[curr];
+      ears.erase(ears.end() - 1);
+      tris[triIndex] = Triangle<T, 2>(m_vertices[prev[curr]],
+                                      m_vertices[curr],
+                                      m_vertices[next[curr]]);
       triIndex += 1;
 
-      // exclude curr from the polygon, connecting prev and next
+      // update adjacencies
       next[prev[curr]] = next[curr];
       prev[next[curr]] = prev[curr];
 
-      // last triangle?
+      // exit when last triangle processed
       if(--length < NUM_INDICES_PER_TRI) return;
 
-      // check if prev and next have become new ears
-      if(!is_ear.at(prev[curr]) && prev[curr] != 0)
+      // check if prev or next are new ears (convex vertices)
+      if(!is_ear[prev[curr]] && prev[curr] != 0)
       {
         if(prev[prev[curr]] != next[curr] &&
            axom::primal::orientation(
@@ -501,10 +499,10 @@ public:
              primal::ON_NEGATIVE_SIDE)
         {
           ears.emplace_back(prev[curr]);
-          is_ear.at(prev[curr]) = true;
+          is_ear[prev[curr]] = true;
         }
       }
-      if(!is_ear.at(next[curr]) && next[curr] < size - 1)
+      if(!is_ear[next[curr]] && next[curr] < size - 1)
       {
         if(next[next[curr]] != prev[curr] &&
            axom::primal::orientation(
@@ -513,12 +511,10 @@ public:
              primal::ON_NEGATIVE_SIDE)
         {
           ears.emplace_back(next[curr]);
-          is_ear.at(next[curr]) = true;
+          is_ear[next[curr]] = true;
         }
       }
     }
-
-    printf("CCCCC\n");
   };
 
   /*!
