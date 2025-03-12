@@ -162,7 +162,21 @@ int main(int argc, char *argv[])
   app.add_flag("--handler", handlerEnabled, "Enable Conduit handler.");
 
   // Parse command line options.
-  app.parse(argc, argv);
+  try
+  {
+    app.parse(argc, argv);
+  }
+  catch (axom::CLI::CallForHelp& e)
+  {
+    std::cout << app.help() << std::endl;
+    return 0;
+  }
+  catch (axom::CLI::ParseError& e)
+  {
+    // Handle other parsing errors
+    std::cerr << e.what() << std::endl;
+    return app.exit(e);
+  }
 
 #if defined(AXOM_USE_CALIPER)
   axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(

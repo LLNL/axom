@@ -40,9 +40,16 @@ void printNode(const conduit::Node &n)
 }
 
 //--------------------------------------------------------------------------------
+bool requiresStructuredMesh(const std::string &method)
+{
+  return method == "elvira";
+}
+
+//--------------------------------------------------------------------------------
 int runMIR(RuntimePolicy policy,
            int gridSize,
            int numCircles,
+           const std::string &method,
            const std::string &outputFilePath,
            bool writeFiles)
 {
@@ -52,6 +59,7 @@ int runMIR(RuntimePolicy policy,
   conduit::Node mesh;
   {
     AXOM_ANNOTATE_SCOPE("generate");
+    tester.setStructured(requiresStructuredMesh(method));
     tester.initTestCaseFive(gridSize, numCircles, mesh);
     // printNode(mesh);
   }
@@ -74,6 +82,7 @@ int runMIR(RuntimePolicy policy,
   timer.start();
   conduit::Node options, resultMesh;
   options["matset"] = "mat";
+  options["method"] = method; // pass method via options.
 
   int retval = 0;
   if(policy == RuntimePolicy::seq)
@@ -132,6 +141,7 @@ int main(int argc, char **argv)
   int numCircles = 2;
   bool disable_write = false;
   std::string outputFilePath("output");
+  std::string method("equiz");
   axom::CLI::App app;
   app.add_flag("--handler", handler)
     ->description("Install a custom error handler that loops forever.")
@@ -139,6 +149,8 @@ int main(int argc, char **argv)
   app.add_option("--gridsize", gridSize)
     ->check(axom::CLI::PositiveNumber)
     ->description("The number of zones along an axis.");
+  app.add_option("--method", method)
+    ->description("The MIR method name (equiz, elvira)");
   app.add_option("--numcircles", numCircles)
     ->check(axom::CLI::PositiveNumber)
     ->description("The number of circles to use for material creation.");
@@ -178,7 +190,21 @@ int main(int argc, char **argv)
       axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
   // Parse command line options.
-  app.parse(argc, argv);
+  try
+  {
+    app.parse(argc, argv);
+  }
+  catch (axom::CLI::CallForHelp& e)
+  {
+    std::cout << app.help() << std::endl;
+    return 0;
+  }
+  catch (axom::CLI::ParseError& e)
+  {
+    // Handle other parsing errors
+    std::cerr << e.what() << std::endl;
+    return app.exit(e);
+  }
 
   if(handler)
   {
@@ -192,7 +218,7 @@ int main(int argc, char **argv)
   int retval = 0;
   try
   {
-    retval = runMIR(policy, gridSize, numCircles, outputFilePath, !disable_write);
+    retval = runMIR(policy, gridSize, numCircles, method, outputFilePath, !disable_write);
   }
   catch(std::invalid_argument const &e)
   {
