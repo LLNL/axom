@@ -492,6 +492,7 @@ View* Group::createView(const std::string& path, const DataType& dtype)
   if(view != nullptr)
   {
     view->describe(dtype);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
 
   return view;
@@ -517,6 +518,7 @@ View* Group::createView(const std::string& path, Buffer* buff)
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -538,6 +540,7 @@ View* Group::createView(const std::string& path,
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -560,6 +563,7 @@ View* Group::createViewWithShape(const std::string& path,
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -578,6 +582,7 @@ View* Group::createView(const std::string& path, const DataType& dtype, Buffer* 
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
 
   return view;
@@ -689,12 +694,13 @@ View* Group::createViewAndAllocate(const std::string& path,
                                    IndexType num_elems,
                                    int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   View* view = createView(path, type, num_elems);
   if(view != nullptr)
   {
     view->allocate(allocID);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -713,12 +719,13 @@ View* Group::createViewWithShapeAndAllocate(const std::string& path,
                                             const IndexType* shape,
                                             int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   View* view = createViewWithShape(path, type, ndims, shape);
   if(view != nullptr)
   {
     view->allocate(allocID);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -735,12 +742,13 @@ View* Group::createViewAndAllocate(const std::string& path,
                                    const DataType& dtype,
                                    int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   View* view = createView(path, dtype);
   if(view != nullptr)
   {
     view->allocate(allocID);
+assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -752,12 +760,14 @@ View* Group::createViewAndAllocate(const std::string& path,
  *
  *************************************************************************
  */
-View* Group::createViewString(const std::string& path, const std::string& value)
+View* Group::createViewString(const std::string& path,
+                              const std::string& value,
+                              int allocID)
 {
   View* view = createView(path);
   if(view != nullptr)
   {
-    view->setString(value);
+    view->setString(value, allocID);
   }
 
   return view;
@@ -966,7 +976,7 @@ View* Group::copyView(View* view)
  */
 View* Group::deepCopyView(const View* view, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   if(view == nullptr || hasChildView(view->getName()))
   {
@@ -1411,7 +1421,7 @@ Group* Group::copyGroup(Group* group)
  */
 Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   if(srcGroup == nullptr || hasChildGroup(srcGroup->getName()))
   {
@@ -1517,25 +1527,35 @@ Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
  *
  *************************************************************************
  */
-Group* Group::transfer_allocator(int newAllocId)
+Group* Group::transfer_allocator(int newAllocId,
+                                 const std::function<bool(View&)>& pred)
 {
   SLIC_ASSERT(newAllocId != INVALID_ALLOCATOR_ID);
 
   // copy child Groups to new Group
   for(auto& grp : groups())
   {
-    grp.transfer_allocator(newAllocId);
+    grp.transfer_allocator(newAllocId, pred);
   }
 
   // copy Views to new Group
   for(auto& view : views())
   {
-    view.transfer_allocator(newAllocId);
+    if(view.m_state != View::State::EXTERNAL && pred(view))
+    {
+      view.transfer_allocator(newAllocId);
+    }
   }
 
-  m_default_allocator_id = newAllocId;
+  // m_default_allocator_id = newAllocId;
 
   return this;
+}
+
+Group* Group::transfer_allocator(int newAllocId)
+{
+  return transfer_allocator(newAllocId,
+                            std::function<bool(View&)>{[](View&) { return true; }});
 }
 
 /*
@@ -3579,7 +3599,7 @@ bool Group::rename(const std::string& new_name)
  *
  *************************************************************************
  */
-int Group::getValidAllocatorID(int allocID)
+int Group::getValidAxomAllocatorID(int allocID)
 {
 #ifdef AXOM_USE_UMPIRE
   if(allocID == INVALID_ALLOCATOR_ID)
@@ -3590,6 +3610,26 @@ int Group::getValidAllocatorID(int allocID)
 
   return allocID;
 }
+
+#if 0
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to return a valid Conduit allocator ID.
+ *
+ *************************************************************************
+ */
+int View::getValidConduitAllocatorID(int allocID)
+{
+  if(allocID == INVALID_ALLOCATOR_ID)
+  {
+    allocID = getOwningGroup()->getDefaultAllocatorID();
+  }
+  auto conduitAllocId = axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID);
+
+  return conduitAllocId;
+}
+#endif
 
 } /* end namespace sidre */
 } /* end namespace axom */

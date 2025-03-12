@@ -464,12 +464,17 @@ const std::string topoName = "mesh";
 const std::string coordsetName = "coords";
 int cellCount = -1;
 
+const auto hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
 // Computational mesh in different forms, initialized in main
 #if defined(AXOM_USE_MFEM)
 std::shared_ptr<sidre::MFEMSidreDataCollection> shapingDC;
 #endif
 axom::sidre::Group* compMeshGrp = nullptr;
 std::shared_ptr<conduit::Node> compMeshNode;
+
+std::function<bool(axom::sidre::View& v)> selectScalarAndStringViews =
+  [](axom::sidre::View& v) { return v.isScalar() || v.isString(); };
 
 axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
@@ -491,6 +496,7 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 
   // State group is optional to blueprint, and we don't use it, but mint checks for it.
   meshGrp->createGroup("state");
+  meshGrp->transfer_allocator(hostAllocId, selectScalarAndStringViews);
 
   return meshGrp;
 }
@@ -1136,9 +1142,9 @@ axom::sidre::View* getElementVolumes(
 
     // Allocate and populate cell volumes.
     axom::sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
-    fieldGrp->createViewString("topology", topoName);
-    fieldGrp->createViewString("association", "element");
-    fieldGrp->createViewString("volume_dependent", "true");
+    fieldGrp->createViewString("topology", topoName, hostAllocId);
+    fieldGrp->createViewString("association", "element", hostAllocId);
+    fieldGrp->createViewString("volume_dependent", "true", hostAllocId);
     volSidreView =
       fieldGrp->createViewAndAllocate("values",
                                       axom::sidre::detail::SidreTT<double>::id,
@@ -1556,12 +1562,15 @@ int main(int argc, char** argv)
                 "-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION.");
 #endif
 
+axom::sidre::View* connView = nullptr;
+conduit::Node* connNode = nullptr;
   if(params.useBlueprintSidre() || params.useBlueprintConduit())
   {
     compMeshGrp = ds.getRoot()->createGroup("compMesh");
     compMeshGrp->setDefaultAllocator(allocatorId);
 
     createBoxMesh(compMeshGrp);
+connView = compMeshGrp->getView("topologies/" + topoName + "/elements/connectivity");
 
     if(params.useBlueprintConduit())
     {
@@ -1569,9 +1578,9 @@ int main(int argc, char** argv)
       auto makeField = [&](const std::string& fieldName, double initValue) {
         auto fieldGrp = compMeshGrp->createGroup("fields/" + fieldName);
         axom::IndexType shape[] = {params.getBoxCellCount(), 1};
-        fieldGrp->createViewString("association", "element");
-        fieldGrp->createViewString("topology", topoName);
-        fieldGrp->createViewString("volume_dependent", "true");
+        fieldGrp->createViewString("association", "element", hostAllocId);
+        fieldGrp->createViewString("topology", topoName, hostAllocId);
+        fieldGrp->createViewString("volume_dependent", "true", hostAllocId);
         axom::sidre::View* valuesView = fieldGrp->createViewWithShapeAndAllocate(
           "values",
           axom::sidre::detail::SidreTT<double>::id,
@@ -1596,6 +1605,7 @@ int main(int argc, char** argv)
     */
     compMeshNode = std::make_shared<conduit::Node>();
     compMeshGrp->createNativeLayout(*compMeshNode);
+connNode = &(compMeshNode->fetch_existing("topologies/" + topoName + "/elements/connectivity"));
     SLIC_INFO(axom::fmt::format("{:-^80}", "Generated Blueprint mesh"));
     cellCount = params.getBoxCellCount();
   }
@@ -1700,6 +1710,17 @@ int main(int argc, char** argv)
     slic::flushStreams();
   }
   AXOM_ANNOTATE_END("shaping");
+
+  if(params.useBlueprintSidre() || params.useBlueprintConduit())
+  {
+    // The shaper created some blueprint nodes that we need to move to the host.
+    if(compMeshGrp->getDefaultAllocatorID() != hostAllocId)
+    {
+      compMeshGrp->transfer_allocator(hostAllocId, selectScalarAndStringViews);
+      compMeshNode = std::make_shared<conduit::Node>();
+      compMeshGrp->createNativeLayout(*compMeshNode);
+    }
+  }
 
   //---------------------------------------------------------------------------
   // After shaping in all shapes, generate/adjust the material volume fractions

@@ -643,8 +643,7 @@ public:
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == SCALAR)
     {
-      allocID = getValidAllocatorID(allocID);
-      auto conduitAllocId = axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID);
+      auto conduitAllocId = getValidConduitAllocatorID(allocID);
       m_node.set_allocator(conduitAllocId);
       m_node.set(value);
       m_schema.set(m_node.schema());
@@ -689,8 +688,7 @@ public:
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == SCALAR)
     {
-      allocID = getValidAllocatorID(allocID);
-      auto conduitAllocId = axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID);
+      auto conduitAllocId = getValidConduitAllocatorID(allocID);
       m_node.set_allocator(conduitAllocId);
       m_node.set(value);
       m_schema.set(m_node.schema());
@@ -735,13 +733,15 @@ public:
  *
  * \return pointer to this View object.
  */
-  View* setString(const std::string& value)
+  View* setString(const std::string& value, int allocID = INVALID_ALLOCATOR_ID)
   {
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a string.  May be
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == STRING)
     {
+      auto conduitAllocId = getValidConduitAllocatorID(allocID);
+      m_node.set_allocator(conduitAllocId);
       m_node.set_string(value);
       m_schema.set(m_node.schema());
       m_state = STRING;
@@ -1569,11 +1569,21 @@ private:
    */
   State getStateId(const std::string& name) const;
 
+#if 1
   /*!
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
-  int getValidAllocatorID(int allocatorID);
+  int getValidAxomAllocatorID(int allocatorID);
+
+  /*!
+   * \brief Private method. If allocatorID is a valid allocator ID then return
+   *  it. Otherwise return the ID of the default allocator of the owning group.
+   *  In both cases, return the corresponding Conduit allocator id, not the
+   *  Axom id.
+   */
+  int getValidConduitAllocatorID(int allocatorID);
+#endif
 
   /// Name of this View object.
   std::string m_name;

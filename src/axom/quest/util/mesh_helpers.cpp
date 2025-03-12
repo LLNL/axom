@@ -102,6 +102,8 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
   const std::string& coordsetName,
   axom::runtime_policy::Policy runtimePolicy)
 {
+  const int hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
   auto* topoGrp = meshGrp->createGroup("topologies")->createGroup(topologyName);
   SLIC_ERROR_IF(topoGrp == nullptr,
                 "Cannot allocate topology '" + topologyName +
@@ -115,9 +117,9 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
                   "' in blueprint mesh '" + meshGrp->getName() +
                   "'.  It already exists.");
 
-  topoGrp->createView("type")->setString("structured");
-  topoGrp->createView("coordset")->setString(coordsetName);
-  auto* dimsGrp = topoGrp->createGroup("elements/dims");
+  topoGrp->createView("type")->setString("structured", hostAllocId);
+  topoGrp->createView("coordset")->setString(coordsetName, hostAllocId);
+  auto* dimsGrp = topoGrp->createGroup("elements/dims")->setDefaultAllocator(hostAllocId);
 
   constexpr int DIM = 3;
 
@@ -134,7 +136,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh(
   dimsGrp->createViewScalar("j", nj);
   dimsGrp->createViewScalar("k", nk);
 
-  coordsetGrp->createView("type")->setString("explicit");
+  coordsetGrp->createView("type")->setString("explicit", hostAllocId);
   auto* valuesGrp = coordsetGrp->createGroup("values");
   auto* xVu =
     valuesGrp->createViewAndAllocate("x",
@@ -247,6 +249,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
   AXOM_ANNOTATE_SCOPE("convert_to_unstructured");
   constexpr int DIM = 3;
 
+  const int hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
   const std::string& coordsetName =
     meshGrp->getView("topologies/" + topoName + "/coordset")->getString();
 
@@ -259,8 +263,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
     meshGrp->getGroup("topologies")->getGroup(topoName);
   axom::sidre::View* topoTypeView = topoGrp->getView("type");
   SLIC_ASSERT(std::string(topoTypeView->getString()) == "structured");
-  topoTypeView->setString("unstructured");
-  topoGrp->createView("elements/shape")->setString("hex");
+  topoTypeView->setString("unstructured", hostAllocId);
+  topoGrp->createView("elements/shape")->setString("hex", hostAllocId);
 
   axom::sidre::Group* topoElemGrp = topoGrp->getGroup("elements");
   axom::sidre::Group* topoDimsGrp = topoElemGrp->getGroup("dims");
@@ -359,7 +363,7 @@ void convert_blueprint_structured_explicit_to_unstructured_impl(
     }
 
     // mint::Mesh requires connectivity strides, even though Blueprint doesn't.
-    elementsGrp->createViewScalar("stride", NUM_VERTS_PER_HEX);
+    elementsGrp->createViewScalar("stride", NUM_VERTS_PER_HEX, hostAllocId);
 
     // mint::Mesh requires field group, even though Blueprint doesn't.
     meshGrp->createGroup("fields");

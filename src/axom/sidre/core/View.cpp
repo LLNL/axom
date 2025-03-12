@@ -62,7 +62,7 @@ std::string View::getPathName() const
  */
 View* View::allocate(int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   if(isAllocateValid())
   {
@@ -94,7 +94,7 @@ View* View::allocate(int allocID)
  */
 View* View::allocate(TypeID type, IndexType num_elems, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   if(type == NO_TYPE_ID || num_elems < 0)
   {
@@ -124,7 +124,7 @@ View* View::allocate(TypeID type, IndexType num_elems, int allocID)
  */
 View* View::allocate(TypeID type, int ndims, const IndexType* shape, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   SLIC_CHECK_MSG(
     ndims > 0,
@@ -172,7 +172,7 @@ View* View::allocate(TypeID type, int ndims, const IndexType* shape, int allocID
  */
 View* View::allocate(const DataType& dtype, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   if(dtype.is_empty())
   {
@@ -308,6 +308,10 @@ View* View::reallocate(const DataType& dtype)
  */
 View* View::transfer_allocator(int newAllocId)
 {
+  // TODO: Consider make this a no-op instead of an error.
+  // depending on a yet-to-show use case.
+  // I don't think there's enough info for changing
+  // the View into a STRING, SCALAR or BUFFER.
   SLIC_ERROR_IF(m_state == EXTERNAL,
                 "View::transfer_allocator doesn't work on external data.");
 
@@ -333,7 +337,10 @@ View* View::transfer_allocator(int newAllocId)
                                        oldBuffer->getTotalBytes());
     m_data_buffer->attachToView(this);
     apply();
-    // Delete oldBuffer?
+    // TODO: delete oldBuffer; // Delete oldBuffer?
+    // delete oldBuffer; // ? ... or ...
+    // if(oldBuffer->getNumViews() == 0)
+    //   getOwningGroup()->getDataStore()->destroyBuffer(oldBuffer); // ?
   }
 
 
@@ -1993,6 +2000,7 @@ const char* View::getAttributeString(const Attribute* attr) const
   return m_attr_values.getString(attr);
 }
 
+#if 1
 /*
  *************************************************************************
  *
@@ -2000,7 +2008,7 @@ const char* View::getAttributeString(const Attribute* attr) const
  *
  *************************************************************************
  */
-int View::getValidAllocatorID(int allocID)
+int View::getValidAxomAllocatorID(int allocID)
 {
 #ifdef AXOM_USE_UMPIRE
   if(allocID == INVALID_ALLOCATOR_ID)
@@ -2011,6 +2019,25 @@ int View::getValidAllocatorID(int allocID)
 
   return allocID;
 }
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to return a valid Conduit allocator ID.
+ *
+ *************************************************************************
+ */
+int View::getValidConduitAllocatorID(int allocID)
+{
+  if(allocID == INVALID_ALLOCATOR_ID)
+  {
+    allocID = getOwningGroup()->getDefaultAllocatorID();
+  }
+  auto conduitAllocId = axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID);
+
+  return conduitAllocId;
+}
+#endif
 
 } /* end namespace sidre */
 } /* end namespace axom */

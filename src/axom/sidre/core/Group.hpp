@@ -294,7 +294,7 @@ public:
    */
   Group* setDefaultAllocator(umpire::Allocator alloc)
   {
-    m_default_allocator_id = alloc.getId();
+    setDefaultAllocator(alloc.getId());
     return this;
   }
 
@@ -304,6 +304,8 @@ public:
   Group* setDefaultAllocator(int allocId)
   {
     m_default_allocator_id = allocId;
+    m_default_allocator_id_conduit =
+      axom::ConduitMemCallbacks::getInstance(m_default_allocator_id).conduitId();
     return this;
   }
 #else
@@ -330,6 +332,22 @@ public:
    * \return pointer to this Group object.
    */
   Group* transfer_allocator(int newAllocId);
+
+  /*!
+   * \brief Reallocate data to a new allocator, with a predicate for
+   * selecting a subset of Views to transfer.
+   *
+   * \param [i] pred A predicate that returns true for Views that are
+   *   subject to transfering to the new allocator and false for Views
+   *   that are not.
+   *
+   * \post All Groups in the hierarchy and all Views selected by \c pred
+   *   have default allocator \c newAllocId
+   *
+   * \return pointer to this Group object.
+   */
+  Group* transfer_allocator(int newAllocId,
+                            const std::function<bool(View&)>& pred);
 
   /*!
    * \brief Insert information about data associated with Group subtree with
@@ -836,12 +854,14 @@ public:
    * \sa View::setScalar()
    */
   template <typename ScalarType>
-  View* createViewScalar(const std::string& path, ScalarType value)
+  View* createViewScalar(const std::string& path,
+                         ScalarType value,
+                         int allocID = INVALID_ALLOCATOR_ID)
   {
     View* view = createView(path);
     if(view != nullptr)
     {
-      view->setScalar(value, m_default_allocator_id);
+      view->setScalar(value, allocID);
     }
 
     return view;
@@ -851,7 +871,7 @@ public:
    * \brief Create View object with given name or path in this Group
    * set its data to given string.
    *
-   * This is equivalent to: createView(name)->setString(value);
+   * This is equivalent to: createView(name)->setString(value, allocID);
    *
    * If given data type object is empty, data will not be allocated.
    *
@@ -859,7 +879,9 @@ public:
    *
    * \sa View::setString()
    */
-  View* createViewString(const std::string& path, const std::string& value);
+  View* createViewString(const std::string& path,
+                         const std::string& value,
+                         int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1988,7 +2010,17 @@ private:
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
-  int getValidAllocatorID(int allocatorID);
+  int getValidAxomAllocatorID(int allocatorID);
+
+#if 0
+  /*!
+   * \brief Private method. If allocatorID is a valid allocator ID then return
+   *  it. Otherwise return the ID of the default allocator of the owning group.
+   *  In both cases, return the corresponding Conduit allocator id, not the
+   *  Axom id.
+   */
+  int getValidConduitAllocatorID(int allocatorID);
+#endif
 
   /// Name of this Group object.
   std::string m_name;
@@ -2017,6 +2049,7 @@ private:
 #ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
 #endif
+  conduit::index_t m_default_allocator_id_conduit;
 };
 
 } /* end namespace sidre */
