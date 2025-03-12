@@ -1238,22 +1238,36 @@ TEST(primal_nurbspatch, reverse_orientation)
   // clang-format on
 
   NURBSPatchType original(controlPoints, weights, npts_u, npts_v, degree_u, degree_v);
-  NURBSPatchType reversed(controlPoints, weights, npts_u, npts_v, degree_u, degree_v);
+
+  // Add some knots to the patch in the u and v directions to make it more interesting
+  original.insertKnot_u(0.3, 2);
+  original.insertKnot_u(0.5, 1);
+
+  original.insertKnot_v(0.4, 1);
+  original.insertKnot_v(0.6, 2);
+
+  double min_u = 1.0, max_u = 2.0;
+  double min_v = -1.0, max_v = 0.5;
+
+  original.rescale_u(min_u, max_u);
+  original.rescale_v(min_v, max_v);
+
+  NURBSPatchType reversed(original);
 
   // Reverse along the u-axis
   reversed.reverseOrientation(0);
 
   constexpr int npts = 11;
   double u_pts[npts], v_pts[npts];
-  axom::numerics::linspace(0.0, 1.0, u_pts, npts);
-  axom::numerics::linspace(0.0, 1.0, v_pts, npts);
+  axom::numerics::linspace(min_u, max_u, u_pts, npts);
+  axom::numerics::linspace(min_v, max_v, v_pts, npts);
 
   for(auto u : u_pts)
   {
     for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
-      PointType r_pt = reversed.evaluate(1 - u, v);
+      PointType r_pt = reversed.evaluate(min_u + max_u - u, v);
 
       for(int N = 0; N < DIM; ++N)
       {
@@ -1285,7 +1299,7 @@ TEST(primal_nurbspatch, reverse_orientation)
     for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
-      PointType r_pt = reversed.evaluate(u, 1 - v);
+      PointType r_pt = reversed.evaluate(u, min_v + max_v - v);
 
       for(int N = 0; N < DIM; ++N)
       {
@@ -1301,7 +1315,7 @@ TEST(primal_nurbspatch, reverse_orientation)
     for(auto v : v_pts)
     {
       PointType o_pt = original.evaluate(u, v);
-      PointType r_pt = reversed.evaluate(1 - u, 1 - v);
+      PointType r_pt = reversed.evaluate(min_u + max_u - u, min_v + max_v - v);
 
       for(int N = 0; N < DIM; ++N)
       {
