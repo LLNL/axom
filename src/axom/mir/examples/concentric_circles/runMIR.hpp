@@ -59,10 +59,12 @@ int runMIR(const conduit::Node &hostMesh,
     using CoordsetView = decltype(coordsetView);
 
     using ShapeType = QuadShape<int>;
-    auto topologyView = make_unstructured_single_shape<ShapeType>::view(n_topology);
+    auto topologyView =
+      make_unstructured_single_shape<ShapeType>::view(n_topology);
     using TopologyView = decltype(topologyView);
 
-    auto matsetView = make_unibuffer_matset<int, float, MAXMATERIALS>::view(n_matset);
+    auto matsetView =
+      make_unibuffer_matset<int, float, MAXMATERIALS>::view(n_matset);
     using MatsetView = decltype(matsetView);
 
     using MIR =
@@ -81,7 +83,8 @@ int runMIR(const conduit::Node &hostMesh,
     using TopologyView = decltype(topologyView);
     using IndexingPolicy = typename TopologyView::IndexingPolicy;
 
-    auto matsetView = make_unibuffer_matset<int, float, MAXMATERIALS>::view(n_matset);
+    auto matsetView =
+      make_unibuffer_matset<int, float, MAXMATERIALS>::view(n_matset);
     using MatsetView = decltype(matsetView);
 
     using MIR =

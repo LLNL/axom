@@ -85,11 +85,12 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
 
 //--------------------------------------------------------------------------------
 template <typename TopologyView, typename CoordsetView>
-void generateSphericalVolumeFractions(TopologyView topologyView,
-       CoordsetView coordsetView,
-       int gridSize,
-       int numSpheres,
-       std::vector<std::vector<axom::float64>> &materialVolumeFractionsData)
+void generateSphericalVolumeFractions(
+  TopologyView topologyView,
+  CoordsetView coordsetView,
+  int gridSize,
+  int numSpheres,
+  std::vector<std::vector<axom::float64>>& materialVolumeFractionsData)
 {
   using PointType = typename CoordsetView::PointType;
 
@@ -192,10 +193,7 @@ void generateSphericalVolumeFractions(TopologyView topologyView,
 }
 
 //--------------------------------------------------------------------------------
-void MeshTester::setStructured(bool structured)
-{
-  m_structured = structured;
-}
+void MeshTester::setStructured(bool structured) { m_structured = structured; }
 
 //--------------------------------------------------------------------------------
 void MeshTester::mesh3x3(conduit::Node& mesh)
@@ -772,11 +770,11 @@ void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& m
     circleRadii.push_back(minRadius + (i * radiusDelta));
   }
 
-  const conduit::Node &n_coordset = mesh["coordsets/coords"];
-  const conduit::Node &n_topology = mesh["topologies/mesh"];
+  const conduit::Node& n_coordset = mesh["coordsets/coords"];
+  const conduit::Node& n_topology = mesh["topologies/mesh"];
 
   // Make views and add materials.
-  auto coordsetView = make_explicit_coordset<float, 2>::view(n_coordset); 
+  auto coordsetView = make_explicit_coordset<float, 2>::view(n_coordset);
   using CoordsetView = decltype(coordsetView);
 
   if(m_structured)
@@ -794,7 +792,8 @@ void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& m
   else
   {
     using ShapeType = QuadShape<int>;
-    auto topologyView = make_unstructured_single_shape<ShapeType>::view(n_topology);
+    auto topologyView =
+      make_unstructured_single_shape<ShapeType>::view(n_topology);
     using TopologyView = decltype(topologyView);
 
     // Add the material
@@ -884,10 +883,10 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
   // Generate the mesh topology
   generateGrid3D(gridSize, mesh);
 
-  const conduit::Node &n_coordset = mesh["coordsets/coords"];
-  const conduit::Node &n_topology = mesh["topologies/mesh"];
+  const conduit::Node& n_coordset = mesh["coordsets/coords"];
+  const conduit::Node& n_topology = mesh["topologies/mesh"];
 
-  auto coordsetView = make_explicit_coordset<float, 3>::view(n_coordset); 
+  auto coordsetView = make_explicit_coordset<float, 3>::view(n_coordset);
 
   const int numMaterials = numSpheres + 1;
   std::vector<std::vector<axom::float64>> materialVolumeFractionsData;
@@ -895,7 +894,10 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
   {
     auto topologyView = axom::mir::views::make_structured<3>::view(n_topology);
 
-    generateSphericalVolumeFractions(topologyView, coordsetView, gridSize, numSpheres,
+    generateSphericalVolumeFractions(topologyView,
+                                     coordsetView,
+                                     gridSize,
+                                     numSpheres,
                                      materialVolumeFractionsData);
     addMaterial(topologyView.numberOfZones(),
                 numMaterials,
@@ -905,9 +907,13 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
   else
   {
     using ShapeType = HexShape<int>;
-    auto topologyView = make_unstructured_single_shape<ShapeType>::view(n_topology);
+    auto topologyView =
+      make_unstructured_single_shape<ShapeType>::view(n_topology);
 
-    generateSphericalVolumeFractions(topologyView, coordsetView, gridSize, numSpheres,
+    generateSphericalVolumeFractions(topologyView,
+                                     coordsetView,
+                                     gridSize,
+                                     numSpheres,
                                      materialVolumeFractionsData);
     addMaterial(topologyView.numberOfZones(),
                 numMaterials,

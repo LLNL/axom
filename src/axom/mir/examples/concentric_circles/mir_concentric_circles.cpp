@@ -82,7 +82,7 @@ int runMIR(RuntimePolicy policy,
   timer.start();
   conduit::Node options, resultMesh;
   options["matset"] = "mat";
-  options["method"] = method; // pass method via options.
+  options["method"] = method;  // pass method via options.
 
   int retval = 0;
   if(policy == RuntimePolicy::seq)
@@ -194,12 +194,12 @@ int main(int argc, char **argv)
   {
     app.parse(argc, argv);
   }
-  catch (axom::CLI::CallForHelp& e)
+  catch(axom::CLI::CallForHelp &e)
   {
     std::cout << app.help() << std::endl;
     return 0;
   }
-  catch (axom::CLI::ParseError& e)
+  catch(axom::CLI::ParseError &e)
   {
     // Handle other parsing errors
     std::cerr << e.what() << std::endl;
@@ -218,7 +218,8 @@ int main(int argc, char **argv)
   int retval = 0;
   try
   {
-    retval = runMIR(policy, gridSize, numCircles, method, outputFilePath, !disable_write);
+    retval =
+      runMIR(policy, gridSize, numCircles, method, outputFilePath, !disable_write);
   }
   catch(std::invalid_argument const &e)
   {

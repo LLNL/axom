@@ -749,8 +749,7 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList
   const int numVertices = inputList.numVertices();
   for(int iVert = 0; iVert < numVertices; iVert++)
   {
-    const int prevVert =
-      ((iVert - 1) == -1) ? (numVertices - 1) : (iVert - 1);
+    const int prevVert = ((iVert - 1) == -1) ? (numVertices - 1) : (iVert - 1);
     const PointType& current_point = inputList[iVert];
     const PointType& prev_point = inputList[prevVert];
 
@@ -816,13 +815,17 @@ AXOM_HOST_DEVICE PolygonType makeUniquePoints(const PolygonType& poly, double ep
   for(int i = 0; i < numVertices; i++)
   {
     int prevIndex = ((i - 1) == -1) ? (numVertices - 1) : (i - 1);
-    const auto &curPoint = poly[i];
-    const auto &prevPoint = poly[prevIndex];
+    const auto& curPoint = poly[i];
+    const auto& prevPoint = poly[prevIndex];
     // Check whether curPoint and prevPoint are far enough apart to be different.
     // If so, add the point. NOTE: casts are needed to match eps when the polygon
     // does not use double precision coordinates.
-    if(!axom::utilities::isNearlyEqual(static_cast<double>(curPoint[0]), static_cast<double>(prevPoint[0]), eps) ||
-       !axom::utilities::isNearlyEqual(static_cast<double>(curPoint[1]), static_cast<double>(prevPoint[1]), eps))
+    if(!axom::utilities::isNearlyEqual(static_cast<double>(curPoint[0]),
+                                       static_cast<double>(prevPoint[0]),
+                                       eps) ||
+       !axom::utilities::isNearlyEqual(static_cast<double>(curPoint[1]),
+                                       static_cast<double>(prevPoint[1]),
+                                       eps))
     {
       uniqueList.addVertex(poly[i]);
     }

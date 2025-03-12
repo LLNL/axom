@@ -161,12 +161,12 @@ int main(int argc, char *argv[])
   {
     app.parse(argc, argv);
   }
-  catch (axom::CLI::CallForHelp& e)
+  catch(axom::CLI::CallForHelp &e)
   {
     std::cout << app.help() << std::endl;
     return 0;
   }
-  catch (axom::CLI::ParseError& e)
+  catch(axom::CLI::ParseError &e)
   {
     // Handle other parsing errors
     std::cerr << e.what() << std::endl;

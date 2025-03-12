@@ -2132,7 +2132,8 @@ TEST(primal_clip, polygon_intersect_robustness)
 TEST(primal_clip, polygon_clip_failure)
 {
   // Use float
-  using Polygon2D = axom::primal::Polygon<float, 2, axom::primal::PolygonArray::Dynamic, 5>;
+  using Polygon2D =
+    axom::primal::Polygon<float, 2, axom::primal::PolygonArray::Dynamic, 5>;
   using Point2D = axom::primal::Point<float, 2>;
   using Vector2D = axom::primal::Vector<float, 2>;
   using Plane2D = axom::primal::Plane<float, 2>;
