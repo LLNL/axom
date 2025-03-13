@@ -118,16 +118,18 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
   axom::primal::Point<T, NDIMS> &pt)
 {
   namespace bputils = axom::mir::utilities::blueprint;
+  // The range for the interval
   axom::primal::Point<T, NDIMS> range[2] = {_range[0], _range[1]};
-
-  // IDEA: While iterations are low, if we have a really small matVolume, skew
-  //       the lerp value toward the extremes so we hopefully converge faster.
+  // This array holds the volumes for the interval.
+  double f_t[2] = {0., matVolume};
+  // The blend value within the current interval.
+  double t_blend = 0.5;
 
   ClipResultType clippedShape {};
   for(int iterations = 0; iterations < max_iterations; iterations++)
   {
     // Pick the middle of the range and position the plane there.
-    pt = axom::primal::Point<T, NDIMS>::lerp(range[0], range[1], 0.5);
+    pt = axom::primal::Point<T, NDIMS>::lerp(range[0], range[1], t_blend);
 
     // The ELVIRA normals point away from the material. Axom's clipping
     // keeps the shape where the normal points into the shape. Reverse
@@ -142,7 +144,7 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
       bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
     const double volumeError = axom::utilities::abs(matVolume - fragmentVolume);
 
-    //std::cout << "\titerations=" << iterations << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
+    //std::cout << "\titerations=" << iterations << ", t_blend=" << t_blend << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
     if((volumeError <= tolerance) || (iterations >= max_iterations))
     {
       break;
@@ -150,11 +152,29 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
     else if(fragmentVolume < matVolume)
     {
       range[0] = pt;
+      f_t[0] = fragmentVolume;
     }
     else
     {
       range[1] = pt;
+      f_t[1] = fragmentVolume;
     }
+
+    // Now, try and find a new value for t_blend, the value within this interval
+    // where we think we'll find targetVolume
+    //
+    //  |           f_t[0]
+    //  |           *\___
+    //  |           |    \____*targetVolume
+    //  |                     |\_______* f_t[1]
+    //  |           |
+    //  |                     |        |
+    //  ------------+---------+--------+--------------
+    //              0         t_blend  1
+    constexpr double offset = 0.02;
+    t_blend =
+      axom::utilities::clampVal((matVolume - f_t[0]) / (f_t[1] - f_t[0]), 0., 1.);
+    t_blend = (1. - 2. * offset) * t_blend + offset;
   }
 
   return clippedShape;
