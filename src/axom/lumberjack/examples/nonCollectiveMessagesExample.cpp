@@ -35,13 +35,15 @@ int main(int argc, char** argv)
   axom::lumberjack::Lumberjack lj;
   lj.initialize(&communicator, ranksLimit);
 
-  if (commRank > 1){
+  if(commRank > 1)
+  {
     /* sleep simulates work being done by other ranks 
        that prevents them from sending/receiving messages */
     sleep(5u);
   }
 
-  if (commRank == 1) {
+  if(commRank == 1)
+  {
     lj.queueMessage("This is a sample error message sent from rank 1");
 
     lj.pushMessagesOnce();
@@ -57,7 +59,8 @@ int main(int argc, char** argv)
     std::cout << "--> simulated program termination" << std::endl;
   }
 
-  if (commRank == 0) {
+  if(commRank == 0)
+  {
     /* Call push to determine whether error messages have 
        arrived from any rank.  In this example, we expect an
        error message to arrive from rank 1.  In applications, 
