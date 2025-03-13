@@ -59,7 +59,7 @@ void NonCollectiveRootCommunicator::push(
     bool receive_messages = true;
     while(receive_messages)
     {
-      currPackedMessages = mpiNonBlockingReceiveMessages(m_mpiComm);
+      currPackedMessages = mpiBlockingReceiveIfMessagesExist(m_mpiComm);
 
       if(isPackedMessagesEmpty(currPackedMessages))
       {

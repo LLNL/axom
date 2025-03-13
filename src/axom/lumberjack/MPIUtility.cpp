@@ -48,7 +48,7 @@ const char* mpiBlockingReceiveMessages(MPI_Comm comm)
   return charArray;
 }
 
-const char* mpiNonBlockingReceiveMessages(MPI_Comm comm)
+const char* mpiBlockingReceiveIfMessagesExist(MPI_Comm comm)
 {
   char* charArray = nullptr;
   int messageSize = -1;
