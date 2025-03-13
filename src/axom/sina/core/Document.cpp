@@ -601,484 +601,313 @@
      return true;
  }
  
- bool validate_curve_sets_hdf5(const DataHolder::CurveSetMap &new_curve_sets, const conduit::Node &existing_curve_sets) {
-     // int largest = 0;
- 
-     // // Iterate over existing curve sets
-     // std::vector<std::string> existing_keys = existing_curve_sets.child_names();
-     // for (auto &existing_key : existing_keys) {
-     //     const conduit::Node &existing_curve_set = existing_curve_sets[existing_key];
-     //     bool match_found = true;
- 
-     //     if (new_curve_sets.find(existing_key) != new_curve_sets.end()) {
-     //         bool dep_match = true;
-     //         bool indep_match = true;
-     //         const auto &new_curve_set = new_curve_sets.at(existing_key);
- 
-     //         // Validate dependent curves
-     //         if (new_curve_set.getDependentCurves().size() > 0 && existing_curve_set.has_child("dependent")) {
-     //             const conduit::Node &existing_dep = existing_curve_set["dependent"];
-     //             // Check existing dependents
-     //             for (auto dep_key : existing_dep.child_names()) {
-     //                 const conduit::Node &dep_item = existing_dep[dep_key];
-     //                 const auto &dependents = new_curve_set.getDependentCurves();
-     //                 if (dependents.find(dep_key) != dependents.end()) {
-     //                     size_t new_size = dependents.at(dep_key).getValues().size();
-     //                     int total_size = (int)dep_item["value"].dtype().number_of_elements() + (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set lengths mismatch at Dependent: " << dep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 } else {
-     //                     size_t new_size = dep_item["value"].dtype().number_of_elements();
-     //                     int total_size = (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set length mismatch at Existing Dependent: " << dep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 }
-     //             }
- 
-     //             // Check new dependents
-     //             for (auto &new_dep : new_curve_set.getDependentCurves()) {
-     //                 auto &new_dep_key = new_dep.first;
-     //                 auto &new_dep_item = new_dep.second;
-     //                 size_t new_size = new_dep_item.getValues().size();
- 
-     //                 if (existing_dep.has_child(new_dep_key)) {
-     //                     // Already exists, check combined size
-     //                     size_t old_size = existing_dep[new_dep_key]["value"].dtype().number_of_elements();
-     //                     int total_size = (int)old_size + (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set lengths mismatch at Dependent: " << new_dep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 } else {
-     //                     // new dep curve
-     //                     int total_size = (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set length mismatch at New Dependent: " << new_dep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 }
-     //             }
-     //         } else {
-     //             dep_match = false;
-     //         }
- 
-     //         // Validate independent curves
-     //         if (new_curve_set.getIndependentCurves().size() > 0 && existing_curve_set.has_child("independent")) {
-     //             const conduit::Node &existing_indep = existing_curve_set["independent"];
-     //             // Check existing independents
-     //             for (auto indep_key : existing_indep.child_names()) {
-     //                 const conduit::Node &indep_item = existing_indep[indep_key];
-     //                 const auto &independents = new_curve_set.getIndependentCurves();
-     //                 if (independents.find(indep_key) != independents.end()) {
-     //                     size_t new_size = independents.at(indep_key).getValues().size();
-     //                     int total_size = (int)indep_item["value"].dtype().number_of_elements() + (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set lengths mismatch at Independent: " << indep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 } else {
-     //                     size_t new_size = indep_item["value"].dtype().number_of_elements();
-     //                     int total_size = (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set length mismatch at Existing Independent: " << indep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 }
-     //             }
- 
-     //             // Check new independents
-     //             for (auto &new_indep : new_curve_set.getIndependentCurves()) {
-     //                 auto &new_indep_key = new_indep.first;
-     //                 auto &new_indep_item = new_indep.second;
-     //                 size_t new_size = new_indep_item.getValues().size();
-     //                 if (existing_indep.has_child(new_indep_key)) {
-     //                     size_t old_size = existing_indep[new_indep_key]["value"].dtype().number_of_elements();
-     //                     int total_size = (int)old_size + (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set lengths mismatch at Independent: " << new_indep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 } else {
-     //                     int total_size = (int)new_size;
-     //                     if (largest == 0) {
-     //                         largest = total_size;
-     //                     } else if (largest != total_size) {
-     //                         std::cerr << "Appending curve set length mismatch at New Independent: " << new_indep_key << std::endl;
-     //                         return false;
-     //                     }
-     //                 }
-     //             }
-     //         } else {
-     //             indep_match = false;
-     //         }
- 
-     //         if (!dep_match && !indep_match) {
-     //             // check if no new curves but existing sets have them
-     //             if (!((new_curve_set.getDependentCurves().size() == 0 && existing_curve_set.has_child("dependent")) &&
-     //                   (new_curve_set.getIndependentCurves().size() == 0 && existing_curve_set.has_child("independent")))) {
-     //                 match_found = false;
-     //             }
-     //         }
- 
-     //     } else {
-     //         match_found = false;
-     //     }
- 
-     //     if (!match_found) {
-     //         std::cerr << "No matching existing curve set found for appending." << std::endl;
-     //         return false;
-     //     }
-     // }
- 
-     // return true;
+ bool validate_curve_sets_hdf5(const Document &newData, conduit::relay::io::IOHandle &existing_file, const conduit::Node &info) {
+    info.print();
+    std::vector<std::string> record_list;
+    std::string curve_set_path;
+    existing_file.list_child_names("records", record_list);
+
+    for (auto &record : newData.getRecords()) {
+        for (const auto &rec_name : record_list) {
+            std::string id_path = "records/" + rec_name + "/id/";
+            conduit::Node id;
+            existing_file.read(id_path, id);
+            if (id.to_string() == "\"" + record->getId().getId() + "\"") {
+                try {
+                    std::string cs_path = "records/" + rec_name + "/curve_sets/";
+                    std::vector<std::string> curve_sets_list;
+                    existing_file.list_child_names("records/" + rec_name + "/curve_sets", curve_sets_list);
+                    auto &new_curve_sets = record->getCurveSets();
+
+                    for (const auto &cs_name : curve_sets_list) {
+                        // Locate the new curve set information.
+                        auto cs_itr = new_curve_sets.find(cs_name);
+                        if (cs_itr == new_curve_sets.end())
+                            continue;
+                        
+                        const auto &new_dependents  = cs_itr->second.getDependentCurves();
+                        const auto &new_independents = cs_itr->second.getIndependentCurves();
+                        
+                        // Process dependent curves.
+                        std::string dependent_path = cs_path + cs_name + "/dependent/";
+
+                        bool need_dep_flag = false;
+                        int dep_count = -1;
+                        
+                        for (const auto &dep_name : info[dependent_path].child_names()) {
+                            curve_set_path = dependent_path + dep_name + "/value";
+
+                            if(info.has_path(curve_set_path))
+                            {
+                                if (need_dep_flag && info[curve_set_path]["num_elements"].to_int() > 0) {
+                                    std::cerr << "Error validating dependents: " << curve_set_path << " will mistmatch with earlier independents in its curve_set if appended to.";
+                                    return false;
+                                } else {
+                                    if (dep_count == -1) {
+                                        // First dependent has increased its size
+                                        dep_count = new_dependents.find(dep_name)->second.getValues().size() + info[curve_set_path]["num_elements"].to_int();
+                                    } else if (dep_count != new_dependents.find(dep_name)->second.getValues().size() + info[curve_set_path]["num_elements"].to_int()) {
+                                        std::cerr << "Error validating dependents: " << curve_set_path << "'s size after append will mismatch with an earlier dependent post-append.";
+                                        return false;
+                                    }
+                                }
+                            }
+                            else {
+                                if (dep_count == -1) {
+                                    // No more dependents are allowed to increase size
+                                    need_dep_flag = true;
+                                } else {
+                                    std::cerr << "Error validating dependents: " << curve_set_path << "is not being appended to and will mismatch with dependents that were.";
+                                    return false;
+                                }
+                            }
+                        }
+                        // Made it out of For loop, either all deps increased by same increment or none did
+
+                        // Process independent curves.
+                        std::string independent_path = cs_path + cs_name + "/independent/";
+
+                        bool need_indep_flag = false;
+                        int indep_count = -1;
+                        
+                        for (const auto &indep_name : info[independent_path].child_names()) {
+                            curve_set_path = independent_path + indep_name + "/value";
+
+                            if(info.has_path(curve_set_path))
+                            {
+                                if (need_indep_flag && info[curve_set_path]["num_elements"].to_int() > 0) {
+                                    std::cerr << "Error validating independents: " << curve_set_path << " will mistmatch with earlier independents in its curve_set if appended to.";
+                                    return false;
+                                } else {
+                                    if (indep_count == -1) {
+                                        // First independent has increased its size
+                                        indep_count = new_independents.find(indep_name)->second.getValues().size() + info[curve_set_path]["num_elements"].to_int();
+                                    } else if (indep_count != new_independents.find(indep_name)->second.getValues().size() + info[curve_set_path]["num_elements"].to_int()) {
+                                        std::cerr << "Error validating independents: " << curve_set_path << "'s size after append will mismatch with an earlier independent post-append.";
+                                        return false;
+                                    }
+                                }
+                            }
+                            else {
+                                if (indep_count == -1) {
+                                    // No more independents are allowed to increase size
+                                    need_indep_flag = true;
+                                } else {
+                                    std::cerr << "Error validating independents: " << curve_set_path << "is not being appended to and will mismatch with independents that were.";
+                                    return false;
+                                }
+                            }
+                        }
+                        // Made it out of For loop, either all indeps increased by same increment or none did
+                        // Since both passed, restart with the next curve set.
+                    }
+                    // Made it through this curve set, on to the next
+
+                } catch (const std::exception &e) {
+                    std::cerr << "Error validating curve sets: " << e.what() << std::endl;
+                }
+                break;
+            }
+            // Onto the next record
+        }
+    }
+    return true;
  }
+
  
- 
- bool append_to_hdf5(const std::string &hdf5FilePath, const Document &newData, const int data_protocol, const int udc_protocol) {
-     conduit::relay::io::IOHandle existing_file;
-     conduit::Node to_load;
-     conduit::Node to_set;
-     // Load existing HDF5 file
-     try {
-         existing_file.open(hdf5FilePath);
-     } catch (const std::exception &e) {
-         std::cerr << "Error loading HDF5 file: " << e.what() << std::endl;
-         return false;
-     }
- 
-     // Check number of records
-     std::vector<std::string> record_count;
-     existing_file.list_child_names("records", record_count);
-     int existing_record_count = record_count.size();
-     int new_record_count = (int)newData.getRecords().size();
-     if (existing_record_count != new_record_count) {
-         std::cerr << "Mismatch in the number of records." << std::endl;
-         return false;
-     }
- 
-     conduit::Node opts, placeholder;
-     opts["stride"] = 1;
-     std::string cs_path, data_path, udc_path;
- 
-     std::vector<std::string> record_list;
-     std::vector<std::string>::const_iterator rec_itr;
-     existing_file.list_child_names("records", record_list);
-     int extension = record_list.size();
- 
-     // if (validate_curve_sets_hdf5) {
- 
-     // } else {
- 
-     // }
- 
-     // TODO: Validate
-     for (auto& record : newData.getRecords()) {
-         bool found = false;
-         for (rec_itr = record_list.begin(); rec_itr < record_list.end(); ++rec_itr) {
-             std::string id_path = "records/" + *rec_itr + "/id/";
-             conduit::Node id;
-             existing_file.read(id_path, id);
-             if (id.to_string() == "\"" + record->getId().getId() + "\"") {
-                 found = true;
- 
-                 // DATA VALUES
-                 try {
-                     data_path = "records/" + *rec_itr + "/data/";
-                     std::vector<std::string> data_list;
-                     existing_file.list_child_names("records/" + *rec_itr + "/data", data_list);
-                     auto& new_data_sets = record->getData();
-                     for (auto& new_data : new_data_sets) {
-                         auto& [new_data_key, new_data_pair] = new_data;
-                         json obj = obj.parse(new_data_pair.toNode().to_json());
-                         std::string json_str = obj.dump(4);
-                         if (std::find(data_list.begin(), data_list.end(), new_data_key) != data_list.end()) {
-                             switch(data_protocol) {
-                                 case 1:
-                                     existing_file.remove(data_path + new_data_key);
-                                     existing_file.write(new_data_pair.toNode(), data_path + new_data_key);
-                                     break;
-                                 case 2:
-                                     break;
-                                 default:
-                                     std::cout << "Invalid Entry";
-                                     return false;
-                             }
-                         } else {
-                             existing_file.write(new_data_pair.toNode(), data_path + new_data_key);
-                         }   
-                     }
-                 } catch (const std::exception &e) {
- 
-                 }
- 
- 
-                 // USER DEFINED
-                 try {
-                     udc_path = "records/" + *rec_itr + "/user_defined/";
-                     std::vector<std::string> udc_list;
-                     existing_file.list_child_names("records/" + *rec_itr + "/user_defined", udc_list);
-                     auto& new_udc_sets = record->getUserDefinedContent();
-                     for (auto& new_udc : new_udc_sets.children()) {
-                         std::string udc_name = new_udc.name();
-                         if (std::find(udc_list.begin(), udc_list.end(), udc_name) != udc_list.end()) {
-                             switch(udc_protocol) {
-                                 case 1:
-                                     existing_file.remove(udc_path + udc_name);
-                                     existing_file.write(new_udc, udc_path + udc_name);
-                                     break;
-                                 case 2:
-                                     break;
-                                 default:
-                                     std::cout << "Invalid Entry";
-                                     return false;
-                             }
-                         } else {
-                             existing_file.write(new_udc, udc_path + udc_name);
-                         }   
-                     }
-                 } catch (const std::exception &e) {
- 
-                 }
- 
- 
-                 // CURVE SETS
-                 try {
-                     cs_path = "records/" + *rec_itr + "/curve_sets/";
-                     std::vector<std::string> curve_sets_list;
-                     std::vector<std::string>::const_iterator cs_itr;
-                     existing_file.list_child_names("records/" + *rec_itr+ "/curve_sets", curve_sets_list);
-                     auto& new_curve_sets = record->getCurveSets();
-                     for (cs_itr = curve_sets_list.begin(); cs_itr < curve_sets_list.end(); ++cs_itr) {
-                         const auto &new_cs_values = new_curve_sets.find(*cs_itr);
-                         const auto &new_dependents = new_cs_values->second.getDependentCurves();
-                         const auto &new_independents = new_cs_values->second.getIndependentCurves();
-                         std::string dependent_path = cs_path + *cs_itr + "/dependent/";
-                         std::string independent_path = cs_path + *cs_itr + "/independent/";
-                         std::vector<std::string> dependents;
-                         std::vector<std::string> independents;
-                         std::vector<std::string>::const_iterator dep_itr;
-                         std::vector<std::string>::const_iterator indep_itr;
-                         existing_file.list_child_names(dependent_path, dependents);
-                         existing_file.list_child_names(independent_path, independents);
-                         std::vector<double> current_array;
-                         new_dependents.find(*cs_itr);
-                         for (dep_itr = dependents.begin(); dep_itr < dependents.end(); ++dep_itr) {
-                             std::string curve_set_path = dependent_path + *dep_itr + "/value";
-                             conduit::Node* existing_dep_values = new conduit::Node();
-                             existing_file.read(curve_set_path, *existing_dep_values);
-                             opts["offset"] = existing_dep_values->dtype().number_of_elements();
-                             delete existing_dep_values;
-                             const auto &new_dep_values = new_dependents.find(*dep_itr)->second.getValues();
-                             for (auto& value : new_dep_values) {
-                                 current_array.push_back(value);
-                             }
-                             to_set.set(current_array);
-                             current_array.clear();
-                             conduit::relay::io::hdf5_write(to_set, hdf5FilePath, curve_set_path, opts, true);
-                         }
- 
-                         for (indep_itr = independents.begin(); indep_itr < independents.end(); ++indep_itr) {
-                             std::string curve_set_path = independent_path + *indep_itr + "/value";
-                             conduit::Node* existing_indep_values = new conduit::Node();
-                             existing_file.read(curve_set_path, *existing_indep_values);
-                             opts["offset"] = existing_indep_values->dtype().number_of_elements();
-                             delete existing_indep_values;
-                             const auto &new_indep_values = new_independents.find(*indep_itr)->second.getValues();
-                             for (auto& value : new_indep_values) {
-                                 current_array.push_back(value);
-                             }
-                             to_set.set(current_array);
-                             current_array.clear();
-                             conduit::relay::io::hdf5_write(to_set, hdf5FilePath, curve_set_path, opts, true);
-                         }
-                     }
-                     break;
-                 } catch (const std::exception &e) {
- 
-                 }
-             }
-         }
-         if (!found) {
-             existing_file.write(record->toNode(), "records/" + std::to_string(extension++) + "/");
-         }
-     }
- 
-     conduit::relay::io::hdf5_read(hdf5FilePath, to_load);
-     to_load.print();
-     return false;
- }
- 
- 
- // bool append_to_hdf5_multiple(const std::string& hdf5FilePath, const json& new_records) {
- //     conduit::Node data;
- //     conduit::relay::io::hdf5_read(hdf5FilePath, data);
- 
- //     if (data["records"].number_of_children() != new_records["records"].size()) {
- //         std::cerr << "Mismatch in the number of records." << std::endl;
- //         return false;
- //     }
- 
- //     for (int index = 0; index < data["records"].number_of_children(); ++index) {
- //         const auto& existing_record = data["records"][index];
- //         const auto& new_record = new_records["records"][index];
- //         json obj = obj.parse(existing_record["curve_sets"].to_json());
- 
- //         if (!validate_curve_sets_json(obj, new_record["curve_sets"])) {
- //             std::cerr << "Validation failed for curve sets at index " << index << std::endl;
- //             return false;  
- //         }
- //     }
- 
- 
- //     conduit::Node& records = data["records"];
- //     for (int i = 0; i < records.number_of_children(); ++i) {
- //         conduit::Node& record = records[i];
- 
- //         if (record.has_child("curve_sets")) {
- //             conduit::Node& curve_sets = record["curve_sets"];
- //             const auto& new_record = new_records["records"][i];
- //             int j = 0;
- //             for (const auto& new_curve_set : new_record["curve_sets"]) {
- //                 conduit::Node& curve_set = curve_sets[j];
- //                 if (new_curve_set.contains("dependent")) {
- //                     conduit::Node& dependent = curve_set["dependent"];
- //                     for (const auto& dep_item : new_curve_set["dependent"].items()) {
- //                         const std::string& key = dep_item.key();
- //                         conduit::Node& dep_value = dependent[key];
- //                         conduit::Node& valueNode = dep_value["value"];
- //                         std::vector<double> currentValues;
- //                         const conduit::double_array existingArray = valueNode.as_double_array();
- //                         currentValues.reserve(existingArray.number_of_elements());
- //                         for (conduit::index_t i = 0; i < existingArray.number_of_elements(); ++i) {
- //                             currentValues.push_back(existingArray[i]);
- //                         }
- //                         const auto& new_dep_value = dep_item.value()["value"];
- 
- //                         currentValues.insert(currentValues.end(), new_dep_value.begin(), new_dep_value.end());
- //                         valueNode.set(currentValues);
- //                     }
- //                 }
- 
- //                 if (new_curve_set.contains("independent")) {
- //                     conduit::Node& independent = curve_set["independent"];
- //                     for (const auto& indep_item : new_curve_set["independent"].items()) {
- //                         const std::string& key = indep_item.key();
- //                         conduit::Node& indep_value = independent[key];
- //                         conduit::Node& valueNode = indep_value["value"];
- //                         std::vector<double> currentValues;
- //                         const conduit::double_array existingArray = valueNode.as_double_array();
- //                         currentValues.reserve(existingArray.number_of_elements());
- //                         for (conduit::index_t i = 0; i < existingArray.number_of_elements(); ++i) {
- //                             currentValues.push_back(existingArray[i]);
- //                         }
- //                         const auto& new_dep_value = indep_item.value()["value"];
- 
- //                         currentValues.insert(currentValues.end(), new_dep_value.begin(), new_dep_value.end());
- //                         valueNode.set(currentValues);
- //                     }
- //                 }
- //             }
- //             j++;
- //         }
- //     }
- 
- //     conduit::relay::io::hdf5_write(data, hdf5FilePath);
- 
- //     return true;
- // }
- 
- // bool append_to_hdf5_one_record(const std::string& hdf5FilePath, const json& new_curve_sets, size_t recordIndex) {
- //     conduit::Node data;
- //     conduit::relay::io::hdf5_read(hdf5FilePath, data);
- 
- //     for (int index = 0; index < data["records"].number_of_children(); ++index) {
- //         const auto& existing_record = data["records"][index];
- //         json obj = obj.parse(existing_record["curve_sets"].to_json());
- 
- //         if (!validate_curve_sets_json(obj, new_curve_sets)) {
- //             std::cerr << "Validation failed for curve sets at index " << index << std::endl;
- //             return false;  
- //         }
- //     }
- 
- 
- //     conduit::Node& records = data["records"];
- //     conduit::Node& record = records[recordIndex];
- //     json obj = obj.parse(record["curve_sets"].to_json());
- 
- //     if (!validate_curve_sets_json(obj, new_curve_sets)) {
- //         std::cerr << "Validation failed for new curve sets." << std::endl;
- //         return false;  
- //     }
- 
- //     if (record.has_child("curve_sets")) {
- //         conduit::Node& curve_sets = record["curve_sets"];
- //         int j = 0;
- //         for (const auto& new_curve_set : new_curve_sets) {
- //             conduit::Node& curve_set = curve_sets[j];
- //             if (curve_set.has_child("dependent")) {
- //                 conduit::Node& dependent = curve_set["dependent"];
- //                 for (const auto& dep_item : new_curve_set["dependent"].items()) {
- //                     const std::string& key = dep_item.key();
- //                     conduit::Node& dep_value = dependent[key];
- //                     conduit::Node& valueNode = dep_value["value"];
- //                     std::vector<double> currentValues;
- //                     const conduit::double_array existingArray = valueNode.as_double_array();
- //                     currentValues.reserve(existingArray.number_of_elements());
- //                     for (conduit::index_t i = 0; i < existingArray.number_of_elements(); ++i) {
- //                         currentValues.push_back(existingArray[i]);
- //                     }
- //                     const auto& new_dep_value = dep_item.value()["value"];
- 
- //                     currentValues.insert(currentValues.end(), new_dep_value.begin(), new_dep_value.end());
- //                     valueNode.set(currentValues);
- //                 }
- //             }
- 
- //                 if (curve_set.has_child("independent")) {
- //                 conduit::Node& independent = curve_set["independent"];
- //                 for (const auto& indep_item : new_curve_set["independent"].items()) {
- //                     const std::string& key = indep_item.key();
- //                     conduit::Node& indep_value = independent[key];
- //                     conduit::Node& valueNode = indep_value["value"];
- //                     std::vector<double> currentValues;
- //                     const conduit::double_array existingArray = valueNode.as_double_array();
- //                     currentValues.reserve(existingArray.number_of_elements());
- //                     for (conduit::index_t i = 0; i < existingArray.number_of_elements(); ++i) {
- //                         currentValues.push_back(existingArray[i]);
- //                     }
- //                     const auto& new_dep_value = indep_item.value()["value"];
- 
- //                     currentValues.insert(currentValues.end(), new_dep_value.begin(), new_dep_value.end());
- //                     valueNode.set(currentValues);
- //                 }
- //             }
- //         }
- //         j++;
- //     }
- 
- //     conduit::relay::io::hdf5_write(data, hdf5FilePath);
- 
- //     return true;
- // }
+bool append_to_hdf5(const std::string &hdf5FilePath,
+                    const Document &newData,
+                    const int data_protocol,
+                    const int udc_protocol)
+{
+    conduit::relay::io::IOHandle existing_file;
+    conduit::Node to_load;
+    conduit::Node to_set;
+    conduit::Node opts;
+    conduit::Node info;
+
+    opts["stride"] = 1;
+    
+    // Open the existing HDF5 file.
+    try {
+        existing_file.open(hdf5FilePath);
+        conduit::relay::io::hdf5_read_info(hdf5FilePath, info);
+    } catch (const std::exception &e) {
+        std::cerr << "Error loading HDF5 file: " << e.what() << std::endl;
+        return false;
+    }
+    
+    std::string cs_path, data_path, udc_path;
+    int extension = info["records"].number_of_children();
+    
+    if (!validate_curve_sets_hdf5(newData, existing_file, info)) {
+        std::cerr << "Error validating curve sets, append has been cancelled.";
+        return false;
+    }
+
+    std::vector<std::string> record_list;
+    existing_file.list_child_names("records", record_list);
+
+    // Iterate over each record in newData.
+    for (auto &record : newData.getRecords()) {
+        bool found = false;
+        for (const auto &rec_name : record_list) {
+            std::string id_path = "records/" + rec_name + "/id/";
+            conduit::Node id;
+            existing_file.read(id_path, id);
+            if (id.to_string() == "\"" + record->getId().getId() + "\"") {
+                found = true;
+                
+                // ----------------------
+                // Update DATA VALUES.
+                // ----------------------
+                try {
+                    data_path = "records/" + rec_name + "/data/";
+                    std::vector<std::string> data_keys;
+                    existing_file.list_child_names(data_path, data_keys);
+                    auto &new_data_sets = record->getData();
+                    for (auto &new_data : new_data_sets) {
+                        auto &new_data_key  = new_data.first;
+                        auto &new_data_pair = new_data.second;
+                        if (std::find(data_keys.begin(), data_keys.end(), new_data_key) != data_keys.end()) {
+                            switch(data_protocol) {
+                                case 1:
+                                    existing_file.remove(data_path + new_data_key);
+                                    existing_file.write(new_data_pair.toNode(), data_path + new_data_key);
+                                    break;
+                                case 2:
+                                    break;
+                                default:
+                                    std::cerr << "Invalid Data Protocol Entry" << std::endl;
+                                    return false;
+                            }
+                        } else {
+                            existing_file.write(new_data_pair.toNode(), data_path + new_data_key);
+                        }
+                    }
+                } catch (const std::exception &e) {
+                    std::cerr << "Error updating data values: " << e.what() << std::endl;
+                }
+                                
+                // ----------------------
+                // Update USER DEFINED CONTENT.
+                // ----------------------
+                try {
+                    udc_path = "records/" + rec_name + "/user_defined/";
+                    std::vector<std::string> udc_list;
+                    existing_file.list_child_names(udc_path, udc_list);
+                    auto &new_udc_sets = record->getUserDefinedContent();
+                    for (auto &new_udc : new_udc_sets.children()) {
+                        std::string udc_name = new_udc.name();
+                        if (std::find(udc_list.begin(), udc_list.end(), udc_name) != udc_list.end()) {
+                            switch(udc_protocol) {
+                                case 1:
+                                    existing_file.remove(udc_path + udc_name);
+                                    existing_file.write(new_udc, udc_path + udc_name);
+                                    break;
+                                case 2:
+                                    break;
+                                default:
+                                    std::cerr << "Invalid UDC Protocol Entry" << std::endl;
+                                    return false;
+                            }
+                        } else {
+                            existing_file.write(new_udc, udc_path + udc_name);
+                        }
+                    }
+                } catch (const std::exception &e) {
+                    std::cerr << "Error updating user defined content: " << e.what() << std::endl;
+                }
+                
+                // ----------------------
+                // Update CURVE SETS.
+                // ----------------------
+                try {
+                    cs_path = "records/" + rec_name + "/curve_sets/";
+                    std::vector<std::string> curve_sets_list;
+                    existing_file.list_child_names("records/" + rec_name + "/curve_sets", curve_sets_list);
+                    auto &new_curve_sets = record->getCurveSets();
+                    
+                    for (const auto &cs_name : curve_sets_list) {
+                        // Locate the new curve set information.
+                        auto cs_itr = new_curve_sets.find(cs_name);
+                        if (cs_itr == new_curve_sets.end())
+                            continue;
+                        
+                        const auto &new_dependents  = cs_itr->second.getDependentCurves();
+                        const auto &new_independents = cs_itr->second.getIndependentCurves();
+                        
+                        // Process dependent curves.
+                        std::string dependent_path = cs_path + cs_name + "/dependent/";
+                        std::vector<std::string> dependents;
+                        existing_file.list_child_names(dependent_path, dependents);
+                        
+                        for (const auto &dep_name : dependents) {
+                            std::string curve_set_path = dependent_path + dep_name + "/value";
+                            
+                            // Read metadata for the dataset.
+                            if(info.has_path(curve_set_path) &&
+                            info[curve_set_path].has_child("num_elements"))
+                            {
+                                int current_size = info[curve_set_path]["num_elements"].to_int();
+                                opts["offset"] = current_size;
+                            }
+                            else {
+                                std::cerr << "Metadata for dataset " << curve_set_path
+                                        << " not found or missing num_elements." << std::endl;
+                                continue;
+                            }
+                            
+                            // Prepare and append new dependent values.
+                            const auto &new_dep_values = new_dependents.find(dep_name)->second.getValues();
+                            std::vector<double> current_array(new_dep_values.begin(), new_dep_values.end());
+                            to_set.set(current_array);
+                            conduit::relay::io::hdf5_write(to_set, hdf5FilePath, curve_set_path, opts, true);
+                        }
+                        
+                        // Process independent curves.
+                        std::string independent_path = cs_path + cs_name + "/independent/";
+                        std::vector<std::string> independents;
+                        existing_file.list_child_names(independent_path, independents);
+                        
+                        for (const auto &indep_name : independents) {
+                            std::string curve_set_path = independent_path + indep_name + "/value";
+                            
+                            if(info.has_path(curve_set_path) &&
+                            info[curve_set_path].has_child("num_elements"))
+                            {
+                                int current_size = info[curve_set_path]["num_elements"].to_int();
+                                opts["offset"] = current_size;
+                            }
+                            else {
+                                std::cerr << "Metadata for dataset " << curve_set_path
+                                        << " not found or missing num_elements." << std::endl;
+                                continue;
+                            }
+                            
+                            // Prepare and append new independent values.
+                            const auto &new_indep_values = new_independents.find(indep_name)->second.getValues();
+                            std::vector<double> current_array(new_indep_values.begin(), new_indep_values.end());
+                            to_set.set(current_array);
+                            conduit::relay::io::hdf5_write(to_set, hdf5FilePath, curve_set_path, opts, true);
+                        }
+                    }
+                } catch (const std::exception &e) {
+                    std::cerr << "Error updating curve sets: " << e.what() << std::endl;
+                }
+            }
+        }
+        if (!found) {
+            // Record not found – add as new.
+            existing_file.write(record->toNode(), "records/" + std::to_string(extension++) + "/");
+        }
+    }
+    
+    // TODO: remove debug
+    conduit::relay::io::hdf5_read(hdf5FilePath, to_load);
+    to_load.print();
+    return true;
+}
  
  }  // namespace sina
  }  // namespace axom
