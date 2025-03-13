@@ -41,13 +41,15 @@ void check_point_policy()
 //------------------------------------------------------------------------------
 TEST(primal_point, point_default_constructor)
 {
-  static const int DIM = 2;
+  static const int DIM = 3;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
 
   QPoint pt;
 
   EXPECT_EQ(pt[0], CoordType());
+  EXPECT_EQ(pt[1], CoordType());
+  EXPECT_EQ(pt[2], CoordType());
   EXPECT_EQ(pt.dimension(), DIM);
 }
 
