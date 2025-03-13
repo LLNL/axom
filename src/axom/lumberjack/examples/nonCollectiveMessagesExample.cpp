@@ -14,7 +14,7 @@
 int main(int argc, char** argv)
 {
   /*
-    This test illustrated the use of a non-collective root communicator 
+    This test illustrates the use of a non-collective root communicator 
     to send/receive messages when a runtime error is thrown.
   */
   // Initialize MPI and get rank and comm size
