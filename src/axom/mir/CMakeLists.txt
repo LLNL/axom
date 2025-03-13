@@ -56,6 +56,7 @@ set(mir_headers
     clipping/ClipOptions.hpp
     clipping/ClipTableManager.hpp
     detail/elvira_impl.hpp
+    detail/elvira_detail.hpp
     ElviraAlgorithm.hpp
     EquiZAlgorithm.hpp
     MIRAlgorithm.hpp
