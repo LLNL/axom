@@ -56,7 +56,7 @@ to the root.  After each push the tree is completely flushed.
 NonCollectiveRootCommunicator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: This Communicator is useful for logging messages non-collectively, which is useful for error-handling.  Note that it will not scale as well as the recommended BinaryTreeCommunicator.
+.. note:: This Communicator logs messages non-collectively, which is useful for error-handling.  Note that it will not scale as well as the recommended BinaryTreeCommunicator.
 
 This Communicator has all nodes directly connecting to the root node which
 is rank 0.  The root node is the only node allowed to output messages.
