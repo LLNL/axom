@@ -145,7 +145,6 @@ void saveDocument(Document const &document, std::string const &fileName)
   fout << asJson;
   fout.close();
 
-
   // windows doesn't let you rename to a destination that already exists
   axom::utilities::filesystem::removeFile(fileName);
 
