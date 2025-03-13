@@ -140,8 +140,12 @@
  * \brief Macro used to silence UndefinedBehaviorSanitizer errors
  *  when compiling and linking with -fsanitize=undefined
  */
-#if __has_attribute(no_sanitize_undefined)
-  #define AXOM_SUPPRESS_UBSAN __attribute__((no_sanitize_undefined))
+#if defined(__has_attribute)
+  #if __has_attribute(no_sanitize_undefined)
+    #define AXOM_SUPPRESS_UBSAN __attribute__((no_sanitize_undefined))
+  #else
+    #define AXOM_SUPPRESS_UBSAN
+  #endif
 #else
   #define AXOM_SUPPRESS_UBSAN
 #endif
