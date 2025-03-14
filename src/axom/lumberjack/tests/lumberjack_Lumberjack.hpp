@@ -453,7 +453,7 @@ TEST(lumberjack_Lumberjack, swapNonOwnedCommunicator)
 
   EXPECT_EQ(communicator1, lumberjack_communicator.getCommunicator());
 
-  lumberjack_communicator.swapCommunicator(communicator2);
+  lumberjack_communicator.setCommunicator(communicator2);
 
   /* communicator1 should still be valid after swap 
      because it's not owned by Lumberjack*/
@@ -479,7 +479,7 @@ TEST(lumberjack_Lumberjack, swapOwnedCommunicator)
 
   EXPECT_NE(lumberjack.getCommunicator(), nullptr);
 
-  lumberjack.swapCommunicator(communicator);
+  lumberjack.setCommunicator(communicator);
 
   EXPECT_EQ(lumberjack.getCommunicator(), communicator);
 

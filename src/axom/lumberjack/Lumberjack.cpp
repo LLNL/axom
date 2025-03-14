@@ -196,7 +196,7 @@ void Lumberjack::pushMessagesFully()
 
 bool Lumberjack::isOutputNode() { return m_communicator->isOutputNode(); }
 
-void Lumberjack::swapCommunicator(Communicator* communicator)
+void Lumberjack::setCommunicator(Communicator* communicator)
 {
   if(m_isCommunicatorOwned)
   {

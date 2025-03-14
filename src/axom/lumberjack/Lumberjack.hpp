@@ -239,7 +239,7 @@ public:
    *
    *****************************************************************************
    */
-  void swapCommunicator(Communicator* communicator);
+  void setCommunicator(Communicator* communicator);
 
   /*!
    *****************************************************************************
