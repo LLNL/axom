@@ -260,7 +260,6 @@ bool append_to_json(const std::string& jsonFilePath, Document const &newData, co
  * \param jsonFilePath the path to the HDF5 file
  * \param new_data a vector of the new data to append
  * \param recordIndex the index of the record we wish to append to, should we only choose one
- * \param cs_protocol 0 = append to all curves, 1 = only independents, 2 = only dependents
  * 
  * \return true if appended successfully, false if the append fails
  */
