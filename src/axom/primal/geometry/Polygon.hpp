@@ -408,21 +408,16 @@ public:
    * \pre This function is only valid when NDIMS = 2, tris is pre-allocated
    *      to be (numVertices() - 2), and the polygon is simple.
    *
-   * \note Implementation is based on the following paper:
-   *       M. Livesu, G. Cherchi, R. Scateni and M. Attene, "Deterministic Linear
-   *       Time Constrained Triangulation Using Simplified Earcut," in IEEE
-   *       Transactions on Visualization and Computer Graphics, 2022
-   *
-   *       And the corresponding code implementation:
-   *       https://github.com/mlivesu/cinolib/blob/master/include/cinolib/segment_insertion_linear_earcut.cpp
+   * \note Implementation of ear-clipping algorithm based on:
+   *       https://github.com/mlivesu/cinolib/blob/master/include/cinolib/earcut.cpp
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 2, void>::type triangulate(
-    axom::ArrayView<Triangle<T, TDIM>>& tris) const
+    axom::ArrayView<Triangle<T, TDIM>>& tris,
+    double eps = 1e-8) const
   {
     using Segment2D = axom::primal::Segment<T, 2>;
 
-    const int NUM_INDICES_PER_TRI = 3;
     const int size = numVertices();
 
     SLIC_ASSERT(isValid());
@@ -431,6 +426,7 @@ public:
                       << (size - 2) << " for triangles, but found size of "
                       << tris.size());
 
+    // triangle to initialize
     int triIndex = 0;
 
     // adjacencies
@@ -440,9 +436,9 @@ public:
     // keep a list of the ears to be cut
     axom::Array<int> ears(size, size);
 
-    // keeps track of ears
-    // (corners that were not ears at the beginning may become so later on)
+    // keeps track of ears and concave vertices
     axom::Array<bool> is_ear(size, size);
+    axom::Array<bool> is_concave(size, size);
 
     // default initialization
     for(int i = 0; i < size; i++)
@@ -450,33 +446,72 @@ public:
       prev[i] = -1 + i;
       next[i] = 1 + i;
       is_ear[i] = false;
+      is_concave[i] = false;
     }
     prev[0] = size - 1;
     next[size - 1] = 0;
 
-    // precompute internal ears
-    for(int curr = 1; curr < size - 1; ++curr)
-    {
-      // check if vertex is convex
-      // (prev != next to avoid ear test for dangling edges)
-      if(prev != next &&
-         axom::primal::orientation(
-           m_vertices[prev[curr]],
-           Segment2D(m_vertices[curr], m_vertices[next[curr]])) ==
-           primal::ON_NEGATIVE_SIDE)
+    // helper lambda that performs a local concavity test for a given vertex
+    auto concave_test = [&](const int curr) {
+      return (axom::primal::orientation(
+                m_vertices[prev[curr]],
+                Segment2D(m_vertices[curr], m_vertices[next[curr]]),
+                eps) != primal::ON_NEGATIVE_SIDE);
+    };
+
+    // helper lambda that performs a local ear test for a given vertex
+    auto ear_test = [&](const int curr) {
+      if(is_concave[curr]) return false;
+
+      // does the ear contain any other front vertex?
+      uint beg = next[curr];
+      uint end = prev[curr];
+      uint test = next[beg];
+      while(test != end)
       {
-        ears.emplace_back(curr);
-        is_ear[curr] = true;
+        Triangle<T, 2> tempTri(
+          {m_vertices[prev[curr]], m_vertices[curr], m_vertices[next[curr]]});
+
+        if(is_concave[test] && tempTri.checkInTriangle(m_vertices[test], eps))
+        {
+          return false;
+        }
+        test = next[test];
+      }
+      return true;
+    };
+
+    // find all concave vertices and valid ears
+    for(int i = 0; i < size; i++)
+    {
+      is_concave[i] = concave_test(i);
+    }
+
+    for(int i = 0; i < size; i++)
+    {
+      if(ear_test(i))
+      {
+        is_ear[i] = true;
+        ears.emplace_back(i);
       }
     }
 
-    // process internal ears
-    int length = size;
-    while(true)
+    // triangulates the polygon
+    for(int i = 0; i < size - 2; ++i)
     {
-      // make new triangle (extract one ear)
       int curr = ears.back();
       ears.erase(ears.end() - 1);
+
+      // skip if ear has already been processed
+      if(!is_ear[curr])
+      {
+        --i;
+        continue;
+      }
+      // mark the current ear as processed
+      is_ear[curr] = false;
+
+      // make new tri
       tris[triIndex] = Triangle<T, 2>(m_vertices[prev[curr]],
                                       m_vertices[curr],
                                       m_vertices[next[curr]]);
@@ -486,36 +521,32 @@ public:
       next[prev[curr]] = next[curr];
       prev[next[curr]] = prev[curr];
 
-      // exit when last triangle processed
-      if(--length < NUM_INDICES_PER_TRI) return;
+      // update concavity info
+      is_concave[prev[curr]] = concave_test(prev[curr]);
+      is_concave[next[curr]] = concave_test(next[curr]);
 
-      // check if prev or next are new ears (convex vertices)
-      if(!is_ear[prev[curr]] && prev[curr] != 0)
+      // check if prev and/or next are new ears (convex vertices)
+      if(ear_test(prev[curr]))
       {
-        if(prev[prev[curr]] != next[curr] &&
-           axom::primal::orientation(
-             m_vertices[prev[prev[curr]]],
-             Segment2D(m_vertices[prev[curr]], m_vertices[next[curr]])) ==
-             primal::ON_NEGATIVE_SIDE)
-        {
-          ears.emplace_back(prev[curr]);
-          is_ear[prev[curr]] = true;
-        }
+        is_ear[prev[curr]] = true;
+        ears.emplace_back(prev[curr]);
       }
-      if(!is_ear[next[curr]] && next[curr] < size - 1)
+      else if(is_ear[prev[curr]])
       {
-        if(next[next[curr]] != prev[curr] &&
-           axom::primal::orientation(
-             m_vertices[prev[curr]],
-             Segment2D(m_vertices[next[curr]], m_vertices[next[next[curr]]])) ==
-             primal::ON_NEGATIVE_SIDE)
-        {
-          ears.emplace_back(next[curr]);
-          is_ear[next[curr]] = true;
-        }
+        is_ear[prev[curr]] = false;
+      }
+
+      if(ear_test(next[curr]))
+      {
+        is_ear[next[curr]] = true;
+        ears.emplace_back(next[curr]);
+      }
+      else if(is_ear[next[curr]])
+      {
+        is_ear[next[curr]] = false;
       }
     }
-  };
+  }
 
   /*!
    * \brief Simple formatted print of a polygon instance

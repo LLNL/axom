@@ -910,16 +910,15 @@ TEST(primal_polygon, triangulate)
                                  (poly.numVertices() - 2));
     auto tris_view = tris.view();
 
-    poly.triangulate(tris_view);
+    poly.triangulate(tris_view, EPS);
 
     double tri_area_sum = 0.0;
     SLIC_INFO("Polygon coordinates are: " << poly);
     SLIC_INFO("tris is size of " << tris.size());
     for(int i = 0; i < tris.size(); i++)
     {
-      double tri_area = tris[i].signedArea();
-      EXPECT_GT(tri_area, 0.0);
-      tri_area_sum += tri_area;
+      EXPECT_FALSE(tris[i].degenerate(EPS));
+      tri_area_sum += tris[i].signedArea();
       SLIC_INFO("Triangle " << i << " is " << tris[i]);
     }
 
