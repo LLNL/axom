@@ -545,10 +545,8 @@ public:
           // Get the current zone as a primal shape.
           const auto srcShape = srcView.getShape(srcZone);
 
-          // Determine polygon overlaps.
-          constexpr double eps = 1.e-3;
-
           // Determine the overlap of the src and target shapes.
+          constexpr double eps = 1.e-6;
           const double srcOverlapsTarget =
             detail::shapeOverlap(srcShape, targetShape, eps);
 
