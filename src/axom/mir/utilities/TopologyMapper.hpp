@@ -167,7 +167,7 @@ AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
   }
   else
   {
-    assert("Unsupported shape type");
+    SLIC_ASSERT("Unsupported shape type");
   }
   return retval;
 }
@@ -223,7 +223,7 @@ AXOM_HOST_DEVICE double shapeOverlap(const Shape1Type &shape1,
   }
   else
   {
-    assert("Unsupported shape type");
+    SLIC_ASSERT("Unsupported shape type");
   }
   return retval;
 }
@@ -279,7 +279,7 @@ AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
   }
   else
   {
-    assert("Unsupported shape type");
+    SLIC_ASSERT("Unsupported shape type");
   }
   return retval;
 }
