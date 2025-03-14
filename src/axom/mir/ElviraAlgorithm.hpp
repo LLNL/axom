@@ -164,7 +164,7 @@ protected:
       m_matsetView);
     zlb.execute(selectedZonesView, cleanZones, mixedZones);
     SLIC_ASSERT((cleanZones.size() + mixedZones.size()) ==
-                m_topologyView.numberOfZones());
+                selectedZonesView.size());
     SLIC_INFO(axom::fmt::format("cleanZones: {}, mixedZones: {}",
                                 cleanZones.size(),
                                 mixedZones.size()));
