@@ -230,13 +230,13 @@ int main(int argc, char *argv[])
   catch(axom::CLI::CallForHelp &e)
   {
     std::cout << app.help() << std::endl;
-    return 0;
+    result = 0;
   }
   catch(axom::CLI::ParseError &e)
   {
     // Handle other parsing errors
     std::cerr << e.what() << std::endl;
-    return app.exit(e);
+    result = app.exit(e);
   }
 
   return result;

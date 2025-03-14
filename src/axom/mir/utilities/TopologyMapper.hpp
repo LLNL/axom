@@ -409,6 +409,7 @@ public:
     const conduit::Node &n_materialMap =
       n_matset.fetch_existing("material_map");
     const auto nmats = n_materialMap.number_of_children();
+    const auto numMaterialSlots = nmats + 1; // leave space for empty material.
 
     // Look through the material map to get the largest matId in use.
     int maxMatId = 0;
@@ -452,12 +453,12 @@ public:
     // Build the list of selected zones in the target.
     AXOM_ANNOTATE_BEGIN("target");
     const auto targetView = m_targetView;
-    SelectedZones<ExecSpace> targetSelection(targetView.numberOfZones(),
+    const auto nTargetZones = targetView.numberOfZones();
+    SelectedZones<ExecSpace> targetSelection(nTargetZones,
                                              n_options,
                                              TARGET_SELECTED_ZONES);
     targetSelection.setSorted(false);
     const auto targetSelectionView = targetSelection.view();
-    const auto nTargetZones = targetSelectionView.size();
     AXOM_ANNOTATE_END("target");
 
     // -------------------------------------------------------------------------
@@ -492,13 +493,14 @@ public:
 
     n_volume_fractions.set(
       conduit::DataType(bputils::cpp2conduit<MatFloatType>::id,
-                        nmats * nTargetZones));
+                        numMaterialSlots * nTargetZones));
     n_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id,
-                                         nmats * nTargetZones));
+                                         numMaterialSlots * nTargetZones));
     n_sizes.set(
       conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
     n_offsets.set(
       conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
+    // n_indices are allocated later
 
     // Wrap the output matset data in some array views.
     auto material_ids = make_array_view<MatIntType>(n_material_ids);
@@ -516,7 +518,7 @@ public:
     const SrcMatsetView srcMatsetView(m_srcMatsetView);
     const auto bvh_device = bvh.getTraverser();
     axom::for_all<ExecSpace>(
-      nTargetZones,
+      targetSelectionView.size(),
       AXOM_LAMBDA(axom::IndexType index) {
         // Get the target zone as a primal shape.
         const axom::IndexType zi = targetSelectionView[index];
@@ -554,12 +556,13 @@ public:
           {
             MatFloatType vf = srcOverlapsTarget / targetAmount;
 
-            // Get the src material - there should just be one!
-            typename SrcMatsetView::IDList zids;
-            typename SrcMatsetView::VFList zvfs;
-            srcMatsetView.zoneMaterials(srcZone, zids, zvfs);
-            SLIC_ASSERT(zids.size() == 1);
-            const auto mat = zids[0];
+            // Get the src material - there should just be one because we assume
+            // that a clean matset is being mapped.
+            typename SrcMatsetView::IDList zoneMatIds;
+            typename SrcMatsetView::VFList zoneMatVFs;
+            srcMatsetView.zoneMaterials(srcZone, zoneMatIds, zoneMatVFs);
+            SLIC_ASSERT(zoneMatIds.size() == 1);
+            const auto mat = zoneMatIds[0];
 
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
             std::cout << "\tintersection:" << std::endl
@@ -573,8 +576,8 @@ public:
 #endif
 
             // Add the src material contribution into the target material.
-            MatIntType *matids = material_ids.data() + index /*zi*/ * nmats;
-            MatFloatType *vfs = volume_fractions.data() + index /*zi*/ * nmats;
+            MatIntType *matids = material_ids.data() + zi * numMaterialSlots;
+            MatFloatType *vfs = volume_fractions.data() + zi * numMaterialSlots;
             for(int m = 0; m < nmats; m++)
             {
               if(matids[m] == mat)
@@ -593,7 +596,7 @@ public:
 #endif
                 matids[m] = mat;
                 vfs[m] = vf;
-                sizes[index /*zi*/]++;
+                sizes[zi]++;
                 break;
               }
             }
@@ -622,8 +625,9 @@ public:
     AXOM_ANNOTATE_END("intersection");
 
     // -------------------------------------------------------------------------
-    // Make a pass through the new material to see if any zones have no materials.
-    // If there are such zones, make sure the empty material is used.
+    // Make a pass through the new material to see if any zones have no materials
+    // of if they are partially covered. If there are such zones, make sure the
+    // empty material is used.
     axom::IndexType totalSize = 0;
     {
       AXOM_ANNOTATE_SCOPE("sizes");
@@ -631,9 +635,20 @@ public:
       axom::for_all<ExecSpace>(
         nTargetZones,
         AXOM_LAMBDA(axom::IndexType index) {
-          if(sizes[index] == 0)
+          // Sum the material within the zone.
+          MatFloatType *vfs = volume_fractions.data() + index * numMaterialSlots;
+          MatFloatType vfSum(0);
+          for(MatIntType m = 0; m < sizes[index]; m++)
           {
-            sizes[index] = 1;
+            vfSum += vfs[m];
+          }
+          // If the zone was not completely covered by other materials, increment
+          // its size to include the empty material and set its VF.
+          constexpr MatFloatType MatTolerance = 1.e-6;
+          if(sizes[index] == 0 || (1. - vfSum) > MatTolerance)
+          {
+            vfs[sizes[index]] = 1. - vfSum;
+            sizes[index]++;
             emptyCount += 1;
           }
           reduceSize += sizes[index];
@@ -654,17 +669,35 @@ public:
     n_indices.set(
       conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
     auto indices = make_array_view<MatIntType>(n_indices);
-    constexpr auto UnusedIndexSlot = MatIntType(-1);
-    axom::mir::utilities::fill<ExecSpace>(indices, UnusedIndexSlot);
+
+    // The volume_fractions and material_ids arrays contain gaps that we can compress out.
+    conduit::Node n_new_volume_fractions, n_new_material_ids;
+    n_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
+    n_material_ids.set_allocator(c2a.getConduitAllocatorID());
+    n_new_volume_fractions.set(
+      conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, totalSize));
+    n_new_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id,
+                                             totalSize));
+    auto new_volume_fractions = make_array_view<MatFloatType>(n_new_volume_fractions);
+    auto new_material_ids = make_array_view<MatIntType>(n_new_material_ids);
     axom::for_all<ExecSpace>(
       nTargetZones,
       AXOM_LAMBDA(axom::IndexType index) {
-        const auto start = offsets[index];
-        for(int i = 0; i < sizes[index]; i++)
+        const auto destOffset = offsets[index];
+        for(MatIntType m = 0; m < sizes[index]; m++)
         {
-          indices[start + i] = index * nmats + i;
+          const auto destIndex = destOffset + m;
+          const auto srcIndex = index * numMaterialSlots + m;
+
+          new_volume_fractions[destIndex] = volume_fractions[srcIndex];
+          new_material_ids[destIndex] = material_ids[srcIndex];
+          indices[destIndex] = destIndex;
         }
       });
+    // Move the reorganized data into the output.
+    n_volume_fractions.move(n_new_volume_fractions);
+    n_material_ids.move(n_new_material_ids);
+
     AXOM_ANNOTATE_END("finish");
   }
 
