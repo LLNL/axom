@@ -19,10 +19,10 @@ namespace bputils = axom::mir::utilities::blueprint;
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-#define AXOM_TESTING_GENERATE_BASELINES
+//#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-#define AXOM_TESTING_SAVE_VISUALIZATION
+//#define AXOM_TESTING_SAVE_VISUALIZATION
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
@@ -250,9 +250,12 @@ private:
 
     if(stridedStructured)
     {
-      // Duplicate the coarse_matset for the coarse_strided topology.
+      // Adjust the mesh so we have the right names.
+      n_mesh["coordsets/coarse_strided_coords"].set(n_mesh["coordsets/coarse_coords"]);
+      n_mesh["topologies/coarse_strided/coordset"] = "coarse_strided_coords";
       n_mesh["matsets/coarse_strided_matset"].set(n_mesh["matsets/coarse_matset"]);
       n_mesh["matsets/coarse_strided_matset/topology"] = "coarse_strided";
+      n_mesh.remove("coordsets/coarse_coords");
       n_mesh.remove("topologies/coarse");
       n_mesh.remove("matsets/coarse_matset");
     }
@@ -440,32 +443,28 @@ private:
 };
 
 //------------------------------------------------------------------------------
-#if 1
 TEST(mir_coupling, coupling_2D_sz0_ss0_seq)
 {
   AXOM_ANNOTATE_SCOPE("coupling_2D_sz0_ss0_seq");
   test_coupling<seq_exec>::test2D("coupling_2D_sz0_ss0", false, false);
 }
-#endif
-#if 0
 TEST(mir_coupling, coupling_2D_sz0_ss1_seq)
 {
   AXOM_ANNOTATE_SCOPE("coupling_2D_sz0_ss1_seq");
   test_coupling<seq_exec>::test2D("coupling_2D_sz0_ss1", false, true);
 }
-#endif
 TEST(mir_coupling, coupling_2D_sz1_ss0_seq)
 {
   AXOM_ANNOTATE_SCOPE("coupling_2D_sz1_ss0_seq");
   test_coupling<seq_exec>::test2D("coupling_2D_sz1_ss0", true, false);
 }
-#if 0
 TEST(mir_coupling, coupling_2D_sz1_ss1_seq)
 {
   AXOM_ANNOTATE_SCOPE("coupling_2D_sz1_ss1_seq");
   test_coupling<seq_exec>::test2D("coupling_2D_sz1_ss1", true, true);
 }
 
+#if 0
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_coupling, coupling_2D_sz0_ss0_omp)
 {

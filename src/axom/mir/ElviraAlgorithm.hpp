@@ -38,7 +38,7 @@
 #include <string>
 
 // Uncomment to save inputs and outputs.
-#define AXOM_ELVIRA_DEBUG
+//#define AXOM_ELVIRA_DEBUG
 
 #if defined(AXOM_ELVIRA_DEBUG)
   #include <conduit/conduit_relay_io.hpp>
