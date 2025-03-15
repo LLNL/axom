@@ -8,6 +8,7 @@
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
+#include "axom/mir/views/BasicIndexing.hpp"
 #include "axom/mir/views/Shapes.hpp"
 
 namespace axom
@@ -69,6 +70,7 @@ public:
   using ShapeType = ShapeT;
   using ConnectivityType = typename ShapeType::ConnectivityType;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
+  using IndexingPolicy = BasicIndexing;
 
   /*!
    * \brief Constructor
@@ -80,8 +82,10 @@ public:
     : m_connectivityView(conn)
     , m_sizesView()
     , m_offsetsView()
+    , m_indexing()
   {
     SLIC_ASSERT(!ShapeType::is_variable_size());
+    m_indexing.m_size = numberOfZones();
   }
 
   /*!
@@ -98,6 +102,7 @@ public:
     : m_connectivityView(conn)
     , m_sizesView(sizes)
     , m_offsetsView(offsets)
+    , m_indexing(sizes.size())
   {
     SLIC_ASSERT(m_offsetsView.size() == m_sizesView.size());
   }
@@ -117,7 +122,7 @@ public:
    *
    * \return The number of zones.
    */
-  AXOM_HOST_DEVICE IndexType numberOfZones() const
+  AXOM_HOST_DEVICE inline IndexType numberOfZones() const
   {
     return detail::NumberOfZones<ShapeType, ShapeType::is_variable_size()>::execute(
       m_sizesView.size(),
@@ -129,9 +134,19 @@ public:
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE IndexType connectivitySize() const
+  AXOM_HOST_DEVICE inline IndexType connectivitySize() const
   {
     return m_connectivityView.size();
+  }
+
+  /*!
+   * \brief Return the size of the connectivity.
+   *
+   * \return The size of the connectivity.
+   */
+  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const
+  {
+    return m_indexing;
   }
 
   /*!
@@ -180,6 +195,7 @@ private:
   ConnectivityView m_connectivityView;
   ConnectivityView m_sizesView;
   ConnectivityView m_offsetsView;
+  IndexingPolicy m_indexing;
 };
 
 }  // end namespace views

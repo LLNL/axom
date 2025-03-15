@@ -38,7 +38,7 @@
 #include <string>
 
 // Uncomment to save inputs and outputs.
-//#define AXOM_ELVIRA_DEBUG
+#define AXOM_ELVIRA_DEBUG
 
 #if defined(AXOM_ELVIRA_DEBUG)
   #include <conduit/conduit_relay_io.hpp>
@@ -460,12 +460,15 @@ protected:
     auto matCountView = matCount.view();
     auto matZoneView = matZone.view();
 
-    const auto matsetView = m_matsetView;
+    // Get the material count per zone and the zone number (in case of strided structured)
+    const TopologyView deviceTopologyView(m_topologyView);
+    const MatsetView deviceMatsetView(m_matsetView);
     axom::for_all<ExecSpace>(
       mixedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = mixedZonesView[szIndex];
-        const auto nmats = matsetView.numberOfMaterials(zoneIndex);
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const auto nmats = deviceMatsetView.numberOfMaterials(matZoneIndex);
         matCountView[szIndex] = nmats;
         matZoneView[szIndex] = zoneIndex;
         num_reduce += nmats;
@@ -564,20 +567,21 @@ protected:
     auto zcStencilView = zcStencil.view();
 
     // Traverse the selected zones based on how many materials there are in a zone.
-    TopologyView deviceTopologyView(m_topologyView);
     axom::for_all<ExecSpace>(
       matZoneView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         // The selected zone index in the whole mesh.
         const auto zoneIndex = matZoneView[szIndex];
         const auto matCount = matCountView[szIndex];
+        // The index to use for the zone's material.
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
         // Where to begin writing this zone's fragment data.
         const auto offset = matOffsetView[szIndex];
 
         // Get materials for this zone from the matset.
         typename MatsetView::IDList ids;
         typename MatsetView::VFList vfs;
-        matsetView.zoneMaterials(zoneIndex, ids, vfs);
+        deviceMatsetView.zoneMaterials(matZoneIndex, ids, vfs);
 
         // Reverse sort the materials by the volume fraction so the larger VFs are first.
         SLIC_ASSERT(ids.size() == matCount);
@@ -612,15 +616,22 @@ protected:
           const auto neighborIndex = static_cast<typename MatsetView::ZoneIndex>(
             deviceTopologyView.indexing().LogicalIndexToIndex(neighbor));
 
+          // Turn to a "global" logical index and transform it to an index to use in the material,
+          // which for strided-structured can be larger than the mesh.
+          const auto matNeighbor = deviceTopologyView.indexing().LocalToGlobal(neighbor);
+          const auto matNeighborIndex = static_cast<typename MatsetView::ZoneIndex>(
+            deviceTopologyView.indexing().GlobalToGlobal(matNeighbor));
+
           // Copy material vfs into the stencil.
           for(axom::IndexType m = 0; m < matCount; m++)
           {
             // Ask the neighbor zone for vf.
             const auto fragmentIndex = offset + m;
             typename MatsetView::FloatType vf = 0;
-            matsetView.zoneContainsMaterial(neighborIndex,
-                                            sortedMaterialIdsView[fragmentIndex],
-                                            vf);
+
+            deviceMatsetView.zoneContainsMaterial(matNeighborIndex,
+                                                  sortedMaterialIdsView[fragmentIndex],
+                                                  vf);
 
             // Store the vf into the stencil for the current material.
             const auto destIndex = fragmentIndex * StencilSize + si;
@@ -653,8 +664,6 @@ protected:
     axom::for_all<ExecSpace>(
       matZoneView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
-        // The selected zone index in the whole mesh.
-        //const auto zoneIndex = matZoneView[szIndex];
         const auto matCount = matCountView[szIndex];
         // Where to begin writing this zone's fragment data.
         const auto offset = matOffsetView[szIndex];
@@ -683,6 +692,8 @@ protected:
                                        iskip);
 
 #if defined(AXOM_ELVIRA_GATHER_INFO) && !defined(AXOM_DEVICE_CODE)
+        // The selected zone index in the whole mesh.
+        const auto zoneIndex = matZoneView[szIndex];
         conduit::Node &n_thisZone = n_group4->append();
         n_thisZone["szIndex"] = szIndex;
         n_thisZone["zone"] = zoneIndex;

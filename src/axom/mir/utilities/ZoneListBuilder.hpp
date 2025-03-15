@@ -85,7 +85,10 @@ public:
       m_topologyView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const auto zone = deviceTopologyView.zone(zoneIndex);
-        const int nmats = deviceMatsetView.numberOfMaterials(zoneIndex);
+
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const int nmats = deviceMatsetView.numberOfMaterials(matZoneIndex);
+
         const auto nnodesThisZone = zone.numberOfNodes();
         int *nodeData = nMatsPerNodeView.data();
         for(axom::IndexType i = 0; i < nnodesThisZone; i++)
@@ -223,7 +226,9 @@ public:
         const auto zoneIndex = selectedZonesView[szIndex];
         const auto zone = deviceTopologyView.zone(zoneIndex);
 
-        const int nmats = deviceMatsetView.numberOfMaterials(zoneIndex);
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const int nmats = deviceMatsetView.numberOfMaterials(matZoneIndex);
+
         const auto nnodesThisZone = zone.numberOfNodes();
         int *nodeData = nMatsPerNodeView.data();
         for(axom::IndexType i = 0; i < nnodesThisZone; i++)
@@ -344,13 +349,16 @@ public:
     axom::Array<int> mask(nzones, nzones, allocatorID);
     auto maskView = mask.view();
     RAJA::ReduceSum<reduce_policy, int> mask_reduce(0);
-    const auto matsetView = m_matsetView;
+    const MatsetView deviceMatsetView (m_matsetView);
+    const TopologyView deviceTopologyView(m_topologyView);
     axom::for_all<ExecSpace>(
       selectedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = selectedZonesView[szIndex];
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+
         // clean zone == 1, mixed zone = 0
-        const int ival = (matsetView.numberOfMaterials(zoneIndex) == 1) ? 1 : 0;
+        const int ival = (deviceMatsetView.numberOfMaterials(matZoneIndex) == 1) ? 1 : 0;
         maskView[szIndex] = ival;
         mask_reduce += ival;
       });

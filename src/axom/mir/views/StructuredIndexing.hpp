@@ -260,7 +260,7 @@ public:
    * \return True if the index is within the index, false otherwise.
    */
   AXOM_HOST_DEVICE
-  bool contains(const IndexType index) const
+  bool contains(IndexType index) const
   {
     return contains(IndexToLogicalIndex(index));
   }
@@ -304,7 +304,7 @@ public:
     return retval;
   }
 
-  IndexType clamp(const IndexType index) const
+  IndexType clamp(IndexType index) const
   {
     return LogicalIndexToIndex(clamp(IndexToLogicalIndex(index)));
   }

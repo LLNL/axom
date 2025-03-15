@@ -8,6 +8,7 @@
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
+#include "axom/mir/views/BasicIndexing.hpp"
 #include "axom/mir/views/Shapes.hpp"
 #include "axom/mir/utilities/utilities.hpp"
 
@@ -100,6 +101,7 @@ public:
   using ConnectivityType = ConnT;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
   using ShapeType = VariableShape<ConnectivityType>;
+  using IndexingPolicy = BasicIndexing;
 
   /*!
    * \brief Constructor
@@ -120,6 +122,7 @@ public:
     , m_sizes(sizes)
     , m_offsets(offsets)
     , m_shapeMap(shapemap)
+    , m_indexing(m_sizes.size())
   {
     SLIC_ASSERT(m_shapes.size() != 0);
     SLIC_ASSERT(m_sizes.size() != 0);
@@ -140,16 +143,26 @@ public:
    *
    * \return The number of zones.
    */
-  AXOM_HOST_DEVICE IndexType numberOfZones() const { return m_sizes.size(); }
+  AXOM_HOST_DEVICE inline IndexType numberOfZones() const { return m_sizes.size(); }
 
   /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE IndexType connectivitySize() const
+  AXOM_HOST_DEVICE inline IndexType connectivitySize() const
   {
     return m_connectivity.size();
+  }
+
+  /*!
+   * \brief Return the size of the connectivity.
+   *
+   * \return The size of the connectivity.
+   */
+  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const
+  {
+    return m_indexing;
   }
 
   /*!
@@ -177,6 +190,7 @@ private:
   ConnectivityView m_sizes;
   ConnectivityView m_offsets;
   ShapeMap m_shapeMap;
+  IndexingPolicy m_indexing;
 };
 
 }  // end namespace views

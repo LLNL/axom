@@ -572,6 +572,9 @@ protected:
                   conduit::Node &n_newFields) const
   {
     AXOM_ANNOTATE_SCOPE("makeFields");
+
+    // TODO: Change this to be more like ClipField::makeFields so it supports strided-structured.
+
     for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
     {
       const conduit::Node &n_field = n_fields[i];
@@ -787,17 +790,39 @@ private:
    * \param n_matset The input matset.
    * \param n_newMatset A node that will contain the new matset.
    */
-  void makeMatset(const SelectedZonesView &selectedZonesView,
+  void makeMatset(const SelectedZonesView selectedZonesView,
                   const conduit::Node &n_matset,
                   conduit::Node &n_newMatset) const
   {
     AXOM_ANNOTATE_SCOPE("makeMatset");
-    // _mir_utilities_matsetslicer_begin
-    MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
-    SliceData zSlice;
-    zSlice.m_indicesView = selectedZonesView;
-    ms.execute(zSlice, n_matset, n_newMatset);
-    // _mir_utilities_matsetslicer_end
+    // TODO: Make this "if constexpr" when Axom allows that.
+    if(axom::mir::views::view_traits<TopologyView>::supports_strided_structured())
+    {
+      // If the topology view supports strided structured then we need to convert the
+      // selected zones to "global" values to pull out the right zones from the material.
+      const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+      const auto nzones = selectedZonesView.size();
+      axom::Array<axom::IndexType> matZoneIds(nzones, nzones, allocatorID);
+      auto matZoneIdsView = matZoneIds.view();
+      const TopologyView deviceTopologyView(ExtractZones<ExecSpace, TopologyView, CoordsetView>::m_topologyView);
+      axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType index)
+      {
+        matZoneIdsView[index] = deviceTopologyView.indexing().LocalToGlobal(selectedZonesView[index]);
+      });
+      MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
+      SliceData zSlice;
+      zSlice.m_indicesView = matZoneIdsView;
+      ms.execute(zSlice, n_matset, n_newMatset);
+    }
+    else
+    {
+      // _mir_utilities_matsetslicer_begin
+      MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
+      SliceData zSlice;
+      zSlice.m_indicesView = selectedZonesView;
+      ms.execute(zSlice, n_matset, n_newMatset);
+      // _mir_utilities_matsetslicer_end
+    }
   }
 
   MatsetView m_matsetView;
