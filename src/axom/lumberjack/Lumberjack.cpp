@@ -40,7 +40,7 @@ void Lumberjack::initialize(Communicator* communicator,
 
 void Lumberjack::finalize()
 {
-  if(m_isCommunicatorOwned)
+  if(m_isCommunicatorOwned && m_communicator != nullptr)
   {
     m_communicator->finalize();
     delete m_communicator;
@@ -198,7 +198,7 @@ bool Lumberjack::isOutputNode() { return m_communicator->isOutputNode(); }
 
 void Lumberjack::setCommunicator(Communicator* communicator)
 {
-  if(m_isCommunicatorOwned)
+  if(m_isCommunicatorOwned && m_communicator != nullptr)
   {
     m_communicator->finalize();
     delete m_communicator;

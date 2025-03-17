@@ -235,7 +235,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief swap communicator pointer stored in object
+   * \brief set communicator pointer stored in object
    *
    *****************************************************************************
    */
