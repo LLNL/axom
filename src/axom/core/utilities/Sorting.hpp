@@ -8,8 +8,6 @@
 #include <axom/core/utilities/Utilities.hpp>
 #include <axom/core/NumericLimits.hpp>
 
-#define AXOM_SUPPORT_VARIADIC_TEMPLATE_SORT
-
 namespace axom
 {
 namespace utilities
@@ -33,7 +31,6 @@ AXOM_HOST_DEVICE inline void ifswap(T &a, T &b)
   }
 }
 
-#if defined(AXOM_SUPPORT_VARIADIC_TEMPLATE_SORT)
 /*!
  * \brief This method is called when there are no more values to swap.
  */
@@ -249,11 +246,8 @@ struct greater_than
   }
 };
 
-#endif
-
 }  // end namespace detail
 
-#if defined(AXOM_SUPPORT_VARIADIC_TEMPLATE_SORT)
 /*!
  * \brief Sort multiple arrays, using the first array as the key for sorting.
  *        All other arrays are sorted the same.
@@ -299,7 +293,6 @@ AXOM_HOST_DEVICE inline static void reverse_sort_multiple(T first, Args... args)
                                  detail::Delimiter {},
                                  args...);
 }
-#endif
 
 /**
  * \brief This is a template suitable for sorting small arrays on device.
