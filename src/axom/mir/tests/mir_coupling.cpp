@@ -464,7 +464,6 @@ TEST(mir_coupling, coupling_2D_sz1_ss1_seq)
   test_coupling<seq_exec>::test2D("coupling_2D_sz1_ss1", true, true);
 }
 
-#if 0
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_coupling, coupling_2D_sz0_ss0_omp)
 {
@@ -531,7 +530,7 @@ TEST(mir_coupling, coupling_2D_sz1_ss1_hip)
   test_coupling<hip_exec>::test2D("coupling_2D_sz1_ss1", true, true);
 }
 #endif
-#endif
+
 //------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
