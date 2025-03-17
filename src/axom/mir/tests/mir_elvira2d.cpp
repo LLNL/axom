@@ -29,7 +29,8 @@ std::string baselineDirectory()
 template <typename ExecSpace>
 struct braid2d_mat_test
 {
-  static void initialize(const std::string &type, const std::string &mattype,
+  static void initialize(const std::string &type,
+                         const std::string &mattype,
                          conduit::Node &n_mesh)
   {
     axom::StackArray<axom::IndexType, 2> dims {10, 10};
@@ -41,9 +42,8 @@ struct braid2d_mat_test
   // Select a chunk of clean and mixed zones.
   static void selectZones(conduit::Node &n_options)
   {
-    n_options["selectedZones"].set(std::vector<axom::IndexType>{
-      30, 31, 32, 39, 40, 41, 48, 49, 50
-    });
+    n_options["selectedZones"].set(
+      std::vector<axom::IndexType> {30, 31, 32, 39, 40, 41, 48, 49, 50});
   }
 
   static void test(const std::string &type,
@@ -118,14 +118,19 @@ struct braid2d_mat_test
 TEST(mir_elvira, elvira_uniform_unibuffer_seq)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_seq");
-  braid2d_mat_test<seq_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer");
+  braid2d_mat_test<seq_exec>::test("uniform",
+                                   "unibuffer",
+                                   "elvira_uniform_unibuffer");
 }
 
 TEST(mir_elvira, elvira_uniform_unibuffer_sel_seq)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_seq");
   constexpr bool selectZones = true;
-  braid2d_mat_test<seq_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer_sel", selectZones);
+  braid2d_mat_test<seq_exec>::test("uniform",
+                                   "unibuffer",
+                                   "elvira_uniform_unibuffer_sel",
+                                   selectZones);
 }
 
 //#if defined(AXOM_USE_OPENMP)
@@ -168,14 +173,19 @@ TEST(mir_elvira, elvira_uniform_unibuffer_sel_cuda)
 TEST(mir_elvira, elvira_uniform_unibuffer_hip)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_hip");
-  braid2d_mat_test<hip_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer");
+  braid2d_mat_test<hip_exec>::test("uniform",
+                                   "unibuffer",
+                                   "elvira_uniform_unibuffer");
 }
 
 TEST(mir_elvira, elvira_uniform_unibuffer_sel_hip)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_hip");
   constexpr bool selectZones = true;
-  braid2d_mat_test<hip_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer_sel", selectZones);
+  braid2d_mat_test<hip_exec>::test("uniform",
+                                   "unibuffer",
+                                   "elvira_uniform_unibuffer_sel",
+                                   selectZones);
 }
 #endif
 

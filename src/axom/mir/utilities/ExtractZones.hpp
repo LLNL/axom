@@ -804,11 +804,14 @@ private:
       const auto nzones = selectedZonesView.size();
       axom::Array<axom::IndexType> matZoneIds(nzones, nzones, allocatorID);
       auto matZoneIdsView = matZoneIds.view();
-      const TopologyView deviceTopologyView(ExtractZones<ExecSpace, TopologyView, CoordsetView>::m_topologyView);
-      axom::for_all<ExecSpace>(selectedZonesView.size(), AXOM_LAMBDA(axom::IndexType index)
-      {
-        matZoneIdsView[index] = deviceTopologyView.indexing().LocalToGlobal(selectedZonesView[index]);
-      });
+      const TopologyView deviceTopologyView(
+        ExtractZones<ExecSpace, TopologyView, CoordsetView>::m_topologyView);
+      axom::for_all<ExecSpace>(
+        selectedZonesView.size(),
+        AXOM_LAMBDA(axom::IndexType index) {
+          matZoneIdsView[index] =
+            deviceTopologyView.indexing().LocalToGlobal(selectedZonesView[index]);
+        });
       MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
       SliceData zSlice;
       zSlice.m_indicesView = matZoneIdsView;

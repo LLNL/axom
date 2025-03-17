@@ -198,7 +198,9 @@ template <typename ExecSpace>
 class test_coupling
 {
 public:
-  static void test2D(const std::string &name, bool selectedZones = false, bool stridedStructured = false)
+  static void test2D(const std::string &name,
+                     bool selectedZones = false,
+                     bool stridedStructured = false)
   {
     // Make the 2D input mesh.
     conduit::Node n_mesh;
@@ -251,9 +253,11 @@ private:
     if(stridedStructured)
     {
       // Adjust the mesh so we have the right names.
-      n_mesh["coordsets/coarse_strided_coords"].set(n_mesh["coordsets/coarse_coords"]);
+      n_mesh["coordsets/coarse_strided_coords"].set(
+        n_mesh["coordsets/coarse_coords"]);
       n_mesh["topologies/coarse_strided/coordset"] = "coarse_strided_coords";
-      n_mesh["matsets/coarse_strided_matset"].set(n_mesh["matsets/coarse_matset"]);
+      n_mesh["matsets/coarse_strided_matset"].set(
+        n_mesh["matsets/coarse_matset"]);
       n_mesh["matsets/coarse_strided_matset/topology"] = "coarse_strided";
       n_mesh.remove("coordsets/coarse_coords");
       n_mesh.remove("topologies/coarse");
@@ -280,13 +284,26 @@ private:
 
     if(stridedStructured)
     {
-      auto topologyView = axom::mir::views::make_strided_structured<2>::view(n_topology);
-      mir2D(topologyView, input_prefix, n_input, output_prefix, n_output, selectedZones, stridedStructured);
+      auto topologyView =
+        axom::mir::views::make_strided_structured<2>::view(n_topology);
+      mir2D(topologyView,
+            input_prefix,
+            n_input,
+            output_prefix,
+            n_output,
+            selectedZones,
+            stridedStructured);
     }
     else
     {
       auto topologyView = axom::mir::views::make_structured<2>::view(n_topology);
-      mir2D(topologyView, input_prefix, n_input, output_prefix, n_output, selectedZones, stridedStructured);
+      mir2D(topologyView,
+            input_prefix,
+            n_input,
+            output_prefix,
+            n_output,
+            selectedZones,
+            stridedStructured);
     }
   }
 
@@ -342,11 +359,13 @@ private:
   {
     if(stridedStructured)
     {
-      n_options["selectedZones"].set(std::vector<axom::IndexType>{0,1,3,4,6,7});
+      n_options["selectedZones"].set(
+        std::vector<axom::IndexType> {0, 1, 3, 4, 6, 7});
     }
     else
     {
-      n_options["selectedZones"].set(std::vector<axom::IndexType>{13,14,15,19,20,21,25,26,27});
+      n_options["selectedZones"].set(
+        std::vector<axom::IndexType> {13, 14, 15, 19, 20, 21, 25, 26, 27});
     }
   }
 
@@ -357,21 +376,16 @@ private:
 
     if(stridedStructured)
     {
-      n_selectedZones.set(std::vector<axom::IndexType>{52,53,54,55,
-                                                       64,65,66,67,
-                                                       76,77,78,79,
-                                                       88,89,90,91,
-                                                       100,101,102,103,
-                                                       112,113,114,115});
+      n_selectedZones.set(std::vector<axom::IndexType> {
+        52, 53, 54, 55, 64,  65,  66,  67,  76,  77,  78,  79,
+        88, 89, 90, 91, 100, 101, 102, 103, 112, 113, 114, 115});
     }
     else
     {
-      n_selectedZones.set(std::vector<axom::IndexType>{50,51,52,53,54,55,
-                                                       62,63,64,65,66,67,
-                                                       74,75,76,77,78,79,
-                                                       86,87,88,89,90,91,
-                                                       98,99,100,101,102,103,
-                                                       110,111,112,113,114,115});
+      n_selectedZones.set(std::vector<axom::IndexType> {
+        50, 51, 52,  53,  54,  55,  62,  63,  64,  65,  66,  67,
+        74, 75, 76,  77,  78,  79,  86,  87,  88,  89,  90,  91,
+        98, 99, 100, 101, 102, 103, 110, 111, 112, 113, 114, 115});
     }
   }
 

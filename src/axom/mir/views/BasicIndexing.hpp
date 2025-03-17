@@ -26,15 +26,10 @@ public:
   /// Constructors
   // @{
   AXOM_HOST_DEVICE
-  BasicIndexing() : m_size(0)
-  {
-  }
+  BasicIndexing() : m_size(0) { }
   AXOM_HOST_DEVICE
-  BasicIndexing(axom::IndexType size) : m_size(size)
-  {
-  }
+  BasicIndexing(axom::IndexType size) : m_size(size) { }
   // @}
-
 
   /*!
    * \brief Return the size
@@ -79,7 +74,9 @@ public:
 
   AXOM_HOST_DEVICE inline axom::IndexType clamp(axom::IndexType index) const
   {
-    return axom::utilities::clampVal(index, axom::IndexType(0), axom::IndexType(m_size - 1));
+    return axom::utilities::clampVal(index,
+                                     axom::IndexType(0),
+                                     axom::IndexType(m_size - 1));
   }
 
   axom::IndexType m_size {0};

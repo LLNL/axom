@@ -467,7 +467,8 @@ protected:
       mixedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = mixedZonesView[szIndex];
-        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const auto matZoneIndex =
+          deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
         const auto nmats = deviceMatsetView.numberOfMaterials(matZoneIndex);
         matCountView[szIndex] = nmats;
         matZoneView[szIndex] = zoneIndex;
@@ -574,7 +575,8 @@ protected:
         const auto zoneIndex = matZoneView[szIndex];
         const auto matCount = matCountView[szIndex];
         // The index to use for the zone's material.
-        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const auto matZoneIndex =
+          deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
         // Where to begin writing this zone's fragment data.
         const auto offset = matOffsetView[szIndex];
 
@@ -618,9 +620,11 @@ protected:
 
           // Turn to a "global" logical index and transform it to an index to use in the material,
           // which for strided-structured can be larger than the mesh.
-          const auto matNeighbor = deviceTopologyView.indexing().LocalToGlobal(neighbor);
-          const auto matNeighborIndex = static_cast<typename MatsetView::ZoneIndex>(
-            deviceTopologyView.indexing().GlobalToGlobal(matNeighbor));
+          const auto matNeighbor =
+            deviceTopologyView.indexing().LocalToGlobal(neighbor);
+          const auto matNeighborIndex =
+            static_cast<typename MatsetView::ZoneIndex>(
+              deviceTopologyView.indexing().GlobalToGlobal(matNeighbor));
 
           // Copy material vfs into the stencil.
           for(axom::IndexType m = 0; m < matCount; m++)
@@ -629,9 +633,10 @@ protected:
             const auto fragmentIndex = offset + m;
             typename MatsetView::FloatType vf = 0;
 
-            deviceMatsetView.zoneContainsMaterial(matNeighborIndex,
-                                                  sortedMaterialIdsView[fragmentIndex],
-                                                  vf);
+            deviceMatsetView.zoneContainsMaterial(
+              matNeighborIndex,
+              sortedMaterialIdsView[fragmentIndex],
+              vf);
 
             // Store the vf into the stencil for the current material.
             const auto destIndex = fragmentIndex * StencilSize + si;

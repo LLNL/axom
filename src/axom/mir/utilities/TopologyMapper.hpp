@@ -414,7 +414,7 @@ public:
     const conduit::Node &n_materialMap =
       n_matset.fetch_existing("material_map");
     const auto nmats = n_materialMap.number_of_children();
-    const auto numMaterialSlots = nmats + 1; // leave space for empty material.
+    const auto numMaterialSlots = nmats + 1;  // leave space for empty material.
 
     // Look through the material map to get the largest matId in use.
     int maxMatId = 0;
@@ -679,9 +679,10 @@ public:
     n_new_material_ids.set_allocator(c2a.getConduitAllocatorID());
     n_new_volume_fractions.set(
       conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, totalSize));
-    n_new_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id,
-                                             totalSize));
-    auto new_volume_fractions = make_array_view<MatFloatType>(n_new_volume_fractions);
+    n_new_material_ids.set(
+      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
+    auto new_volume_fractions =
+      make_array_view<MatFloatType>(n_new_volume_fractions);
     auto new_material_ids = make_array_view<MatIntType>(n_new_material_ids);
     axom::for_all<ExecSpace>(
       nTargetZones,

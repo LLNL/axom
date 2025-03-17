@@ -143,7 +143,10 @@ public:
    *
    * \return The number of zones.
    */
-  AXOM_HOST_DEVICE inline IndexType numberOfZones() const { return m_sizes.size(); }
+  AXOM_HOST_DEVICE inline IndexType numberOfZones() const
+  {
+    return m_sizes.size();
+  }
 
   /*!
    * \brief Return the size of the connectivity.
