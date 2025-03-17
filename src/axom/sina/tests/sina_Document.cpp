@@ -823,10 +823,10 @@ TEST(Document, test_append_to_hdf5) {
 
 TEST(Document, test_append_to_json_failures) {
   // We have a lot of potential failures
-  // 1. Fail validation due to a later curve set not being uniform
-  // 2. Fail validation due to an earlier curve set not being uniform
+  // 1. Fail validation due to an appended-to curve not being uniform
+  // 2. Fail validation due to a new curve not being uniform
   // 3. Fail because Dependents won't be uniform with Independents
-  // 4. Fail because Protocol 3 Duplicate Dependent
+  // 4. Fail because Protocol 3 Duplicate Data
   // 5. Fail because Protocol 3 Duplicate UDC
 
   std::streambuf* origBuffer = std::cerr.rdbuf();
@@ -898,7 +898,7 @@ TEST(Document, test_append_to_json_failures) {
   SCOPED_TRACE("Attempting Case 2");
   std::string f2_data = ([](std::string s) {
     auto j = nlohmann::json::parse(s);
-    j["records"][0]["curve_sets"]["1"]["dependent"]["1"]["value"] = {1, 1, 1};
+    j["records"][0]["curve_sets"]["1"]["dependent"]["2"]["value"] = {1, 1, 1};
     return j.dump();
   })(new_data);
 
@@ -950,7 +950,7 @@ TEST(Document, test_append_to_json_failures) {
   std::cerr.rdbuf(origBuffer);
   std::string expected =
     "Error validating dependents: Record bar1, Curve Set 1, Dependent 1's size after append will mismatch with an earlier curve post-append.\n"
-    "Error validating dependents: Record bar1, Curve Set 1, Dependent 1's size after append will mismatch with an earlier curve post-append.\n"
+    "Error validating dependents: Record bar1, Curve Set 1, Dependent 2 will mistmatch with earlier curves in its curve_set if appended to.\n"
     "Error validating independents: Record bar1, Curve Set 1, Independent 1's size after append will mismatch with an earlier curve post-append.\n"
     "Found a duplicate data entry, protocol 3 dictates append cancellation.\n"
     "Found duplicate UDC, protocol 3 dictates append cancellation.\n";
@@ -1000,7 +1000,7 @@ TEST(Document, test_append_to_hdf5_failures) {
   SCOPED_TRACE("Attempting Case 2");
   std::string f2_data = ([](std::string s) {
     auto j = nlohmann::json::parse(s);
-    j["records"][0]["curve_sets"]["1"]["dependent"]["1"]["value"] = {1, 1, 1};
+    j["records"][0]["curve_sets"]["1"]["dependent"]["2"]["value"] = {1, 1, 1};
     return j.dump();
   })(new_data);
 
@@ -1009,7 +1009,7 @@ TEST(Document, test_append_to_hdf5_failures) {
   result = append_to_hdf5(hdf5FilePath, new_doc, 1, 1);
   ASSERT_FALSE(result); 
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 1: Checking if File Was Changed");
+  ValidateHDF5RecordsUnchanged(root, "Case 2: Checking if File Was Changed");
 
   // ---- Failure 3 ----
   SCOPED_TRACE("Attempting Case 3");
@@ -1024,7 +1024,7 @@ TEST(Document, test_append_to_hdf5_failures) {
   result = append_to_hdf5(hdf5FilePath, new_doc, 1, 1);
   ASSERT_FALSE(result); 
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 1: Checking if File Was Changed");
+  ValidateHDF5RecordsUnchanged(root, "Case 3: Checking if File Was Changed");
 
   // ---- Failure 4 ----
   SCOPED_TRACE("Attempting Case 4");
@@ -1033,7 +1033,7 @@ TEST(Document, test_append_to_hdf5_failures) {
   result = append_to_hdf5(hdf5FilePath, new_doc, 3, 1);
   ASSERT_FALSE(result); 
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 1: Checking if File Was Changed");
+  ValidateHDF5RecordsUnchanged(root, "Case 4: Checking if File Was Changed");
 
   // ---- Failure 5 ----
   SCOPED_TRACE("Attempting Case 5");
@@ -1042,13 +1042,13 @@ TEST(Document, test_append_to_hdf5_failures) {
   result = append_to_hdf5(hdf5FilePath, new_doc, 1, 3);
   ASSERT_FALSE(result); 
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 1: Checking if File Was Changed");
+  ValidateHDF5RecordsUnchanged(root, "Case 5: Checking if File Was Changed");
 
   // ---- Assert Error Messages ----
   std::cerr.rdbuf(origBuffer);
   std::string expected =
   "Error validating dependents: records/0/curve_sets/1/dependent/0/value's size after append will mismatch with an earlier curve post-append.\n"
-  "Error validating dependents: records/0/curve_sets/1/dependent/0/value's size after append will mismatch with an earlier curve post-append.\n"
+  "Error validating dependents: records/0/curve_sets/1/dependent/0/value will mistmatch with earlier curves in its curve_set if appended to.\n"
   "Error validating independents: records/0/curve_sets/1/independent/1/value's size after append will mismatch with an earlier curve post-append.\n"
   "Found a duplicate data entry, protocol 3 dictates append cancellation.\n"
   "Found duplicate UDC, protocol 3 dictates append cancellation.\n";
