@@ -401,19 +401,21 @@ public:
   }
 
   /**
-   * \brief Triangulates the polygon, returning an array of triangles.
+   * \brief Triangulates the polygon, allocates and returns an array of triangles.
    *
-   * \param [out] tris the array of Triangles
+   * \param [out] tris newly-initialized Array of Triangles
+   * \param [in] eps The epsilon value
    *
-   * \pre This function is only valid when NDIMS = 2, tris is pre-allocated
-   *      to be (numVertices() - 2), and the polygon is simple.
+   * \pre This function is only valid when NDIMS = 2 and the polygon is simple.
    *
    * \note Implementation of ear-clipping algorithm based on:
    *       https://github.com/mlivesu/cinolib/blob/master/include/cinolib/earcut.cpp
+   *
+   * This routine initializes an Array, \a tris.
    */
   template <int TDIM = NDIMS>
   typename std::enable_if<TDIM == 2, void>::type triangulate(
-    axom::ArrayView<Triangle<T, TDIM>>& tris,
+    axom::Array<Triangle<T, TDIM>>& tris,
     double eps = 1e-8) const
   {
     using Segment2D = axom::primal::Segment<T, 2>;
@@ -421,10 +423,8 @@ public:
     const int size = numVertices();
 
     SLIC_ASSERT(isValid());
-    SLIC_ASSERT_MSG(tris.size() == (size - 2),
-                    "triangulate() expects size of "
-                      << (size - 2) << " for triangles, but found size of "
-                      << tris.size());
+
+    tris = axom::Array<Triangle<T, TDIM>>(size - 2, size - 2);
 
     // triangle to initialize
     int triIndex = 0;

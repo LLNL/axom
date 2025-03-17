@@ -17,6 +17,20 @@ namespace
 constexpr double EPS = 1e-8;
 }
 
+// Helper function to generate a regular n-sided 2D polygon centered around origin
+axom::primal::Polygon<double, 2> generateNSidedPolygon2D(int nSides)
+{
+  axom::primal::Polygon<double, 2> polygon(nSides);
+
+  for(int i = 0; i < nSides; ++i)
+  {
+    const double angle = 2. * M_PI * i / nSides;
+    polygon.addVertex(axom::primal::Point<double, 2> {cos(angle), sin(angle)});
+  }
+
+  return polygon;
+};
+
 //------------------------------------------------------------------------------
 TEST(primal_polygon, empty)
 {
@@ -397,19 +411,6 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
 
   using TransformMatrix = axom::numerics::Matrix<double>;
 
-  // lambda to generate a regular n-sided 2D polygon centered around origin
-  auto generateNSidedPolygon = [](int nSides) {
-    Polygon2D polygon(nSides);
-
-    for(int i = 0; i < nSides; ++i)
-    {
-      const double angle = 2. * M_PI * i / nSides;
-      polygon.addVertex(Point2D {cos(angle), sin(angle)});
-    }
-
-    return polygon;
-  };
-
   // lambda to generate an affine transformation matrix for 2D points
   auto generateTransformMatrix2D =
     [](const Point2D& scale, const Point2D& translate, double rotation_angle) {
@@ -546,7 +547,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
 
   for(int nSides = 3; nSides < 10; ++nSides)
   {
-    Polygon2D polygon2d = generateNSidedPolygon(nSides);
+    Polygon2D polygon2d = generateNSidedPolygon2D(nSides);
     const double unscaled_area = nSides / 2. * sin(2 * M_PI / nSides);
     EXPECT_DOUBLE_EQ(unscaled_area, polygon2d.area());
 
@@ -906,20 +907,17 @@ TEST(primal_polygon, triangulate)
   using Triangle2D = axom::primal::Triangle<double, 2>;
 
   auto testTriangulation = [](const Polygon2D& poly) {
-    axom::Array<Triangle2D> tris((poly.numVertices() - 2),
-                                 (poly.numVertices() - 2));
-    auto tris_view = tris.view();
+    axom::Array<Triangle2D> tris;
 
-    poly.triangulate(tris_view, EPS);
+    poly.triangulate(tris, 1e-12);
+
+    EXPECT_EQ(poly.numVertices() - 2, tris.size());
 
     double tri_area_sum = 0.0;
-    SLIC_INFO("Polygon coordinates are: " << poly);
-    SLIC_INFO("tris is size of " << tris.size());
     for(int i = 0; i < tris.size(); i++)
     {
-      EXPECT_FALSE(tris[i].degenerate(EPS));
+      EXPECT_FALSE(tris[i].degenerate(1e-12));
       tri_area_sum += tris[i].signedArea();
-      SLIC_INFO("Triangle " << i << " is " << tris[i]);
     }
 
     EXPECT_NEAR(poly.signedArea(), tri_area_sum, EPS);
@@ -964,6 +962,12 @@ TEST(primal_polygon, triangulate)
                        Point2D({0, 0}),
                        Point2D({2, 0})});
   testTriangulation(horseshoe);
+
+  // Circle approximation
+  Polygon2D sampled_circle = generateNSidedPolygon2D(1000);
+  EXPECT_NEAR(sampled_circle.signedArea(), M_PI, 1e-4);
+
+  testTriangulation(sampled_circle);
 }
 
 //------------------------------------------------------------------------------
