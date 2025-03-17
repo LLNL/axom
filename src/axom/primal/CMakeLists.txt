@@ -26,6 +26,7 @@ set( primal_headers
     geometry/CurvedPolygon.hpp
     geometry/Hexahedron.hpp
     geometry/KnotVector.hpp
+    geometry/Line.hpp
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
     geometry/NURBSCurve.hpp
@@ -65,9 +66,11 @@ set( primal_headers
     operators/detail/fuzzy_comparators.hpp
     operators/detail/intersect_bezier_impl.hpp
     operators/detail/intersect_bounding_box_impl.hpp
+    operators/detail/intersect_patch_impl.hpp
     operators/detail/intersect_impl.hpp
     operators/detail/intersect_ray_impl.hpp
-    operators/detail/winding_number_impl.hpp
+    operators/detail/winding_number_2d_impl.hpp
+    operators/detail/winding_number_3d_impl.hpp
      
     ## utils
     utils/ZipIndexable.hpp

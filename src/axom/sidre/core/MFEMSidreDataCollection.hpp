@@ -472,6 +472,12 @@ public:
    */
   virtual void Load(int cycle_ = 0)
   {
+  #ifndef AXOM_USE_HDF5
+    SLIC_ERROR(
+      "MFEMSidreDataCollection::Load(<cycle>) is only implemented for the "
+      "'sidre_hdf5' protocol");
+  #endif
+
     SetCycle(cycle_);
     Load(get_file_path(name), "sidre_hdf5");
   }

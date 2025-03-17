@@ -24,7 +24,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   MIR algorithms take Blueprint meshes with a matset and they use the matset's material information
   to split any input zones that contain multiple materials into zones that contain a single material.
   The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
-  oriented algorithm that produces smooth interfaces between zones and their neighbors.
+  oriented algorithm that produces smooth interfaces between zones and their neighbors. The Mir
+  component also provides a 2D ELVIRA algorithm, which reconstructs polygonal shapes and preserves
+  volume fractions.
 - Support in `quest::IntersectionShaper` for Blueprint mesh stored in a `conduit::Node`
   or `sidre::Group`.
 - Adds new CMake configuration options, `AXOM_ENABLE_ASAN` and `AXOM_ENABLE_UBSAN`, to enable/disable AddressSanitizer and UndefinedBehaviorSanitizer respectively in Axom. Default is OFF for both.
@@ -40,6 +42,9 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
 - Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
   of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
+- Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
+- Adds LineFileTagCombiner to Lumberjack to allow combining messages if line number, file, and tag are equal.
+- Adds some support for 2D shaping in `quest::IntersectionShaper`, using STL meshes with zero for z-coordinates or in-memory triangles as input.
 
 ###  Changed
 - `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.
@@ -63,8 +68,9 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 
 ###  Fixed
 - Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
-This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
-as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+  This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
+  as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+- Minor bugfix to `primal::intersect(segment, ray)` to better handle cases when segment and ray overlap.
 - Fixes a memory leak in `axom::Array` copy constructor.
 - Fixes robustness issue with the `axom::primal::clip` overload for clipping a 2D polygon against another 2D polygon.
 
