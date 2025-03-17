@@ -344,7 +344,7 @@ public:
    *        material onto the target mesh.
    *
    * \param n_srcMesh The Conduit node that contains the coordset, topology, matset for the source mesh.
-   * \param n_options A Conduit node that contains the algorithm options.
+   * \param n_options A Conduit node that contains the algorithm options. A copy will be made in the appropriate memory space.
    * \param n_targetMesh The node that contains the coordset and topology for the source mesh.
    *
    * \verbatim
@@ -366,7 +366,7 @@ public:
    */
   void execute(const conduit::Node &n_srcMesh,
                const conduit::Node &n_options,
-               conduit::Node &n_targetMesh)
+               conduit::Node &n_targetMesh) const
   {
     AXOM_ANNOTATE_SCOPE("TopologyMapper::execute");
     namespace bputils = axom::mir::utilities::blueprint;
@@ -385,23 +385,28 @@ public:
     const char *TARGET_MATSET_NAME = "target/matsetName";
     const char *TARGET_SELECTED_ZONES = "target/selectedZones";
 
+    // Make sure options are in the right memory space in case we are given lists of
+    // selected zone ids.
+    conduit::Node n_options_copy;
+    bputils::copy<ExecSpace>(n_options_copy, n_options);
+
     // Ensure required options exist.
     const char *required[] = {SRC_MATSET_NAME,
                               TARGET_TOPOLOGY_NAME,
                               TARGET_MATSET_NAME};
     for(const auto &key : required)
     {
-      if(!n_options.has_path(key))
+      if(!n_options_copy.has_path(key))
       {
         SLIC_ERROR(axom::fmt::format("Key \"{}\" missing from options.", key));
         return;
       }
     }
-    const std::string srcMatsetName = n_options[SRC_MATSET_NAME].as_string();
+    const std::string srcMatsetName = n_options_copy[SRC_MATSET_NAME].as_string();
     const std::string targetTopologyName =
-      n_options[TARGET_TOPOLOGY_NAME].as_string();
+      n_options_copy[TARGET_TOPOLOGY_NAME].as_string();
     const std::string targetMatsetName =
-      n_options[TARGET_MATSET_NAME].as_string();
+      n_options_copy[TARGET_MATSET_NAME].as_string();
 
     // Look at the source mesh's matset. Count the number of materials.
     const conduit::Node &n_matset =
@@ -430,7 +435,7 @@ public:
     AXOM_ANNOTATE_BEGIN("bbox");
     const auto srcView = m_srcView;
     SelectedZones<ExecSpace> srcSelection(srcView.numberOfZones(),
-                                          n_options,
+                                          n_options_copy,
                                           SRC_SELECTED_ZONES);
     srcSelection.setSorted(false);
     const auto srcSelectionView = srcSelection.view();
@@ -455,7 +460,7 @@ public:
     const auto targetView = m_targetView;
     const auto nTargetZones = targetView.numberOfZones();
     SelectedZones<ExecSpace> targetSelection(nTargetZones,
-                                             n_options,
+                                             n_options_copy,
                                              TARGET_SELECTED_ZONES);
     targetSelection.setSorted(false);
     const auto targetSelectionView = targetSelection.view();
@@ -670,8 +675,8 @@ public:
 
     // The volume_fractions and material_ids arrays contain gaps that we can compress out.
     conduit::Node n_new_volume_fractions, n_new_material_ids;
-    n_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
-    n_material_ids.set_allocator(c2a.getConduitAllocatorID());
+    n_new_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
+    n_new_material_ids.set_allocator(c2a.getConduitAllocatorID());
     n_new_volume_fractions.set(
       conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, totalSize));
     n_new_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id,
@@ -686,7 +691,6 @@ public:
         {
           const auto destIndex = destOffset + m;
           const auto srcIndex = index * numMaterialSlots + m;
-
           new_volume_fractions[destIndex] = volume_fractions[srcIndex];
           new_material_ids[destIndex] = material_ids[srcIndex];
           indices[destIndex] = destIndex;
