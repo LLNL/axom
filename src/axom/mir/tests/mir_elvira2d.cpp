@@ -133,26 +133,30 @@ TEST(mir_elvira, elvira_uniform_unibuffer_sel_seq)
                                    selectZones);
 }
 
-//#if defined(AXOM_USE_OPENMP)
-//TEST(mir_elvira, elvira_uniform_unibuffer_omp)
-//{
-//  AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_omp");
-//  braid2d_mat_test<omp_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer");
-//}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_elvira, elvira_uniform_unibuffer_omp)
+{
+  AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_omp");
+  braid2d_mat_test<omp_exec>::test("uniform",
+                                   "unibuffer",
+                                   "elvira_uniform_unibuffer");
+}
 
-//TEST(mir_elvira, elvira_uniform_unibuffer_sel_omp)
-//{
-//  AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_omp");
-//  constexpr bool selectZones = true;
-//  braid2d_mat_test<omp_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer_sel", selectZones);
-//}
-//#endif
+TEST(mir_elvira, elvira_uniform_unibuffer_sel_omp)
+{
+  AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_omp");
+  constexpr bool selectZones = true;
+  braid2d_mat_test<omp_exec>::test("uniform",
+                                   "unibuffer",
+                                   "elvira_uniform_unibuffer_sel",
+                                   selectZones);
+}
+#endif
 
 #if defined(AXOM_USE_CUDA)
 TEST(mir_elvira, elvira_uniform_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_cuda");
-  constexpr bool selectZones = true;
   braid2d_mat_test<cuda_exec>::test("uniform",
                                     "unibuffer",
                                     "elvira_uniform_unibuffer");
