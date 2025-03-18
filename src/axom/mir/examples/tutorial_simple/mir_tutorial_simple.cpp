@@ -105,7 +105,7 @@ struct Input
     }
     catch(const axom::CLI::CallForHelp &e)
     {
-      std::cout << app.help() << std::endl;
+      std::cout << m_app.help() << std::endl;
     }
 
     return 0;
