@@ -549,23 +549,27 @@ private:
 //------------------------------------------------------------------------------
 TEST(mir_topology_mapper, TopologyMapper_2D_seq)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_2D_seq");
   test_TopologyMapper<seq_exec>::test2D();
 }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_topology_mapper, TopologyMapper_2D_omp)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_2D_omp");
   test_TopologyMapper<omp_exec>::test2D();
 }
 #endif
 #if defined(AXOM_USE_CUDA)
 TEST(mir_topology_mapper, TopologyMapper_2D_cuda)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_2D_cuda");
   test_TopologyMapper<cuda_exec>::test2D();
 }
 #endif
 #if defined(AXOM_USE_HIP)
 TEST(mir_topology_mapper, TopologyMapper_2D_hip)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_2D_hip");
   test_TopologyMapper<hip_exec>::test2D();
 }
 #endif
@@ -573,23 +577,27 @@ TEST(mir_topology_mapper, TopologyMapper_2D_hip)
 //------------------------------------------------------------------------------
 TEST(mir_topology_mapper, TopologyMapper_3D_seq)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_3D_seq");
   test_TopologyMapper<seq_exec>::test3D();
 }
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_topology_mapper, TopologyMapper_3D_omp)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_3D_omp");
   test_TopologyMapper<omp_exec>::test3D();
 }
 #endif
 #if defined(AXOM_USE_CUDA)
 TEST(mir_topology_mapper, TopologyMapper_3D_cuda)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_3D_cuda");
   test_TopologyMapper<cuda_exec>::test3D();
 }
 #endif
 #if defined(AXOM_USE_HIP)
 TEST(mir_topology_mapper, TopologyMapper_3D_hip)
 {
+  AXOM_ANNOTATE_SCOPE("TopologyMapper_3D_hip");
   test_TopologyMapper<hip_exec>::test3D();
 }
 #endif

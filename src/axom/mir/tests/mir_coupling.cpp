@@ -560,8 +560,8 @@ int main(int argc, char *argv[])
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
-#if defined(AXOM_USE_CALIPER)
   axom::CLI::App app;
+#if defined(AXOM_USE_CALIPER)
   std::string annotationMode("none");
   app.add_option("--caliper", annotationMode)
     ->description(

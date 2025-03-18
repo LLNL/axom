@@ -103,6 +103,10 @@ struct Input
     {
       return m_app.exit(e);
     }
+    catch(const axom::CLI::CallForHelp &e)
+    {
+      std::cout << app.help() << std::endl;
+    }
 
     return 0;
   }
