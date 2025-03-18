@@ -21,8 +21,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ###  Added
 - New `axom::MALLOC_ALLOCATOR_ID` is for using malloc and free.
-  This id uses malloc/free on the host, and works even when Axom is
-  configured with Umpire.  Non-Umpire allocator ids are negative.
 - Added a new "Mir" Axom component for accelerated Material Interface Reconstruction (MIR) algorithms.
   MIR algorithms take Blueprint meshes with a matset and they use the matset's material information
   to split any input zones that contain multiple materials into zones that contain a single material.
@@ -46,8 +44,9 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
 
 ###  Changed
-- The default allocator id zero in `memoryh_management.hpp` is now in the
-  `axom::DYNAMIC_ALLOCATOR_ID` and has a different value.
+- The default allocator id zero in `memory_management.hpp` is now in the
+  `axom::DYNAMIC_ALLOCATOR_ID` and has a different value to avoid clashing
+  with Umpire.
 - `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.
 - `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
   Changing the policy after construction is no longer supported.
