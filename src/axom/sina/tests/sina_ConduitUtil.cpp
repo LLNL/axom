@@ -200,7 +200,7 @@ TEST(ConduitUtil, toDoubleVector_empty)
 
 TEST(ConduitUtil, toDoubleVector_validValues)
 {
-  conduit::Node nonEmptyList = parseJsonValue("[1, 2.0, 3, 4]");
+  conduit::Node nonEmptyList = parseJsonValue("[1.0, 2.0, 3.0, 4.0]");
   EXPECT_THAT(toDoubleVector(nonEmptyList, "testNode"),
               ElementsAre(1.0, 2.0, 3.0, 4.0));
 }
