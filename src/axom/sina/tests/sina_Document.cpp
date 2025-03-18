@@ -393,11 +393,11 @@ TEST(Document, saveDocument_json)
   document.add(
     std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
-  saveDocument(document, tmpFile.getName());
+  saveDocument(document, tmpFile.getName() + ".json");
 
   conduit::Node readContents;
   {
-    std::ifstream fin {tmpFile.getName()};
+    std::ifstream fin {tmpFile.getName() + ".json"};
     std::stringstream f_buf;
     f_buf << fin.rdbuf();
     readContents.parse(f_buf.str(), "json");
@@ -522,10 +522,10 @@ TEST(Document, saveDocument_hdf5)
   document.add(
     std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
-  saveDocument(document, tmpFile.getName(), Protocol::HDF5);
+  saveDocument(document, tmpFile.getName() + ".hdf5", Protocol::HDF5);
 
   conduit::Node readContents;
-  conduit::relay::io::load(tmpFile.getName(), "hdf5", readContents);
+  conduit::relay::io::load(tmpFile.getName() + ".hdf5", "hdf5", readContents);
 
   ASSERT_TRUE(readContents[EXPECTED_RECORDS_KEY].dtype().is_list());
   EXPECT_EQ(1, readContents[EXPECTED_RECORDS_KEY].number_of_children());
