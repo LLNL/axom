@@ -3,13 +3,13 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "gtest/gtest.h"
-
-#include <vector>
-
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/sidre.hpp"
+
+#include "gtest/gtest.h"
+
+#include <vector>
 
 using axom::sidre::DataStore;
 using axom::sidre::DOUBLE_ID;
@@ -292,6 +292,12 @@ TEST(sidre_external, verify_external_layout)
 //------------------------------------------------------------------------------
 TEST(sidre_external, save_load_external_view)
 {
+#ifndef AXOM_USE_HDF5
+  SUCCEED() << "sidre::Group::loadExternalData() is only implemented "
+               "for the 'sidre_hdf5' protocol";
+  return;
+#endif
+
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 

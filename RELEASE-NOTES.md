@@ -42,6 +42,9 @@ to use Open Cascade's file I/O capabilities in support of Quest applications.
 - Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
   of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
 - Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
+- Adds LineFileTagCombiner to Lumberjack to allow combining messages if line number, file, and tag are equal.
+- Adds some support for 2D shaping in `quest::IntersectionShaper`, using STL meshes with zero for z-coordinates or in-memory triangles as input.
+- Adds `NonCollectiveRootCommunicator` to Lumberjack to provide an MPI-based communicator for logging messages non-collectively.
 
 ###  Changed
 - `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.

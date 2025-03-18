@@ -25,8 +25,11 @@
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
 #include "axom/primal/operators/squared_distance.hpp"
+#include "axom/primal/operators/detail/winding_number_2d_impl.hpp"
 
 #include <ostream>
+#include <math.h>
+
 #include "axom/fmt.hpp"
 
 namespace axom
@@ -56,6 +59,9 @@ std::ostream& operator<<(std::ostream& os, const NURBSPatch<T, NDIMS>& nPatch);
  *   and continuous (unless p = 0 or q = 0)
  * 
  * Nonrational NURBS patches are identified by an empty weights array.
+ * 
+ * Untrimmed NURBS patches are identified by an internal flag, but a nonempty
+ *  trimming curve vector should be marked as trimmed.
  */
 template <typename T, int NDIMS>
 class NURBSPatch
@@ -75,6 +81,10 @@ public:
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
   using NURBSCurveType = primal::NURBSCurve<T, NDIMS>;
 
+  using TrimmingCurveType = primal::NURBSCurve<T, 2>;
+  using TrimmingCurveVec = axom::Array<TrimmingCurveType>;
+  using ParameterPointType = Point<T, 2>;
+
   AXOM_STATIC_ASSERT_MSG(
     (NDIMS == 1) || (NDIMS == 2) || (NDIMS == 3),
     "A NURBS Patch object may be defined in 1-, 2-, or 3-D");
@@ -92,11 +102,11 @@ public:
   NURBSPatch()
   {
     m_controlPoints.resize(0, 0);
-    m_weights.resize(0, 0);
     m_knotvec_u = KnotVectorType();
     m_knotvec_v = KnotVectorType();
 
     makeNonrational();
+    makeUntrimmed();
   }
 
   /*!
@@ -118,6 +128,7 @@ public:
     m_knotvec_v = KnotVectorType(deg_v + 1, deg_v);
 
     makeNonrational();
+    makeUntrimmed();
   }
 
   /*!
@@ -140,6 +151,7 @@ public:
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
 
     makeNonrational();
+    makeUntrimmed();
   }
 
   /*!
@@ -157,6 +169,8 @@ public:
 
     m_knotvec_u = KnotVectorType(deg_u + 1, deg_u);
     m_knotvec_v = KnotVectorType(deg_v + 1, deg_v);
+
+    makeUntrimmed();
   }
 
   /*!
@@ -187,6 +201,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
@@ -237,6 +252,8 @@ public:
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -267,6 +284,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
@@ -315,6 +333,8 @@ public:
     m_knotvec_u = KnotVectorType(npts_u, deg_u);
     m_knotvec_v = KnotVectorType(npts_v, deg_v);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -336,6 +356,7 @@ public:
     SLIC_ASSERT(deg_u >= 0 && deg_v >= 0);
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(pts_shape[0], deg_u);
     m_knotvec_v = KnotVectorType(pts_shape[1], deg_v);
@@ -366,6 +387,8 @@ public:
 
     m_knotvec_u = KnotVectorType(pts_shape[0], deg_u);
     m_knotvec_v = KnotVectorType(pts_shape[1], deg_v);
+
+    makeUntrimmed();
 
     SLIC_ASSERT(isValidNURBS());
   }
@@ -405,6 +428,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(knots_u, nkts_u, nkts_u - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, nkts_v, nkts_v - npts_v - 1);
@@ -458,6 +482,8 @@ public:
     m_knotvec_u = KnotVectorType(knots_u, nkts_u, nkts_u - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, nkts_v, nkts_v - npts_v - 1);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -490,6 +516,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - npts_v - 1);
@@ -536,6 +563,8 @@ public:
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - npts_u - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - npts_v - 1);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -570,6 +599,7 @@ public:
     }
 
     makeNonrational();
+    makeUntrimmed();
 
     SLIC_ASSERT(isValidNURBS());
   }
@@ -612,6 +642,8 @@ public:
       m_weights.flatIndex(t) = weights[t];
     }
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -637,6 +669,7 @@ public:
     SLIC_ASSERT(pts_shape[0] >= 0 && pts_shape[1] >= 0);
 
     makeNonrational();
+    makeUntrimmed();
 
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - pts_shape[0] - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - pts_shape[1] - 1);
@@ -671,6 +704,8 @@ public:
     m_knotvec_u = KnotVectorType(knots_u, knots_u.size() - pts_shape[0] - 1);
     m_knotvec_v = KnotVectorType(knots_v, knots_v.size() - pts_shape[1] - 1);
 
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -694,6 +729,8 @@ public:
     , m_knotvec_v(knotvec_v)
   {
     makeNonrational();
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
@@ -719,11 +756,13 @@ public:
     , m_knotvec_u(knotvec_u)
     , m_knotvec_v(knotvec_v)
   {
+    makeUntrimmed();
+
     SLIC_ASSERT(isValidNURBS());
   }
 
   /*!
-   * \brief Evaluate a NURBS surface at a particular parameter value \a t
+   * \brief Evaluate the untrimmed NURBS surface at a particular parameter value \a t
    *
    * \param [in] u The parameter value on the first axis
    * \param [in] v The parameter value on the second axis
@@ -1075,11 +1114,130 @@ public:
     }
   }
 
-  /// Make nonrational by shrinking array of weights
+  /// \brief Make nonrational by shrinking array of weights
   void makeNonrational() { m_weights.clear(); }
 
-  /// Use array size as flag for rationality
+  /// \brief Use array size as flag for rationality
   bool isRational() const { return !m_weights.empty(); }
+
+  /// \brief Get array of trimming curvse
+  const TrimmingCurveVec& getTrimmingCurves() const { return m_trimmingCurves; }
+
+  /// \brief Get mutable array of trimming curves
+  TrimmingCurveVec& getTrimmingCurves() { return m_trimmingCurves; }
+
+  /// \brief Get a trimming curve by index
+  const TrimmingCurveType& getTrimmingCurve(int idx) const
+  {
+    SLIC_ASSERT(idx >= 0 && idx < m_trimmingCurves.size());
+    return m_trimmingCurves[idx];
+  }
+
+  /// \brief Add a trimming curve
+  void addTrimmingCurve(const TrimmingCurveType& curve)
+  {
+    m_isTrimmed = true;
+    m_trimmingCurves.push_back(curve);
+  }
+
+  /// \brief Add array of trimming curves
+  void addTrimmingCurves(const TrimmingCurveVec& curves)
+  {
+    m_isTrimmed = true;
+    m_trimmingCurves.insert(m_trimmingCurves.end(), curves.begin(), curves.end());
+  }
+
+  /// \brief Clear trimming curves, but DON'T mark as untrimmed
+  void clearTrimmingCurves() { m_trimmingCurves.clear(); }
+
+  /// \brief Get number of trimming curves
+  int getNumTrimmingCurves() const { return m_trimmingCurves.size(); }
+
+  /// \brief use array size as flag for trimmed-ness
+  bool isTrimmed() const { return m_isTrimmed; }
+
+  /// \brief Mark as trimmed
+  void markAsTrimmed() { m_isTrimmed = true; }
+
+  /// \brief Delete all trimming curves
+  void makeUntrimmed()
+  {
+    m_isTrimmed = false;
+    m_trimmingCurves.clear();
+  }
+
+  /// \brief Make trivially trimmed by adding trimming curves at each boundary
+  void makeTriviallyTrimmed()
+  {
+    if(isTrimmed())
+    {
+      m_trimmingCurves.clear();
+    }
+
+    const double min_u = m_knotvec_u[0];
+    const double max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    const double min_v = m_knotvec_v[0];
+    const double max_v = m_knotvec_v[m_knotvec_v.getNumKnots() - 1];
+
+    // For each min/max u/v, add a straight trimming curve along the boundary
+    TrimmingCurveType curve;
+    constexpr int num_points = 2;
+    constexpr int degree = 1;
+    curve.setParameters(num_points, degree);
+
+    // Top
+    curve[0] = ParameterPointType({max_u, max_v});
+    curve[1] = ParameterPointType({min_u, max_v});
+    addTrimmingCurve(curve);
+
+    // Right
+    curve[0] = ParameterPointType({max_u, min_v});
+    curve[1] = ParameterPointType({max_u, max_v});
+    addTrimmingCurve(curve);
+
+    // Bottom
+    curve[0] = ParameterPointType({min_u, min_v});
+    curve[1] = ParameterPointType({max_u, min_v});
+    addTrimmingCurve(curve);
+
+    // Left
+    curve[0] = ParameterPointType({min_u, max_v});
+    curve[1] = ParameterPointType({min_u, min_v});
+    addTrimmingCurve(curve);
+
+    m_isTrimmed = true;
+  }
+
+  /*!
+   * \brief Check if a parameter point is visible on the NURBS patch
+   *
+   * \param [in] uv The parameter point to check
+   * 
+   * Checks for containment of the parameter point in 
+   *  the collection of trimming curves via an even-odd rule.
+   * 
+   * If the collection of trimming curves does not form closed loops, 
+   *  then the (now fractional) generalized winding number is rounded to the
+   *  nearest integer before the even-odd rule is applied.
+   */
+  bool isVisible(T u, T v) const
+  {
+    if(!isTrimmed())
+    {
+      return (m_knotvec_u.isValidParameter(u) && m_knotvec_v.isValidParameter(v));
+    }
+
+    ParameterPointType uv = {u, v};
+
+    double gwn = 0.0;
+    for(const auto& curve : m_trimmingCurves)
+    {
+      gwn += detail::nurbs_winding_number(uv, curve);
+    }
+
+    return std::lround(gwn) % 2 != 0;
+  }
 
   /// Clears the list of control points, make nonrational
   void clear()
@@ -1087,7 +1245,9 @@ public:
     m_controlPoints.clear();
     m_knotvec_u.clear();
     m_knotvec_v.clear();
+    m_trimmingCurves.clear();
     makeNonrational();
+    makeUntrimmed();
   }
 
   /// Retrieves the control point at index \a (idx_p, idx_q)
@@ -1142,7 +1302,9 @@ public:
   {
     return (lhs.m_controlPoints == rhs.m_controlPoints) &&
       (lhs.m_weights == rhs.m_weights) && (lhs.m_knotvec_u == rhs.m_knotvec_u) &&
-      (lhs.m_knotvec_v == rhs.m_knotvec_v);
+      (lhs.m_knotvec_v == rhs.m_knotvec_v) &&
+      (lhs.m_isTrimmed == rhs.m_isTrimmed) &&
+      (lhs.m_trimmingCurves == rhs.m_trimmingCurves);
   }
 
   /*!
@@ -1168,6 +1330,9 @@ public:
   /*!
    * \brief Reverses the order of one direction of the NURBS patch's control points and weights
    *
+   * This method does not affect the position of the patch in space, or its 
+   *  trimming curves, but it does reverse the patch's normal vectors. 
+   * 
    * \param [in] axis orientation of patch. 0 to reverse in u, 1 for reverse in v
    */
   void reverseOrientation(int axis)
@@ -1207,6 +1372,18 @@ public:
     }
 
     m_knotvec_u.reverse();
+
+    // Mirror the trimming curves on the u-axis
+    auto min_u = m_knotvec_u[0];
+    auto max_u = m_knotvec_u[m_knotvec_u.getNumKnots() - 1];
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = min_u + max_u - curve[i][0];
+      }
+    }
   }
 
   /// \brief Reverses the order of the control points, weights, and knots on the second axis
@@ -1234,9 +1411,26 @@ public:
     }
 
     m_knotvec_v.reverse();
+
+    // Mirror the trimming curves on the v-axis
+    auto min_v = m_knotvec_v[0];
+    auto max_v = m_knotvec_v[m_knotvec_v.getNumKnots() - 1];
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][1] = min_v + max_v - curve[i][1];
+      }
+    }
   }
 
-  /// \brief Swap the axes such that s(u, v) becomes s(v, u)
+  /*!
+   * \brief Swap the axes such that s(u, v) becomes s(v, u)
+   *
+   * This method does not affect the position of the patch in space,
+   *  or its trimming curves.
+   */
   void swapAxes()
   {
     auto patch_shape = m_controlPoints.shape();
@@ -1268,7 +1462,15 @@ public:
       m_weights = new_weights;
     }
 
-    std::swap(m_knotvec_u, m_knotvec_v);
+    axom::utilities::swap(m_knotvec_u, m_knotvec_v);
+
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int j = 0; j < curve.getNumControlPoints(); ++j)
+      {
+        axom::utilities::swap(curve[j][0], curve[j][1]);
+      }
+    }
   }
 
   /// \brief Returns an axis-aligned bounding box containing the patch
@@ -1441,7 +1643,7 @@ public:
   }
 
   /*!
-   * \brief Evaluate the surface and the first \a d derivatives at parameter \a u, \a v
+   * \brief Evaluate the untrimmed surface and the first \a d derivatives at parameter \a u, \a v
    *
    * \param [in] u The parameter value on the first axis
    * \param [in] v The parameter value on the second axis
@@ -1471,10 +1673,10 @@ public:
                                   m_knotvec_v[m_knotvec_v.getNumKnots() - 1]);
 
     const int deg_u = getDegree_u();
-    const int du = std::min(d, deg_u);
+    const int du = axom::utilities::min(d, deg_u);
 
     const int deg_v = getDegree_v();
-    const int dv = std::min(d, deg_v);
+    const int dv = axom::utilities::min(d, deg_v);
 
     // Matrix for derivatives
     ders.resize(d + 1, d + 1);
@@ -1518,7 +1720,7 @@ public:
         }
       }
 
-      int dd = std::min(d - k, dv);
+      int dd = axom::utilities::min(d - k, dv);
       for(int l = 0; l <= dd; ++l)
       {
         for(int s = 0; s <= deg_v; ++s)
@@ -1580,7 +1782,7 @@ public:
   }
 
   /*!
-   * \brief Evaluates all first derivatives of the NURBS patch at (\a u, \a v)
+   * \brief Evaluates all first derivatives of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1599,13 +1801,13 @@ public:
     axom::Array<VectorType, 2> ders;
     evaluateDerivatives(u, v, 1, ders);
 
-    eval = PointType(ders[0][0]);
+    eval = PointType(ders[0][0].array());
     Du = ders[1][0];
     Dv = ders[0][1];
   }
 
   /*!
-   * \brief Evaluates all linear derivatives of the NURBS patch at (\a u, \a v)
+   * \brief Evaluates all linear derivatives of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1635,7 +1837,7 @@ public:
   }
 
   /*!
-   * \brief Evaluates all second derivatives of the NURBS patch at (\a u, \a v)
+   * \brief Evaluates all second derivatives of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1671,7 +1873,7 @@ public:
   }
 
   /*!
-   * \brief Computes a tangent in u of the NURBS patch at (\a u, \a v)
+   * \brief Computes a tangent in u of the untrimmed patch at (\a u, \a v)
    *
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1707,7 +1909,7 @@ public:
   }
 
   /*!
-   * \brief Computes the second derivative in u of a NURBS patch at (\a u, \a v)
+   * \brief Computes the second derivative in u of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1725,7 +1927,7 @@ public:
   }
 
   /*!
-   * \brief Computes the second derivative in v of a NURBS patch at (\a u, \a v)
+   * \brief Computes the second derivative in v of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1743,7 +1945,7 @@ public:
   }
 
   /*!
-   * \brief Computes the mixed second derivative in u and v of a NURBS patch at (\a u, \a v)
+   * \brief Computes the mixed second derivative in u and v of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1761,7 +1963,7 @@ public:
   }
 
   /*!
-   * \brief Computes the mixed second derivative in u and v of a NURBS patch at (\a u, \a v)
+   * \brief Computes the mixed second derivative in u and v of the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1773,7 +1975,7 @@ public:
   VectorType dvdu(T u, T v) const { return dudv(u, v); }
 
   /*!
-   * \brief Computes the normal vector to the NURBS patch at (\a u, \a v)
+   * \brief Computes the normal vector to the untrimmed patch at (\a u, \a v)
    * 
    * \param [in] u Parameter value at which to evaluate on the first axis
    * \param [in] v Parameter value at which to evaluate on the second axis
@@ -1830,7 +2032,7 @@ public:
     const auto k = m_knotvec_u.findSpan(u, s);
 
     // Find how many knots we need to insert
-    int r = std::min(target_multiplicity - s, p - s);
+    int r = axom::utilities::min(target_multiplicity - s, p - s);
     if(r <= 0)
     {
       return k;
@@ -1997,7 +2199,7 @@ public:
     const auto k = m_knotvec_v.findSpan(v, s);
 
     // Find how many knots we need to insert
-    int r = std::min(target_multiplicity - s, q - s);
+    int r = axom::utilities::min(target_multiplicity - s, q - s);
     if(r <= 0)
     {
       return k;
@@ -2125,7 +2327,7 @@ public:
   }
 
   /*!
-    * \brief Splits a NURBS patch into four NURBS patches
+    * \brief Splits an untrimmed NURBS patch into four NURBS patches
     *
     * \param [in] u parameter value at which to bisect on the first axis
     * \param [in] v parameter value at which to bisect on the second axis
@@ -2146,6 +2348,7 @@ public:
     *   ---------------------- u = 1
     *
     * \pre Parameter \a u and \a v must be *strictly interior* to the knot span
+    * \pre The patch must be untrimmed
     */
   void split(T u,
              T v,
@@ -2156,6 +2359,8 @@ public:
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
+    SLIC_ASSERT_MSG(!isTrimmed(),
+                    "Splitting a trimmed patch is not yet supported");
 
     // Bisect the patch along the u direction
     split_u(u, p1, p2);
@@ -2169,11 +2374,15 @@ public:
   }
 
   /*!
-   * \brief Split the NURBS patch in two along the u direction
+   * \brief Split the untrimmed NURBS patch in two along the u direction
+   *
+   * \pre The patch must be untrimmed
    */
   void split_u(T u, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_u.isValidInteriorParameter(u));
+    SLIC_ASSERT_MSG(!isTrimmed(),
+                    "Splitting a trimmed patch is not yet supported");
 
     const bool isRationalPatch = isRational();
 
@@ -2239,11 +2448,15 @@ public:
   }
 
   /*!
-   * \brief Split the NURBS patch in two along the v direction
+   * \brief Split the untrimmed NURBS patch in two along the v direction
+   *
+   * \pre The patch must be untrimmed
    */
   void split_v(T v, NURBSPatch& p1, NURBSPatch& p2, bool normalize = false) const
   {
     SLIC_ASSERT(m_knotvec_v.isValidInteriorParameter(v));
+    SLIC_ASSERT_MSG(!isTrimmed(),
+                    "Splitting a trimmed patch is not yet supported");
 
     const bool isRationalPatch = isRational();
 
@@ -2324,10 +2537,13 @@ public:
   }
 
   /*!
-   * \brief Splits a NURBS surface (at each internal knot) into several Bezier patches
-   *   
+   * \brief Splits the untrimmed NURBS surface (at each internal knot) into several Bezier patches
+   * 
    * If either degree_u or degree_v is zero, the resulting Bezier patches along 
    *  that axis will be disconnected and order 0
+   * 
+   * This method ignores any trimming curves in the patch, 
+   *  and returns all extracted patches of the untrimmed patch.
    * 
    * Algorithm A5.7 on p. 177 of "The NURBS Book"
    * 
@@ -2355,7 +2571,8 @@ public:
       }
     }
 
-    axom::Array<T> alphas(std::max(0, std::max(p - 1, q - 1)));
+    axom::Array<T> alphas(
+      axom::utilities::max(0, axom::utilities::max(p - 1, q - 1)));
 
     // Do Bezier extraction on the u-axis, which returns a collection of Bezier strips
     if(p == 0)
@@ -2631,13 +2848,24 @@ public:
   {
     m_knotvec_u.normalize();
     m_knotvec_v.normalize();
+
+    rescaleTrimmingCurves_u(0.0, 1.0);
+    rescaleTrimmingCurves_v(0.0, 1.0);
   }
 
   /// \brief Normalize the knot vector in u to the span [0, 1]
-  void normalize_u() { m_knotvec_u.normalize(); }
+  void normalize_u()
+  {
+    m_knotvec_u.normalize();
+    rescaleTrimmingCurves_u(0.0, 1.0);
+  }
 
   /// \brief Normalize the knot vector in v to the span [0, 1]
-  void normalize_v() { m_knotvec_v.normalize(); }
+  void normalize_v()
+  {
+    m_knotvec_v.normalize();
+    rescaleTrimmingCurves_v(0.0, 1.0);
+  }
 
   /*!
    * \brief Rescale both knot vectors to the span of [a, b]
@@ -2652,6 +2880,9 @@ public:
     SLIC_ASSERT(a < b);
     m_knotvec_u.rescale(a, b);
     m_knotvec_v.rescale(a, b);
+
+    rescaleTrimmingCurves_u(a, b);
+    rescaleTrimmingCurves_v(a, b);
   }
 
   /*!
@@ -2666,6 +2897,8 @@ public:
   {
     SLIC_ASSERT(a < b);
     m_knotvec_u.rescale(a, b);
+
+    rescaleTrimmingCurves_u(a, b);
   }
 
   /*!
@@ -2680,6 +2913,8 @@ public:
   {
     SLIC_ASSERT(a < b);
     m_knotvec_v.rescale(a, b);
+
+    rescaleTrimmingCurves_v(a, b);
   }
 
   /*!
@@ -2732,6 +2967,20 @@ public:
     for(int i = 0; i < nkts_v; ++i)
     {
       os << m_knotvec_v[i] << ((i < nkts_v - 1) ? "," : "]");
+    }
+
+    if(isTrimmed())
+    {
+      os << ", trimming curves [";
+      for(int i = 0; i < m_trimmingCurves.size(); ++i)
+      {
+        os << m_trimmingCurves[i];
+        if(i < m_trimmingCurves.size() - 1)
+        {
+          os << ", ";
+        }
+      }
+      os << "]";
     }
 
     return os;
@@ -2807,6 +3056,31 @@ private:
   CoordsMat m_controlPoints;
   WeightsMat m_weights;
   KnotVectorType m_knotvec_u, m_knotvec_v;
+
+  bool m_isTrimmed;
+  TrimmingCurveVec m_trimmingCurves;
+
+  void rescaleTrimmingCurves_u(T a, T b)
+  {
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][0] = a + (b - a) * curve[i][0];
+      }
+    }
+  }
+
+  void rescaleTrimmingCurves_v(T a, T b)
+  {
+    for(auto& curve : m_trimmingCurves)
+    {
+      for(int i = 0; i < curve.getNumControlPoints(); ++i)
+      {
+        curve[i][1] = a + (b - a) * curve[i][1];
+      }
+    }
+  }
 };
 
 //------------------------------------------------------------------------------
