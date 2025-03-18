@@ -135,10 +135,8 @@ inline int getAllocatorIDFromPointer(const void* ptr)
     return allocator.getId();
   }
 #endif
-  // TODO: How to distinguish between dynamic and malloc allocators?
-  // Can they coexist?
   AXOM_UNUSED_VAR(ptr);
-  return DYNAMIC_ALLOCATOR_ID;
+  return MALLOC_ALLOCATOR_ID;
 }
 
 /*!
@@ -226,14 +224,14 @@ inline T* allocate(std::size_t n, int allocID) noexcept
   }
 #endif
 
-  if(allocID == MALLOC_ALLOCATOR_ID)
+  if(allocID == DYNAMIC_ALLOCATOR_ID)
   {
+    // Dynamic memory space falls back on malloc.
     return static_cast<T*>(std::malloc(numbytes));
   }
 
-  if(allocID == DYNAMIC_ALLOCATOR_ID)
+  else if(allocID == MALLOC_ALLOCATOR_ID)
   {
-    // TODO: Is this the correct behavior for Dynamic?
     return static_cast<T*>(std::malloc(numbytes));
   }
 
@@ -378,40 +376,54 @@ inline int getAllocatorID();
 template <>
 inline int getAllocatorID<MemorySpace::Dynamic>()
 {
+  /*
+    With Umpire enabled, this returns the current default Umpire id,
+    not DYNAMIC_ALLOCATOR_ID.  MemorySpace::Dynamic is special that
+    way.
+  */
   return axom::getDefaultAllocatorID();
+}
+
+template <>
+inline int getAllocatorID<MemorySpace::Malloc>()
+{
+  return axom::MALLOC_ALLOCATOR_ID;
 }
 
 inline MemorySpace getAllocatorSpace(int allocatorId)
 {
-  // Treat non-Umpire allocatorID first.  Umpire's getAllocator
-  // throws exception if given a non-Umpire id.
-  assert(allocatorId != INVALID_ALLOCATOR_ID);
-  if(allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
-  if(allocatorId == MALLOC_ALLOCATOR_ID) return MemorySpace::Malloc;
-
 #ifdef AXOM_USE_UMPIRE
   using ump_res_type = typename umpire::MemoryResourceTraits::resource_type;
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
-  auto umpResType =
-    rm.getAllocator(allocatorId).getAllocationStrategy()->getTraits().resource;
-  switch(umpResType)
+  if(rm.isAllocator(allocatorId))
   {
-  case ump_res_type::host:
-    return MemorySpace::Host;
-  case ump_res_type::device:
-    return MemorySpace::Device;
-  case ump_res_type::device_const:
-    return MemorySpace::Constant;
-  case ump_res_type::pinned:
-    return MemorySpace::Pinned;
-  case ump_res_type::um:
-    return MemorySpace::Unified;
-  default:
-    return MemorySpace::Dynamic;
+    auto umpResType =
+      rm.getAllocator(allocatorId).getAllocationStrategy()->getTraits().resource;
+    switch(umpResType)
+    {
+    case ump_res_type::host:
+      return MemorySpace::Host;
+    case ump_res_type::device:
+      return MemorySpace::Device;
+    case ump_res_type::device_const:
+      return MemorySpace::Constant;
+    case ump_res_type::pinned:
+      return MemorySpace::Pinned;
+    case ump_res_type::um:
+      return MemorySpace::Unified;
+    default:
+      return MemorySpace::Dynamic;
+    }
   }
 #endif
+  if(allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
+  if(allocatorId == MALLOC_ALLOCATOR_ID) return MemorySpace::Malloc;
+
+  std::cerr << "*** Unrecognized allocator id " << allocatorId << "."
+            << std::endl;
+  axom::utilities::processAbort();
 
   return MemorySpace::Dynamic;  // Silence warning.
 }
