@@ -18,6 +18,7 @@
 
 // axom headers
 #include "axom/config.hpp"
+#include "axom/core/Array.hpp"
 #include "axom/core/ConduitMemCallbacks.hpp"
 #include "axom/core/ItemCollection.hpp"
 #include "axom/core/Macros.hpp"
@@ -329,6 +330,8 @@ public:
   /*!
    * \brief Reallocate data to a new allocator.
    *
+   * This does NOT change any Group's default allocator.
+   *
    * \return pointer to this Group object.
    */
   Group* transfer_allocator(int newAllocId);
@@ -337,12 +340,11 @@ public:
    * \brief Reallocate data to a new allocator, with a predicate for
    * selecting a subset of Views to transfer.
    *
+   * This does NOT change any Group's default allocator.
+   *
    * \param [i] pred A predicate that returns true for Views that are
    *   subject to transfering to the new allocator and false for Views
    *   that are not.
-   *
-   * \post All Groups in the hierarchy and all Views selected by \c pred
-   *   have default allocator \c newAllocId
    *
    * \return pointer to this Group object.
    */
@@ -477,6 +479,16 @@ public:
    * If no such View exists, nullptr is returned.
    */
   const View* getView(IndexType idx) const;
+
+
+  /*!
+   * \brief Find hierarchy's views that match some criteria,
+   * and append their addresses to an Array.
+   *
+   * \brief Return number of views found.
+   */
+  axom::IndexType findViews(const std::function<bool(View&)>& criteria,
+                            axom::Array<View*>& found);
 
   //@}
 

@@ -77,7 +77,7 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   // This may take too long if there are repeated construction.
   m_bpGrp->createNativeLayout(m_bpNodeInt);
 
-#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEBUG) && 0
   std::string whyBad;
   bool goodMesh = verifyInputMesh(whyBad);
   SLIC_ASSERT_MSG(goodMesh, whyBad);
@@ -112,8 +112,15 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   m_bpGrp = m_dataStore.getRoot()->createGroup("internalGrp");
   m_bpGrp->setDefaultAllocator(m_allocatorId);
 
+  // This importConduitTreeExternal is bad.  We want to shallow-copy the array data, but not the scalars and strings.
   m_bpGrp->importConduitTreeExternal(bpNode);
+conduit::Node& topoCoordsetNode = bpNode.fetch_existing("topologies/" + m_bpTopo + "/coordset");
+std::string v = topoCoordsetNode.as_string();
+axom::sidre::View* topoCoordsetView = m_bpGrp->getView("topologies/" + m_bpTopo + "/coordset");
+std::string u = topoCoordsetView->getString();
 
+// auto& topoCoordsetNode = bpNode.fetch_existing("topologies/" + m_bpTopo + "/coordset");
+// std::string t = topoCoordsetNode.to_string();
   // We want unstructured topo but can accomodate structured.
   const std::string topoType = bpNode.fetch_existing("topologies")
                                  .fetch_existing(m_bpTopo)
@@ -129,8 +136,12 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   }
 
   m_bpGrp->createNativeLayout(m_bpNodeInt);
+conduit::Node& topoCoordsetNode2 = m_bpNodeInt.fetch_existing("topologies/" + m_bpTopo + "/coordset");
+std::string s = topoCoordsetNode2.to_string();
+std::cout << u << ' ' << s << std::endl;
+topoCoordsetNode.print();
 
-#if defined(AXOM_DEBUG)
+#if defined(AXOM_DEBUG) && 0
   std::string whyBad;
   bool goodMesh = verifyInputMesh(whyBad);
   SLIC_ASSERT_MSG(goodMesh, whyBad);

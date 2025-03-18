@@ -460,6 +460,10 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 }
 #endif
 
+/************************************************************
+ * Shared variables.
+ ************************************************************/
+
 const std::string topoName = "mesh";
 const std::string coordsetName = "coords";
 int cellCount = -1;
@@ -475,6 +479,8 @@ std::shared_ptr<conduit::Node> compMeshNode;
 
 std::function<bool(axom::sidre::View& v)> selectScalarAndStringViews =
   [](axom::sidre::View& v) { return v.isScalar() || v.isString(); };
+std::function<bool(axom::sidre::View& v)> selectNonHostViews =
+  [](axom::sidre::View& v) { return v.getVoidPtr() != nullptr && !v.isHostAccessible(); };
 
 axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
@@ -1564,6 +1570,7 @@ int main(int argc, char** argv)
 
 axom::sidre::View* connView = nullptr;
 conduit::Node* connNode = nullptr;
+conduit::Node* topoCoordsetNode = nullptr;
   if(params.useBlueprintSidre() || params.useBlueprintConduit())
   {
     compMeshGrp = ds.getRoot()->createGroup("compMesh");
@@ -1604,10 +1611,36 @@ connView = compMeshGrp->getView("topologies/" + topoName + "/elements/connectivi
       so that any change in one is reflected in the other.
     */
     compMeshNode = std::make_shared<conduit::Node>();
+axom::sidre::View* topoCoordsetView = compMeshGrp->getView("topologies/" + topoName + "/coordset");
+std::string t = topoCoordsetView->getString();
     compMeshGrp->createNativeLayout(*compMeshNode);
 connNode = &(compMeshNode->fetch_existing("topologies/" + topoName + "/elements/connectivity"));
+topoCoordsetNode = &(compMeshNode->fetch_existing("topologies/" + topoName + "/coordset"));
+std::string s = topoCoordsetNode->to_string();
+topoCoordsetNode->print();
+std::cout << s << std::endl;
     SLIC_INFO(axom::fmt::format("{:-^80}", "Generated Blueprint mesh"));
     cellCount = params.getBoxCellCount();
+  }
+
+  {
+    // Check for mesh info needed on host but isn't.
+#if 0
+    axom::sidre::Group* tmpMeshGrp = ds.getRoot()->createGroup("tmpMeshGrp",
+                                                               compMeshGrp->isUsingList(),
+                                                               false);
+    tmpMeshGrp->setDefaultAllocator(hostAllocId);
+    tmpMeshGrp->deepCopyGroupToSelf(compMeshGrp);
+    tmpMeshGrp->print();
+#endif
+    axom::Array<axom::sidre::View*> foundViews;
+    compMeshGrp->findViews(selectNonHostViews, foundViews);
+    std::cout << "Found " << foundViews.size()
+              << " views with data inaccessible by host:" << std::endl;
+    for(auto* view : foundViews)
+    {
+      std::cout << view->getPath() << '/' << view->getName() << " has data at " << view->getVoidPtr() << std::endl;
+    }
   }
 
   //---------------------------------------------------------------------------

@@ -12,6 +12,7 @@
 #include "DataStore.hpp"
 #include "Attribute.hpp"
 
+#include "axom/core/execution/execution_space.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/ConduitMemCallbacks.hpp"
 
@@ -1496,6 +1497,37 @@ View::State View::getStateId(const std::string& name) const
   }
 
   return res;
+}
+
+/*
+ * Return whether view data is on device.
+ */
+bool View::isDeviceData() const
+{
+  bool rval= false;
+  void* dataPtr = getVoidPtr();
+  if(dataPtr != nullptr)
+  {
+    int allocId = axom::getAllocatorIDFromPointer(dataPtr);
+    rval = axom::isDeviceAllocator(allocId);
+  }
+  return rval;
+}
+
+
+/*
+ * Return whether view data is accessible on the host CPU.
+ */
+bool View::isHostAccessible() const
+{
+  bool rval= false;
+  void* dataPtr = getVoidPtr();
+  if(dataPtr != nullptr)
+  {
+    int allocId = axom::getAllocatorIDFromPointer(dataPtr);
+    rval = axom::execution_space<axom::SEQ_EXEC>::usesAllocId(allocId);
+  }
+  return rval;
 }
 
 /*

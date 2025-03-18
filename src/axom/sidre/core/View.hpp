@@ -210,6 +210,23 @@ public:
   bool isString() const { return m_state == STRING; }
 
   /*!
+   * \brief Return whether view data is on device, as determined
+   * by Axom's memory management.
+   *
+   * By convention, this returns a false if data is not allocated.
+   */
+  bool isDeviceData() const;
+
+  /*!
+   * \brief Return whether view data is accessible on the host CPU,
+   * as determined by Axom's memory management.
+   *
+   * By convention, this returns a false if data is not allocated,
+   * because we expect null pointers to be correctly checked before use.
+   */
+  bool isHostAccessible() const;
+
+  /*!
    * \brief Return type of data for this View object.
    *        Return NO_TYPE_ID for an undescribed view.
    */
@@ -406,7 +423,7 @@ public:
   View* reallocate(IndexType num_elems);
 
   /*!
-   * \brief  Reallocate data for view as specified by Conduit data type object.
+   * \brief Reallocate data for this View as specified by Conduit data type object.
    *
    * \note Reallocation from a view is allowed under the conditions
    *       described by the allocate() method. If the conditions are not met
@@ -1555,7 +1572,7 @@ private:
                //    applied may be true or false
     SCALAR,    // View holds scalar data (via setScalar()):
                //    applied is true
-    STRING     // View holds string data (view setString()):
+    STRING     // View holds string data (via setString()):
                //    applied is true
   };
 

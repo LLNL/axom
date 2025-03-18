@@ -1471,7 +1471,7 @@ Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
 Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
 {
   SLIC_ERROR_IF(m_is_list && !srcGroup->m_is_list,
-                "Group::deepCopyToSelf cannot copy from a list Group to a non-list Group.");
+                "Group::deepCopyToSelf cannot copy from a list Group '" + srcGroup->getPath() + "' to a non-list Group '" + getPath() + "'");
 
   destroyGroupsAndData();
   destroyViewsAndData();
@@ -1556,6 +1556,33 @@ Group* Group::transfer_allocator(int newAllocId)
 {
   return transfer_allocator(newAllocId,
                             std::function<bool(View&)>{[](View&) { return true; }});
+}
+
+/*
+ *************************************************************************
+ *
+ * Find hierarchy's views that match some criteria.
+ *
+ *************************************************************************
+ */
+axom::IndexType Group::findViews(const std::function<bool(View&)>& criteria,
+                                 axom::Array<View*>& found)
+{
+  auto origSize = found.size();
+
+  for(auto& view : views())
+  {
+    if(criteria(view)) {
+      found.push_back(&view);
+    }
+  }
+
+  for(auto& grp : groups())
+  {
+    grp.findViews(criteria, found);
+  }
+
+  return found.size() - origSize;
 }
 
 /*
@@ -3032,6 +3059,18 @@ bool Group::importConduitTree(const conduit::Node& node, bool preserve_contents)
   return success;
 }
 
+/*
+  TODO: Fix: This implementation is not fully shallow copying as its comments
+  claim.
+  It only shallow-copies nodes that are arrays of more than 1.
+  For strings and arrays of 1 numeric value, it makes a deep copy.
+  (Conduit doesn't differentiate between array-of-1 and scalars.)
+  We can't do much about the ambiguities of interpreting Conduit
+  data, but we should shallow copy all.
+  But then, what is the state of a string with external storage,
+  STRING or EXTERNAL?  What are resonable alternatives?  Exempt
+  these two types from external pointers and deep copying them?
+*/
 bool Group::importConduitTreeExternal(conduit::Node& node, bool preserve_contents)
 {
   bool success = true;
@@ -3068,6 +3107,7 @@ bool Group::importConduitTreeExternal(conduit::Node& node, bool preserve_content
         if(cld_name != "sidre_group_name")
         {
           //create string view
+          // createViewString(cld_name, cld_node.data_ptr());
           createViewString(cld_name, cld_node.as_string());
         }
       }
