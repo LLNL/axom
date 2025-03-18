@@ -22,10 +22,16 @@ namespace bputils = axom::mir::utilities::blueprint;
 using RuntimePolicy = axom::runtime_policy::Policy;
 
 //--------------------------------------------------------------------------------
-MIRApplication::MIRApplication() : handler(true), gridSize(5), numCircles(2),
-  writeFiles(true), outputFilePath("output"), method("equiz"), policy(RuntimePolicy::seq), annotationMode("report")
-{
-}
+MIRApplication::MIRApplication()
+  : handler(true)
+  , gridSize(5)
+  , numCircles(2)
+  , writeFiles(true)
+  , outputFilePath("output")
+  , method("equiz")
+  , policy(RuntimePolicy::seq)
+  , annotationMode("report")
+{ }
 
 //--------------------------------------------------------------------------------
 int MIRApplication::initialize(int argc, char **argv)
@@ -209,9 +215,7 @@ int MIRApplication::runMIR()
 }
 
 //--------------------------------------------------------------------------------
-void MIRApplication::adjustMesh(conduit::Node &)
-{
-}
+void MIRApplication::adjustMesh(conduit::Node &) { }
 
 //--------------------------------------------------------------------------------
 void MIRApplication::saveMesh(const conduit::Node &n_mesh, const std::string &path)
@@ -225,7 +229,9 @@ void MIRApplication::saveMesh(const conduit::Node &n_mesh, const std::string &pa
 }
 
 //--------------------------------------------------------------------------------
-void MIRApplication::conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
+void MIRApplication::conduit_debug_err_handler(const std::string &s1,
+                                               const std::string &s2,
+                                               int i1)
 {
   SLIC_ERROR(
     axom::fmt::format("Error from Conduit: s1={}, s2={}, i1={}", s1, s2, i1));

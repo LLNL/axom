@@ -25,7 +25,7 @@ public:
    * \return 0 on success; less than zero otherwise.
    */
   int initialize(int argc, char **argv);
- 
+
   /*!
    * \brief Execute the main application logic.
    * \return 0 on success; less than zero otherwise.
@@ -61,7 +61,9 @@ protected:
   /*!
    * \brief A static error handler for Conduit.
    */
-  static void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1);
+  static void conduit_debug_err_handler(const std::string &s1,
+                                        const std::string &s2,
+                                        int i1);
 
   bool handler;
   int gridSize;
