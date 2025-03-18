@@ -28,8 +28,8 @@
 namespace axom
 {
 // To co-exist with Umpire allocator ids, use negative values here.
-constexpr int INVALID_ALLOCATOR_ID = -1; //!< Place holder for invalid value
-constexpr int MALLOC_ALLOCATOR_ID = -3;  //!< Uses malloc, free and realloc
+constexpr int INVALID_ALLOCATOR_ID = -1;  //!< Place holder for invalid value
+constexpr int MALLOC_ALLOCATOR_ID = -3;   //!< Uses malloc, free and realloc
 
 // _memory_space_start
 /*!
@@ -41,14 +41,14 @@ constexpr int MALLOC_ALLOCATOR_ID = -3;  //!< Uses malloc, free and realloc
  */
 enum class MemorySpace
 {
-  Dynamic, //!< Refers to Umpire's current default allocator
-  Malloc,  //!< Uses malloc, free and realloc
+  Dynamic,  //!< Refers to Umpire's current default allocator
+  Malloc,   //!< Uses malloc, free and realloc
 #ifdef AXOM_USE_UMPIRE
-  Host,    //!< Umpire's host memory space
-  Device,  //!< Umpire's device memory space
-  Unified, //!< Umpire's unified memory space
-  Pinned,  //!< Umpire's pinned memory space
-  Constant //!< Umpire's constant memory space
+  Host,     //!< Umpire's host memory space
+  Device,   //!< Umpire's device memory space
+  Unified,  //!< Umpire's unified memory space
+  Pinned,   //!< Umpire's pinned memory space
+  Constant  //!< Umpire's constant memory space
 #endif
 };
 // _memory_space_end
@@ -308,10 +308,9 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
   }
   else
   {
-    std::cerr << "*** Unrecognized allocator id " << allocID <<
-              ".  Axom was NOT built with Umpire, so the only valid allocator id is MALLOC_ALLOCATOR_ID ("
-              << MALLOC_ALLOCATOR_ID << ")."
-              << std::endl;
+    std::cerr << "*** Unrecognized allocator id "
+              << allocID << ".  Axom was NOT built with Umpire, so the only valid allocator id is MALLOC_ALLOCATOR_ID ("
+              << MALLOC_ALLOCATOR_ID << ")." << std::endl;
     axom::utilities::processAbort();
   }
 
