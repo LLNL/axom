@@ -28,12 +28,11 @@
 namespace axom
 {
 // To co-exist with Umpire allocator ids, use negative values here.
-constexpr int INVALID_ALLOCATOR_ID = -1;
-constexpr int DYNAMIC_ALLOCATOR_ID = -2;
-constexpr int MALLOC_ALLOCATOR_ID = -3;
+constexpr int INVALID_ALLOCATOR_ID = -1; //!< Place holder for invalid value
+constexpr int MALLOC_ALLOCATOR_ID = -3;  //!< Uses malloc, free and realloc
 
 // _memory_space_start
-/*! 
+/*!
  * \brief Memory spaces supported by Array-like types
  *
  * This abstraction is not implemented using Umpire's MemoryResourceType enum
@@ -42,14 +41,14 @@ constexpr int MALLOC_ALLOCATOR_ID = -3;
  */
 enum class MemorySpace
 {
-  Dynamic,
-  Malloc,
+  Dynamic, //!< Refers to Umpire's current default allocator
+  Malloc,  //!< Uses malloc, free and realloc
 #ifdef AXOM_USE_UMPIRE
-  Host,
-  Device,
-  Unified,
-  Pinned,
-  Constant
+  Host,    //!< Umpire's host memory space
+  Device,  //!< Umpire's device memory space
+  Unified, //!< Umpire's unified memory space
+  Pinned,  //!< Umpire's pinned memory space
+  Constant //!< Umpire's constant memory space
 #endif
 };
 // _memory_space_end
@@ -104,24 +103,25 @@ inline void setDefaultAllocator(int allocId)
 }
 
 /*!
- * \brief Returns the ID of the current default allocator.
- * \return ID the ID of the current default allocator.
- * \post ID != INVALID_ALLOCATOR_ID
+ * \brief Returns the ID of the current default Umpire allocator
+ * or MALLOC_ALLOCATOR_ID if Umpire is not used.
+ *
+ * \return ID of the current Umpire default allocator or MALLOC_ALLOCATOR_ID.
  */
 inline int getDefaultAllocatorID()
 {
 #ifdef AXOM_USE_UMPIRE
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
-  return DYNAMIC_ALLOCATOR_ID;
+  return MALLOC_ALLOCATOR_ID;
 #endif
 }
 
 /*!
  * \brief Get the allocator id from which data has been allocated.
  * \return Allocator id.  If Umpire doesn't have an allocator for
- * the pointer, or Axom wasn't configured with Umpire, return
- * \c axom::MALLOC_ALLOCATOR_ID.
+ * the pointer, or Axom wasn't configured with Umpire, assume the
+ * pointer was from a malloc and return \c axom::MALLOC_ALLOCATOR_ID.
  *
  * \pre ptr has a valid pointer value.
  */
@@ -224,13 +224,7 @@ inline T* allocate(std::size_t n, int allocID) noexcept
   }
 #endif
 
-  if(allocID == DYNAMIC_ALLOCATOR_ID)
-  {
-    // Dynamic memory space falls back on malloc.
-    return static_cast<T*>(std::malloc(numbytes));
-  }
-
-  else if(allocID == MALLOC_ALLOCATOR_ID)
+  if(allocID == MALLOC_ALLOCATOR_ID)
   {
     return static_cast<T*>(std::malloc(numbytes));
   }
@@ -308,15 +302,15 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
 
 #else
 
-  if(allocID == MALLOC_ALLOCATOR_ID || allocID == DYNAMIC_ALLOCATOR_ID)
+  if(allocID == MALLOC_ALLOCATOR_ID)
   {
     pointer = static_cast<T*>(std::realloc(pointer, numbytes));
   }
   else
   {
     std::cerr << "*** Unrecognized allocator id " << allocID <<
-              ".  Axom was NOT built with Umpire, so the only valid allocator ids are MALLOC_ALLOCATOR_ID ("
-              << MALLOC_ALLOCATOR_ID << ") and DYNAMIC_ALLOCATOR_ID (" << DYNAMIC_ALLOCATOR_ID << ")."
+              ".  Axom was NOT built with Umpire, so the only valid allocator id is MALLOC_ALLOCATOR_ID ("
+              << MALLOC_ALLOCATOR_ID << ")."
               << std::endl;
     axom::utilities::processAbort();
   }
@@ -377,9 +371,8 @@ template <>
 inline int getAllocatorID<MemorySpace::Dynamic>()
 {
   /*
-    With Umpire enabled, this returns the current default Umpire id,
-    not DYNAMIC_ALLOCATOR_ID.  MemorySpace::Dynamic is special that
-    way.
+    With Umpire enabled, this returns the current default Umpire id.
+    Without Umpire, it returns MALLOC_ALLOCATOR_ID.
   */
   return axom::getDefaultAllocatorID();
 }
@@ -418,7 +411,6 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
     }
   }
 #endif
-  if(allocatorId == DYNAMIC_ALLOCATOR_ID) return MemorySpace::Dynamic;
   if(allocatorId == MALLOC_ALLOCATOR_ID) return MemorySpace::Malloc;
 
   std::cerr << "*** Unrecognized allocator id " << allocatorId << "."
