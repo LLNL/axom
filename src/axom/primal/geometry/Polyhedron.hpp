@@ -560,7 +560,7 @@ public:
         {
           VectorType v1 = m_vertices[faces[i_offset + j]] - origin;
           VectorType v2 = m_vertices[faces[i_offset + k]] - origin;
-          double curVol = VectorType::scalar_triple_product(v0, v1, v2);
+          const T curVol = VectorType::scalar_triple_product(v0, v1, v2);
 
           volume += curVol;
           if(should_compute_centroid)
@@ -687,13 +687,14 @@ public:
   AXOM_HOST_DEVICE
   bool hasDuplicateVertices(double eps = 1.e-10) const
   {
+    const auto typedEPS = static_cast<T>(eps);
     for(int i = 0; i < m_num_vertices; i++)
     {
       for(int j = i + 1; j < m_num_vertices; j++)
       {
-        if(axom::utilities::isNearlyEqual(m_vertices[i][0], m_vertices[j][0], eps) &&
-           axom::utilities::isNearlyEqual(m_vertices[i][1], m_vertices[j][1], eps) &&
-           axom::utilities::isNearlyEqual(m_vertices[i][2], m_vertices[j][2], eps))
+        if(axom::utilities::isNearlyEqual(m_vertices[i][0], m_vertices[j][0], typedEPS) &&
+           axom::utilities::isNearlyEqual(m_vertices[i][1], m_vertices[j][1], typedEPS) &&
+           axom::utilities::isNearlyEqual(m_vertices[i][2], m_vertices[j][2], typedEPS))
         {
           return true;
         }
