@@ -336,7 +336,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             entries.append(cmake_cache_option("ENABLE_HIP", True))
 
             rocm_root = os.path.dirname(spec["llvm-amdgpu"].prefix)
-            entries.append(cmake_cache_path("ROCM_PATH", rocm_root))
+            entries.append(cmake_cache_path("ROCM_ROOT_DIR", rocm_root))
 
             hip_link_flags = "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
 
