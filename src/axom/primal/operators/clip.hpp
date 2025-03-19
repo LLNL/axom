@@ -627,7 +627,7 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Plane<T, 3>& plane,
  *             shape to try to obtain a nonnegative signed volume.
  *             Defaults to false.
  *
- * \return The polyhedron obtained from clipping a polyhedron against
+ * \return The polyhedron obtained from clipping a hexahedron against
  *         the half-space defined by a plane.
  */
 template <typename T>

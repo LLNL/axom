@@ -84,7 +84,9 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
   double f_t[2] = {0., matVolume};
   // The blend value within the current interval.
   double t_blend = 0.5;
-
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+  std::cout << "\tclipToVolume: shape=" << shape << std::endl;
+#endif
   ClipResultType clippedShape {};
   for(int iterations = 0; iterations < max_iterations; iterations++)
   {
@@ -103,8 +105,9 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
     const double fragmentVolume =
       bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
     const double volumeError = axom::utilities::abs(matVolume - fragmentVolume);
-
-    std::cout << "\titerations=" << iterations << ", t_blend=" << t_blend << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+    std::cout << "\t\titerations=" << iterations << ", t_blend=" << t_blend << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
+#endif
     if((volumeError <= tolerance) || (iterations >= max_iterations))
     {
       break;
@@ -343,6 +346,9 @@ public:
       m_mat_sizes[fragmentOffset] = static_cast<MaterialID>(1);
       m_mat_offsets[fragmentOffset] = fragmentOffset;
       m_mat_indices[fragmentOffset] = fragmentOffset;
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+      std::cout << "\taddShape: zone=" << zoneIndex << ", fragmentOffset=" << fragmentOffset << ", mat=" << matId << ", shape=" << shape << std::endl;
+#endif
     }
 
     // These ArrayView objects expose data that we've allocated in Conduit nodes to represent the new mesh.
@@ -575,15 +581,17 @@ public:
     // These ArrayView objects expose data that we've allocated in Conduit nodes to represent the new mesh.
 
     // New coordset data.
-    axom::ArrayView<CoordType> m_x {}, m_y {};  //!< X,Y coordinates
+    axom::ArrayView<CoordType> m_x {}, m_y {}, m_z {};  //!< X,Y,Z coordinates
 
     // New topology data.
-    axom::ArrayView<ConnectivityType> m_connectivity {}, m_sizes {},
-      m_offsets {};  //!< Connectivity data.
+    axom::ArrayView<ConnectivityType> m_connectivity {}, m_sizes {}, m_offsets {};
+
+    axom::ArrayView<ConnectivityType> m_subelement_connectivity {}, m_subelement_sizes {},
+      m_subelement_offsets {};
 
     // New field data.
     axom::ArrayView<axom::IndexType> m_original_zones {};  //!< View for originalZone field data.
-    axom::ArrayView<double> m_norm_x {}, m_norm_y {};  //!< Fragment normals
+    axom::ArrayView<double> m_norm_x {}, m_norm_y {}, m_norm_z {};  //!< Fragment normals
 
     // New matset data
     axom::ArrayView<MaterialVF> m_volume_fractions {};
