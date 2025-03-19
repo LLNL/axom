@@ -114,6 +114,10 @@ if (MFEM_FOUND)
         TARGET mfem_smoke_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 
+    target_include_directories(mfem_smoke_test PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../..>
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+
     axom_add_test(NAME    mfem_smoke
                   COMMAND mfem_smoke_test)
 
