@@ -18,6 +18,7 @@ set(gtest_mir_tests
     mir_views_indexing.cpp
     mir_views.cpp
     mir_elvira2d.cpp
+    mir_elvira3d.cpp
     mir_equiz2d.cpp
     mir_equiz3d.cpp
     mir_slicers.cpp
