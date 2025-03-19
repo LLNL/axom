@@ -28,8 +28,8 @@
 namespace axom
 {
 // To co-exist with Umpire allocator ids, use negative values here.
-constexpr int INVALID_ALLOCATOR_ID = -1;  //!< Place holder for invalid value
-constexpr int MALLOC_ALLOCATOR_ID = -3;   //!< Uses malloc, free and realloc
+constexpr int INVALID_ALLOCATOR_ID = -1;  //!< Place holder for no allocator
+constexpr int MALLOC_ALLOCATOR_ID = -3;   //!< Refers to MemorySpace::Malloc
 
 // _memory_space_start
 /*!
@@ -42,7 +42,7 @@ constexpr int MALLOC_ALLOCATOR_ID = -3;   //!< Uses malloc, free and realloc
 enum class MemorySpace
 {
   Dynamic,  //!< Refers to Umpire's current default allocator
-  Malloc,   //!< Uses malloc, free and realloc
+  Malloc,   //!< Host memory using malloc, free and realloc
 #ifdef AXOM_USE_UMPIRE
   Host,     //!< Umpire's host memory space
   Device,   //!< Umpire's device memory space
@@ -120,8 +120,8 @@ inline int getDefaultAllocatorID()
 /*!
  * \brief Get the allocator id from which data has been allocated.
  * \return Allocator id.  If Umpire doesn't have an allocator for
- * the pointer, or Axom wasn't configured with Umpire, assume the
- * pointer was from a malloc and return \c axom::MALLOC_ALLOCATOR_ID.
+ * the pointer, or if Axom wasn't configured with Umpire, assume the
+ * pointer is from a malloc and return \c axom::MALLOC_ALLOCATOR_ID.
  *
  * \pre ptr has a valid pointer value.
  */
