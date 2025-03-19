@@ -207,7 +207,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("py-sphinx")
         depends_on("py-shroud")
         depends_on("py-jsonschema")
-        depends_on("llvm+clang@14", type="build")
+
+        # Need clang@14 for clang-format
+        # (ENABLE_CLANGFORMAT will be OFF if not the exact version)
+        depends_on("llvm+clang@14", type="build", when="~rocm")
+        depends_on("llvm", type="build", when="+rocm")
 
     # -----------------------------------------------------------------------
     # Conflicts
@@ -560,11 +564,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             path2 = os.path.realpath(spec["doxygen"].prefix)
             self.find_path_replacement(path1, path2, path_replacements, "DEVTOOLS_ROOT", entries)
 
-        if spec.satisfies("+devtools") and spec.satisfies("^llvm"):
+        if spec.satisfies("+devtools") and spec.satisfies("^llvm@14"):
             clang_fmt_path = spec["llvm"].prefix.bin.join("clang-format")
             entries.append(cmake_cache_path("CLANGFORMAT_EXECUTABLE", clang_fmt_path))
         else:
-            entries.append("# ClangFormat disabled due to llvm and devtools not in spec\n")
+            entries.append("# ClangFormat disabled due to llvm@14 and devtools not in spec\n")
             entries.append(cmake_cache_option("ENABLE_CLANGFORMAT", False))
 
         if spec.satisfies("+python") or spec.satisfies("+devtools"):
