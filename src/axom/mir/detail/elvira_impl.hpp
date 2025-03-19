@@ -1058,12 +1058,11 @@ struct elvira<3>
    * \note Calling this function will update some vectors in the \a fragmentVectorsStart.
    */
   AXOM_HOST_DEVICE
-  static void execute(int AXOM_UNUSED_PARAM(matCount),
-                      const double *AXOM_UNUSED_PARAM(fragmentVFStencilStart),
-                      double *AXOM_UNUSED_PARAM(fragmentVectorsStart),
-                      int AXOM_UNUSED_PARAM(iskip))
+  static void execute(int matCount,
+                      const double *fragmentVFStencilStart,
+                      double *fragmentVectorsStart,
+                      int iskip)
   {
-#if 0
     constexpr int StencilSize = getStencilSize(NDIMS);
     constexpr int numVectorComponents = 3;
 
@@ -1074,7 +1073,14 @@ struct elvira<3>
     {
       if(m != iskip)
       {
+#if 0
         elvira3d(vol_fracs, normal);
+#else
+        // For now
+        normal[0] = 1.;
+        normal[1] = 0.;
+        normal[2] = 0.;
+#endif
       }
       else
       {
@@ -1087,7 +1093,6 @@ struct elvira<3>
       vol_fracs += StencilSize;
       normal += numVectorComponents;
     }
-#endif
   }
 };
 

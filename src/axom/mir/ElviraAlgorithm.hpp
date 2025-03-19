@@ -830,10 +830,12 @@ protected:
         const auto offset = matOffsetView[szIndex];
 
         // Get the starting shape.
-        auto shape = deviceShapeView.getShape(zoneIndex);
+        const auto inputShape = deviceShapeView.getShape(zoneIndex);
 
         // Get the zone's actual volume.
-        const double zoneVol = bputils::ComputeShapeAmount<NDIMS>::execute(shape);
+        const double zoneVol = bputils::ComputeShapeAmount<NDIMS>::execute(inputShape);
+
+        ClipResultType clippedShape;
 
         // Make a fragment for each material. The biggest ones come first.
         for(axom::IndexType m = 0; m < matCount - 1; m++)
@@ -858,23 +860,46 @@ protected:
             normal[d] = static_cast<CoordType>(normalPtr[d]);
           }
 
-          // Compute start and end points along which to move the plane origin.
           PointType range[2];
-          detail::computeRange(shape, normal, range);
-
-          // Figure out the clipped shape that has the desired volume.
           PointType pt {};
-          const auto clippedShape =
-            detail::clipToVolume<ClipResultType>(shape,
-                                                 normal,
-                                                 range,
-                                                 matVolume,
-                                                 max_iterations,
-                                                 tolerance,
-                                                 pt);
+          if(m == 0)
+          {
+            // First time through, operate on the inputShape.
+
+            // Compute start and end points along which to move the plane origin.
+            detail::computeRange(inputShape, normal, range);
+
+            // Figure out the clipped shape that has the desired volume.
+            clippedShape = 
+              detail::clipToVolume<ClipResultType>(inputShape,
+                                                   normal,
+                                                   range,
+                                                   matVolume,
+                                                   max_iterations,
+                                                   tolerance,
+                                                   pt);
+          }
+          else
+          {
+            // In subsequent iterations, the clippedShape is the input and it
+            // can have a different type then inputShape.
+
+            // Compute start and end points along which to move the plane origin.
+            detail::computeRange(clippedShape, normal, range);
+
+            // Figure out the clipped shape that has the desired volume.
+            clippedShape = 
+              detail::clipToVolume<ClipResultType>(clippedShape,
+                                                   normal,
+                                                   range,
+                                                   matVolume,
+                                                   max_iterations,
+                                                   tolerance,
+                                                   pt);
+          }
 
           // Emit clippedShape as material matId
-          //std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", iterations=" << iterations << ", pt=" << pt << ", clipped=" << clippedShape << std::endl;
+          std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", pt=" << pt << ", clipped=" << clippedShape << std::endl;
           buildView.addShape(zoneIndex,
                              fragmentIndex,
                              clippedShape,
@@ -883,7 +908,14 @@ protected:
 
           // Clip in the other direction to get the remaining fragment for the next material.
           const auto P = PlaneType(normal, pt, false);
-          shape = axom::primal::clip(shape, P);
+          if(m == 0)
+          {
+            clippedShape = axom::primal::clip(inputShape, P);
+          }
+          else
+          {
+            clippedShape = axom::primal::clip(clippedShape, P);
+          }
         }
 
         // Emit the last leftover fragment.
@@ -891,8 +923,8 @@ protected:
         const auto matId = sortedMaterialIdsView[fragmentIndex];
         const double *normalPtr =
           fragmentVectorsView.data() + (fragmentIndex * numVectorComponents);
-        //std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", clipped=" << shape << std::endl;
-        buildView.addShape(zoneIndex, fragmentIndex, shape, matId, normalPtr);
+        std::cout << "zone=" << zoneIndex << ", fragmentIndex=" << fragmentIndex << ", mat=" << matId << ", clipped=" << clippedShape << std::endl;
+        buildView.addShape(zoneIndex, fragmentIndex, clippedShape, matId, normalPtr);
       });
   }
 
