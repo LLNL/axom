@@ -552,6 +552,95 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Plane<T, 3>& plane,
   return clip(tet, plane, eps, tryFixOrientation);
 }
 
+/*!
+ * \brief Clips a 3D polyhedron against the half-space defined by a plane
+ *        and returns the resulting polyhedron
+ *
+ *  This function clips a polyhedron against the half-space defined by a
+ *  plane. This involves finding new vertices at the intersection of the
+ *  polyhedron edges and the plane, removing vertices from the polyhedron
+ *  that are below the plane, and redefining the neighbors for each vertex
+ *  (a vertex is a neighbor of another vertex if there is an edge between
+ *  them).
+ *
+ * \param [in] plane The plane defining the half-space used to clip the tetrahedron
+ * \param [in] poly The polyhedron to clip
+ * \param [in] eps The tolerance for plane point orientation
+ *
+ * \return The polyhedron obtained from clipping a polyhedron against
+ *         the half-space defined by a plane.
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Polyhedron<T, 3>& poly,
+                                       const Plane<T, 3>& plane,
+                                       double eps = 1.e-10)
+{
+  Polyhedron<T, 3> clipped(poly);
+  detail::clipPolyhedron(clipped, plane, eps);
+  return clipped;
+}
+
+/*!
+ * \brief Clips a 3D polyhedron against the half-space defined by a plane
+ *        and returns the resulting polyhedron
+ *
+ *  This function clips a polyhedron against the half-space defined by a
+ *  plane. This involves finding new vertices at the intersection of the
+ *  polyhedron edges and the plane, removing vertices from the polyhedron
+ *  that are below the plane, and redefining the neighbors for each vertex
+ *  (a vertex is a neighbor of another vertex if there is an edge between
+ *  them).
+ *
+ * \param [in] poly The polyhedron to clip
+ * \param [in] plane The plane defining the half-space used to clip the polyhedron.
+ * \param [in] eps The tolerance for plane point orientation
+ *
+ * \return The polyhedron obtained from clipping a polyhedron against
+ *         the half-space defined by a plane.
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Plane<T, 3>& plane,
+                                       const Polyhedron<T, 3>& poly,
+                                       double eps = 1.e-10)
+{
+  Polyhedron<T, 3> clipped(poly);
+  detail::clipPolyhedron(clipped, plane, eps);
+  return clipped;
+}
+
+/*!
+ * \brief Clips a 3D hexahedron against the half-space defined by a plane
+ *        and returns the resulting polyhedron
+ *
+ *  This function clips a hexahedron against the half-space defined by a
+ *  plane. This involves finding new vertices at the intersection of the
+ *  hexahedron edges and the plane, removing vertices from the hexahedron
+ *  that are below the plane, and redefining the neighbors for each vertex
+ *  (a vertex is a neighbor of another vertex if there is an edge between
+ *  them).
+ *
+ * \param [in] hex The hexahedron to clip
+ * \param [in] plane The plane defining the half-space used to clip the hexahedron.
+ * \param [in] eps The tolerance for plane point orientation
+ * \param [in] tryFixOrientation If true, takes each shape with a negative
+ *             signed volume and swaps the order of some vertices in that
+ *             shape to try to obtain a nonnegative signed volume.
+ *             Defaults to false.
+ *
+ * \return The polyhedron obtained from clipping a polyhedron against
+ *         the half-space defined by a plane.
+ */
+template <typename T>
+AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Hexahedron<T, 3>& hex,
+                                       const Plane<T, 3>& plane,
+                                       double eps = 1.e-10,
+                                       bool tryFixOrientation = false)
+{
+  // Initialize our polyhedron to clip
+  auto poly = Polyhedron<T, 3>::from_primitive(hex, tryFixOrientation);
+  return clip(poly, plane, eps);
+}
+
 }  // namespace primal
 }  // namespace axom
 
