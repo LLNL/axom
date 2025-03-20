@@ -273,7 +273,7 @@ std::vector<int> permute(const std::vector<int> &input)
   std::iota(indices.begin(), indices.end(), 0);
   for(size_t i = 0; i < input.size(); i++)
   {
-    order[i] = drand48();
+    order[i] = axom::utilities::random_real(0., 1.);
   }
   std::sort(indices.begin(), indices.end(), [&](int a, int b) {
     return order[a] < order[b];
@@ -292,12 +292,12 @@ std::vector<int> makeUnsortedArray(int n)
 
 std::vector<int> makeRandomArray(int n)
 {
-  constexpr int largestId = 1 << 28;
+  constexpr double largestId = static_cast<double>(1 << 28);
   std::vector<int> values;
   values.resize(n);
   for(int i = 0; i < n; i++)
   {
-    values[i] = static_cast<int>(largestId * drand48());
+    values[i] = static_cast<int>(axom::utilities::random_real(0., largestId));
   }
   return permute(values);
 }

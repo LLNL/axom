@@ -353,6 +353,8 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
   default:
     return MemorySpace::Dynamic;
   }
+#else
+  return MemorySpace::Dynamic;
 #endif
 }
 
