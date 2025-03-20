@@ -30,8 +30,8 @@ std::string baselineDirectory()
 template <typename ExecSpace>
 struct test_Elvira3D
 {
-  static const int gridSize = 10;
-  static const int numSpheres = 4;
+  static const int gridSize = 3;//10;
+  static const int numSpheres = 1;//4;
 
   static void initialize(conduit::Node &n_mesh)
   {

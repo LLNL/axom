@@ -38,9 +38,9 @@
 #include <string>
 
 // Uncomment to save inputs and outputs.
-//#define AXOM_ELVIRA_DEBUG
+#define AXOM_ELVIRA_DEBUG
 
-//#define AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS
+#define AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS
 
 #if defined(AXOM_ELVIRA_DEBUG)
   #include <conduit/conduit_relay_io.hpp>
@@ -837,11 +837,15 @@ protected:
         // Get the zone's actual volume.
         const double zoneVol = bputils::ComputeShapeAmount<NDIMS>::execute(inputShape);
 
-        ClipResultType remainder;
+        ClipResultType remaining;
 
         // Make a fragment for each material. The biggest ones come first.
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
         std::cout << "makeFragments: zoneIndex=" << zoneIndex << ", matCount=" << matCount << std::endl;
+        if(zoneIndex >= 27)
+        {
+          std::cout << "Got here!" << std::endl;
+        }
 #endif
         for(axom::IndexType m = 0; m < matCount - 1; m++)
         {
@@ -893,13 +897,13 @@ protected:
             // can have a different type then inputShape.
 
             // Compute start and end points along which to move the plane origin.
-            detail::computeRange(remainder, normal, range);
+            detail::computeRange(remaining, normal, range);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
-            std::cout << "\tm=" << m << ", remainder=" << remainder << ", range={" << range[0] << ", " << range[1] << "}" << std::endl;
+            std::cout << "\tm=" << m << ", remaining=" << remaining << ", range={" << range[0] << ", " << range[1] << "}" << std::endl;
 #endif
             // Figure out the clipped shape that has the desired volume.
             clippedShape = 
-              detail::clipToVolume<ClipResultType>(remainder,
+              detail::clipToVolume<ClipResultType>(remaining,
                                                    normal,
                                                    range,
                                                    matVolume,
@@ -922,7 +926,7 @@ protected:
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
             std::cout << "\tclip: P=" << P << ", before=" << inputShape;
 #endif
-            remainder = axom::primal::clip(inputShape, P);
+            remaining = axom::primal::clip(inputShape, P);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
             std::cout << ", after=" << clippedShape << std::endl;
 #endif
@@ -930,11 +934,11 @@ protected:
           else
           {
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
-            std::cout << "\tclip: P=" << P << ", before=" << remainder;
+            std::cout << "\tclip: P=" << P << ", before=" << remaining;
 #endif
-            remainder = axom::primal::clip(remainder, P);
+            remaining = axom::primal::clip(remaining, P);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
-            std::cout << ", after=" << remainder << std::endl;
+            std::cout << ", after=" << remaining << std::endl;
 #endif
           }
         }
@@ -944,7 +948,7 @@ protected:
         const auto matId = sortedMaterialIdsView[fragmentIndex];
         const double *normalPtr =
           fragmentVectorsView.data() + (fragmentIndex * numVectorComponents);
-        buildView.addShape(zoneIndex, fragmentIndex, remainder, matId, normalPtr);
+        buildView.addShape(zoneIndex, fragmentIndex, remaining, matId, normalPtr);
       });
   }
 
