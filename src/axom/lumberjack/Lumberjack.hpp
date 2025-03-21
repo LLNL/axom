@@ -235,11 +235,11 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief set communicator pointer stored in object
+   * \brief set communicator pointer stored in object as well as ownership
    *
    *****************************************************************************
    */
-  void setCommunicator(Communicator* communicator);
+  void setCommunicator(Communicator* communicator, bool isCommunicatorOwned);
 
   /*!
    *****************************************************************************

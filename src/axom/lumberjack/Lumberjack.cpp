@@ -196,13 +196,15 @@ void Lumberjack::pushMessagesFully()
 
 bool Lumberjack::isOutputNode() { return m_communicator->isOutputNode(); }
 
-void Lumberjack::setCommunicator(Communicator* communicator)
+void Lumberjack::setCommunicator(Communicator* communicator,
+                                 bool isCommunicatorOwned)
 {
   if(m_isCommunicatorOwned && m_communicator != nullptr)
   {
     m_communicator->finalize();
     delete m_communicator;
   }
+  m_isCommunicatorOwned = isCommunicatorOwned;
   m_communicator = communicator;
 }
 
@@ -261,3 +263,9 @@ void Lumberjack::combineMessages()
 }
 }  // end namespace lumberjack
 }  // end namespace axom
+
+template <typename Type>
+Type add(Type val1, Type val2)
+{
+  return val1 + val2;
+}
