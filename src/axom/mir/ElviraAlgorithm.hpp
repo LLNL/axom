@@ -840,12 +840,8 @@ protected:
         ClipResultType remaining;
 
         // Make a fragment for each material. The biggest ones come first.
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
         std::cout << "makeFragments: zoneIndex=" << zoneIndex << ", matCount=" << matCount << std::endl;
-        if(zoneIndex >= 27)
-        {
-          std::cout << "Got here!" << std::endl;
-        }
 #endif
         for(axom::IndexType m = 0; m < matCount - 1; m++)
         {
@@ -878,7 +874,7 @@ protected:
 
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(inputShape, normal, range);
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
             std::cout << "\tm=" << m << ", inputShape=" << inputShape << ", range={" << range[0] << ", " << range[1] << "}" << std::endl;
 #endif
             // Figure out the clipped shape that has the desired volume.
@@ -898,7 +894,7 @@ protected:
 
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(remaining, normal, range);
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
             std::cout << "\tm=" << m << ", remaining=" << remaining << ", range={" << range[0] << ", " << range[1] << "}" << std::endl;
 #endif
             // Figure out the clipped shape that has the desired volume.
@@ -923,21 +919,21 @@ protected:
           const auto P = PlaneType(normal, pt, false);
           if(m == 0)
           {
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
             std::cout << "\tclip: P=" << P << ", before=" << inputShape;
 #endif
             remaining = axom::primal::clip(inputShape, P);
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
             std::cout << ", after=" << clippedShape << std::endl;
 #endif
           }
           else
           {
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
             std::cout << "\tclip: P=" << P << ", before=" << remaining;
 #endif
             remaining = axom::primal::clip(remaining, P);
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
             std::cout << ", after=" << remaining << std::endl;
 #endif
           }

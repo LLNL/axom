@@ -84,7 +84,7 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
   double f_t[2] = {0., matVolume};
   // The blend value within the current interval.
   double t_blend = 0.5;
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
   std::cout << "\tclipToVolume: shape=" << shape << std::endl;
 #endif
   ClipResultType clippedShape {};
@@ -105,7 +105,7 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
     const double fragmentVolume =
       bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
     const double volumeError = axom::utilities::abs(matVolume - fragmentVolume);
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
     std::cout << "\t\titerations=" << iterations << ", t_blend=" << t_blend << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
 #endif
     if((volumeError <= tolerance) || (iterations >= max_iterations))
@@ -346,7 +346,7 @@ public:
       m_mat_sizes[fragmentOffset] = static_cast<MaterialID>(1);
       m_mat_offsets[fragmentOffset] = fragmentOffset;
       m_mat_indices[fragmentOffset] = fragmentOffset;
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
       std::cout << "\taddShape: zone=" << zoneIndex << ", fragmentOffset=" << fragmentOffset << ", mat=" << matId << ", shape=" << shape << std::endl;
 #endif
     }
@@ -597,7 +597,7 @@ public:
       int *subelement_offsets = m_subelement_offsets.data() + fragmentOffset * MAX_FACES_PER_FRAGMENT;
       int numFaces;
       shape.getFaces(subelement_connectivity, subelement_sizes, subelement_offsets, numFaces);
-#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS)
+#if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
       std::cout << "addShape: zoneIndex=" << zoneIndex << ", fragmentOffset=" << fragmentOffset << ", nverts=" << nverts << ", numFaces=" << numFaces << ", subelement_connectivity={";
       for(int i = 0; i < MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE; i++)
       {

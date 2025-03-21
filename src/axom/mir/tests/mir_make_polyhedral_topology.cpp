@@ -134,7 +134,6 @@ struct make_polyhedral
 };
 
 //------------------------------------------------------------------------------
-#if 1
 TEST(mir_make_polyhedral_topology, uniform_seq)
 {
   AXOM_ANNOTATE_SCOPE("uniform_seq");
@@ -158,13 +157,12 @@ TEST(mir_make_polyhedral_topology, wedges_seq)
   AXOM_ANNOTATE_SCOPE("wedges_seq");
   make_polyhedral<seq_exec>::test("wedges", "make_polyhedral_wedges");
 }
-#endif
+
 TEST(mir_make_polyhedral_topology, hexs_seq)
 {
   AXOM_ANNOTATE_SCOPE("hexs_seq");
   make_polyhedral<seq_exec>::test("hexs", "make_polyhedral_hexs");
 }
-#if 0
 
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_make_polyhedral_topology, uniform_omp)
@@ -261,7 +259,7 @@ TEST(mir_make_polyhedral_topology, hexs_hip)
   make_polyhedral<hip_exec>::test("hexs", "make_polyhedral_hexs");
 }
 #endif
-#endif
+
 //------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {

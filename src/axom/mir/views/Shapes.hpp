@@ -73,7 +73,11 @@ struct PointTraits
     return zoneIndex;
   }
 
-  constexpr static IndexType faces[][1] = {{0}};
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 1> getFace(IndexType faceIndex)
+  {
+    assert(faceIndex == 0);
+    return StackArray<IndexType, 1>{0};
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int AXOM_UNUSED_PARAM(edgeIndex))
@@ -116,7 +120,11 @@ struct LineTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  constexpr static IndexType faces[][2] = {{0, 1}};
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getFace(IndexType faceIndex)
+  {
+    assert(faceIndex == 0);
+    return StackArray<IndexType, 2>{0,1};
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int /*edgeIndex*/)
@@ -165,7 +173,11 @@ struct TriTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  constexpr static IndexType faces[][3] = {{0, 1, 2}};
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(IndexType faceIndex)
+  {
+    assert(faceIndex == 0);
+    return StackArray<IndexType, 3>{0,1,2};
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int edgeIndex)
@@ -215,7 +227,11 @@ struct QuadTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  constexpr static IndexType faces[][4] = {{0, 1, 2, 3}};
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  {
+    assert(faceIndex == 0);
+    return StackArray<IndexType, 4>{0,1,2,3};
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int edgeIndex)
@@ -271,10 +287,15 @@ struct TetTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  constexpr static IndexType faces[][3] = {{0, 1, 3},
-                                           {1, 2, 3},
-                                           {2, 0, 3},
-                                           {0, 2, 1}};
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(IndexType faceIndex)
+  {
+    const axom::StackArray<IndexType, 3> faces[] = {{0, 1, 3},
+                                                    {1, 2, 3},
+                                                    {2, 0, 3},
+                                                    {0, 2, 1}};
+    assert(faceIndex >= 0 && faceIndex < numberOfFaces());
+    return faces[faceIndex];
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int edgeIndex)
@@ -331,11 +352,16 @@ struct PyramidTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  constexpr static int faces[][4] = {{3, 2, 1, 0},
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  {
+    const axom::StackArray<IndexType, 4> faces[] = {{3, 2, 1, 0},
                                      {0, 1, 4, -1},
                                      {1, 2, 4, -1},
                                      {2, 3, 4, -1},
                                      {3, 0, 4, -1}};
+    assert(faceIndex >= 0 && faceIndex < numberOfFaces());
+    return faces[faceIndex];
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int edgeIndex)
@@ -394,11 +420,16 @@ struct WedgeTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  constexpr static int faces[][4] = {{0, 2, 1, -1},
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  {
+    const axom::StackArray<IndexType, 4> faces[] = {{0, 2, 1, -1},
                                      {3, 4, 5, -1},
                                      {0, 1, 4, 3},
                                      {1, 2, 5, 4},
                                      {2, 0, 3, 5}};
+    assert(faceIndex >= 0 && faceIndex < numberOfFaces());
+    return faces[faceIndex];
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int edgeIndex)
@@ -456,12 +487,17 @@ struct HexTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  constexpr static IndexType faces[][4] = {{3, 0, 4, 7},
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  {
+    const axom::StackArray<IndexType, 4> faces[] = {{3, 0, 4, 7},
                                            {1, 2, 6, 5},
                                            {0, 1, 5, 4},
                                            {3, 7, 6, 2},
                                            {0, 3, 2, 1},
                                            {4, 5, 6, 7}};
+    assert(faceIndex >= 0 && faceIndex < numberOfFaces());
+    return faces[faceIndex];
+  }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int edgeIndex)
@@ -701,9 +737,10 @@ struct Shape : public ShapeTraits
     getFace(axom::IndexType faceIndex, ConnectivityType *ids, axom::IndexType &numIds) const
   {
     numIds = ShapeTraits::numberOfNodesInFace(faceIndex);
+    const auto faceIds = ShapeTraits::getFace(faceIndex);
     for(IndexType i = 0; i < numIds; i++)
     {
-      ids[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
+      ids[i] = m_ids[faceIds[i]];
     }
   }
   /// @}

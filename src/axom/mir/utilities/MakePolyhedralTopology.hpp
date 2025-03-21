@@ -158,7 +158,7 @@ public:
     {
       const auto zone = deviceTopologyView.zone(zoneIndex);
       // This where the zone's faces begin in se_conn. We'll update it as we add faces.
-      auto offset = zoneFaceOffsets[zoneIndex];
+      auto offset = zoneFaceOffsetsView[zoneIndex];
 
       for(axom::IndexType fi = 0; fi < zone.numberOfFaces(); fi++)
       {

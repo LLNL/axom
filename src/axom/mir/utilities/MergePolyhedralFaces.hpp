@@ -56,13 +56,13 @@ public:
     // Get the data from the topology and make views.
     conduit::Node &n_elem_conn = n_topo["elements/connectivity"];
     //conduit::Node &n_elem_sizes = n_topo["elements/sizes"];
-    conduit::Node &n_elem_offsets = n_topo["elements/offsets"];
+    //conduit::Node &n_elem_offsets = n_topo["elements/offsets"];
     conduit::Node &n_se_conn = n_topo["subelements/connectivity"];
     conduit::Node &n_se_sizes = n_topo["subelements/sizes"];
     conduit::Node &n_se_offsets = n_topo["subelements/offsets"];
     auto elem_conn = bputils::make_array_view<ConnectivityType>(n_elem_conn);
     //auto elem_sizes = bputils::make_array_view<ConnectivityType>(n_elem_sizes);
-    auto elem_offsets = bputils::make_array_view<ConnectivityType>(n_elem_offsets);
+    //auto elem_offsets = bputils::make_array_view<ConnectivityType>(n_elem_offsets);
     auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
     auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
     auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
@@ -79,7 +79,7 @@ public:
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("naming");
-    using NamingType = HashNaming<ConnectivityType, 4>;
+    using NamingType = HashNaming<ConnectivityType, 5>;
     using KeyType = typename NamingType::KeyType;
 
     NamingType naming;
@@ -96,14 +96,6 @@ public:
       const auto faceIds = se_conn.data() + se_offsets[faceIndex];
 
       // Make a name for this face.
-      constexpr int MAX_PTS = 10;
-      SLIC_ASSERT(numFaceIds <= MAX_PTS);
-      // Copy the faceIds because naming will sort them.
-      ConnectivityType dupIds[MAX_PTS];
-      for(axom::IndexType i = 0; i < numFaceIds; i++)
-      {
-        dupIds[i] = faceIds[i];
-      }
       faceNamesView[faceIndex] = namingView.makeName(faceIds, numFaceIds);
     });
     AXOM_ANNOTATE_END("naming");
@@ -118,6 +110,8 @@ public:
 
     // Make faces unique.
     axom::mir::utilities::Unique<ExecSpace, std::uint64_t>::execute(faceNamesView, uniqueKeys, selectedFaces);
+    const auto uniqueKeysView = uniqueKeys.view();
+    const auto selectedFacesView = selectedFaces.view();
     AXOM_ANNOTATE_END("unique");
 
     //--------------------------------------------------------------------------
@@ -138,7 +132,7 @@ public:
     RAJA::ReduceSum<reduce_policy, axom::IndexType> reduceNewSizes(0);
     axom::for_all<ExecSpace>(selectedFaces.size(), AXOM_LAMBDA(axom::IndexType index)
     {
-      const auto size =  se_sizes[selectedFaces[index]];
+      const auto size =  se_sizes[selectedFacesView[index]];
       new_se_sizes[index] = size;
       reduceNewSizes += size;
     });
@@ -157,7 +151,7 @@ public:
     {
       const auto numFaceIds = new_se_sizes[index];
       const auto destOffset = new_se_offsets[index];
-      const auto srcOffset = se_offsets[selectedFaces[index]];
+      const auto srcOffset = se_offsets[selectedFacesView[index]];
       for(axom::IndexType i = 0; i < numFaceIds; i++)
       {
         new_se_conn[destOffset + i] = se_conn[srcOffset + i];
@@ -165,7 +159,6 @@ public:
     });
 
     // Now, rewrite the connectivity with the new face ids.
-    const auto uniqueKeysView = uniqueKeys.view();
     axom::for_all<ExecSpace>(elem_conn.size(), AXOM_LAMBDA(axom::IndexType index)
     {
       const auto originalFaceId = elem_conn[index];
