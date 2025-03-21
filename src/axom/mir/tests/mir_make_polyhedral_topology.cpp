@@ -13,10 +13,10 @@
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-#define AXOM_TESTING_GENERATE_BASELINES
+// #define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-#define AXOM_TESTING_SAVE_VISUALIZATION
+// #define AXOM_TESTING_SAVE_VISUALIZATION
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
@@ -58,41 +58,51 @@ struct make_polyhedral
     {
       auto topologyView = views::make_uniform<3>::view(n_input);
       using TopologyView = decltype(topologyView);
+      using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else if(type == "tets")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::TetShape<conduit::index_t>>::view(n_input);
+      auto topologyView = views::make_unstructured_single_shape<views::TetShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
+      using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else if(type == "pyramids")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::PyramidShape<conduit::index_t>>::view(n_input);
+      auto topologyView = views::make_unstructured_single_shape<views::PyramidShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
+      using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else if(type == "wedges")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::WedgeShape<conduit::index_t>>::view(n_input);
+      auto topologyView = views::make_unstructured_single_shape<views::WedgeShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
+      using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else if(type == "hexs")
     {
       auto topologyView = views::make_unstructured_single_shape<views::HexShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
+      using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else
     {
@@ -124,7 +134,7 @@ struct make_polyhedral
 };
 
 //------------------------------------------------------------------------------
-#if 0
+#if 1
 TEST(mir_make_polyhedral_topology, uniform_seq)
 {
   AXOM_ANNOTATE_SCOPE("uniform_seq");

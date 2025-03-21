@@ -8,7 +8,6 @@
 #include "axom/core.hpp"
 #include "axom/mir/utilities/utilities.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
-#include "axom/mir/utilities/MergePolyhedralFaces.hpp"
 
 #include <conduit/conduit.hpp>
 
@@ -177,10 +176,6 @@ public:
     });
     axom::exclusive_scan<ExecSpace>(se_sizes, se_offsets);
     AXOM_ANNOTATE_END("subelements");
-
-    //--------------------------------------------------------------------------
-    // Merge the face definitions and rewrite the connectivity.
-//    MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_newTopo);
   }
 
   TopologyView m_topologyView;
