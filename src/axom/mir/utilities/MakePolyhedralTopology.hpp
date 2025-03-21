@@ -58,7 +58,7 @@ public:
    * \param[out] n_newTopo The node that will contain the new polyhedral topology.
    *
    */
-  void execute(const conduit::Node &AXOM_UNUSED_PARAM(n_topo),
+  void execute(const conduit::Node &n_topo,
                conduit::Node &n_newTopo) const
   {
     AXOM_ANNOTATE_SCOPE("MakePolyhedralTopology");
@@ -72,7 +72,9 @@ public:
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("counting");
     n_newTopo["type"] = "unstructured";
+    n_newTopo["coordset"] = n_topo["coordset"].as_string();
     n_newTopo["elements/shape"] = "polyhedral";
+    n_newTopo["subelements/shape"] = "polygonal";
 
     // This node is the number of faces in each zone.
     conduit::Node &n_elem_sizes = n_newTopo["elements/sizes"];
@@ -121,7 +123,7 @@ public:
     conduit::Node &n_elem_conn = n_newTopo["elements/connectivity"];
     n_elem_conn.set_allocator(c2a.getConduitAllocatorID());
     n_elem_conn.set(
-      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, totalFaceStorage));
+      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, totalFaces));
     auto elem_conn = bputils::make_array_view<ConnectivityType>(n_elem_conn);
     axom::for_all<ExecSpace>(totalFaces, AXOM_LAMBDA(axom::IndexType faceIndex)
     {
@@ -178,7 +180,7 @@ public:
 
     //--------------------------------------------------------------------------
     // Merge the face definitions and rewrite the connectivity.
-    MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_newTopo);
+//    MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_newTopo);
   }
 
   TopologyView m_topologyView;

@@ -55,13 +55,13 @@ public:
 
     // Get the data from the topology and make views.
     conduit::Node &n_elem_conn = n_topo["elements/connectivity"];
-    conduit::Node &n_elem_sizes = n_topo["elements/sizes"];
+    //conduit::Node &n_elem_sizes = n_topo["elements/sizes"];
     conduit::Node &n_elem_offsets = n_topo["elements/offsets"];
     conduit::Node &n_se_conn = n_topo["subelements/connectivity"];
     conduit::Node &n_se_sizes = n_topo["subelements/sizes"];
     conduit::Node &n_se_offsets = n_topo["subelements/offsets"];
     auto elem_conn = bputils::make_array_view<ConnectivityType>(n_elem_conn);
-    auto elem_sizes = bputils::make_array_view<ConnectivityType>(n_elem_sizes);
+    //auto elem_sizes = bputils::make_array_view<ConnectivityType>(n_elem_sizes);
     auto elem_offsets = bputils::make_array_view<ConnectivityType>(n_elem_offsets);
     auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
     auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);

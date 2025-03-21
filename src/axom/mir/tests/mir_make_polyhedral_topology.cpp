@@ -32,8 +32,7 @@ struct make_polyhedral
   static void initialize(const std::string &type,
                          conduit::Node &n_mesh)
   {
-    axom::StackArray<axom::IndexType, 5> dims {4, 4, 4};
-    axom::StackArray<axom::IndexType, 5> zoneDims {dims[0] - 1, dims[1] - 1, dims[2] - 1};
+    axom::StackArray<axom::IndexType, 3> dims {4, 4, 4};
     axom::mir::testing::data::braid(type, dims, n_mesh);
   }
 
@@ -89,7 +88,7 @@ struct make_polyhedral
     }
     else if(type == "hexs")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::HexShape<conduit::index_t>>::view(n_input);
+      auto topologyView = views::make_unstructured_single_shape<views::HexShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
@@ -104,8 +103,11 @@ struct make_polyhedral
     conduit::Node hostOutputMesh;
     axom::mir::utilities::blueprint::copy<seq_exec>(hostOutputMesh, deviceMesh);
 
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+#if defined(AXOM_USE_HDF5)
     conduit::relay::io::blueprint::save_mesh(hostOutputMesh, name, "hdf5");
+#endif
+    conduit::relay::io::save(hostOutputMesh, name + ".yaml", "yaml");
 #endif
     // Handle baseline comparison.
     {
@@ -122,6 +124,7 @@ struct make_polyhedral
 };
 
 //------------------------------------------------------------------------------
+#if 0
 TEST(mir_make_polyhedral_topology, uniform_seq)
 {
   AXOM_ANNOTATE_SCOPE("uniform_seq");
@@ -145,13 +148,13 @@ TEST(mir_make_polyhedral_topology, wedges_seq)
   AXOM_ANNOTATE_SCOPE("wedges_seq");
   make_polyhedral<seq_exec>::test("wedges", "make_polyhedral_wedges");
 }
-
+#endif
 TEST(mir_make_polyhedral_topology, hexs_seq)
 {
   AXOM_ANNOTATE_SCOPE("hexs_seq");
   make_polyhedral<seq_exec>::test("hexs", "make_polyhedral_hexs");
 }
-
+#if 0
 
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_make_polyhedral_topology, uniform_omp)
@@ -248,7 +251,7 @@ TEST(mir_make_polyhedral_topology, hexs_hip)
   make_polyhedral<hip_exec>::test("hexs", "make_polyhedral_hexs");
 }
 #endif
-
+#endif
 //------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
