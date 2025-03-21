@@ -55,7 +55,7 @@ Communicators
 ===================== ===================
 Name                  Description
 ===================== ===================
-swapCommunicator      Swaps communicator instance stored in Lumberjack
+setCommunicator       Sets communicator instance stored in Lumberjack
 getCommunicator       Returns pointer to communicator instance stored in Lumberjack
 isCommunicatorOwned   Returns Boolean flag that controls whether communicator instance is owned by Lumberjack
 ===================== ===================
