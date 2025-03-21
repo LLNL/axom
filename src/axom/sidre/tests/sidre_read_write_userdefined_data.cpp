@@ -340,75 +340,87 @@ void test_external_user_defined_data()
   return;
 #endif
 
-  // populate data
   constexpr IndexType size = 10;
-  axom::Array<T, DIM> states(size, size);
-  fill_array(states, 0, true);
+  IndexType num_states {0};
+  IndexType state_size {0};
+  IndexType total_size {0};
+  IndexType num_uint8s {0};
 
-  // Create datastore
   DataStore ds;
   Group* root = ds.getRoot();
 
-  // get size
-  auto num_states = static_cast<IndexType>(states.size());
-  auto state_size = static_cast<IndexType>(sizeof(*(states.begin())));
-  auto total_size = num_states * state_size;
-  auto num_uint8s = total_size / sizeof(std::uint8_t);
+  const std::string filename = "sidre_external_states";
 
-  SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
-  SLIC_INFO(axom::fmt::format("State Size={}", state_size));
-  SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
-  SLIC_INFO(
-    axom::fmt::format("Total Size/State Size={}", total_size / state_size));
-  SLIC_INFO(axom::fmt::format("Num of uint8={}", num_uint8s));
+  // populate data
+  {
+    axom::Array<T, DIM> states(size, size);
+    fill_array(states, 0, true);
 
-  // write shape
-  root->createViewScalar("num_states", num_states);
-  root->createViewScalar("state_size", state_size);
-  root->createViewScalar("total_size", total_size);
+    // get size
+    num_states = static_cast<IndexType>(states.size());
+    state_size = static_cast<IndexType>(sizeof(*(states.begin())));
+    total_size = num_states * state_size;
+    num_uint8s = total_size / sizeof(std::uint8_t);
 
-  // Add states as an external buffer
-  View* states_view = root->createView("states");
-  states_view->setExternalDataPtr(axom::sidre::UINT8_ID,
-                                  num_uint8s,
-                                  states.data());
+    SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
+    SLIC_INFO(axom::fmt::format("State Size={}", state_size));
+    SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
+    SLIC_INFO(
+      axom::fmt::format("Total Size/State Size={}", total_size / state_size));
+    SLIC_INFO(axom::fmt::format("Num of uint8={}", num_uint8s));
 
-  // Save the array data into a file
-  std::string filename = "sidre_external_states";
-  root->save(filename);
+    // write shape
+    root->createViewScalar("num_states", num_states);
+    root->createViewScalar("state_size", state_size);
+    root->createViewScalar("total_size", total_size);
+
+    // Add states as an external buffer
+    View* states_view = root->createView("states");
+    states_view->setExternalDataPtr(axom::sidre::UINT8_ID,
+                                    num_uint8s,
+                                    states.data());
+
+    // Save the array data into a file
+    root->save(filename);
+  }
 
   // Load data into new array
-  Group* loaded_group = root->createGroup("loaded_data");
-  loaded_group->load(filename);
+  {
+    Group* loaded_group = root->createGroup("loaded_data");
+    loaded_group->load(filename);
 
-  // Verify size correctness
-  EXPECT_TRUE(loaded_group->hasView("num_states"));
-  auto loaded_num_states =
-    loaded_group->getView("num_states")->getData<axom::IndexType>();
-  EXPECT_TRUE(num_states == loaded_num_states);
+    // Verify size correctness
+    EXPECT_TRUE(loaded_group->hasView("num_states"));
+    auto loaded_num_states =
+      loaded_group->getView("num_states")->getData<axom::IndexType>();
+    EXPECT_EQ(num_states, loaded_num_states);
 
-  EXPECT_TRUE(loaded_group->hasView("state_size"));
-  auto loaded_state_size =
-    loaded_group->getView("state_size")->getData<axom::IndexType>();
-  EXPECT_TRUE(state_size == loaded_state_size);
+    EXPECT_TRUE(loaded_group->hasView("state_size"));
+    auto loaded_state_size =
+      loaded_group->getView("state_size")->getData<axom::IndexType>();
+    EXPECT_EQ(state_size, loaded_state_size);
 
-  EXPECT_TRUE(loaded_group->hasView("total_size"));
-  auto loaded_total_size =
-    loaded_group->getView("total_size")->getData<axom::IndexType>();
-  EXPECT_TRUE(total_size == loaded_total_size);
+    EXPECT_TRUE(loaded_group->hasView("total_size"));
+    auto loaded_total_size =
+      loaded_group->getView("total_size")->getData<axom::IndexType>();
+    EXPECT_EQ(total_size, loaded_total_size);
 
-  // Create new array to fill with loaded data
-  axom::Array<T, DIM> loaded_states(size, size);
-  fill_array(loaded_states, -1, false);
+    EXPECT_TRUE(loaded_group->hasView("states"));
+    auto loaded_states_size = loaded_group->getView("states")->getNumElements();
+    EXPECT_EQ(num_uint8s, loaded_states_size);
 
-  // Load external data
-  EXPECT_TRUE(loaded_group->hasView("states"));
-  View* loaded_states_view = loaded_group->getView("states");
-  loaded_states_view->setExternalDataPtr(loaded_states.data());
-  loaded_group->loadExternalData(filename);
+    // Create new array to fill with loaded data
+    axom::Array<T, DIM> loaded_states(size, size);
+    fill_array(loaded_states, -1, false);
 
-  // Test data was read into the new location and overwrote the bad data
-  check_array(loaded_states);
+    // Load external data
+    View* loaded_states_view = loaded_group->getView("states");
+    loaded_states_view->setExternalDataPtr(loaded_states.data());
+    loaded_group->loadExternalData(filename);
+
+    // Test data was read into the new location and overwrote the bad data
+    check_array(loaded_states);
+  }
 }
 
 #if defined(AXOM_USE_MFEM) && defined(AXOM_USE_HDF5)
@@ -419,85 +431,99 @@ void test_MFEMSidreDataCollection_user_defined_data()
   std::string test_name =
     ::testing::UnitTest::GetInstance()->current_test_info()->name();
 
-  // populate data
   constexpr IndexType size = 10;
-  axom::Array<T, DIM> states(size, size);
-  fill_array(states, 0, true);
+  IndexType num_states {0};
+  IndexType state_size {0};
+  IndexType total_size {0};
+  IndexType num_uint8s {0};
 
-  // Create MFEMSidreDataCollection
-  auto* mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian1D(10));
-  const bool owns_mesh_data = true;
-  MFEMSidreDataCollection sdc_writer(test_name, mesh, owns_mesh_data);
-  Group* bp_group = sdc_writer.GetBPGroup();
+  // populate data into Data Collection and save
+  {
+    axom::Array<T, DIM> states(size, size);
+    fill_array(states, 0, true);
 
-  // get size
-  auto num_states = static_cast<IndexType>(states.size());
-  auto state_size = static_cast<IndexType>(sizeof(*(states.begin())));
-  auto total_size = num_states * state_size;
-  auto num_uint8s = total_size / sizeof(std::uint8_t);
+    // Create MFEMSidreDataCollection
+    auto* mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian1D(10));
+    const bool owns_mesh_data = true;
+    MFEMSidreDataCollection sdc_writer(test_name, mesh, owns_mesh_data);
+    Group* bp_group = sdc_writer.GetBPGroup();
 
-  SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
-  SLIC_INFO(axom::fmt::format("State Size={}", state_size));
-  SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
-  SLIC_INFO(
-    axom::fmt::format("Total Size/State Size={}", total_size / state_size));
-  SLIC_INFO(axom::fmt::format("Num of uint8={}", num_uint8s));
+    // get size
+    num_states = static_cast<IndexType>(states.size());
+    state_size = static_cast<IndexType>(sizeof(*(states.begin())));
+    total_size = num_states * state_size;
+    num_uint8s = total_size / sizeof(std::uint8_t);
 
-  // write shape
-  bp_group->createViewScalar("num_states", num_states);
-  bp_group->createViewScalar("state_size", state_size);
-  bp_group->createViewScalar("total_size", total_size);
+    SLIC_INFO(axom::fmt::format("Num of States={}", num_states));
+    SLIC_INFO(axom::fmt::format("State Size={}", state_size));
+    SLIC_INFO(axom::fmt::format("Total Size={}", total_size));
+    SLIC_INFO(
+      axom::fmt::format("Total Size/State Size={}", total_size / state_size));
+    SLIC_INFO(axom::fmt::format("Num of uint8={}", num_uint8s));
 
-  // Add states as an external buffer
-  View* states_view = bp_group->createView("states");
-  states_view->setExternalDataPtr(axom::sidre::UINT8_ID,
-                                  num_uint8s,
-                                  states.data());
+    // write shape
+    bp_group->createViewScalar("num_states", num_states);
+    bp_group->createViewScalar("state_size", state_size);
+    bp_group->createViewScalar("total_size", total_size);
+
+    // Add states as an external buffer
+    View* states_view = bp_group->createView("states");
+    states_view->setExternalDataPtr(axom::sidre::UINT8_ID,
+                                    num_uint8s,
+                                    states.data());
 
   // Save the array data into a file
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  sdc_writer.SetComm(MPI_COMM_WORLD);
+    sdc_writer.SetComm(MPI_COMM_WORLD);
   #endif
-  sdc_writer.SetCycle(0);
-  sdc_writer.Save();
+    sdc_writer.SetCycle(0);
+    sdc_writer.Save();
+  }
 
   // Load data into new Data Collection
-  MFEMSidreDataCollection sdc_reader(test_name);
+  {
+    MFEMSidreDataCollection sdc_reader(test_name);
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  sdc_reader.SetComm(MPI_COMM_WORLD);
+    sdc_reader.SetComm(MPI_COMM_WORLD);
   #endif
-  sdc_reader.Load();
+    sdc_reader.Load();
 
-  Group* loaded_bp_group = sdc_reader.GetBPGroup();
+    Group* loaded_bp_group = sdc_reader.GetBPGroup();
 
-  // Verify size correctness
-  EXPECT_TRUE(loaded_bp_group->hasView("num_states"));
-  auto loaded_num_states =
-    loaded_bp_group->getView("num_states")->getData<axom::IndexType>();
-  EXPECT_TRUE(num_states == loaded_num_states);
+    // Verify size correctness
+    EXPECT_TRUE(loaded_bp_group->hasView("num_states"));
+    auto loaded_num_states =
+      loaded_bp_group->getView("num_states")->getData<axom::IndexType>();
+    EXPECT_EQ(num_states, loaded_num_states);
 
-  EXPECT_TRUE(loaded_bp_group->hasView("state_size"));
-  auto loaded_state_size =
-    loaded_bp_group->getView("state_size")->getData<axom::IndexType>();
-  EXPECT_TRUE(state_size == loaded_state_size);
+    EXPECT_TRUE(loaded_bp_group->hasView("state_size"));
+    auto loaded_state_size =
+      loaded_bp_group->getView("state_size")->getData<axom::IndexType>();
+    EXPECT_EQ(state_size, loaded_state_size);
 
-  EXPECT_TRUE(loaded_bp_group->hasView("total_size"));
-  auto loaded_total_size =
-    loaded_bp_group->getView("total_size")->getData<axom::IndexType>();
-  EXPECT_TRUE(total_size == loaded_total_size);
+    EXPECT_TRUE(loaded_bp_group->hasView("total_size"));
+    auto loaded_total_size =
+      loaded_bp_group->getView("total_size")->getData<axom::IndexType>();
+    EXPECT_EQ(total_size, loaded_total_size);
 
-  // Create new array to fill with loaded data
-  axom::Array<T, DIM> loaded_states(size, size);
-  fill_array(loaded_states, -1, false);
+    EXPECT_TRUE(loaded_bp_group->hasView("states"));
+    auto loaded_states_size =
+      loaded_bp_group->getView("states")->getNumElements();
+    EXPECT_EQ(num_uint8s, loaded_states_size);
 
-  // Load external data
-  EXPECT_TRUE(loaded_bp_group->hasView("states"));
-  View* loaded_states_view = loaded_bp_group->getView("states");
-  loaded_states_view->setExternalDataPtr(loaded_states.data());
-  sdc_reader.LoadExternalData();
+    // Create new array to fill with loaded data
+    axom::Array<T, DIM> loaded_states(size, size);
+    fill_array(loaded_states, -1, false);
 
-  // Test data was read into the new location and overwrote the bad data
-  check_array(loaded_states);
+    // Load external data
+    EXPECT_TRUE(loaded_bp_group->hasView("states"));
+    View* loaded_states_view = loaded_bp_group->getView("states");
+    loaded_states_view->setExternalDataPtr(loaded_states.data());
+    sdc_reader.LoadExternalData();
+
+    // Test data was read into the new location and overwrote the bad data
+    check_array(loaded_states);
+  }
 }
 
 #endif  // defined(AXOM_USE_MFEM) && defined(AXOM_USE_HDF5)

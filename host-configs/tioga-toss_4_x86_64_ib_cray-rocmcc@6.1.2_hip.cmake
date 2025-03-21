@@ -132,7 +132,7 @@ set(CAMP_DIR "${TPL_ROOT}/camp-2024.07.0-hcbpird6z6buwcx5sd5t3aqho4yxqv6z" CACHE
 
 set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/2024_10_28_13_16_23/._view/duoudtvvq736czrjvwlncemhjhg3agix" CACHE PATH "")
 
-set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/rocmcc/rocmcc-5.2.3-magic/llvm/bin/clang-format" CACHE PATH "")
+set(CLANGFORMAT_EXECUTABLE "/usr/tce/packages/rocmcc/rocmcc-6.2.1-magic/llvm/bin/clang-format" CACHE PATH "")
 
 set(PYTHON_EXECUTABLE "/collab/usr/gapps/axom/devtools/toss_4_x86_64_ib_cray/2024_10_28_13_16_23/gcc-10.3.1/python-3.12.5-khbdgeaypdfyrrvyywvvqt47x66jd5ol/bin/python3.12" CACHE PATH "")
 

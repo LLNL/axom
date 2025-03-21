@@ -376,7 +376,9 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
   const std::string& topoName)
 {
   AXOM_ANNOTATE_SCOPE("convert_to_unstructured");
-  constexpr int DIM = 3;
+  // Note: MSVC required `static` to pass DIM to the axom::for_all w/ C++14
+  // this restriction might be lifted w/ C++17
+  static constexpr int DIM = 3;
 
   const std::string& coordsetName =
     meshGrp->getView("topologies/" + topoName + "/coordset")->getString();
@@ -514,8 +516,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
   const std::string& topoName)
 {
   AXOM_ANNOTATE_SCOPE("convert_to_unstructured");
-  constexpr int DIM = 2;
-  constexpr int NUM_VERTS_PER_QUAD = 4;
+  static constexpr int DIM = 2;
+  static constexpr int NUM_VERTS_PER_QUAD = 4;
 
   const std::string& coordsetName =
     meshGrp->getView("topologies/" + topoName + "/coordset")->getString();
