@@ -878,36 +878,16 @@ struct VariableShape
     return nnodes;
   }
 
-  AXOM_HOST_DEVICE IndexType maxNodesInFace() const
+  AXOM_HOST_DEVICE static constexpr IndexType maxNodesInFace()
   {
-    IndexType nnodes = 0;
-    switch(m_shapeId)
-    {
-    case Line_ShapeID:
-      nnodes = LineTraits::maxNodesInFace();
-      break;
-    case Tri_ShapeID:
-      nnodes = TriTraits::maxNodesInFace();
-      break;
-    case Quad_ShapeID:
-      nnodes = QuadTraits::maxNodesInFace();
-      break;
-    case Polygon_ShapeID:
-      nnodes = PolygonShape<int>::maxNodesInFace();
-      break;
-    case Tet_ShapeID:
-      nnodes = TetTraits::maxNodesInFace();
-      break;
-    case Pyramid_ShapeID:
-      nnodes = PyramidTraits::maxNodesInFace();
-      break;
-    case Wedge_ShapeID:
-      nnodes = WedgeTraits::maxNodesInFace();
-      break;
-    case Hex_ShapeID:
-      nnodes = HexTraits::maxNodesInFace();
-      break;
-    }
+    IndexType nnodes = LineTraits::maxNodesInFace();
+    nnodes = std::max(nnodes, TriTraits::maxNodesInFace());
+    nnodes = std::max(nnodes, QuadTraits::maxNodesInFace());
+    nnodes = std::max(nnodes, PolygonTraits::maxNodesInFace());
+    nnodes = std::max(nnodes, TetTraits::maxNodesInFace());
+    nnodes = std::max(nnodes, PyramidTraits::maxNodesInFace());
+    nnodes = std::max(nnodes, WedgeTraits::maxNodesInFace());
+    nnodes = std::max(nnodes, HexTraits::maxNodesInFace());
     return nnodes;
   }
 

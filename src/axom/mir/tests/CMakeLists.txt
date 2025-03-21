@@ -22,6 +22,7 @@ set(gtest_mir_tests
     mir_equiz2d.cpp
     mir_equiz3d.cpp
     mir_slicers.cpp
+    mir_make_polyhedral_topology.cpp
     mir_mergemeshes.cpp
     mir_node_to_zone_relation.cpp
     mir_topology_mapper.cpp

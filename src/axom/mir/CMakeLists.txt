@@ -70,11 +70,13 @@ set(mir_headers
     utilities/ExtrudeMesh.hpp
     utilities/FieldBlender.hpp
     utilities/FieldSlicer.hpp
+    utilities/MakePolyhedralTopology.hpp
     utilities/MakeZoneCenters.hpp
     utilities/MakeZoneVolumes.hpp
     utilities/MakeUnstructured.hpp
     utilities/MatsetSlicer.hpp
     utilities/MergeMeshes.hpp
+    utilities/MergePolyhedralFaces.hpp
     utilities/NodeToZoneRelationBuilder.hpp
     utilities/PrimalAdaptor.hpp
     utilities/RecenterField.hpp

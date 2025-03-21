@@ -279,7 +279,7 @@ public:
         sorted[0] = p[0];
         sorted[1] = p[1];
         sorted[2] = p[2];
-        axom::utilities::Sorting<IndexType, 3>::sort(sorted);
+        axom::utilities::Sorting<IndexType, 3>::sort(sorted, n);
 
         KeyType k0 = static_cast<KeyType>(sorted[0]) & Max20Bit;
         KeyType k1 = static_cast<KeyType>(sorted[1]) & Max20Bit;
@@ -295,7 +295,7 @@ public:
         sorted[1] = p[1];
         sorted[2] = p[2];
         sorted[3] = p[3];
-        axom::utilities::Sorting<IndexType, 4>::sort(sorted);
+        axom::utilities::Sorting<IndexType, 4>::sort(sorted, n);
 
         KeyType k0 = static_cast<KeyType>(sorted[0]) & Max15Bit;
         KeyType k1 = static_cast<KeyType>(sorted[1]) & Max15Bit;
