@@ -570,12 +570,17 @@ struct PolygonShape : public PolygonTraits
    * \brief Get the ids for the requested face.
    *
    * \param faceIndex The index of the desired face.
+   * \param[out] ids A buffer that will contain the ids.
+   * \param[out] numIds The number of ids returned for the face.
    *
-   * \return An array view (wrapping m_faceIds) that contains the ids for the face.
    */
-  AXOM_HOST_DEVICE ConnectivityView getFace(int AXOM_UNUSED_PARAM(faceIndex)) const
+  AXOM_HOST_DEVICE void getFace(int AXOM_UNUSED_PARAM(faceIndex), ConnectivityType *ids, axom::IndexType &numIds) const
   {
-    return m_ids;
+    numIds = m_ids.size();
+    for(axom::IndexType i = 0; i < numIds; i++)
+    {
+      ids[i] = m_ids[i];
+    }
   }
 
   AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex) const
@@ -608,7 +613,7 @@ struct Shape : public ShapeTraits
   /*!
    * \brief Construct a shape.
    */
-  AXOM_HOST_DEVICE Shape() : m_ids(), m_faceIds() { }
+  AXOM_HOST_DEVICE Shape() : m_ids() { }
 
   /*!
    * \brief Construct a shape.
@@ -617,7 +622,6 @@ struct Shape : public ShapeTraits
    */
   AXOM_HOST_DEVICE Shape(ConnectivityStorageConstRef ids)
     : m_ids(ids)
-    , m_faceIds()
   {
     SLIC_ASSERT(m_ids.size() == ShapeTraits::numberOfNodes());
   }
@@ -675,32 +679,37 @@ struct Shape : public ShapeTraits
    * \brief Get the ids for the requested face.
    *
    * \param faceIndex The index of the desired face.
-   *
-   * \return The ids that make up the face
+   * \param[out] ids A buffer that will contain the ids.
+   * \param[out] numIds The number of ids returned for the face.
    */
   /// @{
   template <int _ndims = ShapeTraits::dimension()>
   AXOM_HOST_DEVICE
-    typename std::enable_if<_ndims == 2, ConnectivityStorageConstRef>::type
-    getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex)) const
+    typename std::enable_if<_ndims < 3, void>::type
+    getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex), ConnectivityType *ids, axom::IndexType &numIds) const
   {
-    return m_ids;
+    numIds = static_cast<axom::IndexType>(m_ids.size());
+    for(axom::IndexType i = 0; i < numIds; i++)
+    {
+      ids[i] = m_ids[i];
+    }
   }
 
-  //  template <int _ndims = ShapeTraits::dimension()>
-  //  AXOM_HOST_DEVICE typename std::enable_if<_ndims > 2, ConnectivityStorage>::type
-  //  getFace(axom::IndexType faceIndex) const
-  //  {
-  //    const auto nnodes = ShapeTraits::numberOfNodesInFace(faceIndex);
-  //    for(IndexType i = 0; i < nnodes; i++)
-  //      m_faceIds[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
-  //    return ConnectivityStorage(m_faceIds.m_data, nnodes);
-  //  }
+  template <int _ndims = ShapeTraits::dimension()>
+  AXOM_HOST_DEVICE
+    typename std::enable_if<_ndims == 3, void>::type
+    getFace(axom::IndexType faceIndex, ConnectivityType *ids, axom::IndexType &numIds) const
+  {
+    numIds = ShapeTraits::numberOfNodesInFace(faceIndex);
+    for(IndexType i = 0; i < numIds; i++)
+    {
+      ids[i] = m_ids[ShapeTraits::faces[faceIndex][i]];
+    }
+  }
   /// @}
 
 private:
   ConnectivityStorage m_ids;
-  mutable axom::StackArray<ConnectivityType, ShapeTraits::maxNodesInFace()> m_faceIds;
 };
 
 /*!
@@ -933,6 +942,52 @@ struct VariableShape
       break;
     }
     return nfaces;
+  }
+
+  AXOM_HOST_DEVICE void getFace(axom::IndexType faceIndex, ConnectivityType *ids, axom::IndexType &numIds) const
+  {
+    switch(m_shapeId)
+    {
+    case Line_ShapeID:
+      // Falls through
+    case Tri_ShapeID:
+      // Falls through
+    case Quad_ShapeID:
+      // Falls through
+    case Polygon_ShapeID:
+      {
+        numIds = m_ids.size();
+        for(axom::IndexType i = 0; i < numIds; i++)
+        {
+          ids[i] = m_ids[i];
+        }
+      }
+      break;
+    case Tet_ShapeID:
+      {
+        TetShape<ConnectivityType> obj(m_ids);
+        obj.getFace(faceIndex, ids, numIds);
+      }
+      break;
+    case Pyramid_ShapeID:
+      {
+        PyramidShape<ConnectivityType> obj(m_ids);
+        obj.getFace(faceIndex, ids, numIds);
+      }
+      break;
+    case Wedge_ShapeID:
+      {
+        WedgeShape<ConnectivityType> obj(m_ids);
+        obj.getFace(faceIndex, ids, numIds);
+      }
+      break;
+    case Hex_ShapeID:
+      {
+        HexShape<ConnectivityType> obj(m_ids);
+        obj.getFace(faceIndex, ids, numIds);
+      }
+      break;
+    }
   }
 
   AXOM_HOST_DEVICE IndexType numberOfEdges() const

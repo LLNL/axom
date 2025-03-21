@@ -171,6 +171,16 @@ public:
         m_data.m_subelement_sizes[faceId]);
     }
 
+    AXOM_HOST_DEVICE void getFace(int faceIndex, ConnectivityType *ids, axom::IndexType &numIds) const
+    {
+      const auto faceIds = getFace(faceIndex);
+      numIds = faceIds.size();
+      for(axom::IndexType i = 0; i < numIds; i++)
+      {
+        ids[i] = faceIds[i];
+      }
+    }
+
   private:
     AXOM_HOST_DEVICE bool find(const ConnectivityType *arr,
                                axom::IndexType n,

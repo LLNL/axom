@@ -43,6 +43,9 @@ TEST(mir_views, shape2conduitName)
   EXPECT_EQ(axom::mir::views::QuadShape<int>::name(), "quad");
   EXPECT_EQ(axom::mir::views::QuadShape<long>::name(), "quad");
 
+  EXPECT_EQ(axom::mir::views::PolygonShape<int>::name(), "polygonal");
+  EXPECT_EQ(axom::mir::views::PolygonShape<long>::name(), "polygonal");
+
   EXPECT_EQ(axom::mir::views::TetShape<int>::name(), "tet");
   EXPECT_EQ(axom::mir::views::TetShape<long>::name(), "tet");
 
@@ -54,6 +57,105 @@ TEST(mir_views, shape2conduitName)
 
   EXPECT_EQ(axom::mir::views::HexShape<int>::name(), "hex");
   EXPECT_EQ(axom::mir::views::HexShape<long>::name(), "hex");
+}
+
+//------------------------------------------------------------------------------
+TEST(mir_views, shape_faces)
+{
+  using ConnType = int;
+
+  ConnType face[5];
+  axom::IndexType numIds;
+
+  ConnType tri_ids[] = {10, 20, 30};
+  axom::mir::views::TriShape<ConnType> triShape(axom::ArrayView<ConnType>(tri_ids, 3));
+  EXPECT_EQ(triShape.numberOfFaces(), 1);
+  triShape.getFace(0, face, numIds);
+  EXPECT_EQ(numIds, 3);
+  EXPECT_EQ(face[0], tri_ids[0]);
+  EXPECT_EQ(face[1], tri_ids[1]);
+  EXPECT_EQ(face[2], tri_ids[2]);
+
+  ConnType quad_ids[] = {10, 20, 30, 40};
+  axom::mir::views::QuadShape<ConnType> quadShape(axom::ArrayView<ConnType>(quad_ids, 4));
+  EXPECT_EQ(quadShape.numberOfFaces(), 1);
+  quadShape.getFace(0, face, numIds);
+  EXPECT_EQ(numIds, 4);
+  EXPECT_EQ(face[0], quad_ids[0]);
+  EXPECT_EQ(face[1], quad_ids[1]);
+  EXPECT_EQ(face[2], quad_ids[2]);
+  EXPECT_EQ(face[3], quad_ids[3]);
+
+  ConnType polygon_ids[] = {10, 20, 30, 40, 50};
+  axom::mir::views::PolygonShape<ConnType> polyShape(axom::ArrayView<ConnType>(polygon_ids, 5));
+  EXPECT_EQ(polyShape.numberOfFaces(), 1);
+  polyShape.getFace(0, face, numIds);
+  EXPECT_EQ(numIds, 5);
+  EXPECT_EQ(face[0], polygon_ids[0]);
+  EXPECT_EQ(face[1], polygon_ids[1]);
+  EXPECT_EQ(face[2], polygon_ids[2]);
+  EXPECT_EQ(face[3], polygon_ids[3]);
+  EXPECT_EQ(face[4], polygon_ids[4]);
+
+  ConnType tet_ids[] = {10, 20, 30, 40};
+  axom::mir::views::TetShape<ConnType> tetShape(axom::ArrayView<ConnType>(tet_ids, 4));
+  EXPECT_EQ(tetShape.numberOfFaces(), 4);
+  axom::IndexType tet_nids[4] = {3, 3, 3, 3};
+  ConnType tet_faces[4][3] = {{10, 20, 40}, {20, 30, 40}, {30, 10, 40}, {10, 30, 20}};
+  for(int f = 0; f < 4; f++)
+  {
+    tetShape.getFace(f, face, numIds);
+    EXPECT_EQ(numIds, tet_nids[f]);
+    for(axom::IndexType i = 0; i < tet_nids[f]; i++)
+    {
+      EXPECT_EQ(face[i], tet_faces[f][i]);
+    }
+  }
+
+  ConnType pyr_ids[] = {10, 20, 30, 40, 50};
+  axom::mir::views::PyramidShape<ConnType> pyrShape(axom::ArrayView<ConnType>(pyr_ids, 5));
+  EXPECT_EQ(pyrShape.numberOfFaces(), 5);
+  axom::IndexType pyr_nids[5] = {4, 3, 3, 3, 3};
+  ConnType pyr_faces[5][4] = {{40, 30, 20, 10}, {10, 20, 50, -1}, {20, 30, 50, -1}, {30, 40, 50, -1}, {40, 10, 50, -1}};
+  for(int f = 0; f < 4; f++)
+  {
+    pyrShape.getFace(f, face, numIds);
+    EXPECT_EQ(numIds, pyr_nids[f]);
+    for(axom::IndexType i = 0; i < pyr_nids[f]; i++)
+    {
+      EXPECT_EQ(face[i], pyr_faces[f][i]);
+    }
+  }
+
+  ConnType wed_ids[] = {10, 20, 30, 40, 50, 60};
+  axom::mir::views::WedgeShape<ConnType> wedShape(axom::ArrayView<ConnType>(wed_ids, 6));
+  EXPECT_EQ(wedShape.numberOfFaces(), 5);
+  axom::IndexType wed_nids[5] = {3, 3, 4, 4, 4};
+  ConnType wed_faces[5][4] = {{10, 30, 20, -1}, {40, 50, 60, -1}, {10, 20, 50, 40}, {20, 30, 60, 50}, {30, 10, 40, 60}};
+  for(int f = 0; f < 4; f++)
+  {
+    wedShape.getFace(f, face, numIds);
+    EXPECT_EQ(numIds, wed_nids[f]);
+    for(axom::IndexType i = 0; i < wed_nids[f]; i++)
+    {
+      EXPECT_EQ(face[i], wed_faces[f][i]);
+    }
+  }
+
+  ConnType hex_ids[] = {10, 20, 30, 40, 50, 60, 70, 80};
+  axom::mir::views::HexShape<ConnType> hexShape(axom::ArrayView<ConnType>(hex_ids, 8));
+  EXPECT_EQ(hexShape.numberOfFaces(), 6);
+  axom::IndexType hex_nids[6] = {4, 4, 4, 4, 4, 4};
+  ConnType hex_faces[6][4] = {{40, 10, 50, 80}, {20, 30, 70, 60}, {10, 20, 60, 50}, {40, 80, 70, 30}, {10, 40, 30, 20}, {50, 60, 70, 80}};
+  for(int f = 0; f < 6; f++)
+  {
+    hexShape.getFace(f, face, numIds);
+    EXPECT_EQ(numIds, hex_nids[f]);
+    for(axom::IndexType i = 0; i < hex_nids[f]; i++)
+    {
+      EXPECT_EQ(face[i], hex_faces[f][i]);
+    }
+  }
 }
 
 //------------------------------------------------------------------------------
