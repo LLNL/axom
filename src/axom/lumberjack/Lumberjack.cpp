@@ -263,9 +263,3 @@ void Lumberjack::combineMessages()
 }
 }  // end namespace lumberjack
 }  // end namespace axom
-
-template <typename Type>
-Type add(Type val1, Type val2)
-{
-  return val1 + val2;
-}
