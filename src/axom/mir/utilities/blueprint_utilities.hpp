@@ -244,8 +244,12 @@ void copy(conduit::Node &dest, const conduit::Node &src)
   }
   else
   {
-    if(!src.dtype().is_string() && src.dtype().number_of_elements() > 1)
+    const int allocatorID = axom::getAllocatorIDFromPointer(src.data_ptr());
+    bool deviceAllocated = isDeviceAllocator(allocatorID);
+    if(deviceAllocated || (!src.dtype().is_string() && src.dtype().number_of_elements() > 1))
     {
+      // std::cout << "Copying " << src.path() << "  " << src.dtype().name() << "[" << src.dtype().number_of_elements() << "], allocatorID=" << axom::getAllocatorIDFromPointer(src.data_ptr()) << std::endl;
+
       // Allocate the node's memory in the right place.
       dest.reset();
       dest.set_allocator(c2a.getConduitAllocatorID());
@@ -265,6 +269,8 @@ void copy(conduit::Node &dest, const conduit::Node &src)
     }
     else
     {
+      // std::cout << "!Copying " << src.path() << "  " << src.dtype().name() << "[" << src.dtype().number_of_elements() << "], allocatorID=" << axom::getAllocatorIDFromPointer(src.data_ptr()) << std::endl;
+
       // The data fits in the node or is a string. It's on the host.
       dest.set(src);
     }

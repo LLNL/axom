@@ -51,6 +51,7 @@ public:
                const conduit::Node &n_input,
                conduit::Node &n_output)
   {
+    AXOM_ANNOTATE_SCOPE("CoordsetSlicer");
     using value_type = typename CoordsetView::value_type;
     using PointType = typename CoordsetView::PointType;
     namespace bputils = axom::mir::utilities::blueprint;
