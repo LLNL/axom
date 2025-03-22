@@ -5,7 +5,11 @@
 #ifndef AXOM_MIR_ELVIRA_ALGORITHM_DETAIL_HPP_
 #define AXOM_MIR_ELVIRA_ALGORITHM_DETAIL_HPP_
 
-// Includes happen in the ElviraAlgorithm.hpp header file that includes this file.
+// Most includes happen in the ElviraAlgorithm.hpp header file that includes this file.
+
+#include "axom/mir/utilities/MergeCoordsetPoints.hpp"
+#include "axom/mir/utilities/MergePolyhedralFaces.hpp"
+#include "axom/mir/views/dispatch_coordset.hpp"
 
 namespace axom
 {
@@ -377,6 +381,14 @@ public:
    */
   View view() { return m_view; }
 
+  /*!
+   * \brief Clean the mesh, merging coordinates and faces.
+   *
+   * \note This method invalidates the views in m_view by causing some of their backing arrays to be replaced.
+   */
+  void cleanMesh(conduit::Node &AXOM_UNUSED_PARAM(n_coordset), conduit::Node &AXOM_UNUSED_PARAM(n_topology), axom::Array<axom::IndexType> &AXOM_UNUSED_PARAM(selectedIds)) const
+  {
+  }
 private:
   View m_view;
 };
@@ -677,6 +689,36 @@ public:
    * \return A view that be used to store data.
    */
   View view() { return m_view; }
+
+
+  /*!
+   * \brief Clean the mesh, merging coordinates and faces.
+   *
+   * \note This method invalidates the views in m_view by causing some of their backing arrays to be replaced.
+   */
+  void cleanMesh(conduit::Node &n_coordset, conduit::Node &n_topology, axom::Array<axom::IndexType> &selectedIds) const
+  {
+    AXOM_ANNOTATE_SCOPE("cleanMesh");
+    namespace bputils = axom::mir::utilities::blueprint;
+    axom::Array<axom::IndexType> old2new;
+
+    auto newCoordsetView = axom::mir::views::make_explicit_coordset<CoordType, CoordsetView::dimension()>::view(n_coordset);
+    using NewCoordsetView = decltype(newCoordsetView);
+    bputils::MergeCoordsetPoints<ExecSpace, NewCoordsetView> mcp(newCoordsetView);
+    conduit::Node n_mcp_options;
+    mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
+
+    // Changing the coordset changed the nodes so we need to change the subelement/connectivity.
+    conduit::Node &n_se_conn = n_topology["subelements/connectivity"];
+    auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
+    axom::for_all<ExecSpace>(se_conn.size(), AXOM_LAMBDA(axom::IndexType index)
+    {
+      se_conn[index] = old2new[se_conn[index]];
+    });
+
+    // Now merge any faces that can be merged.
+    bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_topology);
+  }
 
 private:
   View m_view;

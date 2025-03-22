@@ -525,13 +525,12 @@ protected:
     conduit::Node n_zcfield;
     zc.execute(n_topo, n_coordset, n_zcfield);
     // _mir_utilities_makezonecenters_end
-    using zc_value = typename CoordsetView::value_type;
-    axom::ArrayView<zc_value> xview, yview, zview;
-    xview = bputils::make_array_view<zc_value>(n_zcfield["values/x"]);
-    yview = bputils::make_array_view<zc_value>(n_zcfield["values/y"]);
+    axom::ArrayView<CoordType> xview, yview, zview;
+    xview = bputils::make_array_view<CoordType>(n_zcfield["values/x"]);
+    yview = bputils::make_array_view<CoordType>(n_zcfield["values/y"]);
     if(n_zcfield.has_path("values/z"))
     {
-      zview = bputils::make_array_view<zc_value>(n_zcfield["values/z"]);
+      zview = bputils::make_array_view<CoordType>(n_zcfield["values/z"]);
     }
 #if defined(AXOM_ELVIRA_GATHER_INFO)
     if(!axom::execution_space<ExecSpace>::onDevice())
@@ -774,7 +773,12 @@ protected:
                   fragmentVFStencilView,
                   max_iterations,
                   tolerance);
-
+#if 1
+    //--------------------------------------------------------------------------
+    // Clean up the mesh so it has merged coordinates and merged faces.
+    axom::Array<axom::IndexType> selectedIds;
+    build.cleanMesh(n_newCoordset, n_newTopo, selectedIds);
+#endif
     //--------------------------------------------------------------------------
 #if defined(AXOM_ELVIRA_DEBUG)
     AXOM_ANNOTATE_BEGIN("verify");
