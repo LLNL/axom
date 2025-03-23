@@ -28,6 +28,9 @@ namespace axom
 {
 namespace quest
 {
+
+namespace detail
+{
 //---------------------------------------------------------------------------
 /*!
  * \brief Transform a 2D point and return a 2D point.
@@ -199,552 +202,7 @@ static void writeLines(const std::string& filename, const std::vector<Segment>& 
   fclose(f);
 }
 #endif
-
-//---------------------------------------------------------------------------
-/*!
- * \brief Helper class for interpolating points on a NURBS curve
- *
- * This class was adapted from a similar class in the C2C library's testing framework.
- * The algorithms are adapted from: Piegl and Tiller's "The NURBS Book", 2nd Ed,  (Springer, 1997) 
- */
-struct NURBSInterpolator
-{
-  using BasisVector = std::vector<double>;
-  using PointType = primal::Point<double, 2>;
-
-  // EPS is used for computing span intervals
-  NURBSInterpolator(const c2c::NURBSData& curve, double EPS = 1E-9) : m_curve(curve)
-  {
-    const int p = m_curve.order - 1;
-    const int knotSize = m_curve.knots.size();
-
-    AXOM_UNUSED_VAR(p);  // silence warnings in release configs
-    AXOM_UNUSED_VAR(knotSize);
-
-    SLIC_ASSERT(p >= 1);
-    SLIC_ASSERT(knotSize >= 2 * p);
-    computeSpanIntervals(EPS);
-  }
-
-  /// Helper function to compute the start and end parametric coordinates of each knot span
-  void computeSpanIntervals(double EPS)
-  {
-    using axom::utilities::isNearlyEqual;
-    const auto& U = m_curve.knots;
-    const int knotSize = U.size();
-    const int p = m_curve.order - 1;
-    const int n = knotSize - 1 - p - 1;
-
-    for(int i = p; i < n + 1; ++i)
-    {
-      const double left = U[i];
-      const double right = U[i + 1];
-      if(!isNearlyEqual(left, right, EPS))
-      {
-        m_spanIntervals.push_back(std::make_pair(left, right));
-      }
-    }
-  }
-
-  /*!
-   * \brief Checks that the knots of the NURBS curve are closed
-   *
-   * The knots vector is closed when it begins with \a m_curve.order equal knot values
-   * and ends with the same number of equal knot values
-   */
-  bool areKnotsClosed(double EPS = 1E-9) const
-  {
-    using axom::utilities::isNearlyEqual;
-    const auto& U = m_curve.knots;
-
-    int p = m_curve.order - 1;
-
-    const double startKnot = U[0];
-    for(int i = 1; i <= p; ++i)
-    {
-      if(!isNearlyEqual(startKnot, U[i], EPS))
-      {
-        return false;
-      }
-    }
-
-    const int endIndex = U.size() - 1;
-    const double endKnot = U[endIndex];
-    for(int i = 1; i <= p; ++i)
-    {
-      const int index = endIndex - p - 1;
-      if(!isNearlyEqual(endKnot, U[index], EPS))
-      {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  int numSpans() const { return m_spanIntervals.size(); }
-
-  double startParameter(int span = -1) const
-  {
-    const bool inRange = span >= 0 && span < numSpans();
-    return inRange ? m_spanIntervals[span].first : m_curve.knots[0];
-  }
-
-  double endParameter(int span = -1) const
-  {
-    const bool inRange = span >= 0 && span < numSpans();
-    return inRange ? m_spanIntervals[span].second : m_curve.knots[m_curve.knots.size() - 1];
-  }
-
-  /*!
-   * \brief Finds the index of the knot span containing parameter \a u
-   * 
-   * Implementation adapted from Algorithm A2.1 on page 68 of "The NURBS Book"
-   */
-  int findSpan(double u) const
-  {
-    const auto& U = m_curve.knots;
-    const int knotSize = U.size();
-    const int p = m_curve.order - 1;
-    const int n = knotSize - 1 - p - 1;
-
-    if(U[n] <= u && u <= U[n + 1])
-    {
-      return n;
-    }
-
-    // perform binary search on the knots
-    int low = p;
-    int high = n + 1;
-    int mid = (low + high) / 2;
-    while(u < U[mid] || u >= U[mid + 1])
-    {
-      (u < U[mid]) ? high = mid : low = mid;
-      mid = (low + high) / 2;
-    }
-    return mid;
-  }
-
-  /*!
-   * \brief Evaluates the B-spline basis functions for span \a span at parameter value \a u 
-   * 
-   * Implementation adapted from Algorithm A2.2 on page 70 of "The NURBS Book".
-   */
-  BasisVector calculateBasisFunctions(int span, double u) const
-  {
-    const int p = m_curve.order - 1;
-    const auto& U = m_curve.knots;
-
-    BasisVector N(p + 1);
-    BasisVector left(p + 1);
-    BasisVector right(p + 1);
-
-    // Note: This implementation avoids division by zero and redundant computation
-    // that might arise from a direct implementation of the recurrence relation
-    // for basis functions. See "The NURBS Book" for details.
-    N[0] = 1.0;
-    for(int j = 1; j <= p; ++j)
-    {
-      left[j] = u - U[span + 1 - j];
-      right[j] = U[span + j] - u;
-      double saved = 0.0;
-      for(int r = 0; r < j; ++r)
-      {
-        double temp = N[r] / (right[r + 1] + left[j - r]);
-        N[r] = saved + right[r + 1] * temp;
-        saved = left[j - r] * temp;
-      }
-      N[j] = saved;
-    }
-    return N;
-  }
-
-  /*!
-   * \brief Finds the point on the curve at parameter \a u
-   *
-   * Adapted from Algorithm A4.1 on page 124 of "The NURBS Book"
-   */
-  PointType at(double u) const
-  {
-    using GrassmanPoint = primal::Point<double, 3>;
-    GrassmanPoint cw {0.0};
-
-    const auto span = findSpan(u);
-    const auto N = calculateBasisFunctions(span, u);
-    const int p = m_curve.order - 1;
-    for(int j = 0; j <= p; ++j)
-    {
-      const int offset = span - p + j;
-      const double weight = m_curve.weights[offset];
-      const auto& controlPoint = m_curve.controlPoints[offset];
-
-      cw[0] += N[j] * weight * controlPoint.getZ().getValue();
-      cw[1] += N[j] * weight * controlPoint.getR().getValue();
-      cw[2] += N[j] * weight;
-    }
-
-    // Return projected point
-    // All units should have been normalized by c2c::toNurbs(piece, units)
-    return PointType {cw[0] / cw[2], cw[1] / cw[2]};
-  }
-
-  /*!
-   * \brief Evaluates the B-spline derivative basis functions for span \a span 
-   *        at parameter value \a u
-   * 
-   * \param span The span of interest.
-   * \param u The u value at which to evaluate derivatives.
-   * \param n The number of derivatives to compute.
-   * \param[out] ders Store the basis functions.
-   *
-   * \note ders[0] stores the basis functions. ders[1] stores the 1st derivative
-   *       basis functions, etc.
-   *
-   * Implementation adapted from Algorithm A2.3 on pp. 72-73 of "The NURBS Book".
-   */
-  void derivativeBasisFunctions(int span, double u, int n, std::vector<BasisVector>& ders) const
-  {
-    const int p = m_curve.order - 1;
-    const auto& U = m_curve.knots;
-
-    std::vector<BasisVector> ndu(p + 1), a(2);
-    BasisVector left(p + 1), right(p + 1);
-    for(int j = 0; j <= p; j++)
-    {
-      ndu[j].resize(p + 1);
-    }
-    for(int j = 0; j <= n; j++)
-    {
-      ders[j].resize(p + 1);
-    }
-    a[0].resize(p + 1);
-    a[1].resize(p + 1);
-
-    ndu[0][0] = 1.;
-    for(int j = 1; j <= p; j++)
-    {
-      left[j] = u - U[span + 1 - j];
-      right[j] = U[span + j] - u;
-      double saved = 0.0;
-      for(int r = 0; r < j; r++)
-      {
-        // lower triangle
-        ndu[j][r] = right[r + 1] + left[j - r];
-        double temp = ndu[r][j - 1] / ndu[j][r];
-        // upper triangle
-        ndu[r][j] = saved + right[r + 1] * temp;
-        saved = left[j - r] * temp;
-      }
-      ndu[j][j] = saved;
-    }
-    // Load basis functions
-    for(int j = 0; j <= p; j++)
-    {
-      ders[0][j] = ndu[j][p];
-    }
-
-    // This section computes the derivatives (Eq. [2.9])
-
-    // Loop over function index.
-    for(int r = 0; r <= p; r++)
-    {
-      int s1 = 0, s2 = 1;  // Alternate rows in array a
-      a[0][0] = 1.;
-      // Loop to compute kth derivative
-      for(int k = 1; k <= n; k++)
-      {
-        double d = 0.;
-        int rk = r - k;
-        int pk = p - k;
-        if(r >= k)
-        {
-          a[s2][0] = a[s1][0] / ndu[pk + 1][rk];
-          d = a[s2][0] * ndu[rk][pk];
-        }
-        int j1 = (rk >= -1) ? 1 : -rk;
-        int j2 = (r - 1 <= pk) ? (k - 1) : (p - r);
-        for(int j = j1; j <= j2; j++)
-        {
-          a[s2][j] = (a[s1][j] - a[s1][j - 1]) / ndu[pk + 1][rk + j];
-          d += a[s2][j] * ndu[rk + j][pk];
-        }
-        if(r <= pk)
-        {
-          a[s2][k] = -a[s1][k - 1] / ndu[pk + 1][r];
-          d += a[s2][k] * ndu[r][pk];
-        }
-        ders[k][r] = d;
-        // Switch rows
-        std::swap(s1, s2);
-      }
-    }
-    // Multiply through by the correct factors (Eq. [2.9])
-    double r = static_cast<double>(p);
-    for(int k = 1; k <= n; k++)
-    {
-      for(int j = 0; j <= p; j++)
-      {
-        ders[k][j] *= r;
-      }
-      r *= static_cast<double>(p - k);
-    }
-  }
-
-  /*!
-   * \brief Evaluates derivatives at the provided value \a u.
-   *
-   * \param u The u value at which to evaluate derivatives.
-   * \param d The number of derivatives to create (1 for 1st derivative,
-   *          2 for both 1st and 2nd derivatives, etc.)
-   * \param[out] CK An array of points to contain the output derivatives.
-   *
-   * Implementation adapted from Algorithm A3.2 on p. 93 of "The NURBS Book".
-   * Rational derivatives from Algorithm A4.2 on p. 127 of "The NURBS Book".
-   */
-  void derivativesAt(double u, int d, PointType* CK) const
-  {
-    const int p = m_curve.order - 1;
-
-    // Compute the basis functions for the curve and its d derivatives.
-    int du = std::min(d, p);
-    const auto span = findSpan(u);
-    std::vector<BasisVector> N(d + 1);
-    derivativeBasisFunctions(span, u, d, N);
-
-    // Store w(u) in wders[0], w'(u) in wders[1], ...
-    std::vector<PointType> Aders(d + 1);
-    std::vector<double> wders(d + 1);
-
-    // Compute the point and d derivatives
-    for(int k = 0; k <= du; k++)
-    {
-      double x = 0., y = 0., w = 0.;
-      for(int j = 0; j <= p; j++)
-      {
-        int offset = span - p + j;
-        const double weight = m_curve.weights[offset];
-
-        // Compute the weighted point.
-        double Pw[3];
-        Pw[0] = weight * m_curve.controlPoints[offset].getZ().getValue();
-        Pw[1] = weight * m_curve.controlPoints[offset].getR().getValue();
-        Pw[2] = weight;
-
-        x = x + N[k][j] * Pw[0];
-        y = y + N[k][j] * Pw[1];
-        w = w + N[k][j] * Pw[2];
-      }
-      Aders[k] = PointType {x, y};
-      wders[k] = w;
-    }
-
-    // Do the rational part from A4.2. Note that Aders[0] is the point A(u)
-    // and wders[0] is w(u).
-    for(int k = 0; k <= d; k++)
-    {
-      PointType v = Aders[k];
-      for(int i = 1; i <= k; i++)
-      {
-        auto bin = axom::utilities::binomialCoefficient(k, i);
-        v[0] = v[0] - bin * wders[i] * CK[k - i][0];
-        v[1] = v[1] - bin * wders[i] * CK[k - i][1];
-      }
-      CK[k][0] = v[0] / wders[0];
-      CK[k][1] = v[1] / wders[0];
-    }
-  }
-
-  /*!
-   * \brief Evaluates the B-spline curvature at parameter value \a u
-   * 
-   * \param u The parameter value.
-   *
-   * \return The curvature value at u.
-   */
-  double curvature(double u) const
-  {
-    // Evaluate 1st and 2nd derivatives at u.
-    PointType derivs[3];
-    derivativesAt(u, 2, derivs);
-    const PointType& D1 = derivs[1];
-    const PointType& D2 = derivs[2];
-
-    double xp = D1.data()[0];   // x'
-    double xpp = D2.data()[0];  // x''
-
-    double yp = D1.data()[1];   // y'
-    double ypp = D2.data()[1];  // y''
-
-    // This is signed curvature as formulated at:
-    // https://en.wikipedia.org/wiki/Curvature#Curvature_of_a_graph
-    // k = (x'y'' - y'x'') / pow(x'x' + y'y', 3./2.)
-    double xp2_plus_yp2 = xp * xp + yp * yp;
-    return (xp * ypp - yp * xpp) / pow(xp2_plus_yp2, 3. / 2.);
-  }
-
-  /*!
-   * \brief Evaluates the B-spline curvature derivatives (up to 2nd) at
-   *        parameter value \a u
-   * 
-   * \param[in] u The parameter value.
-   * \param[in] d The number of derivatives to compute (1=1st deriv, 2=1st & 2nd derivs)
-   * \param[out] ders An array that will contain the curvature derivatives.
-   */
-  void curvatureDerivatives(double u, int d, double* ders) const
-  {
-    // Evaluate 1st, 2nd, 3rd curve derivatives at u.
-    PointType derivs[4];
-    derivativesAt(u, 3, derivs);
-    const PointType& D1 = derivs[1];
-    const PointType& D2 = derivs[2];
-    const PointType& D3 = derivs[3];
-
-    double xp = D1.data()[0];    // x'
-    double xpp = D2.data()[0];   // x''
-    double xppp = D3.data()[0];  // x'''
-
-    double yp = D1.data()[1];    // y'
-    double ypp = D2.data()[1];   // y''
-    double yppp = D3.data()[1];  // y'''
-
-    // 1st derivative of curvature.
-    double xp2_plus_yp2 = xp * xp + yp * yp;
-    double A = -3. * (xp * ypp - yp * xpp) * 2 * (xp * xpp + yp * ypp);
-    double B = 2. * pow(xp2_plus_yp2, 5. / 2.);
-    double C = xp * yppp - yp * xppp;
-    double D = pow(xp2_plus_yp2, 3. / 2.);
-    ders[0] = A / B + C / D;
-
-    if(d >= 2)
-    {
-      // 2nd derivative of curvature.
-      double E = 15. * (-yp * xpp + xp * ypp) * pow(2. * xp * xpp + 2. * yp * ypp, 2.) /
-        (4. * pow(xp2_plus_yp2, 7. / 2.));
-      double F =
-        3. * (2. * xp * xpp + 2. * yp * ypp) * (-yp * xppp + xp * yppp) / pow(xp2_plus_yp2, 5. / 2.);
-      double G = 3. * (-yp * xpp + xp * ypp) *
-        (2. * (xpp * xpp) + 2. * (ypp * ypp) + 2. * xp * xppp + 2. * yp * yppp) /
-        (2. * pow(xp2_plus_yp2, 5. / 2.));
-      double H = (-ypp * xppp + xpp * yppp) / pow(xp2_plus_yp2, 3. / 2.);
-
-      ders[1] = E - F - G + H;
-    }
-  }
-
-  /*!
-   * \brief Compute the revolved volume of the curve across its entire
-   *        parametric interval [0,1] using quadrature.
-   *
-   * \param transform A 4x4 transformation matrix that we use to transform
-   *                  the points and the derivative values.
-   *
-   * \note We include a transformation of the points so any transforms
-   *       can figure into the integration.
-   *
-   * \return The revolved curve volume.
-   */
-  double revolvedVolume(const numerics::Matrix<double>& transform) const
-  {
-    // Use 5-point Gauss Quadrature.
-    const double X[] = {-0.906179845938664, -0.538469310105683, 0, 0.538469310105683, 0.906179845938664};
-    const double W[] = {0.23692688505618908,
-                        0.47862867049936647,
-                        0.5688888888888889,
-                        0.47862867049936647,
-                        0.23692688505618908};
-
-    // Make a transform with no translation. We use this to transform
-    // the derivative since we want to permit scaling and rotation but
-    // translating it does not make sense.
-    numerics::Matrix<double> transform2 = transform;
-    transform2(0, 3) = 0.;
-    transform2(1, 3) = 0.;
-    transform2(2, 3) = 0.;
-
-#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
-    SLIC_INFO(fmt::format("revolvedVolume"));
-#endif
-
-    // Break up the [0,1] interval and compute quadrature in the subintervals.
-    double vol = 0.;
-    for(const auto& interval : m_spanIntervals)
-    {
-      double ad = interval.first;
-      double bd = interval.second;
-#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
-      SLIC_INFO(fmt::format("interval ({}, {})", ad, bd));
-#endif
-
-      // Approximate the integral "Int pi*x'(u)*y(u)^2du" using quadrature.
-      double scale = M_PI * ((bd - ad) / 2.);
-      double sum = 0.;
-      for(size_t i = 0; i < 5; i++)
-      {
-        // Map quad point x value [-1,1] to [a,b].
-        double u = X[i] * ((bd - ad) / 2.) + ((bd + ad) / 2.);
-
-        // Compute y(u) to get radius
-        PointType p_u = at(u);
-        PointType p_uT = transformPoint(transform, p_u);
-        double r = p_uT[1];
-
-        // Compute x'(u)
-        PointType xprime[2];
-        derivativesAt(u, 1, xprime);
-        PointType xprimeT = transformPoint(transform2, xprime[1]);
-        double xp = xprimeT[0];
-
-#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
-        SLIC_INFO(fmt::format("\ti={}, u={}, p(u)=({},{}), xp=({},{})",
-                              i,
-                              u,
-                              p_u[0],
-                              p_u[1],
-                              xprime[0],
-                              xprime[1]));
-#endif
-
-        // Accumulate weight times dx*r^2.
-        sum += W[i] * xp * (r * r);
-      }
-      // Guard against volumes being negative (if the curve went the wrong way)
-      vol += fabs(scale * sum);
-    }
-#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
-    SLIC_INFO(fmt::format("revolvedVolume={}", vol));
-#endif
-    return vol;
-  }
-
-  /*!
-   * \brief Approximate the arc length of the whole curve by using
-   *        the segments between a number of points.
-   *
-   * \param nSamples The number of points to use when making segments.
-   *
-   * \note Quadrature could probably be used too.
-   *
-   * \return The arc length of the whole curve when broken into segments.
-   */
-  double getArcLength(int nSamples) const
-  {
-    constexpr double u0 = 0.;
-    double arcLength = 0.;
-    PointType prev = at(u0);
-    for(int i = 1; i < nSamples; i++)
-    {
-      double u = i / static_cast<double>(nSamples - 1);
-      PointType cur = at(u);
-      arcLength += sqrt(primal::squared_distance(prev, cur));
-      prev = cur;
-    }
-    return arcLength;
-  }
-
-private:
-  const c2c::NURBSData& m_curve;
-  std::vector<std::pair<double, double>> m_spanIntervals;
-};
+}  // namespace detail
 
 void C2CReader::clear() { m_nurbsData.clear(); }
 
@@ -964,7 +422,7 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
   AXOM_UNUSED_VAR(contourCount);
 
   // Iterate over the contours and linearize each of them.
-  std::vector<Segment> S;
+  std::vector<detail::Segment> S;
   S.reserve(INITIAL_GUESS_NPTS);
   for(const auto& nurbs : m_nurbsData)
   {
@@ -984,7 +442,7 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
     const PointType p1 = nurbs.evaluate(u1);
 
     // This segment represents the whole [0,1] interval.
-    Segment first;
+    detail::Segment first;
     first.u = u0;
     first.point = p0;
     first.length = sqrt(primal::squared_distance(p0, p1));
@@ -994,7 +452,7 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
     first.next_length[1] = sqrt(primal::squared_distance(next_point, p1));
 
     // This segment just contains the end point of the interval.
-    Segment last;
+    detail::Segment last;
     last.u = u1;
     last.point = p1;
     last.length = 0.;
@@ -1048,8 +506,8 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
         size_t nextIndex = splitIndex + 1;
 
         // Partition segment.
-        Segment& left = S[splitIndex];
-        Segment right;
+        detail::Segment& left = S[splitIndex];
+        detail::Segment right;
 
         // The old segment length pre-split.
         double oldSegLength = left.length;
@@ -1173,10 +631,10 @@ double revolvedVolume(const primal::NURBSCurve<double, 2>& nurbs,
       VectorType dt;
       bezier.evaluate_first_derivative(u, eval, dt);
 
-      const PointType p_uT = transformPoint(transform, eval);
+      const PointType p_uT = detail::transformPoint(transform, eval);
       const double r = p_uT[1];
 
-      const PointType xprimeT = transformPoint(transform2, dt);
+      const PointType xprimeT = detail::transformPoint(transform2, dt);
       const double xp = xprimeT[0];
 
 #ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
