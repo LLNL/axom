@@ -35,13 +35,17 @@ namespace quest
  * \param transform A 4x4 transformation matrix.
  * \param pt The input 2D point.
  *
+ * \tparam InputPointType The input type needs to have a subscript operator
+ *         which can be called on index 0 and 1
  * \return The transformed 2D point.
  */
+template <typename InputPointType>
 inline primal::Point<double, 2> transformPoint(const numerics::Matrix<double>& transform,
-                                               const primal::Point<double, 2>& pt)
+                                               const InputPointType& pt)
 {
   // Turn the point2 into a vec4.
-  double pt4[] = {pt[0], pt[1], 0., 1.}, newpt4[] = {0., 0., 0., 1.};
+  double pt4[] = {pt[0], pt[1], 0., 1.};
+  double newpt4[] = {0., 0., 0., 1.};
 
   // Transform the point.
   axom::numerics::matrix_vector_multiply(transform, pt4, newpt4);
@@ -770,13 +774,27 @@ int C2CReader::read()
 
 int C2CReader::readContour()
 {
+  using PointType = primal::Point<double, 2>;
+
   c2c::Contour contour = c2c::parseContour(m_fileName);
 
   SLIC_INFO(fmt::format("Loading contour with {} pieces", contour.getPieces().size()));
 
   for(auto* piece : contour.getPieces())
   {
-    m_nurbsData.emplace_back(c2c::toNurbs(*piece, m_lengthUnit));
+    const auto nurbsData = c2c::toNurbs(*piece, m_lengthUnit);
+
+    std::vector<PointType> controlPoints;
+    for(const auto& pt : nurbsData.controlPoints)
+    {
+      controlPoints.emplace_back(PointType {pt.getZ().getValue(), pt.getR().getValue()});
+    }
+
+    m_nurbsData.emplace_back(controlPoints.data(),
+                             nurbsData.weights.data(),
+                             controlPoints.size(),
+                             nurbsData.knots.data(),
+                             nurbsData.knots.size());
   }
 
   return 0;
@@ -789,15 +807,9 @@ void C2CReader::log()
   sstr << fmt::format("The contour has {} pieces\n", m_nurbsData.size());
 
   int index = 0;
-  for(const auto& nurbs : m_nurbsData)
+  for(const auto& curve : m_nurbsData)
   {
-    sstr << fmt::format("Piece {}\n{{", index);
-    sstr << fmt::format("\torder: {}\n", nurbs.order);
-    sstr << fmt::format("\tknots: {}\n", fmt::join(nurbs.knots, " "));
-    sstr << fmt::format("\tknot spans: {}\n", NURBSInterpolator(nurbs).numSpans());
-    sstr << fmt::format("\tweights: {}\n", fmt::join(nurbs.weights, " "));
-    sstr << fmt::format("\tcontrol points: {}\n", fmt::join(nurbs.controlPoints, " "));
-    sstr << "}\n";
+    sstr << fmt::format("\tCurve {}: {}\n", index, curve);
     ++index;
   }
 
@@ -821,30 +833,22 @@ void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>*
 
   const double EPS_SQ = m_vertexWeldThreshold * m_vertexWeldThreshold;
 
+  const double denom = static_cast<double>(segmentsPerKnotSpan);
+  PointsArray pts;
+  pts.reserve(segmentsPerKnotSpan + 1);
   for(const auto& nurbs : m_nurbsData)
   {
-    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
-
-    // For each knot span
-    for(int span = 0; span < interpolator.numSpans(); ++span)
+    for(const auto& bezier : nurbs.extractBezier())
     {
-      // Generate points on the curve
-      PointsArray pts;
-      pts.reserve(segmentsPerKnotSpan + 1);
-
-      const double startParameter = interpolator.startParameter(span);
-      const double endParameter = interpolator.endParameter(span);
-
-      double denom = static_cast<double>(segmentsPerKnotSpan);
+      pts.clear();
       for(int i = 0; i <= segmentsPerKnotSpan; ++i)
       {
-        double u = lerp(startParameter, endParameter, i / denom);
-        pts.emplace_back(interpolator.at(u));
+        pts.emplace_back(bezier.evaluate(lerp(0., 1., i / denom)));
       }
 
       // Check for simple vertex welding opportunities at endpoints of newly interpolated points
       {
-        int numNodes = mesh->getNumberOfNodes();
+        const int numNodes = mesh->getNumberOfNodes();
         if(numNodes > 0)  // this is not the first Piece
         {
           PointType meshPt;
@@ -893,9 +897,8 @@ void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>*
           mesh->appendCell(seg, mint::SEGMENT);
         }
       }
-
-    }  // end for each knot span
-  }    // end for each NURBS curve
+    }
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -965,19 +968,20 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
   S.reserve(INITIAL_GUESS_NPTS);
   for(const auto& nurbs : m_nurbsData)
   {
-    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
     ++contourCount;
 #ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
     fprintf(ferr, "# contour%d\n", contourCount);
 #endif
 
+    const auto knots = nurbs.getKnots();
+
     // Get the contour start/end parameters.
-    const double u0 = interpolator.startParameter(0);
-    const double u1 = interpolator.endParameter(interpolator.numSpans() - 1);
+    const double u0 = knots[0];
+    const double u1 = knots[knots.getNumKnots() - 1];
 
     // Compute the start/end points of the whole curve.
-    const PointType p0 = interpolator.at(u0);
-    const PointType p1 = interpolator.at(u1);
+    const PointType p0 = nurbs.evaluate(u0);
+    const PointType p1 = nurbs.evaluate(u1);
 
     // This segment represents the whole [0,1] interval.
     Segment first;
@@ -985,7 +989,7 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
     first.point = p0;
     first.length = sqrt(primal::squared_distance(p0, p1));
     first.next_u = (u0 + u1) / 2.;
-    PointType next_point = interpolator.at(first.next_u);
+    PointType next_point = nurbs.evaluate(first.next_u);
     first.next_length[0] = sqrt(primal::squared_distance(p0, next_point));
     first.next_length[1] = sqrt(primal::squared_distance(next_point, p1));
 
@@ -1004,11 +1008,20 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
     S.push_back(last);
 
     // If there is a single span in the contour then we already added its points.
-    if(interpolator.numSpans() > 1)
+    if(knots.getNumKnotSpans() > 1)
     {
-      // Compute the arc length of the curve.
+      constexpr int npts = 30;
       constexpr int MAX_NUMBER_OF_SAMPLES = 2000;
-      double hiCurveLen = interpolator.getArcLength(MAX_NUMBER_OF_SAMPLES);
+
+      // get arc-length of NURBS curve; note: currently requires MFEM for Gaussian weights!
+      double hiCurveLen = 0;
+      for(const auto& bezier : nurbs.extractBezier())
+      {
+        hiCurveLen += primal::evaluate_scalar_line_integral(
+          bezier,
+          [](PointType /*x*/) -> double { return 1.; },
+          npts);
+      }
 
       // The initial curve length.
       double curveLength = first.length;
@@ -1050,17 +1063,17 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
         // that yielded the u value with the longest left+right line segments but
         // using the midpoint ended up with better behavior.
         right.u = left.next_u;
-        right.point = interpolator.at(right.u);
+        right.point = nurbs.evaluate(right.u);
         right.length = left.next_length[1];
 
         right.next_u = (right.u + S[nextIndex].u) / 2.;
-        PointType right_next = interpolator.at(right.next_u);
+        PointType right_next = nurbs.evaluate(right.next_u);
         right.next_length[0] = sqrt(primal::squared_distance(right.point, right_next));
         right.next_length[1] = sqrt(primal::squared_distance(right_next, S[nextIndex].point));
 
         left.length = left.next_length[0];
         left.next_u = (left.u + right.u) / 2.;
-        PointType left_next = interpolator.at(left.next_u);
+        PointType left_next = nurbs.evaluate(left.next_u);
         left.next_length[0] = sqrt(primal::squared_distance(left.point, left_next));
         left.next_length[1] = sqrt(primal::squared_distance(left_next, right.point));
 
@@ -1111,17 +1124,86 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
 #endif
 }
 
+double revolvedVolume(const primal::NURBSCurve<double, 2>& nurbs,
+                      const numerics::Matrix<double>& transform)
+{
+  using PointType = axom::primal::Point<double, 2>;
+  using VectorType = axom::primal::Vector<double, 2>;
+
+  // Use 5-point Gauss Quadrature.
+  const double X[] = {-0.906179845938664, -0.538469310105683, 0, 0.538469310105683, 0.906179845938664};
+  const double W[] = {0.23692688505618908,
+                      0.47862867049936647,
+                      0.5688888888888889,
+                      0.47862867049936647,
+                      0.23692688505618908};
+
+  // Make a transform with no translation. We use this to transform
+  // the derivative since we want to permit scaling and rotation but
+  // translating it does not make sense.
+  numerics::Matrix<double> transform2 = transform;
+  transform2(0, 3) = 0.;
+  transform2(1, 3) = 0.;
+  transform2(2, 3) = 0.;
+
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+  SLIC_INFO(fmt::format("revolvedVolume"));
+#endif
+
+  // Break up the [0,1] interval and compute quadrature in the subintervals.
+  double vol = 0.;
+  for(const auto& bezier : nurbs.extractBezier())
+  {
+    constexpr double ad = 0;
+    constexpr double bd = 1;
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+    SLIC_INFO(fmt::format("interval ({}, {})", ad, bd));
+#endif
+
+    // Approximate the integral "Int pi*x'(u)*y(u)^2du" using quadrature.
+    constexpr double scale = M_PI * ((bd - ad) / 2.);
+    double sum = 0.;
+    for(size_t i = 0; i < 5; i++)
+    {
+      // Map quad point x value [-1,1] to [a,b].
+      const double u = X[i] * ((bd - ad) / 2.) + ((bd + ad) / 2.);
+
+      // Compute y(u) to get radius
+      PointType eval;
+      VectorType dt;
+      bezier.evaluate_first_derivative(u, eval, dt);
+
+      const PointType p_uT = transformPoint(transform, eval);
+      const double r = p_uT[1];
+
+      const PointType xprimeT = transformPoint(transform2, dt);
+      const double xp = xprimeT[0];
+
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+      SLIC_INFO(
+        fmt::format("\ti={}, u={}, p(u)=({},{}), xp=({},{})", i, u, eval[0], eval[1], dt[0], dt[1]));
+#endif
+
+      // Accumulate weight times dx*r^2.
+      sum += W[i] * xp * (r * r);
+    }
+    // Guard against volumes being negative (if the curve went the wrong way)
+    vol += fabs(scale * sum);
+  }
+#ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
+  SLIC_INFO(fmt::format("revolvedVolume={}", vol));
+#endif
+  return vol;
+}
+
 double C2CReader::getRevolvedVolume(const numerics::Matrix<double>& transform) const
 {
-  double revolvedVolume = 0.;
+  double vol = 0.;
   for(const auto& nurbs : m_nurbsData)
   {
-    NURBSInterpolator interpolator(nurbs, m_vertexWeldThreshold);
-
-    // Add the contour's revolved volume to the total.
-    revolvedVolume += interpolator.revolvedVolume(transform);
+    vol += revolvedVolume(nurbs, transform);
   }
-  return revolvedVolume;
+  return vol;
 }
 
 }  // end namespace quest
