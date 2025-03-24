@@ -21,8 +21,7 @@ namespace detail
  * \return A number of elements for an array-based stack.
  */
 template <typename T>
-AXOM_HOST_DEVICE
-constexpr static T stack_size(T N)
+AXOM_HOST_DEVICE constexpr static T stack_size(T N)
 {
   T v = N;
   T i = 0;
