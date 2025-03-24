@@ -14,20 +14,37 @@
  */
 
 #include "axom/lumberjack/Lumberjack.hpp"
+#include <iostream>
 
 namespace axom
 {
 namespace lumberjack
 {
-void Lumberjack::initialize(Communicator* communicator, int ranksLimit)
+void Lumberjack::initialize(Communicator* communicator,
+                            int ranksLimit,
+                            bool isCommunicatorOwned)
 {
-  m_communicator = communicator;
-  m_ranksLimit = ranksLimit;
-  m_combiners.push_back(new TextTagCombiner);
+  if(m_isInitialized == false)
+  {
+    m_isInitialized = true;
+    m_communicator = communicator;
+    m_isCommunicatorOwned = isCommunicatorOwned;
+    m_ranksLimit = ranksLimit;
+    m_combiners.push_back(new TextTagCombiner);
+  }
+  else
+  {
+    std::cerr << "Lumberjack::initialize called more than once" << std::endl;
+  }
 }
 
 void Lumberjack::finalize()
 {
+  if(m_isCommunicatorOwned && m_communicator != nullptr)
+  {
+    m_communicator->finalize();
+    delete m_communicator;
+  }
   m_communicator = nullptr;
   clearCombiners();
   clearMessages();
@@ -178,6 +195,22 @@ void Lumberjack::pushMessagesFully()
 }
 
 bool Lumberjack::isOutputNode() { return m_communicator->isOutputNode(); }
+
+void Lumberjack::setCommunicator(Communicator* communicator,
+                                 bool isCommunicatorOwned)
+{
+  if(m_isCommunicatorOwned && m_communicator != nullptr)
+  {
+    m_communicator->finalize();
+    delete m_communicator;
+  }
+  m_isCommunicatorOwned = isCommunicatorOwned;
+  m_communicator = communicator;
+}
+
+Communicator* Lumberjack::getCommunicator() { return m_communicator; }
+
+bool Lumberjack::isCommunicatorOwned() { return m_isCommunicatorOwned; }
 
 void Lumberjack::combineMessages()
 {

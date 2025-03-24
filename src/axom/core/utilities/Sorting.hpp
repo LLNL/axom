@@ -15,7 +15,25 @@ namespace utilities
 namespace detail
 {
 
-/**
+/*!
+ * \brief Computes stack size for qsort.
+ * \param N The largest number of items to support.
+ * \return A number of elements for an array-based stack.
+ */
+AXOM_HOST_DEVICE
+constexpr static int stack_size(int N)
+{
+  int v = N;
+  int i = 0;
+  while(v > 0)
+  {
+    i++;
+    v /= 2;
+  }
+  return i * 2;
+}
+
+/*!
  * \brief Swap 2 elements if b < a.
  * param a The first value.
  * param b The second value.
@@ -68,7 +86,7 @@ AXOM_HOST_DEVICE inline void ifswap_multiple(Predicate &&predicate,
   }
 }
 
-/**
+/*!
  * \brief Create a partition for qsort.
  *
  * \param[inout] values The array to be sorted.
@@ -98,7 +116,7 @@ AXOM_HOST_DEVICE static axom::IndexType partitionMultiple(Predicate &&predicate,
   return i + 1;
 }
 
-/**
+/*!
  * \brief Sort the input array using qsort.
  *
  * \param[inout] values The array to be sorted.
@@ -110,9 +128,8 @@ AXOM_HOST_DEVICE static void qsortMultiple(Predicate &&predicate,
                                            T values,
                                            Args... args)
 {
-  constexpr size_t StackSize = sizeof(axom::IndexType) * 8;
   if(n <= 1) return;
-  axom::IndexType stack[StackSize][2];
+  axom::IndexType stack[stack_size(axom::numeric_limits<axom::IndexType>::max())][2];
   axom::IndexType stack_count = 1;
   stack[0][0] = 0;
   stack[0][1] = n - 1;
@@ -294,7 +311,7 @@ AXOM_HOST_DEVICE inline static void reverse_sort_multiple(T first, Args... args)
                                  args...);
 }
 
-/**
+/*!
  * \brief This is a template suitable for sorting small arrays on device.
  *
  * \tparam T The data type being sorted.
@@ -310,7 +327,7 @@ struct Sorting
   static constexpr int MAX_SIZE = N;
   static constexpr int SORT_SIZE_CUTOFF = 11;
 
-  /**
+  /*!
    * \brief Sort an array of values in place.
    *
    * \param[inout] values The array of values to sort.
@@ -329,24 +346,7 @@ struct Sorting
   // Internal methods (sort)
   //----------------------------------------------------------------------------
 
-  /**
-   * \brief Computes stack size for qsort.
-   * \return A number of elements for an array-based stack.
-   */
-  AXOM_HOST_DEVICE
-  constexpr static int stack_size()
-  {
-    int v = N;
-    int i = 0;
-    while(v > 0)
-    {
-      i++;
-      v /= 2;
-    }
-    return i * 2;
-  }
-
-  /**
+  /*!
    * \brief Sort the input array using qsort.
    *
    * \param[inout] values The array to be sorted.
@@ -356,7 +356,7 @@ struct Sorting
   static void qsort(T *values, int n)
   {
     if(n <= 1) return;
-    int stack[stack_size()][2];
+    int stack[detail::stack_size(N)][2];
     int stack_count = 1;
     stack[0][0] = 0;
     stack[0][1] = n - 1;
@@ -369,7 +369,7 @@ struct Sorting
 
       if(low < high)
       {
-        int pivot_index = partition(values, low, high);
+        const int pivot_index = partition(values, low, high);
 
         stack[stack_count][0] = low;
         stack[stack_count][1] = pivot_index - 1;
@@ -382,7 +382,7 @@ struct Sorting
     }
   }
 
-  /**
+  /*!
    * \brief Create a partition for qsort.
    *
    * \param[inout] values The array to be sorted.
@@ -394,7 +394,28 @@ struct Sorting
   AXOM_HOST_DEVICE
   static int partition(T *values, int low, int high)
   {
-    const auto pivot = values[high];
+    // Median-of-three pivot selection
+    const int mid = low + (high - low) / 2;
+
+    // Find the median of values[low], values[mid], values[high]
+    if(values[low] > values[mid])
+    {
+      axom::utilities::swap(values[low], values[mid]);
+    }
+    if(values[low] > values[high])
+    {
+      axom::utilities::swap(values[low], values[high]);
+    }
+    if(values[mid] > values[high])
+    {
+      axom::utilities::swap(values[mid], values[high]);
+    }
+
+    // Use the median as the pivot
+    axom::utilities::swap(values[mid], values[high]);
+
+    const T pivot = values[high];
+
     int i = low - 1;
     for(int j = low; j < high; j++)
     {
@@ -408,7 +429,7 @@ struct Sorting
     return i + 1;
   }
 
-  /**
+  /*!
    * \brief Sort the input array using insertion sort.
    *
    * \param[inout] values The array to be sorted.
@@ -430,14 +451,14 @@ struct Sorting
   }
 };
 
-/**
+/*!
  * \brief Template specialization for sorting arrays with 3 elements.
  * \note Specializing resulted in a small speedup over general sorting.
  */
 template <typename T>
 struct Sorting<T, 3>
 {
-  /**
+  /*!
    * \brief Sort the input array.
    *
    * \param[inout] values The array to be sorted.
@@ -451,14 +472,14 @@ struct Sorting<T, 3>
   }
 };
 
-/**
+/*!
  * \brief Template specialization for sorting arrays with 4 elements.
  * \note Specializing resulted in a small speedup over general sorting.
  */
 template <typename T>
 struct Sorting<T, 4>
 {
-  /**
+  /*!
    * \brief Sort the input array.
    *
    * \param[inout] values The array to be sorted.

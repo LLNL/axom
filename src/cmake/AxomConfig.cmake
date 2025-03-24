@@ -43,9 +43,12 @@ foreach(option MPI3)
     endif()
 endforeach()
 
-convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
-convert_to_native_escaped_file_path(${PROJECT_BINARY_DIR} AXOM_BIN_DIR)
-
+# Handle paths
+convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR_NATIVE)
+convert_to_native_escaped_file_path(${PROJECT_BINARY_DIR} AXOM_BIN_DIR_NATIVE)
+if(AXOM_DATA_DIR)
+  convert_to_native_escaped_file_path(${AXOM_DATA_DIR} AXOM_DATA_DIR_NATIVE)
+endif()
 
 #------------------------------------------------------------------------------
 # Compiler and language related configuration variables

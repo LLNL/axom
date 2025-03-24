@@ -34,29 +34,29 @@ std::string baselineDirectory()
 
 TEST(mir_views, shape2conduitName)
 {
-  EXPECT_EQ(axom::mir::views::LineShape<int>::name(), "line");
-  EXPECT_EQ(axom::mir::views::LineShape<long>::name(), "line");
+  EXPECT_STREQ(axom::mir::views::LineShape<int>::name(), "line");
+  EXPECT_STREQ(axom::mir::views::LineShape<long>::name(), "line");
 
-  EXPECT_EQ(axom::mir::views::TriShape<int>::name(), "tri");
-  EXPECT_EQ(axom::mir::views::TriShape<long>::name(), "tri");
+  EXPECT_STREQ(axom::mir::views::TriShape<int>::name(), "tri");
+  EXPECT_STREQ(axom::mir::views::TriShape<long>::name(), "tri");
 
-  EXPECT_EQ(axom::mir::views::QuadShape<int>::name(), "quad");
-  EXPECT_EQ(axom::mir::views::QuadShape<long>::name(), "quad");
+  EXPECT_STREQ(axom::mir::views::QuadShape<int>::name(), "quad");
+  EXPECT_STREQ(axom::mir::views::QuadShape<long>::name(), "quad");
 
-  EXPECT_EQ(axom::mir::views::PolygonShape<int>::name(), "polygonal");
-  EXPECT_EQ(axom::mir::views::PolygonShape<long>::name(), "polygonal");
+  EXPECT_STREQ(axom::mir::views::PolygonShape<int>::name(), "polygonal");
+  EXPECT_STREQ(axom::mir::views::PolygonShape<long>::name(), "polygonal");
 
-  EXPECT_EQ(axom::mir::views::TetShape<int>::name(), "tet");
-  EXPECT_EQ(axom::mir::views::TetShape<long>::name(), "tet");
+  EXPECT_STREQ(axom::mir::views::TetShape<int>::name(), "tet");
+  EXPECT_STREQ(axom::mir::views::TetShape<long>::name(), "tet");
 
-  EXPECT_EQ(axom::mir::views::PyramidShape<int>::name(), "pyramid");
-  EXPECT_EQ(axom::mir::views::PyramidShape<long>::name(), "pyramid");
+  EXPECT_STREQ(axom::mir::views::PyramidShape<int>::name(), "pyramid");
+  EXPECT_STREQ(axom::mir::views::PyramidShape<long>::name(), "pyramid");
 
-  EXPECT_EQ(axom::mir::views::WedgeShape<int>::name(), "wedge");
-  EXPECT_EQ(axom::mir::views::WedgeShape<long>::name(), "wedge");
+  EXPECT_STREQ(axom::mir::views::WedgeShape<int>::name(), "wedge");
+  EXPECT_STREQ(axom::mir::views::WedgeShape<long>::name(), "wedge");
 
-  EXPECT_EQ(axom::mir::views::HexShape<int>::name(), "hex");
-  EXPECT_EQ(axom::mir::views::HexShape<long>::name(), "hex");
+  EXPECT_STREQ(axom::mir::views::HexShape<int>::name(), "hex");
+  EXPECT_STREQ(axom::mir::views::HexShape<long>::name(), "hex");
 }
 
 //------------------------------------------------------------------------------
