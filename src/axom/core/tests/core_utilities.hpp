@@ -136,16 +136,16 @@ bool decreasing(const ArrayType &arr)
 
 TEST(core_utilities, sort_multiple_values)
 {
-  constexpr int NUM_ITERS = 500;
-  constexpr int MAX_SIZE = 100;
+  constexpr axom::IndexType NUM_ITERS = 500;
+  constexpr axom::IndexType MAX_SIZE = 100;
 
   // Run this for a few iterations to test that sorting works on different random shuffles.
-  for(int n = 1; n < MAX_SIZE; ++n)
+  for(axom::IndexType n = 1; n < MAX_SIZE; ++n)
   {
     std::vector<double> vec;
     vec.resize(n);
 
-    for(int iter = 0; iter < NUM_ITERS; iter++)
+    for(axom::IndexType iter = 0; iter < NUM_ITERS; iter++)
     {
       // Fill it with random doubles in the range of [0, 1024)
       std::generate_n(vec.data(), n, []() -> double {

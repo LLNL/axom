@@ -20,11 +20,12 @@ namespace detail
  * \param N The largest number of items to support.
  * \return A number of elements for an array-based stack.
  */
+template <typename T>
 AXOM_HOST_DEVICE
-constexpr static int stack_size(int N)
+constexpr static T stack_size(T N)
 {
-  int v = N;
-  int i = 0;
+  T v = N;
+  T i = 0;
   while(v > 0)
   {
     i++;

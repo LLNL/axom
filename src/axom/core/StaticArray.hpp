@@ -32,7 +32,15 @@ public:
   /*!
    * \brief Constructor
    */
-  AXOM_HOST_DEVICE StaticArray() : StackArray<T, N>(), m_size(0) { }
+  AXOM_HOST_DEVICE StaticArray() : StackArray<T, N>(), m_size(0)
+  {
+#if defined(AXOM_DEBUG)
+    for(int i = 0; i < m_size; i++)
+    {
+      StackArray<T, N>::m_data[i] = T {};
+    }
+#endif
+  }
 
   /*!
    * \brief Copy Constructor
@@ -147,7 +155,16 @@ public:
    * \brief Clears the data from the static array
    */
   AXOM_HOST_DEVICE
-  void clear() { m_size = 0; }
+  void clear()
+  {
+    m_size = 0;
+#if defined(AXOM_DEBUG)
+    for(int i = 0; i < m_size; i++)
+    {
+      StackArray<T, N>::m_data[i] = T {};
+    }
+#endif
+  }
 
   /**
    * \brief Determines whether the container is empty.
