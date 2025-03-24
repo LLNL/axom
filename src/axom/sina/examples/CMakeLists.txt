@@ -27,7 +27,7 @@ set(sina_example_sources
     sina_view_datum_values.cpp
 )
 
-set(sina_example_depends sina conduit::conduit slic)
+set(sina_example_depends sina conduit::conduit)
 
 if (ENABLE_FORTRAN)
     blt_list_append( TO sina_example_sources ELEMENTS sina_fortran.f)
