@@ -311,30 +311,30 @@ void saveDocument(Document const &document,
 
   switch(protocol)
   {
-    case Protocol::JSON:
-    {
-      protocolWarn(".json", fileName);
-      auto asJson = document.toJson();
-      std::ofstream fout {tmpFileName};
-      fout.exceptions(std::ostream::failbit | std::ostream::badbit);
-      fout << asJson;
-      fout.close();
-    }
+  case Protocol::JSON:
+  {
+    protocolWarn(".json", fileName);
+    auto asJson = document.toJson();
+    std::ofstream fout {tmpFileName};
+    fout.exceptions(std::ostream::failbit | std::ostream::badbit);
+    fout << asJson;
+    fout.close();
+  }
+  break;
+#ifdef AXOM_USE_HDF5
+  case Protocol::HDF5:
+    protocolWarn(".hdf5", fileName);
+    document.toHDF5(tmpFileName);
     break;
-  #ifdef AXOM_USE_HDF5
-    case Protocol::HDF5:
-      protocolWarn(".hdf5", fileName);
-      document.toHDF5(tmpFileName);
-      break;
-  #endif
-    default:
-    {
-      std::ostringstream message;
-      message << "Invalid format choice. Please choose from one of the supported "
-                "protocols: "
-              << get_supported_file_types();
-      throw std::invalid_argument(message.str());
-    }
+#endif
+  default:
+  {
+    std::ostringstream message;
+    message << "Invalid format choice. Please choose from one of the supported "
+               "protocols: "
+            << get_supported_file_types();
+    throw std::invalid_argument(message.str());
+  }
   }
 
   if(rename(tmpFileName.c_str(), fileName.c_str()) != 0)
