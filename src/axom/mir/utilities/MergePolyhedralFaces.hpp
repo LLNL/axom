@@ -55,20 +55,21 @@ public:
 
     // Get the data from the topology and make views.
     conduit::Node &n_elem_conn = n_topo["elements/connectivity"];
-    //conduit::Node &n_elem_sizes = n_topo["elements/sizes"];
-    //conduit::Node &n_elem_offsets = n_topo["elements/offsets"];
+    conduit::Node &n_elem_sizes = n_topo["elements/sizes"];
+    conduit::Node &n_elem_offsets = n_topo["elements/offsets"];
     conduit::Node &n_se_conn = n_topo["subelements/connectivity"];
     conduit::Node &n_se_sizes = n_topo["subelements/sizes"];
     conduit::Node &n_se_offsets = n_topo["subelements/offsets"];
     auto elem_conn = bputils::make_array_view<ConnectivityType>(n_elem_conn);
-    //auto elem_sizes = bputils::make_array_view<ConnectivityType>(n_elem_sizes);
-    //auto elem_offsets = bputils::make_array_view<ConnectivityType>(n_elem_offsets);
+    auto elem_sizes = bputils::make_array_view<ConnectivityType>(n_elem_sizes);
+    auto elem_offsets = bputils::make_array_view<ConnectivityType>(n_elem_offsets);
     auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
     auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
     auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("maxnode");
+    // NOTE: the se_conn array may have gap values (typically -1).
     RAJA::ReduceMax<reduce_policy, ConnectivityType> reduceMaxNodeId(0);
     axom::for_all<ExecSpace>(se_conn.size(), AXOM_LAMBDA(axom::IndexType index)
     {
@@ -115,7 +116,7 @@ public:
     AXOM_ANNOTATE_END("unique");
 
     //--------------------------------------------------------------------------
-    AXOM_ANNOTATE_BEGIN("rewriting");
+    AXOM_ANNOTATE_BEGIN("rewriting_subelements");
     conduit::Node n_new_se_sizes;
     n_new_se_sizes.set_allocator(c2a.getConduitAllocatorID());
     n_new_se_sizes.set(
@@ -152,33 +153,91 @@ public:
       const auto numFaceIds = new_se_sizes[index];
       const auto destOffset = new_se_offsets[index];
       const auto srcOffset = se_offsets[selectedFacesView[index]];
-      for(axom::IndexType i = 0; i < numFaceIds; i++)
+      for(ConnectivityType i = 0; i < numFaceIds; i++)
       {
         new_se_conn[destOffset + i] = se_conn[srcOffset + i];
       }
-    });
-
-    // Now, rewrite the connectivity with the new face ids.
-    axom::for_all<ExecSpace>(elem_conn.size(), AXOM_LAMBDA(axom::IndexType index)
-    {
-      const auto originalFaceId = elem_conn[index];
-
-      // Get the "name" of the old face.
-      const auto originalFaceKey = faceNamesView[originalFaceId];
-
-      // Look for the index of the "name" in the new uniqueKeys.
-      // That will be its face index in the new faces.
-      const auto newId = axom::mir::utilities::bsearch(originalFaceKey, uniqueKeysView);
-      SLIC_ASSERT(newId != -1);
-      elem_conn[index] = static_cast<ConnectivityType>(newId);
     });
 
     // Move the "new" nodes into the Blueprint hierarchy.
     n_se_conn.move(n_new_se_conn);
     n_se_sizes.move(n_new_se_sizes);
     n_se_offsets.move(n_new_se_offsets);
+    AXOM_ANNOTATE_END("rewriting_subelements");
 
-    AXOM_ANNOTATE_END("rewriting");
+    //--------------------------------------------------------------------------
+    // Now, rewrite the connectivity with the new face ids.
+    AXOM_ANNOTATE_BEGIN("rewriting_elements");
+
+    // Sum the element sizes so we can check for gaps to eliminate.
+    RAJA::ReduceSum<reduce_policy, axom::IndexType> reduceConnSize(0);
+    axom::for_all<ExecSpace>(elem_sizes.size(), AXOM_LAMBDA(axom::IndexType index)
+    {
+      reduceConnSize += elem_sizes[index];
+    });
+    const auto totalConnSize = reduceConnSize.get();
+
+    if(totalConnSize == elem_conn.size())
+    {
+      // The connectivity has no gaps.
+
+      axom::for_all<ExecSpace>(elem_conn.size(), AXOM_LAMBDA(axom::IndexType index)
+      {
+        const auto originalFaceId = elem_conn[index];
+
+        // Get the "name" of the old face.
+        const auto originalFaceKey = faceNamesView[originalFaceId];
+
+        // Look for the index of the "name" in the new uniqueKeys.
+        // That will be its face index in the new faces.
+        const auto newId = axom::mir::utilities::bsearch(originalFaceKey, uniqueKeysView);
+        SLIC_ASSERT(newId != -1);
+        elem_conn[index] = static_cast<ConnectivityType>(newId);
+      });
+    }
+    else
+    {
+      // The connectivity size does not match the expected sizes. It probably
+      // contains gaps. We can rewrite it and the offsets.
+
+      conduit::Node n_new_elem_conn;
+      n_new_elem_conn.set_allocator(c2a.getConduitAllocatorID());
+      n_new_elem_conn.set(
+        conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, totalConnSize));
+      auto new_elem_conn = bputils::make_array_view<ConnectivityType>(n_new_elem_conn);
+
+      conduit::Node n_new_elem_offsets;
+      n_new_elem_offsets.set_allocator(c2a.getConduitAllocatorID());
+      n_new_elem_offsets.set(
+        conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, elem_sizes.size()));
+      auto new_elem_offsets = bputils::make_array_view<ConnectivityType>(n_new_elem_offsets);
+      axom::exclusive_scan<ExecSpace>(elem_sizes, new_elem_offsets);
+
+      axom::for_all<ExecSpace>(elem_sizes.size(), AXOM_LAMBDA(axom::IndexType index)
+      {
+        const auto srcOffset = elem_offsets[index];
+        const auto destOffset = new_elem_offsets[index];
+        const auto size = elem_sizes[index];
+        for(ConnectivityType i = 0; i < size; i++)
+        {
+          const auto originalFaceId = elem_conn[srcOffset + i];
+
+          // Get the "name" of the old face.
+          const auto originalFaceKey = faceNamesView[originalFaceId];
+
+          // Look for the index of the "name" in the new uniqueKeys.
+          // That will be its face index in the new faces.
+          const auto newId = axom::mir::utilities::bsearch(originalFaceKey, uniqueKeysView);
+          SLIC_ASSERT(newId != -1);
+          new_elem_conn[destOffset + i] = static_cast<ConnectivityType>(newId);
+        }
+      });
+
+      n_elem_conn.move(n_new_elem_conn);
+      n_elem_offsets.move(n_new_elem_offsets);
+    }
+
+    AXOM_ANNOTATE_END("rewriting_elements");
   }
 };
 

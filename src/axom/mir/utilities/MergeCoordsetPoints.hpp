@@ -89,6 +89,7 @@ public:
     using KeyType = std::uint64_t;
 
     const auto nnodes = m_coordsetView.numberOfNodes();
+std::cout << "Creating names for " << nnodes << " nodes." << std::endl;
     axom::Array<KeyType> coordNames(nnodes, nnodes, allocatorID);
     auto coordNamesView = coordNames.view();
     const auto deviceCoordsetView = m_coordsetView;
@@ -101,12 +102,18 @@ public:
       value_type truncated[CoordsetView::dimension()];
       for(int d = 0; d < CoordsetView::dimension(); d++)
       {
-        truncated[d] = static_cast<value_type>(std::round(pt[d] / tolerance) * tolerance);
+        value_type value = static_cast<value_type>(std::round(pt[d] / tolerance) * tolerance);
+        if(value > -tolerance && value < tolerance)
+        {
+          value = value_type{0};
+        }
+        truncated[d] = value;
       }
 
       // Make a name for this point
       const void *tptr = static_cast<const void *>(truncated);
       coordNamesView[index] = axom::mir::utilities::hash_bytes(static_cast<const std::uint8_t *>(tptr), sizeof(value_type) * CoordsetView::dimension());
+std::cout << "coordNames[" << index << "]=" << coordNamesView[index] << std::endl;
     });
     AXOM_ANNOTATE_END("naming");
 
@@ -120,16 +127,19 @@ public:
     const auto uniqueNamesView = uniqueNames.view();
     const auto selectedIdsView = selectedIds.view();
     AXOM_ANNOTATE_END("unique");
+std::cout << "unique: selectedIds.size=" << selectedIds.size() << ", uniqueNames.size=" << uniqueNames.size() << std::endl;
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("old2new");
     old2new = axom::Array<axom::IndexType>(nnodes, nnodes, allocatorID);
+std::cout << "creating old2new sized " << nnodes << " nodes." << std::endl;
     auto old2newView = old2new.view();
     axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(axom::IndexType index)
     {
       const auto newNodeId = axom::mir::utilities::bsearch(coordNamesView[index], uniqueNamesView);
       SLIC_ASSERT(newNodeId >= 0 && newNodeId < nnodes);
       old2newView[index] = newNodeId;
+std::cout << "old2new[" << index << "]=" << newNodeId << std::endl;
     });
     AXOM_ANNOTATE_END("old2new");
     
@@ -140,6 +150,8 @@ public:
     bputils::SliceData slice;
     slice.m_indicesView = selectedIdsView;
     css.execute(slice, n_coordset, n_coordset);
+std::cout << "n_coordset.size=" << n_coordset["values/x"].dtype().number_of_elements() << std::endl;
+n_coordset.print();
   }
 
   CoordsetView m_coordsetView;

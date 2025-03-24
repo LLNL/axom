@@ -75,6 +75,7 @@ set(mir_headers
     utilities/MakeZoneVolumes.hpp
     utilities/MakeUnstructured.hpp
     utilities/MatsetSlicer.hpp
+    utilities/MergeCoordsetPoints.hpp
     utilities/MergeMeshes.hpp
     utilities/MergePolyhedralFaces.hpp
     utilities/NodeToZoneRelationBuilder.hpp

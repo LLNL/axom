@@ -982,26 +982,42 @@ struct VariableShape
       break;
     case Tet_ShapeID:
       {
-        TetShape<ConnectivityType> obj(m_ids);
-        obj.getFace(faceIndex, ids, numIds);
+        numIds = TetTraits::numberOfNodesInFace(faceIndex);
+        const auto faceIds = TetTraits::getFace(faceIndex);
+        for(IndexType i = 0; i < numIds; i++)
+        {
+          ids[i] = m_ids[faceIds[i]];
+        }
       }
       break;
     case Pyramid_ShapeID:
       {
-        PyramidShape<ConnectivityType> obj(m_ids);
-        obj.getFace(faceIndex, ids, numIds);
+        numIds = PyramidTraits::numberOfNodesInFace(faceIndex);
+        const auto faceIds = PyramidTraits::getFace(faceIndex);
+        for(IndexType i = 0; i < numIds; i++)
+        {
+          ids[i] = m_ids[faceIds[i]];
+        }
       }
       break;
     case Wedge_ShapeID:
       {
-        WedgeShape<ConnectivityType> obj(m_ids);
-        obj.getFace(faceIndex, ids, numIds);
+        numIds = WedgeTraits::numberOfNodesInFace(faceIndex);
+        const auto faceIds = WedgeTraits::getFace(faceIndex);
+        for(IndexType i = 0; i < numIds; i++)
+        {
+          ids[i] = m_ids[faceIds[i]];
+        }
       }
       break;
     case Hex_ShapeID:
       {
-        HexShape<ConnectivityType> obj(m_ids);
-        obj.getFace(faceIndex, ids, numIds);
+        numIds = HexTraits::numberOfNodesInFace(faceIndex);
+        const auto faceIds = HexTraits::getFace(faceIndex);
+        for(IndexType i = 0; i < numIds; i++)
+        {
+          ids[i] = m_ids[faceIds[i]];
+        }
       }
       break;
     }

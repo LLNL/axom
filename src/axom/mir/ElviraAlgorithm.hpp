@@ -309,10 +309,13 @@ protected:
     // Merge clean and MIR output.
     std::vector<bputils::MeshInput> inputs(2);
     inputs[0].m_input = &n_cleanOutput;
+    inputs[0].topologyName = topoName;
+
     inputs[1].m_input = &n_mirOutput;
+    inputs[1].topologyName = topoName;
 
     conduit::Node mmOpts;
-    mmOpts["topology"] = topoName;
+    mmOpts["topologyName"] = topoName;
     MergeMeshes mm;
     mm.execute(inputs, mmOpts, n_merged);
   }

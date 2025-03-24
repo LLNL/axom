@@ -653,6 +653,7 @@ public:
       m_original_zones[fragmentOffset] = zoneIndex;
       m_norm_x[fragmentOffset] = normal[0];
       m_norm_y[fragmentOffset] = normal[1];
+      m_norm_z[fragmentOffset] = normal[2];
 
       // Save material data.
       m_volume_fractions[fragmentOffset] = static_cast<MaterialVF>(1.);
@@ -709,11 +710,29 @@ public:
     mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
 
     // Changing the coordset changed the nodes so we need to change the subelement/connectivity.
+    // Traverse it using sizes/offsets in case some of the connectivity values are being skipped.
     conduit::Node &n_se_conn = n_topology["subelements/connectivity"];
+    const conduit::Node &n_se_sizes = n_topology["subelements/sizes"];
+    const conduit::Node &n_se_offsets = n_topology["subelements/offsets"];
+
     auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
-    axom::for_all<ExecSpace>(se_conn.size(), AXOM_LAMBDA(axom::IndexType index)
+    const auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
+    const auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
+    auto old2newView = old2new.view();
+std::cout << "--------------------------------------------------\n";
+std::cout << "se_conn.size=" << se_conn.size() << std::endl;
+std::cout << "old2new.size=" << old2new.size() << std::endl;
+    axom::for_all<ExecSpace>(se_sizes.size(), AXOM_LAMBDA(axom::IndexType index)
     {
-      se_conn[index] = old2new[se_conn[index]];
+      const auto size = se_sizes[index];
+      const auto offset = se_offsets[index];
+      for(ConnectivityType i = 0; i < size; i++)
+      {
+        const auto nodeId = se_conn[offset + i];
+        std::cout << (offset+i) << ": old=" << nodeId;
+        std::cout << ", new=" << old2newView[nodeId] << std::endl;
+        se_conn[offset + i] = old2newView[nodeId];
+      }
     });
 
     // Now merge any faces that can be merged.
