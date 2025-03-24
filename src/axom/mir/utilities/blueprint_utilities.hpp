@@ -12,6 +12,7 @@
 #include "axom/core/NumericLimits.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
+#include "axom/export/mir.h"
 
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_blueprint.hpp>
@@ -46,7 +47,7 @@ struct cpp2conduit<conduit::int8>
 {
   using type = conduit::int8;
   static constexpr conduit::index_t id = conduit::DataType::INT8_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -54,7 +55,7 @@ struct cpp2conduit<conduit::int16>
 {
   using type = conduit::int16;
   static constexpr conduit::index_t id = conduit::DataType::INT16_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -62,7 +63,7 @@ struct cpp2conduit<conduit::int32>
 {
   using type = conduit::int32;
   static constexpr conduit::index_t id = conduit::DataType::INT32_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -70,7 +71,7 @@ struct cpp2conduit<conduit::int64>
 {
   using type = conduit::int64;
   static constexpr conduit::index_t id = conduit::DataType::INT64_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -78,7 +79,7 @@ struct cpp2conduit<conduit::uint8>
 {
   using type = conduit::uint8;
   static constexpr conduit::index_t id = conduit::DataType::UINT8_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -86,7 +87,7 @@ struct cpp2conduit<conduit::uint16>
 {
   using type = conduit::uint16;
   static constexpr conduit::index_t id = conduit::DataType::UINT16_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -94,7 +95,7 @@ struct cpp2conduit<conduit::uint32>
 {
   using type = conduit::uint32;
   static constexpr conduit::index_t id = conduit::DataType::UINT32_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -102,7 +103,7 @@ struct cpp2conduit<conduit::uint64>
 {
   using type = conduit::uint64;
   static constexpr conduit::index_t id = conduit::DataType::UINT64_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -110,7 +111,7 @@ struct cpp2conduit<conduit::float32>
 {
   using type = conduit::float32;
   static constexpr conduit::index_t id = conduit::DataType::FLOAT32_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 template <>
@@ -118,7 +119,7 @@ struct cpp2conduit<conduit::float64>
 {
   using type = conduit::float64;
   static constexpr conduit::index_t id = conduit::DataType::FLOAT64_ID;
-  static const char *name;
+  AXOM_MIR_EXPORT static const char *name;
 };
 
 //------------------------------------------------------------------------------
