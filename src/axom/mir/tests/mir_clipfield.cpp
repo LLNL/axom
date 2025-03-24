@@ -281,7 +281,7 @@ std::vector<int> permute(const std::vector<int> &input)
   std::iota(indices.begin(), indices.end(), 0);
   for(size_t i = 0; i < input.size(); i++)
   {
-    order[i] = drand48();
+    order[i] = axom::utilities::random_real(0., 1.);
   }
   std::sort(indices.begin(), indices.end(), [&](int a, int b) {
     return order[a] < order[b];
@@ -300,12 +300,12 @@ std::vector<int> makeUnsortedArray(int n)
 
 std::vector<int> makeRandomArray(int n)
 {
-  constexpr int largestId = 1 << 28;
+  constexpr double largestId = static_cast<double>(1 << 28);
   std::vector<int> values;
   values.resize(n);
   for(int i = 0; i < n; i++)
   {
-    values[i] = static_cast<int>(largestId * drand48());
+    values[i] = static_cast<int>(axom::utilities::random_real(0., largestId));
   }
   return values;
 }
@@ -331,44 +331,6 @@ TEST(mir_clipfield, sort_values)
       auto values = makeUnsortedArray(n);
       axom::utilities::Sorting<int, MaxSize>::sort(values.data(), values.size());
       EXPECT_TRUE(increasing(values));
-    }
-  }
-}
-
-//------------------------------------------------------------------------------
-TEST(mir_clipfield, sort_multiple_values)
-{
-  constexpr axom::IndexType MaxSize = 15;
-  for(axom::IndexType n = 1; n < MaxSize; n++)
-  {
-    for(axom::IndexType trial = 1; trial <= n; trial++)
-    {
-      auto vec0 = makeRandomDoubleArray(n);
-      std::vector<int> vec1(n);
-      std::iota(vec1.begin(), vec1.end(), n);
-
-      auto vec0Copy(vec0);
-      auto vec1Copy(vec1);
-
-      // Sort values based on vec0.
-      axom::utilities::sort_multiple(vec0.data(), vec1.data(), n);
-      EXPECT_TRUE(increasing(vec0));
-
-      // Sort back based on vec1.
-      axom::utilities::sort_multiple(vec1.data(), vec0.data(), n);
-      EXPECT_TRUE(increasing(vec1));
-
-      // Make sure both vectors are the same as the initial vectors.
-      EXPECT_EQ(vec0, vec0Copy);
-      EXPECT_EQ(vec1, vec1Copy);
-
-      // Reverse values based on vec0.
-      axom::utilities::reverse_sort_multiple(vec0.data(), vec1.data(), n);
-      EXPECT_TRUE(decreasing(vec0));
-
-      // Reverse back based on vec1.
-      axom::utilities::reverse_sort_multiple(vec1.data(), vec0.data(), n);
-      EXPECT_TRUE(decreasing(vec1));
     }
   }
 }

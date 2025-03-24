@@ -997,7 +997,14 @@ void MFEMSidreDataCollection::LoadExternalData(const std::string& filename,
   else
   #endif
   {
-    grp->loadExternalData(path);
+    if(!group_name.empty())
+    {
+      grp->loadExternalData(path);
+    }
+    else
+    {
+      m_bp_grp->loadExternalData(path);
+    }
   }
 }
 
