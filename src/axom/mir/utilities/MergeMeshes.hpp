@@ -834,6 +834,7 @@ std::cout << "------------------------------------------------------------------
                                  const conduit::Node &n_options,
                                  conduit::Node &output) const
   {
+    AXOM_ANNOTATE_SCOPE("mergeTopologiesPolyhedral");
     std::vector<MeshInput> phInputs;
     try
     {
@@ -860,8 +861,8 @@ std::cout << "------------------------------------------------------------------
                                       conduit::Node &output) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
+    AXOM_ANNOTATE_SCOPE("mergeTopologiesPolyhedralInner");
 
-    AXOM_ANNOTATE_SCOPE("mergeTopologiesUnstructured");
     axom::IndexType totalElemConnLen = 0, totalElemZones = 0;
     countZones(inputs, totalElemConnLen, totalElemZones);
 

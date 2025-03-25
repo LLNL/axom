@@ -839,6 +839,120 @@ TEST(mir_blueprint_utilities, makezonecenters_hip)
 #endif
 
 //------------------------------------------------------------------------------
+template <typename ExecSpace>
+struct test_mergecoordsetpoints
+{
+  static void test()
+  {
+    conduit::Node hostMesh;
+    create(hostMesh);
+
+    // host->device
+    conduit::Node deviceMesh;
+    bputils::copy<ExecSpace>(deviceMesh, hostMesh);
+
+    conduit::Node &n_coordset = deviceMesh["coordsets/coords"];
+    auto coordsetView =
+      axom::mir::views::make_explicit_coordset<double, 2>::view(n_coordset);
+    using CoordsetView = decltype(coordsetView);
+
+    bputils::MergeCoordsetPoints<ExecSpace, CoordsetView> mcp(coordsetView);
+    conduit::Node n_newCoordset;
+    axom::Array<axom::IndexType> selectedIds, old2new;
+    // Make anything closer than 0.005 match
+    const double eps = 0.005;
+    conduit::Node n_options;
+    n_options["tolerance"] = eps;
+    mcp.execute(n_coordset, n_options, selectedIds, old2new);
+
+    // Stash the selectedIds and old2new in the coordset node so we can bring it to the host easier.
+    n_coordset["selectedIds"].set_external(selectedIds.data(), selectedIds.size());
+    n_coordset["old2new"].set_external(old2new.data(), old2new.size());
+
+    // device->host
+    conduit::Node n_hostCoordset;
+    bputils::copy<axom::SEQ_EXEC>(n_hostCoordset, n_coordset);
+    //printNode(n_hostCoordset);
+
+    // Compare results.
+    const double res_x[] = {2.0, -0.0001, 1.0001, 0.0, 2.0, 1.0, 2.0, 1.0, 0.0};
+    const double res_y[] = {2.0, 1.0, 1.0, 0.0001, -0.0001, 0.0, 1.0001, 2.0001, 2.0};
+    const int res_old2new[] = {3, 5, 2, 1, 5, 4, 6, 2, 1, 2, 7, 8, 2, 6, 0, 7};
+
+    const auto x = n_hostCoordset["values/x"].as_double_accessor();
+    const auto y = n_hostCoordset["values/y"].as_double_accessor();
+    const auto o2n = n_hostCoordset["old2new"].as_int_accessor();
+    EXPECT_EQ(x.number_of_elements(), 9);
+    EXPECT_EQ(y.number_of_elements(), 9);
+    EXPECT_EQ(o2n.number_of_elements(), 16);
+    for(int i = 0; i < 9; i++)
+    {
+      EXPECT_NEAR(x[i], res_x[i], eps);
+      EXPECT_NEAR(y[i], res_y[i], eps);
+    }
+    for(int i = 0; i < 16; i++)
+    {
+      EXPECT_EQ(o2n[i], res_old2new[i]);
+    }
+  }
+
+  static void create(conduit::Node &hostMesh)
+  {
+    /*
+    We have nodes that are given such that each zone corner is repeated and may have some
+    small tolerance variations. We want to make sure the nodes get joined.
+
+    8-------9--------10
+    |       |        |
+    |       |        |
+    |z3     |z4      |
+    4-------5--------6
+    |       |        |
+    |       |        |
+    |z0     |z1      |
+    0-------1--------2
+    */
+    const char *yaml = R"xx(
+coordsets:
+  coords:
+    type: explicit
+    values:
+      x: [0.,     1.0001, 1., 0.,       1.,  2.,     2., 1.0001,       -0.0001, 1., 1.,     0.,       1.0001, 2.,     2., 1.]
+      y: [0.0001, 0.,     1., 1.,       0., -0.0001, 1., 1.,            1.,     1., 2.0001, 2.,       1.,     1.0001, 2., 2.0001]
+)xx";
+
+    hostMesh.parse(yaml);
+  }
+};
+
+TEST(mir_blueprint_utilities, mergecoordsetpoints_seq)
+{
+  AXOM_ANNOTATE_SCOPE("mergecoordsetpoints_seq");
+  test_mergecoordsetpoints<seq_exec>::test();
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(mir_blueprint_utilities, mergecoordsetpoints_omp)
+{
+  AXOM_ANNOTATE_SCOPE("mergecoordsetpoints_omp");
+  test_mergecoordsetpoints<omp_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(mir_blueprint_utilities, mergecoordsetpoints_cuda)
+{
+  AXOM_ANNOTATE_SCOPE("mergecoordsetpoints_cuda");
+  test_mergecoordsetpoints<cuda_exec>::test();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(mir_blueprint_utilities, mergecoordsetpoints_hip)
+{
+  AXOM_ANNOTATE_SCOPE("mergecoordsetpoints_hip");
+  test_mergecoordsetpoints<hip_exec>::test();
+}
+#endif
+
+//------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
   std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;

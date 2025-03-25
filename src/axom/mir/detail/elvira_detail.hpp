@@ -526,12 +526,16 @@ public:
     n_normal["association"] = "element";
     conduit::Node &n_x = n_normal["values/x"];
     conduit::Node &n_y = n_normal["values/y"];
+    conduit::Node &n_z = n_normal["values/z"];
     n_x.set_allocator(c2a.getConduitAllocatorID());
     n_x.set(conduit::DataType(bputils::cpp2conduit<double>::id, numFragments));
     m_view.m_norm_x = bputils::make_array_view<double>(n_x);
     n_y.set_allocator(c2a.getConduitAllocatorID());
     n_y.set(conduit::DataType(bputils::cpp2conduit<double>::id, numFragments));
     m_view.m_norm_y = bputils::make_array_view<double>(n_y);
+    n_z.set_allocator(c2a.getConduitAllocatorID());
+    n_z.set(conduit::DataType(bputils::cpp2conduit<double>::id, numFragments));
+    m_view.m_norm_z = bputils::make_array_view<double>(n_z);
 
     // Set up new matset. All of the sizes are numFragments because we're making clean zones.
     n_matset["topology"] = n_topology.name();
@@ -707,33 +711,32 @@ public:
     using NewCoordsetView = decltype(newCoordsetView);
     bputils::MergeCoordsetPoints<ExecSpace, NewCoordsetView> mcp(newCoordsetView);
     conduit::Node n_mcp_options;
-    mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
+    const bool merged = mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
 
     // Changing the coordset changed the nodes so we need to change the subelement/connectivity.
     // Traverse it using sizes/offsets in case some of the connectivity values are being skipped.
-    conduit::Node &n_se_conn = n_topology["subelements/connectivity"];
-    const conduit::Node &n_se_sizes = n_topology["subelements/sizes"];
-    const conduit::Node &n_se_offsets = n_topology["subelements/offsets"];
-
-    auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
-    const auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
-    const auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
-    auto old2newView = old2new.view();
-std::cout << "--------------------------------------------------\n";
-std::cout << "se_conn.size=" << se_conn.size() << std::endl;
-std::cout << "old2new.size=" << old2new.size() << std::endl;
-    axom::for_all<ExecSpace>(se_sizes.size(), AXOM_LAMBDA(axom::IndexType index)
+    if(merged)
     {
-      const auto size = se_sizes[index];
-      const auto offset = se_offsets[index];
-      for(ConnectivityType i = 0; i < size; i++)
+      AXOM_ANNOTATE_SCOPE("rewriting_subelements");
+      conduit::Node &n_se_conn = n_topology["subelements/connectivity"];
+      const conduit::Node &n_se_sizes = n_topology["subelements/sizes"];
+      const conduit::Node &n_se_offsets = n_topology["subelements/offsets"];
+
+      auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
+      const auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
+      const auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
+      auto old2newView = old2new.view();
+      axom::for_all<ExecSpace>(se_sizes.size(), AXOM_LAMBDA(axom::IndexType index)
       {
-        const auto nodeId = se_conn[offset + i];
-        std::cout << (offset+i) << ": old=" << nodeId;
-        std::cout << ", new=" << old2newView[nodeId] << std::endl;
-        se_conn[offset + i] = old2newView[nodeId];
-      }
-    });
+        const auto size = se_sizes[index];
+        const auto offset = se_offsets[index];
+        for(ConnectivityType i = 0; i < size; i++)
+        {
+          const auto nodeId = se_conn[offset + i];
+          se_conn[offset + i] = old2newView[nodeId];
+        }
+      });
+    }
 
     // Now merge any faces that can be merged.
     bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_topology);

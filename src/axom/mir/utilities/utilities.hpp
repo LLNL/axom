@@ -471,8 +471,8 @@ struct Unique
       });
 
     // Sort the keys, indices in place.
-    RAJA::sort_pairs<loop_policy>(RAJA::make_span(keys_view.data(), n),
-                                  RAJA::make_span(indices_view.data(), n));
+    RAJA::stable_sort_pairs<loop_policy>(RAJA::make_span(keys_view.data(), n),
+                                         RAJA::make_span(indices_view.data(), n));
 
     // Make a mask array for where differences occur.
     axom::Array<axom::IndexType> mask(n, n, allocatorID);
