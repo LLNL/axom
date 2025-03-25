@@ -43,7 +43,7 @@ struct MeshInput
     m_nodeMapView {};  //!< Map for mesh nodeIds to nodeIds in final mesh.
   axom::ArrayView<axom::IndexType>
     m_nodeSliceView {};  //!< Node ids to be extracted and added to final mesh.
-  std::string topologyName {}; //!< The name of the topology to use.
+  std::string topologyName {};  //!< The name of the topology to use.
 };
 
 /*!
@@ -116,46 +116,47 @@ protected:
   {
     try
     {
-    for(size_t i = 0; i < inputs.size(); i++)
-    {
-      if(inputs[i].m_input == nullptr) return false;
-
-      if(inputs[i].topologyName.empty())
+      for(size_t i = 0; i < inputs.size(); i++)
       {
-        // If we did not specify which topology, make sure that there is only 1.
-        const char *keys[] = {"coordsets", "topologies", "matsets"};
+        if(inputs[i].m_input == nullptr) return false;
+
         if(inputs[i].topologyName.empty())
         {
-          for(int k = 0; k < 3; k++)
+          // If we did not specify which topology, make sure that there is only 1.
+          const char *keys[] = {"coordsets", "topologies", "matsets"};
+          if(inputs[i].topologyName.empty())
           {
-            if(inputs[i].m_input->has_path(keys[k]))
+            for(int k = 0; k < 3; k++)
             {
-              const conduit::Node &n = inputs[i].m_input->fetch_existing(keys[k]);
-              if(n.number_of_children() > 1) return false;
+              if(inputs[i].m_input->has_path(keys[k]))
+              {
+                const conduit::Node &n =
+                  inputs[i].m_input->fetch_existing(keys[k]);
+                if(n.number_of_children() > 1) return false;
+              }
             }
           }
         }
-      }
-      const conduit::Node &n_topo = getTopology(inputs[i]);
-      if(n_topo["type"].as_string() != "unstructured")
-      {
-        return false;
-      }
-      const conduit::Node &n_coordset = getCoordset(inputs[i]);
-      if(n_coordset["type"].as_string() != "explicit")
-      {
-        return false;
-      }
+        const conduit::Node &n_topo = getTopology(inputs[i]);
+        if(n_topo["type"].as_string() != "unstructured")
+        {
+          return false;
+        }
+        const conduit::Node &n_coordset = getCoordset(inputs[i]);
+        if(n_coordset["type"].as_string() != "explicit")
+        {
+          return false;
+        }
 
-      // Require no nodeMap/nodeSlice or that they both be present.
-      if(!((inputs[i].m_nodeMapView.size() == 0 &&
-            inputs[i].m_nodeSliceView.size() == 0) ||
-           (inputs[i].m_nodeMapView.size() > 0 &&
-            inputs[i].m_nodeSliceView.size() > 0)))
-      {
-        return false;
+        // Require no nodeMap/nodeSlice or that they both be present.
+        if(!((inputs[i].m_nodeMapView.size() == 0 &&
+              inputs[i].m_nodeSliceView.size() == 0) ||
+             (inputs[i].m_nodeMapView.size() > 0 &&
+              inputs[i].m_nodeSliceView.size() > 0)))
+        {
+          return false;
+        }
       }
-    }
     }
     catch(std::exception &e)
     {
@@ -518,7 +519,7 @@ protected:
       mergeTopologiesUnstructured(shape_map, inputs, n_options, output);
     }
   }
-   
+
   /*!
    * \brief Merge multiple topologies into a single topology.
    *
@@ -725,8 +726,10 @@ std::cout << "------------------------------------------------------------------
       // Make a new mesh input node and a topology node under it.
       phInputs[i].m_input = new conduit::Node;
       phInputs[i].topologyName = inputs[i].topologyName;
-      conduit::Node &n_phTopo = phInputs[i].m_input->operator[]("topologies/" + n_srcTopo.name());
-      conduit::Node &n_phCoordset = phInputs[i].m_input->operator[]("coordsets/" + n_srcCoordset.name());
+      conduit::Node &n_phTopo =
+        phInputs[i].m_input->operator[]("topologies/" + n_srcTopo.name());
+      conduit::Node &n_phCoordset =
+        phInputs[i].m_input->operator[]("coordsets/" + n_srcCoordset.name());
 
       // We coordsets linked in.
       n_phCoordset.set_external(n_srcCoordset);
@@ -739,49 +742,62 @@ std::cout << "------------------------------------------------------------------
       else
       {
         // Convert the mesh to polyhedral.
-        const std::string shape = n_srcTopo.fetch_existing("elements/shape").as_string();
-        views::IndexNode_to_ArrayView(n_srcTopo.fetch_existing("elements/connectivity"), [&](auto connView)
-        {
-          using ConnectivityType = typename decltype(connView)::value_type;
+        const std::string shape =
+          n_srcTopo.fetch_existing("elements/shape").as_string();
+        views::IndexNode_to_ArrayView(
+          n_srcTopo.fetch_existing("elements/connectivity"),
+          [&](auto connView) {
+            using ConnectivityType = typename decltype(connView)::value_type;
 
-          if(shape == "tet")
-          {
-            auto topologyView = views::make_unstructured_single_shape<views::TetShape<ConnectivityType>>::view(n_srcTopo);
-            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-          }
-          else if(shape == "pyramid")
-          {
-            auto topologyView = views::make_unstructured_single_shape<views::PyramidShape<ConnectivityType>>::view(n_srcTopo);
-            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-          }
-          else if(shape == "wedge")
-          {
-            auto topologyView = views::make_unstructured_single_shape<views::WedgeShape<ConnectivityType>>::view(n_srcTopo);
-            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-          }
-          else if(shape == "hex")
-          {
-            auto topologyView = views::make_unstructured_single_shape<views::HexShape<ConnectivityType>>::view(n_srcTopo);
-            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-          }
-          else if(shape == "mixed")
-          {
-            const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-            axom::Array<IndexType> values, ids;
-            auto shapeMap = views::buildShapeMap(n_srcTopo, values, ids, allocatorID);
-            views::UnstructuredTopologyMixedShapeView<ConnectivityType> topologyView(
-              bputils::make_array_view<ConnectivityType>(n_srcTopo["elements/connectivity"]),
-              bputils::make_array_view<ConnectivityType>(n_srcTopo["elements/shapes"]),
-              bputils::make_array_view<ConnectivityType>(n_srcTopo["elements/sizes"]),
-              bputils::make_array_view<ConnectivityType>(n_srcTopo["elements/offsets"]),
-              shapeMap);
-            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-          }
-          else
-          {
-            SLIC_INFO(axom::fmt::format("{} is not a supported shape type.", shape));
-          }
-        });
+            if(shape == "tet")
+            {
+              auto topologyView = views::make_unstructured_single_shape<
+                views::TetShape<ConnectivityType>>::view(n_srcTopo);
+              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+            }
+            else if(shape == "pyramid")
+            {
+              auto topologyView = views::make_unstructured_single_shape<
+                views::PyramidShape<ConnectivityType>>::view(n_srcTopo);
+              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+            }
+            else if(shape == "wedge")
+            {
+              auto topologyView = views::make_unstructured_single_shape<
+                views::WedgeShape<ConnectivityType>>::view(n_srcTopo);
+              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+            }
+            else if(shape == "hex")
+            {
+              auto topologyView = views::make_unstructured_single_shape<
+                views::HexShape<ConnectivityType>>::view(n_srcTopo);
+              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+            }
+            else if(shape == "mixed")
+            {
+              const int allocatorID =
+                axom::execution_space<ExecSpace>::allocatorID();
+              axom::Array<IndexType> values, ids;
+              auto shapeMap =
+                views::buildShapeMap(n_srcTopo, values, ids, allocatorID);
+              views::UnstructuredTopologyMixedShapeView<ConnectivityType> topologyView(
+                bputils::make_array_view<ConnectivityType>(
+                  n_srcTopo["elements/connectivity"]),
+                bputils::make_array_view<ConnectivityType>(
+                  n_srcTopo["elements/shapes"]),
+                bputils::make_array_view<ConnectivityType>(
+                  n_srcTopo["elements/sizes"]),
+                bputils::make_array_view<ConnectivityType>(
+                  n_srcTopo["elements/offsets"]),
+                shapeMap);
+              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+            }
+            else
+            {
+              SLIC_INFO(
+                axom::fmt::format("{} is not a supported shape type.", shape));
+            }
+          });
       }
 #if 0
       std::cout << "Input " << i << std::endl;
@@ -796,7 +812,9 @@ std::cout << "------------------------------------------------------------------
    * \brief Make a polyhedral mesh given the input topology view.
    */
   template <typename TopologyView>
-  void makePolyhedralMesh(const TopologyView &topologyView, const conduit::Node n_srcTopo, conduit::Node &n_phTopo) const
+  void makePolyhedralMesh(const TopologyView &topologyView,
+                          const conduit::Node n_srcTopo,
+                          conduit::Node &n_phTopo) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
     using ConnectivityType = typename TopologyView::ConnectivityType;
@@ -873,9 +891,8 @@ std::cout << "------------------------------------------------------------------
     const axom::IndexType n = static_cast<axom::IndexType>(inputs.size());
 
     conduit::Node *n_newTopoPtr = nullptr;
-    axom::IndexType connOffset = 0, sizesOffset = 0,
-                    seConnOffset = 0, seSizesOffset = 0,
-                    coordOffset = 0, faceOffset = 0;
+    axom::IndexType connOffset = 0, sizesOffset = 0, seConnOffset = 0,
+                    seSizesOffset = 0, coordOffset = 0, faceOffset = 0;
     for(axom::IndexType i = 0; i < n; i++)
     {
       const conduit::Node &n_srcTopo = getTopology(inputs[i]);
@@ -925,19 +942,23 @@ std::cout << "------------------------------------------------------------------
 
         conduit::Node &n_newOffsets = n_newTopo["elements/offsets"];
         n_newOffsets.set_allocator(c2a.getConduitAllocatorID());
-        n_newOffsets.set(conduit::DataType(n_srcOffsets.dtype().id(), totalElemZones));
+        n_newOffsets.set(
+          conduit::DataType(n_srcOffsets.dtype().id(), totalElemZones));
 
         conduit::Node &n_newSEConn = n_newTopo["subelements/connectivity"];
         n_newSEConn.set_allocator(c2a.getConduitAllocatorID());
-        n_newSEConn.set(conduit::DataType(n_srcSEConn.dtype().id(), totalSEConnLen));
+        n_newSEConn.set(
+          conduit::DataType(n_srcSEConn.dtype().id(), totalSEConnLen));
 
         conduit::Node &n_newSESizes = n_newTopo["subelements/sizes"];
         n_newSESizes.set_allocator(c2a.getConduitAllocatorID());
-        n_newSESizes.set(conduit::DataType(n_srcSESizes.dtype().id(), totalSEZones));
+        n_newSESizes.set(
+          conduit::DataType(n_srcSESizes.dtype().id(), totalSEZones));
 
         conduit::Node &n_newSEOffsets = n_newTopo["subelements/offsets"];
         n_newSEOffsets.set_allocator(c2a.getConduitAllocatorID());
-        n_newSEOffsets.set(conduit::DataType(n_srcSEOffsets.dtype().id(), totalSEZones));
+        n_newSEOffsets.set(
+          conduit::DataType(n_srcSEOffsets.dtype().id(), totalSEZones));
       }
 
       // Copy this input's element connectivity into the new topology.
@@ -946,7 +967,10 @@ std::cout << "------------------------------------------------------------------
         n_srcSizes,
         n_srcOffsets,
         n_srcSESizes,
-        [&](auto srcConnView, auto srcSizesView, auto srcOffsetsView, auto srcSESizesView) {
+        [&](auto srcConnView,
+            auto srcSizesView,
+            auto srcOffsetsView,
+            auto srcSESizesView) {
           using ConnType = typename decltype(srcConnView)::value_type;
           conduit::Node &n_newConn =
             n_newTopoPtr->fetch_existing("elements/connectivity");
@@ -955,7 +979,7 @@ std::cout << "------------------------------------------------------------------
           // Copy the relevant connectivity from srcConnView. Also compute how
           // many elements were used.
           axom::ArrayView<axom::IndexType> nodeMapView;
-          mergeTopology_copy(nodeMapView, // does nothing for PH
+          mergeTopology_copy(nodeMapView,  // does nothing for PH
                              connOffset,
                              faceOffset,
                              connView,
@@ -993,7 +1017,7 @@ std::cout << "------------------------------------------------------------------
           // Copy the relevant connectivity from srcSEConnView. Also compute how
           // many elements were used.
           axom::ArrayView<axom::IndexType> nodeMapView;
-          mergeTopology_copy(nodeMapView, // does nothing for PH
+          mergeTopology_copy(nodeMapView,  // does nothing for PH
                              seConnOffset,
                              coordOffset,
                              seConnView,
@@ -1006,33 +1030,39 @@ std::cout << "------------------------------------------------------------------
         });
 
       // Copy this input's subelement sizes into the new topology.
-      axom::mir::views::IndexNode_to_ArrayView(n_srcSESizes, [&](auto srcSESizesView) {
-        using ConnType = typename decltype(srcSESizesView)::value_type;
-        conduit::Node &n_newSESizes =
-          n_newTopoPtr->fetch_existing("subelements/sizes");
-        auto seSizesView = bputils::make_array_view<ConnType>(n_newSESizes);
+      axom::mir::views::IndexNode_to_ArrayView(
+        n_srcSESizes,
+        [&](auto srcSESizesView) {
+          using ConnType = typename decltype(srcSESizesView)::value_type;
+          conduit::Node &n_newSESizes =
+            n_newTopoPtr->fetch_existing("subelements/sizes");
+          auto seSizesView = bputils::make_array_view<ConnType>(n_newSESizes);
 
-        mergeTopology_copy_sizes(seSizesOffset, seSizesView, srcSESizesView);
+          mergeTopology_copy_sizes(seSizesOffset, seSizesView, srcSESizesView);
 
-        seSizesOffset += srcSESizesView.size();
-      });
+          seSizesOffset += srcSESizesView.size();
+        });
     }
 
     // Make new offsets from the sizes.
     conduit::Node &n_newSizes = n_newTopoPtr->fetch_existing("elements/sizes");
-    conduit::Node &n_newSESizes = n_newTopoPtr->fetch_existing("subelements/sizes");
-    axom::mir::views::IndexNode_to_ArrayView_same(n_newSizes, n_newSESizes, [&](auto sizesView, auto seSizesView) {
-      using ConnType = typename decltype(sizesView)::value_type;
-      conduit::Node &n_newOffsets =
-        n_newTopoPtr->fetch_existing("elements/offsets");
-      auto offsetsView = bputils::make_array_view<ConnType>(n_newOffsets);
-      axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
+    conduit::Node &n_newSESizes =
+      n_newTopoPtr->fetch_existing("subelements/sizes");
+    axom::mir::views::IndexNode_to_ArrayView_same(
+      n_newSizes,
+      n_newSESizes,
+      [&](auto sizesView, auto seSizesView) {
+        using ConnType = typename decltype(sizesView)::value_type;
+        conduit::Node &n_newOffsets =
+          n_newTopoPtr->fetch_existing("elements/offsets");
+        auto offsetsView = bputils::make_array_view<ConnType>(n_newOffsets);
+        axom::exclusive_scan<ExecSpace>(sizesView, offsetsView);
 
-      conduit::Node &n_newSEOffsets =
-        n_newTopoPtr->fetch_existing("subelements/offsets");
-      auto seOffsetsView = bputils::make_array_view<ConnType>(n_newSEOffsets);
-      axom::exclusive_scan<ExecSpace>(seSizesView, seOffsetsView);
-    });
+        conduit::Node &n_newSEOffsets =
+          n_newTopoPtr->fetch_existing("subelements/offsets");
+        auto seOffsetsView = bputils::make_array_view<ConnType>(n_newSEOffsets);
+        axom::exclusive_scan<ExecSpace>(seSizesView, seOffsetsView);
+      });
   }
 
   /*!

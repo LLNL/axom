@@ -73,10 +73,11 @@ struct PointTraits
     return zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 1> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 1> getFace(
+    IndexType faceIndex)
   {
     assert(faceIndex == 0);
-    return StackArray<IndexType, 1>{0};
+    return StackArray<IndexType, 1> {0};
   }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
@@ -120,10 +121,11 @@ struct LineTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getFace(
+    IndexType faceIndex)
   {
     assert(faceIndex == 0);
-    return StackArray<IndexType, 2>{0,1};
+    return StackArray<IndexType, 2> {0, 1};
   }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
@@ -173,10 +175,11 @@ struct TriTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(
+    IndexType faceIndex)
   {
     assert(faceIndex == 0);
-    return StackArray<IndexType, 3>{0,1,2};
+    return StackArray<IndexType, 3> {0, 1, 2};
   }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
@@ -227,10 +230,11 @@ struct QuadTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(
+    IndexType faceIndex)
   {
     assert(faceIndex == 0);
-    return StackArray<IndexType, 4>{0,1,2,3};
+    return StackArray<IndexType, 4> {0, 1, 2, 3};
   }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
@@ -287,7 +291,8 @@ struct TetTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(
+    IndexType faceIndex)
   {
     const axom::StackArray<IndexType, 3> faces[] = {{0, 1, 3},
                                                     {1, 2, 3},
@@ -352,13 +357,14 @@ struct PyramidTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(
+    IndexType faceIndex)
   {
     const axom::StackArray<IndexType, 4> faces[] = {{3, 2, 1, 0},
-                                     {0, 1, 4, -1},
-                                     {1, 2, 4, -1},
-                                     {2, 3, 4, -1},
-                                     {3, 0, 4, -1}};
+                                                    {0, 1, 4, -1},
+                                                    {1, 2, 4, -1},
+                                                    {2, 3, 4, -1},
+                                                    {3, 0, 4, -1}};
     assert(faceIndex >= 0 && faceIndex < numberOfFaces());
     return faces[faceIndex];
   }
@@ -420,13 +426,14 @@ struct WedgeTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(
+    IndexType faceIndex)
   {
     const axom::StackArray<IndexType, 4> faces[] = {{0, 2, 1, -1},
-                                     {3, 4, 5, -1},
-                                     {0, 1, 4, 3},
-                                     {1, 2, 5, 4},
-                                     {2, 0, 3, 5}};
+                                                    {3, 4, 5, -1},
+                                                    {0, 1, 4, 3},
+                                                    {1, 2, 5, 4},
+                                                    {2, 0, 3, 5}};
     assert(faceIndex >= 0 && faceIndex < numberOfFaces());
     return faces[faceIndex];
   }
@@ -487,14 +494,15 @@ struct HexTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(
+    IndexType faceIndex)
   {
     const axom::StackArray<IndexType, 4> faces[] = {{3, 0, 4, 7},
-                                           {1, 2, 6, 5},
-                                           {0, 1, 5, 4},
-                                           {3, 7, 6, 2},
-                                           {0, 3, 2, 1},
-                                           {4, 5, 6, 7}};
+                                                    {1, 2, 6, 5},
+                                                    {0, 1, 5, 4},
+                                                    {3, 7, 6, 2},
+                                                    {0, 3, 2, 1},
+                                                    {4, 5, 6, 7}};
     assert(faceIndex >= 0 && faceIndex < numberOfFaces());
     return faces[faceIndex];
   }
@@ -610,7 +618,9 @@ struct PolygonShape : public PolygonTraits
    * \param[out] numIds The number of ids returned for the face.
    *
    */
-  AXOM_HOST_DEVICE void getFace(int AXOM_UNUSED_PARAM(faceIndex), ConnectivityType *ids, axom::IndexType &numIds) const
+  AXOM_HOST_DEVICE void getFace(int AXOM_UNUSED_PARAM(faceIndex),
+                                ConnectivityType *ids,
+                                axom::IndexType &numIds) const
   {
     numIds = m_ids.size();
     for(axom::IndexType i = 0; i < numIds; i++)
@@ -656,8 +666,7 @@ struct Shape : public ShapeTraits
    *
    * \param ids A reference to connectivity storage for this shape.
    */
-  AXOM_HOST_DEVICE Shape(ConnectivityStorageConstRef ids)
-    : m_ids(ids)
+  AXOM_HOST_DEVICE Shape(ConnectivityStorageConstRef ids) : m_ids(ids)
   {
     SLIC_ASSERT(m_ids.size() == ShapeTraits::numberOfNodes());
   }
@@ -720,9 +729,10 @@ struct Shape : public ShapeTraits
    */
   /// @{
   template <int _ndims = ShapeTraits::dimension()>
-  AXOM_HOST_DEVICE
-    typename std::enable_if<_ndims < 3, void>::type
-    getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex), ConnectivityType *ids, axom::IndexType &numIds) const
+    AXOM_HOST_DEVICE typename std::enable_if <
+    _ndims<3, void>::type getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex),
+                                  ConnectivityType *ids,
+                                  axom::IndexType &numIds) const
   {
     numIds = static_cast<axom::IndexType>(m_ids.size());
     for(axom::IndexType i = 0; i < numIds; i++)
@@ -732,9 +742,10 @@ struct Shape : public ShapeTraits
   }
 
   template <int _ndims = ShapeTraits::dimension()>
-  AXOM_HOST_DEVICE
-    typename std::enable_if<_ndims == 3, void>::type
-    getFace(axom::IndexType faceIndex, ConnectivityType *ids, axom::IndexType &numIds) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, void>::type getFace(
+    axom::IndexType faceIndex,
+    ConnectivityType *ids,
+    axom::IndexType &numIds) const
   {
     numIds = ShapeTraits::numberOfNodesInFace(faceIndex);
     const auto faceIds = ShapeTraits::getFace(faceIndex);
@@ -961,7 +972,9 @@ struct VariableShape
     return nfaces;
   }
 
-  AXOM_HOST_DEVICE void getFace(axom::IndexType faceIndex, ConnectivityType *ids, axom::IndexType &numIds) const
+  AXOM_HOST_DEVICE void getFace(axom::IndexType faceIndex,
+                                ConnectivityType *ids,
+                                axom::IndexType &numIds) const
   {
     switch(m_shapeId)
     {
@@ -972,54 +985,54 @@ struct VariableShape
     case Quad_ShapeID:
       // Falls through
     case Polygon_ShapeID:
+    {
+      numIds = m_ids.size();
+      for(axom::IndexType i = 0; i < numIds; i++)
       {
-        numIds = m_ids.size();
-        for(axom::IndexType i = 0; i < numIds; i++)
-        {
-          ids[i] = m_ids[i];
-        }
+        ids[i] = m_ids[i];
       }
-      break;
+    }
+    break;
     case Tet_ShapeID:
+    {
+      numIds = TetTraits::numberOfNodesInFace(faceIndex);
+      const auto faceIds = TetTraits::getFace(faceIndex);
+      for(IndexType i = 0; i < numIds; i++)
       {
-        numIds = TetTraits::numberOfNodesInFace(faceIndex);
-        const auto faceIds = TetTraits::getFace(faceIndex);
-        for(IndexType i = 0; i < numIds; i++)
-        {
-          ids[i] = m_ids[faceIds[i]];
-        }
+        ids[i] = m_ids[faceIds[i]];
       }
-      break;
+    }
+    break;
     case Pyramid_ShapeID:
+    {
+      numIds = PyramidTraits::numberOfNodesInFace(faceIndex);
+      const auto faceIds = PyramidTraits::getFace(faceIndex);
+      for(IndexType i = 0; i < numIds; i++)
       {
-        numIds = PyramidTraits::numberOfNodesInFace(faceIndex);
-        const auto faceIds = PyramidTraits::getFace(faceIndex);
-        for(IndexType i = 0; i < numIds; i++)
-        {
-          ids[i] = m_ids[faceIds[i]];
-        }
+        ids[i] = m_ids[faceIds[i]];
       }
-      break;
+    }
+    break;
     case Wedge_ShapeID:
+    {
+      numIds = WedgeTraits::numberOfNodesInFace(faceIndex);
+      const auto faceIds = WedgeTraits::getFace(faceIndex);
+      for(IndexType i = 0; i < numIds; i++)
       {
-        numIds = WedgeTraits::numberOfNodesInFace(faceIndex);
-        const auto faceIds = WedgeTraits::getFace(faceIndex);
-        for(IndexType i = 0; i < numIds; i++)
-        {
-          ids[i] = m_ids[faceIds[i]];
-        }
+        ids[i] = m_ids[faceIds[i]];
       }
-      break;
+    }
+    break;
     case Hex_ShapeID:
+    {
+      numIds = HexTraits::numberOfNodesInFace(faceIndex);
+      const auto faceIds = HexTraits::getFace(faceIndex);
+      for(IndexType i = 0; i < numIds; i++)
       {
-        numIds = HexTraits::numberOfNodesInFace(faceIndex);
-        const auto faceIds = HexTraits::getFace(faceIndex);
-        for(IndexType i = 0; i < numIds; i++)
-        {
-          ids[i] = m_ids[faceIds[i]];
-        }
+        ids[i] = m_ids[faceIds[i]];
       }
-      break;
+    }
+    break;
     }
   }
 

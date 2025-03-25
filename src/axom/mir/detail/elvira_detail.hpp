@@ -110,7 +110,11 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
       bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
     const double volumeError = axom::utilities::abs(matVolume - fragmentVolume);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-    std::cout << "\t\titerations=" << iterations << ", t_blend=" << t_blend << ", P=" << P << ", clippedShape=" << clippedShape << ", matVolume=" << matVolume << ", fragmentVolume=" << fragmentVolume << ", volumeError=" << volumeError << std::endl;
+    std::cout << "\t\titerations=" << iterations << ", t_blend=" << t_blend
+              << ", P=" << P << ", clippedShape=" << clippedShape
+              << ", matVolume=" << matVolume
+              << ", fragmentVolume=" << fragmentVolume
+              << ", volumeError=" << volumeError << std::endl;
 #endif
     if((volumeError <= tolerance) || (iterations >= max_iterations))
     {
@@ -351,7 +355,9 @@ public:
       m_mat_offsets[fragmentOffset] = fragmentOffset;
       m_mat_indices[fragmentOffset] = fragmentOffset;
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-      std::cout << "\taddShape: zone=" << zoneIndex << ", fragmentOffset=" << fragmentOffset << ", mat=" << matId << ", shape=" << shape << std::endl;
+      std::cout << "\taddShape: zone=" << zoneIndex
+                << ", fragmentOffset=" << fragmentOffset << ", mat=" << matId
+                << ", shape=" << shape << std::endl;
 #endif
     }
 
@@ -386,9 +392,11 @@ public:
    *
    * \note This method invalidates the views in m_view by causing some of their backing arrays to be replaced.
    */
-  void cleanMesh(conduit::Node &AXOM_UNUSED_PARAM(n_coordset), conduit::Node &AXOM_UNUSED_PARAM(n_topology), axom::Array<axom::IndexType> &AXOM_UNUSED_PARAM(selectedIds)) const
-  {
-  }
+  void cleanMesh(conduit::Node &AXOM_UNUSED_PARAM(n_coordset),
+                 conduit::Node &AXOM_UNUSED_PARAM(n_topology),
+                 axom::Array<axom::IndexType> &AXOM_UNUSED_PARAM(selectedIds)) const
+  { }
+
 private:
   View m_view;
 };
@@ -411,7 +419,8 @@ class TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, PHShape
 {
   static constexpr int MAX_POINTS_PER_FACE = 5;
   static constexpr int MAX_FACES_PER_FRAGMENT = 7;
-  static constexpr int MAX_POINTS_PER_FRAGMENT = 10; // Enough for hex with one corner cut off.
+  static constexpr int MAX_POINTS_PER_FRAGMENT =
+    10;  // Enough for hex with one corner cut off.
 
   using CoordType = typename CoordsetView::value_type;
   using ConnectivityType = typename TopologyView::ConnectivityType;
@@ -458,57 +467,62 @@ public:
     axom::mir::utilities::fill<ExecSpace>(m_view.m_z, CoordType(0));
 
     // elements (zone definitions)
-    constexpr ConnectivityType UnusedValue = std::numeric_limits<ConnectivityType>::is_signed ? -1 : 99999999;
+    constexpr ConnectivityType UnusedValue =
+      std::numeric_limits<ConnectivityType>::is_signed ? -1 : 99999999;
     {
-    n_topology["type"] = "unstructured";
-    n_topology["elements/shape"] = "polyhedral";
-    conduit::Node &n_conn = n_topology["elements/connectivity"];
-    n_conn.set_allocator(c2a.getConduitAllocatorID());
-    n_conn.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                 numFragments * MAX_FACES_PER_FRAGMENT));
-    m_view.m_connectivity = bputils::make_array_view<ConnectivityType>(n_conn);
-    axom::mir::utilities::fill<ExecSpace>(m_view.m_connectivity,
-                                          UnusedValue);
+      n_topology["type"] = "unstructured";
+      n_topology["elements/shape"] = "polyhedral";
+      conduit::Node &n_conn = n_topology["elements/connectivity"];
+      n_conn.set_allocator(c2a.getConduitAllocatorID());
+      n_conn.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                                   numFragments * MAX_FACES_PER_FRAGMENT));
+      m_view.m_connectivity = bputils::make_array_view<ConnectivityType>(n_conn);
+      axom::mir::utilities::fill<ExecSpace>(m_view.m_connectivity, UnusedValue);
 
-    conduit::Node &n_sizes = n_topology["elements/sizes"];
-    n_sizes.set_allocator(c2a.getConduitAllocatorID());
-    n_sizes.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                  numFragments));
-    m_view.m_sizes = bputils::make_array_view<ConnectivityType>(n_sizes);
-
-    conduit::Node &n_offsets = n_topology["elements/offsets"];
-    n_offsets.set_allocator(c2a.getConduitAllocatorID());
-    n_offsets.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+      conduit::Node &n_sizes = n_topology["elements/sizes"];
+      n_sizes.set_allocator(c2a.getConduitAllocatorID());
+      n_sizes.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
                                     numFragments));
-    m_view.m_offsets = bputils::make_array_view<ConnectivityType>(n_offsets);
+      m_view.m_sizes = bputils::make_array_view<ConnectivityType>(n_sizes);
+
+      conduit::Node &n_offsets = n_topology["elements/offsets"];
+      n_offsets.set_allocator(c2a.getConduitAllocatorID());
+      n_offsets.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                                      numFragments));
+      m_view.m_offsets = bputils::make_array_view<ConnectivityType>(n_offsets);
     }
 
     // subelements (face definitions)
     {
-    n_topology["subelements/shape"] = "polygonal";
-    conduit::Node &n_se_conn = n_topology["subelements/connectivity"];
-    n_se_conn.set_allocator(c2a.getConduitAllocatorID());
-    n_se_conn.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                 numFragments * MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE));
-    m_view.m_subelement_connectivity = bputils::make_array_view<ConnectivityType>(n_se_conn);
-    axom::mir::utilities::fill<ExecSpace>(m_view.m_subelement_connectivity,
-                                          UnusedValue);
+      n_topology["subelements/shape"] = "polygonal";
+      conduit::Node &n_se_conn = n_topology["subelements/connectivity"];
+      n_se_conn.set_allocator(c2a.getConduitAllocatorID());
+      n_se_conn.set(conduit::DataType(
+        bputils::cpp2conduit<ConnectivityType>::id,
+        numFragments * MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE));
+      m_view.m_subelement_connectivity =
+        bputils::make_array_view<ConnectivityType>(n_se_conn);
+      axom::mir::utilities::fill<ExecSpace>(m_view.m_subelement_connectivity,
+                                            UnusedValue);
 
-    conduit::Node &n_se_sizes = n_topology["subelements/sizes"];
-    n_se_sizes.set_allocator(c2a.getConduitAllocatorID());
-    n_se_sizes.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                  numFragments * MAX_FACES_PER_FRAGMENT));
-    m_view.m_subelement_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
-    axom::mir::utilities::fill<ExecSpace>(m_view.m_subelement_sizes,
-                                          ConnectivityType{0});
+      conduit::Node &n_se_sizes = n_topology["subelements/sizes"];
+      n_se_sizes.set_allocator(c2a.getConduitAllocatorID());
+      n_se_sizes.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                                       numFragments * MAX_FACES_PER_FRAGMENT));
+      m_view.m_subelement_sizes =
+        bputils::make_array_view<ConnectivityType>(n_se_sizes);
+      axom::mir::utilities::fill<ExecSpace>(m_view.m_subelement_sizes,
+                                            ConnectivityType {0});
 
-    conduit::Node &n_se_offsets = n_topology["subelements/offsets"];
-    n_se_offsets.set_allocator(c2a.getConduitAllocatorID());
-    n_se_offsets.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                    numFragments * MAX_FACES_PER_FRAGMENT));
-    m_view.m_subelement_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
-    axom::mir::utilities::fill<ExecSpace>(m_view.m_subelement_offsets,
-                                          UnusedValue);
+      conduit::Node &n_se_offsets = n_topology["subelements/offsets"];
+      n_se_offsets.set_allocator(c2a.getConduitAllocatorID());
+      n_se_offsets.set(
+        conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+                          numFragments * MAX_FACES_PER_FRAGMENT));
+      m_view.m_subelement_offsets =
+        bputils::make_array_view<ConnectivityType>(n_se_offsets);
+      axom::mir::utilities::fill<ExecSpace>(m_view.m_subelement_offsets,
+                                            UnusedValue);
     }
 
     // Make new fields.
@@ -606,15 +620,23 @@ public:
         m_y[destIndex] = pt[1];
         m_z[destIndex] = pt[2];
       }
-// NOTE: this will only work if the Polyhedron contains int connectivity
+      // NOTE: this will only work if the Polyhedron contains int connectivity
       // Get the faces out of the shape and store them in the Blueprint arrays.
-      int *subelement_connectivity = m_subelement_connectivity.data() + fragmentOffset * (MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE);
-      int *subelement_sizes = m_subelement_sizes.data() + fragmentOffset * MAX_FACES_PER_FRAGMENT;
-      int *subelement_offsets = m_subelement_offsets.data() + fragmentOffset * MAX_FACES_PER_FRAGMENT;
+      int *subelement_connectivity = m_subelement_connectivity.data() +
+        fragmentOffset * (MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE);
+      int *subelement_sizes =
+        m_subelement_sizes.data() + fragmentOffset * MAX_FACES_PER_FRAGMENT;
+      int *subelement_offsets =
+        m_subelement_offsets.data() + fragmentOffset * MAX_FACES_PER_FRAGMENT;
       int numFaces;
-      shape.getFaces(subelement_connectivity, subelement_sizes, subelement_offsets, numFaces);
+      shape.getFaces(subelement_connectivity,
+                     subelement_sizes,
+                     subelement_offsets,
+                     numFaces);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-      std::cout << "addShape: zoneIndex=" << zoneIndex << ", fragmentOffset=" << fragmentOffset << ", nverts=" << nverts << ", numFaces=" << numFaces << ", subelement_connectivity={";
+      std::cout << "addShape: zoneIndex=" << zoneIndex
+                << ", fragmentOffset=" << fragmentOffset << ", nverts=" << nverts
+                << ", numFaces=" << numFaces << ", subelement_connectivity={";
       for(int i = 0; i < MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE; i++)
       {
         std::cout << subelement_connectivity[i] << ", ";
@@ -635,11 +657,13 @@ public:
       int index = 0;
       for(int f = 0; f < numFaces; f++)
       {
-        subelement_offsets[f] += fragmentOffset * MAX_POINTS_PER_FACE * MAX_FACES_PER_FRAGMENT;
+        subelement_offsets[f] +=
+          fragmentOffset * MAX_POINTS_PER_FACE * MAX_FACES_PER_FRAGMENT;
 
         for(int i = 0; i < subelement_sizes[f]; i++)
         {
-          subelement_connectivity[index++] += fragmentOffset * MAX_POINTS_PER_FRAGMENT;
+          subelement_connectivity[index++] +=
+            fragmentOffset * MAX_POINTS_PER_FRAGMENT;
         }
       }
 
@@ -675,12 +699,13 @@ public:
     // New topology data.
     axom::ArrayView<ConnectivityType> m_connectivity {}, m_sizes {}, m_offsets {};
 
-    axom::ArrayView<ConnectivityType> m_subelement_connectivity {}, m_subelement_sizes {},
-      m_subelement_offsets {};
+    axom::ArrayView<ConnectivityType> m_subelement_connectivity {},
+      m_subelement_sizes {}, m_subelement_offsets {};
 
     // New field data.
     axom::ArrayView<axom::IndexType> m_original_zones {};  //!< View for originalZone field data.
-    axom::ArrayView<double> m_norm_x {}, m_norm_y {}, m_norm_z {};  //!< Fragment normals
+    axom::ArrayView<double> m_norm_x {}, m_norm_y {},
+      m_norm_z {};  //!< Fragment normals
 
     // New matset data
     axom::ArrayView<MaterialVF> m_volume_fractions {};
@@ -695,23 +720,27 @@ public:
    */
   View view() { return m_view; }
 
-
   /*!
    * \brief Clean the mesh, merging coordinates and faces.
    *
    * \note This method invalidates the views in m_view by causing some of their backing arrays to be replaced.
    */
-  void cleanMesh(conduit::Node &n_coordset, conduit::Node &n_topology, axom::Array<axom::IndexType> &selectedIds) const
+  void cleanMesh(conduit::Node &n_coordset,
+                 conduit::Node &n_topology,
+                 axom::Array<axom::IndexType> &selectedIds) const
   {
     AXOM_ANNOTATE_SCOPE("cleanMesh");
     namespace bputils = axom::mir::utilities::blueprint;
     axom::Array<axom::IndexType> old2new;
 
-    auto newCoordsetView = axom::mir::views::make_explicit_coordset<CoordType, CoordsetView::dimension()>::view(n_coordset);
+    auto newCoordsetView =
+      axom::mir::views::make_explicit_coordset<CoordType, CoordsetView::dimension()>::view(
+        n_coordset);
     using NewCoordsetView = decltype(newCoordsetView);
     bputils::MergeCoordsetPoints<ExecSpace, NewCoordsetView> mcp(newCoordsetView);
     conduit::Node n_mcp_options;
-    const bool merged = mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
+    const bool merged =
+      mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
 
     // Changing the coordset changed the nodes so we need to change the subelement/connectivity.
     // Traverse it using sizes/offsets in case some of the connectivity values are being skipped.
@@ -723,23 +752,27 @@ public:
       const conduit::Node &n_se_offsets = n_topology["subelements/offsets"];
 
       auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
-      const auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
-      const auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
+      const auto se_sizes =
+        bputils::make_array_view<ConnectivityType>(n_se_sizes);
+      const auto se_offsets =
+        bputils::make_array_view<ConnectivityType>(n_se_offsets);
       auto old2newView = old2new.view();
-      axom::for_all<ExecSpace>(se_sizes.size(), AXOM_LAMBDA(axom::IndexType index)
-      {
-        const auto size = se_sizes[index];
-        const auto offset = se_offsets[index];
-        for(ConnectivityType i = 0; i < size; i++)
-        {
-          const auto nodeId = se_conn[offset + i];
-          se_conn[offset + i] = old2newView[nodeId];
-        }
-      });
+      axom::for_all<ExecSpace>(
+        se_sizes.size(),
+        AXOM_LAMBDA(axom::IndexType index) {
+          const auto size = se_sizes[index];
+          const auto offset = se_offsets[index];
+          for(ConnectivityType i = 0; i < size; i++)
+          {
+            const auto nodeId = se_conn[offset + i];
+            se_conn[offset + i] = old2newView[nodeId];
+          }
+        });
     }
 
     // Now merge any faces that can be merged.
-    bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_topology);
+    bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
+      n_topology);
   }
 
 private:

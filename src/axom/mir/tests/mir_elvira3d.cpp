@@ -23,15 +23,16 @@
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"), "mir_elvira3d");
+  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
+               "mir_elvira3d");
 }
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 struct test_Elvira3D
 {
-  static const int gridSize = 3;//10;
-  static const int numSpheres = 1;//4;
+  static const int gridSize = 3;    //10;
+  static const int numSpheres = 1;  //4;
 
   static void initialize(conduit::Node &n_mesh)
   {
@@ -58,8 +59,7 @@ struct test_Elvira3D
     n_options["selectedZones"].set(selected);
   }
 
-  static void test(const std::string &name,
-                   bool selectedZones = false)
+  static void test(const std::string &name, bool selectedZones = false)
   {
     namespace bputils = axom::mir::utilities::blueprint;
 
@@ -136,7 +136,7 @@ TEST(mir_elvira3d, elvira3d_unibuffer_sel_seq)
                                 selectZones);
 }
 
-#if defined(AXOM_USE_OPENMP)
+  #if defined(AXOM_USE_OPENMP)
 TEST(mir_elvira3d, elvira3d_unibuffer_omp)
 {
   AXOM_ANNOTATE_SCOPE("elvira3d_unibuffer_omp");
@@ -150,9 +150,9 @@ TEST(mir_elvira3d, elvira3d_unibuffer_sel_omp)
   test_Elvira3D<omp_exec>::test("elvira3d_unibuffer_sel",
                                 selectZones);
 }
-#endif
+  #endif
 
-#if defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA)
 TEST(mir_elvira3d, elvira3d_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("elvira3d_unibuffer_cuda");
@@ -166,9 +166,9 @@ TEST(mir_elvira3d, elvira3d_unibuffer_sel_cuda)
   test_Elvira3D<cuda_exec>::test("elvira3d_unibuffer_sel",
                                  selectZones);
 }
-#endif
+  #endif
 
-#if defined(AXOM_USE_HIP)
+  #if defined(AXOM_USE_HIP)
 TEST(mir_elvira3d, elvira3d_unibuffer_hip)
 {
   AXOM_ANNOTATE_SCOPE("elvira3d_unibuffer_hip");
@@ -182,7 +182,7 @@ TEST(mir_elvira3d, elvira3d_unibuffer_sel_hip)
   test_Elvira3D<hip_exec>::test("elvira3d_unibuffer_sel",
                                 selectZones);
 }
-#endif
+  #endif
 #endif
 //------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)

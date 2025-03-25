@@ -842,13 +842,15 @@ protected:
         const auto inputShape = deviceShapeView.getShape(zoneIndex);
 
         // Get the zone's actual volume.
-        const double zoneVol = bputils::ComputeShapeAmount<NDIMS>::execute(inputShape);
+        const double zoneVol =
+          bputils::ComputeShapeAmount<NDIMS>::execute(inputShape);
 
         ClipResultType remaining;
 
-        // Make a fragment for each material. The biggest ones come first.
+      // Make a fragment for each material. The biggest ones come first.
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-        std::cout << "makeFragments: zoneIndex=" << zoneIndex << ", matCount=" << matCount << std::endl;
+        std::cout << "makeFragments: zoneIndex=" << zoneIndex
+                  << ", matCount=" << matCount << std::endl;
 #endif
         for(axom::IndexType m = 0; m < matCount - 1; m++)
         {
@@ -882,17 +884,18 @@ protected:
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(inputShape, normal, range);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << "\tm=" << m << ", inputShape=" << inputShape << ", range={" << range[0] << ", " << range[1] << "}" << std::endl;
+            std::cout << "\tm=" << m << ", inputShape=" << inputShape
+                      << ", range={" << range[0] << ", " << range[1] << "}"
+                      << std::endl;
 #endif
             // Figure out the clipped shape that has the desired volume.
-            clippedShape = 
-              detail::clipToVolume<ClipResultType>(inputShape,
-                                                   normal,
-                                                   range,
-                                                   matVolume,
-                                                   max_iterations,
-                                                   tolerance,
-                                                   pt);
+            clippedShape = detail::clipToVolume<ClipResultType>(inputShape,
+                                                                normal,
+                                                                range,
+                                                                matVolume,
+                                                                max_iterations,
+                                                                tolerance,
+                                                                pt);
           }
           else
           {
@@ -902,17 +905,17 @@ protected:
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(remaining, normal, range);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << "\tm=" << m << ", remaining=" << remaining << ", range={" << range[0] << ", " << range[1] << "}" << std::endl;
+            std::cout << "\tm=" << m << ", remaining=" << remaining << ", range={"
+                      << range[0] << ", " << range[1] << "}" << std::endl;
 #endif
             // Figure out the clipped shape that has the desired volume.
-            clippedShape = 
-              detail::clipToVolume<ClipResultType>(remaining,
-                                                   normal,
-                                                   range,
-                                                   matVolume,
-                                                   max_iterations,
-                                                   tolerance,
-                                                   pt);
+            clippedShape = detail::clipToVolume<ClipResultType>(remaining,
+                                                                normal,
+                                                                range,
+                                                                matVolume,
+                                                                max_iterations,
+                                                                tolerance,
+                                                                pt);
           }
 
           // Emit clippedShape as material matId

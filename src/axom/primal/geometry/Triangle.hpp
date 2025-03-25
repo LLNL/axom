@@ -73,10 +73,7 @@ public:
    *
    * \return The number of vertices in a Triangle.
    */
-  AXOM_HOST_DEVICE static constexpr int numVertices()
-  {
-    return NUM_TRI_VERTS;
-  }
+  AXOM_HOST_DEVICE static constexpr int numVertices() { return NUM_TRI_VERTS; }
 
   /*!
    * \brief Index operator to get the i^th vertex

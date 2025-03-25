@@ -1773,7 +1773,8 @@ TEST(primal_clip, polyhedron_plane)
       const Precision x = static_cast<Precision>(cos(a));
       const Precision y = static_cast<Precision>(sin(a));
 
-      verts[zi * nSides + s] = static_cast<std::int8_t>(poly.addVertex(PointType{x, y, z}));
+      verts[zi * nSides + s] =
+        static_cast<std::int8_t>(poly.addVertex(PointType {x, y, z}));
       a += dA;
     }
   }
@@ -1806,7 +1807,7 @@ TEST(primal_clip, polyhedron_plane)
   const double Vc = clipped.signedVolume();
 
   // Entire polyhedron volume should be 2*sqrt(2)
-  EXPECT_NEAR(V, 2*sqrt(2.), EPS);
+  EXPECT_NEAR(V, 2 * sqrt(2.), EPS);
 
   // We clipped away half of the volume.
   EXPECT_NEAR(V_2, Vc, EPS);

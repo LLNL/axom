@@ -247,7 +247,8 @@ void copy(conduit::Node &dest, const conduit::Node &src)
   {
     const int allocatorID = axom::getAllocatorIDFromPointer(src.data_ptr());
     bool deviceAllocated = isDeviceAllocator(allocatorID);
-    if(deviceAllocated || (!src.dtype().is_string() && src.dtype().number_of_elements() > 1))
+    if(deviceAllocated ||
+       (!src.dtype().is_string() && src.dtype().number_of_elements() > 1))
     {
       // std::cout << "Copying " << src.path() << "  " << src.dtype().name() << "[" << src.dtype().number_of_elements() << "], allocatorID=" << axom::getAllocatorIDFromPointer(src.data_ptr()) << std::endl;
 

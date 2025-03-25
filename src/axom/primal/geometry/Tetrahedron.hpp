@@ -120,10 +120,7 @@ public:
    *
    * \return The number of vertices in a Tetrahedron.
    */
-  AXOM_HOST_DEVICE static constexpr int numVertices()
-  {
-    return NUM_VERTS;
-  }
+  AXOM_HOST_DEVICE static constexpr int numVertices() { return NUM_VERTS; }
 
   /*!
    * \brief Index operator to get the i^th vertex

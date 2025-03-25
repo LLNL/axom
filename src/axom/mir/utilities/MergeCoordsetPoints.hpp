@@ -15,14 +15,14 @@
 
 // Includes for appropriate round function.
 #if defined(AXOM_DEVICE_CODE)
- #if defined(AXOM_USE_CUDA)
-  #include <cuda_runtime.h>
- #endif
- #if defined(AXOM_USE_HIP)
-  #include <hip/hip_runtime.h>
- #endif
+  #if defined(AXOM_USE_CUDA)
+    #include <cuda_runtime.h>
+  #endif
+  #if defined(AXOM_USE_HIP)
+    #include <hip/hip_runtime.h>
+  #endif
 #else
-#include <cmath>
+  #include <cmath>
 #endif
 
 // RAJA
@@ -73,7 +73,7 @@ struct Rounder<float>
   }
 };
 
-} // end namespace detail
+}  // end namespace detail
 
 /**
  * \brief Merge
@@ -92,9 +92,9 @@ public:
    *
    * \param coordsetView The coordset view that wraps the coordset to be modified.
    */
-  MergeCoordsetPoints(const CoordsetView &coordsetView) : m_coordsetView(coordsetView)
-  {
-  }
+  MergeCoordsetPoints(const CoordsetView &coordsetView)
+    : m_coordsetView(coordsetView)
+  { }
 
   /*!
    * \brief Merge the coordset points using a tolerance and pass out an array of the
@@ -157,29 +157,33 @@ public:
     axom::Array<KeyType> coordNames(nnodes, nnodes, allocatorID);
     auto coordNamesView = coordNames.view();
     const auto deviceCoordsetView = m_coordsetView;
-    axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(axom::IndexType index)
-    {
-      // Get the current point.
-      const auto pt = deviceCoordsetView[index];
+    axom::for_all<ExecSpace>(
+      nnodes,
+      AXOM_LAMBDA(axom::IndexType index) {
+        // Get the current point.
+        const auto pt = deviceCoordsetView[index];
 
-      // Truncate the point components using the tolerance so we can eliminate
-      // precision beyond what we want with the tolerance. The idea is that points
-      // that are close enough will hash to the same name.
-      value_type truncated[CoordsetView::dimension()];
-      for(int d = 0; d < CoordsetView::dimension(); d++)
-      {
-        value_type value = detail::Rounder<value_type>::execute(pt[d] / tolerance) * tolerance;
-        if(value > -tolerance && value < tolerance)
+        // Truncate the point components using the tolerance so we can eliminate
+        // precision beyond what we want with the tolerance. The idea is that points
+        // that are close enough will hash to the same name.
+        value_type truncated[CoordsetView::dimension()];
+        for(int d = 0; d < CoordsetView::dimension(); d++)
         {
-          value = value_type{0};
+          value_type value =
+            detail::Rounder<value_type>::execute(pt[d] / tolerance) * tolerance;
+          if(value > -tolerance && value < tolerance)
+          {
+            value = value_type {0};
+          }
+          truncated[d] = value;
         }
-        truncated[d] = value;
-      }
 
-      // Make a name for this point
-      const void *tptr = static_cast<const void *>(truncated);
-      coordNamesView[index] = axom::mir::utilities::hash_bytes(static_cast<const std::uint8_t *>(tptr), sizeof(value_type) * CoordsetView::dimension());
-    });
+        // Make a name for this point
+        const void *tptr = static_cast<const void *>(truncated);
+        coordNamesView[index] = axom::mir::utilities::hash_bytes(
+          static_cast<const std::uint8_t *>(tptr),
+          sizeof(value_type) * CoordsetView::dimension());
+      });
     AXOM_ANNOTATE_END("naming");
 
     //--------------------------------------------------------------------------
@@ -187,7 +191,9 @@ public:
 
     // Make faces unique.
     axom::Array<KeyType> uniqueNames;
-    axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(coordNamesView, uniqueNames, selectedIds);
+    axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(coordNamesView,
+                                                              uniqueNames,
+                                                              selectedIds);
     const auto uniqueNamesView = uniqueNames.view();
     const auto selectedIdsView = selectedIds.view();
     AXOM_ANNOTATE_END("unique");
@@ -203,12 +209,14 @@ public:
       AXOM_ANNOTATE_BEGIN("old2new");
       // Make a map of nodes in the old coordset to nodes in the new coordset. We
       // do it by looking up the old node name in the new coordset unique names.
-      axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(axom::IndexType index)
-      {
-        const auto newNodeId = axom::mir::utilities::bsearch(coordNamesView[index], uniqueNamesView);
-        SLIC_ASSERT(newNodeId >= 0 && newNodeId < nnodes);
-        old2newView[index] = newNodeId;
-      });
+      axom::for_all<ExecSpace>(
+        nnodes,
+        AXOM_LAMBDA(axom::IndexType index) {
+          const auto newNodeId =
+            axom::mir::utilities::bsearch(coordNamesView[index], uniqueNamesView);
+          SLIC_ASSERT(newNodeId >= 0 && newNodeId < nnodes);
+          old2newView[index] = newNodeId;
+        });
       AXOM_ANNOTATE_END("old2new");
 
       //--------------------------------------------------------------------------
@@ -229,11 +237,12 @@ public:
       AXOM_ANNOTATE_BEGIN("old2new");
 
       auto selectedIdsView = selectedIds.view();
-      axom::for_all<ExecSpace>(nnodes, AXOM_LAMBDA(axom::IndexType index)
-      {
-        selectedIdsView[index] = index;
-        old2newView[index] = index;
-      });
+      axom::for_all<ExecSpace>(
+        nnodes,
+        AXOM_LAMBDA(axom::IndexType index) {
+          selectedIdsView[index] = index;
+          old2newView[index] = index;
+        });
     }
 
     return merged;

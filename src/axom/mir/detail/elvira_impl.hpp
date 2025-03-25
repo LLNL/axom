@@ -923,7 +923,7 @@ AXOM_HOST_DEVICE void computeJacobian(const value_type *xcst,
 
   }  // END if negative determinant
 
-#if 0 //defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
+#if 0  //defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
   std::cout << "xcst={";
   for(int i = 0; i < 9; i++)
   {

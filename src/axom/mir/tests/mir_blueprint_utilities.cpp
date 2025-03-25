@@ -866,7 +866,8 @@ struct test_mergecoordsetpoints
     mcp.execute(n_coordset, n_options, selectedIds, old2new);
 
     // Stash the selectedIds and old2new in the coordset node so we can bring it to the host easier.
-    n_coordset["selectedIds"].set_external(selectedIds.data(), selectedIds.size());
+    n_coordset["selectedIds"].set_external(selectedIds.data(),
+                                           selectedIds.size());
     n_coordset["old2new"].set_external(old2new.data(), old2new.size());
 
     // device->host

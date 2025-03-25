@@ -22,22 +22,21 @@
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"), "mir_make_polyhedral_topology");
+  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
+               "mir_make_polyhedral_topology");
 }
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 struct make_polyhedral
 {
-  static void initialize(const std::string &type,
-                         conduit::Node &n_mesh)
+  static void initialize(const std::string &type, conduit::Node &n_mesh)
   {
     axom::StackArray<axom::IndexType, 3> dims {4, 4, 4};
     axom::mir::testing::data::braid(type, dims, n_mesh);
   }
 
-  static void test(const std::string &type,
-                   const std::string &name)
+  static void test(const std::string &type, const std::string &name)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     namespace views = axom::mir::views;
@@ -62,47 +61,58 @@ struct make_polyhedral
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
+        n_output);
     }
     else if(type == "tets")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::TetShape<int>>::view(n_input);
+      auto topologyView =
+        views::make_unstructured_single_shape<views::TetShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
+        n_output);
     }
     else if(type == "pyramids")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::PyramidShape<int>>::view(n_input);
+      auto topologyView =
+        views::make_unstructured_single_shape<views::PyramidShape<int>>::view(
+          n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
+        n_output);
     }
     else if(type == "wedges")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::WedgeShape<int>>::view(n_input);
+      auto topologyView =
+        views::make_unstructured_single_shape<views::WedgeShape<int>>::view(
+          n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
+        n_output);
     }
     else if(type == "hexs")
     {
-      auto topologyView = views::make_unstructured_single_shape<views::HexShape<int>>::view(n_input);
+      auto topologyView =
+        views::make_unstructured_single_shape<views::HexShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
+        n_output);
     }
     else
     {
@@ -114,9 +124,9 @@ struct make_polyhedral
     axom::mir::utilities::blueprint::copy<seq_exec>(hostOutputMesh, deviceMesh);
 
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
-#if defined(AXOM_USE_HDF5)
+  #if defined(AXOM_USE_HDF5)
     conduit::relay::io::blueprint::save_mesh(hostOutputMesh, name, "hdf5");
-#endif
+  #endif
     conduit::relay::io::save(hostOutputMesh, name + ".yaml", "yaml");
 #endif
     // Handle baseline comparison.

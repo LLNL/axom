@@ -97,10 +97,7 @@ public:
    *
    * \return The number of vertices in a Segment.
    */
-  AXOM_HOST_DEVICE static constexpr int numVertices()
-  {
-    return NUM_SEG_VERTS;
-  }
+  AXOM_HOST_DEVICE static constexpr int numVertices() { return NUM_SEG_VERTS; }
 
   /*!
    * \brief Index operator to get the i^th vertex
