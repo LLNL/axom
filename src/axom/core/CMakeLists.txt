@@ -102,6 +102,7 @@ set(core_sources
 
     Path.cpp
     Types.cpp
+    ConduitMemCallbacks.cpp
     )
 
 #------------------------------------------------------------------------------

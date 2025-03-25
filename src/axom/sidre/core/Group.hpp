@@ -306,7 +306,7 @@ public:
   {
     m_default_allocator_id = allocId;
     m_default_allocator_id_conduit =
-      axom::ConduitMemCallbacks::getInstance(m_default_allocator_id).conduitId();
+      axom::ConduitMemCallbacks::instanceForAxomId(m_default_allocator_id).conduitId();
     return this;
   }
 #else

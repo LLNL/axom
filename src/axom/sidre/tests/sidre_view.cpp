@@ -1933,7 +1933,7 @@ TEST(sidre_view, deep_copy_to_conduit)
       std::cout << "Testing copying allocator id " << srcAllocId << " to "
                 << dstAllocId << std::endl;
 
-      const auto& idConverter = axom::ConduitMemCallbacks::getInstance(dstAllocId);
+      const auto& idConverter = axom::ConduitMemCallbacks::instanceForAxomId(dstAllocId);
       auto dstAllocIdConduit = idConverter.conduitId();
 
       conduit::Node dst;
@@ -2020,7 +2020,7 @@ TEST(sidre_view, transfer_allocator)
   axom::Array<char> tmpCharArray;
 
   // For each combination of origAllocId and newAllocId,
-  // 1. Copy "orig" to  a "test' to test without changing orig.
+  // 1. Copy "orig" to a "test" to test without changing orig.
   // 2. Change the allocator id of test Group to newAllocId.
 
   for(auto origAllocId : allocIds)
@@ -2059,7 +2059,7 @@ TEST(sidre_view, transfer_allocator)
     }
 
     //
-    // Copy the source into destinations of different alloc ids
+    // Copy the source into testGrp then transfer testGrp's data to another allocator.
     //
 
     for(auto testAllocId : allocIds)
@@ -2068,17 +2068,17 @@ TEST(sidre_view, transfer_allocator)
                 << testAllocId << std::endl;
 
       Group* testGrp = ds.getRoot()->createGroup("testGrp");
-      // testGrp->setDefaultAllocator(testAllocId);
       testGrp->deepCopyGroupToSelf(orig);
-      testGrp->transfer_allocator(testAllocId);
+      testGrp->reallocateTo(testAllocId);
       if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(testAllocId))
       {
         std::cout << "test group:" << std::endl;
         testGrp->print();
+        std::cout << std::endl;
       }
 
       //
-      // Check pointers.  Copy data to temporary host buffers and check data.
+      // Check pointers:  Copy data to temporary host buffers and check data.
       //
 
       double* testScalarPtr =

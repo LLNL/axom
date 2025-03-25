@@ -30,14 +30,18 @@ namespace axom
 {
 
 /*!
+  TODO: The name isn't great.  How about ConduitMemory or ConduitAllocator MemoryForConduit?
+
   @brief Object to handle Conduit memory operations by delegating to Axom.
 
-  This class has no public constructor.  Use getInstance(int axomAllocId)
-  to access the instance for a specific Axom allocator id.  The construction
-  registers the appropriate callbacks with Conduit, including the required
-  memset and memcopy callbacks.
+  This class has no public constructor.  Use instanceForAxomId(int
+  axomAllocId) to access the instance for a specific Axom allocator
+  id.  The construction registers the appropriate callbacks with
+  Conduit, including the required memset and memcopy callbacks.
 
-  Examples for setting Conduit allocator ids when you have Axom allocator ids.
+  Examples for setting Conduit allocator ids when you have Axom
+  allocator ids:
+
   @code{.cpp}
     void foo(conduit::Node& n, int axomAllocId) {
       n.set_allocator(axomAllocIdToConduit(axomAllocId));
@@ -64,52 +68,35 @@ struct ConduitMemCallbacks
   */
   static conduit::index_t axomAllocIdToConduit(int axomAllocId)
   {
-    return getInstance(axomAllocId).conduitId();
+    return instanceForAxomId(axomAllocId).conduitId();
+  }
+
+  /*!
+    @brief Convert a Conduit allocator id to Axom.
+
+    The allocator must have been registered by a prior
+    instanceForAxomId() call.
+  */
+  static int conduitAllocIdToAxom(conduit::index_t conduitAllocId)
+  {
+    return instanceForConduitId(conduitAllocId).axomId();
   }
 
   //!@brief Return the instance for the given Axom allocator id.
-  static const ConduitMemCallbacks& getInstance(int axomAllocId)
-  {
-    // This method is not thread safe.
+  static const ConduitMemCallbacks& instanceForAxomId(int axomAllocId);
 
-    // Mapping from Axom allocator to an instance.
-    static std::map<int, std::shared_ptr<ConduitMemCallbacks>> s_handlers;
-
-    if(s_handlers.empty())
-    {
-      // Required one-time actions
-      static auto axomMemcopy = [](void* dst, const void* src, size_t byteCount) {
-        axom::copy(dst, src, byteCount);
-      };
-      static auto axomMemset = [](void* ptr, int value, size_t count) {
-        if(axom::getAllocatorIDFromPointer(ptr) == axom::DYNAMIC_ALLOCATOR_ID)
-        {
-          std::memset(ptr, value, count);
-        }
-        else
-        {
-          umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-          rm.memset(ptr, value, count);
-        }
-      };
-      conduit::utils::set_memcpy_handler(axomMemcopy);
-      conduit::utils::set_memset_handler(axomMemset);
-    }
-
-    auto it = s_handlers.find(axomAllocId);
-    if(it == s_handlers.end())
-    {
-      it =
-        s_handlers.emplace(axomAllocId, new ConduitMemCallbacks(axomAllocId)).first;
-    }
-    assert(it->first == axomAllocId);
-
-    return *it->second;
-  }
+  //!@brief Return the instance for the given Conduit allocator id.
+  static const ConduitMemCallbacks& instanceForConduitId(conduit::index_t conduitAllocId);
 
   ~ConduitMemCallbacks() { }
 
 private:
+  //!@brief Mapping from Axom allocator to an instance.
+  static std::map<int, std::shared_ptr<ConduitMemCallbacks>> s_axomToInstance;
+
+  //!@brief Mapping from Conduit allocator to an instance.
+  static std::map<conduit::index_t, std::shared_ptr<ConduitMemCallbacks>> s_conduitToInstance;
+
   //!@brief Axom's allocator id.
   int m_axomId;
   //!@brief Conduit's allocator id equivalent to m_axomId.
