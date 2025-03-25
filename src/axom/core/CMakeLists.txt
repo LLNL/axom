@@ -66,6 +66,7 @@ set(core_headers
     MapCollection.hpp
     FlatMap.hpp
     FlatMapView.hpp
+    FlatMapUtil.hpp
     DeviceHash.hpp
     NumericArray.hpp
     NumericLimits.hpp
