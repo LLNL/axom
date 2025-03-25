@@ -73,7 +73,7 @@ public:
    */
   AXOM_HOST_DEVICE int getNumNeighbors(int vtx) const
   {
-#if !defined(AXOM_DEVICE_CODE)
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
 #endif
     return num_nbrs[vtx];
@@ -93,7 +93,9 @@ public:
    */
   AXOM_HOST_DEVICE VertexNbrs& operator[](int vtx)
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+#endif
     return getNeighbors(vtx);
   }
 
@@ -111,7 +113,9 @@ public:
    */
   AXOM_HOST_DEVICE VertexNbrs& getNeighbors(int vtx)
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+#endif
     return nbrs[vtx];
   }
 
@@ -126,7 +130,7 @@ public:
   AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx,
                                      std::initializer_list<std::int8_t> nbrIds)
   {
-#if !defined(AXOM_DEVICE_CODE)
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(num_nbrs[vtx] + nbrIds.size() <= MAX_NBRS_PER_VERT);
 #endif
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
@@ -148,7 +152,7 @@ public:
    */
   AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx, std::int8_t nbrId)
   {
-#if !defined(AXOM_DEVICE_CODE)
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
 #endif
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
@@ -172,7 +176,7 @@ public:
                                             std::int8_t nbr,
                                             std::int8_t pos)
   {
-#if !defined(AXOM_DEVICE_CODE)
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
     SLIC_ASSERT(pos <= num_nbrs[vtx]);
 #endif

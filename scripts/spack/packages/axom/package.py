@@ -339,10 +339,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             entries.append(cmake_cache_option("ENABLE_HIP", True))
 
+            hip_link_flags = ""
+
             rocm_root = os.path.dirname(spec["llvm-amdgpu"].prefix)
             entries.append(cmake_cache_path("ROCM_ROOT_DIR", rocm_root))
-
-            hip_link_flags = "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
 
             # Recommended MPI flags
             hip_link_flags += "-lxpmem "
@@ -355,6 +355,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # Fixes for mpi for rocm until wrapper paths are fixed
             # These flags are already part of the wrapped compilers on TOSS4 systems
             if spec.satisfies("+fortran") and self.is_fortran_compiler("amdflang"):
+
+                # Only amdclang requires this path; cray compiler fails if this is included
+                hip_link_flags += "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
+
                 hip_link_flags += "-Wl,--disable-new-dtags "
 
                 if spec.satisfies("^hip@6.0.0:"):
@@ -364,6 +368,12 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 else:
                     hip_link_flags += "-L{0}/llvm/lib -Wl,-rpath,{0}/llvm/lib ".format(rocm_root)
                 hip_link_flags += "-lpgmath -lflang -lflangrti -lompstub "
+
+            # Additional library path for cray compiler
+            if self.spec.satisfies("%cce"):
+                hip_link_flags += "-L/opt/cray/pe/cce/{0}/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/{0}/cce/x86_64/lib ".format(
+                                        self.spec.compiler.version
+                                    )
 
             # Remove extra link library for crayftn
             if spec.satisfies("+fortran") and self.is_fortran_compiler("crayftn"):
