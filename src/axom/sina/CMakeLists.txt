@@ -62,12 +62,14 @@ if (ENABLE_FORTRAN)
     ELEMENTS interface/sina_fortran_interface.h)
   blt_list_append(TO sina_sources 
     ELEMENTS interface/sina_fortran_interface.cpp interface/sina_fortran_interface.f)
+  
   configure_file(interface/sina_fortran_interface.f.in 
-    interface/sina_fortran_interface.f 
-    @ONLY)
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/interface/sina_functions.mod
-                ${CMAKE_CURRENT_BINARY_DIR}/interface/hdf5_config.mod
-    DESTINATION interface)
+                 interface/sina_fortran_interface.f 
+                 @ONLY)
+  
+  install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/sina_functions.mod
+                ${CMAKE_Fortran_MODULE_DIRECTORY}/hdf5_config.mod
+          DESTINATION interface)
 endif()
 
 #------------------------------------------------------------------------------
