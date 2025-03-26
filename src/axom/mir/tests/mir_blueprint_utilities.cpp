@@ -19,6 +19,22 @@ namespace mir = axom::mir;
 namespace bputils = axom::mir::utilities::blueprint;
 
 //------------------------------------------------------------------------------
+
+// Uncomment to generate baselines
+//#define AXOM_TESTING_GENERATE_BASELINES
+
+// Uncomment to save visualization files for debugging (when making baselines)
+//#define AXOM_TESTING_SAVE_VISUALIZATION
+
+#include "axom/mir/tests/mir_testing_helpers.hpp"
+
+std::string baselineDirectory()
+{
+  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
+               "mir_blueprint_utilities");
+}
+
+//------------------------------------------------------------------------------
 template <typename ExecSpace>
 struct test_conduit_allocate
 {
@@ -162,34 +178,25 @@ struct test_make_unstructured
     conduit::Node hostResult;
     bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
 
-    // Result
-    conduit::Node expectedResult;
-    result(expectedResult);
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+    conduit::relay::io::blueprint::save_mesh(hostResult, "unstructured", "hdf5");
+    conduit::relay::io::save(hostResult, "unstructured.yaml", "yaml");
+#endif
 
-    // Compare just the topologies
-    constexpr double tolerance = 1.e-7;
-    conduit::Node info;
-    bool success = compareConduit(expectedResult["topologies/mesh"],
-                                  hostResult["topologies/mesh"],
-                                  tolerance,
-                                  info);
-    if(!success)
-    {
-      info.print();
-    }
-    EXPECT_TRUE(success);
+    // Handle baseline comparison.
+    const auto paths = baselinePaths<ExecSpace>();
+    std::string baselineName(yamlRoot("unstructured"));
+#if defined(AXOM_TESTING_GENERATE_BASELINES)
+    saveBaseline(paths, baselineName, hostResult);
+#else
+    EXPECT_TRUE(compareBaseline(paths, baselineName, hostResult));
+#endif
   }
 
   static void create(conduit::Node &mesh)
   {
     std::vector<int> dims {4, 4};
     axom::mir::testing::data::braid("uniform", dims, mesh);
-  }
-
-  static void result(conduit::Node &mesh)
-  {
-    std::vector<int> dims {4, 4};
-    axom::mir::testing::data::braid("quads", dims, mesh);
   }
 };
 

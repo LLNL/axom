@@ -119,38 +119,255 @@ void printNode(const conduit::Node &n)
   n.to_summary_string_stream(std::cout, options);
 }
 
+template <typename T>
+struct compareValue
+{
+  static inline bool compare(T v1, T v2, T AXOM_UNUSED_PARAM(tolerance))
+  {
+    return v1 == v2;
+  }
+};
+
+template <>
+struct compareValue<float>
+{
+  static inline bool compare(float v1, float v2, float tolerance)
+  {
+    float diff = axom::utilities::abs(v1 - v2);
+    return diff <= tolerance;
+  }
+};
+
+template <>
+struct compareValue<double>
+{
+  static inline bool compare(double v1, double v2, double tolerance)
+  {
+    double diff = axom::utilities::abs(v1 - v2);
+    return diff <= tolerance;
+  }
+};
+
+template <typename T>
+bool compareArray(const conduit::Node &n1,
+                  const conduit::Node &AXOM_UNUSED_PARAM(n2),
+                  const conduit::DataAccessor<T> &a1,
+                  const conduit::DataAccessor<T> &a2,
+                  conduit::Node &info,
+                  T tolerance = T{0})
+{
+  bool same = true;
+  if(a1.number_of_elements() != a2.number_of_elements())
+  {
+    info[n1.path()]["errors"] = axom::fmt::format("Different lengths. {} != {}", a1.number_of_elements(), a2.number_of_elements());
+    same = false;
+  }
+  else
+  {
+    T maxdiff {0};
+    conduit::Node errors;
+    constexpr int errorLimit = 10;
+    int errorCount = 0;
+    for(int i = 0; i < a1.number_of_elements(); i++)
+    {
+      T diff = axom::utilities::abs(a1[i] - a2[i]);
+      maxdiff = std::max(diff, maxdiff);
+      if(!compareValue<T>::compare(a1[i], a2[i], tolerance))
+      {
+        if(errorCount < errorLimit)
+        {
+          errors.append().set(
+            axom::fmt::format("Difference at index {}. ({} != {})", i, a1[i], a2[i]));
+        }
+        errorCount++;
+        if(errorCount == errorLimit+1)
+        {
+          errors.append().set("...");
+        }
+        same = false;
+      }
+    }
+    if(errorCount > 0)
+    {
+      info[n1.path()]["maxdiff"] = maxdiff;
+      info[n1.path()]["errors"].set(errors);
+    }
+  }
+  return same;
+}
+
+template <typename T>
+bool compareScalar(const conduit::Node &n1,
+                   const conduit::Node &AXOM_UNUSED_PARAM(n2),
+                   const T &v1,
+                   const T &v2,
+                   conduit::Node &info,
+                   T tolerance = T{})
+{
+  bool same = compareValue<T>::compare(v1, v2, tolerance);
+  if(!same)
+  {
+    info[n1.path()]["errors"].set(axom::fmt::format("{} != {}", v1, v2));
+  }
+  return same;
+}
+
+bool compareNode(const conduit::Node &n1,
+                 const conduit::Node &n2,
+                 double tolerance,
+                 conduit::Node &info)
+{
+  bool same = false;
+  // String
+  if(n1.dtype().is_string() && n2.dtype().is_string())
+  {
+    same = n1.as_string() == n2.as_string();
+    if(!same)
+    {
+      info[n1.path()]["errors"].set(axom::fmt::format("\"{}\" != \"{}\"", n1.as_string(), n2.as_string()));
+    }
+  }
+  else if(n1.dtype().number_of_elements() > 1 || n2.dtype().number_of_elements() > 1)
+  {
+    // Array comparison.
+    if(n1.dtype().id() == n1.dtype().id())
+    {
+      // Types are equal
+      if(n1.dtype().is_int8())
+      {
+        same = compareArray<conduit::int8>(n1, n2, n1.as_int8_accessor(), n2.as_int8_accessor(), info);
+      }
+      else if(n1.dtype().is_int16())
+      {
+        same = compareArray<conduit::int16>(n1, n2, n1.as_int16_accessor(), n2.as_int16_accessor(), info);
+      }
+      else if(n1.dtype().is_int32())
+      {
+        same = compareArray<conduit::int32>(n1, n2, n1.as_int32_accessor(), n2.as_int32_accessor(), info);
+      }
+      else if(n1.dtype().is_int64())
+      {
+        same = compareArray<conduit::int64>(n1, n2, n1.as_int64_accessor(), n2.as_int64_accessor(), info);
+      }
+      else if(n1.dtype().is_uint8())
+      {
+        same = compareArray<conduit::uint8>(n1, n2, n1.as_uint8_accessor(), n2.as_uint8_accessor(), info);
+      }
+      else if(n1.dtype().is_uint16())
+      {
+        same = compareArray<conduit::uint16>(n1, n2, n1.as_uint16_accessor(), n2.as_uint16_accessor(), info);
+      }
+      else if(n1.dtype().is_uint32())
+      {
+        same = compareArray<conduit::uint32>(n1, n2, n1.as_uint32_accessor(), n2.as_uint32_accessor(), info);
+      }
+      else if(n1.dtype().is_uint64())
+      {
+        same = compareArray<conduit::uint64>(n1, n2, n1.as_uint64_accessor(), n2.as_uint64_accessor(), info);
+      }
+      else if(n1.dtype().is_float32())
+      {
+        same = compareArray<conduit::float32>(n1, n2, n1.as_float32_accessor(), n2.as_float32_accessor(), info, static_cast<conduit::float32>(tolerance));
+      }
+      else if(n1.dtype().is_float64())
+      {
+        same = compareArray<conduit::float64>(n1, n2, n1.as_float64_accessor(), n2.as_float64_accessor(), info, tolerance);
+      }
+      else
+      {
+        info[n1.path()]["errors"].set(axom::fmt::format("Unsupported array type {}.", n1.dtype().name()));
+      }
+    }
+    // Array comparison - types differ
+    else if(n1.dtype().is_floating_point() && n2.dtype().is_floating_point())
+    {
+      same = compareArray<conduit::float64>(n1, n2, n1.as_double_accessor(), n2.as_double_accessor(), info, tolerance);
+    }
+    else
+    {
+      same = compareArray<conduit::index_t>(n1, n2, n1.as_index_t_accessor(), n2.as_index_t_accessor(), info);
+    }
+  }
+  else
+  {
+    // Scalars.
+    if(n1.dtype().is_int8())
+    {
+      same = compareScalar<conduit::int8>(n1, n2, n1.to_int8(), n2.to_int8(), info);
+    }
+    else if(n1.dtype().is_int16())
+    {
+      same = compareScalar<conduit::int16>(n1, n2, n1.to_int16(), n2.to_int16(), info);
+    }
+    else if(n1.dtype().is_int32())
+    {
+      same = compareScalar<conduit::int32>(n1, n2, n1.to_int32(), n2.to_int32(), info);
+    }
+    else if(n1.dtype().is_int64())
+    {
+      same = compareScalar<conduit::int64>(n1, n2, n1.to_int64(), n2.to_int64(), info);
+    }
+    else if(n1.dtype().is_uint8())
+    {
+      same = compareScalar<conduit::uint8>(n1, n2, n1.to_uint8(), n2.to_uint8(), info);
+    }
+    else if(n1.dtype().is_uint16())
+    {
+      same = compareScalar<conduit::uint16>(n1, n2, n1.to_uint16(), n2.to_uint16(), info);
+    }
+    else if(n1.dtype().is_uint32())
+    {
+      same = compareScalar<conduit::uint32>(n1, n2, n1.to_uint32(), n2.to_uint32(), info);
+    }
+    else if(n1.dtype().is_uint64())
+    {
+      same = compareScalar<conduit::uint64>(n1, n2, n1.to_uint64(), n2.to_uint64(), info);
+    }
+    else if(n1.dtype().is_float32())
+    {
+      same = compareScalar<conduit::float32>(n1, n2, n1.to_float32(), n2.to_float32(), info, static_cast<conduit::float32>(tolerance));
+    }
+    else if(n1.dtype().is_float64())
+    {
+      same = compareScalar<conduit::float64>(n1, n2, n1.to_float64(), n2.to_float64(), info, tolerance);
+    }
+    else
+    {
+      info[n1.path()]["errors"].set(axom::fmt::format("Error comparing \"{}\" and \"{}\"", n1.dtype().name(), n2.dtype().name()));
+      same = false;
+    }
+  }
+  return same;
+}
+
 bool compareConduit(const conduit::Node &n1,
                     const conduit::Node &n2,
                     double tolerance,
                     conduit::Node &info)
 {
   bool same = true;
-  if(n1.dtype().id() == n2.dtype().id() && n1.dtype().is_floating_point())
+  // See if n1, n2 are objects - but not both.
+  if((n1.dtype().is_object() && !n2.dtype().is_object()) ||
+     (!n1.dtype().is_object() && n2.dtype().is_object()))
   {
-    const auto a1 = n1.as_double_accessor();
-    const auto a2 = n2.as_double_accessor();
-    double maxdiff = 0.;
-    for(int i = 0; i < a1.number_of_elements() && same; i++)
-    {
-      double diff = fabs(a1[i] - a2[i]);
-      maxdiff = std::max(diff, maxdiff);
-      same &= diff <= tolerance;
-      if(!same)
-      {
-        info.append().set(
-          axom::fmt::format("\"{}\" fields differ at index {}.", n1.name(), i));
-      }
-    }
-    info["maxdiff"][n1.name()] = maxdiff;
+    info[n1.path()]["errors"] = axom::fmt::format("Object types differ. \"{}\" is a {}. \"{}\" is a {}.",
+      n1.path(), n1.dtype().name(), n1.path(), n1.dtype().name());
+    same = false;
   }
-  else
+  else if(n1.dtype().is_object() && n2.dtype().is_object())
   {
-    for(int i = 0; i < n1.number_of_children() && same; i++)
+    // Both are objects. Recurse.
+    for(int i = 0; i < n1.number_of_children(); i++)
     {
       const auto &n1c = n1.child(i);
       const auto &n2c = n2.fetch_existing(n1c.name());
       same &= compareConduit(n1c, n2c, tolerance, info);
     }
+  }
+  // Arrays
+  else
+  {
+    same = compareNode(n1, n2, tolerance, info);
   }
   return same;
 }
