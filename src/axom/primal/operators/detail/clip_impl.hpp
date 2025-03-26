@@ -557,9 +557,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
  * \param [in] eps The tolerance for plane point orientation
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedronPolyhedron(const Polyhedron<T, NDIMS>& poly1,
-                                                               const Polyhedron<T, NDIMS>& poly2,
-                                                               double eps)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedronPolyhedron(
+  const Polyhedron<T, NDIMS>& poly1,
+  const Polyhedron<T, NDIMS>& poly2,
+  double eps)
 {
   using PlaneType = Plane<T, NDIMS>;
 

@@ -384,17 +384,16 @@ private:
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     // Wrap coarse/post_mir mesh in views.
-    auto srcCoordset = views::make_explicit_coordset<double, 2>::view(n_dev["coordsets/postmir_coords"]);
+    auto srcCoordset = views::make_explicit_coordset<double, 2>::view(
+      n_dev["coordsets/postmir_coords"]);
     using SrcCoordsetView = decltype(srcCoordset);
 
     using SrcTopologyView =
       views::UnstructuredTopologyMixedShapeView<conduit::index_t>;
     axom::Array<axom::IndexType> shapeValues, shapeIds;
     const conduit::Node &n_srcTopo = n_dev["topologies/postmir"];
-    auto shapeMap = views::buildShapeMap(n_srcTopo,
-                                                    shapeValues,
-                                                    shapeIds,
-                                                    allocatorID);
+    auto shapeMap =
+      views::buildShapeMap(n_srcTopo, shapeValues, shapeIds, allocatorID);
     SrcTopologyView srcTopo(
       bputils::make_array_view<conduit::index_t>(
         n_srcTopo["elements/connectivity"]),
@@ -404,12 +403,14 @@ private:
       shapeMap);
 
     // Wrap fine mesh in views.
-    auto targetCoordset = views::make_explicit_coordset<double, 2>::view(n_dev["coordsets/fine_coords"]);
+    auto targetCoordset = views::make_explicit_coordset<double, 2>::view(
+      n_dev["coordsets/fine_coords"]);
     using TargetCoordsetView = decltype(targetCoordset);
 
     const conduit::Node &n_targetTopo = n_dev["topologies/fine"];
     using TargetShapeType = views::QuadShape<int>;
-    auto targetTopo = views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
+    auto targetTopo =
+      views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
     using TargetTopologyView = decltype(targetTopo);
 
     //_mir_utilities_extrudemesh_begin
@@ -446,7 +447,8 @@ private:
   static void mapping2D(conduit::Node &n_dev)
   {
     // Wrap coarse/post_mir mesh in views.
-    auto srcCoordset = views::make_explicit_coordset<double, 2>::view(n_dev["coordsets/postmir_coords"]);
+    auto srcCoordset = views::make_explicit_coordset<double, 2>::view(
+      n_dev["coordsets/postmir_coords"]);
     using SrcCoordsetView = decltype(srcCoordset);
 
     using SrcTopologyView =
@@ -454,10 +456,8 @@ private:
     axom::Array<axom::IndexType> shapeValues, shapeIds;
     const conduit::Node &n_srcTopo = n_dev["topologies/postmir"];
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    auto shapeMap = views::buildShapeMap(n_srcTopo,
-                                                    shapeValues,
-                                                    shapeIds,
-                                                    allocatorID);
+    auto shapeMap =
+      views::buildShapeMap(n_srcTopo, shapeValues, shapeIds, allocatorID);
     SrcTopologyView srcTopo(
       bputils::make_array_view<conduit::index_t>(
         n_srcTopo["elements/connectivity"]),
@@ -468,17 +468,18 @@ private:
 
     const conduit::Node &n_srcMatset = n_dev["matsets/postmir_matset"];
     auto srcMatset =
-      views::make_unibuffer_matset<std::int64_t, double, 4>::view(
-        n_srcMatset);
+      views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_srcMatset);
     using SrcMatsetView = decltype(srcMatset);
 
     // Wrap fine mesh in views.
-    auto targetCoordset = views::make_explicit_coordset<double, 2>::view(n_dev["coordsets/fine_coords"]);
+    auto targetCoordset = views::make_explicit_coordset<double, 2>::view(
+      n_dev["coordsets/fine_coords"]);
     using TargetCoordsetView = decltype(targetCoordset);
 
     const conduit::Node &n_targetTopo = n_dev["topologies/fine"];
     using TargetShapeType = views::QuadShape<int>;
-    auto targetTopo = views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
+    auto targetTopo =
+      views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
     using TargetTopologyView = decltype(targetTopo);
 
     // _mir_utilities_topologymapper_begin
@@ -501,7 +502,8 @@ private:
   static void mapping3D(conduit::Node &n_dev)
   {
     // Wrap coarse/post_mir mesh in views.
-    auto srcCoordset = views::make_explicit_coordset<double, 3>::view(n_dev["coordsets/epm_coords"]);
+    auto srcCoordset = views::make_explicit_coordset<double, 3>::view(
+      n_dev["coordsets/epm_coords"]);
     using SrcCoordsetView = decltype(srcCoordset);
 
     using SrcTopologyView =
@@ -509,10 +511,8 @@ private:
     axom::Array<axom::IndexType> shapeValues, shapeIds;
     const conduit::Node &n_srcTopo = n_dev["topologies/epm"];
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    auto shapeMap = views::buildShapeMap(n_srcTopo,
-                                                    shapeValues,
-                                                    shapeIds,
-                                                    allocatorID);
+    auto shapeMap =
+      views::buildShapeMap(n_srcTopo, shapeValues, shapeIds, allocatorID);
     SrcTopologyView srcTopo(
       bputils::make_array_view<conduit::index_t>(
         n_srcTopo["elements/connectivity"]),
@@ -523,19 +523,19 @@ private:
 
     const conduit::Node &n_srcMatset = n_dev["matsets/epm_matset"];
     auto srcMatset =
-      views::make_unibuffer_matset<std::int64_t, double, 4>::view(
-        n_srcMatset);
+      views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_srcMatset);
     using SrcMatsetView = decltype(srcMatset);
 
     // Wrap fine mesh in views.
-    auto targetCoordset = views::make_explicit_coordset<double, 3>::view(n_dev["coordsets/efm_coords"]);
+    auto targetCoordset = views::make_explicit_coordset<double, 3>::view(
+      n_dev["coordsets/efm_coords"]);
     using TargetCoordsetView = decltype(targetCoordset);
 
     const conduit::Node &n_targetTopo = n_dev["topologies/efm"];
     using TargetShapeType = views::HexShape<int>;
-    auto targetTopo = views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
+    auto targetTopo =
+      views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
     using TargetTopologyView = decltype(targetTopo);
-
 
     // Make new VFs via mapper.
     using Mapper = bputils::TopologyMapper<ExecSpace,
@@ -560,10 +560,8 @@ private:
     axom::Array<axom::IndexType> shapeValues, shapeIds;
     const conduit::Node &n_srcTopo = n_dev["topologies/epm"];
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    auto shapeMap = views::buildShapeMap(n_srcTopo,
-                                                    shapeValues,
-                                                    shapeIds,
-                                                    allocatorID);
+    auto shapeMap =
+      views::buildShapeMap(n_srcTopo, shapeValues, shapeIds, allocatorID);
     SrcTopologyView srcTopo(
       bputils::make_array_view<conduit::index_t>(
         n_srcTopo["elements/connectivity"]),
@@ -579,39 +577,49 @@ private:
     bputils::MergePolyhedralFaces<ExecSpace, conduit::index_t>::execute(n_phTopo);
 
     // Copy epm_matset to phmatset.
-    bputils::copy<ExecSpace>(n_dev["matsets/ph_matset"], n_dev["matsets/epm_matset"]);
+    bputils::copy<ExecSpace>(n_dev["matsets/ph_matset"],
+                             n_dev["matsets/epm_matset"]);
     n_dev["matsets/ph_matset/topology"] = "phmesh";
   }
 
   static void mappingPH(conduit::Node &n_dev)
   {
     // Wrap coarse/post_mir mesh in views.
-    auto srcCoordset = views::make_explicit_coordset<double, 3>::view(n_dev["coordsets/epm_coords"]);
+    auto srcCoordset = views::make_explicit_coordset<double, 3>::view(
+      n_dev["coordsets/epm_coords"]);
     using SrcCoordsetView = decltype(srcCoordset);
 
     // Make polyhedral topology view.
-    using SrcTopologyView = views::UnstructuredTopologyPolyhedralView<conduit::index_t>;
+    using SrcTopologyView =
+      views::UnstructuredTopologyPolyhedralView<conduit::index_t>;
     const conduit::Node &n_srcTopo = n_dev["topologies/phmesh"];
-    SrcTopologyView srcTopo(bputils::make_array_view<conduit::index_t>(n_srcTopo["subelements/connectivity"]),
-                            bputils::make_array_view<conduit::index_t>(n_srcTopo["subelements/sizes"]),
-                            bputils::make_array_view<conduit::index_t>(n_srcTopo["subelements/offsets"]),
-                            bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/connectivity"]),
-                            bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/sizes"]),
-                            bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/offsets"]));
+    SrcTopologyView srcTopo(
+      bputils::make_array_view<conduit::index_t>(
+        n_srcTopo["subelements/connectivity"]),
+      bputils::make_array_view<conduit::index_t>(
+        n_srcTopo["subelements/sizes"]),
+      bputils::make_array_view<conduit::index_t>(
+        n_srcTopo["subelements/offsets"]),
+      bputils::make_array_view<conduit::index_t>(
+        n_srcTopo["elements/connectivity"]),
+      bputils::make_array_view<conduit::index_t>(n_srcTopo["elements/sizes"]),
+      bputils::make_array_view<conduit::index_t>(
+        n_srcTopo["elements/offsets"]));
 
     const conduit::Node &n_srcMatset = n_dev["matsets/ph_matset"];
     auto srcMatset =
-      views::make_unibuffer_matset<std::int64_t, double, 4>::view(
-        n_srcMatset);
+      views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_srcMatset);
     using SrcMatsetView = decltype(srcMatset);
 
     // Wrap fine mesh in views.
-    auto targetCoordset = views::make_explicit_coordset<double, 3>::view(n_dev["coordsets/efm_coords"]);
+    auto targetCoordset = views::make_explicit_coordset<double, 3>::view(
+      n_dev["coordsets/efm_coords"]);
     using TargetCoordsetView = decltype(targetCoordset);
 
     const conduit::Node &n_targetTopo = n_dev["topologies/efm"];
     using TargetShapeType = views::HexShape<int>;
-    auto targetTopo = views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
+    auto targetTopo =
+      views::make_unstructured_single_shape<TargetShapeType>::view(n_targetTopo);
     using TargetTopologyView = decltype(targetTopo);
 
     // Make new VFs via mapper.
@@ -692,7 +700,6 @@ TEST(mir_topology_mapper, TopologyMapper_PH_seq)
   AXOM_ANNOTATE_SCOPE("TopologyMapper_PH_seq");
   test_TopologyMapper<seq_exec>::testPH();
 }
-#if 0
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_topology_mapper, TopologyMapper_PH_omp)
 {
@@ -714,7 +721,7 @@ TEST(mir_topology_mapper, TopologyMapper_PH_hip)
   test_TopologyMapper<hip_exec>::testPH();
 }
 #endif
-#endif
+
 //------------------------------------------------------------------------------
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {

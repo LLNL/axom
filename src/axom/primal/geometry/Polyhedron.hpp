@@ -259,6 +259,7 @@ public:
   using NumArrayType = axom::NumericArray<T, NDIMS>;
   using PlaneType = Plane<T, NDIMS>;
   using PlaneArrayType = StackArray<PlaneType, MAX_PLANES>;
+
 private:
   using Coords = StackArray<PointType, MAX_VERTS>;
   using Neighbors = NeighborCollection;
@@ -511,7 +512,7 @@ public:
    *
    * \return An array of planes that describe the faces.
    */
-  AXOM_HOST_DEVICE PlaneArrayType getFaces(int &numFaces) const
+  AXOM_HOST_DEVICE PlaneArrayType getFaces(int& numFaces) const
   {
     PlaneArrayType facePlanes;
     numFaces = 0;

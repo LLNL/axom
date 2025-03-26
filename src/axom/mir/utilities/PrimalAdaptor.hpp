@@ -31,22 +31,29 @@ struct PolyhedralFaces
   static constexpr int MAX_PLANES = 64;
 
   AXOM_HOST_DEVICE inline int size() const { return m_planes.size(); }
-  AXOM_HOST_DEVICE inline const PlaneType &operator[](size_t i) const { return m_planes[i]; }
-  AXOM_HOST_DEVICE inline PlaneType &operator[](size_t i) { return m_planes[i]; }
+  AXOM_HOST_DEVICE inline const PlaneType &operator[](size_t i) const
+  {
+    return m_planes[i];
+  }
+  AXOM_HOST_DEVICE inline PlaneType &operator[](size_t i)
+  {
+    return m_planes[i];
+  }
   AXOM_HOST_DEVICE inline void push_back(const PlaneType &plane)
   {
     m_planes.push_back(plane);
   }
   AXOM_HOST_DEVICE axom::ArrayView<PlaneType> getFaces() const
   {
-    return axom::ArrayView<PlaneType>(const_cast<PlaneType *>(m_planes.data()), m_planes.size());
+    return axom::ArrayView<PlaneType>(const_cast<PlaneType *>(m_planes.data()),
+                                      m_planes.size());
   }
 
   axom::StaticArray<PlaneType, MAX_PLANES> m_planes;
 };
 
 template <typename T>
-std::ostream &operator << (std::ostream &os, const PolyhedralFaces<T> &obj)
+std::ostream &operator<<(std::ostream &os, const PolyhedralFaces<T> &obj)
 {
   os << "PolyhedralFaces\n";
   for(int i = 0; i < obj.size(); i++)
@@ -105,7 +112,7 @@ struct AveragePoints
     return result;
   }
 
-  VectorType sum{};
+  VectorType sum {};
   int numPoints {0};
 };
 
@@ -132,9 +139,10 @@ struct AdaptPolyhedron
    *
    * \return A representation of the polyhedral zone.
    */
-  AXOM_HOST_DEVICE static PolyhedralRepresentation convert(const TopologyView &topologyView,
-                                                           const CoordsetView &coordsetView,
-                                                           size_t zoneIndex)
+  AXOM_HOST_DEVICE static PolyhedralRepresentation convert(
+    const TopologyView &topologyView,
+    const CoordsetView &coordsetView,
+    size_t zoneIndex)
   {
     const auto zone = topologyView.zone(zoneIndex);
     const auto uniqueNodeIds = zone.getUniqueIds();
@@ -148,7 +156,8 @@ struct AdaptPolyhedron
     {
       ids.push_back(uniqueNodeIds[i]);
     }
-    axom::utilities::Sorting<int, Polyhedron::MAX_VERTS>::sort(ids.data(), nnodes);
+    axom::utilities::Sorting<int, Polyhedron::MAX_VERTS>::sort(ids.data(),
+                                                               nnodes);
 
     // Add vertices in ids sorted order.
     for(axom::IndexType i = 0; i < nnodes; i++)
@@ -187,8 +196,10 @@ struct AdaptPolyhedron
           {
             // Neighbors for currentNodeId
             int candidates[2];
-            candidates[0] = static_cast<int>(faceIds[(fi == 0) ? lastIndex : (fi - 1)]);
-            candidates[1] = static_cast<int>(faceIds[(fi == lastIndex) ? 0 : (fi + 1)]);
+            candidates[0] =
+              static_cast<int>(faceIds[(fi == 0) ? lastIndex : (fi - 1)]);
+            candidates[1] =
+              static_cast<int>(faceIds[(fi == lastIndex) ? 0 : (fi + 1)]);
             if(reverseOrder)
             {
               axom::utilities::swap(candidates[0], candidates[1]);
@@ -198,7 +209,8 @@ struct AdaptPolyhedron
             {
               // Check whether this neighbor has been seen before.
               bool found = false;
-              for(axom::IndexType ni = 0; ni < seenNeighbors.size() && !found; ni++)
+              for(axom::IndexType ni = 0; ni < seenNeighbors.size() && !found;
+                  ni++)
               {
                 found |= (seenNeighbors[ni] == candidates[ci]);
               }
@@ -210,7 +222,8 @@ struct AdaptPolyhedron
                 seenNeighbors.push_back(candidates[ci]);
 
                 // Look up the index of the candidate point in the sorted indices.
-                auto neighborIndex = axom::mir::utilities::bsearch(candidates[ci], ids);
+                auto neighborIndex =
+                  axom::mir::utilities::bsearch(candidates[ci], ids);
                 SLIC_ASSERT(neighborIndex != -1);
 
                 poly.addNeighbors(i, neighborIndex);
@@ -246,9 +259,10 @@ struct AdaptPolyhedron<TopologyView, CoordsetView, true>
    *
    * \return A representation of the polyhedral zone.
    */
-  AXOM_HOST_DEVICE static PolyhedralRepresentation convert(const TopologyView &topologyView,
-                                                           const CoordsetView &coordsetView,
-                                                           size_t zoneIndex)
+  AXOM_HOST_DEVICE static PolyhedralRepresentation convert(
+    const TopologyView &topologyView,
+    const CoordsetView &coordsetView,
+    size_t zoneIndex)
   {
     PolyhedralRepresentation faces;
     const auto zone = topologyView.zone(zoneIndex);
@@ -306,7 +320,8 @@ struct PrimalAdaptor
     axom::primal::Tetrahedron<value_type, CoordsetView::dimension()>;
   using Hexahedron =
     axom::primal::Hexahedron<value_type, CoordsetView::dimension()>;
-  using Polyhedron = typename AdaptPolyhedron<TopologyView, CoordsetView, makeFaces>::PolyhedralRepresentation;
+  using Polyhedron =
+    typename AdaptPolyhedron<TopologyView, CoordsetView, makeFaces>::PolyhedralRepresentation;
   using BoundingBox =
     axom::primal::BoundingBox<value_type, CoordsetView::dimension()>;
 
@@ -445,7 +460,6 @@ struct PrimalAdaptor
     return shape;
   }
 
-
   /*!
    * \brief Get the zone \a zi as a Polyhedron. This is enabled when the input topology contains polyhedra.
    *
@@ -455,13 +469,15 @@ struct PrimalAdaptor
    */
   template <int TDIM = CoordsetView::dimension(),
             typename ShapeType = typename TopologyView::ShapeType>
-  AXOM_HOST_DEVICE typename std::enable_if<
-    TDIM == 3 && ShapeType::is_polyhedral(),
-    Polyhedron>::type
-  getShape(axom::IndexType zi) const
+  AXOM_HOST_DEVICE
+    typename std::enable_if<TDIM == 3 && ShapeType::is_polyhedral(), Polyhedron>::type
+    getShape(axom::IndexType zi) const
   {
     // Delegate out to the AdaptPolyhedron classes to make the polyhedron.
-    return AdaptPolyhedron<TopologyView, CoordsetView, makeFaces>::convert(m_topologyView, m_coordsetView, zi);
+    return AdaptPolyhedron<TopologyView, CoordsetView, makeFaces>::convert(
+      m_topologyView,
+      m_coordsetView,
+      zi);
   }
 
   TopologyView m_topologyView;
