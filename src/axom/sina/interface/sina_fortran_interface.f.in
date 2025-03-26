@@ -143,11 +143,8 @@ contains
     character(*) fname
     call write_sina_document_noprotocol(fname)
   end subroutine save_without_protocol
-<<<<<<< HEAD:src/axom/sina/interface/sina_fortran_interface.f
-=======
 
 end module 
->>>>>>> origin/sina_hdf5_implementation:src/axom/sina/interface/sina_fortran_interface.f.in
 
 module hdf5_config
   implicit none
