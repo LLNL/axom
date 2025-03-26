@@ -529,8 +529,10 @@ spack:
       require: "@0.4.0"
     caliper:
       require: "@2.12.1~kokkos"
+    # v2025.03.0
     camp:
-      require: "@main"
+      require: "@git.ee0a3069a7ae72da8bcea63c06260fad34901d43"
+    # v0.9.3
     conduit:
       require: "@git.2eec1ad9548cf6d629e2145181ff7b8cef0a38fa~shared~test~examples~utilities"
     hdf5:
@@ -541,12 +543,14 @@ spack:
       require: "@4.7.0"
     py-jsonschema:
       require: "@:4.17" #Anything after this requires py-rpds which requires rust and adds 40 minutes
+    # v2025.03.0
     raja:
       require: "@git.1d70abf171474d331f1409908bdf1b1c3fe19222~shared~examples~exercises"
     scr:
       require: "@3.0.1~shared~tests~examples"
+    # v2025.03.0
     umpire:
-      require: "@develop~shared~examples~werror"
+      require: "@git.1ed0669c57f041baa1f1070693991c3a7a43e7ee~shared~examples~werror"
 
     # Failure with cce compiler:
     # https://github.com/besser82/libxcrypt/issues/181
