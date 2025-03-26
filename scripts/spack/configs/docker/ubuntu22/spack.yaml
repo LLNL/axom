@@ -165,6 +165,7 @@ spack:
       require: "@2025.03.0~shared~examples~exercises"
     scr:
       require: "@3.0.1~shared~tests~examples"
+    # Umpire must be shared when building Axom as a shared library. See PR #1271 for more details.
     umpire:
       require: "@2025.03.0+shared~examples~werror"
 
