@@ -328,28 +328,42 @@ public:
 #endif
 
   /*!
-   * \brief Reallocate data to a new allocator.
-   *
-   * This does NOT change any Group's default allocator.
+   * \brief Reallocate all View data to a new allocator.
    *
    * \return pointer to this Group object.
+   *
+   * This does NOT change any Group's default allocator.
    */
-  Group* transfer_allocator(int newAllocId);
+  Group* reallocateTo(int newAllocId);
 
   /*!
    * \brief Reallocate data to a new allocator, with a predicate for
-   * selecting a subset of Views to transfer.
-   *
-   * This does NOT change any Group's default allocator.
+   * selecting a subset of Views to reallocate.
    *
    * \param [i] pred A predicate that returns true for Views that are
-   *   subject to transfering to the new allocator and false for Views
+   *   subject to reallocation to the new allocator and false for Views
    *   that are not.
    *
    * \return pointer to this Group object.
+   *
+   * This does NOT change any Group's default allocator.
    */
-  Group* transfer_allocator(int newAllocId,
-                            const std::function<bool(View&)>& pred);
+  Group* reallocateTo(int newAllocId,
+                    const std::function<bool(const View&)>& pred);
+
+  /*!
+   * \brief Reallocate data to View-specific allocators.
+   *
+   * \param [i] viewToAllocatorId A function that returns the allocator
+   *   id to reallocate the View's data to.  Where it returns
+   *   the View's current allocator or axom::INVALID_ALLOCATOR_ID,
+   *   the View is unchanged.
+   *
+   * \return pointer to this Group object.
+   *
+   * This does NOT change any Group's default allocator.
+   */
+  Group* reallocateTo(const std::function<int(const View&)>& viewToAllocatorId);
 
   /*!
    * \brief Insert information about data associated with Group subtree with

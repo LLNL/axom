@@ -439,13 +439,15 @@ public:
   /*!
    * \brief Reallocate data to a new allocator.
    *
-   * If the state is EMPTY or allocId is the same as that of
-   * the parent Group's default allocator id, this is a no-op.
-   * If the state is EXTERNAL, it's an error.
+   * If the state is EMPTY or allocId is the current
+   * allocator or is axom::INVALID_ALLOCATOR_ID, this is a no-op.
+   * Reallocating an EXTERNAL View means allocating it internally.
+   * The state will change from EXTERNAL to STRING or SCALAR,
+   * determined by a heuristic guess.
    *
    * \return pointer to this View object.
    */
-  View* transfer_allocator(int newAllocId);
+  View* reallocateTo(int newAllocId);
 
   /*!
    * \brief  Deallocate data for view.

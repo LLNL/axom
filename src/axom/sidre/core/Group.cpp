@@ -1527,35 +1527,56 @@ Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
  *
  *************************************************************************
  */
-Group* Group::transfer_allocator(int newAllocId,
-                                 const std::function<bool(View&)>& pred)
+Group* Group::reallocateTo(int newAllocId,
+                           const std::function<bool(const View&)>& pred)
 {
   SLIC_ASSERT(newAllocId != INVALID_ALLOCATOR_ID);
 
-  // copy child Groups to new Group
   for(auto& grp : groups())
   {
-    grp.transfer_allocator(newAllocId, pred);
+    grp.reallocateTo(newAllocId, pred);
   }
 
-  // copy Views to new Group
   for(auto& view : views())
   {
     if(view.m_state != View::State::EXTERNAL && pred(view))
     {
-      view.transfer_allocator(newAllocId);
+      view.reallocateTo(newAllocId);
     }
   }
-
-  // m_default_allocator_id = newAllocId;
 
   return this;
 }
 
-Group* Group::transfer_allocator(int newAllocId)
+Group* Group::reallocateTo(int newAllocId)
 {
-  return transfer_allocator(newAllocId,
-                            std::function<bool(View&)>{[](View&) { return true; }});
+  return reallocateTo(std::function<int(const View&)>{[=](const View&) { return newAllocId; }});
+}
+
+/*
+ *************************************************************************
+ *
+ * Reallocate data to View-specific allocators.
+ *
+ *************************************************************************
+ */
+Group* Group::reallocateTo(const std::function<int(const View&)>& viewToAllocatorId)
+{
+  for(auto& grp : groups())
+  {
+    grp.reallocateTo(viewToAllocatorId);
+  }
+
+  for(auto& view : views())
+  {
+    int newAllocId = viewToAllocatorId(view);
+    if(newAllocId != axom::INVALID_ALLOCATOR_ID)
+    {
+      view.reallocateTo(newAllocId);
+    }
+  }
+
+  return this;
 }
 
 /*

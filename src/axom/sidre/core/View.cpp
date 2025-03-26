@@ -307,43 +307,59 @@ View* View::reallocate(const DataType& dtype)
  *
  *************************************************************************
  */
-View* View::transfer_allocator(int newAllocId)
+View* View::reallocateTo(int newAllocId)
 {
-  // TODO: Consider make this a no-op instead of an error.
-  // depending on a yet-to-show use case.
-  // I don't think there's enough info for changing
-  // the View into a STRING, SCALAR or BUFFER.
-  SLIC_ERROR_IF(m_state == EXTERNAL,
-                "View::transfer_allocator doesn't work on external data.");
+  if(newAllocId == axom::INVALID_ALLOCATOR_ID) { return this; }
+
+  // TODO: Consider not making this an error.
+  // It can make the data internal or
+  // do nothing, depending on a yet-to-show use case.
+  // If making the data internal, what should be the new state?
+  // STRING, SCALAR or BUFFER?
+  // SLIC_ERROR_IF(m_state == EXTERNAL,
+  //               "View::reallocate doesn't work on external data.");
 
   if(m_state == EMPTY) { return this; }
 
-  int currentAllocId = getOwningGroup()->getDefaultAllocatorID();
-
-  if(newAllocId == currentAllocId) { return this; }
+  // TODO: Probably wrong to use owning group's default allocator.
+  // Group can allocate View with non-default allocator.
+  // int currentAllocId = getOwningGroup()->getDefaultAllocatorID();
 
   if(m_state == STRING || m_state == SCALAR)
   {
-    const auto& conduitMemOp = axom::ConduitMemCallbacks::getInstance(newAllocId);
-    conduit::Node tmpNode;
-    m_node.swap(tmpNode);
-    m_node.set_allocator(conduitMemOp.conduitId());
-    m_node.set_node(tmpNode);
+    // Data is stored in m_node.
+    conduit::index_t conduitAllocId = m_node.allocator();
+    const auto& currentMemOp = axom::ConduitMemCallbacks::instanceForConduitId(conduitAllocId);
+    int currentAllocId = currentMemOp.axomId();
+
+    if(currentAllocId != newAllocId)
+    {
+      const auto& newMemOp = axom::ConduitMemCallbacks::instanceForAxomId(newAllocId);
+      conduit::Node tmpNode;
+      m_node.swap(tmpNode);
+      m_node.set_allocator(newMemOp.conduitId());
+      m_node.set_node(tmpNode);
+    }
   }
   else if(m_state == BUFFER)
   {
-    Buffer* oldBuffer = detachBuffer();
-    allocate(newAllocId);
-    m_data_buffer->copyBytesIntoBuffer(oldBuffer->getVoidPtr(),
-                                       oldBuffer->getTotalBytes());
-    m_data_buffer->attachToView(this);
-    apply();
-    // TODO: delete oldBuffer; // Delete oldBuffer?
-    // delete oldBuffer; // ? ... or ...
-    // if(oldBuffer->getNumViews() == 0)
-    //   getOwningGroup()->getDataStore()->destroyBuffer(oldBuffer); // ?
+    // Data is stored in m_data_buffer.
+    void* currentData = m_data_buffer->getVoidPtr();
+    int currentAllocId = axom::getAllocatorIDFromPointer(currentData);
+    if(currentAllocId != newAllocId)
+    {
+      Buffer* currentBuffer = detachBuffer();
+      allocate(newAllocId);
+      m_data_buffer->copyBytesIntoBuffer(currentBuffer->getVoidPtr(),
+                                         currentBuffer->getTotalBytes());
+      m_data_buffer->attachToView(this);
+      apply();
+      // TODO: delete currentBuffer; // Delete currentBuffer?
+      // delete currentBuffer; // ? ... or ...
+      // if(currentBuffer->getNumViews() == 0)
+      //   getOwningGroup()->getDataStore()->destroyBuffer(currentBuffer); // ?
+    }
   }
-
 
   return this;
 }
