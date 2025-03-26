@@ -133,6 +133,12 @@ public:
       return ConnectivityView(m_ids.m_data, nnodes);
     }
 
+    AXOM_HOST_DEVICE ConnectivityType getId(size_t index) const
+    {
+      const auto allIds = getIds();
+      return allIds[index];
+    }
+
     AXOM_HOST_DEVICE ConnectivityView getUniqueIds() const
     {
       axom::IndexType nnodes = 0;

@@ -713,9 +713,7 @@ protected:
     AXOM_ANNOTATE_SCOPE("makePolyhedralInputs");
     namespace views = axom::mir::views;
     namespace bputils = axom::mir::utilities::blueprint;
-#if 0
-std::cout << "----------------------------------------------------------------------------\nPH Inputs\n----------------------------------------------------------------------------\n";
-#endif
+
     // Make a vector of polyhedral input meshes.
     std::vector<MeshInput> phInputs(inputs.size());
     for(size_t i = 0; i < inputs.size(); i++)
@@ -799,11 +797,6 @@ std::cout << "------------------------------------------------------------------
             }
           });
       }
-#if 0
-      std::cout << "Input " << i << std::endl;
-      phInputs[i].m_input->print();
-      std::cout << "-----------\n";
-#endif
     }
     return phInputs;
   }

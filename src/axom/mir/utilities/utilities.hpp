@@ -80,13 +80,16 @@ void fill(axom::ArrayView<T> view, T fillValue)
  * \brief Use binary search to find the index of the \a value in the supplied
  *        sorted view.
  *
+ * \tparam T The type of elements we're handling.
+ * \tparam ContainerT A container or view of T.
+ *
  * \param[in] value The search value.
- * \param[in] view The view that contains the sorted search data values.
+ * \param[in] view A view or container that contains the sorted search data values.
  *
  * \return The index where value was located in view or -1 if not found.
  */
-template <typename T>
-AXOM_HOST_DEVICE std::int32_t bsearch(T value, const axom::ArrayView<T> &view)
+template <typename T, typename ContainerT>
+AXOM_HOST_DEVICE std::int32_t bsearch(T value, const ContainerT &view)
 {
   std::int32_t index = -1;
   std::int32_t left = 0;

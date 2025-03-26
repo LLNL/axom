@@ -251,12 +251,14 @@ template <typename T, int NDIMS = 3>
 class Polyhedron
 {
 public:
+  constexpr static int MAX_VERTS = NeighborCollection::MAX_VERTS;
+  constexpr static int MAX_PLANES = MAX_VERTS;
+
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
   using NumArrayType = axom::NumericArray<T, NDIMS>;
-
-  constexpr static int MAX_VERTS = NeighborCollection::MAX_VERTS;
-
+  using PlaneType = Plane<T, NDIMS>;
+  using PlaneArrayType = StackArray<PlaneType, MAX_PLANES>;
 private:
   using Coords = StackArray<PointType, MAX_VERTS>;
   using Neighbors = NeighborCollection;
@@ -500,6 +502,38 @@ public:
       }
     }
     face_count = facesAdded;
+  }
+
+  /*!
+   * \brief Get the polyhedron's faces as planes.
+   *
+   * \param[out] The number of faces.
+   *
+   * \return An array of planes that describe the faces.
+   */
+  AXOM_HOST_DEVICE PlaneArrayType getFaces(int &numFaces) const
+  {
+    PlaneArrayType facePlanes;
+    numFaces = 0;
+
+    // Get faces
+    int faces[MAX_VERTS * MAX_VERTS];
+    int face_size[MAX_VERTS * 2];
+    int face_offset[MAX_VERTS * 2];
+    int face_count;
+    getFaces(faces, face_size, face_offset, face_count);
+
+    // Turn the faces to planes.
+    for(int i = 0; i < face_count; ++i)
+    {
+      const int i_offset = face_offset[i];
+      const auto p0 = m_vertices[faces[i_offset]];
+      const auto p1 = m_vertices[faces[i_offset + 1]];
+      const auto p2 = m_vertices[faces[i_offset + 2]];
+
+      facePlanes[numFaces++] = axom::primal::make_plane(p0, p1, p2);
+    }
+    return facePlanes;
   }
 
   /*!
