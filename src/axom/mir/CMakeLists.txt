@@ -84,6 +84,7 @@ set(mir_headers
     utilities/SelectedZones.hpp
     utilities/TopologyMapper.hpp
     utilities/utilities.hpp
+    utilities/Unique.hpp
     utilities/VariableShape.hpp
     utilities/ZoneListBuilder.hpp
     views/dispatch_coordset.hpp

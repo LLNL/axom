@@ -16,6 +16,7 @@
 #include "axom/mir/utilities/FieldSlicer.hpp"
 #include "axom/mir/utilities/SelectedZones.hpp"
 #include "axom/mir/utilities/utilities.hpp"
+#include "axom/mir/utilities/Unique.hpp"
 #include "axom/mir/views/Shapes.hpp"
 #include "axom/mir/views/view_traits.hpp"
 #include "axom/slic.hpp"
