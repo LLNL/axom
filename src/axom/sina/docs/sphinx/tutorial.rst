@@ -148,10 +148,10 @@ Input and Output
 
 Once you have a document, it is easy to save it to a file. To save to a JSON, we
 run the saveDocument() with the optional argument Protocol set to JSON or set as
-nothing. Alternatively, if you wish to save the document to an HDF5 file, you must set 
-saveDocument()'s optional Protocol parameter to HDF5. After executing the below, you 
-will output a file named "my_output.json" and a file named "my_output.hdf5", both of
-which you can ingest into a Sina datastore.
+nothing. Alternatively if you wish to save the document to an HDF5 file: Configure 
+axom for HDF5 support then you can set saveDocument()'s optional Protocol parameter 
+to HDF5. After executing the below, you will output a file named "my_output.json" 
+and a file named "my_output.hdf5", both of which you can ingest into a Sina datastore.
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
    :language: cpp
@@ -161,18 +161,13 @@ which you can ingest into a Sina datastore.
 If needed, you can also load a document from a file. This can be useful,
 for example, if you wrote a document when writing a restart and you want to
 continue from where you left off.  To load from a JSON file simply run loadDocument()
-with the optional argument Protocol set to JSON or set as nothing, and to load from
-an HDF5 set the Protocol to HDF5.
+with the optional argument Protocol set to JSON or set as nothing. If you've configured 
+for, and wish to load from an HDF5 simply set the Protocol to HDF5.
 
 Note that due to HDF5's handling of '/' as indicators for nested structures,
-our saveDocument() function will string-replace '/' in parent nodes to 
-'__SINA_SLASHREPLACE__' in the resulting HDF5 file, while our loadDocument()
-function will string-replace them back to normal.
-
-Additionally, Sina is also equipped to handle missing, broken, or incorrect file 
-extensions.  In such an event (for example: saving a JSON file as Example, Example.jso, 
-or Example.hdf5), Sina will replace incorrect file extensions and append to missing or 
-broken ones while outputting a WARNING message to let you know of said occurance.
+parent nodes will have '/' changed to the ``slashSubstitute`` variable located in 
+``axom/sina/core/Document.hpp`` as an HDF5 with saveDocument(). loadDocument() 
+will restore them to normal:
 
 
 .. literalinclude:: ../../examples/sina_tutorial.cpp
@@ -200,3 +195,4 @@ convert to and from JSON. The user-defined section is exposed as a
    :language: cpp
    :start-after: //! [begin user defined]
    :end-before: //! [end user defined]
+

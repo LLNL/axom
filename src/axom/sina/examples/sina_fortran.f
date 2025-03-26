@@ -1,5 +1,6 @@
 program example
   use sina_functions
+  use hdf5_config
   implicit none
 
   ! data types
@@ -57,7 +58,9 @@ program example
   full_path = make_cstring(wrk_dir//''//fle_nme)
   ofull_path = make_cstring(wrk_dir//''//ofle_nme)
   json_fn = make_cstring('sina_dump.json')
-  hdf5_fn = make_cstring('sina_dump.hdf5')
+  if (use_hdf5) then
+    hdf5_fn = make_cstring('sina_dump.hdf5')
+  end if
   
   
   mime_type = make_cstring('')
@@ -151,7 +154,9 @@ program example
   ! write out the Sina Document
   print *,'Writing out the Sina Document'
   call write_sina_document(json_fn)
-  call write_sina_document(hdf5_fn, 1)
+  if (use_hdf5) then
+    call write_sina_document(hdf5_fn, 1)
+  end if
 
   
 contains

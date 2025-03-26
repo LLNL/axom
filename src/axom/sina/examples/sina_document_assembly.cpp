@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/config.hpp"
 #include "axom/sina.hpp"
 
 int main(void)
@@ -35,7 +36,9 @@ int main(void)
   // since we gave saveDocument no optional protocol parameter, it will default to JSON
   axom::sina::saveDocument(document, "MySinaData.json");
 
+#ifdef AXOM_USE_HDF5
   // We will also save a copy of the document as an HDF5 file
   // which can be done by passing the protocol as HDF5
   axom::sina::saveDocument(document, "MySinaData.hdf5", axom::sina::Protocol::HDF5);
+#endif
 }
