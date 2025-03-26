@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -109,15 +109,6 @@ inline AXOM_HOST_DEVICE void swap(T& a, T& b)
   b = tmp;
 }
 
-/*! 
- * \brief returns the linear interpolation of \a A and \a B at \a t. i.e. (1-t)A+tB
- */
-template <typename T>
-inline AXOM_HOST_DEVICE T lerp(T A, T B, T t)
-{
-  return (1 - t) * A + t * B;
-}
-
 /*!
  * \brief Returns the base 2 logarithm of the input.
  * \param [in] val The input value
@@ -126,6 +117,20 @@ template <typename T>
 inline T log2(T val)
 {
   return static_cast<T>(std::log2(val));
+}
+
+/*!
+ * \brief Linearly interpolates between two values
+ * \param [in] val0 The first value
+ * \param [in] val2 The second value
+ * \param [in] t The interpolation parameter.
+ * \return The interpolated value
+ */
+template <typename T>
+inline AXOM_HOST_DEVICE T lerp(T v0, T v1, T t)
+{
+  constexpr T one = T(1);
+  return (one - t) * v0 + t * v1;
 }
 
 /*!

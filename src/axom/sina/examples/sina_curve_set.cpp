@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,15 +9,13 @@
 #include <cmath>
 #include <vector>
 
-using namespace std;
-
 struct BounceData
 {
-  vector<double> time;
-  vector<double> xPosition;
-  vector<double> yPosition;
-  vector<double> xVelocity;
-  vector<double> yVelocity;
+  std::vector<double> time;
+  std::vector<double> xPosition;
+  std::vector<double> yPosition;
+  std::vector<double> xVelocity;
+  std::vector<double> yVelocity;
 };
 
 BounceData generateBounceData(double initialY,
@@ -67,7 +65,9 @@ BounceData generateBounceData(double initialY,
   return data;
 }
 
-void addCurveSet(axom::sina::Record &record, BounceData bounceData, string curveName)
+void addCurveSet(axom::sina::Record &record,
+                 BounceData bounceData,
+                 std::string curveName)
 {
   // Create the curve set object
   axom::sina::CurveSet bounceCurveSet {curveName};
@@ -112,7 +112,7 @@ int main()
   axom::sina::Document doc;
 
   axom::sina::ID id {"ball_bounce_run", axom::sina::IDType::Global};
-  unique_ptr<axom::sina::Record> study {
+  std::unique_ptr<axom::sina::Record> study {
     new axom::sina::Record {id, "ball bounce study"}};
 
   addCurveSet(*study, bounceData, "ball_bounce");

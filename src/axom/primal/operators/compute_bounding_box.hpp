@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,10 +12,9 @@
 #ifndef AXOM_PRIMAL_COMPUTE_BOUNDING_BOX_HPP_
 #define AXOM_PRIMAL_COMPUTE_BOUNDING_BOX_HPP_
 
-#include "axom/primal/geometry/NumericArray.hpp"  // for numeric arrays
-#include "axom/core/numerics/Matrix.hpp"          // for Matrix
-#include "axom/core/Macros.hpp"                   // for AXOM_HOST__DEVICE
-#include "axom/core/numerics/eigen_solve.hpp"     // for eigen_solve
+#include "axom/core/numerics/Matrix.hpp"       // for Matrix
+#include "axom/core/Macros.hpp"                // for AXOM_HOST__DEVICE
+#include "axom/core/numerics/eigen_solve.hpp"  // for eigen_solve
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Hexahedron.hpp"

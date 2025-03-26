@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -197,6 +197,7 @@ void reset_state()
 {
   axom::slic::internal::clear_streams();
   has_aborted = false;
+  AXOM_UNUSED_VAR(has_aborted);
 }
 }  // end anonymous namespace
 
@@ -972,6 +973,7 @@ TEST_P(SlicMacrosParallel, test_debug_macros)
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
+  AXOM_UNUSED_VAR(expected_line_number);
 #endif
 }
 
@@ -1098,6 +1100,7 @@ TEST_P(SlicMacrosParallel, test_abort_error_macros)
 
       // Quiet warning about has_aborted and reset_state never being referenced
       AXOM_UNUSED_VAR(has_aborted);
+      AXOM_UNUSED_VAR(expected_line_number);
       reset_state();
 
       EXPECT_TRUE(slic::internal::are_all_streams_empty());
@@ -1233,6 +1236,7 @@ TEST_P(SlicMacrosParallel, test_abort_warning_macros)
       axom::slic::setIsRoot(true);
 
 #else
+      AXOM_UNUSED_VAR(expected_line_number);
       // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
       EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
@@ -1278,6 +1282,7 @@ TEST_P(SlicMacrosParallel, test_assert_macros)
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
@@ -1311,6 +1316,7 @@ TEST_P(SlicMacrosParallel, test_assert_macros)
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 }
@@ -1348,6 +1354,7 @@ TEST_P(SlicMacrosParallel, test_check_macros)
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 
@@ -1381,6 +1388,7 @@ TEST_P(SlicMacrosParallel, test_check_macros)
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::are_all_streams_empty());
 #endif
 }

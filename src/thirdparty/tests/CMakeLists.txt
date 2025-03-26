@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -240,6 +240,22 @@ if (C2C_FOUND)
 
     axom_add_test(NAME    c2c_smoke
                   COMMAND c2c_smoke_test)
+endif()
+
+#------------------------------------------------------------------------------
+# Smoke test for Open Cascade third party library
+#------------------------------------------------------------------------------
+
+if (OPENCASCADE_FOUND)
+    axom_add_executable(
+        NAME       opencascade_smoke_test
+        SOURCES    opencascade_smoke.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON opencascade gtest
+        FOLDER     axom/thirdparty/tests )
+
+    axom_add_test(NAME    opencascade_smoke
+                  COMMAND opencascade_smoke_test)
 endif()
 
 #------------------------------------------------------------------------------

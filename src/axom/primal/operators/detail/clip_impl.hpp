@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -714,25 +714,25 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   const int numClipEdges = planePoints.numVertices();
 
   // Iterate through edges of clip polygon, represented as planes
-  for(int i = 0; i < numClipEdges; i++)
+  for(int iEdge = 0; iEdge < numClipEdges; iEdge++)
   {
     PlaneType plane =
-      make_plane(planePoints[i], planePoints[(i + 1) % numClipEdges]);
+      make_plane(planePoints[iEdge], planePoints[(iEdge + 1) % numClipEdges]);
 
     PolygonType inputList = outputList;
     outputList.clear();
 
-    for(int i = 0; i < inputList.numVertices(); i++)
+    for(int iVert = 0; iVert < inputList.numVertices(); iVert++)
     {
-      PointType current_point = inputList[i];
+      PointType current_point = inputList[iVert];
       PointType prev_point =
-        inputList[(i - 1) == -1 ? (inputList.numVertices() - 1) : (i - 1)];
+        inputList[(iVert - 1) == -1 ? (inputList.numVertices() - 1) : (iVert - 1)];
 
       T seg_param;
       PointType intersecting_point;
       SegmentType subject_edge(prev_point, current_point);
 
-      if(intersect(plane, subject_edge, seg_param))
+      if(intersect(plane, subject_edge, seg_param, eps))
       {
         intersecting_point = subject_edge.at(seg_param);
       }
@@ -742,13 +742,7 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
 
       if(cur_p_orientation == ON_POSITIVE_SIDE)
       {
-        // Handles the edge case of 3 consecutive vertices with orientations
-        // ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE. Default algorithm
-        // check (prev_p_orientation != ON_POSITIVE_SIDE) results in the
-        // vertex on the boundary being added twice.
-        if(prev_p_orientation == ON_NEGATIVE_SIDE ||
-           (prev_p_orientation == ON_BOUNDARY &&
-            intersecting_point != outputList[outputList.numVertices() - 1]))
+        if(prev_p_orientation != ON_POSITIVE_SIDE)
         {
           outputList.addVertex(intersecting_point);
         }
@@ -761,7 +755,27 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
     }
   }  // end of iteration through edges of clip polygon
 
-  return outputList;
+  // Remove duplicate points.
+  // Handles edge cases such as 3 consecutive vertices with orientations
+  // ON_POSITIVE_SIDE, ON_BOUNDARY, ON_POSITIVE where point on the boundary
+  // is added twice.
+  PolygonType uniqueList;
+  for(int i = 0; i < outputList.numVertices(); i++)
+  {
+    int prevIndex = ((i - 1) == -1) ? (outputList.numVertices() - 1) : (i - 1);
+
+    if(!axom::utilities::isNearlyEqual(outputList[i][0],
+                                       outputList[prevIndex][0],
+                                       eps) ||
+       !axom::utilities::isNearlyEqual(outputList[i][1],
+                                       outputList[prevIndex][1],
+                                       eps))
+    {
+      uniqueList.addVertex(outputList[i]);
+    }
+  }
+
+  return uniqueList;
 }
 
 }  // namespace detail

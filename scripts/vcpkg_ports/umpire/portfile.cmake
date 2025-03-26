@@ -4,7 +4,9 @@ vcpkg_from_github(
     REF v2024.07.0
     SHA512 c29c39b74641485e81bfaebc9eb2c36a2404e7866848d50f4dc6c576f03bf0ec3989d21ee0f8c573e40c11ad6c279054feefaf50ff7dcc2eb617c4ac60b8520d
     HEAD_REF develop
+    PATCHES v2024.07.0-chrono-include.patch
 )
+
 
 vcpkg_check_features(OUT_FEATURE_OPTIONS FEATURE_OPTIONS
     FEATURES

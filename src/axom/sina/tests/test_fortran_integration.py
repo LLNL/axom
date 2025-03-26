@@ -5,6 +5,7 @@ import os
 import subprocess
 import unittest
 
+
 def parse_args():
     """Helper function to obtain the binary directory path of Axom from CLI"""
     parser = argparse.ArgumentParser(description="Unit test arguments")
@@ -19,28 +20,22 @@ class TestFortranExampleIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Obtain the binary directory from the CLI and compile the sina fortran
-        example needed for these tests if necessary.
+        Obtain the binary directory from the CLI.
         """
-        cwd = os.getcwd()
-
         args = parse_args()
         cls.binary_dir = args.binary_dir
         if cls.binary_dir is None:
             # Assume we're at /path/to/build_dir/axom/sina/tests so move up to build_dir
-            cls.binary_dir = f"{cwd}/../../../"
-        
-        os.chdir(cls.binary_dir)
-
-        if not os.path.exists(f"{cls.binary_dir}/examples/sina_fortran_ex"):
-            subprocess.run(["make", "sina_fortran_ex"])
-
-        os.chdir(cwd)
-
+            cls.binary_dir = os.path.join(os.getcwd(), "..", "..", "..")
 
     def setUp(self):
         """ Invoke example Fortran application to dump a sina file """
-        subprocess.run([f"{self.binary_dir}/examples/sina_fortran_ex"])
+        sina_fortran_ex_path = os.path.join(self.binary_dir, "examples", "sina_fortran_ex")
+        if not os.path.exists(sina_fortran_ex_path):
+            raise FileNotFoundError(
+                f"The sina_fortran_ex needed for running fortran tests could not be found at path '{sina_fortran_ex_path}'"
+            )
+        subprocess.run([sina_fortran_ex_path])
         self.dump_file = "sina_dump.json"
         
     def tearDown(self):
@@ -51,7 +46,7 @@ class TestFortranExampleIntegration(unittest.TestCase):
         """ Make sure the files we're importing follow the Sina schema. """
         try:
             import jsonschema
-            schema_file = os.path.join(f"{self.binary_dir}/tests/sina_schema.json")
+            schema_file = os.path.join(self.binary_dir, "tests", "sina_schema.json")
             with io.open(schema_file, "r", encoding="utf-8") as schema:
                 schema = json.load(schema)
                 with io.open(self.dump_file, "r", encoding="utf-8") as loaded_test:
@@ -74,9 +69,12 @@ class TestFortranExampleIntegration(unittest.TestCase):
         self.assertEqual("my_type", record["type"])
         
         # Test the files
-        self.assertEqual(list(record["files"].keys()), ["/path/to/my/file/my_other_file.txt", "/path/to/my/file/my_file.txt"])
-        self.assertEqual(record["files"]["/path/to/my/file/my_other_file.txt"]["mimetype"], "png")
-        self.assertEqual(record["files"]["/path/to/my/file/my_file.txt"]["mimetype"], "txt")
+        path_to_my_file = os.path.join("/path", "to", "my", "file")
+        my_file = os.path.join(path_to_my_file, "my_file.txt")
+        other_file = os.path.join(path_to_my_file, "my_other_file.txt")
+        self.assertEqual(list(record["files"].keys()), [other_file, my_file])
+        self.assertEqual(record["files"][other_file]["mimetype"], "png")
+        self.assertEqual(record["files"][my_file]["mimetype"], "txt")
         
         # Test the signed variants 
         self.assertEqual("A", record["data"]["char"]["value"])

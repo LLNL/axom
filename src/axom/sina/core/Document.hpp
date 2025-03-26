@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,6 +24,9 @@
 #include "axom/sina/core/Record.hpp"
 #include "axom/sina/core/Relationship.hpp"
 #include "axom/json.hpp"
+
+#define SINA_FILE_FORMAT_VERSION_MAJOR 1
+#define SINA_FILE_FORMAT_VERSION_MINOR 0
 
 namespace axom
 {
@@ -85,6 +88,11 @@ const std::string slashSubstitute = "__SINA_SLASHREPLACE__";
  * You can also export your Document to file:
  * \code
  *   axom::sina::saveDocument(myDocument, "path/to/outfile.json")
+ * \endcode
+ *
+ * Check the Sina file format version with:
+ * \code
+ *   axom::sina::getSinaFileFormatVersion();
  * \endcode
  *
  */
@@ -220,6 +228,17 @@ private:
  * \throws std::ios::failure if there are any IO errors
  */
 void saveDocument(Document const &document, std::string const &fileName, Protocol protocol = Protocol::JSON);
+
+/**
+ * \brief Get the current file format version.
+ *
+ * \return A string representing the file format version.
+ */
+inline std::string getSinaFileFormatVersion()
+{
+  return std::to_string(SINA_FILE_FORMAT_VERSION_MAJOR) + "." +
+    std::to_string(SINA_FILE_FORMAT_VERSION_MINOR);
+}
 
 /**
  * \brief Load a document from the given path. Only records which this library

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,6 +7,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/Sorting.hpp"
 
 #include <algorithm>
 #include <random>
@@ -74,6 +75,45 @@ TEST(core_utilities, insertion_sort_doubles)
     for(int i = 0; i < NUM_DBLS - 1; i++)
     {
       ASSERT_LE(data[i], data[i + 1]);
+    }
+  }
+}
+
+TEST(core_utilities, qsort_sort_double)
+{
+  constexpr int NUM_ITERS = 1000;
+  constexpr int MAX_SIZE = 100;
+
+  // Run this for a few iterations to test that sorting works on different random shuffles.
+  for(int n = 1; n < MAX_SIZE; ++n)
+  {
+    std::vector<double> vec;
+    vec.resize(n);
+
+    for(int iter = 0; iter < NUM_ITERS; iter++)
+    {
+      // Fill it with random doubles in the range of [0, 1024)
+      std::generate_n(vec.data(), n, []() -> double {
+        return axom::utilities::random_real(0., 1024.);
+      });
+
+      // sort the first two iterations in descending/ascending order
+      if(iter == 0)
+      {
+        std::sort(vec.begin(), vec.end(), [](int a, int b) { return a > b; });
+      }
+      else if(iter == 1)
+      {
+        std::sort(vec.begin(), vec.end(), [](int a, int b) { return a < b; });
+      }
+
+      axom::utilities::Sorting<double, MAX_SIZE>::qsort(vec.data(), n);
+    }
+
+    // Check that the results are sorted
+    for(int i = 1; i < n; i++)
+    {
+      EXPECT_TRUE(vec[i - 1] <= vec[i]) << "data not sorted!";
     }
   }
 }

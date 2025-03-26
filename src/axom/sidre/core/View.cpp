@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -291,6 +291,45 @@ View* View::reallocate(const DataType& dtype)
   IndexType num_elems = dtype.number_of_elements();
   m_data_buffer->reallocate(num_elems);
   apply();
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Reshape an array View.
+ *
+ *************************************************************************
+ */
+View* View::reshapeArray(int ndims, const IndexType* shape)
+{
+  if(m_state != BUFFER && m_state != EXTERNAL)
+  {
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View can only reshape array states (BUFFER or EXTERNAL).");
+    return this;
+  }
+
+  IndexType newSize = shape[0];
+  for(int d = 1; d < ndims; ++d)
+  {
+    newSize *= shape[d];
+  }
+  if(newSize != getNumElements())
+  {
+    SLIC_WARNING(SIDRE_VIEW_LOG_PREPEND
+                 << "View reshape must not change the number of elements.");
+    return this;
+  }
+
+  // If View was applied before reshape, then reapply it.
+  const bool is_applied = m_is_applied;
+  describe(getTypeID(), ndims, shape);
+  if(is_applied)
+  {
+    apply();
+  }
 
   return this;
 }
@@ -1511,14 +1550,15 @@ View* View::importArrayNode(const Node& array)
       conduit::index_t num_ele = array_dtype.number_of_elements();
       conduit::index_t ele_bytes = DataType::default_bytes(array_dtype.id());
 
-      buff->allocate((TypeID)array_dtype.id(), num_ele);
+      int allocID = m_owning_group->getDefaultAllocatorID();
+      buff->allocate((TypeID)array_dtype.id(), num_ele, allocID);
 
       // copy the data in a way that matches
       // to compact representation of the buffer
       conduit::uint8* data_ptr = (conduit::uint8*)buff->getVoidPtr();
       for(conduit::index_t i = 0; i < num_ele; i++)
       {
-        memcpy(data_ptr, array.element_ptr(i), ele_bytes);
+        axom::copy(data_ptr, array.element_ptr(i), ele_bytes);
         data_ptr += ele_bytes;
       }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -114,7 +114,13 @@ class BitSet
 {
 public:
   using Index = int;
+
+#if(defined(__x86_64__) && defined(__GNUC__)) || \
+  (defined(_WIN64) && (_MSC_VER >= 1600))
   using Word = std::uint64_t;
+#else
+  using Word = std::uint32_t;
+#endif
 
   // TODO: update using a policy
   using ArrayType = axom::Array<Word, 1>;

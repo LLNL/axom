@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -634,7 +634,7 @@ TEST(primal_integral, bezierpatch_sphere)
                                    Vector3D(sphere_faces[0].evaluate(0.6, 0))};
 
   const double quad_tol = 1e-5;
-  const double EPS = 1e-10;
+  const double EPS = 1e-11;
 
   const double edge_tol = 1e-6;
   const double edge_offset = 1e-5;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,7 +15,6 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/Segment.hpp"
@@ -1862,15 +1861,16 @@ public:
   }
 
   /*!
-   * \brief Predicate to check if the Bezier patch is approximately planar
+   * \brief Predicate to check if the Bezier patch is approximately planar (i.e. flat)
    *
    * This function checks if all control points of the BezierPatch
    * are approximately on the plane defined by its four corners
    *
-   * \param [in] tol Threshold for sum of squared distances
-   * \return True if c1 is near-planar
+   * \param [in] sq_tol Threshold for sum of squared distances
+   * \param [in] EPS Threshold for nearness to zero
+   * \return True if the object is planar up to tolerance \a sq_tol
    */
-  bool isPlanar(double tol = 1E-8) const
+  bool isPlanar(double sq_tol = 1e-8, double EPS = 1e-8) const
   {
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
@@ -1895,49 +1895,51 @@ public:
     if(!axom::utilities::isNearlyEqual(
          VectorType::scalar_triple_product(v1, v2, v3),
          0.0,
-         tol))
+         EPS))
     {
       return false;
     }
 
     // Find three points that produce a nonzero normal
     Vector3D plane_normal = VectorType::cross_product(v1, v2);
-    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, EPS))
     {
       plane_normal = VectorType::cross_product(v1, v3);
     }
-    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, tol))
+    if(axom::utilities::isNearlyEqual(plane_normal.norm(), 0.0, EPS))
     {
       plane_normal = VectorType::cross_product(v2, v3);
     }
     plane_normal = plane_normal.unitVector();
 
-    double sqDist = 0.0;
-
     // Check all control points for simplicity
-    for(int p = 0; p <= ord_u && sqDist <= tol; ++p)
+    for(int p = 0; p <= ord_u; ++p)
     {
-      for(int q = ((p == 0) ? 1 : 0); q <= ord_v && sqDist <= tol; ++q)
+      for(int q = ((p == 0) ? 1 : 0); q <= ord_v; ++q)
       {
         const double signedDist =
           plane_normal.dot(m_controlPoints(p, q) - m_controlPoints(0, 0));
-        sqDist += signedDist * signedDist;
+
+        if(signedDist * signedDist > sq_tol)
+        {
+          return false;
+        }
       }
     }
-
-    return (sqDist <= tol);
+    return true;
   }
 
   /*!
    * \brief Predicate to check if the patch can be approximated by a polygon
    *
    * This function checks if a BezierPatch lies in a plane
-   *  and that the edged are linear up to tolerance `tol`
+   *  and that the edges are linear up to tolerance `sq_tol`
    *
    * \param [in] tol Threshold for sum of squared distances
-   * \return True if c1 is near-planar-polygonal
+   * \param [in] EPS Threshold for nearness to zero
+   * \return True if c1 is planar-polygonal up to tolerance \a sq_tol
    */
-  bool isPolygonal(double tol = 1E-8) const
+  bool isPolygonal(double sq_tol = 1e-8, double EPS = 1e-8) const
   {
     const int ord_u = getOrder_u();
     const int ord_v = getOrder_v();
@@ -1956,27 +1958,123 @@ public:
     }
 
     // Check if the patch is planar
-    if(!isPlanar(tol))
+    if(!isPlanar(sq_tol, EPS))
     {
       return false;
     }
 
     // Check if each bounding curve is linear
-    if(!isocurve_u(0).isLinear(tol))
+    if(!isocurve_u(0).isLinear(sq_tol))
     {
       return false;
     }
-    if(!isocurve_v(0).isLinear(tol))
+    if(!isocurve_v(0).isLinear(sq_tol))
     {
       return false;
     }
-    if(!isocurve_u(1).isLinear(tol))
+    if(!isocurve_u(1).isLinear(sq_tol))
     {
       return false;
     }
-    if(!isocurve_v(1).isLinear(tol))
+    if(!isocurve_v(1).isLinear(sq_tol))
     {
       return false;
+    }
+
+    return true;
+  }
+
+  /*!
+   * \brief Predicate to check if the Bezier patch is approximately bilinear
+   *
+   * This function checks if the patch is (nearly) bilinear.
+   * A necessary condition for a geometrically bilinear patch is that each line of
+   *  control points in the net is approximately linear. 
+   * A necessary condition for a parametrically bilinear patch is that the control
+   *  points are coincident with the surface of the bilinear patch defined by
+   *  its corners evaluated at uniform parameter values, 
+   *  i.e. the control points are also equally spaced on the net.
+   *
+   * \param [in] sq_tol Threshold for absolute squared distances
+   * \param [in] useStrictBilinear If true, require the patch be parametrically bilinear
+   * \return True if patch is bilinear up to tolerance \a sq_tol
+   */
+  bool isBilinear(double sq_tol = 1e-8, bool useStrictBilinear = false) const
+  {
+    const int ord_u = getOrder_u();
+    const int ord_v = getOrder_v();
+
+    if(ord_u <= 1 && ord_v <= 1)
+    {
+      return true;
+    }
+
+    if(useStrictBilinear)
+    {
+      // Anonymous function to evaluate the bilinear patch defined by the corners
+      auto bilinear_patch = [&](T u, T v) -> PointType {
+        PointType val;
+        for(int N = 0; N < NDIMS; ++N)
+        {
+          val[N] = axom::utilities::lerp(
+            axom::utilities::lerp(m_controlPoints(0, 0)[N],
+                                  m_controlPoints(0, ord_v)[N],
+                                  v),
+            axom::utilities::lerp(m_controlPoints(ord_u, 0)[N],
+                                  m_controlPoints(ord_u, ord_v)[N],
+                                  v),
+            u);
+        }
+        return val;
+      };
+
+      for(int u = 0; u <= ord_u; ++u)
+      {
+        for(int v = 0; v <= ord_v; ++v)
+        {
+          // Don't need to check the corners
+          if((u == 0 && v == 0) || (u == 0 && v == ord_v) ||
+             (u == ord_u && v == 0) || (u == ord_u && v == ord_v))
+          {
+            continue;
+          }
+
+          // Evaluate where the control point would be if the patch *was* bilinear
+          PointType bilinear_point =
+            bilinear_patch(u / static_cast<T>(ord_u), v / static_cast<T>(ord_v));
+
+          if(squared_distance(m_controlPoints(u, v), bilinear_point) > sq_tol)
+          {
+            return false;
+          }
+        }
+      }
+    }
+    else
+    {
+      for(int p = 0; p <= ord_u; ++p)
+      {
+        Segment<T, 3> seg(m_controlPoints(p, 0), m_controlPoints(p, ord_v));
+        for(int q = 1; q < ord_v; ++q)
+        {
+          if(squared_distance(m_controlPoints(p, q), seg))
+          {
+            return false;
+          }
+        }
+      }
+
+      for(int q = 0; q <= ord_v; ++q)
+      {
+        Segment<T, 3> seg(m_controlPoints(0, q), m_controlPoints(ord_u, q));
+        for(int p = 1; p < ord_u; ++p)
+        {
+          if(squared_distance(m_controlPoints(p, q), seg))
+          {
+            return false;
+          }
+        }
+      }
     }
 
     return true;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -322,9 +322,9 @@ private:
 
     // Fit as many bits as possible per dimension into an int64, i.e. floor(63/DIM)
     constexpr QuantizedCoordType shift_bits = (DIM == 2) ? 31 : 21;
-    primal::NumericArray<QuantizedCoordType, DIM> res(
-      static_cast<QuantizedCoordType>(1) << shift_bits,
-      DIM);
+    NumericArray<QuantizedCoordType, DIM> res(static_cast<QuantizedCoordType>(1)
+                                                << shift_bits,
+                                              DIM);
     auto quantizer =
       spin::rectangular_lattice_from_bounding_box<DIM, CoordType, QuantizedCoordType>(
         bb,

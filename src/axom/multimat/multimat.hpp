@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -549,8 +549,10 @@ public:
   void convertFieldToCellDom(int field_idx);
   DataLayout getFieldDataLayout(int field_idx) const;
 
+  std::string getFieldMappingAsString(int field_idx) const;
   std::string getFieldDataLayoutAsString(int field_idx) const;
   std::string getFieldSparsityLayoutAsString(int field_idx) const;
+  std::string getFieldDataTypeAsString(int field_idx) const;
 
   /** Convert the data to be stored in the specified layout. **/
   void convertLayout(DataLayout, SparsityLayout);
@@ -574,6 +576,19 @@ public:
   FieldMapping getFieldMapping(int field_idx) const
   {
     return m_fieldMappingVec[field_idx];
+  }
+
+  /**
+   * \brief Get the DataType for a field.
+   *
+   * A DataTypeSupported for a field indicates the underlying supported data
+   * type (e.g. double).
+   *
+   * \param field_idx the index of the field
+   */
+  DataTypeSupported getFieldDataType(int field_idx) const
+  {
+    return m_dataTypeVec[field_idx];
   }
 
   //Dynamic mode functions
@@ -1312,6 +1327,12 @@ BSet MultiMat::getCompatibleBivarSet(int fieldIdx) const
 
   return *ptr;
 }
+
+// Output operators.
+std::ostream& operator<<(std::ostream& os, FieldMapping mapping);
+std::ostream& operator<<(std::ostream& os, DataLayout layout);
+std::ostream& operator<<(std::ostream& os, SparsityLayout sparsity);
+std::ostream& operator<<(std::ostream& os, DataTypeSupported type);
 
 }  //end namespace multimat
 }  //end namespace axom

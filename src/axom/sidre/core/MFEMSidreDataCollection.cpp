@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -953,18 +953,58 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   }
 }
 
-void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
+void MFEMSidreDataCollection::LoadExternalData(const std::string& filename,
+                                               const std::string& group_name)
 {
+  // Use the user-provided group name or the DataCollection's base group
+  Group* grp = m_bp_grp->getDataStore()->getRoot();
+  if(!group_name.empty())
+  {
+  #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
+    if(m_comm != MPI_COMM_NULL)
+    {
+      SLIC_ERROR(
+        "Loading external data with a group name is not supported in "
+        "parallel.");
+    }
+  #endif
+
+    SLIC_ERROR_IF(!m_bp_grp->hasGroup(group_name),
+                  axom::fmt::format(
+                    "MFEMSidreDataCollection does not have a Sidre Group '{}'",
+                    group_name));
+    grp = m_bp_grp->getGroup(group_name);
+  }
+
+  // Use the user-provided file name or the DataCollection's file name
+  std::string path = name;
+  if(!filename.empty())
+  {
+    path = filename;
+  }
+  path = get_file_path(path);
+
   #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if(m_comm != MPI_COMM_NULL)
   {
+    // The conduit abstraction appears to automatically handle the ".root"
+    // suffix, but the IOManager does not, so it gets added here
+    using axom::utilities::string::endsWith;
+    std::string suffixedPath = endsWith(path, ".root") ? path : path + ".root";
     IOManager reader(m_comm);
-    reader.loadExternalData(m_bp_grp->getDataStore()->getRoot(), path);
+    reader.loadExternalData(grp, suffixedPath);
   }
   else
   #endif
   {
-    m_bp_grp->loadExternalData(path);
+    if(!group_name.empty())
+    {
+      grp->loadExternalData(path);
+    }
+    else
+    {
+      m_bp_grp->loadExternalData(path);
+    }
   }
 }
 
@@ -1187,7 +1227,7 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
       // Root file support only available in hdf5.
       else
       {
-        writer.write(blueprint_indicies_grp, 1, file_path + ".root", protocol);
+        blueprint_indicies_grp->save(file_path + ".root", protocol);
       }
     }
   }

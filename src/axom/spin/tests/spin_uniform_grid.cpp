@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -582,7 +582,7 @@ public:
   std::unique_ptr<DynamicUniformGridType> constructUniformGridDynamic()
   {
     const int res_raw[3] = {2, 3, 4};
-    const axom::primal::NumericArray<int, DIM> resolution(res_raw);
+    const axom::NumericArray<int, DIM> resolution(res_raw);
     return std::make_unique<DynamicUniformGridType>(resolution,
                                                     m_boundingBoxes.view(),
                                                     m_iota.view(),
@@ -592,7 +592,7 @@ public:
   std::unique_ptr<FlatUniformGridType> constructUniformGridFlat()
   {
     const int res_raw[3] = {2, 3, 4};
-    const axom::primal::NumericArray<int, DIM> resolution(res_raw);
+    const axom::NumericArray<int, DIM> resolution(res_raw);
     return std::make_unique<FlatUniformGridType>(resolution,
                                                  m_boundingBoxes.view(),
                                                  m_iota.view(),

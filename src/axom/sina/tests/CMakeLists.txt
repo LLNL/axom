@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -98,22 +98,19 @@ endif()
 #------------------------------------------------------------------------------
 # Add fortran integration test
 #------------------------------------------------------------------------------
-if (ENABLE_FORTRAN)
-    find_package(Python REQUIRED COMPONENTS Interpreter)
-    if (Python_FOUND)
-        configure_file(
-            ${CMAKE_SOURCE_DIR}/axom/sina/tests/test_fortran_integration.py
-            ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py
-            COPYONLY
-        )
-        configure_file(
-            ${CMAKE_SOURCE_DIR}/axom/sina/interface/sina_schema.json
-            ${TEST_OUTPUT_DIRECTORY}/sina_schema.json
-            COPYONLY
-        )
+if (ENABLE_FORTRAN AND DEFINED PYTHON_EXECUTABLE)
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/axom/sina/tests/test_fortran_integration.py
+        ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py
+        COPYONLY
+    )
+    configure_file(
+        ${CMAKE_SOURCE_DIR}/axom/sina/interface/sina_schema.json
+        ${TEST_OUTPUT_DIRECTORY}/sina_schema.json
+        COPYONLY
+    )
 
-        axom_add_test( NAME     sina_fortran_integration_test
-                    COMMAND  ${Python_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR}
-        )
-    endif()
+    axom_add_test( NAME     sina_fortran_integration_test
+                COMMAND  ${PYTHON_EXECUTABLE} ${TEST_OUTPUT_DIRECTORY}/test_fortran_integration.py -bd ${PROJECT_BINARY_DIR}
+    )
 endif()

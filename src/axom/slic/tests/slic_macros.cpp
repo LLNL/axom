@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -323,6 +323,7 @@ TEST(slic_macros, test_debug_macros)
 #else
   // SLIC_DEBUG macros only log messages when AXOM_DEBUG is defined
   EXPECT_TRUE(slic::internal::is_stream_empty());
+  AXOM_UNUSED_VAR(expected_line_number);
 #endif
 
   // is root, but conditional is false -> no message
@@ -355,6 +356,7 @@ TEST(slic_macros, test_assert_macros)
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 
@@ -374,6 +376,7 @@ TEST(slic_macros, test_assert_macros)
 #else
   // SLIC_ASSERT macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 }
@@ -397,6 +400,7 @@ TEST(slic_macros, test_check_macros)
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 
@@ -416,6 +420,7 @@ TEST(slic_macros, test_check_macros)
 #else
   // SLIC_CHECK macros only log messages when AXOM_DEBUG is defined
   AXOM_UNUSED_VAR(val);
+  AXOM_UNUSED_VAR(expected_line_number);
   EXPECT_TRUE(slic::internal::is_stream_empty());
 #endif
 }

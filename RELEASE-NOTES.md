@@ -1,6 +1,6 @@
 
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2025, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -20,18 +20,76 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ###  Added
+- Added a new "Mir" Axom component for accelerated Material Interface Reconstruction (MIR) algorithms.
+  MIR algorithms take Blueprint meshes with a matset and they use the matset's material information
+  to split any input zones that contain multiple materials into zones that contain a single material.
+  The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
+  oriented algorithm that produces smooth interfaces between zones and their neighbors.
+- Support in `quest::IntersectionShaper` for Blueprint mesh stored in a `conduit::Node`
+  or `sidre::Group`.
+- Adds new CMake configuration options, `AXOM_ENABLE_ASAN` and `AXOM_ENABLE_UBSAN`, to enable/disable AddressSanitizer and UndefinedBehaviorSanitizer respectively in Axom. Default is OFF for both.
+- A number of new `klee::Geometry` constructors are added, for the different shapes now supported.
+  This is a temporary change.  The class will be subclassed in the future to support a diversity of geometries.
+- Support some analytical shapes in `IntersectionShaper`.
+- Support generating shapes in memory (not requiring input files).
+- `sidre::View` holding array data may now be re-shaped.  See `sidre::View::reshapeArray`.
+- Sina C++ library is now a component of Axom
+- Adds optional dependency on [Open Cascade](https://dev.opencascade.org). The initial intention is 
+to use Open Cascade's file I/O capabilities in support of Quest applications.
+- Adds `primal::NURBSCurve` and `primal::NURBSPatch` classes, supported by `primal::KnotVector`.
+- Adds a Quest example that reads in a STEP file using Open Cascade and processes its geometry
+- Adds a piecewise method to load external data using `sidre::IOManager`.  This adds new overloaded methods
+  of `loadExternalData` in `sidre::IOManager` and `sidre::Group`.
+- Adds intersection routines between `primal::Ray` objects and `primal::NURBSCurve`/`primal::NURBSPatch` objects.
+- Adds LineFileTagCombiner to Lumberjack to allow combining messages if line number, file, and tag are equal.
+- Adds some support for 2D shaping in `quest::IntersectionShaper`, using STL meshes with zero for z-coordinates or in-memory triangles as input.
+- Adds ability in Lumberjack to own and set communicators.
+- Adds `NonCollectiveRootCommunicator` to Lumberjack to provide an MPI-based communicator for logging messages non-collectively.
 
 ###  Changed
+- `primal::NumericArray` has been moved to `core`.  The header is `core/NumericArray.hpp`.
+- `quest::Shaper` and `quest::IntersectionShaper` constructors require a runtime policy.
+  Changing the policy after construction is no longer supported.
+- Importing Conduit array data into `sidre::View` now allocates destination
+  data using the `View`'s parent's allocator ID, instead of always using
+  host memory.  This is consistent with the behavior of deep-copying data
+  from Sidre.
+- ItemCollection and its child classes MapCollection, ListCollection, and IndexedCollection were moved from Sidre
+  to core.  The namespace prefix for these classes is now `axom::` instead of `axom::sidre`.  The internal usage of
+  these types within Sidre Datastore and Group is unchanged.
+- `MFEMSidreDataCollection::LoadExternalData` now takes two optional string parameters, one that is a
+  filename (defaults to the `name` member variable) and the other is a `Group` path relative to the base of
+  the Data Collection itself (defaults to the root of the `DataStore`).
+- `SLIC_ASSERT`,`SLIC_ASSERT_MSG`,`SLIC_CHECK`, and `SLIC_CHECK_MSG` macros delegate to assert() within HIP device kernels.
 
 ###  Deprecated
 
 ###  Removed
 
 ###  Fixed
-- Added a guard for sidre-related mint API usage in a quest example
+- Fixes compilation issue with RAJA@2024.07 on 32-bit Windows configurations. 
+  This required a [RAJA fix to avoid 64-bit intrinsics](https://github.com/LLNL/RAJA/pull/1746), 
+  as well as support for 32-bit `Word`s in Slam's `BitSet` class.
+- Minor bugfix to `primal::intersect(segment, ray)` to better handle cases when segment and ray overlap.
+- Fixes a memory leak in `axom::Array` copy constructor.
+- Fixes robustness issue with the `axom::primal::clip` overload for clipping a 2D polygon against another 2D polygon.
+
+## [Version 0.10.1] - Release date 2024-10-22
+
+###  Added
+- Constructor to Axom BVH that avoids an unnecessary copy of each bounding box.
+
+###  Fixed
+- Issue with uninitialized state in axom::Array class was causing
+  host-initialization of device-allocated memory in certain situations. This
+  could cause warnings about uninitialized memory or crashes in the axom::Array
+  constructor.
+- Added a guard for sidre-related mint API usage in a quest example.
 - Removed `std::ends` usage from `SLIC_ASSERT`,`SLIC_ASSERT_MSG`,`SLIC_CHECK`,
   and `SLIC_CHECK_MSG` macros that prevented Lumberjack from combining
   messages.
+- Some line numbers linking file contents into the Axom Quickstart Guide were
+  incorrect causing the docs to appear incomplete.
 
 
 ## [Version 0.10.0] - Release date 2024-09-27
@@ -45,7 +103,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Primal: Adds `Polygon::reverseOrientation()` to reverse orientation of
   a polygon in-place.
 - Adds `StaticArray`, a wrapper for `StackArray` with a size member variable.
-- Multidimenional `core::Array` supports column-major and arbitrary stride ordering,
+- Multidimensional `core::Array` supports column-major and arbitrary stride ordering,
   in addition to the default row-major ordering.
 - Adds new `PolygonArray` and `MAX_VERTS` template parameters to `primal::Polygon` for dynamic
   or static allocation.
@@ -1116,7 +1174,8 @@ fractions for the associated materials must be supplied before shaping.
 - Use this section in case of vulnerabilities
 
 
-[Unreleased]:     https://github.com/LLNL/axom/compare/v0.10.0...develop
+[Unreleased]:     https://github.com/LLNL/axom/compare/v0.10.1...develop
+[Version 0.10.1]: https://github.com/LLNL/axom/compare/v0.10.0...v0.10.1
 [Version 0.10.0]: https://github.com/LLNL/axom/compare/v0.9.0...v0.10.0
 [Version 0.9.0]:  https://github.com/LLNL/axom/compare/v0.8.1...v0.9.0
 [Version 0.8.1]:  https://github.com/LLNL/axom/compare/v0.8.0...v0.8.1

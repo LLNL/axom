@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,6 +22,18 @@ namespace utilities
 {
 #define INFO_BUFFER_SIZE 32767
 
+#ifdef WIN32
+std::string TCharToString(TCHAR* buf)
+{
+  #ifndef UNICODE
+  return std::string(buf);
+  #else
+  const auto wStr = std::wstring(buf);
+  return std::string(wStr.begin(), wStr.end());
+  #endif
+}
+#endif
+
 std::string getHostName()
 {
   std::string hostName = "";
@@ -38,7 +50,7 @@ std::string getHostName()
   DWORD bufCharCount = INFO_BUFFER_SIZE;
   if(GetComputerName(infoBuf, &bufCharCount))
   {
-    hostName = std::string(infoBuf);
+    hostName = TCharToString(infoBuf);
   }
 #else
   if(gethostname(infoBuf, INFO_BUFFER_SIZE) == 0)
@@ -66,7 +78,7 @@ std::string getUserName()
   DWORD bufCharCount = INFO_BUFFER_SIZE;
   if(GetUserName(infoBuf, &bufCharCount))
   {
-    userName = std::string(infoBuf);
+    userName = TCharToString(infoBuf);
   }
 #else
   if(getlogin_r(infoBuf, INFO_BUFFER_SIZE) == 0)

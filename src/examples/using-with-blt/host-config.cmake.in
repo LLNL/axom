@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -46,6 +46,7 @@ endif()
 set(ENABLE_HIP                @ENABLE_HIP@                  CACHE BOOL "")
 
 if(ENABLE_HIP)
+  set(ROCM_PATH                 "@ROCM_PATH@"                 CACHE PATH "")
   set(HIP_ROOT_DIR              "@HIP_ROOT_DIR@"              CACHE PATH "")
   set(HIP_CLANG_PATH            "@HIP_CLANG_PATH@"            CACHE PATH "")
   set(CMAKE_HIP_ARCHITECTURES   "@CMAKE_HIP_ARCHITECTURES@"   CACHE STRING "")

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -65,10 +65,11 @@ IDField::IDField(ID value_, std::string localName_, std::string globalName_)
 IDField::IDField(conduit::Node const &parentObject,
                  std::string localName_,
                  std::string globalName_)
-  : IDField {extractIDFromObject(parentObject, localName_, globalName_),
-             std::move(localName_),
-             std::move(globalName_)}
-{ }
+  : value(extractIDFromObject(parentObject, localName_, globalName_))
+{
+  std::swap(localName, localName_);
+  std::swap(globalName, globalName_);
+}
 
 void IDField::addTo(conduit::Node &object) const
 {

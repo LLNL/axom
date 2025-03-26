@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -41,14 +41,20 @@ std::vector<int> testSizes()
 {
   std::vector<int> vals;
 
-  vals.push_back(0);     // empty bitset
-  vals.push_back(23);    // less than one word
-  vals.push_back(63);    // one bit less than a word
-  vals.push_back(64);    // exactly one word
-  vals.push_back(65);    // one bit more than a word
-  vals.push_back(128);   // two words
-  vals.push_back(153);   // more than two words
+  vals.push_back(0);    // empty bitset
+  vals.push_back(23);   // less than one word
+  vals.push_back(31);   // one bit less than a 4-byte word
+  vals.push_back(32);   // exactly one 4-byte word
+  vals.push_back(33);   // one bit more than a 4-byte word
+  vals.push_back(63);   // one bit less than an 8-byte word
+  vals.push_back(64);   // exactly one 8-byte word
+  vals.push_back(65);   // one bit more than an 8-byte word
+  vals.push_back(127);  // one bit less than two words
+  vals.push_back(128);  // two words
+  vals.push_back(129);  // more than two words
+  vals.push_back(153);
   vals.push_back(1547);  // large bitset
+  //vals.push_back(1234567);  // large bitset
 
   return vals;
 }
@@ -243,6 +249,66 @@ TEST_P(SlamBitSet, iterator)
 
     EXPECT_EQ(bitset.count(), numFound);
   }
+}
+
+TEST_P(SlamBitSet, atomicOps)
+{
+  using Index = slam::BitSet::Index;
+  const int NBITS = GetParam();
+  const Index STRIDE = 5;
+  const Index OFFSET = 2;
+
+  SLIC_INFO("Testing atomic ops on bitset (" << NBITS << " bits)");
+
+  // Construct the first bitset and check validity
+  slam::BitSet bitset1 = generateBitset(NBITS, STRIDE, OFFSET);
+  EXPECT_TRUE(bitset1.isValid());
+  EXPECT_EQ(NBITS, bitset1.size());
+
+  // Construct the second bitset from the first
+  slam::BitSet bitset2(NBITS);
+  for(Index i = 0; i < NBITS; ++i)
+  {
+    if(bitset1.test(i))
+    {
+      bitset2.atomicSet(i);
+    }
+    else
+    {
+      bitset2.atomicClear(i);
+    }
+  }
+  EXPECT_TRUE(bitset2.isValid());
+  EXPECT_EQ(NBITS, bitset2.size());
+
+  // Check for equality
+  EXPECT_EQ(bitset1.count(), bitset2.count());
+  EXPECT_EQ(bitset1, bitset2);
+
+  // Apply several atomic operations w/ checks
+  for(int i = 0; i < NBITS; ++i)
+  {
+    EXPECT_EQ(bitset1.test(i), bitset2.test(i));
+
+    bitset2.atomicFlip(i);
+    EXPECT_NE(bitset1.test(i), bitset2.test(i));
+
+    bitset1.flip(i);
+    EXPECT_EQ(bitset1.test(i), bitset2.test(i));
+
+    bitset2.atomicClear(i);
+    EXPECT_FALSE(bitset2.test(i));
+
+    bitset2.atomicSet(i);
+    EXPECT_TRUE(bitset2.test(i));
+
+    bitset2.atomicClear(i);
+    EXPECT_FALSE(bitset2.test(i));
+  }
+
+  bitset1.clear();
+  EXPECT_EQ(bitset1.count(), bitset2.count());
+  EXPECT_EQ(bitset1, bitset2);
 }
 
 TEST_P(SlamBitSet, unionOperator)

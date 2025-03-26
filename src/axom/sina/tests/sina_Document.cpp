@@ -1,6 +1,4 @@
-
-
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,6 +12,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/sina/core/Document.hpp"
 #include "axom/sina/core/Run.hpp"
 #include "axom/json.hpp"
@@ -368,7 +367,10 @@ NamedTempFile::NamedTempFile()
   fileName = tmpFileName.data();
 }
 
-NamedTempFile::~NamedTempFile() { std::remove(fileName.data()); }
+NamedTempFile::~NamedTempFile()
+{
+  axom::utilities::filesystem::removeFile(fileName.data());
+}
 
 
 TEST(Document, create_fromJson_roundtrip_json)

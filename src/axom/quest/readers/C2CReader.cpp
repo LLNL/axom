@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -550,8 +550,8 @@ struct NURBSInterpolator
       for(int i = 1; i <= k; i++)
       {
         auto bin = axom::utilities::binomialCoefficient(k, i);
-        v[0] = v[0] - bin * wders[i] * CK[k - 1][0];
-        v[1] = v[1] - bin * wders[i] * CK[k - 1][1];
+        v[0] = v[0] - bin * wders[i] * CK[k - i][0];
+        v[1] = v[1] - bin * wders[i] * CK[k - i][1];
       }
       CK[k][0] = v[0] / wders[0];
       CK[k][1] = v[1] / wders[0];

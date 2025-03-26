@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -217,6 +217,11 @@ spack:
       externals:
       - spec: ghostscript@9.25
         prefix: /usr
+    git:
+      buildable: false
+      externals:
+      - spec: git@2.45.0
+        prefix: /usr/tce/packages/git/git-2.45.0
     gmake:
       buildable: false
       externals:
@@ -278,6 +283,34 @@ spack:
       - spec: zlib@1.2.7
         prefix: /usr
 
+    # External dependencies for opencascade
+    # Couldn't find the exact versions for the libx* libraries, so copied from toss4 versions
+    mesa:
+      buildable: False
+      externals:
+      - spec: mesa@18.3.4  # found via: glxinfo | grep -i version
+        prefix: /
+    libxi:
+      buildable: False
+      externals:
+      - spec: libxi@1.7.10
+        prefix: /
+    libxt:
+      buildable: False
+      externals:
+      - spec: libxt@1.1.5
+        prefix: /
+    libxext:
+      buildable: False
+      externals:
+      - spec: libxext@1.3.4
+        prefix: /
+    libxmu:
+      buildable: False
+      externals:
+      - spec: libxmu@1.1.3
+        prefix: /
+
     # External dependencies for SCR
     lsf:
       buildable: False
@@ -317,6 +350,10 @@ spack:
       version: [2.24.0]
     mfem:
       require: "@4.6.0"
+    opencascade:
+      require: "@7.8.1+data_exchange~draw"
+    py-jsonschema:
+      require: "@:4.17" #Anything after this requires py-rpds which requires rust and adds 40 minutes
     raja:
       require: "@2024.07.0~shared~examples~exercises"
     scr:

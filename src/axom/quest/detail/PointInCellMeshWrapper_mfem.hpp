@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -324,12 +324,12 @@ public:
     // Set up the inverse element transformation
     InvTransform invTrans(&tr);
 
+    SLIC_DEBUG_IF(m_printLevel >= 0, "Checking element " << eltIdx);
+
     invTrans.SetPrintLevel(m_printLevel);
     invTrans.SetInitialGuessType(m_initGuessType);
     invTrans.SetInitGuessRelOrder(m_grid_order);
     invTrans.SetSolverType(m_solverType);
-
-    SLIC_DEBUG_IF(m_printLevel >= 0, "Checking element " << eltIdx);
 
     // Status codes: {0 -> successful; 1 -> outside elt; 2-> did not converge}
     int err = invTrans.Transform(ptSpace, ipRef);
@@ -408,12 +408,13 @@ private:
     }
 
     // Output some information
-    SLIC_DEBUG("Mesh nodes fec -- "
-               << nodalFEColl->Name() << " with ordering "
-               << nodalFESpace->GetOrdering()
-               << "\n\t -- Positive nodes are fec -- "
-               << positiveNodes->FESpace()->FEColl()->Name()
-               << " with ordering " << positiveNodes->FESpace()->GetOrdering());
+    SLIC_DEBUG_ROOT("Mesh nodes fec -- "
+                    << nodalFEColl->Name() << " with ordering "
+                    << nodalFESpace->GetOrdering()
+                    << "\n\t -- Positive nodes are fec -- "
+                    << positiveNodes->FESpace()->FEColl()->Name()
+                    << " with ordering "
+                    << positiveNodes->FESpace()->GetOrdering());
 
     /// For each element, compute bounding box, and overall mesh bbox
     mfem::Array<int> dofIndices;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "benchmark/benchmark_api.h"
+#include "benchmark/benchmark.h"
 #include "axom/slic.hpp"
 
 #include "axom/slam/policies/SizePolicies.hpp"
@@ -19,8 +19,8 @@ namespace
 {
 namespace slam = axom::slam;
 
-const int STRIDE = 7;
-const int OFFSET = 12;
+// constexpr int STRIDE = 7;
+// constexpr int OFFSET = 12;
 
 using IndexType = int;
 using IndexArray = IndexType*;
@@ -131,7 +131,7 @@ template <int SZ>
 void positionSet_compileTimeSize(benchmark::State& state)
 {
   using StaticSetSize = slam::policies::CompileTimeSize<int, SZ>;
-  using SetType = slam::OrderedSet<StaticSetSize>;
+  using SetType = slam::OrderedSet<int, int, StaticSetSize>;
   SetType set(SZ);
 
   while(state.KeepRunning())
@@ -173,7 +173,7 @@ BENCHMARK_TEMPLATE(positionSet_runtimeTimeSize_template, S3);
 void positionSet_runtimeTimeSize_function(benchmark::State& state)
 {
   using SetType = slam::OrderedSet<>;
-  SetType set(state.range_x());
+  SetType set(state.range(0));
 
   while(state.KeepRunning())
   {
@@ -190,7 +190,7 @@ BENCHMARK(positionSet_runtimeTimeSize_function)->Apply(CustomArgs);
 void positionSet_runtimeTimeSize_function_sizeOutside(benchmark::State& state)
 {
   using SetType = slam::OrderedSet<>;
-  SetType set(state.range_x());
+  SetType set(state.range(0));
 
   const int sz = set.size();
   while(state.KeepRunning())
@@ -208,7 +208,7 @@ BENCHMARK(positionSet_runtimeTimeSize_function_sizeOutside)->Apply(CustomArgs);
 void positionSet_runtimeTimeSize_function_volatileSizeOutside(benchmark::State& state)
 {
   using SetType = slam::OrderedSet<>;
-  SetType set(state.range_x());
+  SetType set(state.range(0));
 
   volatile int sz = set.size();
   while(state.KeepRunning())
@@ -227,7 +227,7 @@ void positionSet_runtimeTimeSize_iter(benchmark::State& state)
 {
   using SetType = slam::OrderedSet<>;
   using SetIter = SetType::iterator;
-  SetType set(state.range_x());
+  SetType set(state.range(0));
 
   while(state.KeepRunning())
   {
