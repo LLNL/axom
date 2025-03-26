@@ -356,9 +356,6 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # These flags are already part of the wrapped compilers on TOSS4 systems
             if spec.satisfies("+fortran") and self.is_fortran_compiler("amdflang"):
 
-                # Only amdclang requires this path; cray compiler fails if this is included
-                hip_link_flags += "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
-
                 hip_link_flags += "-Wl,--disable-new-dtags "
 
                 if spec.satisfies("^hip@6.0.0:"):
@@ -367,6 +364,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     )
                 else:
                     hip_link_flags += "-L{0}/llvm/lib -Wl,-rpath,{0}/llvm/lib ".format(rocm_root)
+
+                # Only amdclang requires this path; cray compiler fails if this is included
+                hip_link_flags += "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
+
                 hip_link_flags += "-lpgmath -lflang -lflangrti -lompstub "
 
             # Additional library path for cray compiler
