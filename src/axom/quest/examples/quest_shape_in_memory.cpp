@@ -1606,8 +1606,6 @@ int main(int argc, char** argv)
                 "-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION.");
 #endif
 
-axom::sidre::View* connView = nullptr;
-conduit::Node* connNode = nullptr;
 conduit::Node* topoCoordsetNode = nullptr;
   if(params.useBlueprintSidre() || params.useBlueprintConduit())
   {
@@ -1615,7 +1613,6 @@ conduit::Node* topoCoordsetNode = nullptr;
     compMeshGrp->setDefaultAllocator(arrayAllocId);
 
     createBoxMesh(compMeshGrp);
-connView = compMeshGrp->getView("topologies/" + topoName + "/elements/connectivity");
 
     // Move memory to standard allocators.
     compMeshGrp->reallocateTo(viewToStandardAllocator);
@@ -1652,14 +1649,7 @@ connView = compMeshGrp->getView("topologies/" + topoName + "/elements/connectivi
       so that any change in one is reflected in the other.
     */
     compMeshNode = std::make_shared<conduit::Node>();
-axom::sidre::View* topoCoordsetView = compMeshGrp->getView("topologies/" + topoName + "/coordset");
-std::string t = topoCoordsetView->getString();
     compMeshGrp->createNativeLayout(*compMeshNode);
-connNode = &(compMeshNode->fetch_existing("topologies/" + topoName + "/elements/connectivity"));
-topoCoordsetNode = &(compMeshNode->fetch_existing("topologies/" + topoName + "/coordset"));
-std::string s = topoCoordsetNode->to_string();
-topoCoordsetNode->print();
-std::cout << s << std::endl;
     SLIC_INFO(axom::fmt::format("{:-^80}", "Generated Blueprint mesh"));
     cellCount = params.getBoxCellCount();
   }

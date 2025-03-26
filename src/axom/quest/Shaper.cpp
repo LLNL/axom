@@ -112,14 +112,13 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   m_bpGrp = m_dataStore.getRoot()->createGroup("internalGrp");
   m_bpGrp->setDefaultAllocator(m_allocatorId);
 
-  // This importConduitTreeExternal is bad.  We want to shallow-copy the array data, but not the scalars and strings.
+  m_bpGrp->importConduitTreeExternal(bpNode);
   /*
     Whether View data should live on host or another allocator (like device data).
     Return the "right" choice based on View type, using a heuristic.
     as determined by heuristics.
     Ordered by likeliest to be correct.
   */
-  m_bpGrp->importConduitTreeExternal(bpNode);
   const auto hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
   auto viewToStandardAllocator =
     [&](const axom::sidre::View& v) {
@@ -152,13 +151,7 @@ Shaper::Shaper(RuntimePolicy execPolicy,
       return axom::INVALID_ALLOCATOR_ID;
     };
   m_bpGrp->reallocateTo(viewToStandardAllocator);
-conduit::Node& topoCoordsetNode = bpNode.fetch_existing("topologies/" + m_bpTopo + "/coordset");
-std::string v = topoCoordsetNode.as_string();
-axom::sidre::View* topoCoordsetView = m_bpGrp->getView("topologies/" + m_bpTopo + "/coordset");
-std::string u = topoCoordsetView->getString();
 
-// auto& topoCoordsetNode = bpNode.fetch_existing("topologies/" + m_bpTopo + "/coordset");
-// std::string t = topoCoordsetNode.to_string();
   // We want unstructured topo but can accomodate structured.
   const std::string topoType = bpNode.fetch_existing("topologies")
                                  .fetch_existing(m_bpTopo)
@@ -174,10 +167,6 @@ std::string u = topoCoordsetView->getString();
   }
 
   m_bpGrp->createNativeLayout(m_bpNodeInt);
-conduit::Node& topoCoordsetNode2 = m_bpNodeInt.fetch_existing("topologies/" + m_bpTopo + "/coordset");
-std::string s = topoCoordsetNode2.to_string();
-std::cout << u << ' ' << s << std::endl;
-topoCoordsetNode.print();
 
 #if defined(AXOM_DEBUG) && 0
   std::string whyBad;
