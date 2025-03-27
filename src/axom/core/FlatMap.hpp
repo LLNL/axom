@@ -733,7 +733,7 @@ FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType bucket_count,
   {
     std::int32_t numGroups =
       std::ceil((bucket_count + 1) / (double)BucketsPerGroup);
-    m_numGroups2 = 31 - (axom::utilities::countl_zero(numGroups));
+    m_numGroups2 = 32 - (axom::utilities::countl_zero(numGroups));
   }
 
   IndexType numGroupsRounded = 1 << m_numGroups2;
