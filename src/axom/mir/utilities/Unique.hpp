@@ -77,7 +77,7 @@ void printMap(const std::string &name, const MapType &container, bool printKey)
   std::cout << "]\n";
 }
 
-} // end namespace detail
+}  // end namespace detail
 #endif
 
 /*!
