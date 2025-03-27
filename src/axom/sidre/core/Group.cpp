@@ -16,7 +16,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/MapCollection.hpp"
 #include "axom/core/Path.hpp"
-#include "axom/core/ConduitMemCallbacks.hpp"
+#include "axom/core/ConduitMemory.hpp"
 
 // Sidre headers
 #include "Buffer.hpp"
@@ -3686,7 +3686,7 @@ int View::getValidConduitAllocatorID(int allocID)
   {
     allocID = getOwningGroup()->getDefaultAllocatorID();
   }
-  auto conduitAllocId = axom::ConduitMemCallbacks::axomAllocIdToConduit(allocID);
+  auto conduitAllocId = axom::ConduitMemory::axomAllocIdToConduit(allocID);
 
   return conduitAllocId;
 }

@@ -56,7 +56,6 @@ set(core_headers
     ArrayBase.hpp
     ArrayIteratorBase.hpp
     ArrayView.hpp
-    ConduitMemCallbacks.hpp
     MDMapping.hpp
     IndexedCollection.hpp
     ItemCollection.hpp
@@ -102,8 +101,12 @@ set(core_sources
 
     Path.cpp
     Types.cpp
-    ConduitMemCallbacks.cpp
     )
+
+if (CONDUIT_FOUND)
+  blt_list_append( TO core_headers ELEMENTS ConduitMemory.hpp )
+  blt_list_append( TO core_sources ELEMENTS ConduitMemory.cpp )
+endif()
 
 #------------------------------------------------------------------------------
 # Set library dependencies

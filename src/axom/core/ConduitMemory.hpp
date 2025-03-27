@@ -6,15 +6,15 @@
 /*!
  ******************************************************************************
  *
- * \file ConduitMemCallbacks.hpp
+ * \file ConduitMemory.hpp
  *
  * \brief   Call-backs for using Axom memory mamagement in Conduit.
  *
  ******************************************************************************
  */
 
-#ifndef SIDRE_CONDUITMEMCALLBACKS_HPP_
-#define SIDRE_CONDUITMEMCALLBACKS_HPP_
+#ifndef SIDRE_CONDUITMEMORY_HPP_
+#define SIDRE_CONDUITMEMORY_HPP_
 
 // Standard C++ headers
 #include <string>
@@ -54,7 +54,7 @@ namespace axom
     }
   @endcode
 */
-struct ConduitMemCallbacks
+struct ConduitMemory
 {
   //!@brief Return the Axom allocator id.
   int axomId() const { return m_axomId; }
@@ -83,19 +83,19 @@ struct ConduitMemCallbacks
   }
 
   //!@brief Return the instance for the given Axom allocator id.
-  static const ConduitMemCallbacks& instanceForAxomId(int axomAllocId);
+  static const ConduitMemory& instanceForAxomId(int axomAllocId);
 
   //!@brief Return the instance for the given Conduit allocator id.
-  static const ConduitMemCallbacks& instanceForConduitId(conduit::index_t conduitAllocId);
+  static const ConduitMemory& instanceForConduitId(conduit::index_t conduitAllocId);
 
-  ~ConduitMemCallbacks() { }
+  ~ConduitMemory() { }
 
 private:
   //!@brief Mapping from Axom allocator to an instance.
-  static std::map<int, std::shared_ptr<ConduitMemCallbacks>> s_axomToInstance;
+  static std::map<int, std::shared_ptr<ConduitMemory>> s_axomToInstance;
 
   //!@brief Mapping from Conduit allocator to an instance.
-  static std::map<conduit::index_t, std::shared_ptr<ConduitMemCallbacks>> s_conduitToInstance;
+  static std::map<conduit::index_t, std::shared_ptr<ConduitMemory>> s_conduitToInstance;
 
   //!@brief Axom's allocator id.
   int m_axomId;
@@ -114,13 +114,13 @@ private:
   AllocatorCallback* m_allocCallback;
   DeallocCallback* m_deallocCallback;
 
-  ConduitMemCallbacks() = delete;
+  ConduitMemory() = delete;
 
   /*!
     @brief Constructor creates allocator/deallocator function and registers
     them with Conduit.
   */
-  ConduitMemCallbacks(int axomAllocId) : m_axomId(axomAllocId)
+  ConduitMemory(int axomAllocId) : m_axomId(axomAllocId)
   {
     using conduit::utils::register_allocator;
     auto deallocator = [](void* ptr) {
@@ -205,7 +205,7 @@ private:
                    "needs case for "
                    "axomAllocId = "
                 << std::to_string(axomAllocId)
-                << ".  Please add it to ConduitMemCallbacks.hpp.";
+                << ".  Please add it to ConduitMemory.hpp.";
       axom::utilities::processAbort();
     }
   }
@@ -213,4 +213,4 @@ private:
 
 } /* end namespace axom */
 
-#endif /* SIDRE_CONDUITMEMCALLBACKS_HPP_ */
+#endif  // AXOM_USE_CONDUIT

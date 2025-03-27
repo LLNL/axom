@@ -3,14 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/ConduitMemCallbacks.hpp"
+#include "axom/core/ConduitMemory.hpp"
 
 namespace axom
 {
-  std::map<int, std::shared_ptr<ConduitMemCallbacks>> ConduitMemCallbacks::s_axomToInstance;
-  std::map<conduit::index_t, std::shared_ptr<ConduitMemCallbacks>> ConduitMemCallbacks::s_conduitToInstance;
+  std::map<int, std::shared_ptr<ConduitMemory>> ConduitMemory::s_axomToInstance;
+  std::map<conduit::index_t, std::shared_ptr<ConduitMemory>> ConduitMemory::s_conduitToInstance;
 
-  const ConduitMemCallbacks& ConduitMemCallbacks::instanceForAxomId(int axomAllocId)
+  const ConduitMemory& ConduitMemory::instanceForAxomId(int axomAllocId)
   {
     // This method IS NOT thread safe.
 
@@ -38,7 +38,7 @@ namespace axom
     auto it = s_axomToInstance.find(axomAllocId);
     if(it == s_axomToInstance.end())
     {
-      std::shared_ptr<ConduitMemCallbacks> newInstance(new ConduitMemCallbacks(axomAllocId));
+      std::shared_ptr<ConduitMemory> newInstance(new ConduitMemory(axomAllocId));
       s_axomToInstance[axomAllocId] = newInstance;
       it = s_axomToInstance.insert({axomAllocId, newInstance}).first;
 
@@ -51,14 +51,14 @@ namespace axom
     return *it->second;
   }
 
-  const ConduitMemCallbacks& ConduitMemCallbacks::instanceForConduitId(conduit::index_t conduitAllocId)
+  const ConduitMemory& ConduitMemory::instanceForConduitId(conduit::index_t conduitAllocId)
   {
     // This method IS thread safe.
 
     auto it = s_conduitToInstance.find(conduitAllocId);
     if(it == s_conduitToInstance.end())
     {
-      std::cerr << "*** Error: Axom allocator for Conduit allocator id " << conduitAllocId << " doesn't exist.  You have to register the Axom allocator first, using ConduitMemCallbacks::getAxomInstance()." << std::endl;
+      std::cerr << "*** Error: Axom allocator for Conduit allocator id " << conduitAllocId << " doesn't exist.  You have to register the Axom allocator first, using ConduitMemory::getAxomInstance()." << std::endl;
       axom::utilities::processAbort();
     }
     assert(it->first == conduitAllocId);

@@ -5,7 +5,7 @@
 
 #include "gtest/gtest.h"
 #include "axom/core/Types.hpp"
-#include "axom/core/ConduitMemCallbacks.hpp"
+#include "axom/core/ConduitMemory.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
@@ -1933,7 +1933,7 @@ TEST(sidre_view, deep_copy_to_conduit)
       std::cout << "Testing copying allocator id " << srcAllocId << " to "
                 << dstAllocId << std::endl;
 
-      const auto& idConverter = axom::ConduitMemCallbacks::instanceForAxomId(dstAllocId);
+      const auto& idConverter = axom::ConduitMemory::instanceForAxomId(dstAllocId);
       auto dstAllocIdConduit = idConverter.conduitId();
 
       conduit::Node dst;

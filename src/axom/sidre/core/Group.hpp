@@ -19,7 +19,7 @@
 // axom headers
 #include "axom/config.hpp"
 #include "axom/core/Array.hpp"
-#include "axom/core/ConduitMemCallbacks.hpp"
+#include "axom/core/ConduitMemory.hpp"
 #include "axom/core/ItemCollection.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/MapCollection.hpp"
@@ -306,7 +306,7 @@ public:
   {
     m_default_allocator_id = allocId;
     m_default_allocator_id_conduit =
-      axom::ConduitMemCallbacks::instanceForAxomId(m_default_allocator_id).conduitId();
+      axom::ConduitMemory::instanceForAxomId(m_default_allocator_id).conduitId();
     return this;
   }
 #else
