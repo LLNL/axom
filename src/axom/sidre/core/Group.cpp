@@ -2565,6 +2565,8 @@ Group::Group(const std::string& name, DataStore* datastore, bool is_list)
   , m_group_coll(nullptr)
 #ifdef AXOM_USE_UMPIRE
   , m_default_allocator_id(axom::getDefaultAllocatorID())
+#else
+  , m_default_allocator_id(axom::MALLOC_ALLOCATOR_ID)
 #endif
 {
   if(is_list)
@@ -3662,13 +3664,10 @@ bool Group::rename(const std::string& new_name)
  */
 int Group::getValidAxomAllocatorID(int allocID)
 {
-#ifdef AXOM_USE_UMPIRE
   if(allocID == INVALID_ALLOCATOR_ID)
   {
     allocID = m_default_allocator_id;
   }
-#endif
-
   return allocID;
 }
 

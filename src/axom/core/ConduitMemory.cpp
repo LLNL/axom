@@ -17,20 +17,27 @@ namespace axom
     if(s_axomToInstance.empty())
     {
       // Required one-time actions
-      static auto axomMemcopy = [](void* dst, const void* src, size_t byteCount) {
-        axom::copy(dst, src, byteCount);
-      };
-      static auto axomMemset = [](void* ptr, int value, size_t count) {
-        if(axom::getAllocatorIDFromPointer(ptr) == axom::DYNAMIC_ALLOCATOR_ID)
-        {
-          std::memset(ptr, value, count);
-        }
-        else
-        {
-          umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
-          rm.memset(ptr, value, count);
-        }
-      };
+      static auto axomMemcopy =
+        [](void* dst, const void* src, size_t byteCount) {
+          axom::copy(dst, src, byteCount);
+        };
+      static auto axomMemset =
+        [](void* ptr, int value, size_t count) {
+          if(axom::getAllocatorIDFromPointer(ptr) == axom::DYNAMIC_ALLOCATOR_ID)
+          {
+            std::memset(ptr, value, count);
+          }
+          else
+          {
+#if defined(AXOM_USE_UMPIRE)
+            umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+            rm.memset(ptr, value, count);
+#else
+            std::cerr << "*** Error: Unrecognized axom allocator id" << std::endl;
+            axom::utilities::processAbort();
+#endif
+          }
+        };
       conduit::utils::set_memcpy_handler(axomMemcopy);
       conduit::utils::set_memset_handler(axomMemset);
     }

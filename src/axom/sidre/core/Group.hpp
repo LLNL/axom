@@ -274,13 +274,13 @@ public:
    */
   bool isRoot() const { return m_parent == this; }
 
-#ifdef AXOM_USE_UMPIRE
   /*!
    * \brief Return the ID of the default umpire::Allocator associated with this
    * Group.
    */
   int getDefaultAllocatorID() const { return m_default_allocator_id; }
 
+#if defined(AXOM_USE_UMPIRE)
   /*!
    * \brief Return the default umpire::Allocator associated with this Group.
    */
@@ -298,34 +298,22 @@ public:
     setDefaultAllocator(alloc.getId());
     return this;
   }
+#endif
 
   /*!
    * \brief Set the default umpire::Allocator associated with this Group.
    */
   Group* setDefaultAllocator(int allocId)
   {
+#if !defined(AXOM_USE_UMPIRE)
+    SLIC_ASSERT(allocId == axom::MALLOC_ALLOCATOR_ID ||
+                allocId == axom::DYNAMIC_ALLOCATOR_ID);
+#endif
     m_default_allocator_id = allocId;
     m_default_allocator_id_conduit =
       axom::ConduitMemory::instanceForAxomId(m_default_allocator_id).conduitId();
     return this;
   }
-#else
-  /*!
-   * \brief Return the ID of the default umpire::Allocator associated with this
-   * Group.
-   */
-  int getDefaultAllocatorID() const { return axom::getDefaultAllocatorID(); }
-
-  /*!
-   * \brief Set the default umpire::Allocator associated with this Group.
-   */
-  Group* setDefaultAllocator(int allocId)
-  {
-    AXOM_UNUSED_VAR(allocId);
-    SLIC_ASSERT(allocId == axom::getDefaultAllocatorID());
-    return this;
-  }
-#endif
 
   /*!
    * \brief Reallocate all View data to a new allocator.
@@ -2072,9 +2060,7 @@ private:
   /// Collection of child Groups
   GroupCollection* m_group_coll;
 
-#ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
-#endif
   conduit::index_t m_default_allocator_id_conduit;
 };
 

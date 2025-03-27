@@ -1986,7 +1986,7 @@ TEST(sidre_view, deep_copy_to_conduit)
 
 //------------------------------------------------------------------------------
 
-TEST(sidre_view, transfer_allocator)
+TEST(sidre_view, reallocate_to)
 {
   // Allocator ids to test.
   std::vector<int> allocIds;

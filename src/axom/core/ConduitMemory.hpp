@@ -19,6 +19,7 @@
 // Standard C++ headers
 #include <string>
 #include <set>
+#include <memory>
 
 #include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
