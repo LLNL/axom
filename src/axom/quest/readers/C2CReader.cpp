@@ -14,15 +14,12 @@
 #include "axom/primal.hpp"
 #include "axom/fmt.hpp"
 
+#include <fstream>
+#include <string>
+
 // These macros enable some debugging utilities for linearization.
 // #define AXOM_DEBUG_LINEARIZE_VERBOSE
-// #define AXOM_DEBUG_WRITE_ERROR_CURVES
 // #define AXOM_DEBUG_WRITE_LINES
-
-/// Overload to format a c2c::Point using fmt
-template <>
-struct axom::fmt::formatter<c2c::Point> : ostream_formatter
-{ };
 
 namespace axom
 {
@@ -168,38 +165,44 @@ static void appendPoints(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
  */
 static void writeLines(const std::string& filename, const std::vector<Segment>& S)
 {
-  FILE* f = fopen(filename.c_str(), "wt");
-  fprintf(f, "# vtk DataFile Version 4.2\n");
-  fprintf(f, "vtk output\n");
-  fprintf(f, "ASCII\n");
-  fprintf(f, "DATASET POLYDATA\n");
-  fprintf(f, "FIELD FieldData 2\n");
-  fprintf(f, "CYCLE 1 1 int\n");
-  fprintf(f, "1\n");
-  fprintf(f, "TIME 1 1 double\n");
-  fprintf(f, "1.0\n");
+  axom::fmt::memory_buffer out;
+  axom::fmt::format_to(std::back_inserter(out),
+                       R"(# vtk DataFile Version 4.2
+vtk output
+ASCII
+DATASET POLYDATA
+FIELD FieldData 2
+CYCLE 1 1 int
+1
+TIME 1 1 double
+1.0
+
+)");
+
   // Write points
-  int npts = S.size();
-  fprintf(f, "POINTS %d float\n", npts);
+  // clang-format off
+  const int npts = S.size();
+  axom::fmt::format_to(std::back_inserter(out), "POINTS {} float\n", npts);
   for(int i = 0; i < npts; i += 3)
   {
-    fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
-    if((i + 1) < npts) fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 1].point[0], S[i + 1].point[1]);
-    if((i + 2) < npts) fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 2].point[0], S[i + 2].point[1]);
-    fprintf(f, "\n");
+    axom::fmt::format_to(std::back_inserter(out),"{}{}{}\n",
+      fmt::format("{:.16f} {:.16f} 0.", S[i].point[0], S[i].point[1]),
+      (i + 1) < npts ? fmt::format(" {:.16f} {:.16f} 0.", S[i + 1].point[0], S[i + 1].point[1]) : "",
+      (i + 2) < npts ? fmt::format(" {:.16f} {:.16f} 0.", S[i + 2].point[0], S[i + 2].point[1]) : "");
   }
-  fprintf(f, "\n");
-
-  int nspans = npts - 1;
+  axom::fmt::format_to(std::back_inserter(out), "\n");
+  // clang-format on
 
   // Write ncells
-  fprintf(f, "LINES %d %d\n", nspans, 3 * nspans);
+  int nspans = npts - 1;
+  axom::fmt::format_to(std::back_inserter(out), "LINES {} {}\n", nspans, 3 * nspans);
   for(int ispan = 0; ispan < nspans; ispan++)
   {
-    fprintf(f, "2 %d %d\n", ispan, ispan + 1);
+    axom::fmt::format_to(std::back_inserter(out), "2 {} {}\n", ispan, ispan + 1);
   }
 
-  fclose(f);
+  std::ofstream f(filename, std::ios::out | std::ios::trunc);
+  f << axom::fmt::to_string(out);
 }
 #endif
 }  // namespace detail
@@ -359,6 +362,47 @@ void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>*
   }
 }
 
+#ifdef AXOM_USE_MFEM
+/// Compute the arc length of a curve by numerical quadrature
+// This currently uses mfem's quadrature weights
+double computeArcLength(const primal::NURBSCurve<double, 2>& nurbs, int npts)
+{
+  using PointType = primal::Point<double, 2>;
+  double arcLength = 0.;
+  for(const auto& bezier : nurbs.extractBezier())
+  {
+    arcLength += primal::evaluate_scalar_line_integral(
+      bezier,
+      [](PointType /*x*/) -> double { return 1.; },
+      npts);
+  }
+  return arcLength;
+}
+#else
+/// Compute the arc length of a curve by discretizing into linear segments and adding their lengths
+double computeArcLength(const primal::NURBSCurve<double, 2>& nurbs, int nSamples)
+{
+  using PointType = primal::Point<double, 2>;
+  using axom::utilities::lerp;
+
+  // Get the contour start/end parameters.
+  const auto knots = nurbs.getKnots();
+  const double u0 = knots[0];
+  const double u1 = knots[knots.getNumKnots() - 1];
+
+  double arcLength = 0.;
+  PointType prev = nurbs.evaluate(u0);
+  for(int i = 1; i <= nSamples; ++i)
+  {
+    const double u = lerp(u0, u1, i / static_cast<double>(nSamples));
+    PointType cur = nurbs.evaluate(u);
+    arcLength += sqrt(primal::squared_distance(prev, cur));
+    axom::utilities::swap(prev, cur);
+  }
+  return arcLength;
+}
+#endif
+
 //---------------------------------------------------------------------------
 void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
                                         double percentError)
@@ -402,23 +446,8 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
   // Clamp the lower error bound so it does not get impractically small.
   percentError = axom::utilities::clampLower(percentError, 1.e-10);
 
-#ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
-  // Make some curves for debugging.
-  FILE* ferr = fopen("error.curve", "wt");
-
-  FILE* fhcl = fopen("hicurvelen.curve", "wt");
-  fprintf(fhcl, "# hicurvelen\n");
-
-  FILE* fcl = fopen("curvelen.curve", "wt");
-  fprintf(fcl, "# curvelen\n");
-
-  FILE* fthresh = fopen("threshold.curve", "wt");
-  fprintf(fthresh, "# threshold\n");
-#endif
-
-  int contourCount {-1};
-
   // clang complains about contourCount (-Wunused-but-set-variable); since we want keep it, let's mark it
+  int contourCount {-1};
   AXOM_UNUSED_VAR(contourCount);
 
   // Iterate over the contours and linearize each of them.
@@ -427,9 +456,6 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
   for(const auto& nurbs : m_nurbsData)
   {
     ++contourCount;
-#ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
-    fprintf(ferr, "# contour%d\n", contourCount);
-#endif
 
     const auto knots = nurbs.getKnots();
 
@@ -468,18 +494,14 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
     // If there is a single span in the contour then we already added its points.
     if(knots.getNumKnotSpans() > 1)
     {
-      constexpr int npts = 30;
       constexpr int MAX_NUMBER_OF_SAMPLES = 2000;
 
-      // get arc-length of NURBS curve; note: currently requires MFEM for Gaussian weights!
-      double hiCurveLen = 0;
-      for(const auto& bezier : nurbs.extractBezier())
-      {
-        hiCurveLen += primal::evaluate_scalar_line_integral(
-          bezier,
-          [](PointType /*x*/) -> double { return 1.; },
-          npts);
-      }
+#ifdef AXOM_USE_MFEM
+      constexpr int quadrature_order = 30;
+      const double hiCurveLen = computeArcLength(nurbs, quadrature_order);
+#else
+      const double hiCurveLen = computeArcLength(nurbs, MAX_NUMBER_OF_SAMPLES);
+#endif
 
       // The initial curve length.
       double curveLength = first.length;
@@ -549,10 +571,7 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
         curveLength = curveLength - oldSegLength + newSegLength;
 
 #ifdef AXOM_DEBUG_WRITE_LINES
-        // Make a filename.
-        char filename[512];
-        int npts = S.size();
-        sprintf(filename, "lines%d_%05d.vtk", contourCount, npts);
+        const auto filename = axom::fmt::format("lines{}_{:05}.vtk", contourCount, S.size());
         writeLines(filename, S);
         SLIC_INFO(fmt::format("Wrote {}", filename));
 #endif
@@ -573,13 +592,6 @@ void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAP
     // Add the points to the mesh.
     appendPoints(mesh, S, EPS_SQ);
   }
-
-#ifdef AXOM_DEBUG_WRITE_ERROR_CURVES
-  fclose(ferr);
-  fclose(fhcl);
-  fclose(fcl);
-  fclose(fthresh);
-#endif
 }
 
 double revolvedVolume(const primal::NURBSCurve<double, 2>& nurbs,
