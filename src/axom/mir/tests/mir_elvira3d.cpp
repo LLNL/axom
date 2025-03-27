@@ -14,10 +14,10 @@
 //------------------------------------------------------------------------------
 
 // Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
+#define AXOM_TESTING_GENERATE_BASELINES
 
 // Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
+#define AXOM_TESTING_SAVE_VISUALIZATION
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
@@ -31,8 +31,8 @@ std::string baselineDirectory()
 template <typename ExecSpace>
 struct test_Elvira3D
 {
-  static const int gridSize = 3;    //10;
-  static const int numSpheres = 1;  //4;
+  static const int gridSize = 10;    //10;
+  static const int numSpheres = 2;  //4;
 
   static void initialize(conduit::Node &n_mesh)
   {
@@ -45,12 +45,17 @@ struct test_Elvira3D
   static void selectZones(conduit::Node &n_options)
   {
     std::vector<axom::IndexType> selected;
-    for(int k = 0; k < gridSize / 2; k++)
+    for(int k = 0; k < gridSize; k++)
     {
-      for(int j = 0; j < gridSize / 2; j++)
+      for(int j = 0; j < gridSize; j++)
       {
-        for(int i = 0; i < gridSize / 2; i++)
+        for(int i = 0; i < gridSize; i++)
         {
+          // Save all but an octant so we can see inside.
+          if(i > gridSize/2 && j > gridSize/2 && k > gridSize/2)
+          {
+            continue;
+          }
           auto idx = k * gridSize * gridSize + j * gridSize + i;
           selected.push_back(idx);
         }
@@ -104,8 +109,11 @@ struct test_Elvira3D
     conduit::Node hostMIRMesh;
     axom::mir::utilities::blueprint::copy<seq_exec>(hostMIRMesh, deviceMIRMesh);
 
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+  #if defined(AXOM_USE_HDF5)
     conduit::relay::io::blueprint::save_mesh(hostMIRMesh, name, "hdf5");
+  #endif
+    conduit::relay::io::save(hostMIRMesh, name+".yaml", "yaml");
 #endif
     // Handle baseline comparison.
     {
