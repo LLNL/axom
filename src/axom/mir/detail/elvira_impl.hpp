@@ -29,8 +29,8 @@ enum class Direction
 enum Difference
 {
   BACKWARD = 0,
-  CENTRAL  = 1,
-  FORWARD  = 2
+  CENTRAL = 1,
+  FORWARD = 2
 };
 
 /// This struct stores the normal computed for a plane of stencil data.
@@ -187,32 +187,34 @@ AXOM_HOST_DEVICE inline void norm2d(value_type n2[2], value_type n3[3])
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE void norm3d(const value_type A[2], const value_type B[2], value_type n3[3])
-{  
+AXOM_HOST_DEVICE void norm3d(const value_type A[2],
+                             const value_type B[2],
+                             value_type n3[3])
+{
   constexpr value_type PTINY = 1.e-15;
 
   n3[0] = A[1] * B[1];
   n3[1] = A[0] * B[0];
-  n3[2] = A[1] * B[0]; // "largest" component.
-  
-  value_type mag = sqrt(n3[0]*n3[0] + n3[1]*n3[1] + n3[2]*n3[2]);
+  n3[2] = A[1] * B[0];  // "largest" component.
+
+  value_type mag = sqrt(n3[0] * n3[0] + n3[1] * n3[1] + n3[2] * n3[2]);
   value_type mag2 = mag * mag;
   // rmag = reciprocal of magnitude
-  value_type rmag = mag / (mag2 + PTINY) ;
-  
+  value_type rmag = mag / (mag2 + PTINY);
+
   // check sign and make unit normal
-  if (( A[1] + B[0] ) < 0 )
+  if((A[1] + B[0]) < 0)
   {
-    rmag = -rmag ;
+    rmag = -rmag;
   }
 
-  n3[0] *= rmag ;
-  n3[1] *= rmag ;
-  n3[2] *= rmag ;
+  n3[0] *= rmag;
+  n3[1] *= rmag;
+  n3[2] *= rmag;
 
-  if (mag2 <= 0)
+  if(mag2 <= 0)
   {
-    n3[2] = 1.0 ; // test for sum==0.
+    n3[2] = 1.0;  // test for sum==0.
   }
 }
 
@@ -281,12 +283,12 @@ vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
   if(d > 0.5 * nbd)
   {
     d = nbd - d;
-    ifdhi = 1; // symmetric at vf = 0.5
+    ifdhi = 1;  // symmetric at vf = 0.5
   }
   if(d <= 0.0)
   {
     vf = 0.0;
-  } // For numerical safety.
+  }  // For numerical safety.
   else
   {
     // Do the vf calculation per Youngs.
@@ -359,12 +361,12 @@ vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
   if(ifdhi)
   {
     vf = 1.0 - vf;
-  } // vf=0.5 symmetry.
+  }  // vf=0.5 symmetry.
   constexpr value_type eps = 1.0e-15;
   constexpr value_type lower = eps;
   constexpr value_type upper = 1. - eps;
-  if(vf < lower) vf = 0.0; // Truncate.
-  if(vf > upper) vf = 1.0; // Truncate.
+  if(vf < lower) vf = 0.0;  // Truncate.
+  if(vf > upper) vf = 1.0;  // Truncate.
   return (vf);
 }
 
@@ -536,7 +538,7 @@ AXOM_HOST_DEVICE value_type cub4p(const value_type *x, const value_type *y)
 
       // Test for secant applicability.
       if(de0 * de1 > 0.0)
-      { // dy/de same sign.
+      {  // dy/de same sign.
 
         demin = (de0sq < de1sq) ? de0sq : de1sq;
         ddemax = (dde0sq > dde1sq) ? dde0sq : dde1sq;
@@ -680,7 +682,7 @@ AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
       }
     }
 
-    if(ik == 4) return (d[4]); // Exact boundary.
+    if(ik == 4) return (d[4]);  // Exact boundary.
 
     // Cross section is a simple tetrahedron.
     if(ik == 0)
@@ -713,7 +715,7 @@ AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
     if(dstar > nbd) dstar = nbd;
   }
 
-  dstar += (n[0] + n[1] + n[2]); // (1,1,1) offset: center zone.
+  dstar += (n[0] + n[1] + n[2]);  // (1,1,1) offset: center zone.
 
   // Additional offset for lowest d node of cube.
   for(i = 0; i < 3; i++)
@@ -723,7 +725,7 @@ AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
       dstar += n[i];
     }
   }
-  dstar = -dstar; // conventional (n,x)+d=0.
+  dstar = -dstar;  // conventional (n,x)+d=0.
 
   return dstar;
 }
@@ -869,21 +871,22 @@ AXOM_HOST_DEVICE value_type det_variance(const value_type *vf, const int *ivf)
    *  |   | 1 |   |
    *  *---*---*---*
    */
-  const int andfn[5] = {1, 3, 4, 5, 7} ;
-  const int len = 5 ;
+  const int andfn[5] = {1, 3, 4, 5, 7};
+  const int len = 5;
 
-  value_type avg  = 0.0 ;
-  value_type avg2 = 0.0 ;
-  for (int i=0; i< len ; i++) {
+  value_type avg = 0.0;
+  value_type avg2 = 0.0;
+  for(int i = 0; i < len; i++)
+  {
     // Pull out certain values from the plane selected by ivf.
-    const value_type x = vf[ivf[andfn[i]]] ;
-    avg  += x ;
-    avg2 += x*x ;
+    const value_type x = vf[ivf[andfn[i]]];
+    avg += x;
+    avg2 += x * x;
   }
-  avg  /= len ;
-  avg2 /= len ;
-  
-  const value_type var = ((double)len/(len-1.0)) * (avg2 - avg*avg) ;
+  avg /= len;
+  avg2 /= len;
+
+  const value_type var = ((double)len / (len - 1.0)) * (avg2 - avg * avg);
   return var;
 }
 
@@ -902,31 +905,32 @@ AXOM_HOST_DEVICE value_type det_variance(const value_type *vf, const int *ivf)
 template <typename value_type>
 AXOM_HOST_DEVICE void pick_elv(Result2D<value_type> elv2d[2], const value_type *vf)
 {
-  const int ivf[19]= { 1, 3, 4, 5, 7, 9,10,11,12,13,14,15,16,17,19,21,22,23,25};
-  const int idiff[5]= {0,0,1,2,2} ;
-  const int jdiff[5]= {0,2,1,0,2} ;
-  const value_type chfac[5] = {1.0, 1.0, 0.25, 1.0, 1.0} ;
+  const int ivf[19] =
+    {1, 3, 4, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 21, 22, 23, 25};
+  const int idiff[5] = {0, 0, 1, 2, 2};
+  const int jdiff[5] = {0, 2, 1, 0, 2};
+  const value_type chfac[5] = {1.0, 1.0, 0.25, 1.0, 1.0};
 
-  const int p0 = elv2d[0].plane ;
-  const int p1 = elv2d[1].plane ; 
-  const int p2 = 3 - p0 - p1 ;
+  const int p0 = elv2d[0].plane;
+  const int p1 = elv2d[1].plane;
+  const int p2 = 3 - p0 - p1;
 
   int imin = 0;
   int jmin = 0;
-  value_type chmin=0.0;
+  value_type chmin = 0.0;
 
   // Only use differences symmetric over two planes.
-  for (int diff=0 ; diff < 5 ; diff++ )
+  for(int diff = 0; diff < 5; diff++)
   {
-    const int i = idiff[diff] ;
-    const int j = jdiff[diff] ;
+    const int i = idiff[diff];
+    const int j = jdiff[diff];
 
     // Get 3d trial slope.
     value_type n30[3], n3[3];
     norm3d(elv2d[0].normal[i], elv2d[1].normal[j], n30);
     n3[p0] = n30[0];
     n3[p1] = n30[1];
-    n3[p2] = n30[2]; 
+    n3[p2] = n30[2];
 
     // Calculate plane displacement
     const auto d = d_3cube(n3, vf[13]);
@@ -939,14 +943,14 @@ AXOM_HOST_DEVICE void pick_elv(Result2D<value_type> elv2d[2], const value_type *
     value_type chisq = elvira_chisq(vf, vfs, ivf, 19);
 
     // Preferentially use central difference.
-    chisq *= chfac[diff] ; 
+    chisq *= chfac[diff];
 
     // Select trial normal with lowest error sum.
-    if ( ( diff == 0 ) || (chisq < chmin) )
+    if((diff == 0) || (chisq < chmin))
     {
-      imin = i ;
-      jmin = j ;
-      chmin = chisq ;
+      imin = i;
+      jmin = j;
+      chmin = chisq;
     }
   }
 
@@ -977,7 +981,7 @@ AXOM_HOST_DEVICE void pick_elv(Result2D<value_type> elv2d[2], const value_type *
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE void missvol1(value_type c00, // Center column sum.
+AXOM_HOST_DEVICE void missvol1(value_type c00,  // Center column sum.
                                value_type c10,
                                value_type v10,
                                value_type c01,
@@ -987,47 +991,47 @@ AXOM_HOST_DEVICE void missvol1(value_type c00, // Center column sum.
 {
   constexpr value_type one6 = 1. / 6.;
 
-  const value_type k10 = c10+v10 ;
-  const value_type k01 = c01+v01 ;
-  const value_type d10 = c00-k10 ;     
-  const value_type d01 = c00-k01 ;
-  const value_type dd1 = 6.0*d10*d01;
+  const value_type k10 = c10 + v10;
+  const value_type k01 = c01 + v01;
+  const value_type d10 = c00 - k10;
+  const value_type d01 = c00 - k01;
+  const value_type dd1 = 6.0 * d10 * d01;
 
-  value_type h1, vsign ;
-  if ( far )
+  value_type h1, vsign;
+  if(far)
   {
-    h1 = 1.5*k10 - 0.5*k01 ;
-    vsign = -1.0 ;
+    h1 = 1.5 * k10 - 0.5 * k01;
+    vsign = -1.0;
   }
   else
   {
-    h1 = 1.5*k10 + 0.5*k01 - c00 ; 
-    vsign = 1.0 ;
+    h1 = 1.5 * k10 + 0.5 * k01 - c00;
+    vsign = 1.0;
   }
 
   // Max tetrahedron height.
   value_type hmax;
   {
-    const value_type hmax2 = axom::utilities::abs( d01 ) ;
-    hmax  = axom::utilities::abs( d10 ) ;
+    const value_type hmax2 = axom::utilities::abs(d01);
+    hmax = axom::utilities::abs(d10);
     hmax = axom::utilities::min(hmax, hmax2);
     hmax = axom::utilities::min(hmax, 1.);
   }
 
-  value_type lb=0.0, ub=0.0 ;
+  value_type lb = 0.0, ub = 0.0;
   bool correction = true;
-  if ( c10 > c00+0.5 )
+  if(c10 > c00 + 0.5)
   {
     // Up correction.
-    lb = 0.0 ;
-    ub = one6 * hmax ;
-    h1 -= 3.0 ;
+    lb = 0.0;
+    ub = one6 * hmax;
+    h1 -= 3.0;
   }
-  else if ( c10 < c00-0.5)
+  else if(c10 < c00 - 0.5)
   {
     // Down correction.
-    lb = -one6* hmax  ;
-    ub = 0.0 ;
+    lb = -one6 * hmax;
+    ub = 0.0;
   }
   else
   {
@@ -1035,15 +1039,15 @@ AXOM_HOST_DEVICE void missvol1(value_type c00, // Center column sum.
     correction = false;
   }
 
-  if ( correction )
+  if(correction)
   {
-    const value_type h2 = h1*h1 ;
-    const value_type d  = 4.5*h2 - vsign*(dd1 - 6.0*v10*d01) ;
+    const value_type h2 = h1 * h1;
+    const value_type d = 4.5 * h2 - vsign * (dd1 - 6.0 * v10 * d01);
 
     // d should be between 0 and -6.
-    const value_type va = ( d < 0.0  ) ? ((h2*h1 - vsign*v10*dd1) / d) : 0;
-  
-    vma -= va ;
+    const value_type va = (d < 0.0) ? ((h2 * h1 - vsign * v10 * dd1) / d) : 0;
+
+    vma -= va;
     vma = axom::utilities::max(vma, lb);
     vma = axom::utilities::min(vma, ub);
   }
@@ -1066,99 +1070,99 @@ AXOM_HOST_DEVICE void crc_sides(const value_type upcol[2][3],
                                 value_type n3a[3])
 {
   constexpr int MAX_ITERATIONS = 100;
-  value_type c00, c10, c01 ;
+  value_type c00, c10, c01;
   value_type side[4];
 
   // central column.
-  c00 = upcol[0][1] ;
+  c00 = upcol[0][1];
   // Cyclical side column sums.
-  side[0] = upcol[0][2] ;
-  side[1] = upcol[1][2] ;
-  side[2] = upcol[0][0] ;
-  side[3] = upcol[1][0] ;
+  side[0] = upcol[0][2];
+  side[1] = upcol[1][2];
+  side[2] = upcol[0][0];
+  side[3] = upcol[1][0];
 
   int ncrc = 1;
   int is[2] = {0, 0};
-  if ( diff[0] == FORWARD )
-  { 
-    is[0] = ( diff[1] == FORWARD ) ? 0 : 3 ;
-  }
-  else if ( diff[0] == BACKWARD )
+  if(diff[0] == FORWARD)
   {
-    is[0] = ( diff[1] == FORWARD ) ? 1 : 2 ;
+    is[0] = (diff[1] == FORWARD) ? 0 : 3;
+  }
+  else if(diff[0] == BACKWARD)
+  {
+    is[0] = (diff[1] == FORWARD) ? 1 : 2;
   }
   else
-  { // Central-Central
-    is[0] = 0 ;	// Central: Apply correction to +x+y and -x-y pairs.
-    is[1] = 2 ;
-    ncrc = 2 ;
+  {             // Central-Central
+    is[0] = 0;  // Central: Apply correction to +x+y and -x-y pairs.
+    is[1] = 2;
+    ncrc = 2;
   }
 
   // Loop over one or two corrections.
-  for (int i=0 ; i<ncrc ; i++)
-  {  
-    constexpr value_type tol = 1.0e-24 ;
-    value_type del = 1.0 ;
+  for(int i = 0; i < ncrc; i++)
+  {
+    constexpr value_type tol = 1.0e-24;
+    value_type del = 1.0;
 
     // Missing volumes, b ccw from a.
     value_type vma, vmb, vmaold, vmbold;
-    vma = vmb = vmaold = vmbold = 0.0 ;
+    vma = vmb = vmaold = vmbold = 0.0;
 
-    int isp = is[i] + 1 ;
-    if ( isp == 4 )
+    int isp = is[i] + 1;
+    if(isp == 4)
     {
-      isp = 0 ;
+      isp = 0;
     }
 
     // Rotational Orientation.
-    c10 = side[is[i]] ;
-    c01 = side[isp  ] ;
-    
-    // Select near or far corrections.
-    const int far = ((c10-c00)*(c01-c00) > 0 ) ? 0 : 1;
+    c10 = side[is[i]];
+    c01 = side[isp];
 
-    int iters = 0 ;
-    while ( del > tol )
+    // Select near or far corrections.
+    const int far = ((c10 - c00) * (c01 - c00) > 0) ? 0 : 1;
+
+    int iters = 0;
+    while(del > tol)
     {
-      missvol1( c00, c10, vmaold, c01, vmbold, vma, far ) ; 
-      missvol1( c00, c01, vmbold, c10, vmaold, vmb, far ) ; 
-      del = (vma-vmaold) * (vma-vmaold) + (vmb-vmbold) * (vmb-vmbold) ; 
-      vmaold = vma ;
-      vmbold = vmb ;
-      iters++ ;
-      if ( iters >= MAX_ITERATIONS)
+      missvol1(c00, c10, vmaold, c01, vmbold, vma, far);
+      missvol1(c00, c01, vmbold, c10, vmaold, vmb, far);
+      del = (vma - vmaold) * (vma - vmaold) + (vmb - vmbold) * (vmb - vmbold);
+      vmaold = vma;
+      vmbold = vmb;
+      iters++;
+      if(iters >= MAX_ITERATIONS)
       {
-        del = 0.0 ;
+        del = 0.0;
       }
     }
 
-    side[is[i]] += vma ;
-    side[isp  ] += vmb ;
+    side[is[i]] += vma;
+    side[isp] += vmb;
   }
 
-  n2a[0][1] = n2a[1][0] = 1.0 ;
+  n2a[0][1] = n2a[1][0] = 1.0;
 
-  for (int i=0 ; i < 2 ; i++ )
+  for(int i = 0; i < 2; i++)
   {
-    switch ( diff[i] )
+    switch(diff[i])
     {
-    case FORWARD :
-      n2a[i][i] = axom::utilities::abs( c00 - side[i] ) ;
-      break ;
-    case BACKWARD : 
-      n2a[i][i] = axom::utilities::abs( c00 - side[2+i] ) ;
-      break ;
-    case CENTRAL :
-      n2a[i][i] = 0.5 * axom::utilities::abs( side[i]-side[2+i] ) ;
-      break ; 
+    case FORWARD:
+      n2a[i][i] = axom::utilities::abs(c00 - side[i]);
+      break;
+    case BACKWARD:
+      n2a[i][i] = axom::utilities::abs(c00 - side[2 + i]);
+      break;
+    case CENTRAL:
+      n2a[i][i] = 0.5 * axom::utilities::abs(side[i] - side[2 + i]);
+      break;
     default:
-      break ;
+      break;
     }
   }
- 
-  norm3d(n2a[0], n2a[1], n3a) ;
 
-  return ;
+  norm3d(n2a[0], n2a[1], n3a);
+
+  return;
 }
 
 /*!
@@ -1172,62 +1176,57 @@ AXOM_HOST_DEVICE void crc_sides(const value_type upcol[2][3],
  * \note Adapted from J. Grandy's Overlink code
  */
 template <typename value_type>
-AXOM_HOST_DEVICE value_type missvol2(value_type vf,
-                                     value_type c0,
-                                     value_type cx,
-                                     value_type cy)
+AXOM_HOST_DEVICE value_type
+missvol2(value_type vf, value_type c0, value_type cx, value_type cy)
 {
-  value_type v[4], f[4], vm ;
-  value_type cs, sign ;
+  value_type v[4], f[4], vm;
+  value_type cs, sign;
   constexpr value_type one3 = 1. / 3.;
   constexpr value_type two3 = 2. / 3.;
 
-  if ( vf > 0.5 )
+  if(vf > 0.5)
   {
     // upper correction - convert to lower.
-    sign = -1.0 ;
-    c0   = 3.0 - c0 ;
-    cx   = 3.0 - cx ;
-    cy   = 3.0 - cy ;
+    sign = -1.0;
+    c0 = 3.0 - c0;
+    cx = 3.0 - cx;
+    cy = 3.0 - cy;
   }
   else
   {
-    sign = 1.0 ;
+    sign = 1.0;
   }
-  
-  cs = 2.0 * c0 - 0.5 * (cx+cy) ;
-  f[3] = cs * cs * cs ;
 
-  cs = -0.5 * (cx + cy) ;
-  f[0] = cs * cs * cs + 6.0 * c0 * cx * cy ;
+  cs = 2.0 * c0 - 0.5 * (cx + cy);
+  f[3] = cs * cs * cs;
+
+  cs = -0.5 * (cx + cy);
+  f[0] = cs * cs * cs + 6.0 * c0 * cx * cy;
 
   // Satisfy constraints to initiate correction.
-  if ( (c0 < cx) &&
-       (c0 < cy) &&
-       (f[3] < 0.0) &&
-       (f[0] > 0.0) )
+  if((c0 < cx) && (c0 < cy) && (f[3] < 0.0) && (f[0] > 0.0))
   {
-    cs += two3 * c0 ;
-    f[1] = cs * cs * cs + 4.0 * c0 * (one3*c0 - cx) * (one3*c0 - cy) ;
+    cs += two3 * c0;
+    f[1] = cs * cs * cs + 4.0 * c0 * (one3 * c0 - cx) * (one3 * c0 - cy);
 
-    cs += two3 * c0 ;
-    f[2] = cs * cs * cs + 2.0 * c0 * (two3*c0 - cx) * (two3*c0 - cy) ;
+    cs += two3 * c0;
+    f[2] = cs * cs * cs + 2.0 * c0 * (two3 * c0 - cx) * (two3 * c0 - cy);
 
-    v[0] = -c0 ;
-    v[1] = -two3 * c0 ;
-    v[2] = -one3 * c0 ;
-    v[3] = 0.0 ;
-  
+    v[0] = -c0;
+    v[1] = -two3 * c0;
+    v[2] = -one3 * c0;
+    v[3] = 0.0;
+
     // Returns a negative value for vm (lower correction).
-    vm = cub4p( v, f);
+    vm = cub4p(v, f);
 
     // Convert to upper correction if vol fraction > 0.5.
-    vm = vm * sign ;
+    vm = vm * sign;
   }
   else
   {
     // No correction.
-    vm = 0.0 ;
+    vm = 0.0;
   }
 
   return vm;
@@ -1253,36 +1252,36 @@ AXOM_HOST_DEVICE void crc_cen(const value_type upcen[3],
                               value_type n3a[3])
 {
   // No correction for central difference.
-  if ((diff[0] != CENTRAL) && (diff[1] != CENTRAL))
+  if((diff[0] != CENTRAL) && (diff[1] != CENTRAL))
   {
-    value_type cside[2] ;
-    for (int i=0 ; i<2 ; i++)
+    value_type cside[2];
+    for(int i = 0; i < 2; i++)
     {
-      cside[i] = (diff[i] == FORWARD) ? upcol[i][2] : upcol[i][0] ;
+      cside[i] = (diff[i] == FORWARD) ? upcol[i][2] : upcol[i][0];
     }
 
-    value_type c0 = upcol[0][1] ;
+    value_type c0 = upcol[0][1];
 
     // Get the missing volume.
-    const value_type vm = missvol2( upcen[1], c0, cside[0], cside[1] ) ;
-    c0 += vm ;
+    const value_type vm = missvol2(upcen[1], c0, cside[0], cside[1]);
+    c0 += vm;
 
     // Find the gradient.
-    for (int i=0 ; i<2 ; i++)
+    for(int i = 0; i < 2; i++)
     {
-      if (diff[i] == FORWARD)
+      if(diff[i] == FORWARD)
       {
-        n2a[i][i] = axom::utilities::abs( upcol[i][2] - c0 ) ;
+        n2a[i][i] = axom::utilities::abs(upcol[i][2] - c0);
       }
       else
       {
-        n2a[i][i] = axom::utilities::abs( c0 - upcol[i][0] ) ;
+        n2a[i][i] = axom::utilities::abs(c0 - upcol[i][0]);
       }
     }
-    n2a[0][1] = n2a[1][0] = 1.0 ;
+    n2a[0][1] = n2a[1][0] = 1.0;
   }
 
-  norm3d( n2a[0], n2a[1], n3a) ;
+  norm3d(n2a[0], n2a[1], n3a);
 }
 
 /*!
@@ -1302,9 +1301,9 @@ AXOM_HOST_DEVICE void correct1(Result2D<value_type> elv2d[2],
   constexpr value_type one6 = 1. / 6.;
   constexpr value_type five6 = 5. / 6.;
 
-  const int p0 = elv2d[0].plane ;
-  const int p1 = elv2d[1].plane ; 
-  const int p2 = 3 - p0 - p1 ;
+  const int p0 = elv2d[0].plane;
+  const int p1 = elv2d[1].plane;
+  const int p2 = 3 - p0 - p1;
 
   value_type n30[3];
   norm3d(elv2d[0].normal[elv2d[0].difference_used],
@@ -1312,73 +1311,73 @@ AXOM_HOST_DEVICE void correct1(Result2D<value_type> elv2d[2],
          n30);
 
   // Ensure correct order.
-  if ((n30[2]*n30[2] >= n30[1]*n30[1]) && 
-      (n30[2]*n30[2] >= n30[0]*n30[0]) &&
+  if((n30[2] * n30[2] >= n30[1] * n30[1]) &&
+     (n30[2] * n30[2] >= n30[0] * n30[0]) &&
 
-      (n30[0]*n30[0] > 0.0) && // Do not correct if 0 component.
-      (n30[1]*n30[1] > 0.0) )
+     (n30[0] * n30[0] > 0.0) &&  // Do not correct if 0 component.
+     (n30[1] * n30[1] > 0.0))
   {
     // Load columns, central column vol fractions.
     value_type upcol[2][3], upcen[3];
-    for (int j=0 ; j < 3 ; j++)
+    for(int j = 0; j < 3; j++)
     {
-      upcen[j] = vf_cen[j] ; 
-      for (int i=0 ; i < 2 ; i++)
+      upcen[j] = vf_cen[j];
+      for(int i = 0; i < 2; i++)
       {
-	upcol[i][j] = elv2d[i].columns[j];
+        upcol[i][j] = elv2d[i].columns[j];
       }
     }
 
     int diff[2];
-    for (int i=0 ; i < 2 ; i++)
+    for(int i = 0; i < 2; i++)
     {
       diff[i] = elv2d[i].difference_used;
     }
 
     // Turn over (rotating in K-I plane) if n[2] negative.
-    // Corrections apply only to magnitude of normal; signs are 
+    // Corrections apply only to magnitude of normal; signs are
     // correct from mat corner algorithm.
-    if (n30[2] < 0.0)
+    if(n30[2] < 0.0)
     {
       axom::utilities::swap(upcen[0], upcen[2]);
 
-      diff[0] = 2 - diff[0]; // Forward <--> Backward
+      diff[0] = 2 - diff[0];  // Forward <--> Backward
 
       axom::utilities::swap(upcol[0][0], upcol[0][2]);
     }
 
     // Magnitudes of normals.
     value_type n2a[2][2];
-    for (int i=0 ; i<2 ; i++)
+    for(int i = 0; i < 2; i++)
     {
       const value_type *n2 = elv2d[i].normal[elv2d[i].difference_used];
-      for (int k=0 ; k<2 ; k++)
+      for(int k = 0; k < 2; k++)
       {
-        n2a[i][k] = axom::utilities::abs( n2[k] ) ;
+        n2a[i][k] = axom::utilities::abs(n2[k]);
       }
     }
 
     // Signs of components.
     value_type nsgn[3];
-    for (int k=0 ; k<3 ; k++)
+    for(int k = 0; k < 3; k++)
     {
-      nsgn[k] = ( (n30[k]>=0) ? 1.0 : -1.0) ;
+      nsgn[k] = ((n30[k] >= 0) ? 1.0 : -1.0);
     }
 
     value_type n30a[3];
-    if ( (vf_cen[1] >= one6) && (vf_cen[1] <= five6))
+    if((vf_cen[1] >= one6) && (vf_cen[1] <= five6))
     {
-      crc_sides( upcol, diff, n2a, n30a ) ;
+      crc_sides(upcol, diff, n2a, n30a);
     }
     else
     {
-      crc_cen( upcen, upcol, diff, n2a, n30a ) ;
+      crc_cen(upcen, upcol, diff, n2a, n30a);
     }
 
     // Permute and replace signs.
-    n3[p0] = n30a[0] * nsgn[0] ;
-    n3[p1] = n30a[1] * nsgn[1] ;
-    n3[p2] = n30a[2] * nsgn[2] ;
+    n3[p0] = n30a[0] * nsgn[0];
+    n3[p1] = n30a[1] * nsgn[1];
+    n3[p2] = n30a[2] * nsgn[2];
   }
   else
   {
@@ -1400,17 +1399,17 @@ AXOM_HOST_DEVICE void correct1(Result2D<value_type> elv2d[2],
 template <typename value_type>
 AXOM_HOST_DEVICE void elvira3d(const value_type *vf, value_type n[3])
 {
-  const int stencil2d[3][9] = {{1,4,7,10,13,16,19,22,25},    // yz
-                               {3,12,21,4,13,22,5,14,23},    // zx
-                               {9,10,11,12,13,14,15,16,17}}; // xy
-  
+  const int stencil2d[3][9] = {{1, 4, 7, 10, 13, 16, 19, 22, 25},     // yz
+                               {3, 12, 21, 4, 13, 22, 5, 14, 23},     // zx
+                               {9, 10, 11, 12, 13, 14, 15, 16, 17}};  // xy
+
   // central columns.
-  const int ccol[3][3] = { {12,13,14}, {10,13,16}, {4,13,22} } ;
+  const int ccol[3][3] = {{12, 13, 14}, {10, 13, 16}, {4, 13, 22}};
 
   value_type variance[3];
-  for (int i=0; i<3; i++)
+  for(int i = 0; i < 3; i++)
   {
-    variance[i] = det_variance(vf, stencil2d[i]) ;
+    variance[i] = det_variance(vf, stencil2d[i]);
   }
 
   // Find dimension with smallest variance.
@@ -1422,25 +1421,28 @@ AXOM_HOST_DEVICE void elvira3d(const value_type *vf, value_type n[3])
   // plane 0=yz, 1=zx, 2=xy.
   Result2D<value_type> elv2d[2];
   int plane = small;
-  for (int dir = 0; dir < 2; dir++)
+  for(int dir = 0; dir < 2; dir++)
   {
-    plane = ( plane + 1 ) % 3;
-    elvira2d(elv2d[dir], vf, stencil2d[plane], (dir==0)? Direction::VERTICAL : Direction::HORIZONTAL);
+    plane = (plane + 1) % 3;
+    elvira2d(elv2d[dir],
+             vf,
+             stencil2d[plane],
+             (dir == 0) ? Direction::VERTICAL : Direction::HORIZONTAL);
     elv2d[dir].plane = plane;
   }
 
   // Pull out data of the selected central column
   value_type vf_col[3];
-  for (int i=0 ; i<3 ; i++)
+  for(int i = 0; i < 3; i++)
   {
-     vf_col[i] = vf[ccol[small][i]];
+    vf_col[i] = vf[ccol[small][i]];
   }
 
   // Choose difference schemes.
-  pick_elv( elv2d, vf ) ;
+  pick_elv(elv2d, vf);
 
   // make corrections, find 3d normal.
-  correct1( elv2d, vf_col, n) ; 
+  correct1(elv2d, vf_col, n);
 }
 
 /*!

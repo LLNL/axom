@@ -85,7 +85,9 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
 
 //--------------------------------------------------------------------------------
 template <typename PointType>
-int materialAtPoint(const PointType &samplePoint, const PointType &sphereCenter, const std::vector<axom::float64> &sphereRadii2)
+int materialAtPoint(const PointType& samplePoint,
+                    const PointType& sphereCenter,
+                    const std::vector<axom::float64>& sphereRadii2)
 {
   const int numSpheres = static_cast<int>(sphereRadii2.size());
   // Default material is always the last index
@@ -157,13 +159,14 @@ void generateSphericalVolumeFractions(
     int cornerMats[8];
     for(int i = 0; i < 8; i++)
     {
-      cornerMats[i] = materialAtPoint(coordsetView[zone.getId(i)], sphereCenter, sphereRadii2);
+      cornerMats[i] =
+        materialAtPoint(coordsetView[zone.getId(i)], sphereCenter, sphereRadii2);
     }
     // See whether the materials are all the same at the corners.
     bool allSame = true;
     for(int i = 1; i < 8; i++)
     {
-      allSame &= cornerMats[i-1] == cornerMats[i];
+      allSame &= cornerMats[i - 1] == cornerMats[i];
     }
 
     // Run the uniform sampling to determine how much of the current cell is composed of each material
@@ -198,11 +201,13 @@ void generateSphericalVolumeFractions(
         {
           for(int x = 0; x < numSamples; ++x)
           {
-            const PointType samplePoint({static_cast<float>(delta_x * x + v0[0]),
-                                         static_cast<float>(delta_y * y + v0[1]),
-                                         static_cast<float>(delta_z * z + v0[2])});
+            const PointType samplePoint(
+              {static_cast<float>(delta_x * x + v0[0]),
+               static_cast<float>(delta_y * y + v0[1]),
+               static_cast<float>(delta_z * z + v0[2])});
 
-            const int mat = materialAtPoint(samplePoint, sphereCenter, sphereRadii2);
+            const int mat =
+              materialAtPoint(samplePoint, sphereCenter, sphereRadii2);
             materialCount[mat]++;
           }
         }
@@ -210,7 +215,8 @@ void generateSphericalVolumeFractions(
     }
 
     // Assign the element volume fractions based on the count of the samples in each circle
-    const axom::float64 scale = 1. / static_cast<axom::float64>(numSamples * numSamples * numSamples);
+    const axom::float64 scale =
+      1. / static_cast<axom::float64>(numSamples * numSamples * numSamples);
     for(int matID = 0; matID < numMaterials; ++matID)
     {
       materialVolumeFractionsData[matID][eID] = materialCount[matID] * scale;

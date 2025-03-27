@@ -31,7 +31,7 @@ std::string baselineDirectory()
 template <typename ExecSpace>
 struct test_Elvira3D
 {
-  static const int gridSize = 20;    //10;
+  static const int gridSize = 20;   //10;
   static const int numSpheres = 2;  //4;
 
   static void initialize(conduit::Node &n_mesh)
@@ -53,7 +53,7 @@ struct test_Elvira3D
         for(int i = 0; i < gridSize; i++)
         {
           // Save all but an octant so we can see inside.
-          if(i > gridSize/2 && j > gridSize/2 && k > gridSize/2)
+          if(i > gridSize / 2 && j > gridSize / 2 && k > gridSize / 2)
           {
             continue;
           }
@@ -127,7 +127,7 @@ struct test_Elvira3D
   #if defined(AXOM_USE_HDF5)
       conduit::relay::io::blueprint::save_mesh(hostMIRMesh, name, "hdf5");
   #endif
-      conduit::relay::io::save(hostMIRMesh, name+".yaml", "yaml");
+      conduit::relay::io::save(hostMIRMesh, name + ".yaml", "yaml");
     }
 #endif
     // Handle baseline comparison.
