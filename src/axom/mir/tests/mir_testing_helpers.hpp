@@ -133,7 +133,7 @@ struct compareValue<float>
 {
   static inline bool compare(float v1, float v2, float tolerance)
   {
-    float diff = axom::utilities::abs(v1 - v2);
+    float diff = axom::utilities::max(v1, v2) - axom::utilities::min(v1, v2);
     return diff <= tolerance;
   }
 };
@@ -170,7 +170,7 @@ bool compareArray(const conduit::Node &n1,
     int errorCount = 0;
     for(int i = 0; i < a1.number_of_elements(); i++)
     {
-      T diff = axom::utilities::abs(a1[i] - a2[i]);
+      const T diff = axom::utilities::max(a1[i], a2[i]) - axom::utilities::min(a1[i], a2[i]);
       maxdiff = std::max(diff, maxdiff);
       if(!compareValue<T>::compare(a1[i], a2[i], tolerance))
       {
@@ -470,6 +470,11 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
         // We found a baseline so we can exit
         break;
       }
+    }
+    catch(conduit::Error &e)
+    {
+      SLIC_INFO(
+        axom::fmt::format("Could not load {} from {}! {}", baselineName, path, e.message()));
     }
     catch(...)
     {

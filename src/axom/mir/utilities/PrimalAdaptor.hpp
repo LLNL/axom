@@ -306,7 +306,7 @@ struct AdaptPolyhedron<TopologyView, CoordsetView, true>
  *        method.
  *
  * \tparam TopologyView The topology view type.
- * \tparam TopologyView The topology view type.
+ * \tparam CoordsetView The coordset view type.
  * \tparam makeFaces Whether to make faces for polyhedral shapes or to make primal::Polyhedron.
  */
 template <typename TopologyView, typename CoordsetView, bool makeFaces = false>

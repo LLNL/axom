@@ -317,8 +317,9 @@ private:
                     bool stridedStructured)
   {
     namespace bputils = axom::mir::utilities::blueprint;
+    SLIC_INFO(axom::fmt::format("mir2D {} to {}", input_prefix, output_prefix));
 
-    // Wrap the coarse mesh in views.
+    // Wrap the input mesh in views.
     const conduit::Node &n_coordset =
       n_input[axom::fmt::format("coordsets/{}_coords", input_prefix)];
     const conduit::Node &n_matset =
@@ -395,6 +396,7 @@ private:
                         bool stridedStructured)
   {
     namespace bputils = axom::mir::utilities::blueprint;
+    SLIC_INFO("mapping2D postmir to fine");
 
     // Wrap the source mesh from (coarse MIR output).
     const conduit::Node &n_src_coordset = n_src["coordsets/postmir_coords"];

@@ -50,6 +50,7 @@ struct make_polyhedral
     conduit::relay::io::save(hostMesh, name + "_orig.yaml", "yaml");
 #endif
 
+    //_mir_utilities_makepolyhedraltopology_begin
     // Run the algorithm
     const conduit::Node &n_input = deviceMesh["topologies/mesh"];
     conduit::Node &n_output = deviceMesh["topologies/polymesh"];
@@ -64,6 +65,7 @@ struct make_polyhedral
       bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
         n_output);
     }
+    //_mir_utilities_makepolyhedraltopology_end
     else if(type == "tets")
     {
       auto topologyView =

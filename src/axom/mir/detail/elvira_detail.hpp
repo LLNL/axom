@@ -730,6 +730,8 @@ public:
                  axom::Array<axom::IndexType> &selectedIds) const
   {
     AXOM_ANNOTATE_SCOPE("cleanMesh");
+
+    // _mir_utilities_mergecoordsetpoints_begin
     namespace bputils = axom::mir::utilities::blueprint;
     axom::Array<axom::IndexType> old2new;
 
@@ -741,6 +743,7 @@ public:
     conduit::Node n_mcp_options;
     const bool merged =
       mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
+    // _mir_utilities_mergecoordsetpoints_end
 
     // Changing the coordset changed the nodes so we need to change the subelement/connectivity.
     // Traverse it using sizes/offsets in case some of the connectivity values are being skipped.
