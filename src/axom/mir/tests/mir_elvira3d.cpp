@@ -31,11 +31,12 @@ std::string baselineDirectory()
 template <typename ExecSpace>
 struct test_Elvira3D
 {
-  static const int gridSize = 10;    //10;
+  static const int gridSize = 20;    //10;
   static const int numSpheres = 2;  //4;
 
   static void initialize(conduit::Node &n_mesh)
   {
+    AXOM_ANNOTATE_SCOPE("initialize");
     axom::mir::MeshTester M;
     M.setStructured(true);
     M.initTestCaseSix(gridSize, numSpheres, n_mesh);
@@ -71,10 +72,18 @@ struct test_Elvira3D
     // Create the data
     conduit::Node hostMesh, deviceMesh;
     initialize(hostMesh);
-    axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
-    conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
-    conduit::relay::io::save(hostMesh, name + "_orig.yaml", "yaml");
+    {
+      AXOM_ANNOTATE_SCOPE("host_to_device");
+      axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
+    }
+#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+    {
+      AXOM_ANNOTATE_SCOPE("save_original");
+  #if defined(AXOM_USE_HDF5)
+      conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
+  #endif
+      conduit::relay::io::save(hostMesh, name + "_orig.yaml", "yaml");
+    }
 #endif
 
     // Make views.
@@ -107,16 +116,23 @@ struct test_Elvira3D
 
     // device->host
     conduit::Node hostMIRMesh;
-    axom::mir::utilities::blueprint::copy<seq_exec>(hostMIRMesh, deviceMIRMesh);
+    {
+      AXOM_ANNOTATE_SCOPE("device_to_host");
+      axom::mir::utilities::blueprint::copy<seq_exec>(hostMIRMesh, deviceMIRMesh);
+    }
 
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION)
+    {
+      AXOM_ANNOTATE_SCOPE("save_baseline");
   #if defined(AXOM_USE_HDF5)
-    conduit::relay::io::blueprint::save_mesh(hostMIRMesh, name, "hdf5");
+      conduit::relay::io::blueprint::save_mesh(hostMIRMesh, name, "hdf5");
   #endif
-    conduit::relay::io::save(hostMIRMesh, name+".yaml", "yaml");
+      conduit::relay::io::save(hostMIRMesh, name+".yaml", "yaml");
+    }
 #endif
     // Handle baseline comparison.
     {
+      AXOM_ANNOTATE_SCOPE("compare_baseline");
       std::string baselineName(yamlRoot(name));
       const auto paths = baselinePaths<ExecSpace>();
 #if defined(AXOM_TESTING_GENERATE_BASELINES)

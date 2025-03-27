@@ -84,6 +84,23 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
 }
 
 //--------------------------------------------------------------------------------
+template <typename PointType>
+int materialAtPoint(const PointType &samplePoint, const PointType &sphereCenter, const std::vector<axom::float64> &sphereRadii2)
+{
+  const int numSpheres = static_cast<int>(sphereRadii2.size());
+  // Default material is always the last index
+  const int defaultMaterialID = numSpheres;
+  for(int cID = 0; cID < numSpheres; ++cID)
+  {
+    if(primal::squared_distance(samplePoint, sphereCenter) < sphereRadii2[cID])
+    {
+      return cID;
+    }
+  }
+  return defaultMaterialID;
+}
+
+//--------------------------------------------------------------------------------
 template <typename TopologyView, typename CoordsetView>
 void generateSphericalVolumeFractions(
   TopologyView topologyView,
@@ -93,18 +110,16 @@ void generateSphericalVolumeFractions(
   std::vector<std::vector<axom::float64>>& materialVolumeFractionsData)
 {
   using PointType = typename CoordsetView::PointType;
+  AXOM_ANNOTATE_SCOPE("generateSphericalVolumeFractions");
 
   // Generate the element volume fractions with concentric spheres
   int numMaterials = numSpheres + 1;
-  int defaultMaterialID =
-    numMaterials - 1;  // default material is always the last index
 
-  // Initialize the radii of the circles
-  std::vector<axom::float64> sphereRadii;
-  axom::float64 maxRadius =
-    gridSize / 2.0;  // Note: The choice of divisor is arbitrary
-  axom::float64 minRadius =
-    gridSize / 4.0;  // Note: The choice of divisor is arbitrary
+  // Initialize the radii^2 of the circles
+  std::vector<axom::float64> sphereRadii2;
+  // Note: The choice of divisors is arbitrary
+  axom::float64 maxRadius = gridSize / 2.1;
+  axom::float64 minRadius = gridSize / 4.0;
 
   axom::float64 radiusDelta;
   if(numSpheres <= 1)
@@ -116,7 +131,7 @@ void generateSphericalVolumeFractions(
   for(int i = 0; i < numSpheres; ++i)
   {
     auto rad = minRadius + (i * radiusDelta);
-    sphereRadii.push_back(rad * rad);
+    sphereRadii2.push_back(rad * rad);
   }
 
   // Initialize all material volume fractions to 0
@@ -129,16 +144,27 @@ void generateSphericalVolumeFractions(
   // all spheres are centered around the same point
   const float c = static_cast<float>(gridSize / 2.0);
   const auto sphereCenter = PointType({c, c, c});
+  const int numSamples = 10;
+  const axom::float64 numSamples3 = numSamples * numSamples * numSamples;
 
   // Use the uniform sampling method to generate volume fractions for each material
   axom::Array<int> materialCount(numMaterials, 0);
   for(int eID = 0; eID < topologyView.numberOfZones(); ++eID)
   {
     const auto zone = topologyView.zone(eID);
-    const auto v0 = coordsetView[zone.getId(0)];
-    const auto v1 = coordsetView[zone.getId(1)];
-    const auto v3 = coordsetView[zone.getId(3)];
-    const auto v4 = coordsetView[zone.getId(4)];
+
+    // Get the materials at the zone corners.
+    int cornerMats[8];
+    for(int i = 0; i < 8; i++)
+    {
+      cornerMats[i] = materialAtPoint(coordsetView[zone.getId(i)], sphereCenter, sphereRadii2);
+    }
+    // See whether the materials are all the same at the corners.
+    bool allSame = true;
+    for(int i = 1; i < 8; i++)
+    {
+      allSame &= cornerMats[i-1] == cornerMats[i];
+    }
 
     // Run the uniform sampling to determine how much of the current cell is composed of each material
     for(int i = 0; i < numMaterials; ++i)
@@ -146,48 +172,48 @@ void generateSphericalVolumeFractions(
       materialCount[i] = 0;
     }
 
-    float delta_x =
-      axom::utilities::abs(v1[0] - v0[0]) / static_cast<float>(gridSize - 1);
-    float delta_y =
-      axom::utilities::abs(v3[1] - v0[1]) / static_cast<float>(gridSize - 1);
-    float delta_z =
-      axom::utilities::abs(v4[2] - v0[2]) / static_cast<float>(gridSize - 1);
-
-    for(int z = 0; z < gridSize; ++z)
+    if(allSame)
     {
-      for(int y = 0; y < gridSize; ++y)
-      {
-        for(int x = 0; x < gridSize; ++x)
-        {
-          const PointType samplePoint({static_cast<float>(delta_x * x + v0[0]),
-                                       static_cast<float>(delta_y * y + v0[1]),
-                                       static_cast<float>(delta_z * z + v0[2])});
+      // All the samples are the same.
+      materialCount[cornerMats[0]] = numSamples3;
+    }
+    else
+    {
+      // The zone looks mixed. We have to check various samples.
+      const auto v0 = coordsetView[zone.getId(0)];
+      const auto v1 = coordsetView[zone.getId(1)];
+      const auto v3 = coordsetView[zone.getId(3)];
+      const auto v4 = coordsetView[zone.getId(4)];
 
-          bool isPointSampled = false;
-          for(int cID = 0; cID < numSpheres && !isPointSampled; ++cID)
+      float delta_x =
+        axom::utilities::abs(v1[0] - v0[0]) / static_cast<float>(numSamples - 1);
+      float delta_y =
+        axom::utilities::abs(v3[1] - v0[1]) / static_cast<float>(numSamples - 1);
+      float delta_z =
+        axom::utilities::abs(v4[2] - v0[2]) / static_cast<float>(numSamples - 1);
+
+      for(int z = 0; z < numSamples; ++z)
+      {
+        for(int y = 0; y < numSamples; ++y)
+        {
+          for(int x = 0; x < numSamples; ++x)
           {
-            if(primal::squared_distance(samplePoint, sphereCenter) <
-               sphereRadii[cID])
-            {
-              materialCount[cID]++;
-              isPointSampled = true;
-            }
-          }
-          if(!isPointSampled)
-          {
-            // The point was not within any of the circles, so increment the count for the default material
-            materialCount[defaultMaterialID]++;
+            const PointType samplePoint({static_cast<float>(delta_x * x + v0[0]),
+                                         static_cast<float>(delta_y * y + v0[1]),
+                                         static_cast<float>(delta_z * z + v0[2])});
+
+            const int mat = materialAtPoint(samplePoint, sphereCenter, sphereRadii2);
+            materialCount[mat]++;
           }
         }
       }
     }
 
     // Assign the element volume fractions based on the count of the samples in each circle
-    const axom::float64 nzones_inv =
-      1. / static_cast<axom::float64>(gridSize * gridSize * gridSize);
+    const axom::float64 scale = 1. / static_cast<axom::float64>(numSamples * numSamples * numSamples);
     for(int matID = 0; matID < numMaterials; ++matID)
     {
-      materialVolumeFractionsData[matID][eID] = materialCount[matID] * nzones_inv;
+      materialVolumeFractionsData[matID][eID] = materialCount[matID] * scale;
     }
   }
 }

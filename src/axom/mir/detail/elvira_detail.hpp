@@ -40,7 +40,8 @@ AXOM_HOST_DEVICE inline void computeRange(const ShapeType &shape,
   const axom::primal::Plane<T, NDIMS> P(normal, bbox.getCentroid(), false);
 
   // Compute distances from all points in shape to plane.
-  range[0] = range[1] = bbox.getCentroid();
+  const auto centroid = bbox.getCentroid();
+  range[0] = range[1] = centroid;
   double dist[2] = {0., 0.};
   for(axom::IndexType ip = 0; ip < shape.numVertices(); ip++)
   {
@@ -48,12 +49,12 @@ AXOM_HOST_DEVICE inline void computeRange(const ShapeType &shape,
     if(d < dist[0])
     {
       dist[0] = d;
-      range[0] = bbox.getCentroid() + (normal * d);
+      range[0] = centroid + (normal * d);
     }
     if(d > dist[1])
     {
       dist[1] = d;
-      range[1] = bbox.getCentroid() + (normal * d);
+      range[1] = centroid + (normal * d);
     }
   }
 }
@@ -142,7 +143,7 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
     //  |                     |        |
     //  ------------+---------+--------+--------------
     //              0         t_blend  1
-    constexpr double offset = 0.02;
+    constexpr double offset = (NDIMS == 3) ? 0.1 : 0.02;
     t_blend =
       axom::utilities::clampVal((matVolume - f_t[0]) / (f_t[1] - f_t[0]), 0., 1.);
     t_blend = (1. - 2. * offset) * t_blend + offset;
