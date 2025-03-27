@@ -12,15 +12,24 @@
 // gtest includes
 #include "gtest/gtest.h"
 
-template <typename FlatMapType>
+template <typename Key, typename Value, typename ExecSpaceType>
+struct FlatMapTestParams
+{
+  using KeyType = Key;
+  using ValueType = Value;
+  using ExecSpace = ExecSpaceType;
+};
+
+template <typename FlatMapTestParams>
 class core_flatmap_forall : public ::testing::Test
 {
 public:
-  using MapType = FlatMapType;
-  using MapViewType = typename FlatMapType::View;
-  using KeyType = typename FlatMapType::key_type;
-  using ValueType = typename FlatMapType::mapped_type;
-  using ExecSpace = axom::SEQ_EXEC;
+  using KeyType = typename FlatMapTestParams::KeyType;
+  using ValueType = typename FlatMapTestParams::ValueType;
+  using ExecSpace = typename FlatMapTestParams::ExecSpace;
+
+  using MapType = axom::FlatMap<KeyType, ValueType>;
+  using MapViewType = typename MapType::View;
 
   template <typename T>
   KeyType getKey(T input)
@@ -37,7 +46,11 @@ public:
   ValueType getDefaultValue() { return ValueType(); }
 };
 
-using ViewTypes = ::testing::Types<axom::FlatMap<int, double>>;
+using ViewTypes = ::testing::Types<
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+  FlatMapTestParams<int, double, axom::OMP_EXEC>,
+#endif
+  FlatMapTestParams<int, double, axom::SEQ_EXEC>>;
 
 TYPED_TEST_SUITE(core_flatmap_forall, ViewTypes);
 
