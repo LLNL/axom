@@ -74,24 +74,18 @@ struct execution_name<hip_exec>
 #endif
 
 //------------------------------------------------------------------------------
-std::string pjoin(const std::string& str)
-{
-  return str;
-}
+std::string pjoin(const std::string &str) { return str; }
 
-std::string pjoin(const char *str)
-{
-  return std::string(str);
-}
+std::string pjoin(const char *str) { return std::string(str); }
 
 template <typename... Args>
-std::string pjoin(const std::string& str, Args... args)
+std::string pjoin(const std::string &str, Args... args)
 {
   return axom::utilities::filesystem::joinPath(str, pjoin(args...));
 }
 
 template <typename... Args>
-std::string pjoin(const char* str, Args... args)
+std::string pjoin(const char *str, Args... args)
 {
   return axom::utilities::filesystem::joinPath(std::string(str), pjoin(args...));
 }

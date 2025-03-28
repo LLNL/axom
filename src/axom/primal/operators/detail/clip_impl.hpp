@@ -558,10 +558,8 @@ struct HexFaces
  * \return A view containing the planes that make up the hex shape.
  */
 template <typename ShapeType, typename PlaneType>
-AXOM_HOST_DEVICE axom::ArrayView<PlaneType> getHexahedronPlanes(
-  const ShapeType &shape,
-  PlaneType *planes,
-  double eps)
+AXOM_HOST_DEVICE axom::ArrayView<PlaneType>
+getHexahedronPlanes(const ShapeType& shape, PlaneType* planes, double eps)
 {
   /*
       3-------2
@@ -575,17 +573,17 @@ AXOM_HOST_DEVICE axom::ArrayView<PlaneType> getHexahedronPlanes(
 
    */
   const HexFaces faces[] = {
-    {{1,2,0}, 3, {0,2,3}}, // Back face
-    {{4,7,5}, 6, {5,7,6}}, // Front face
-    {{0,4,1}, 5, {4,5,1}}, // Bottom face
-    {{5,6,1}, 2, {1,6,2}}, // Right face
-    {{2,6,3}, 7, {3,6,7}}, // Top face
-    {{0,3,4}, 7, {4,3,7}}  // Left face
+    {{1, 2, 0}, 3, {0, 2, 3}},  // Back face
+    {{4, 7, 5}, 6, {5, 7, 6}},  // Front face
+    {{0, 4, 1}, 5, {4, 5, 1}},  // Bottom face
+    {{5, 6, 1}, 2, {1, 6, 2}},  // Right face
+    {{2, 6, 3}, 7, {3, 6, 7}},  // Top face
+    {{0, 3, 4}, 7, {4, 3, 7}}   // Left face
   };
   int planeCount = 0;
   for(int f = 0; f < 6; f++)
   {
-    const HexFaces &face = faces[f];
+    const HexFaces& face = faces[f];
     // Make a plane with 3 points of the quad face.
     planes[planeCount] = make_plane(shape[face.plane1Ids[0]],
                                     shape[face.plane1Ids[1]],
