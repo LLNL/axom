@@ -85,16 +85,17 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
   // The blend value within the current interval.
   double t_blend = 0.5;
 
+  // The ELVIRA normals point away from the material. Axom's clipping
+  // keeps the shape where the normal points into the shape. Reverse
+  // the ELVIRA normal when forming the plane so we keep the right piece.
+  const auto clipNormal = -normal;
+
   ClipResultType clippedShape {};
   for(int iterations = 0; iterations < max_iterations; iterations++)
   {
     // Pick the middle of the range and position the plane there.
     pt = axom::primal::Point<T, NDIMS>::lerp(range[0], range[1], t_blend);
-
-    // The ELVIRA normals point away from the material. Axom's clipping
-    // keeps the shape where the normal points into the shape. Reverse
-    // the ELVIRA normal when forming the plane so we keep the right piece.
-    const auto P = axom::primal::Plane<T, NDIMS>(-normal, pt, false);
+    const auto P = axom::primal::Plane<T, NDIMS>(clipNormal, pt, false);
 
     // Clip the shape at the current plane.
     clippedShape = axom::primal::clip(shape, P);

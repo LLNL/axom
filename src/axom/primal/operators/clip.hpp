@@ -306,6 +306,8 @@ AXOM_HOST_DEVICE Polyhedron<T, 3> clip(const Tetrahedron<T, 3>& tet,
  *
  * \note Function is based off clipPolyhedron() in Mike Owen's PolyClipper.
  *
+ * \note hex1 and hex2 are assumed to be convex.
+ *
  * \warning tryFixOrientation flag does not guarantee the shapes' vertex orders
  *          will be valid. It is the responsiblity of the caller to pass
  *          shapes with a valid vertex order. Otherwise, if the shapes have

@@ -2129,7 +2129,7 @@ TEST(primal_clip, polygon_intersect_robustness)
   }
 }
 
-TEST(primal_clip, polygon_clip_failure)
+TEST(primal_clip, polygon_clip_regression)
 {
   // Use float
   using Polygon2D =

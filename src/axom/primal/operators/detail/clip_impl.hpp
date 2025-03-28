@@ -537,6 +537,80 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
 }
 
 /*!
+ * \brief This object breaks a hex face into 2 triangles and indicates a point
+ *        that can be tested for whether the face is planar.
+ */
+struct HexFaces
+{
+  int plane1Ids[3];
+  int testId;
+  int plane2Ids[3];
+};
+
+/*!
+ * \brief Get a view containing planes for an input hex (or hex-like) shape.
+ *
+ * \param shape The input hex shape.
+ * \param planes An array of planes large enough to hold the planes we'll make.
+ * \param eps A tolerance that indicates how far from the plane a point can be
+ *            in order to be planar.
+ *
+ * \return A view containing the planes that make up the hex shape.
+ */
+template <typename ShapeType, typename PlaneType>
+AXOM_HOST_DEVICE axom::ArrayView<PlaneType> getHexahedronPlanes(
+  const ShapeType &shape,
+  PlaneType *planes,
+  double eps)
+{
+  /*
+      3-------2
+     /|      /|
+    / |     / |
+   7-------6  |
+   |  0----|--1
+   | /     | /
+   |/      |/
+   4-------5
+
+   */
+  const HexFaces faces[] = {
+    {{1,2,0}, 3, {0,2,3}}, // Back face
+    {{4,7,5}, 6, {5,7,6}}, // Front face
+    {{0,4,1}, 5, {4,5,1}}, // Bottom face
+    {{5,6,1}, 2, {1,6,2}}, // Right face
+    {{2,6,3}, 7, {3,6,7}}, // Top face
+    {{0,3,4}, 7, {4,3,7}}  // Left face
+  };
+  int planeCount = 0;
+  for(int f = 0; f < 6; f++)
+  {
+    const HexFaces &face = faces[f];
+    // Make a plane with 3 points of the quad face.
+    planes[planeCount] = make_plane(shape[face.plane1Ids[0]],
+                                    shape[face.plane1Ids[1]],
+                                    shape[face.plane1Ids[2]]);
+    // Get the signed distance to another point.
+    const auto dist = planes[planeCount].signedDistance(shape[face.testId]);
+    planeCount++;
+
+    // If the point was far enough off the plane then the face is not
+    // planar and we should add another plane for the other triangle
+    // in the hex face.
+    if(axom::utilities::abs(dist) > eps)
+    {
+      // The plane was not planar enough. Add the other plane too.
+      planes[planeCount] = make_plane(shape[face.plane2Ids[0]],
+                                      shape[face.plane2Ids[1]],
+                                      shape[face.plane2Ids[2]]);
+      planeCount++;
+    }
+  }
+
+  return axom::ArrayView<PlaneType>(planes, planeCount);
+}
+
+/*!
  * \brief Finds the clipped intersection Polyhedron between Hexahedron
  *        hex1 and Hexahedron hex2.
  *
@@ -544,9 +618,13 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
  * \param [in] hex2 The hexahedron for clipping.
  * \param [in] eps The tolerance for plane point orientation.
  * \param [in] tryFixOrientation Check if the signed volume of each shape is positive.
+ *
+ * \note hex1 and hex2 are assumed to be convex.
+ *
  * \return The Polyhedron formed from clipping the hexahedron with a hexahedron.
  *
  */
+
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   const Hexahedron<T, NDIMS>& hex1,
@@ -560,32 +638,23 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   // Initialize our polyhedron to return
   PolyhedronType poly = PolyhedronType::from_primitive(hex1, tryFixOrientation);
 
-  // Initialize planes from tetrahedron vertices
-  // (Ordering here matters to get the correct winding)
-  PlaneType planes[6] = {make_plane(hex2[1], hex2[2], hex2[0]),
-                         make_plane(hex2[4], hex2[7], hex2[5]),
-                         make_plane(hex2[0], hex2[4], hex2[1]),
-                         make_plane(hex2[5], hex2[6], hex2[1]),
-                         make_plane(hex2[2], hex2[6], hex2[3]),
-                         make_plane(hex2[0], hex2[3], hex2[4])};
+  // Get clipping planes from hex2.
+  constexpr int MAX_PLANES = 12;
+  PlaneType planes[MAX_PLANES];
+  auto planesView = getHexahedronPlanes(hex2, planes, eps);
 
-  // Adjusts planes in case tetrahedron signed volume is negative
+  // Adjusts planes in case hexhedron signed volume is negative
   if(tryFixOrientation)
   {
     PolyhedronType hex2_poly =
       PolyhedronType::from_primitive(hex2, tryFixOrientation);
-    planes[0] = make_plane(hex2_poly[1], hex2_poly[2], hex2_poly[0]);
-    planes[1] = make_plane(hex2_poly[4], hex2_poly[7], hex2_poly[5]);
-    planes[2] = make_plane(hex2_poly[0], hex2_poly[4], hex2_poly[1]);
-    planes[3] = make_plane(hex2_poly[5], hex2_poly[6], hex2_poly[1]);
-    planes[4] = make_plane(hex2_poly[2], hex2_poly[6], hex2_poly[3]);
-    planes[5] = make_plane(hex2_poly[0], hex2_poly[3], hex2_poly[4]);
+    // Get planes from the Polyhedral version of the plane, which could have
+    // reordered the points.
+    planesView = getHexahedronPlanes(hex2_poly, planes, eps);
   }
 
-  axom::StackArray<IndexType, 1> planeSize = {6};
-  axom::ArrayView<PlaneType> planesView(planes, planeSize);
-
   clipPolyhedron(poly, planesView, eps);
+
   return poly;
 }
 
@@ -795,7 +864,7 @@ AXOM_HOST_DEVICE PolygonType clipPolygonPlaneSimple(const PolygonType& inputList
 }
 
 /*!
- * \brief Remove duplicate points in a polygon.
+ * \brief Remove duplicate adjacent points in a polygon.
  *
  * \param poly The polygon to filter.
  * \param eps The tolerance for filtering.

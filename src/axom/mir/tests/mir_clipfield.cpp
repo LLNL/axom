@@ -314,7 +314,7 @@ std::vector<double> makeRandomDoubleArray(int n)
   values.resize(n);
   for(int i = 0; i < n; i++)
   {
-    values[i] = drand48();
+    values[i] = axom::utilities::random_real(0., 1000.);
   }
   return values;
 }
