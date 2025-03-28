@@ -478,10 +478,12 @@ std::shared_ptr<sidre::MFEMSidreDataCollection> shapingDC;
 axom::sidre::Group* compMeshGrp = nullptr;
 std::shared_ptr<conduit::Node> compMeshNode;
 
-auto selectScalarAndStringViews =
-  [](const axom::sidre::View& v) { return v.isScalar() || v.isString(); };
-auto selectNonHostViews =
-  [](const axom::sidre::View& v) { return v.getVoidPtr() != nullptr && !v.isHostAccessible(); };
+auto selectScalarAndStringViews = [](const axom::sidre::View& v) {
+  return v.isScalar() || v.isString();
+};
+auto selectNonHostViews = [](const axom::sidre::View& v) {
+  return v.getVoidPtr() != nullptr && !v.isHostAccessible();
+};
 
 /*
   Whether View data should live on host or another allocator (like device data).
@@ -489,36 +491,35 @@ auto selectNonHostViews =
   as determined by heuristics.
   Ordered by likeliest to be correct.
 */
-auto viewToStandardAllocator =
-  [](const axom::sidre::View& v) {
-    if ( v.isString() || (v.isExternal() && v.getNumElements() == 1) )
-    {
-      // String or likely external string
-      return hostAllocId;
-    }
-    if ( (v.hasBuffer() || v.isExternal())
-         && (v.getName() == "offsets" || v.getName() == "strides")
-         && (v.getNumElements() <= 3) )
-    {
-      // Likely Blueprint specification of array offsets or strides.
-      return hostAllocId;
-    }
-    if ( v.hasBuffer() && v.getPath().find("/values/") == std::string::npos )
-    {
-      // Likely Blueprint mesh data or coordinate values.
-      return arrayAllocId;
-    }
-    if ( v.isScalar() || (v.isExternal() && v.getNumElements() == 1) )
-    {
-      // Scalar or likely external scalar
-      return hostAllocId;
-    }
-    if ( v.hasBuffer() && v.getNumElements() <= 3 )
-    {
-      return hostAllocId;
-    }
+auto viewToStandardAllocator = [](const axom::sidre::View& v) {
+  if(v.isString() || (v.isExternal() && v.getNumElements() == 1))
+  {
+    // String or likely external string
+    return hostAllocId;
+  }
+  if((v.hasBuffer() || v.isExternal()) &&
+     (v.getName() == "offsets" || v.getName() == "strides") &&
+     (v.getNumElements() <= 3))
+  {
+    // Likely Blueprint specification of array offsets or strides.
+    return hostAllocId;
+  }
+  if(v.hasBuffer() && v.getPath().find("/values/") == std::string::npos)
+  {
+    // Likely Blueprint mesh data or coordinate values.
     return arrayAllocId;
-  };
+  }
+  if(v.isScalar() || (v.isExternal() && v.getNumElements() == 1))
+  {
+    // Scalar or likely external scalar
+    return hostAllocId;
+  }
+  if(v.hasBuffer() && v.getNumElements() <= 3)
+  {
+    return hostAllocId;
+  }
+  return arrayAllocId;
+};
 
 axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
@@ -1606,7 +1607,7 @@ int main(int argc, char** argv)
                 "-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION.");
 #endif
 
-conduit::Node* topoCoordsetNode = nullptr;
+  conduit::Node* topoCoordsetNode = nullptr;
   if(params.useBlueprintSidre() || params.useBlueprintConduit())
   {
     compMeshGrp = ds.getRoot()->createGroup("compMesh");

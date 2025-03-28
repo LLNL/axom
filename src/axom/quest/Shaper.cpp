@@ -120,36 +120,35 @@ Shaper::Shaper(RuntimePolicy execPolicy,
     Ordered by likeliest to be correct.
   */
   const auto hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
-  auto viewToStandardAllocator =
-    [&](const axom::sidre::View& v) {
-      if ( v.isString() || (v.isExternal() && v.getNumElements() == 1) )
-      {
-        // String or likely external string
-        return hostAllocId;
-      }
-      if ( (v.hasBuffer() || v.isExternal())
-           && (v.getName() == "offsets" || v.getName() == "strides")
-           && (v.getNumElements() <= 3) )
-      {
-        // Likely Blueprint specification of array offsets or strides.
-        return hostAllocId;
-      }
-      if ( v.hasBuffer() && v.getPath().find("/values/") == std::string::npos )
-      {
-        // Likely Blueprint mesh data or coordinate values.
-        return axom::INVALID_ALLOCATOR_ID;
-      }
-      if ( v.isScalar() || (v.isExternal() && v.getNumElements() == 1) )
-      {
-        // Scalar or likely external scalar
-        return hostAllocId;
-      }
-      if ( v.hasBuffer() && v.getNumElements() <= 3 )
-      {
-        return hostAllocId;
-      }
+  auto viewToStandardAllocator = [&](const axom::sidre::View& v) {
+    if(v.isString() || (v.isExternal() && v.getNumElements() == 1))
+    {
+      // String or likely external string
+      return hostAllocId;
+    }
+    if((v.hasBuffer() || v.isExternal()) &&
+       (v.getName() == "offsets" || v.getName() == "strides") &&
+       (v.getNumElements() <= 3))
+    {
+      // Likely Blueprint specification of array offsets or strides.
+      return hostAllocId;
+    }
+    if(v.hasBuffer() && v.getPath().find("/values/") == std::string::npos)
+    {
+      // Likely Blueprint mesh data or coordinate values.
       return axom::INVALID_ALLOCATOR_ID;
-    };
+    }
+    if(v.isScalar() || (v.isExternal() && v.getNumElements() == 1))
+    {
+      // Scalar or likely external scalar
+      return hostAllocId;
+    }
+    if(v.hasBuffer() && v.getNumElements() <= 3)
+    {
+      return hostAllocId;
+    }
+    return axom::INVALID_ALLOCATOR_ID;
+  };
   m_bpGrp->reallocateTo(viewToStandardAllocator);
 
   // We want unstructured topo but can accomodate structured.

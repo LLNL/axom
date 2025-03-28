@@ -1933,7 +1933,8 @@ TEST(sidre_view, deep_copy_to_conduit)
       std::cout << "Testing copying allocator id " << srcAllocId << " to "
                 << dstAllocId << std::endl;
 
-      const auto& idConverter = axom::ConduitMemory::instanceForAxomId(dstAllocId);
+      const auto& idConverter =
+        axom::ConduitMemory::instanceForAxomId(dstAllocId);
       auto dstAllocIdConduit = idConverter.conduitId();
 
       conduit::Node dst;
@@ -2102,7 +2103,8 @@ TEST(sidre_view, reallocate_to)
         EXPECT_EQ(tmpIntArray[i], intArray[i]);
       }
 
-      char* testStringPtr = (char*)testGrp->getView(origString->getName())->getVoidPtr();
+      char* testStringPtr =
+        (char*)testGrp->getView(origString->getName())->getVoidPtr();
       EXPECT_NE(testStringPtr, nullptr);
       EXPECT_NE(testStringPtr, origStringPtr);
       auto testStringAllocId = axom::getAllocatorIDFromPointer(testStringPtr);

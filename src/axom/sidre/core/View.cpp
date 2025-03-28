@@ -309,7 +309,10 @@ View* View::reallocate(const DataType& dtype)
  */
 View* View::reallocateTo(int newAllocId)
 {
-  if(newAllocId == axom::INVALID_ALLOCATOR_ID) { return this; }
+  if(newAllocId == axom::INVALID_ALLOCATOR_ID)
+  {
+    return this;
+  }
 
   // TODO: Consider not making this an error.
   // It can make the data internal or
@@ -319,7 +322,10 @@ View* View::reallocateTo(int newAllocId)
   // SLIC_ERROR_IF(m_state == EXTERNAL,
   //               "View::reallocate doesn't work on external data.");
 
-  if(m_state == EMPTY) { return this; }
+  if(m_state == EMPTY)
+  {
+    return this;
+  }
 
   // TODO: Probably wrong to use owning group's default allocator.
   // Group can allocate View with non-default allocator.
@@ -329,7 +335,8 @@ View* View::reallocateTo(int newAllocId)
   {
     // Data is stored in m_node.
     conduit::index_t conduitAllocId = m_node.allocator();
-    const auto& currentMemOp = axom::ConduitMemory::instanceForConduitId(conduitAllocId);
+    const auto& currentMemOp =
+      axom::ConduitMemory::instanceForConduitId(conduitAllocId);
     int currentAllocId = currentMemOp.axomId();
 
     if(currentAllocId != newAllocId)
@@ -1520,7 +1527,7 @@ View::State View::getStateId(const std::string& name) const
  */
 bool View::isDeviceData() const
 {
-  bool rval= false;
+  bool rval = false;
   void* dataPtr = getVoidPtr();
   if(dataPtr != nullptr)
   {
@@ -1530,13 +1537,12 @@ bool View::isDeviceData() const
   return rval;
 }
 
-
 /*
  * Return whether view data is accessible on the host CPU.
  */
 bool View::isHostAccessible() const
 {
-  bool rval= false;
+  bool rval = false;
   void* dataPtr = getVoidPtr();
   if(dataPtr != nullptr)
   {
@@ -2058,12 +2064,12 @@ const char* View::getAttributeString(const Attribute* attr) const
  */
 int View::getValidAxomAllocatorID(int allocID)
 {
-#ifdef AXOM_USE_UMPIRE
+  #ifdef AXOM_USE_UMPIRE
   if(allocID == INVALID_ALLOCATOR_ID)
   {
     allocID = getOwningGroup()->getDefaultAllocatorID();
   }
-#endif
+  #endif
 
   return allocID;
 }

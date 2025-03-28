@@ -492,7 +492,8 @@ View* Group::createView(const std::string& path, const DataType& dtype)
   if(view != nullptr)
   {
     view->describe(dtype);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
 
   return view;
@@ -518,7 +519,8 @@ View* Group::createView(const std::string& path, Buffer* buff)
   if(view != nullptr)
   {
     view->attachBuffer(buff);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -540,7 +542,8 @@ View* Group::createView(const std::string& path,
   if(view != nullptr)
   {
     view->attachBuffer(buff);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -563,7 +566,8 @@ View* Group::createViewWithShape(const std::string& path,
   if(view != nullptr)
   {
     view->attachBuffer(buff);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -582,7 +586,8 @@ View* Group::createView(const std::string& path, const DataType& dtype, Buffer* 
   if(view != nullptr)
   {
     view->attachBuffer(buff);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
 
   return view;
@@ -700,7 +705,8 @@ View* Group::createViewAndAllocate(const std::string& path,
   if(view != nullptr)
   {
     view->allocate(allocID);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -725,7 +731,8 @@ View* Group::createViewWithShapeAndAllocate(const std::string& path,
   if(view != nullptr)
   {
     view->allocate(allocID);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -748,7 +755,8 @@ View* Group::createViewAndAllocate(const std::string& path,
   if(view != nullptr)
   {
     view->allocate(allocID);
-assert(view->m_state == View::State::BUFFER || view->m_state == View::State::EMPTY);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -1471,7 +1479,9 @@ Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
 Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
 {
   SLIC_ERROR_IF(m_is_list && !srcGroup->m_is_list,
-                "Group::deepCopyToSelf cannot copy from a list Group '" + srcGroup->getPath() + "' to a non-list Group '" + getPath() + "'");
+                "Group::deepCopyToSelf cannot copy from a list Group '" +
+                  srcGroup->getPath() + "' to a non-list Group '" + getPath() +
+                  "'");
 
   destroyGroupsAndData();
   destroyViewsAndData();
@@ -1550,7 +1560,8 @@ Group* Group::reallocateTo(int newAllocId,
 
 Group* Group::reallocateTo(int newAllocId)
 {
-  return reallocateTo(std::function<int(const View&)>{[=](const View&) { return newAllocId; }});
+  return reallocateTo(
+    std::function<int(const View&)> {[=](const View&) { return newAllocId; }});
 }
 
 /*
@@ -1593,7 +1604,8 @@ axom::IndexType Group::findViews(const std::function<bool(View&)>& criteria,
 
   for(auto& view : views())
   {
-    if(criteria(view)) {
+    if(criteria(view))
+    {
       found.push_back(&view);
     }
   }

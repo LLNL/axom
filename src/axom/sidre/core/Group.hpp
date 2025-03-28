@@ -337,7 +337,7 @@ public:
    * This does NOT change any Group's default allocator.
    */
   Group* reallocateTo(int newAllocId,
-                    const std::function<bool(const View&)>& pred);
+                      const std::function<bool(const View&)>& pred);
 
   /*!
    * \brief Reallocate data to View-specific allocators.
@@ -481,7 +481,6 @@ public:
    * If no such View exists, nullptr is returned.
    */
   const View* getView(IndexType idx) const;
-
 
   /*!
    * \brief Find hierarchy's views that match some criteria,

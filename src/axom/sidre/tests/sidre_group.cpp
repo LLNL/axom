@@ -1497,14 +1497,14 @@ TEST(sidre_group, scalar_memory_allocator)
 {
   // Allocator ids to test.
   std::vector<int> allocIds(1, axom::DYNAMIC_ALLOCATOR_ID);
-  #ifdef AXOM_USE_UMPIRE
+#ifdef AXOM_USE_UMPIRE
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
-    #ifdef AXOM_USE_GPU
+  #ifdef AXOM_USE_GPU
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
-  // Does it make sense to check Pinned and Constant memory spaces?
-    #endif
+    // Does it make sense to check Pinned and Constant memory spaces?
   #endif
+#endif
 
   DataStore ds;
   Group* grp = ds.getRoot()->createGroup("grp");
@@ -1516,7 +1516,8 @@ TEST(sidre_group, scalar_memory_allocator)
     std::int32_t scalarInt = 12345;
     grp->createViewScalar("scalarInt", scalarInt);
 
-    std::int32_t* scalarIntPtr = (std::int32_t*)grp->getView("scalarInt")->getVoidPtr();
+    std::int32_t* scalarIntPtr =
+      (std::int32_t*)grp->getView("scalarInt")->getVoidPtr();
     auto allocIdScalarInt = axom::getAllocatorIDFromPointer(scalarIntPtr);
     EXPECT_EQ(allocIdScalarInt, allocId);
 
@@ -1661,16 +1662,16 @@ TEST(sidre_group, deep_copy_interspace)
 
   // Allocator ids to test.
   std::vector<int> allocIds;
-  #ifdef AXOM_USE_UMPIRE
+#ifdef AXOM_USE_UMPIRE
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
-    #ifdef AXOM_USE_GPU
+  #ifdef AXOM_USE_GPU
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
   allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
-  // Does it make sense to check Pinned and Constant memory spaces?
-    #endif
-  #else
-  allocIds.push_back(axom::DYNAMIC_ALLOCATOR_ID);
+    // Does it make sense to check Pinned and Constant memory spaces?
   #endif
+#else
+  allocIds.push_back(axom::DYNAMIC_ALLOCATOR_ID);
+#endif
 
   DataStore ds;
 
@@ -1681,7 +1682,10 @@ TEST(sidre_group, deep_copy_interspace)
   // Original values on host
   const double doubleValue = 10.13456;
   axom::Array<std::int32_t> intArray(N, N);
-  for(int i = 0; i < N; ++i) { intArray[i] = 1001.5 + i; }
+  for(int i = 0; i < N; ++i)
+  {
+    intArray[i] = 1001.5 + i;
+  }
   std::string stringValue = "a string";
 
   // Temporary space for correctness checks
@@ -1745,7 +1749,8 @@ TEST(sidre_group, deep_copy_interspace)
       dstGrandparent->setDefaultAllocator(dstAllocId);
       dstGrandparent->deepCopyGroup(srcParent);
 
-      axom::sidre::Group* dstParent = dstGrandparent->getGroup(srcParent->getName());
+      axom::sidre::Group* dstParent =
+        dstGrandparent->getGroup(srcParent->getName());
       Group* dst = dstParent->getGroup(src->getName());
 
       //
