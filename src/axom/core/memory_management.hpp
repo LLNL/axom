@@ -200,6 +200,12 @@ inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept;
 /// @}
 // _memory_management_routines_end
 
+/*!
+ * \brief Wrapper type representing an Umpire allocator ID.
+ *
+ *  This type is intended for use in function and constructor arguments, in
+ *  order to avoid ambiguities in overload resolution.
+ */
 struct Allocator
 {
 public:
@@ -207,6 +213,7 @@ public:
     : m_id {alloc_id}
   { }
 
+  /// \brief Returns the allocator ID.
   int get() const { return m_id; }
 
 private:
