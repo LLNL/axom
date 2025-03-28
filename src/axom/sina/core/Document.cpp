@@ -14,6 +14,7 @@
  */
 
 #include "axom/sina/core/Document.hpp"
+#include "axom/core.hpp"
 
 #include <cstdio>
 #include <fstream>
@@ -136,14 +137,16 @@ void saveDocument(Document const &document, std::string const &fileName)
   // that if a write fails, the old file is left intact. For this reason,
   // we write to a temporary file first and then move the file. The temporary
   // file is in the same directory to ensure that it is part of the same
-  // file system as the destination file so that the move operation is
-  // atomic.
+  // file system as the destination file so that the move operation is atomic.
   std::string tmpFileName = fileName + SAVE_TMP_FILE_EXTENSION;
   auto asJson = document.toJson();
   std::ofstream fout {tmpFileName};
   fout.exceptions(std::ostream::failbit | std::ostream::badbit);
   fout << asJson;
   fout.close();
+
+  // windows doesn't let you rename to a destination that already exists
+  axom::utilities::filesystem::removeFile(fileName);
 
   if(rename(tmpFileName.c_str(), fileName.c_str()) != 0)
   {

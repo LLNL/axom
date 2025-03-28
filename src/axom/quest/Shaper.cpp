@@ -70,7 +70,9 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   , m_bpNodeExt(nullptr)
   , m_bpNodeInt()
 #endif
+#if defined(AXOM_USE_MPI)
   , m_comm(MPI_COMM_WORLD)
+#endif
 {
   SLIC_ASSERT(m_bpTopo != sidre::InvalidName);
 
@@ -106,7 +108,9 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   , m_bpNodeExt(&bpNode)
   , m_bpNodeInt()
 #endif
+#if defined(AXOM_USE_MPI)
   , m_comm(MPI_COMM_WORLD)
+#endif
 {
   AXOM_ANNOTATE_SCOPE("Shaper::Shaper_Node");
   m_bpGrp = m_dataStore.getRoot()->createGroup("internalGrp");

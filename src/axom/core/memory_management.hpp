@@ -409,6 +409,8 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
       return MemorySpace::Dynamic;
     }
   }
+#else
+  return MemorySpace::Dynamic;
 #endif
   if(allocatorId == MALLOC_ALLOCATOR_ID) return MemorySpace::Malloc;
 
