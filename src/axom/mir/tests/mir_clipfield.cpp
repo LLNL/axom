@@ -30,8 +30,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
-               "mir_clipfield");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_clipfield");
 }
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, options)
