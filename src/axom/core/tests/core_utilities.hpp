@@ -118,19 +118,35 @@ TEST(core_utilities, qsort_sort_double)
   }
 }
 
+/*!
+ * \brief Examine a container and check that all of its elements are increasing order.
+ * \param arr The array to examine.
+ * \return True if all elements are in increasing order; False otherwise.
+ */
 template <typename ArrayType>
-bool increasing(const ArrayType &arr)
+bool is_increasing(const ArrayType &arr)
 {
   bool retval = true;
-  for(size_t i = 1; i < arr.size(); i++) retval &= (arr[i] >= arr[i - 1]);
+  for(size_t i = 1; i < arr.size(); i++)
+  {
+    retval &= (arr[i] >= arr[i - 1]);
+  }
   return retval;
 }
 
+/*!
+ * \brief Examine a container and check that all of its elements are decreasing order.
+ * \param arr The array to examine.
+ * \return True if all elements are in decreasing order; False otherwise.
+ */
 template <typename ArrayType>
-bool decreasing(const ArrayType &arr)
+bool is_decreasing(const ArrayType &arr)
 {
   bool retval = true;
-  for(size_t i = 1; i < arr.size(); i++) retval &= (arr[i] <= arr[i - 1]);
+  for(size_t i = 1; i < arr.size(); i++)
+  {
+    retval &= (arr[i] <= arr[i - 1]);
+  }
   return retval;
 }
 
@@ -171,11 +187,11 @@ TEST(core_utilities, sort_multiple_values)
 
       // Sort values in vec and vec2 based on vec.
       axom::utilities::sort_multiple(vec.data(), vec2.data(), n);
-      EXPECT_TRUE(increasing(vec));
+      EXPECT_TRUE(is_increasing(vec));
 
       // Sort back based on vec2.
       axom::utilities::sort_multiple(vec2.data(), vec.data(), n);
-      EXPECT_TRUE(increasing(vec2));
+      EXPECT_TRUE(is_increasing(vec2));
 
       // Make sure both vectors are the same as the initial vectors.
       EXPECT_EQ(vec, vecCopy);
@@ -183,11 +199,11 @@ TEST(core_utilities, sort_multiple_values)
 
       // Reverse values based on vec.
       axom::utilities::reverse_sort_multiple(vec.data(), vec2.data(), n);
-      EXPECT_TRUE(decreasing(vec));
+      EXPECT_TRUE(is_decreasing(vec));
 
       // Reverse back based on vec2.
       axom::utilities::reverse_sort_multiple(vec2.data(), vec.data(), n);
-      EXPECT_TRUE(decreasing(vec2));
+      EXPECT_TRUE(is_decreasing(vec2));
     }
   }
 }
