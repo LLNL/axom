@@ -20,11 +20,11 @@ namespace detail
  * \param N The largest number of items to support.
  * \return A number of elements for an array-based stack.
  */
-AXOM_HOST_DEVICE
-constexpr static int stack_size(int N)
+template <typename T>
+AXOM_HOST_DEVICE constexpr static T stack_size(T N)
 {
-  int v = N;
-  int i = 0;
+  T v = N;
+  T i = 0;
   while(v > 0)
   {
     i++;
@@ -41,7 +41,7 @@ constexpr static int stack_size(int N)
 template <typename T>
 AXOM_HOST_DEVICE inline void ifswap(T &a, T &b)
 {
-  if(b < a)
+  if(a > b)
   {
     T tmp = a;
     a = b;
@@ -398,18 +398,9 @@ struct Sorting
     const int mid = low + (high - low) / 2;
 
     // Find the median of values[low], values[mid], values[high]
-    if(values[low] > values[mid])
-    {
-      axom::utilities::swap(values[low], values[mid]);
-    }
-    if(values[low] > values[high])
-    {
-      axom::utilities::swap(values[low], values[high]);
-    }
-    if(values[mid] > values[high])
-    {
-      axom::utilities::swap(values[mid], values[high]);
-    }
+    detail::ifswap(values[low], values[mid]);
+    detail::ifswap(values[low], values[high]);
+    detail::ifswap(values[mid], values[high]);
 
     // Use the median as the pivot
     axom::utilities::swap(values[mid], values[high]);

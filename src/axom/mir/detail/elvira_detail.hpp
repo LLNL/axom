@@ -24,7 +24,7 @@ namespace detail
  *        would yield 0% intersection and clipping the shape at range[1]
  *        would yield 100% intersection.
  *
- * \param shape The shape to whose range is being computed.
+ * \param shape The shape whose range is being computed.
  * \param normal The normal in the shape along which a clip plane would move.
  * \param[out] range Start and end points of the range that can be used to
  *                   make a clipping plane for the shape.
@@ -89,19 +89,22 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
   double f_t[2] = {0., matVolume};
   // The blend value within the current interval.
   double t_blend = 0.5;
+
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
   std::cout << "\tclipToVolume: shape=" << shape << std::endl;
 #endif
+
+  // The ELVIRA normals point away from the material. Axom's clipping
+  // keeps the shape where the normal points into the shape. Reverse
+  // the ELVIRA normal when forming the plane so we keep the right piece.
+  const auto clipNormal = -normal;
+
   ClipResultType clippedShape {};
   for(int iterations = 0; iterations < max_iterations; iterations++)
   {
     // Pick the middle of the range and position the plane there.
     pt = axom::primal::Point<T, NDIMS>::lerp(range[0], range[1], t_blend);
-
-    // The ELVIRA normals point away from the material. Axom's clipping
-    // keeps the shape where the normal points into the shape. Reverse
-    // the ELVIRA normal when forming the plane so we keep the right piece.
-    const auto P = axom::primal::Plane<T, NDIMS>(-normal, pt, false);
+    const auto P = axom::primal::Plane<T, NDIMS>(clipNormal, pt, false);
 
     // Clip the shape at the current plane.
     clippedShape = axom::primal::clip(shape, P);

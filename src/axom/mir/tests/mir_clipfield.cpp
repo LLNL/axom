@@ -30,8 +30,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
-               "mir_clipfield");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_clipfield");
 }
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, options)
@@ -315,7 +314,7 @@ std::vector<double> makeRandomDoubleArray(int n)
   values.resize(n);
   for(int i = 0; i < n; i++)
   {
-    values[i] = drand48();
+    values[i] = axom::utilities::random_real(0., 1000.);
   }
   return values;
 }

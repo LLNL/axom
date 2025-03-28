@@ -79,7 +79,7 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
       }
     }
     return static_cast<axom::float64>(countOverlap) /
-      static_cast<axom::float64>(gridSize * gridSize);
+      static_cast<axom::float64>(numSamples * numSamples);
   }
 }
 

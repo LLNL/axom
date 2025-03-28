@@ -28,7 +28,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"), "mir_views");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_views");
 }
 //------------------------------------------------------------------------------
 

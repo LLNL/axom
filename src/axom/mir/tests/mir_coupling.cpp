@@ -28,8 +28,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
-               "mir_coupled");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_coupled");
 }
 
 //------------------------------------------------------------------------------
@@ -190,9 +189,6 @@ matsets:
  * \brief Test coupling Elvira MIR to TopologyMapper to reconstruct material zones
  *        on a coarse mesh and then make a new material that indicates the overlap
  *        on a finer mesh.
- *
- * \note TODO: - test strided structured
- *             - test 3D via extrude
  */
 template <typename ExecSpace>
 class test_coupling

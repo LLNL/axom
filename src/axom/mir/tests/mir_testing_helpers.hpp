@@ -74,9 +74,20 @@ struct execution_name<hip_exec>
 #endif
 
 //------------------------------------------------------------------------------
-std::string pjoin(const std::string &path, const std::string &filename)
+std::string pjoin(const std::string &str) { return str; }
+
+std::string pjoin(const char *str) { return std::string(str); }
+
+template <typename... Args>
+std::string pjoin(const std::string &str, Args... args)
 {
-  return axom::utilities::filesystem::joinPath(path, filename);
+  return axom::utilities::filesystem::joinPath(str, pjoin(args...));
+}
+
+template <typename... Args>
+std::string pjoin(const char *str, Args... args)
+{
+  return axom::utilities::filesystem::joinPath(std::string(str), pjoin(args...));
 }
 
 void psplit(const std::string &filepath, std::string &path, std::string &filename)

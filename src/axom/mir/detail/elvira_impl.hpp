@@ -15,10 +15,11 @@ namespace mir
 namespace elvira
 {
 
-// NOTE: Many of the functions below were adapted from Overlink but have been
-//       templated on "value_type" instead of using double. This was done so
-//       we can generate host and device code for HIP without resulting in
-//       multiple function definitions at link time.
+// NOTE: Many of the functions below were adapted from code originally
+//       written by Jeff Grandy. The functions have been templated on
+//       "value_type" instead of using double so we can generate host
+//       and device code for HIP without resulting in  multiple function
+//       definitions at link time.
 
 enum class Direction
 {
@@ -69,7 +70,7 @@ struct Result2D
  *         normal  : normal (x,y) pointing away from the material
  *         err     : the L2 error of the answer returned
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void elvira2d(Result2D<value_type> &result,
@@ -136,7 +137,7 @@ AXOM_HOST_DEVICE void elvira2d(Result2D<value_type> &result,
  *
  * \return chi squared (measure of error)
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE inline value_type elvira_chisq(const value_type *vf,
@@ -158,7 +159,7 @@ AXOM_HOST_DEVICE inline value_type elvira_chisq(const value_type *vf,
  *
  * Notes: Assumes n2 is not (0,0) .
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE inline void norm2d(value_type n2[2], value_type n3[3])
@@ -184,7 +185,7 @@ AXOM_HOST_DEVICE inline void norm2d(value_type n2[2], value_type n3[3])
  * \note Off diagonal n2 terms are +-1.  Physical direction not
  *       assigned in this function.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void norm3d(const value_type A[2],
@@ -221,7 +222,7 @@ AXOM_HOST_DEVICE void norm3d(const value_type A[2],
 /*!
  * \brief Return sorted, positive components of vector length 3.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE inline void n_sort(const value_type n[3],  // input vector
@@ -260,8 +261,7 @@ AXOM_HOST_DEVICE inline void n_sort(const value_type n[3],  // input vector
  * \note Plane equation is (n,x) + d = 0.
  *       Cross section formulas from Youngs (1987).
  *
- * \note Adapted from J. Grandy's Overlink code
- *
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE value_type
@@ -382,7 +382,7 @@ vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
  *   x[0], x[3] are interval endpoints, with function values y[0], y[3].
  *   y[1], y[2] are function at 2/3x[0] + 1/3x[3] and 1/3x[0] + 2/3x[3].
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE value_type cub4p(const value_type *x, const value_type *y)
@@ -395,7 +395,7 @@ AXOM_HOST_DEVICE value_type cub4p(const value_type *x, const value_type *y)
   value_type w0 = 0.0, w1 = 0.0, w2;
   value_type b, y30, y12, a;
   value_type tolsec = 1.0e-28;
-  value_type one6 = 0.16666666666666667;
+  constexpr value_type one6 = 1. / 6.;
   int ifsec, ifbis;
 
   y0 = y[0];
@@ -605,7 +605,7 @@ AXOM_HOST_DEVICE value_type cub4p(const value_type *x, const value_type *y)
  * \note "Lowest d" node depends on signs of n components, hence additional
  *         offsets from the lowest d node to origin.  
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
@@ -743,7 +743,7 @@ AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
  *
  * \note  Plane equation is (n,x) + d = 0.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void vf_3cube(value_type n[3],
@@ -786,7 +786,7 @@ AXOM_HOST_DEVICE void vf_3cube(value_type n[3],
  * \param vf The input volume fraction stencil. This is 9 elements.
  * \param[out] n The output normal (x,y,0) pointing away from the material.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void elvira2xy(const value_type *vf, value_type n[3])
@@ -857,7 +857,7 @@ AXOM_HOST_DEVICE void elvira2xy(const value_type *vf, value_type n[3])
  *
  * \return Variance among central zone.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE value_type det_variance(const value_type *vf, const int *ivf)
@@ -900,7 +900,7 @@ AXOM_HOST_DEVICE value_type det_variance(const value_type *vf, const int *ivf)
  *       side diff, since the asymmetric case (one central, one side) gives 
  *       poor results for spheres by breaking symmetry of two planes.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void pick_elv(Result2D<value_type> elv2d[2], const value_type *vf)
@@ -978,7 +978,7 @@ AXOM_HOST_DEVICE void pick_elv(Result2D<value_type> elv2d[2], const value_type *
  * \param vma New estimate for missing volume v10.
  * \param far Whether to use far corner formulas.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void missvol1(value_type c00,  // Center column sum.
@@ -1061,7 +1061,7 @@ AXOM_HOST_DEVICE void missvol1(value_type c00,  // Center column sum.
  * \param[out] n2a 2d normal in each plane (output).
  * \param[out] n3a Composite 3d normal (output).
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void crc_sides(const value_type upcol[2][3],
@@ -1173,7 +1173,7 @@ AXOM_HOST_DEVICE void crc_sides(const value_type upcol[2][3],
  * \param cx Side column sum
  * \param cy Side column sum
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE value_type
@@ -1241,7 +1241,7 @@ missvol2(value_type vf, value_type c0, value_type cx, value_type cy)
  * \param[out] n2a 2d normal in each plane (output).
  * \param[out] n3a Composite 3d normal (output).
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  *
  */
 template <typename value_type>
@@ -1291,7 +1291,7 @@ AXOM_HOST_DEVICE void crc_cen(const value_type upcen[3],
  * \param vf_cen Volume fractions, three zones in central column
  * \param[out] n3 The 3D normal.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void correct1(Result2D<value_type> elv2d[2],
@@ -1394,7 +1394,7 @@ AXOM_HOST_DEVICE void correct1(Result2D<value_type> elv2d[2],
  * \param vf The input volume fraction stencil. This is 27 elements.
  * \param[out] n The output normal (x,y,z) pointing away from the material.
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void elvira3d(const value_type *vf, value_type n[3])
@@ -1451,7 +1451,7 @@ AXOM_HOST_DEVICE void elvira3d(const value_type *vf, value_type n[3])
  * \param normal The normal to transform, nx,ny,nz
  * \param jac    The jacobian to multiply by
  *
- * \note Adapted from J. Grandy's Overlink code
+ * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void transform(value_type *normal, const value_type jac[3][3])
@@ -1506,7 +1506,7 @@ AXOM_HOST_DEVICE void transform(value_type *normal, const value_type jac[3][3])
  * \param ndims The number of dimensions (2 or 3).
  * \param[out] jac A 3x3 Jacobian matrix.
  *
- * \note  Adapted from J. Grandy's BasicStencil.cc:52 
+ * \note  Adapted from code by Jeff Grandy.
  */
 template <typename value_type>
 AXOM_HOST_DEVICE void computeJacobian(const value_type *xcst,
@@ -1623,6 +1623,7 @@ AXOM_HOST_DEVICE void computeJacobian(const value_type *xcst,
   }
 }
 
+//------------------------------------------------------------------------------
 /*!
  * \brief Get the size of the stencil based on dimension.
  *
@@ -1729,14 +1730,7 @@ struct elvira<3>
     {
       if(m != iskip)
       {
-#if 1
         elvira3d(vol_fracs, normal);
-#else
-        // For now
-        normal[0] = 1.;
-        normal[1] = 0.;
-        normal[2] = 0.;
-#endif
       }
       else
       {
