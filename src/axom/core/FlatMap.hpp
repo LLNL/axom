@@ -107,7 +107,7 @@ public:
    */
   template <typename InputIt>
   FlatMap(InputIt first, InputIt last, IndexType bucket_count = -1)
-    : FlatMap(std::distance(first, last), first, last, bucket_count)
+    : FlatMap(std::distance(first, last), first, last, bucket_count, Allocator {})
   { }
 
   /*!
@@ -598,7 +598,8 @@ public:
     FlatMap rehashed(m_size,
                      std::make_move_iterator(begin()),
                      std::make_move_iterator(end()),
-                     count);
+                     count,
+                     m_allocator);
     this->swap(rehashed);
   }
 
@@ -625,7 +626,11 @@ private:
   friend class FlatMapView<KeyType, ValueType, Hash>;
 
   template <typename InputIt>
-  FlatMap(IndexType num_elems, InputIt first, InputIt last, IndexType bucket_count);
+  FlatMap(IndexType num_elems,
+          InputIt first,
+          InputIt last,
+          IndexType bucket_count,
+          Allocator allocator);
 
   std::pair<iterator, bool> getEmplacePos(const KeyType& key);
 
@@ -755,8 +760,9 @@ template <typename InputIt>
 FlatMap<KeyType, ValueType, Hash>::FlatMap(IndexType num_elems,
                                            InputIt first,
                                            InputIt last,
-                                           IndexType bucket_count)
-  : FlatMap(std::max(num_elems, bucket_count))
+                                           IndexType bucket_count,
+                                           Allocator allocator)
+  : FlatMap(std::max(num_elems, bucket_count), allocator)
 {
   insert(first, last);
 }
