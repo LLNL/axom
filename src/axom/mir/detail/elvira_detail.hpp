@@ -20,7 +20,7 @@ namespace detail
  *        would yield 0% intersection and clipping the shape at range[1]
  *        would yield 100% intersection.
  *
- * \param shape The shape to whose range is being computed.
+ * \param shape The shape whose range is being computed.
  * \param normal The normal in the shape along which a clip plane would move.
  * \param[out] range Start and end points of the range that can be used to
  *                   make a clipping plane for the shape.
