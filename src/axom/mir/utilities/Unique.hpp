@@ -81,7 +81,8 @@ void printMap(const std::string &name, const MapType &container, bool printKey)
 #endif
 
 /*!
- * \brief Makes a unique array of values from an input list of values.
+ * \brief Makes a unique array of values from values that could contain multiple
+ *        instances of a key.
  *
  * \tparam ExecSpace The execution space.
  * \tparam KeyType   The data type for the keys.

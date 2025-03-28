@@ -22,8 +22,7 @@
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
-               "mir_elvira3d");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_elvira3d");
 }
 
 //------------------------------------------------------------------------------

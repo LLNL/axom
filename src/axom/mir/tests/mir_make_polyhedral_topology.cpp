@@ -22,7 +22,7 @@
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
+  return pjoin(dataDirectory(), "mir", "regression",
                "mir_make_polyhedral_topology");
 }
 
