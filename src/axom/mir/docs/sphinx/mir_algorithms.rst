@@ -20,23 +20,26 @@ fields, and materials.
 Axom's MIR algorithms are data parallel and can run on the CPU and the GPU.
 Axom's implementation supports 2D/3D zones from structured or unstructured topologies
 made of Finite Element Zoo elements *(e.g. triangles, quadrilaterals, tetrahedra, pyramids,
-wedges, hexahedra, or topologically-compatible mixtures)*. The MIR logic for Equi-Z is
-encapsulated in ``axom::mir::EquizAlgorithm``, which is a class that is templated on view objects.
-View objects help provide an interface between the Blueprint data and the MIR algorithm.
-At a minimum, an execution space and three views are required to instantiate a MIR algorithm.
-The execution space determines which compute backend will
-be used to execute the algorithm. The Blueprint data must exist in a compatible
-memory space for the execution space. The views are: *CoordsetView*, *TopologyView*, and
-*MaterialView*. The *CoordsetView* template argument lets the algorithm access the mesh's
-coordset using concrete data types and supports queries that return points. The
-*TopologyView* provides a set of operations that can be performed on meshes, mainly a
-method for retrieving individual zones that can be used in device kernels.
-The *MaterialView* provides an interface for querying matsets.
+wedges, hexahedra, or topologically-compatible mixtures)*. Certain algorithms also support
+polyhedral input meshes.
 
-Once view types have been created and views have been instantiated, the MIR algorithm
+MIR algorithms are encapsulated in classes that derive from the ``axom::mir::MIRAlgorithm``
+base class. Specific MIR algorithms are templated on view objects that help provide an interface
+between Blueprint meshes and the MIR algorithm. At a minimum, an execution space and three
+views are required to instantiate a templated MIR algorithm. An execution space determines
+which compute backend will be used to execute the algorithm. Blueprint data must exist in
+a compatible memory space for the execution space. The views are: *CoordsetView*, *TopologyView*,
+and *MaterialView*. The *CoordsetView* template argument lets the MIR algorithm access
+the mesh's coordinates (coordset) using concrete data types and enables queries that return points.
+The *TopologyView* template argument provides an interface for operations performed on
+meshes. The TopologyView provides random-access for retrieving individual zones that can
+be used in MIR algorithm device kernels. The *MaterialView* provides an interface for querying
+material data in matsets.
+
+Once view types have been created and views have been instantiated, a MIR algorithm
 algorithm can be instantiated and used. Algorithms provide a single
 ``execute()`` method that takes the input mesh, an options node, and a node to contain
-the output mesh. The output mesh will exist in the same memory space as the input mesh,
+the output mesh. The output mesh will be created in the same memory space as the input mesh,
 which again, must be compatible with the selected execution space. The ``axom::mir::utilities::blueprint::copy()``
 function can be used to copy Conduit nodes from one memory space to another.
 
@@ -123,15 +126,15 @@ unstructured "mixed" topology.
 ElviraAlgorithm
 ################
 
-The ELVIRA algorithm is another method for reconstructing multi-material zones into zones
-that contain a single material per zone. 
-ELVIRA determines cut plane orientation for each material in a zone using data from neighbor
-zones. This means that each zone is cut multiple times using planes with different orientations,
-resulting in potentially jagged interfaces. ELVIRA prioritizes conservation of material volume
-fractions over the appearance of the resulting material interfaces so it is highly accurate
-but it can be less visually appealing. Since ELVIRA output is comprised of shapes that result
-from several cuts of the input zones, the resulting topology is not water-tight and it consists
-of polygons for 2D and polyhedra for 3D.
+The `ELVIRA algorithm <https://doi.org/10.1016/j.jcp.2003.12.023>`_ is another method for
+reconstructing multi-material zones into zones that contain a single material per zone.
+ELVIRA determines cut plane orientation for each material in a zone using volume fraction
+data from neighbor zones. This means that each zone is cut multiple times using planes
+with different orientations, resulting in potentially jagged interfaces. ELVIRA prioritizes
+conservation of material volume fractions over the appearance of the resulting material
+interfaces so it is highly accurate but it can be less visually appealing. Since ELVIRA
+output is comprised of shapes that result from several cuts of the input zones, the resulting
+topology is not necessarily water-tight and it consists of polygons for 2D and polyhedra for 3D.
 
 Axom's implementation of ELVIRA is data parallel and can run on the CPU and the GPU. Zones
 of interest are identified and are classified as clean or mixed. Clean zones contain a single

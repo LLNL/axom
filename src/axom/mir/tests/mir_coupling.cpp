@@ -189,9 +189,6 @@ matsets:
  * \brief Test coupling Elvira MIR to TopologyMapper to reconstruct material zones
  *        on a coarse mesh and then make a new material that indicates the overlap
  *        on a finer mesh.
- *
- * \note TODO: - test strided structured
- *             - test 3D via extrude
  */
 template <typename ExecSpace>
 class test_coupling
