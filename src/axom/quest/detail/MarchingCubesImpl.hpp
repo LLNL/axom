@@ -973,11 +973,11 @@ private:
   /*!
     TODO: Facet increment values lie in [0, 5], but are wastefully
     stored in 32 bits because of a ROCM scan implementation that adds
-    them in the input type without promoting them to our 32-bit output
+    them in the input type without promoting them to the bigger output
     type.  When ROCM supports the promotion and RAJA uses it, we can
     change this type to something more efficient.
   */
-  using FacetIncrsType = std::int32_t;
+  using FacetIncrsType = axom::IndexType;
   //!@brief Number of surface mesh facets added by each crossing.
   axom::Array<FacetIncrsType>& m_facetIncrs;
 
