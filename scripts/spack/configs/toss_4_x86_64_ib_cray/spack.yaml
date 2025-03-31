@@ -592,8 +592,12 @@ spack:
       version: [18.0.0]
       buildable: false
       externals:
-      - spec: llvm@18.0.0+clang+python
+      - spec: llvm@18.0.0%rocmcc@6.2.1+clang+python
+        prefix: /usr/tce/packages/rocmcc/rocmcc-6.2.1-magic/llvm
+      - spec: llvm@18.0.0%rocmcc@6.3.1+clang+python
         prefix: /usr/tce/packages/rocmcc/rocmcc-6.3.1-magic/llvm
+      - spec: llvm@18.0.0%cce@18.0.1+clang+python
+        prefix: /usr/tce/packages/rocmcc/rocmcc-6.1.2-magic/llvm
     py-sphinx:
       version: [8.0.2]
       buildable: false
