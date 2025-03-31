@@ -292,6 +292,15 @@ public:
   // Allow single-domain code to share common scratch space.
   friend detail::marching_cubes::MarchingCubesSingleDomain;
 
+  /*
+    TODO: CrossingFlagType can be a boolean value but is wastefully
+    stored in 32 bits because of a ROCM scan implementation that adds
+    them in the input type without promoting them to our 32-bit output
+    type.  When ROCM supports the promotion and RAJA uses it, we can
+    change this type to something more efficient.
+  */
+  using CrossingFlagType = std::uint32_t;
+
 private:
   RuntimePolicy m_runtimePolicy;
   int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
@@ -327,7 +336,8 @@ private:
   //!@name Scratch space from m_allocatorID, shared among singles
   // Memory alloc is slow on CUDA, so this optimizes space AND time.
   axom::Array<std::uint16_t> m_caseIdsFlat;
-  axom::Array<std::uint16_t> m_crossingFlags;
+
+  axom::Array<CrossingFlagType> m_crossingFlags;
   axom::Array<axom::IndexType> m_scannedFlags;
   axom::Array<axom::IndexType> m_facetIncrs;
   //@}
