@@ -262,6 +262,7 @@ void ValidateJsonRecordsUnchanged(const nlohmann::json& j, const std::string& co
             nlohmann::json({7, 8}));
 }
 
+#ifdef AXOM_USE_HDF5
 void ValidateHDF5RecordsUnchanged(const conduit::Node root, const std::string& context = "") {
   // Fatal Errors used here since a changed file throws off every test
   SCOPED_TRACE("Validation context: " + context);
@@ -301,6 +302,7 @@ void ValidateHDF5RecordsUnchanged(const conduit::Node root, const std::string& c
   std::vector<double> expected_rec1_ind1 = {7.0, 8.0};
   ASSERT_EQ(rec1_ind1, expected_rec1_ind1);
 }
+#endif
 
 // Tests
 TEST(Document, create_fromNode_empty)
