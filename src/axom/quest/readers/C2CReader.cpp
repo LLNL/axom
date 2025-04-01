@@ -658,7 +658,7 @@ double revolvedVolume(const primal::NURBSCurve<double, 2>& nurbs,
       sum += W[i] * xp * (r * r);
     }
     // Guard against volumes being negative (if the curve went the wrong way)
-    vol += fabs(scale * sum);
+    vol += axom::utilities::abs(scale * sum);
   }
 #ifdef AXOM_DEBUG_LINEARIZE_VERBOSE
   SLIC_INFO(fmt::format("revolvedVolume={}", vol));
