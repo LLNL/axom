@@ -12,7 +12,9 @@
 #include "DataStore.hpp"
 #include "Attribute.hpp"
 
+#include "axom/core/execution/execution_space.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/ConduitMemory.hpp"
 
 namespace axom
 {
@@ -61,7 +63,7 @@ std::string View::getPathName() const
  */
 View* View::allocate(int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   if(isAllocateValid())
   {
@@ -93,7 +95,7 @@ View* View::allocate(int allocID)
  */
 View* View::allocate(TypeID type, IndexType num_elems, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   if(type == NO_TYPE_ID || num_elems < 0)
   {
@@ -123,7 +125,7 @@ View* View::allocate(TypeID type, IndexType num_elems, int allocID)
  */
 View* View::allocate(TypeID type, int ndims, const IndexType* shape, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   SLIC_CHECK_MSG(
     ndims > 0,
@@ -171,7 +173,7 @@ View* View::allocate(TypeID type, int ndims, const IndexType* shape, int allocID
  */
 View* View::allocate(const DataType& dtype, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getOwningGroup()->getValidAxomAllocatorID(allocID);
 
   if(dtype.is_empty())
   {
@@ -291,6 +293,80 @@ View* View::reallocate(const DataType& dtype)
   IndexType num_elems = dtype.number_of_elements();
   m_data_buffer->reallocate(num_elems);
   apply();
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Reallocate data to a different allocator.
+ *
+ * Data must not be external.
+ * If the new allocator is the same as the current, it's a no-op.
+ *
+ *************************************************************************
+ */
+View* View::reallocateTo(int newAllocId)
+{
+  if(newAllocId == axom::INVALID_ALLOCATOR_ID)
+  {
+    return this;
+  }
+
+  // TODO: Consider not making this an error.
+  // It can make the data internal or
+  // do nothing, depending on a yet-to-show use case.
+  // If making the data internal, what should be the new state?
+  // STRING, SCALAR or BUFFER?
+  // SLIC_ERROR_IF(m_state == EXTERNAL,
+  //               "View::reallocate doesn't work on external data.");
+
+  if(m_state == EMPTY)
+  {
+    return this;
+  }
+
+  // TODO: Probably wrong to use owning group's default allocator.
+  // Group can allocate View with non-default allocator.
+  // int currentAllocId = getOwningGroup()->getDefaultAllocatorID();
+
+  if(m_state == STRING || m_state == SCALAR)
+  {
+    // Data is stored in m_node.
+    conduit::index_t conduitAllocId = m_node.allocator();
+    const auto& currentMemOp =
+      axom::ConduitMemory::instanceForConduitId(conduitAllocId);
+    int currentAllocId = currentMemOp.axomId();
+
+    if(currentAllocId != newAllocId)
+    {
+      const auto& newMemOp = axom::ConduitMemory::instanceForAxomId(newAllocId);
+      conduit::Node tmpNode;
+      m_node.swap(tmpNode);
+      m_node.set_allocator(newMemOp.conduitId());
+      m_node.set_node(tmpNode);
+    }
+  }
+  else if(m_state == BUFFER)
+  {
+    // Data is stored in m_data_buffer.
+    void* currentData = m_data_buffer->getVoidPtr();
+    int currentAllocId = axom::getAllocatorIDFromPointer(currentData);
+    if(currentAllocId != newAllocId)
+    {
+      Buffer* currentBuffer = detachBuffer();
+      allocate(newAllocId);
+      m_data_buffer->copyBytesIntoBuffer(currentBuffer->getVoidPtr(),
+                                         currentBuffer->getTotalBytes());
+      m_data_buffer->attachToView(this);
+      apply();
+      // TODO: delete currentBuffer; // Delete currentBuffer?
+      // delete currentBuffer; // ? ... or ...
+      // if(currentBuffer->getNumViews() == 0)
+      //   getOwningGroup()->getDataStore()->destroyBuffer(currentBuffer); // ?
+    }
+  }
 
   return this;
 }
@@ -948,6 +1024,41 @@ void View::createNativeLayout(Node& n) const
 /*
  *************************************************************************
  *
+ * Deep-copy data to given Conduit node.
+ *
+ *************************************************************************
+ */
+void View::deepCopyToConduit(Node& dst) const
+{
+  // see ATK-726 - Handle undescribed and unallocated views in Sidre's
+  // createNativeLayout()
+  // TODO: Need to handle cases where the view is not described
+  // TODO: Need to handle cases where the view is not allocated
+  // TODO: Need to handle cases where the view is not applied
+
+  // Note: We are using conduit's pointer rather than the View pointer
+  //    since the conduit pointer handles offsetting
+  // Note: const_cast the pointer to satisfy conduit's interface
+
+  const conduit::DataType& srcDtype = m_node.dtype();
+  dst.set(srcDtype);
+  if(isAllocated())
+  {
+    // Using set_node to set dst: would reset dst's allocator id to
+    // the Conduit default (not what we want) if dst is an object or
+    // list.  Fortunately, Sidre never uses a Conduit node in those
+    // modes.
+#ifdef AXOM_DEBUG
+    const auto oldAllocatorId = dst.allocator();
+#endif
+    dst.set_node(m_node);
+    SLIC_ASSERT(dst.allocator() == oldAllocatorId);
+  }
+}
+
+/*
+ *************************************************************************
+ *
  * Copy the metadata for the View.
  *
  *************************************************************************
@@ -1173,7 +1284,8 @@ void View::deepCopyView(View* copy, int allocID) const
     break;
   case STRING:
   case SCALAR:
-    copy->m_node = m_node;
+    copy->m_node.set_allocator(axom::ConduitMemory::axomAllocIdToConduit(allocID));
+    copy->m_node.set_node(m_node);
     copy->m_state = m_state;
     copy->m_is_applied = true;
     break;
@@ -1408,6 +1520,36 @@ View::State View::getStateId(const std::string& name) const
   }
 
   return res;
+}
+
+/*
+ * Return whether view data is on device.
+ */
+bool View::isDeviceData() const
+{
+  bool rval = false;
+  void* dataPtr = getVoidPtr();
+  if(dataPtr != nullptr)
+  {
+    int allocId = axom::getAllocatorIDFromPointer(dataPtr);
+    rval = axom::isDeviceAllocator(allocId);
+  }
+  return rval;
+}
+
+/*
+ * Return whether view data is accessible on the host CPU.
+ */
+bool View::isHostAccessible() const
+{
+  bool rval = false;
+  void* dataPtr = getVoidPtr();
+  if(dataPtr != nullptr)
+  {
+    int allocId = axom::getAllocatorIDFromPointer(dataPtr);
+    rval = axom::execution_space<axom::SEQ_EXEC>::usesAllocId(allocId);
+  }
+  return rval;
 }
 
 /*
@@ -1912,6 +2054,7 @@ const char* View::getAttributeString(const Attribute* attr) const
   return m_attr_values.getString(attr);
 }
 
+#if 1
 /*
  *************************************************************************
  *
@@ -1919,17 +2062,36 @@ const char* View::getAttributeString(const Attribute* attr) const
  *
  *************************************************************************
  */
-int View::getValidAllocatorID(int allocID)
+int View::getValidAxomAllocatorID(int allocID)
 {
-#ifdef AXOM_USE_UMPIRE
+  #ifdef AXOM_USE_UMPIRE
   if(allocID == INVALID_ALLOCATOR_ID)
   {
     allocID = getOwningGroup()->getDefaultAllocatorID();
   }
-#endif
+  #endif
 
   return allocID;
 }
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to return a valid Conduit allocator ID.
+ *
+ *************************************************************************
+ */
+int View::getValidConduitAllocatorID(int allocID)
+{
+  if(allocID == INVALID_ALLOCATOR_ID)
+  {
+    allocID = getOwningGroup()->getDefaultAllocatorID();
+  }
+  auto conduitAllocId = axom::ConduitMemory::axomAllocIdToConduit(allocID);
+
+  return conduitAllocId;
+}
+#endif
 
 } /* end namespace sidre */
 } /* end namespace axom */

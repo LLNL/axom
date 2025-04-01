@@ -209,6 +209,23 @@ public:
   bool isString() const { return m_state == STRING; }
 
   /*!
+   * \brief Return whether view data is on device, as determined
+   * by Axom's memory management.
+   *
+   * By convention, this returns a false if data is not allocated.
+   */
+  bool isDeviceData() const;
+
+  /*!
+   * \brief Return whether view data is accessible on the host CPU,
+   * as determined by Axom's memory management.
+   *
+   * By convention, this returns a false if data is not allocated,
+   * because we expect null pointers to be correctly checked before use.
+   */
+  bool isHostAccessible() const;
+
+  /*!
    * \brief Return type of data for this View object.
    *        Return NO_TYPE_ID for an undescribed view.
    */
@@ -405,7 +422,7 @@ public:
   View* reallocate(IndexType num_elems);
 
   /*!
-   * \brief  Reallocate data for view as specified by Conduit data type object.
+   * \brief Reallocate data for this View as specified by Conduit data type object.
    *
    * \note Reallocation from a view is allowed under the conditions
    *       described by the allocate() method. If the conditions are not met
@@ -417,6 +434,19 @@ public:
    * \return pointer to this View object.
    */
   View* reallocate(const DataType& dtype);
+
+  /*!
+   * \brief Reallocate data to a new allocator.
+   *
+   * If the state is EMPTY or allocId is the current
+   * allocator or is axom::INVALID_ALLOCATOR_ID, this is a no-op.
+   * Reallocating an EXTERNAL View means allocating it internally.
+   * The state will change from EXTERNAL to STRING or SCALAR,
+   * determined by a heuristic guess.
+   *
+   * \return pointer to this View object.
+   */
+  View* reallocateTo(int newAllocId);
 
   /*!
    * \brief  Deallocate data for view.
@@ -609,7 +639,7 @@ public:
    * \return pointer to this View object.
    */
   template <typename ScalarType>
-  View* setScalar(ScalarType value)
+  View* setScalar(ScalarType value, int allocID = INVALID_ALLOCATOR_ID)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -631,6 +661,8 @@ public:
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == SCALAR)
     {
+      auto conduitAllocId = getValidConduitAllocatorID(allocID);
+      m_node.set_allocator(conduitAllocId);
       m_node.set(value);
       m_schema.set(m_node.schema());
       m_state = SCALAR;
@@ -652,7 +684,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* setScalar(Node& value)
+  View* setScalar(Node& value, int allocID = INVALID_ALLOCATOR_ID)
   {
     // If this view already contains a scalar, issue a warning if the user is
     // changing the underlying type ( ie: integer -> float ).
@@ -674,6 +706,8 @@ public:
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == SCALAR)
     {
+      auto conduitAllocId = getValidConduitAllocatorID(allocID);
+      m_node.set_allocator(conduitAllocId);
       m_node.set(value);
       m_schema.set(m_node.schema());
       m_state = SCALAR;
@@ -717,13 +751,15 @@ public:
  *
  * \return pointer to this View object.
  */
-  View* setString(const std::string& value)
+  View* setString(const std::string& value, int allocID = INVALID_ALLOCATOR_ID)
   {
     // Note: most of these calls that set the view class members are
     //       unnecessary if the view already holds a string.  May be
     //       a future optimization opportunity to split the
     if(m_state == EMPTY || m_state == STRING)
     {
+      auto conduitAllocId = getValidConduitAllocatorID(allocID);
+      m_node.set_allocator(conduitAllocId);
       m_node.set_string(value);
       m_schema.set(m_node.schema());
       m_state = STRING;
@@ -959,6 +995,11 @@ public:
    * Conduit tree.
    */
   void createNativeLayout(Node& n) const;
+
+  /*!
+   * \brief Deep copy View into the given conduit::Node.
+   */
+  void deepCopyToConduit(Node& n) const;
 
   /*!
    * \brief Copy metadata of the View to the given Conduit node
@@ -1532,7 +1573,7 @@ private:
                //    applied may be true or false
     SCALAR,    // View holds scalar data (via setScalar()):
                //    applied is true
-    STRING     // View holds string data (view setString()):
+    STRING     // View holds string data (via setString()):
                //    applied is true
   };
 
@@ -1546,11 +1587,21 @@ private:
    */
   State getStateId(const std::string& name) const;
 
+#if 1
   /*!
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
-  int getValidAllocatorID(int allocatorID);
+  int getValidAxomAllocatorID(int allocatorID);
+
+  /*!
+   * \brief Private method. If allocatorID is a valid allocator ID then return
+   *  it. Otherwise return the ID of the default allocator of the owning group.
+   *  In both cases, return the corresponding Conduit allocator id, not the
+   *  Axom id.
+   */
+  int getValidConduitAllocatorID(int allocatorID);
+#endif
 
   /// Name of this View object.
   std::string m_name;

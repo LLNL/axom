@@ -16,6 +16,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/MapCollection.hpp"
 #include "axom/core/Path.hpp"
+#include "axom/core/ConduitMemory.hpp"
 
 // Sidre headers
 #include "Buffer.hpp"
@@ -493,6 +494,8 @@ View* Group::createView(const std::string& path, const DataType& dtype)
   if(view != nullptr)
   {
     view->describe(dtype);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
 
   return view;
@@ -518,6 +521,8 @@ View* Group::createView(const std::string& path, Buffer* buff)
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -539,6 +544,8 @@ View* Group::createView(const std::string& path,
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -561,6 +568,8 @@ View* Group::createViewWithShape(const std::string& path,
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -579,6 +588,8 @@ View* Group::createView(const std::string& path, const DataType& dtype, Buffer* 
   if(view != nullptr)
   {
     view->attachBuffer(buff);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
 
   return view;
@@ -690,12 +701,14 @@ View* Group::createViewAndAllocate(const std::string& path,
                                    IndexType num_elems,
                                    int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   View* view = createView(path, type, num_elems);
   if(view != nullptr)
   {
     view->allocate(allocID);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -714,12 +727,14 @@ View* Group::createViewWithShapeAndAllocate(const std::string& path,
                                             const IndexType* shape,
                                             int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   View* view = createViewWithShape(path, type, ndims, shape);
   if(view != nullptr)
   {
     view->allocate(allocID);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -736,12 +751,14 @@ View* Group::createViewAndAllocate(const std::string& path,
                                    const DataType& dtype,
                                    int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   View* view = createView(path, dtype);
   if(view != nullptr)
   {
     view->allocate(allocID);
+    assert(view->m_state == View::State::BUFFER ||
+           view->m_state == View::State::EMPTY);
   }
   return view;
 }
@@ -753,12 +770,14 @@ View* Group::createViewAndAllocate(const std::string& path,
  *
  *************************************************************************
  */
-View* Group::createViewString(const std::string& path, const std::string& value)
+View* Group::createViewString(const std::string& path,
+                              const std::string& value,
+                              int allocID)
 {
   View* view = createView(path);
   if(view != nullptr)
   {
-    view->setString(value);
+    view->setString(value, allocID);
   }
 
   return view;
@@ -967,7 +986,7 @@ View* Group::copyView(View* view)
  */
 View* Group::deepCopyView(const View* view, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   if(view == nullptr || hasChildView(view->getName()))
   {
@@ -1096,7 +1115,9 @@ const Group* Group::getGroup(const std::string& path) const
  *
  *************************************************************************
  */
-Group* Group::createGroup(const std::string& path, bool is_list)
+Group* Group::createGroup(const std::string& path,
+                          bool is_list,
+                          bool accept_existing)
 {
   std::string intpath(path);
   bool create_groups_in_path = true;
@@ -1120,7 +1141,7 @@ Group* Group::createGroup(const std::string& path, bool is_list)
     }
     return nullptr;
   }
-  else if(intpath.empty() || group->hasChildGroup(intpath) ||
+  else if(intpath.empty() || (group->hasChildGroup(intpath) && !accept_existing) ||
           group->hasChildView(intpath))
   {
     SLIC_CHECK_MSG(
@@ -1138,17 +1159,21 @@ Group* Group::createGroup(const std::string& path, bool is_list)
     return nullptr;
   }
 
-  Group* new_group =
-    new(std::nothrow) Group(intpath, group->getDataStore(), is_list);
-  if(new_group == nullptr)
+  if(!group->hasGroup(intpath))
   {
-    return nullptr;
+    Group* new_group =
+      new(std::nothrow) Group(intpath, group->getDataStore(), is_list);
+    if(new_group == nullptr)
+    {
+      return nullptr;
+    }
+
+    SLIC_ASSERT(group->getDefaultAllocatorID() == m_default_allocator_id);
+    new_group->setDefaultAllocator(m_default_allocator_id);
+    return group->attachGroup(new_group);
   }
 
-#ifdef AXOM_USE_UMPIRE
-  new_group->setDefaultAllocator(group->getDefaultAllocator());
-#endif
-  return group->attachGroup(new_group);
+  return group->getGroup(intpath);
 }
 
 Group* Group::createUnnamedGroup(bool is_list)
@@ -1406,7 +1431,7 @@ Group* Group::copyGroup(Group* group)
  */
 Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
 {
-  allocID = getValidAllocatorID(allocID);
+  allocID = getValidAxomAllocatorID(allocID);
 
   if(srcGroup == nullptr || hasChildGroup(srcGroup->getName()))
   {
@@ -1440,6 +1465,159 @@ Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
   }
 
   return dstGroup;
+}
+
+/*
+ *************************************************************************
+ *
+ * Deep copy another Group into this Group.
+ *
+ * All contents in this group and their data are destroyed before the copy.
+ * The deep copy of a Group will copy the group hierarchy and deep copy
+ * all Views within the hierarchy.
+ *
+ *************************************************************************
+ */
+Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
+{
+  SLIC_ERROR_IF(m_is_list && !srcGroup->m_is_list,
+                "Group::deepCopyToSelf cannot copy from a list Group '" +
+                  srcGroup->getPath() + "' to a non-list Group '" + getPath() +
+                  "'");
+
+  destroyGroupsAndData();
+  destroyViewsAndData();
+
+  // copy child Groups to new Group
+  for(auto& grp : srcGroup->groups())
+  {
+#if 1
+    deepCopyGroup(&grp);
+#else
+    Group* dst = nullptr;
+    if(m_is_list)
+    {
+      dst = createUnnamedGroup(grp.m_is_list);
+    }
+    else
+    {
+      const std::string& grpName = srcGroup->getName();
+      dst = createGroup(grpName, grp.m_is_list);
+    }
+    dst->deepCopyGroupToSelf(&grp);
+#endif
+  }
+
+  // copy Views to new Group
+  for(auto& view : srcGroup->views())
+  {
+#if 1
+    deepCopyView(&view);
+#else
+    View* dst = nullptr;
+    if(m_is_list)
+    {
+      dst = createUnnamedGroup(grp.m_is_list);
+    }
+    else
+    {
+      const std::string& grpName = srcGroup->getName();
+      dst = createGroup(grpName, grp.m_is_list);
+    }
+    dst->deepCopyGroupToSelf(&grp);
+    deepCopyView(&view, allocID);
+#endif
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Reallocate data to a different allocator.
+ *
+ *************************************************************************
+ */
+Group* Group::reallocateTo(int newAllocId,
+                           const std::function<bool(const View&)>& pred)
+{
+  SLIC_ASSERT(newAllocId != INVALID_ALLOCATOR_ID);
+
+  for(auto& grp : groups())
+  {
+    grp.reallocateTo(newAllocId, pred);
+  }
+
+  for(auto& view : views())
+  {
+    if(view.m_state != View::State::EXTERNAL && pred(view))
+    {
+      view.reallocateTo(newAllocId);
+    }
+  }
+
+  return this;
+}
+
+Group* Group::reallocateTo(int newAllocId)
+{
+  return reallocateTo(
+    std::function<int(const View&)> {[=](const View&) { return newAllocId; }});
+}
+
+/*
+ *************************************************************************
+ *
+ * Reallocate data to View-specific allocators.
+ *
+ *************************************************************************
+ */
+Group* Group::reallocateTo(const std::function<int(const View&)>& viewToAllocatorId)
+{
+  for(auto& grp : groups())
+  {
+    grp.reallocateTo(viewToAllocatorId);
+  }
+
+  for(auto& view : views())
+  {
+    int newAllocId = viewToAllocatorId(view);
+    if(newAllocId != axom::INVALID_ALLOCATOR_ID)
+    {
+      view.reallocateTo(newAllocId);
+    }
+  }
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Find hierarchy's views that match some criteria.
+ *
+ *************************************************************************
+ */
+axom::IndexType Group::findViews(const std::function<bool(View&)>& criteria,
+                                 axom::Array<View*>& found)
+{
+  auto origSize = found.size();
+
+  for(auto& view : views())
+  {
+    if(criteria(view))
+    {
+      found.push_back(&view);
+    }
+  }
+
+  for(auto& grp : groups())
+  {
+    grp.findViews(criteria, found);
+  }
+
+  return found.size() - origSize;
 }
 
 /*
@@ -1490,6 +1668,66 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
         n.remove(n.number_of_children() - 1);
       }
     }
+  }
+
+  return hasSavedViews;
+}
+
+/*
+ *************************************************************************
+ *
+ * Deep-copy Group's native layout to given Conduit node.
+ *
+ *************************************************************************
+ */
+bool Group::deepCopyToConduit(Node& n, const Attribute* attr) const
+{
+  n.set(DataType::object());
+  bool hasSavedViews = false;
+
+  // Dump the group's views
+  IndexType vidx = getFirstValidViewIndex();
+  while(indexIsValid(vidx))
+  {
+    const View* view = getView(vidx);
+
+    // Check that the view's name is not also a child group name
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
+                   SIDRE_GROUP_LOG_PREPEND
+                     << "'" << view->getName()
+                     << "' is the name of both a group and a view.");
+
+    if(attr == nullptr || view->hasAttributeValue(attr))
+    {
+      conduit::Node& child_node = m_is_list ? n.append() : n[view->getName()];
+      view->deepCopyToConduit(child_node);
+      hasSavedViews = true;
+    }
+    vidx = getNextValidViewIndex(vidx);
+  }
+
+  // Recursively dump the child groups
+  IndexType gidx = getFirstValidGroupIndex();
+  while(indexIsValid(gidx))
+  {
+    const Group* group = getGroup(gidx);
+    conduit::Node& child_node = m_is_list ? n.append() : n[group->getName()];
+    if(group->deepCopyToConduit(child_node, attr))
+    {
+      hasSavedViews = true;
+    }
+    else
+    {
+      if(m_is_list)
+      {
+        n.remove(group->getName());
+      }
+      else
+      {
+        n.remove(n.number_of_children() - 1);
+      }
+    }
+    gidx = getNextValidGroupIndex(gidx);
   }
 
   return hasSavedViews;
@@ -2273,6 +2511,8 @@ Group::Group(const std::string& name, DataStore* datastore, bool is_list)
   , m_group_coll(nullptr)
 #ifdef AXOM_USE_UMPIRE
   , m_default_allocator_id(axom::getDefaultAllocatorID())
+#else
+  , m_default_allocator_id(axom::MALLOC_ALLOCATOR_ID)
 #endif
 {
   if(is_list)
@@ -2781,6 +3021,18 @@ bool Group::importConduitTree(const conduit::Node& node, bool preserve_contents)
   return success;
 }
 
+/*
+  TODO: Fix: This implementation is not fully shallow copying as its comments
+  claim.
+  It only shallow-copies nodes that are arrays of more than 1.
+  For strings and arrays of 1 numeric value, it makes a deep copy.
+  (Conduit doesn't differentiate between array-of-1 and scalars.)
+  We can't do much about the ambiguities of interpreting Conduit
+  data, but we should shallow copy all.
+  But then, what is the state of a string with external storage,
+  STRING or EXTERNAL?  What are resonable alternatives?  Exempt
+  these two types from external pointers and deep copying them?
+*/
 bool Group::importConduitTreeExternal(conduit::Node& node, bool preserve_contents)
 {
   bool success = true;
@@ -2817,6 +3069,7 @@ bool Group::importConduitTreeExternal(conduit::Node& node, bool preserve_content
         if(cld_name != "sidre_group_name")
         {
           //create string view
+          // createViewString(cld_name, cld_node.data_ptr());
           createViewString(cld_name, cld_node.as_string());
         }
       }
@@ -3348,17 +3601,34 @@ bool Group::rename(const std::string& new_name)
  *
  *************************************************************************
  */
-int Group::getValidAllocatorID(int allocID)
+int Group::getValidAxomAllocatorID(int allocID)
 {
-#ifdef AXOM_USE_UMPIRE
   if(allocID == INVALID_ALLOCATOR_ID)
   {
     allocID = m_default_allocator_id;
   }
-#endif
-
   return allocID;
 }
+
+#if 0
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to return a valid Conduit allocator ID.
+ *
+ *************************************************************************
+ */
+int View::getValidConduitAllocatorID(int allocID)
+{
+  if(allocID == INVALID_ALLOCATOR_ID)
+  {
+    allocID = getOwningGroup()->getDefaultAllocatorID();
+  }
+  auto conduitAllocId = axom::ConduitMemory::axomAllocIdToConduit(allocID);
+
+  return conduitAllocId;
+}
+#endif
 
 } /* end namespace sidre */
 } /* end namespace axom */
