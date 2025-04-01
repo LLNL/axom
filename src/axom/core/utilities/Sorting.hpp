@@ -80,7 +80,7 @@ struct Sorting
 
       if(low < high)
       {
-        int pivot_index = partition(values, low, high);
+        const int pivot_index = partition(values, low, high);
 
         stack[stack_count][0] = low;
         stack[stack_count][1] = pivot_index - 1;
@@ -105,6 +105,26 @@ struct Sorting
   AXOM_HOST_DEVICE
   static int partition(T *values, int low, int high)
   {
+    // Median-of-three pivot selection
+    const int mid = low + (high - low) / 2;
+
+    // Find the median of values[low], values[mid], values[high]
+    if(values[low] > values[mid])
+    {
+      axom::utilities::swap(values[low], values[mid]);
+    }
+    if(values[low] > values[high])
+    {
+      axom::utilities::swap(values[low], values[high]);
+    }
+    if(values[mid] > values[high])
+    {
+      axom::utilities::swap(values[mid], values[high]);
+    }
+
+    // Use the median as the pivot
+    axom::utilities::swap(values[mid], values[high]);
+
     const T pivot = values[high];
     int i = low - 1;
     for(int j = low; j < high; j++)
