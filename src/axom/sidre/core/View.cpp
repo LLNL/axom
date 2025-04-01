@@ -11,6 +11,7 @@
 #include "Group.hpp"
 #include "DataStore.hpp"
 #include "Attribute.hpp"
+#include "SidreTypes.hpp"
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/Macros.hpp"
@@ -981,6 +982,114 @@ void View::print(std::ostream& os) const
   Node n;
   copyToConduitNode(n);
   n.to_json_stream(os);
+}
+
+/*
+  Print data in a way that won't crash when data is not host-accessible.
+
+  If data is not host-accessible, print the pointer and a comment.
+*/
+void View::hostPrint(std::ostream& os) const
+{
+  if(isString())
+  {
+    if(isHostAccessible())
+    {
+      os << ' ' << '"' << getString() << '"';
+    }
+    else
+    {
+      os << ' ' << getVoidPtr() << " # non-host string data";
+    }
+  }
+  else if(isScalar())
+  {
+    switch(getTypeID())
+    {
+      case detail::SidreTT<axom::float32>::id:
+        hostPrintScalar<axom::float32>();
+        break;
+      case detail::SidreTT<axom::float64>::id:
+        hostPrintScalar<axom::float64>();
+        break;
+      case detail::SidreTT<std::int8_t>::id:
+        hostPrintScalar<std::int8_t>();
+        break;
+      case detail::SidreTT<std::int16_t>::id:
+        hostPrintScalar<std::int16_t>();
+        break;
+      case detail::SidreTT<std::int32_t>::id:
+        hostPrintScalar<std::int32_t>();
+        break;
+      case detail::SidreTT<std::int64_t>::id:
+        hostPrintScalar<std::int64_t>();
+        break;
+      case detail::SidreTT<std::uint8_t>::id:
+        hostPrintScalar<std::uint8_t>();
+        break;
+      case detail::SidreTT<std::uint16_t>::id:
+        hostPrintScalar<std::uint16_t>();
+        break;
+      case detail::SidreTT<std::uint32_t>::id:
+        hostPrintScalar<std::int32_t>();
+        break;
+      case detail::SidreTT<std::uint64_t>::id:
+        hostPrintScalar<std::int64_t>();
+        break;
+      default:
+        os << ' ' << getVoidPtr() << " # non-host unknown scalar data";
+    }
+  }
+  else if(hasBuffer() || (isExternal() && !isOpaque()))
+  {
+    switch(getTypeID())
+    {
+      case detail::SidreTT<axom::float32>::id:
+        hostPrintArray<axom::float32>();
+        break;
+      case detail::SidreTT<axom::float64>::id:
+        hostPrintArray<axom::float64>();
+        break;
+      case detail::SidreTT<std::int8_t>::id:
+        hostPrintArray<std::int8_t>();
+        break;
+      case detail::SidreTT<std::int16_t>::id:
+        hostPrintArray<std::int16_t>();
+        break;
+      case detail::SidreTT<std::int32_t>::id:
+        hostPrintArray<std::int32_t>();
+        break;
+      case detail::SidreTT<std::int64_t>::id:
+        hostPrintArray<std::int64_t>();
+        break;
+      case detail::SidreTT<std::uint8_t>::id:
+        hostPrintArray<std::uint8_t>();
+        break;
+      case detail::SidreTT<std::uint16_t>::id:
+        hostPrintArray<std::uint16_t>();
+        break;
+      case detail::SidreTT<std::uint32_t>::id:
+        hostPrintArray<std::int32_t>();
+        break;
+      case detail::SidreTT<std::uint64_t>::id:
+        hostPrintArray<std::int64_t>();
+        break;
+      default:
+        os << ' ' << getVoidPtr() << " # non-host unknown scalar data";
+    }
+  }
+  else if(isOpaque())
+  {
+    if(isHostAccessible())
+    {
+      os << ' ' << " # opaque host data";
+    }
+    else
+    {
+      os << ' ' << " # opaque non-host data";
+    }
+  }
+
 }
 
 /*

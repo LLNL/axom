@@ -1415,6 +1415,13 @@ public:
    */
   void printTree(const int nlevels, std::ostream& os = std::cout) const;
 
+  /*!
+    * \brief Print in a way that won't crash for non-host data.
+    *
+    * If data is not host-accessible, print the pointer and a comment.
+    */
+  void hostPrint(const std::string& indent = "", std::ostream& os = std::cout) const;
+
   //@}
 
   /*!

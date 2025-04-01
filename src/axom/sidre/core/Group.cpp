@@ -1880,6 +1880,23 @@ void Group::printTree(const int nlevels, std::ostream& os) const
   }
 }
 
+void Group::hostPrint(const std::string& indent, std::ostream& os) const
+{
+  for(const auto& view : this->views())
+  {
+    os << indent << view.getName() << ':';
+    view.hostPrint(os);
+    os << std::endl;
+  }
+
+  const std::string nextIndent = indent + std::string("  ");
+  for(const auto& group : this->groups())
+  {
+    os << indent << group.getName() << ':' << std::endl;
+    group.hostPrint(nextIndent, os);
+  }
+}
+
 /*
  *************************************************************************
  *

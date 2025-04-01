@@ -19,6 +19,7 @@
 // Standard C++ headers
 #include <string>
 #include <set>
+#include <typeinfo>
 
 // Other axom headers
 #include "axom/config.hpp"
@@ -979,6 +980,13 @@ public:
    */
   void print(std::ostream& os) const;
 
+  /*!
+   * \brief Print data in a way that won't crash for non-host data.
+   *
+   * If data is not host-accessible, print the pointer and a comment.
+   */
+  void hostPrint(std::ostream& os = std::cout) const;
+
   //@}
 
   /*!
@@ -1602,6 +1610,49 @@ private:
    */
   int getValidConduitAllocatorID(int allocatorID);
 #endif
+
+  //!@brief Print on host, as a single line.
+  template <typename T>
+  void hostPrintScalar(std::ostream& os = std::cout) const
+    {
+      if(isHostAccessible())
+      {
+        os << ' ' << T(m_node.value());
+      }
+      else
+      {
+        os << ' ' << getVoidPtr() << " # non-host " << typeid(T).name() << " data";
+      }
+    }
+
+  //!@brief Print on host, as a single line.
+  template <typename T>
+  void hostPrintArray(std::ostream& os = std::cout) const
+    {
+      if(isHostAccessible())
+      {
+        os << " [";
+        auto start = (T*)(getVoidPtr());
+        auto end = (T*)(getVoidPtr()) + getNumElements();
+        if(getNumElements() <= 10)
+        {
+          for(auto i = start; i < end; ++i) { os << *i; if (i != end-1) os << ", "; }
+        }
+        else
+        {
+          auto a = start + 5;
+          auto b = end - 5;
+          for(auto i = start; i < a; ++i) { os << *i << ", "; }
+          os << "..., ";
+          for(auto i = b; i < end; ++i) { os << *i; if (i != end-1) os << ", "; }
+        }
+        os << "]";
+      }
+      else
+      {
+        os << ' ' << getVoidPtr() << " # non-host " << typeid(T).name() << " array of " << getNumElements() << " elements";
+      }
+    }
 
   /// Name of this View object.
   std::string m_name;
