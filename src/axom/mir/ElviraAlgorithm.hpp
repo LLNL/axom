@@ -40,7 +40,11 @@
 // Uncomment to save inputs and outputs.
 //#define AXOM_ELVIRA_DEBUG
 
+// Uncomment to debug make fragments.
 //#define AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS
+
+// Uncomment to gather ELVIRA data and save to YAML file.
+//#define AXOM_ELVIRA_GATHER_INFO
 
 #if defined(AXOM_ELVIRA_DEBUG)
   #include <conduit/conduit_relay_io.hpp>
@@ -448,7 +452,6 @@ protected:
       max_iterations = n_options["max_iterations"].to_int();
     }
 
-//#define AXOM_ELVIRA_GATHER_INFO
 #if defined(AXOM_ELVIRA_GATHER_INFO)
     // Let's output the normals
     conduit::Node *n_result = new conduit::Node;
@@ -776,28 +779,29 @@ protected:
                   fragmentVFStencilView,
                   max_iterations,
                   tolerance);
-#if 1
+
     //--------------------------------------------------------------------------
     // Clean up the mesh so it has merged coordinates and merged faces.
     axom::Array<axom::IndexType> selectedIds;
     build.cleanMesh(n_newCoordset, n_newTopo, selectedIds);
-#endif
+
     //--------------------------------------------------------------------------
 #if defined(AXOM_ELVIRA_DEBUG)
-    AXOM_ANNOTATE_BEGIN("verify");
-    conduit::Node n_mesh;
-    n_mesh[n_newCoordset.path()].set_external(n_newCoordset);
-    n_mesh[n_newTopo.path()].set_external(n_newTopo);
-    n_mesh[n_newFields.path()].set_external(n_newFields);
-    n_mesh[n_newMatset.path()].set_external(n_newMatset);
-
-    // Verify the MIR output.
-    conduit::Node info;
-    if(!conduit::blueprint::mesh::verify(n_mesh, info))
     {
-      info.print();
+      AXOM_ANNOTATE_SCOPE("verify");
+      conduit::Node n_mesh;
+      n_mesh[n_newCoordset.path()].set_external(n_newCoordset);
+      n_mesh[n_newTopo.path()].set_external(n_newTopo);
+      n_mesh[n_newFields.path()].set_external(n_newFields);
+      n_mesh[n_newMatset.path()].set_external(n_newMatset);
+
+      // Verify the MIR output.
+      conduit::Node info;
+      if(!conduit::blueprint::mesh::verify(n_mesh, info))
+      {
+        info.print();
+      }
     }
-    AXOM_ANNOTATE_END("verify");
 #endif
   }
 

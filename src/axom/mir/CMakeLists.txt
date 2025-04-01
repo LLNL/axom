@@ -65,6 +65,7 @@ set(mir_headers
     utilities/blueprint_utilities.hpp
     utilities/BlendData.hpp
     utilities/CoordsetBlender.hpp
+    utilities/CoordsetExtents.hpp
     utilities/CoordsetSlicer.hpp
     utilities/ExtractZones.hpp
     utilities/ExtrudeMesh.hpp

@@ -729,7 +729,7 @@ protected:
       conduit::Node &n_phCoordset =
         phInputs[i].m_input->operator[]("coordsets/" + n_srcCoordset.name());
 
-      // We coordsets linked in.
+      // We need coordsets linked in.
       n_phCoordset.set_external(n_srcCoordset);
 
       if(n_srcTopo.fetch_existing("elements/shape").as_string() == "polyhedral")
@@ -742,8 +742,10 @@ protected:
         // Convert the mesh to polyhedral.
         const std::string shape =
           n_srcTopo.fetch_existing("elements/shape").as_string();
+        const conduit::Node &n_elem_conn =
+          n_srcTopo.fetch_existing("elements/connectivity");
         views::IndexNode_to_ArrayView(
-          n_srcTopo.fetch_existing("elements/connectivity"),
+          n_elem_conn,
           [&](auto connView) {
             using ConnectivityType = typename decltype(connView)::value_type;
 
@@ -806,7 +808,7 @@ protected:
    */
   template <typename TopologyView>
   void makePolyhedralMesh(const TopologyView &topologyView,
-                          const conduit::Node n_srcTopo,
+                          const conduit::Node &n_srcTopo,
                           conduit::Node &n_phTopo) const
   {
     namespace bputils = axom::mir::utilities::blueprint;

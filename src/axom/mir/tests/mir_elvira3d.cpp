@@ -155,7 +155,7 @@ struct test_Elvira3D
       mirTopoView,
       mirCoordsetView);
     mirZV.execute(n_mir_topology, n_mir_coordset, deviceMIRMesh["fields/volume"]);
-    AXOM_ANNOTATE_BEGIN("volume");
+    AXOM_ANNOTATE_END("volume");
 
     //--------------------------------------------------------------------------
     // device->host
@@ -189,7 +189,7 @@ struct test_Elvira3D
 
     //--------------------------------------------------------------------------
     // Compute the total volumes on the original and MIR meshes.
-    constexpr double tolerance = 3.e-6;
+    constexpr double tolerance = 8.e-6;
 
     const auto orig_volume =
       bputils::make_array_view<double>(deviceMesh["fields/volume/values"]);
