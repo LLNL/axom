@@ -347,9 +347,9 @@ spack:
       - spec: cray-mpich@8.1.29%rocmcc@6.1.2+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.1.2/
       - spec: cray-mpich@8.1.29%rocmcc@6.2.1+slurm
-        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.32-rocmcc-6.2.1/
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.2.1/
       - spec: cray-mpich@8.1.29%rocmcc@6.3.1+slurm
-        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.32-rocmcc-6.3.1/
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.3.1/
       - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
       - spec: cray-mpich@8.1.29%cce@18.0.1+slurm
