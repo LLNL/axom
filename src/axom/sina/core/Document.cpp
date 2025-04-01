@@ -27,6 +27,9 @@
   #include "conduit_relay_io.hpp"
 #endif
 
+#include <functional>
+#include <set>
+#include <string>
 #include <cstdio>
 #include <fstream>
 #include <ios>
@@ -38,7 +41,6 @@
 #include "conduit.hpp"
 #include "conduit_relay.hpp"
 #include "conduit_relay_io.hpp"
-#include <algorithm>
 #include "conduit_relay_io_hdf5.hpp"
 
 
@@ -393,112 +395,132 @@ Document loadDocument(std::string const &path,
   }
 }
 
-bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets, const nlohmann::json& existing_curve_sets, const std::string id) {
-  int largest = 0;
-  for (auto& [existing_key, existing_curve_set] : existing_curve_sets.items()) {
-      bool match_found = true;
+// Unified helper function that validates a set of curves (either dependent or independent).
+// Parameters:
+//   new_curves     : a map of new curves (e.g. std::map<std::string, Curve>).
+//   existing_keys  : a set of keys that are present in the existing data.
+//   getExistingSize: a callable that takes a curve key and returns the size (int)
+//                    from the existing data or -1 if not found.
+//   curveType      : "dependent" or "independent" (for erro messages).
+//   recordId       : identifier for the record (for error messages).
+//   curveSetId     : identifier for the curve set (for error messages).
+//   baseline       : reference to an int that will hold the computed baseline value
+//                    (initialize to -1 to have the function set baseline).
+//
+// Templated on the container type to avoid conversion issues (e.g., unordered_map vs. map).
+template<typename CurveMap>
+bool validate_curves_unified(
+    const CurveMap &new_curves,
+    const std::set<std::string>& existing_keys,
+    std::function<int(const std::string&)> getExistingSize,
+    const std::string &curveType,
+    const std::string &recordId,
+    const std::string &curveSetId,
+    int baseline)
+{
+    std::set<std::string> unionKeys = existing_keys;
+    for (const auto &pair : new_curves) {
+        unionKeys.insert(pair.first);
+    }
 
-      if (new_curve_sets.find(existing_key) != new_curve_sets.end()) {
-          bool dep_match = true;
-          bool indep_match = true;
-          const auto& new_curve_set = new_curve_sets.at(existing_key);
-          if (((new_curve_set.getDependentCurves().size() > 0) && existing_curve_set.contains("dependent"))) {
-              for (auto& [dep_key, dep_item] : existing_curve_set["dependent"].items()) {
-                  auto& dependents = new_curve_set.getDependentCurves();
-                  if (dependents.find(dep_key) != dependents.end()) {
-                      size_t new_size = dependents.at(dep_key).getValues().size();
-                      if (largest == 0) {
-                          largest = dep_item["value"].size() + static_cast<int>(new_size);
-                      } else if (largest != 0 && largest != ((int)dep_item["value"].size() + static_cast<int>(new_size))) {
-                          std::cerr << "Error validating dependents: Record " << id << ", Curve Set " << existing_key << ", Dependent " << dep_key
-                                          << "'s size after append will mismatch with an earlier curve post-append." << std::endl;
-                          return false;
-                      }
-                  } else {
-                      size_t new_size = dep_item["value"].size();
-                      if (largest == 0) {
-                          largest = static_cast<int>(new_size);
-                      } else if (largest != 0 && largest != static_cast<int>(new_size)) {
-                          std::cerr << "Error validating dependents: Record " << id << ", Curve Set " << existing_key << ", Dependent " << dep_key
-                                         << " is not being appended to and will mismatch with curves that were." << std::endl;
-                          return false;
-                      }
-                  }
-              }
+    for (const auto &key : unionKeys) {
+        int newSize = 0;
+        auto newItr = new_curves.find(key);
+        if (newItr != new_curves.end()) {
+            newSize = static_cast<int>(newItr->second.getValues().size());
+        }
+        int existingSize = getExistingSize(key);
 
-              for (auto& [new_dep_key, new_dep_item] : new_curve_set.getDependentCurves()) {
-                  auto& dependents = existing_curve_set["dependent"];
-                  if (!dependents.contains(new_dep_key)) {
-                      size_t new_size = new_dep_item.getValues().size();
-                      if (largest == 0) {
-                          largest = static_cast<int>(new_size);
-                      } else if (largest != 0 && largest != static_cast<int>(new_size)) {
-                          std::cerr << "Error validating dependents: Record " << id << ", Curve Set " << existing_key << ", Dependent " << new_dep_key
-                                         << " will mistmatch with earlier curves in its curve_set if appended to." << std::endl;
-                          return false;
-                      }
-                  }
-              }
-          } else {
-              dep_match = false;
-          }
+        // Get total size but ignore -1 returns
+        int total = (existingSize >= 0 ? newSize + existingSize : newSize);
 
-          if (((new_curve_set.getIndependentCurves().size() > 0) && existing_curve_set.contains("independent"))) {
-              for (auto& [indep_key, indep_item] : existing_curve_set["independent"].items()) {
-                  auto& independents = new_curve_set.getIndependentCurves();
-                  if (independents.find(indep_key) != independents.end()) {
-                      size_t new_size = independents.at(indep_key).getValues().size();
-                      if (largest == 0) {
-                          largest = indep_item["value"].size() + static_cast<int>(new_size);
-                      } else if (largest != 0 && largest != ((int)indep_item["value"].size() + static_cast<int>(new_size))) {
-                         std::cerr << "Error validating independents: Record " << id << ", Curve Set " << existing_key << ", Independent " << indep_key
-                                         << "'s size after append will mismatch with an earlier curve post-append." << std::endl;
-                         return false;
-                      }
-                  } else {
-                      size_t new_size = indep_item["value"].size();
-                      if (largest == 0) {
-                          largest = static_cast<int>(new_size);
-                      } else if (largest != 0 && largest != static_cast<int>(new_size)) {
-                         std::cerr << "Error validating independents: Record " << id << ", Curve Set " << existing_key << ", Independent " << indep_key
-                                         << " is not being appended to and will mismatch with curves that were." << std::endl;
-                         return false;
-                      }
-                  }
-              }
+        if (baseline < 0) {
+            baseline = total;
+        } else if (baseline != total) {
+            std::cerr << "Error validating " << curveType << ": Record " << recordId
+                      << ", Curve Set " << curveSetId << ", Curve " << key
+                      << " size mismatch (expected " << baseline << ", got " << total << ")."
+                      << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
 
-              for (auto& [new_indep_key, new_indep_item] : new_curve_set.getIndependentCurves()) {
-                  auto& independents = existing_curve_set["independent"];
-                  if (!independents.contains(new_indep_key)) {
-                      size_t new_size = new_indep_item.getValues().size();
-                      if (largest == 0) {
-                          largest = static_cast<int>(new_size);
-                      } else if (largest != 0 && largest != static_cast<int>(new_size)) {
-                         std::cerr << "Error validating independents: Record " << id << ", Curve Set " << existing_key << ", Independent " << new_indep_key
-                                         << " will mistmatch with earlier curves in its curve_set if appended to." << std::endl;
-                         return false;
-                      }
-                  }
-              }
-          } else {
-              indep_match = false;
-          }
-          
-          if (dep_match && indep_match) {
-              match_found = true;
-          } else if ((!(new_curve_set.getDependentCurves().size() > 0) && existing_curve_set.contains("dependent")) && (!(new_curve_set.getIndependentCurves().size() > 0) && existing_curve_set.contains("independent"))) {
-              match_found = true;
-          }
-      }
+bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
+                              const nlohmann::json &existing_curve_sets,
+                              const std::string recordId)
+{
+    for (auto & [curveSetId, existing_curve_set] : existing_curve_sets.items()) {
+        // Create an alias to avoid capturing the structured binding directly.
+        auto &ecs = existing_curve_set;
 
-      if (!match_found) {
-          std::cerr << "No matching existing curve set found for appending." << std::endl;
-          return false;
-      }
-  }
+        if (new_curve_sets.find(curveSetId) != new_curve_sets.end()) {
+            const auto &new_curve_set = new_curve_sets.at(curveSetId);
 
-  return true;
-} 
+            // Validate dependent curves.
+            std::set<std::string> existingDepKeys;
+            if (ecs.contains("dependent")) {
+                for (auto & [key, val] : ecs["dependent"].items()) {
+                    existingDepKeys.insert(key);
+                }
+            }
+            
+            auto getExistingDepSize = [&ecs](const std::string &key) -> int {
+                if (ecs.contains("dependent") &&
+                    ecs["dependent"].contains(key)) {
+                    return static_cast<int>(ecs["dependent"][key]["value"].size());
+                }
+                return -1;
+            };
+
+            if (!new_curve_set.getDependentCurves().empty() &&
+                !validate_curves_unified(new_curve_set.getDependentCurves(),
+                                         existingDepKeys,
+                                         getExistingDepSize,
+                                         "dependent",
+                                         recordId,
+                                         curveSetId,
+                                         -1))
+            {
+                return false;
+            }
+
+            // Validate independent curves.
+            std::set<std::string> existingIndepKeys;
+            if (ecs.contains("independent")) {
+                for (auto & [key, val] : ecs["independent"].items()) {
+                    existingIndepKeys.insert(key);
+                }
+            }
+
+            auto getExistingIndepSize = [&ecs](const std::string &key) -> int {
+                if (ecs.contains("independent") &&
+                    ecs["independent"].contains(key)) {
+                    return static_cast<int>(ecs["independent"][key]["value"].size());
+                }
+                return -1;
+            };
+
+            if (!new_curve_set.getIndependentCurves().empty() &&
+                !validate_curves_unified(new_curve_set.getIndependentCurves(),
+                                         existingIndepKeys,
+                                         getExistingIndepSize,
+                                         "independent",
+                                         recordId,
+                                         curveSetId,
+                                         -1))
+            {
+                return false;
+            }
+        } else {
+            std::cerr << "Curve set " << curveSetId
+                      << " not found in new data for record " << recordId << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
 
 bool append_to_json(const std::string& jsonFilePath,
                  Document const &newData,
@@ -540,7 +562,9 @@ bool append_to_json(const std::string& jsonFilePath,
      for (auto& existing_record : j["records"]) {
          if (new_record->getId().getId() == existing_record["id"]) {
              found = true;
-             //--- Update Curve Sets ---
+             // ----------------------
+             // Queue update of CURVE SETS.
+             // ----------------------
              if ((new_record->getCurveSets().size() > 0) &&
                  existing_record.contains("curve_sets"))
              {
@@ -579,7 +603,9 @@ bool append_to_json(const std::string& jsonFilePath,
                  }
              }
              
-             //--- Update Data Sets ---
+             // ----------------------
+             // Queue update of DATA VALUES.
+             // ----------------------
              if ((new_record->getData().size() > 0) &&
                  existing_record.contains("data"))
              {
@@ -590,6 +616,7 @@ bool append_to_json(const std::string& jsonFilePath,
                      auto data_key = new_data_key; // local copy for capture
                      nlohmann::json obj = nlohmann::json::parse(new_data_pair.toNode().to_json());
                      if (existing_data_sets.contains(data_key)) {
+                         // Duplicate Handling
                          switch(data_protocol) {
                              case 1:
                                  write_queue.push_back(
@@ -617,7 +644,9 @@ bool append_to_json(const std::string& jsonFilePath,
                  }
              }
              
-             //--- Update User Defined Content ---
+             // ----------------------
+             // Queue update of USER DEFINED CONTENT.
+             // ----------------------
              if ((!new_record->getUserDefinedContent().dtype().is_empty()) &&
                  existing_record.contains("user_defined"))
              {
@@ -685,117 +714,99 @@ bool append_to_json(const std::string& jsonFilePath,
  return true;
 }
 
-bool validate_curve_sets_hdf5(const Document &newData, conduit::relay::io::IOHandle &existing_file, const conduit::Node &info) {
- std::vector<std::string> record_list;
- std::string curve_set_path;
- existing_file.list_child_names("records", record_list);
+#ifdef AXOM_USE_HDF5
+// Top-level HDF5 validation function.
+bool validate_curve_sets_hdf5(const Document &newData,
+                              conduit::relay::io::IOHandle &existing_file,
+                              const conduit::Node &info)
+{
+    std::vector<std::string> record_list;
+    existing_file.list_child_names("records", record_list);
 
- for (auto &record : newData.getRecords()) {
-     for (const auto &rec_name : record_list) {
-         std::string id_path = "records/" + rec_name + "/id/";
-         conduit::Node id;
-         existing_file.read(id_path, id);
-         if (id.to_string() == "\"" + record->getId().getId() + "\"") {
-             try {
-                 std::string cs_path = "records/" + rec_name + "/curve_sets/";
-                 std::vector<std::string> curve_sets_list;
-                 existing_file.list_child_names("records/" + rec_name + "/curve_sets", curve_sets_list);
-                 auto &new_curve_sets = record->getCurveSets();
+    for (auto &record : newData.getRecords()) {
+        for (const auto &rec_name : record_list) {
+            std::string id_path = "records/" + rec_name + "/id/";
+            conduit::Node id;
+            existing_file.read(id_path, id);
+            if (id.to_string() == "\"" + record->getId().getId() + "\"") {
+                try {
+                    std::string cs_path = "records/" + rec_name + "/curve_sets/";
+                    std::vector<std::string> curve_sets_list;
+                    existing_file.list_child_names(cs_path, curve_sets_list);
+                    auto &new_curve_sets = record->getCurveSets();
 
-                 for (const auto &cs_name : curve_sets_list) {
-                     // Locate the new curve set information.
-                     auto cs_itr = new_curve_sets.find(cs_name);
-                     if (cs_itr == new_curve_sets.end())
-                         continue;
-                     
-                     const auto &new_dependents  = cs_itr->second.getDependentCurves();
-                     const auto &new_independents = cs_itr->second.getIndependentCurves();
-                     
-                     // Process dependent curves.
-                     std::string dependent_path = cs_path + cs_name + "/dependent/";
+                    for (const auto &cs_name : curve_sets_list) {
+                        auto cs_itr = new_curve_sets.find(cs_name);
+                        if (cs_itr == new_curve_sets.end())
+                            continue;
 
-                     bool need_dep_flag = false;
-                     int size_count = -1;
-                     
-                     for (const auto &dep_pair : new_dependents) {
-                         curve_set_path = dependent_path + dep_pair.first + "/value";
+                        const auto &new_curve_set = cs_itr->second;
+                        std::set<std::string> existingDepKeys;
+                        if (info.has_path(cs_path + cs_name + "/dependent/")) {
+                          for (const auto &key : info[cs_path + cs_name + "/dependent/"].child_names()) {
+                            existingDepKeys.insert(key);
+                          }
+                        }
 
-                         if(info.has_path(curve_set_path))
-                         {
-                             if (need_dep_flag && info[curve_set_path]["num_elements"].to_int() > 0) {
-                                 std::cerr << "Error validating dependents: " << curve_set_path << " will mistmatch with earlier curves in its curve_set if appended to." << std::endl;
-                                 return false;
-                             } else {
-                                 if (size_count == -1) {
-                                     // First dependent has increased its size
-                                     size_count = dep_pair.second.getValues().size() + info[curve_set_path]["num_elements"].to_int();
-                                 } else if (size_count != dep_pair.second.getValues().size() + info[curve_set_path]["num_elements"].to_int()) {
-                                     std::cerr << "Error validating dependents: " << curve_set_path << "'s size after append will mismatch with an earlier curve post-append." << std::endl;
-                                     return false;
-                                 }
-                             }
-                         }
-                         else {
-                             if (size_count == -1) {
-                                 // No more dependents are allowed to increase size
-                                 need_dep_flag = true;
-                             } else {
-                                 std::cerr << "Error validating dependents: " << curve_set_path << " is not being appended to and will mismatch with curves that were."  << std::endl;
-                                 return false;
-                             }
-                         }
-                     }
-                     // Made it out of For loop, either all deps increased by same increment or none did
+                        // Validate dependent curves.
+                        auto getExistingDepSize = [&info, cs_path, cs_name](const std::string &key) -> int {
+                            std::string fullPath = cs_path + cs_name + "/dependent/" + key + "/value";
+                            if (info.has_path(fullPath)) {
+                                return info[fullPath]["num_elements"].to_int();
+                            }
+                            return -1;
+                        };
 
-                     // Process independent curves.
-                     std::string independent_path = cs_path + cs_name + "/independent/";
+                        if (!new_curve_set.getDependentCurves().empty() &&
+                            !validate_curves_unified(new_curve_set.getDependentCurves(),
+                                                     existingDepKeys,
+                                                     getExistingDepSize,
+                                                     "dependent",
+                                                     record->getId().getId(),
+                                                     cs_name,
+                                                     -1))
+                        {
+                            return false;
+                        }
 
-                     bool need_indep_flag = false;
-                     
-                     for (const auto &indep_pair : new_independents) {
-                         curve_set_path = independent_path + indep_pair.first + "/value";
+                        // Validate independent curves.
+                        std::set<std::string> existingIndepKeys;
+                        if (info.has_path(cs_path + cs_name + "/independent/")) {
+                          for (const auto &key : info[cs_path + cs_name + "/independent/"].child_names()) {
+                            existingIndepKeys.insert(key);
+                          }
+                        }
 
-                         if(info.has_path(curve_set_path))
-                         {
-                             if (need_indep_flag && info[curve_set_path]["num_elements"].to_int() > 0) {
-                                 std::cerr << "Error validating independents: " << curve_set_path << " will mistmatch with earlier curve in its curve_set if appended to." << std::endl;
-                                 return false;
-                             } else {
-                                 if (size_count == -1) {
-                                     // First independent has increased its size
-                                     size_count = indep_pair.second.getValues().size() + info[curve_set_path]["num_elements"].to_int();
-                                 } else if (size_count != indep_pair.second.getValues().size() + info[curve_set_path]["num_elements"].to_int()) {
-                                     std::cerr << "Error validating independents: " << curve_set_path << "'s size after append will mismatch with an earlier curve post-append." << std::endl;
-                                     return false;
-                                 }
-                             }
-                         }
-                         else {
-                             if (size_count == -1) {
-                                 // No more independents are allowed to increase size
-                                 need_indep_flag = true;
-                             } else {
-                                 std::cerr << "Error validating independents: " << curve_set_path << " is not being appended to and will mismatch with curves that were." << std::endl;
-                                 return false;
-                             }
-                         }
-                     }
-                     // Made it out of For loop, either all indeps increased by same increment or none did
-                     // Since both passed, restart with the next curve set.
-                 }
-                 // Made it through this curve set, on to the next
+                        auto getExistingIndepSize = [&info, cs_path, cs_name](const std::string &key) -> int {
+                            std::string fullPath = cs_path + cs_name + "/independent/" + key + "/value";
+                            if (info.has_path(fullPath)) {
+                                return info[fullPath]["num_elements"].to_int();
+                            }
+                            return -1;
+                        };
 
-             } catch (const std::exception &e) {
-                 std::cerr << "Error validating curve sets: " << e.what() << std::endl;
-             }
-             break;
-         }
-         // Onto the next record
-     }
- }
- return true;
+                        if (!new_curve_set.getIndependentCurves().empty() &&
+                            !validate_curves_unified(new_curve_set.getIndependentCurves(),
+                                                     existingIndepKeys,
+                                                     getExistingIndepSize,
+                                                     "independent",
+                                                     record->getId().getId(),
+                                                     cs_name,
+                                                     -1))
+                        {
+                            return false;
+                        }
+                    }
+                } catch (const std::exception &e) {
+                    std::cerr << "Error validating curve sets: " << e.what() << std::endl;
+                    return false;
+                }
+                break; // Found matching record; proceed to next.
+            }
+        }
+    }
+    return true;
 }
-
 
 bool append_to_hdf5(const std::string &hdf5FilePath,
                  const Document &newData,
@@ -853,6 +864,7 @@ bool append_to_hdf5(const std::string &hdf5FilePath,
                      auto new_data_key = new_data.first;
                      auto new_data_pair = new_data.second;
                      if (std::find(data_keys.begin(), data_keys.end(), new_data_key) != data_keys.end()) {
+                         // Duplicate Handling
                          switch(data_protocol) {
                              case 1:
                                  write_queue.push_back([&existing_file, data_path, new_data_key, new_data_pair]() {
@@ -890,6 +902,7 @@ bool append_to_hdf5(const std::string &hdf5FilePath,
                  for (auto &new_udc : new_udc_sets.children()) {
                      std::string udc_name = new_udc.name();
                      if (std::find(udc_list.begin(), udc_list.end(), udc_name) != udc_list.end()) {
+                         // Duplicate Handling
                          switch(udc_protocol) {
                              case 1:
                                  write_queue.push_back([&existing_file, udc_path, udc_name, new_udc]() {
@@ -1031,6 +1044,7 @@ bool append_to_hdf5(const std::string &hdf5FilePath,
      }
  }
  
+ // Execute all queued operations.
  for (auto &write_op : write_queue) {
      try {
          write_op();
@@ -1042,6 +1056,7 @@ bool append_to_hdf5(const std::string &hdf5FilePath,
  
  return true;
 }
+#endif
 
 }  // namespace sina
 }  // namespace axom

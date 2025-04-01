@@ -291,23 +291,28 @@ Document loadDocument(std::string const &path,
                       Protocol protocol = Protocol::JSON);
 
 /**
- * \brief Append data to the curve set values of a JSON File. Listed variants allow for appending to
- *         one or multiple records, dependents/independents or both, and individual curve sets
+ * \brief Append the data, user defined content, and curves/curve sets of a Sina Document
+ *        to an existing JSON file
  *
  * \param jsonFilePath the path to the JSON file
  * \param newData a Sina Document containing the new data to append
+ * \param data_protocol protocol for handling datum duplicates.
+ * \param udc_protocol protocol for handling user defined content duplicates.
+ *                            1 = take the new value. 2 = keep the old value. 3/Other = Cancel the append.
  * 
  * \return true if appended successfully, false if the append fails
  */
 bool append_to_json(const std::string& jsonFilePath, Document const &newData, const int data_protocol = 2, const int udc_protocol = 2);
 
 /**
- * \brief Append data to the curve set values of a HDF5 File. Listed variants allow for appending to
- *         one or multiple records, dependents/independents or both, and individual curve sets
+ * \brief Append the data, user defined content, and curves/curve sets of a Sina Document
+ *        to an existing HDF5 file
  *
- * \param jsonFilePath the path to the HDF5 file
+ * \param hdf5FilePath the path to the HDF5 file
  * \param new_data a vector of the new data to append
- * \param recordIndex the index of the record we wish to append to, should we only choose one
+ * \param data_protocol protocol for handling datum duplicates.
+ * \param udc_protocol protocol for handling user defined content duplicates.
+ *                            1 = take the new value. 2 = keep the old value. 3/Other = Cancel the append.
  * 
  * \return true if appended successfully, false if the append fails
  */
