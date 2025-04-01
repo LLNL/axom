@@ -142,7 +142,8 @@ spack:
       # Flag for lowercase Fortran module names
       flags:
         fflags: -ef
-      modules: []
+      modules:
+      - cce/18.0.1
       operating_system: rhel8
       paths:
         cc: /usr/tce/packages/cce-tce/cce-18.0.1/bin/craycc
@@ -150,6 +151,22 @@ spack:
         f77: /usr/tce/packages/cce-tce/cce-18.0.1/bin/crayftn
         fc: /usr/tce/packages/cce-tce/cce-18.0.1/bin/crayftn
       spec: cce@=18.0.1
+      target: x86_64
+  - compiler:
+      environment: {}
+      extra_rpaths: []
+      # Flag for lowercase Fortran module names
+      flags:
+        fflags: -ef
+      modules:
+      - cce/19.0.0
+      operating_system: rhel8
+      paths:
+        cc: /usr/tce/packages/cce-tce/cce-19.0.0/bin/craycc
+        cxx: /usr/tce/packages/cce-tce/cce-19.0.0/bin/crayCC
+        f77: /usr/tce/packages/cce-tce/cce-19.0.0/bin/crayftn
+        fc: /usr/tce/packages/cce-tce/cce-19.0.0/bin/crayftn
+      spec: cce@=19.0.0
       target: x86_64
 
   packages:
@@ -330,13 +347,15 @@ spack:
       - spec: cray-mpich@8.1.29%rocmcc@6.1.2+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.1.2/
       - spec: cray-mpich@8.1.29%rocmcc@6.2.1+slurm
-        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.2.1/
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.32-rocmcc-6.2.1/
       - spec: cray-mpich@8.1.29%rocmcc@6.3.1+slurm
-        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.3.1/
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.32-rocmcc-6.3.1/
       - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
       - spec: cray-mpich@8.1.29%cce@18.0.1+slurm
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.1.2-cce-18.0.1/
+      - spec: cray-mpich@8.1.32%cce@19.0.0+slurm
+        prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.32-rocmcc-6.3.1-cce-19.0.0/
 
     # blas is a bit more complicated because its a virtual package so fake it with
     # the following per spack docs
@@ -596,8 +615,8 @@ spack:
         prefix: /usr/tce/packages/rocmcc/rocmcc-6.2.1-magic/llvm
       - spec: llvm@18.0.0%rocmcc@6.3.1+clang+python
         prefix: /usr/tce/packages/rocmcc/rocmcc-6.3.1-magic/llvm
-      - spec: llvm@18.0.0%cce@18.0.1+clang+python
-        prefix: /usr/tce/packages/rocmcc/rocmcc-6.1.2-magic/llvm
+      - spec: llvm@18.0.0%cce@19.0.0+clang+python
+        prefix: /usr/tce/packages/rocmcc/rocmcc-6.3.1-magic/llvm
     py-sphinx:
       version: [8.0.2]
       buildable: false
