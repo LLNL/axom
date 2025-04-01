@@ -829,12 +829,16 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
       for(auto idx2 = 0; idx2 < m.secondSetSize(); idx2++)
       {
         for(int i = 0; i < shape[0]; i++)
+        {
           for(int j = 0; j < shape[1]; j++)
+          {
             for(int k = 0; k < shape[2]; k++)
             {
               int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
               m(idx1, idx2, i, j, k) = getVal<double>(idx1, idx2, flatCompIdx);
             }
+          }
+        }
       }
     });
 
@@ -845,7 +849,9 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
     {
       int bsetIndex = idx1 * m.secondSetSize() + idx2;
       for(int i = 0; i < shape[0]; i++)
+      {
         for(int j = 0; j < shape[1]; j++)
+        {
           for(int k = 0; k < shape[2]; k++)
           {
             int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
@@ -860,6 +866,8 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
             EXPECT_DOUBLE_EQ(*ptr, m(idx1, idx2, i, j, k));
             EXPECT_DOUBLE_EQ(*ptr, m[flatIdx]);
           }
+        }
+      }
     }
   }
 
@@ -875,7 +883,9 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
     EXPECT_EQ(it.numComp(), m.stride());
 
     for(int i = 0; i < shape[0]; i++)
+    {
       for(int j = 0; j < shape[1]; j++)
+      {
         for(int k = 0; k < shape[2]; k++)
         {
           int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
@@ -885,6 +895,8 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestCartesianMap
           EXPECT_DOUBLE_EQ(expected_value, it(i, j, k));
           EXPECT_DOUBLE_EQ(expected_value, it.value(i, j, k));
         }
+      }
+    }
   }
 }
 
@@ -1069,14 +1081,20 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
     AXOM_LAMBDA(int idx1) {
       auto submap = m(idx1);
       for(auto slot = 0; slot < submap.size(); slot++)
+      {
         for(int i = 0; i < shape[0]; i++)
+        {
           for(int j = 0; j < shape[1]; j++)
+          {
             for(int k = 0; k < shape[2]; k++)
             {
               int idx2 = submap.index(slot);
               int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
               submap(slot, i, j, k) = getVal<double>(idx1, idx2, flatCompIdx);
             }
+          }
+        }
+      }
     });
 
   SLIC_INFO("\nChecking the elements with findValue().");
@@ -1088,7 +1106,9 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
     {
       bool inRelation = submap.size() > slot && submap.index(slot) == idx2;
       for(int i = 0; i < shape[0]; i++)
+      {
         for(int j = 0; j < shape[1]; j++)
+        {
           for(int k = 0; k < shape[2]; k++)
           {
             int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
@@ -1107,6 +1127,8 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
               EXPECT_EQ(valuePtr, nullptr);
             }
           }
+        }
+      }
       if(inRelation)
       {
         slot++;
@@ -1126,7 +1148,9 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
     EXPECT_EQ(it.numComp(), m.stride());
 
     for(int i = 0; i < shape[0]; i++)
+    {
       for(int j = 0; j < shape[1]; j++)
+      {
         for(int k = 0; k < shape[2]; k++)
         {
           int flatCompIdx = i * strides[0] + j * strides[1] + k * strides[2];
@@ -1136,6 +1160,8 @@ void slam_bivariate_map_templated<ExecutionSpace>::initializeAndTestRelationMap(
           EXPECT_DOUBLE_EQ(expected_value, it(i, j, k));
           EXPECT_DOUBLE_EQ(expected_value, it.value(i, j, k));
         }
+      }
+    }
   }
 }
 

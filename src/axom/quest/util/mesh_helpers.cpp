@@ -640,7 +640,10 @@ bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info)
   conduit::Node meshNode;
   meshGrp->createNativeLayout(meshNode);
   bool isValid = conduit::blueprint::mesh::verify(meshNode, info);
-  if(!isValid) info.print();
+  if(!isValid)
+  {
+    info.print();
+  }
   return isValid;
 }
   #endif

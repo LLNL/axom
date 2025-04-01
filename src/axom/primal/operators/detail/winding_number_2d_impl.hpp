@@ -411,7 +411,10 @@ double bezier_winding_number(const Point<T, 2>& q,
                              double EPS = 1e-8)
 {
   const int ord = c.getOrder();
-  if(ord <= 0) return 0.0;
+  if(ord <= 0)
+  {
+    return 0.0;
+  }
 
   // Early return is possible for most points + curves
   if(!c.boundingBox().expand(edge_tol).contains(q))
@@ -495,7 +498,10 @@ double nurbs_winding_number(const Point<T, 2>& q,
                             double EPS = 1e-8)
 {
   const int deg = n.getDegree();
-  if(deg <= 0) return 0.0;
+  if(deg <= 0)
+  {
+    return 0.0;
+  }
 
   // Early return is possible for most points + curves
   if(!n.boundingBox().expand(edge_tol).contains(q))

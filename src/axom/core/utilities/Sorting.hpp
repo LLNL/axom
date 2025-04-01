@@ -337,9 +337,13 @@ struct Sorting
   inline static void sort(T *values, int n)
   {
     if(n < SORT_SIZE_CUTOFF)
+    {
       insertionSort(values, n);
+    }
     else
+    {
       qsort(values, n);
+    }
   }
 
   //----------------------------------------------------------------------------
@@ -355,7 +359,10 @@ struct Sorting
   AXOM_HOST_DEVICE
   static void qsort(T *values, int n)
   {
-    if(n <= 1) return;
+    if(n <= 1)
+    {
+      return;
+    }
     int stack[detail::stack_size(N)][2];
     int stack_count = 1;
     stack[0][0] = 0;

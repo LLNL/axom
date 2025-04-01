@@ -1777,7 +1777,10 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     // Find the point on the isocurve that is closest to the ray
     for(auto u0 : {u1, u2})
     {
-      if(u0 < -EPS || u0 > 1.0 + EPS) continue;
+      if(u0 < -EPS || u0 > 1.0 + EPS)
+      {
+        continue;
+      }
 
       Vector3 pa = (1 - u0) * q00 + u0 * q10;
       Vector3 pb = (1 - u0) * e00 + u0 * e11;  // actually stores pb - pa
@@ -1908,7 +1911,10 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     // Find the point on the isocurve that is closest to the ray
     for(auto v0 : {v1, v2})
     {
-      if(v0 < -EPS || v0 > 1.0 + EPS) continue;
+      if(v0 < -EPS || v0 > 1.0 + EPS)
+      {
+        continue;
+      }
 
       Vector3 pa = (1.0 - v0) * q00 + v0 * q01;
       Vector3 pb = (1.0 - v0) * e10 + v0 * e01;  // actually stores pb - pa

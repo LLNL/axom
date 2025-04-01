@@ -1593,7 +1593,10 @@ public:
     auto unique_knots_and_multiplicities =
       [](const axom::Array<double>& knots_vector) {
         axom::Array<std::pair<double, int>> uniqueCounts;
-        if(knots_vector.size() == 0) return uniqueCounts;
+        if(knots_vector.size() == 0)
+        {
+          return uniqueCounts;
+        }
 
         double currentValue = knots_vector[0];
         int count = 1;

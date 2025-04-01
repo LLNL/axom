@@ -575,7 +575,10 @@ public:
     const auto& mapping = array.mapping();
     const auto& slowestDirs = mapping.slowestDirs();
     axom::StackArray<axom::IndexType, DIM> invSlowestDirs;
-    for(int i = 0; i < DIM; ++i) invSlowestDirs[slowestDirs[i]] = i;
+    for(int i = 0; i < DIM; ++i)
+    {
+      invSlowestDirs[slowestDirs[i]] = i;
+    }
     const axom::StackArray<axom::IndexType, DIM> begins {
       idxBegin[slowestDirs[0]],
       idxBegin[slowestDirs[1]]};
@@ -621,7 +624,10 @@ public:
     const auto& mapping = array.mapping();
     const auto& slowestDirs = mapping.slowestDirs();
     axom::StackArray<axom::IndexType, DIM> invSlowestDirs;
-    for(int i = 0; i < DIM; ++i) invSlowestDirs[slowestDirs[i]] = i;
+    for(int i = 0; i < DIM; ++i)
+    {
+      invSlowestDirs[slowestDirs[i]] = i;
+    }
     const axom::StackArray<axom::IndexType, DIM> begins {
       idxBegin[slowestDirs[0]],
       idxBegin[slowestDirs[1]],
@@ -798,7 +804,10 @@ public:
 
     axom::utilities::Timer flatTimer(false);
     flatTimer.start();
-    for(int r = 0; r < params.repCount; ++r) runTest_flatAccess(array);
+    for(int r = 0; r < params.repCount; ++r)
+    {
+      runTest_flatAccess(array);
+    }
     flatTimer.stop();
     std::cout << axom::fmt::format("Avg flat-index time   {:.8f} seconds, base",
                                    flatTimer.elapsedTimeInSec() / params.repCount)
@@ -808,7 +817,10 @@ public:
 
     axom::utilities::Timer pointerTimer(false);
     pointerTimer.start();
-    for(int r = 0; r < params.repCount; ++r) runTest_pointerAccess(array);
+    for(int r = 0; r < params.repCount; ++r)
+    {
+      runTest_pointerAccess(array);
+    }
     pointerTimer.stop();
     std::cout << axom::fmt::format(
                    "Avg pointer time      {:.8f} seconds, {:.2f}x",
@@ -818,7 +830,10 @@ public:
 
     axom::utilities::Timer rowMajorTimer(false);
     rowMajorTimer.start();
-    for(int r = 0; r < params.repCount; ++r) runTest_rowMajorAccess(array);
+    for(int r = 0; r < params.repCount; ++r)
+    {
+      runTest_rowMajorAccess(array);
+    }
     rowMajorTimer.stop();
     std::cout << axom::fmt::format(
                    "Avg row-major time    {:.8f} seconds, {:.2f}x",
@@ -828,7 +843,10 @@ public:
 
     axom::utilities::Timer columnMajorTimer(false);
     columnMajorTimer.start();
-    for(int r = 0; r < params.repCount; ++r) runTest_columnMajorAccess(array);
+    for(int r = 0; r < params.repCount; ++r)
+    {
+      runTest_columnMajorAccess(array);
+    }
     columnMajorTimer.stop();
     std::cout << axom::fmt::format(
                    "Avg column-major time {:.8f} seconds, {:.2f}x",
@@ -838,7 +856,10 @@ public:
 
     axom::utilities::Timer dynamicTimer(false);
     dynamicTimer.start();
-    for(int r = 0; r < params.repCount; ++r) runTest_dynamicAccess(array);
+    for(int r = 0; r < params.repCount; ++r)
+    {
+      runTest_dynamicAccess(array);
+    }
     dynamicTimer.stop();
     std::cout << axom::fmt::format(
                    "Avg dynamic time      {:.8f} seconds, {:.2f}x",

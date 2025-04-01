@@ -105,7 +105,10 @@ public:
   void setContourValue(double contourVal)
   {
     m_contourVal = contourVal;
-    if(m_impl) m_impl->setContourValue(m_contourVal);
+    if(m_impl)
+    {
+      m_impl->setContourValue(m_contourVal);
+    }
   }
 
   void setMaskValue(double maskVal)
