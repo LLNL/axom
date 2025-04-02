@@ -5,6 +5,8 @@ doi: 10.11578/dc.20210915.2
 url: https://github.com/llnl/axom
 license: BSD-3-Clause
 authors:
+- family-names: Bergel
+  given-names: Guy
 - family-names: Capps
   given-names: Arlie
   orcid: "https://orcid.org/0000-0003-0511-2645"
