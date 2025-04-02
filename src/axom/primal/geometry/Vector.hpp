@@ -524,9 +524,10 @@ AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::negate()
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline bool Vector<T, NDIMS>::is_zero() const
 {
+  constexpr T zero = 0;
   for(int i = 0; i < NDIMS; ++i)
   {
-    if(!utilities::isNearlyEqual(m_components[i], 0.0))
+    if(!utilities::isNearlyEqual(m_components[i], zero))
     {
       return false;
     }

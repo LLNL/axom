@@ -30,8 +30,7 @@ namespace bputils = axom::mir::utilities::blueprint;
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"),
-               "mir_clipfield");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_clipfield");
 }
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, options)
@@ -261,6 +260,14 @@ bool increasing(const ArrayType &arr)
   return retval;
 }
 
+template <typename ArrayType>
+bool decreasing(const ArrayType &arr)
+{
+  bool retval = true;
+  for(size_t i = 1; i < arr.size(); i++) retval &= (arr[i] <= arr[i - 1]);
+  return retval;
+}
+
 std::vector<int> permute(const std::vector<int> &input)
 {
   std::vector<int> values, indices;
@@ -299,22 +306,34 @@ std::vector<int> makeRandomArray(int n)
   {
     values[i] = static_cast<int>(axom::utilities::random_real(0., largestId));
   }
-  return permute(values);
+  return values;
+}
+std::vector<double> makeRandomDoubleArray(int n)
+{
+  std::vector<double> values;
+  values.resize(n);
+  for(int i = 0; i < n; i++)
+  {
+    values[i] = axom::utilities::random_real(0., 1000.);
+  }
+  return values;
 }
 
 //------------------------------------------------------------------------------
 TEST(mir_clipfield, sort_values)
 {
-  for(int n = 1; n < 15; n++)
+  constexpr int MaxSize = 15;
+  for(int n = 1; n < MaxSize; n++)
   {
     for(int trial = 1; trial <= n; trial++)
     {
       auto values = makeUnsortedArray(n);
-      axom::utilities::Sorting<int, 15>::sort(values.data(), values.size());
+      axom::utilities::Sorting<int, MaxSize>::sort(values.data(), values.size());
       EXPECT_TRUE(increasing(values));
     }
   }
 }
+
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
 struct test_unique
@@ -332,16 +351,20 @@ struct test_unique
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     axom::Array<int> ids {{0, 1, 5, 4, 1, 2, 6,  5, 2, 3, 7,  6,
                            4, 5, 9, 8, 5, 6, 10, 9, 6, 7, 11, 10}};
+    EXPECT_EQ(ids.size(), 24);
+    EXPECT_EQ(ids.view().size(), 24);
+
     // host->device
     axom::Array<int> deviceIds(ids.size(), ids.size(), allocatorID);
     axom::copy(deviceIds.data(), ids.data(), sizeof(int) * ids.size());
+    EXPECT_EQ(deviceIds.size(), 24);
 
     // Make unique ids.
     axom::Array<int> uIds;
     axom::Array<axom::IndexType> uIndices;
-    axom::mir::utilities::Unique<seq_exec, int>::execute(ids.view(),
-                                                         uIds,
-                                                         uIndices);
+    axom::mir::utilities::Unique<ExecSpace, int>::execute(deviceIds.view(),
+                                                          uIds,
+                                                          uIndices);
     // _mir_utilities_unique_end
 
     // device->host
@@ -411,7 +434,7 @@ void test_one_shape(const conduit::Node &hostMesh, const std::string &name)
   conduit::Node deviceMesh;
   bputils::copy<ExecSpace>(deviceMesh, hostMesh);
 
-  // _mir_utilities_clipfield_start
+  // _mir_utilities_clipfield_begin
   // Make views for the device mesh.
   conduit::Node &n_x = deviceMesh.fetch_existing("coordsets/coords/values/x");
   conduit::Node &n_y = deviceMesh.fetch_existing("coordsets/coords/values/y");
@@ -1297,7 +1320,6 @@ TEST(mir_clipfield, selectedzones_hip) { test_selectedzones<hip_exec>::test(); }
 #endif
 
 //------------------------------------------------------------------------------
-#if defined(DEBUGGING_TEST_CASES)
 void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
   std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
@@ -1305,7 +1327,6 @@ void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int
   while(1)
     ;
 }
-#endif
 
 //------------------------------------------------------------------------------
 int main(int argc, char *argv[])
@@ -1313,12 +1334,8 @@ int main(int argc, char *argv[])
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
-#if defined(DEBUGGING_TEST_CASES)
-  conduit::utils::set_error_handler(conduit_debug_err_handler);
-#endif
-#if defined(AXOM_USE_CALIPER)
   axom::CLI::App app;
+#if defined(AXOM_USE_CALIPER)
   std::string annotationMode("none");
   app.add_option("--caliper", annotationMode)
     ->description(
@@ -1326,14 +1343,39 @@ int main(int argc, char *argv[])
       "Use 'help' to see full list.")
     ->capture_default_str()
     ->check(axom::utilities::ValidCaliperMode);
+#endif
+  bool handlerEnabled = false;
+  app.add_flag("--handler", handlerEnabled, "Enable Conduit handler.");
 
   // Parse command line options.
-  app.parse(argc, argv);
+  try
+  {
+    app.parse(argc, argv);
 
-  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-    annotationMode);
+#if defined(AXOM_USE_CALIPER)
+    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+      annotationMode);
 #endif
 
-  result = RUN_ALL_TESTS();
+    axom::slic::SimpleLogger logger;  // create & initialize test logger,
+    if(handlerEnabled)
+    {
+      conduit::utils::set_error_handler(conduit_debug_err_handler);
+    }
+
+    result = RUN_ALL_TESTS();
+  }
+  catch(axom::CLI::CallForHelp &e)
+  {
+    std::cout << app.help() << std::endl;
+    result = 0;
+  }
+  catch(axom::CLI::ParseError &e)
+  {
+    // Handle other parsing errors
+    std::cerr << e.what() << std::endl;
+    result = app.exit(e);
+  }
+
   return result;
 }
