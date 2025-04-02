@@ -1300,7 +1300,7 @@ TYPED_TEST(inlet_Inlet_array, getArray)
 TYPED_TEST(inlet_Inlet_array, inletArraysInSidre)
 {
   std::string testString =
-    "luaArrays = { arr1 = { [0] = 4, [1] = 5, [2] = 6 , [3] = 2.4}, "
+    "luaArrays = { arr1 = { [0] = 4.0, [1] = 5.0, [2] = 6.0, [3] = 2.4}, "
     "              arr2 = { [0] = true, [1] = false}, "
     "              arr3 = { [0] = 'hello', [1] = 'bye'}, "
     "              arr4 = { [0] = 2.4 } }";
