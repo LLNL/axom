@@ -277,7 +277,8 @@ protected:
       }
 
       // Add an originalElements array.
-      addOriginal(n_newFields["originalElements"],
+      const std::string originalElementsField(MIROptions(n_options).originalElementsField());
+      addOriginal(n_newFields[originalElementsField],
                   n_topo.name(),
                   "element",
                   m_topologyView.numberOfZones());
@@ -384,6 +385,7 @@ protected:
     conduit::Node n_ezopts;
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 1;
+    n_ezopts["originalElementsField"] = Options(n_options).originalElementsField();
     // Forward some options involved in naming the objects.
     const std::vector<std::string> keys {"topologyName",
                                          "coordsetName",
@@ -440,16 +442,25 @@ protected:
     constexpr double DEFAULT_TOLERANCE = 1.e-10;
     constexpr int DEFAULT_MAX_ITERATIONS = 50;
     double tolerance = DEFAULT_TOLERANCE;
+    double point_tolerance = DEFAULT_TOLERANCE;
     if(n_options.has_child("tolerance") &&
        n_options["tolerance"].dtype().is_number())
     {
-      tolerance = n_options["tolerance"].to_double();
+      tolerance = axom::utilities::abs(n_options["tolerance"].to_double());
+      SLIC_ASSERT(tolerance > 0.);
+    }
+    if(n_options.has_child("point_tolerance") &&
+       n_options["point_tolerance"].dtype().is_number())
+    {
+      point_tolerance = axom::utilities::abs(n_options["point_tolerance"].to_double());
+      SLIC_ASSERT(point_tolerance > 0.);
     }
     int max_iterations = DEFAULT_MAX_ITERATIONS;
     if(n_options.has_child("max_iterations") &&
        n_options["max_iterations"].dtype().is_number())
     {
-      max_iterations = n_options["max_iterations"].to_int();
+      max_iterations = axom::utilities::abs(n_options["max_iterations"].to_int());
+      max_iterations = axom::utilities::clampVal(max_iterations, 1, 100);
     }
 
 #if defined(AXOM_ELVIRA_GATHER_INFO)
@@ -762,7 +773,8 @@ protected:
 
     // Make the builder that will set up the Blueprint output.
     Builder build;
-    build.allocate(numFragments, n_newCoordset, n_newTopo, n_newFields, n_newMatset);
+    const std::string originalElementsField(MIROptions(n_options).originalElementsField());
+    build.allocate(numFragments, n_newCoordset, n_newTopo, n_newFields, n_newMatset, originalElementsField);
     if(n_matset.has_path("material_map"))
     {
       n_newMatset["material_map"].set(n_matset["material_map"]);
@@ -783,7 +795,7 @@ protected:
     //--------------------------------------------------------------------------
     // Clean up the mesh so it has merged coordinates and merged faces.
     axom::Array<axom::IndexType> selectedIds;
-    build.cleanMesh(n_newCoordset, n_newTopo, selectedIds);
+    build.cleanMesh(n_newCoordset, point_tolerance, n_newTopo, selectedIds);
 
     //--------------------------------------------------------------------------
 #if defined(AXOM_ELVIRA_DEBUG)

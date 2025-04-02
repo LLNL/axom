@@ -203,7 +203,8 @@ public:
                 conduit::Node &n_coordset,
                 conduit::Node &n_topology,
                 conduit::Node &n_fields,
-                conduit::Node &n_matset)
+                conduit::Node &n_matset,
+                const std::string &originalElementsName)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -249,14 +250,15 @@ public:
     m_view.m_offsets = bputils::make_array_view<ConnectivityType>(n_offsets);
 
     // Make new fields.
-    n_fields["originalElements/topology"] = n_topology.name();
-    n_fields["originalElements/association"] = "element";
-    conduit::Node &n_orig_zones = n_fields["originalElements/values"];
-    n_orig_zones.set_allocator(c2a.getConduitAllocatorID());
-    n_orig_zones.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+    conduit::Node &n_origElem = n_fields[originalElementsName];
+    n_origElem["topology"] = n_topology.name();
+    n_origElem["association"] = "element";
+    conduit::Node &n_orig_elem_values = n_origElem["values"];
+    n_orig_elem_values.set_allocator(c2a.getConduitAllocatorID());
+    n_orig_elem_values.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
                                        numFragments));
     m_view.m_original_zones =
-      bputils::make_array_view<ConnectivityType>(n_orig_zones);
+      bputils::make_array_view<ConnectivityType>(n_orig_elem_values);
 
     conduit::Node &n_normal = n_fields["normal"];
     n_normal["topology"] = n_topology.name();
@@ -397,6 +399,7 @@ public:
    * \note This method invalidates the views in m_view by causing some of their backing arrays to be replaced.
    */
   void cleanMesh(conduit::Node &AXOM_UNUSED_PARAM(n_coordset),
+                 double AXOM_UNUSED_PARAM(point_tolerance),
                  conduit::Node &AXOM_UNUSED_PARAM(n_topology),
                  axom::Array<axom::IndexType> &AXOM_UNUSED_PARAM(selectedIds)) const
   { }
@@ -423,8 +426,8 @@ class TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, PHShape
 {
   static constexpr int MAX_POINTS_PER_FACE = 5;
   static constexpr int MAX_FACES_PER_FRAGMENT = 7;
-  static constexpr int MAX_POINTS_PER_FRAGMENT =
-    10;  // Enough for hex with one corner cut off.
+  // Enough for hex with one corner cut off.
+  static constexpr int MAX_POINTS_PER_FRAGMENT = 10;  
 
   using CoordType = typename CoordsetView::value_type;
   using ConnectivityType = typename TopologyView::ConnectivityType;
@@ -443,7 +446,8 @@ public:
                 conduit::Node &n_coordset,
                 conduit::Node &n_topology,
                 conduit::Node &n_fields,
-                conduit::Node &n_matset)
+                conduit::Node &n_matset,
+                const std::string &originalElementsName)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
@@ -530,14 +534,15 @@ public:
     }
 
     // Make new fields.
-    n_fields["originalElements/topology"] = n_topology.name();
-    n_fields["originalElements/association"] = "element";
-    conduit::Node &n_orig_zones = n_fields["originalElements/values"];
-    n_orig_zones.set_allocator(c2a.getConduitAllocatorID());
-    n_orig_zones.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
+    conduit::Node &n_origElem = n_fields[originalElementsName];
+    n_origElem["topology"] = n_topology.name();
+    n_origElem["association"] = "element";
+    conduit::Node &n_orig_elem_values = n_origElem["values"];
+    n_orig_elem_values.set_allocator(c2a.getConduitAllocatorID());
+    n_orig_elem_values.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
                                        numFragments));
     m_view.m_original_zones =
-      bputils::make_array_view<ConnectivityType>(n_orig_zones);
+      bputils::make_array_view<ConnectivityType>(n_orig_elem_values);
 
     conduit::Node &n_normal = n_fields["normal"];
     n_normal["topology"] = n_topology.name();
@@ -727,9 +732,15 @@ public:
   /*!
    * \brief Clean the mesh, merging coordinates and faces.
    *
+   * \param n_coordset The coordset to clean up.
+   * \param point_tolerance The point tolerance used to merge points.
+   * \param n_topology The topology to clean up.
+   * \param[out] selectedIds An array that indicates the points that were selected during coordset point merging.
+   *
    * \note This method invalidates the views in m_view by causing some of their backing arrays to be replaced.
    */
   void cleanMesh(conduit::Node &n_coordset,
+                 double point_tolerance,
                  conduit::Node &n_topology,
                  axom::Array<axom::IndexType> &selectedIds) const
   {
@@ -745,6 +756,7 @@ public:
     using NewCoordsetView = decltype(newCoordsetView);
     bputils::MergeCoordsetPoints<ExecSpace, NewCoordsetView> mcp(newCoordsetView);
     conduit::Node n_mcp_options;
+    n_mcp_options["tolerance"] = point_tolerance;
     const bool merged =
       mcp.execute(n_coordset, n_mcp_options, selectedIds, old2new);
     // _mir_utilities_mergecoordsetpoints_end

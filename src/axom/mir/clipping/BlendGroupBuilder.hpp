@@ -274,7 +274,9 @@ public:
       const auto start = m_state->m_blendGroupStartView[m_blendGroupId];
       float w = 0.f;
       for(IndexType i = 0; i < numIds; i++)
+      {
         w += m_state->m_blendCoeffView[start + i];
+      }
       return w;
     }
 

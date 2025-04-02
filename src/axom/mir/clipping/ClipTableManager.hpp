@@ -418,7 +418,10 @@ public:
    */
   void load(int dim)
   {
-    for(const auto shape : shapes(dim)) loadShape(shape);
+    for(const auto shape : shapes(dim))
+    {
+      loadShape(shape);
+    }
   }
 
   /*!
@@ -434,12 +437,16 @@ public:
     if(dim == -1 || dim == 2)
     {
       for(const auto value : std::vector<size_t> {ST_TRI, ST_QUA})
+      {
         s.push_back(value);
+      }
     }
     if(dim == -1 || dim == 3)
     {
       for(const auto value : std::vector<size_t> {ST_TET, ST_PYR, ST_WDG, ST_HEX})
+      {
         s.push_back(value);
+      }
     }
     return s;
   }

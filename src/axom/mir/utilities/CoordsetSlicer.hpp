@@ -61,9 +61,9 @@ public:
     std::vector<std::string> axes;
     if(n_input["type"].as_string() == "uniform")
     {
-      if(n_input.has_path("dims/i")) axes.push_back("x");
-      if(n_input.has_path("dims/j")) axes.push_back("y");
-      if(n_input.has_path("dims/k")) axes.push_back("z");
+      if(n_input.has_path("dims/i")) { axes.push_back("x"); }
+      if(n_input.has_path("dims/j")) { axes.push_back("y"); }
+      if(n_input.has_path("dims/k")) { axes.push_back("z"); }
     }
     else
     {

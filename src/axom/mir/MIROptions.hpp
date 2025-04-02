@@ -43,7 +43,9 @@ public:
   {
     std::string name(default_value.empty() ? matset() : default_value);
     if(options().has_child("matsetName"))
+    {
       name = options().fetch_existing("matsetName").as_string();
+    }
     return name;
   }
 
