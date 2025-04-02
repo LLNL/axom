@@ -579,7 +579,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             clang_fmt_path = spec["llvm"].prefix.bin.join("clang-format")
             entries.append(cmake_cache_path("CLANGFORMAT_EXECUTABLE", clang_fmt_path))
         else:
-            entries.append("# ClangFormat disabled due to llvm@14 and devtools not in spec\n")
+            entries.append("# ClangFormat disabled since llvm@14 and devtools not in spec\n")
             entries.append(cmake_cache_option("ENABLE_CLANGFORMAT", False))
 
         if spec.satisfies("+python") or spec.satisfies("+devtools"):

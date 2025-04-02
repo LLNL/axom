@@ -169,7 +169,7 @@ def uberenv_build(prefix, spec, project_file, mirror_path):
     if project_file:
         cmd += "--project-json=\"{0}\" ".format(project_file)
 
-    # Take the first 200 characters if spec is too long
+    # File names have a 255 character limit - take the first 200 characters if spec is too long
     truncated_spec = spec[:200]
 
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % truncated_spec.replace(" ", "_"))
