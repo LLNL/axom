@@ -273,21 +273,21 @@ spack:
     cray-mpich:
       buildable: false
       externals:
-      - spec: cray-mpich@8.1.16%clang@14.0.0+slurm
+      - spec: cray-mpich@8.1.16+slurm %clang@14.0.0
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.16-rocmcc-5.2.3/
-      - spec: cray-mpich@8.1.25%clang@15.0.0+slurm
+      - spec: cray-mpich@8.1.25+slurm %clang@15.0.0
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3/
-      - spec: cray-mpich@8.1.25%clang@16.0.0+slurm
+      - spec: cray-mpich@8.1.25+slurm %clang@16.0.0
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.6.0/
-      - spec: cray-mpich@8.1.27%rocmcc@5.7.1+slurm
+      - spec: cray-mpich@8.1.27+slurm %rocmcc@5.7.1
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.27-rocmcc-5.7.1/
-      - spec: cray-mpich@8.1.29%rocmcc@6.1.2+slurm
+      - spec: cray-mpich@8.1.29+slurm %rocmcc@6.1.2
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.1.2/
-      - spec: cray-mpich@8.1.29%rocmcc@6.2.1+slurm
+      - spec: cray-mpich@8.1.29+slurm %rocmcc@6.2.1
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.2.1/
-      - spec: cray-mpich@8.1.25%cce@15.0.1+slurm
+      - spec: cray-mpich@8.1.25+slurm %cce@15.0.1
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.25-rocmcc-5.4.3-cce-15.0.1/
-      - spec: cray-mpich@8.1.29%cce@18.0.0+slurm
+      - spec: cray-mpich@8.1.29+slurm %cce@18.0.0
         prefix: /usr/tce/packages/cray-mpich-tce/cray-mpich-8.1.29-rocmcc-6.1.2-cce-18.0.0/
 
     # blas is a bit more complicated because its a virtual package so fake it with
