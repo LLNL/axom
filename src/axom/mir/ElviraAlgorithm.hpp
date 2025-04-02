@@ -265,7 +265,8 @@ protected:
       }
 
       // Add an originalElements array.
-      const std::string originalElementsField(MIROptions(n_options).originalElementsField());
+      const std::string originalElementsField(
+        MIROptions(n_options).originalElementsField());
       addOriginal(n_newFields[originalElementsField],
                   n_topo.name(),
                   "element",
@@ -373,7 +374,8 @@ protected:
     conduit::Node n_ezopts;
     n_ezopts["topology"] = topoName;
     n_ezopts["compact"] = 1;
-    n_ezopts["originalElementsField"] = Options(n_options).originalElementsField();
+    n_ezopts["originalElementsField"] =
+      Options(n_options).originalElementsField();
     // Forward some options involved in naming the objects.
     const std::vector<std::string> keys {"topologyName",
                                          "coordsetName",
@@ -429,7 +431,9 @@ protected:
     // Handle options.
     // When coordinates have float value, we can't necessarily get beyond a
     // certain tolerance so set the tolerance accordingly.
-    constexpr double DEFAULT_TOLERANCE = std::is_same<CoordType, float>::value ? (axom::numeric_limits<float>::epsilon() * 4.f) : 1.e-10;
+    constexpr double DEFAULT_TOLERANCE = std::is_same<CoordType, float>::value
+      ? (axom::numeric_limits<float>::epsilon() * 4.f)
+      : 1.e-10;
     constexpr int DEFAULT_MAX_ITERATIONS = 50;
     double tolerance = DEFAULT_TOLERANCE;
     double point_tolerance = DEFAULT_TOLERANCE;
@@ -445,7 +449,8 @@ protected:
     if(n_options.has_child("point_tolerance") &&
        n_options["point_tolerance"].dtype().is_number())
     {
-      point_tolerance = axom::utilities::abs(n_options["point_tolerance"].to_double());
+      point_tolerance =
+        axom::utilities::abs(n_options["point_tolerance"].to_double());
       if(point_tolerance < axom::numeric_limits<CoordType>::epsilon())
       {
         point_tolerance = axom::numeric_limits<CoordType>::epsilon();
@@ -769,8 +774,14 @@ protected:
 
     // Make the builder that will set up the Blueprint output.
     Builder build;
-    const std::string originalElementsField(MIROptions(n_options).originalElementsField());
-    build.allocate(numFragments, n_newCoordset, n_newTopo, n_newFields, n_newMatset, originalElementsField);
+    const std::string originalElementsField(
+      MIROptions(n_options).originalElementsField());
+    build.allocate(numFragments,
+                   n_newCoordset,
+                   n_newTopo,
+                   n_newFields,
+                   n_newMatset,
+                   originalElementsField);
     if(n_matset.has_path("material_map"))
     {
       n_newMatset["material_map"].set(n_matset["material_map"]);
@@ -862,7 +873,7 @@ protected:
       // Make a fragment for each material. The biggest ones come first.
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
         SLIC_DEBUG("makeFragments: zoneIndex=" << zoneIndex
-                    << ", matCount=" << matCount);
+                                               << ", matCount=" << matCount);
 #endif
         for(axom::IndexType m = 0; m < matCount - 1; m++)
         {
@@ -896,8 +907,8 @@ protected:
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(inputShape, normal, range);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            SLIC_DEBUG("\tm=" << m << ", inputShape=" << inputShape
-                      << ", range={" << range[0] << ", " << range[1] << "}");
+            SLIC_DEBUG("\tm=" << m << ", inputShape=" << inputShape << ", range={"
+                              << range[0] << ", " << range[1] << "}");
 #endif
             // Figure out the clipped shape that has the desired volume.
             clippedShape = detail::clipToVolume<ClipResultType>(inputShape,
@@ -917,7 +928,7 @@ protected:
             detail::computeRange(remaining, normal, range);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
             SLIC_DEBUG("\tm=" << m << ", remaining=" << remaining << ", range={"
-                      << range[0] << ", " << range[1] << "}");
+                              << range[0] << ", " << range[1] << "}");
 #endif
             // Figure out the clipped shape that has the desired volume.
             clippedShape = detail::clipToVolume<ClipResultType>(remaining,

@@ -64,7 +64,8 @@ struct test_Elvira3D
     return static_cast<int>(selected.size());
   }
 
-  static void test(const std::string &AXOM_UNUSED_PARAM(name), bool selectedZones = false)
+  static void test(const std::string &AXOM_UNUSED_PARAM(name),
+                   bool selectedZones = false)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     namespace views = axom::mir::views;
@@ -188,12 +189,12 @@ struct test_Elvira3D
       AXOM_ANNOTATE_SCOPE("compare_baseline");
       std::string baselineName(yamlRoot(name));
       const auto paths = baselinePaths<ExecSpace>();
-#if defined(AXOM_TESTING_GENERATE_BASELINES)
+  #if defined(AXOM_TESTING_GENERATE_BASELINES)
       saveBaseline(paths, baselineName, hostMIRMesh);
-#else
+  #else
       constexpr double tolerance = 2.6e-06;
       EXPECT_TRUE(compareBaseline(paths, baselineName, hostMIRMesh, tolerance));
-#endif
+  #endif
     }
 #endif
     //--------------------------------------------------------------------------

@@ -72,7 +72,10 @@ public:
    * \return The indexing that contains the mesh logical sizes.
    */
   AXOM_HOST_DEVICE
-  const StructuredIndexing<IndexType, NDIMS> &indexing() const { return m_indexing; }
+  const StructuredIndexing<IndexType, NDIMS> &indexing() const
+  {
+    return m_indexing;
+  }
 
   /*!
    * \brief Return the coordset origin.

@@ -744,60 +744,58 @@ protected:
           n_srcTopo.fetch_existing("elements/shape").as_string();
         const conduit::Node &n_elem_conn =
           n_srcTopo.fetch_existing("elements/connectivity");
-        views::IndexNode_to_ArrayView(
-          n_elem_conn,
-          [&](auto connView) {
-            using ConnectivityType = typename decltype(connView)::value_type;
+        views::IndexNode_to_ArrayView(n_elem_conn, [&](auto connView) {
+          using ConnectivityType = typename decltype(connView)::value_type;
 
-            if(shape == "tet")
-            {
-              auto topologyView = views::make_unstructured_single_shape<
-                views::TetShape<ConnectivityType>>::view(n_srcTopo);
-              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-            }
-            else if(shape == "pyramid")
-            {
-              auto topologyView = views::make_unstructured_single_shape<
-                views::PyramidShape<ConnectivityType>>::view(n_srcTopo);
-              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-            }
-            else if(shape == "wedge")
-            {
-              auto topologyView = views::make_unstructured_single_shape<
-                views::WedgeShape<ConnectivityType>>::view(n_srcTopo);
-              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-            }
-            else if(shape == "hex")
-            {
-              auto topologyView = views::make_unstructured_single_shape<
-                views::HexShape<ConnectivityType>>::view(n_srcTopo);
-              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-            }
-            else if(shape == "mixed")
-            {
-              const int allocatorID =
-                axom::execution_space<ExecSpace>::allocatorID();
-              axom::Array<IndexType> values, ids;
-              auto shapeMap =
-                views::buildShapeMap(n_srcTopo, values, ids, allocatorID);
-              views::UnstructuredTopologyMixedShapeView<ConnectivityType> topologyView(
-                bputils::make_array_view<ConnectivityType>(
-                  n_srcTopo["elements/connectivity"]),
-                bputils::make_array_view<ConnectivityType>(
-                  n_srcTopo["elements/shapes"]),
-                bputils::make_array_view<ConnectivityType>(
-                  n_srcTopo["elements/sizes"]),
-                bputils::make_array_view<ConnectivityType>(
-                  n_srcTopo["elements/offsets"]),
-                shapeMap);
-              makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
-            }
-            else
-            {
-              SLIC_INFO(
-                axom::fmt::format("{} is not a supported shape type.", shape));
-            }
-          });
+          if(shape == "tet")
+          {
+            auto topologyView = views::make_unstructured_single_shape<
+              views::TetShape<ConnectivityType>>::view(n_srcTopo);
+            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+          }
+          else if(shape == "pyramid")
+          {
+            auto topologyView = views::make_unstructured_single_shape<
+              views::PyramidShape<ConnectivityType>>::view(n_srcTopo);
+            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+          }
+          else if(shape == "wedge")
+          {
+            auto topologyView = views::make_unstructured_single_shape<
+              views::WedgeShape<ConnectivityType>>::view(n_srcTopo);
+            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+          }
+          else if(shape == "hex")
+          {
+            auto topologyView = views::make_unstructured_single_shape<
+              views::HexShape<ConnectivityType>>::view(n_srcTopo);
+            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+          }
+          else if(shape == "mixed")
+          {
+            const int allocatorID =
+              axom::execution_space<ExecSpace>::allocatorID();
+            axom::Array<IndexType> values, ids;
+            auto shapeMap =
+              views::buildShapeMap(n_srcTopo, values, ids, allocatorID);
+            views::UnstructuredTopologyMixedShapeView<ConnectivityType> topologyView(
+              bputils::make_array_view<ConnectivityType>(
+                n_srcTopo["elements/connectivity"]),
+              bputils::make_array_view<ConnectivityType>(
+                n_srcTopo["elements/shapes"]),
+              bputils::make_array_view<ConnectivityType>(
+                n_srcTopo["elements/sizes"]),
+              bputils::make_array_view<ConnectivityType>(
+                n_srcTopo["elements/offsets"]),
+              shapeMap);
+            makePolyhedralMesh(topologyView, n_srcTopo, n_phTopo);
+          }
+          else
+          {
+            SLIC_INFO(
+              axom::fmt::format("{} is not a supported shape type.", shape));
+          }
+        });
       }
     }
     return phInputs;

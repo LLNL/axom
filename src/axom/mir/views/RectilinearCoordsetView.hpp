@@ -66,7 +66,10 @@ public:
    * \return The indexing that contains the mesh logical sizes.
    */
   AXOM_HOST_DEVICE
-  const StructuredIndexing<IndexType, 2> &indexing() const { return m_indexing; }
+  const StructuredIndexing<IndexType, 2> &indexing() const
+  {
+    return m_indexing;
+  }
 
   /*!
    * \brief Get a coordinate array view for a dimension.
@@ -189,7 +192,10 @@ public:
    * \return The indexing that contains the mesh logical sizes.
    */
   AXOM_HOST_DEVICE
-  const StructuredIndexing<IndexType, 3> &indexing() const { return m_indexing; }
+  const StructuredIndexing<IndexType, 3> &indexing() const
+  {
+    return m_indexing;
+  }
 
   /*!
    * \brief Get a coordinate array view for a dimension.

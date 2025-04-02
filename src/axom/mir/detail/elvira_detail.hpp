@@ -95,7 +95,8 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
 
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
   SLIC_DEBUG("\tclipToVolume: max_iterations=" << max_iterations
-             << ", tolerance=" << tolerance << ", shape=" << shape);
+                                               << ", tolerance=" << tolerance
+                                               << ", shape=" << shape);
 #endif
 
   // The ELVIRA normals point away from the material. Axom's clipping
@@ -120,16 +121,17 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
     if(ShapeType::PointType::DIMENSION < 3)
     {
-      SLIC_DEBUG("\t\titerations=" << iterations << ", t_blend=" << t_blend
-                 << ", P=" << P << ", clippedShape=" << clippedShape
+      SLIC_DEBUG("\t\titerations="
+                 << iterations << ", t_blend=" << t_blend << ", P=" << P
+                 << ", clippedShape=" << clippedShape
                  << ", matVolume=" << std::setprecision(16) << matVolume
                  << ", fragmentVolume=" << std::setprecision(16) << fragmentVolume
                  << ", volumeError=" << std::setprecision(16) << volumeError);
     }
     else
     {
-      SLIC_DEBUG("\t\titerations=" << iterations << ", t_blend=" << t_blend
-                 << ", P=" << P
+      SLIC_DEBUG("\t\titerations="
+                 << iterations << ", t_blend=" << t_blend << ", P=" << P
                  << ", matVolume=" << std::setprecision(16) << matVolume
                  << ", fragmentVolume=" << std::setprecision(16) << fragmentVolume
                  << ", volumeError=" << std::setprecision(16) << volumeError);
@@ -270,8 +272,8 @@ public:
     n_origElem["association"] = "element";
     conduit::Node &n_orig_elem_values = n_origElem["values"];
     n_orig_elem_values.set_allocator(c2a.getConduitAllocatorID());
-    n_orig_elem_values.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                       numFragments));
+    n_orig_elem_values.set(
+      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, numFragments));
     m_view.m_original_zones =
       bputils::make_array_view<ConnectivityType>(n_orig_elem_values);
 
@@ -376,9 +378,9 @@ public:
       m_mat_offsets[fragmentOffset] = fragmentOffset;
       m_mat_indices[fragmentOffset] = fragmentOffset;
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-      SLIC_DEBUG("\taddShape: zone=" << zoneIndex
-                << ", fragmentOffset=" << fragmentOffset << ", mat=" << matId
-                << ", shape=" << shape);
+      SLIC_DEBUG("\taddShape: zone=" << zoneIndex << ", fragmentOffset="
+                                     << fragmentOffset << ", mat=" << matId
+                                     << ", shape=" << shape);
 #endif
     }
 
@@ -442,7 +444,7 @@ class TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, PHShape
   static constexpr int MAX_POINTS_PER_FACE = 5;
   static constexpr int MAX_FACES_PER_FRAGMENT = 7;
   // Enough for hex with one corner cut off.
-  static constexpr int MAX_POINTS_PER_FRAGMENT = 10;  
+  static constexpr int MAX_POINTS_PER_FRAGMENT = 10;
 
   using CoordType = typename CoordsetView::value_type;
   using ConnectivityType = typename TopologyView::ConnectivityType;
@@ -554,8 +556,8 @@ public:
     n_origElem["association"] = "element";
     conduit::Node &n_orig_elem_values = n_origElem["values"];
     n_orig_elem_values.set_allocator(c2a.getConduitAllocatorID());
-    n_orig_elem_values.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                       numFragments));
+    n_orig_elem_values.set(
+      conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, numFragments));
     m_view.m_original_zones =
       bputils::make_array_view<ConnectivityType>(n_orig_elem_values);
 
