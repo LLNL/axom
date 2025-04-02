@@ -160,11 +160,9 @@ struct test_Elvira3D
 
     // Handle baseline comparison.
 #if 0
-    // NOTE: Comparing against a baseline is turned off for now because on various
-    //       backends, we do not get quite the same answer for new coordinates in
-    //       clipped zones. This ultimately results in different coordset and
-    //       connectivity values. Rather than compare the Conduit nodes, we skip
-    //       it for now and compare material volumes before/after MIR.
+    // NOTE: Comparing against this baseline is turned off for now. Rather than
+    //       compare the Conduit nodes, we skip compare material volumes
+    //       before/after MIR.
     constexpr double tolerance = 2.6e-06;
     EXPECT_TRUE(TestApp.test<ExecSpace>(name, hostMIRMesh, tolerance));
 #endif
@@ -189,27 +187,30 @@ struct test_Elvira3D
     //--------------------------------------------------------------------------
     // comparisons
     EXPECT_EQ(origTotalVolumes.size(), mirTotalVolumes.size());
+    // Expected values for the total volumes when we use selected zones.
+    const double selectedZonesTotalVolume[] = {35.73998360180606,
+                                               292.443992377414,
+                                               455.8160238981947};
     double volumeSums[2] = {0., 0.};
     for(size_t i = 0; i < origTotalVolumes.size(); i++)
     {
-      if(!selectedZones)
-      {
-        SLIC_INFO(axom::fmt::format("Material {}: origVF = {}, mirVF = {}",
-                                    i,
-                                    origTotalVolumes[i],
-                                    mirTotalVolumes[i]));
-      }
-      volumeSums[0] += origTotalVolumes[i];
+      const double origTotalVol = selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
+
+      SLIC_INFO(axom::fmt::format("Material {}: origVF = {}, mirVF = {}",
+                                  i,
+                                  origTotalVol,
+                                  mirTotalVolumes[i]));
+
+      volumeSums[0] += origTotalVol;
       volumeSums[1] += mirTotalVolumes[i];
     }
-    EXPECT_NEAR(volumeSums[0], expectedVolume, tolerance);
+    EXPECT_NEAR(volumeSums[0], selectedZones ? mirExpectedVolume : expectedVolume, tolerance);
     EXPECT_NEAR(volumeSums[1], mirExpectedVolume, tolerance);
-    if(!selectedZones)
+    for(size_t i = 0; i < origTotalVolumes.size(); i++)
     {
-      for(size_t i = 0; i < origTotalVolumes.size(); i++)
-      {
-        EXPECT_NEAR(origTotalVolumes[i], mirTotalVolumes[i], tolerance);
-      }
+      const double origTotalVol = selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
+
+      EXPECT_NEAR(origTotalVol, mirTotalVolumes[i], tolerance);
     }
   }
 
