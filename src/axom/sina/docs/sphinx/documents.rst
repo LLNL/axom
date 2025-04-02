@@ -113,7 +113,7 @@ Generating Documents From HDF5
 
 In addition to assembling ``Document`` instances from existing JSON files, it
 is possible to generate ``Document`` objects from existing HDF5 files using
-conduit.
+Conduit.
 
 When Axom is configured with HDF5 support, Sina's ``saveDocument()`` and ``loadDocument()`` 
 functions support HDF5 assembly through the `Protocol::HDF5` argument.  The functions will 

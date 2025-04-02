@@ -24,3 +24,4 @@ More details on each class can be found in their respective pages below.
    records
    relationships
    curve_sets
+   hdf5_vs_json
