@@ -11,6 +11,9 @@
 #include "axom/mir/utilities/MergePolyhedralFaces.hpp"
 #include "axom/mir/views/dispatch_coordset.hpp"
 
+#include <sstream>
+#include <iomanip>
+
 namespace axom
 {
 namespace mir
@@ -91,7 +94,8 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
   double t_blend = 0.5;
 
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-  std::cout << "\tclipToVolume: shape=" << shape << std::endl;
+  SLIC_DEBUG("\tclipToVolume: max_iterations=" << max_iterations
+             << ", tolerance=" << tolerance << ", shape=" << shape);
 #endif
 
   // The ELVIRA normals point away from the material. Axom's clipping
@@ -114,11 +118,22 @@ AXOM_HOST_DEVICE inline ClipResultType clipToVolume(
       bputils::ComputeShapeAmount<NDIMS>::execute(clippedShape);
     const double volumeError = axom::utilities::abs(matVolume - fragmentVolume);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-    std::cout << "\t\titerations=" << iterations << ", t_blend=" << t_blend
-              << ", P=" << P << ", clippedShape=" << clippedShape
-              << ", matVolume=" << matVolume
-              << ", fragmentVolume=" << fragmentVolume
-              << ", volumeError=" << volumeError << std::endl;
+    if(ShapeType::PointType::DIMENSION < 3)
+    {
+      SLIC_DEBUG("\t\titerations=" << iterations << ", t_blend=" << t_blend
+                 << ", P=" << P << ", clippedShape=" << clippedShape
+                 << ", matVolume=" << std::setprecision(16) << matVolume
+                 << ", fragmentVolume=" << std::setprecision(16) << fragmentVolume
+                 << ", volumeError=" << std::setprecision(16) << volumeError);
+    }
+    else
+    {
+      SLIC_DEBUG("\t\titerations=" << iterations << ", t_blend=" << t_blend
+                 << ", P=" << P
+                 << ", matVolume=" << std::setprecision(16) << matVolume
+                 << ", fragmentVolume=" << std::setprecision(16) << fragmentVolume
+                 << ", volumeError=" << std::setprecision(16) << volumeError);
+    }
 #endif
     if((volumeError <= tolerance) || (iterations >= max_iterations))
     {
@@ -361,9 +376,9 @@ public:
       m_mat_offsets[fragmentOffset] = fragmentOffset;
       m_mat_indices[fragmentOffset] = fragmentOffset;
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-      std::cout << "\taddShape: zone=" << zoneIndex
+      SLIC_DEBUG("\taddShape: zone=" << zoneIndex
                 << ", fragmentOffset=" << fragmentOffset << ", mat=" << matId
-                << ", shape=" << shape << std::endl;
+                << ", shape=" << shape);
 #endif
     }
 
@@ -643,24 +658,26 @@ public:
                      subelement_offsets,
                      numFaces);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-      std::cout << "addShape: zoneIndex=" << zoneIndex
-                << ", fragmentOffset=" << fragmentOffset << ", nverts=" << nverts
-                << ", numFaces=" << numFaces << ", subelement_connectivity={";
+      std::stringstream ss;
+      ss << "addShape: zoneIndex=" << zoneIndex
+         << ", fragmentOffset=" << fragmentOffset << ", nverts=" << nverts
+         << ", numFaces=" << numFaces << ", subelement_connectivity={";
       for(int i = 0; i < MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE; i++)
       {
-        std::cout << subelement_connectivity[i] << ", ";
+        ss << subelement_connectivity[i] << ", ";
       }
-      std::cout << "}, subelement_sizes={";
+      ss << "}, subelement_sizes={";
       for(int i = 0; i < MAX_FACES_PER_FRAGMENT; i++)
       {
-        std::cout << subelement_sizes[i] << ", ";
+        ss << subelement_sizes[i] << ", ";
       }
-      std::cout << "}, subelement_offsets={";
+      ss << "}, subelement_offsets={";
       for(int i = 0; i < MAX_FACES_PER_FRAGMENT; i++)
       {
-        std::cout << subelement_offsets[i] << ", ";
+        ss << subelement_offsets[i] << ", ";
       }
-      std::cout << "}\n";
+      ss << "}";
+      SLIC_DEBUG(ss.str());
 #endif
       // Make the face offsets relative to the whole subelement array.
       int index = 0;

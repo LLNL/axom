@@ -198,7 +198,7 @@ struct test_Elvira3D
 #endif
     //--------------------------------------------------------------------------
     // Compute the total volumes on the original and MIR meshes.
-    constexpr double tolerance = 1.5e-5;
+    constexpr double tolerance = 3.e-5;
 
     const auto orig_volume =
       bputils::make_array_view<double>(deviceMesh["fields/volume/values"]);

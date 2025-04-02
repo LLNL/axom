@@ -6,8 +6,6 @@
 // NOTE: This file is meant to be included by ElviraAlgorithm.hpp after its
 //       other includes so we do not include much here.
 
-#include <iostream>
-
 namespace axom
 {
 namespace mir
@@ -1578,42 +1576,6 @@ AXOM_HOST_DEVICE void computeJacobian(const value_type *xcst,
     }
 
   }  // END if negative determinant
-
-#if 0  //defined(AXOM_ELVIRA_DEBUG) && !defined(AXOM_DEVICE_CODE)
-  std::cout << "xcst={";
-  for(int i = 0; i < 9; i++)
-  {
-    std::cout << xcst[i] << ", ";
-  }
-  std::cout << "}, ycst={";
-  for(int i = 0; i < 9; i++)
-  {
-    std::cout << ycst[i] << ", ";
-  }
-  std::cout << "}, zcst={";
-  for(int i = 0; i < 9; i++)
-  {
-    std::cout << zcst[i] << ", ";
-  }
-
-  std::cout << "}, del={";
-  for(int row = 0; row < 3; row++)
-  {
-    for(int col = 0; col < 3; col++)
-    {
-      std::cout << del[row][col] << ", ";
-    }
-  }
-  std::cout << "}, jac={";
-  for(int row = 0; row < 3; row++)
-  {
-    for(int col = 0; col < 3; col++)
-    {
-      std::cout << jac[row][col] << ", ";
-    }
-  }
-  std::cout << "}, ndims=" << ndims << ", det=" << det << std::endl;
-#endif
 
   // Fix jacobian matrix elements that should be identity for 2D.
   if(ndims == 2)

@@ -187,18 +187,6 @@ protected:
       conduit::Node &n_root_topo = n_root[n_topo.path()];
       conduit::Node &n_root_matset = n_root[n_matset.path()];
       conduit::Node n_root_fields = n_root["fields"];
-#if 0
-      // NOTE: For now, do not add fields to the input that we'll operate on.
-      //       If we do then we get fields for the clean output and nothing
-      //       for the ELVIRA output since it is not handling fields because
-      //       it is using primal clip to make shapes. To do fields, we would
-      //       need to know how to blend at introduced points that arise from
-      //       clipping.
-      for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
-      {
-        n_root_fields[n_fields[i].name()].set_external(n_fields[i]);
-      }
-#endif
 
       // Make the clean mesh.
       conduit::Node n_cleanOutput;
@@ -228,9 +216,9 @@ protected:
       n_mirOutput[n_newMatset.path()].set_external(n_newMatset);
 #if defined(AXOM_ELVIRA_DEBUG)
       saveMesh(n_mirOutput, "debug_elvira_mir");
-      std::cout << "--- clean ---\n";
+      SLIC_DEBUG("--- clean ---");
       printNode(n_cleanOutput);
-      std::cout << "--- MIR ---\n";
+      SLIC_DEBUG("--- MIR ---");
       printNode(n_mirOutput);
 #endif
 
@@ -238,7 +226,7 @@ protected:
       conduit::Node n_merged;
       merge(n_newTopo.name(), n_cleanOutput, n_mirOutput, n_merged);
 #if defined(AXOM_ELVIRA_DEBUG)
-      std::cout << "--- merged ---\n";
+      SLIC_DEBUG("--- merged ---");
       printNode(n_merged);
 
       // Save merged output.
@@ -439,7 +427,9 @@ protected:
     constexpr int NDIMS = TopologyView::dimension();
 
     // Handle options.
-    constexpr double DEFAULT_TOLERANCE = 1.e-10;
+    // When coordinates have float value, we can't necessarily get beyond a
+    // certain tolerance so set the tolerance accordingly.
+    constexpr double DEFAULT_TOLERANCE = std::is_same<CoordType, float>::value ? (axom::numeric_limits<float>::epsilon() * 4.f) : 1.e-10;
     constexpr int DEFAULT_MAX_ITERATIONS = 50;
     double tolerance = DEFAULT_TOLERANCE;
     double point_tolerance = DEFAULT_TOLERANCE;
@@ -447,13 +437,19 @@ protected:
        n_options["tolerance"].dtype().is_number())
     {
       tolerance = axom::utilities::abs(n_options["tolerance"].to_double());
-      SLIC_ASSERT(tolerance > 0.);
+      if(tolerance < axom::numeric_limits<CoordType>::epsilon())
+      {
+        tolerance = axom::numeric_limits<CoordType>::epsilon();
+      }
     }
     if(n_options.has_child("point_tolerance") &&
        n_options["point_tolerance"].dtype().is_number())
     {
       point_tolerance = axom::utilities::abs(n_options["point_tolerance"].to_double());
-      SLIC_ASSERT(point_tolerance > 0.);
+      if(point_tolerance < axom::numeric_limits<CoordType>::epsilon())
+      {
+        point_tolerance = axom::numeric_limits<CoordType>::epsilon();
+      }
     }
     int max_iterations = DEFAULT_MAX_ITERATIONS;
     if(n_options.has_child("max_iterations") &&
@@ -865,8 +861,8 @@ protected:
 
       // Make a fragment for each material. The biggest ones come first.
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-        std::cout << "makeFragments: zoneIndex=" << zoneIndex
-                  << ", matCount=" << matCount << std::endl;
+        SLIC_DEBUG("makeFragments: zoneIndex=" << zoneIndex
+                    << ", matCount=" << matCount);
 #endif
         for(axom::IndexType m = 0; m < matCount - 1; m++)
         {
@@ -900,9 +896,8 @@ protected:
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(inputShape, normal, range);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << "\tm=" << m << ", inputShape=" << inputShape
-                      << ", range={" << range[0] << ", " << range[1] << "}"
-                      << std::endl;
+            SLIC_DEBUG("\tm=" << m << ", inputShape=" << inputShape
+                      << ", range={" << range[0] << ", " << range[1] << "}");
 #endif
             // Figure out the clipped shape that has the desired volume.
             clippedShape = detail::clipToVolume<ClipResultType>(inputShape,
@@ -921,8 +916,8 @@ protected:
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(remaining, normal, range);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << "\tm=" << m << ", remaining=" << remaining << ", range={"
-                      << range[0] << ", " << range[1] << "}" << std::endl;
+            SLIC_DEBUG("\tm=" << m << ", remaining=" << remaining << ", range={"
+                      << range[0] << ", " << range[1] << "}");
 #endif
             // Figure out the clipped shape that has the desired volume.
             clippedShape = detail::clipToVolume<ClipResultType>(remaining,
@@ -946,21 +941,21 @@ protected:
           if(m == 0)
           {
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << "\tclip: P=" << P << ", before=" << inputShape;
+            SLIC_DEBUG("\tclip: P=" << P << ", before=" << inputShape);
 #endif
             remaining = axom::primal::clip(inputShape, P);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << ", after=" << clippedShape << std::endl;
+            SLIC_DEBUG("\tclip: after=" << clippedShape);
 #endif
           }
           else
           {
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << "\tclip: P=" << P << ", before=" << remaining;
+            SLIC_DEBUG("\tclip: P=" << P << ", before=" << remaining);
 #endif
             remaining = axom::primal::clip(remaining, P);
 #if defined(AXOM_ELVIRA_DEBUG_MAKE_FRAGMENTS) && !defined(AXOM_DEVICE_CODE)
-            std::cout << ", after=" << remaining << std::endl;
+            SLIC_DEBUG("\tclip: after=" << remaining);
 #endif
           }
         }
