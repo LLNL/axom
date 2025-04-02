@@ -85,27 +85,28 @@ void dispatch_unstructured_polyhedral_topology(const conduit::Node &topo, FuncTy
   const std::string shape = topo["elements/shape"].as_string();
   if(shape == "polyhedral")
   {
-    IndexNode_to_ArrayView_same(topo["subelements/connectivity"],
-                                topo["subelements/sizes"],
-                                topo["subelements/offsets"],
-                                topo["elements/connectivity"],
-                                topo["elements/sizes"],
-                                topo["elements/offsets"],
-                                [&](auto seConnView,
-                                    auto seSizesView,
-                                    auto seOffsetsView,
-                                    auto connView,
-                                    auto sizesView,
-                                    auto offsetsView) {
-                                  using ConnType = typename decltype(seConnView)::value_type;
-                                  UnstructuredTopologyPolyhedralView<ConnType> ugView(seConnView,
-                                                                                      seSizesView,
-                                                                                      seOffsetsView,
-                                                                                      connView,
-                                                                                      sizesView,
-                                                                                      offsetsView);
-                                  func(shape, ugView);
-                                });
+    IndexNode_to_ArrayView_same(  //
+      topo["subelements/connectivity"],
+      topo["subelements/sizes"],
+      topo["subelements/offsets"],
+      topo["elements/connectivity"],
+      topo["elements/sizes"],
+      topo["elements/offsets"],
+      [&](auto seConnView,
+          auto seSizesView,
+          auto seOffsetsView,
+          auto connView,
+          auto sizesView,
+          auto offsetsView) {
+        using ConnType = typename decltype(seConnView)::value_type;
+        UnstructuredTopologyPolyhedralView<ConnType> ugView(seConnView,
+                                                            seSizesView,
+                                                            seOffsetsView,
+                                                            connView,
+                                                            sizesView,
+                                                            offsetsView);
+        func(shape, ugView);
+      });
   }
 }
 
