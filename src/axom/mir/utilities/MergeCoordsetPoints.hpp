@@ -10,8 +10,16 @@
 #include "axom/mir/utilities/utilities.hpp"
 #include "axom/mir/utilities/blueprint_utilities.hpp"
 #include "axom/mir/utilities/CoordsetSlicer.hpp"
+#include "axom/mir/utilities/CoordsetExtents.hpp"
 
 #include <conduit/conduit.hpp>
+
+// Uncomment to write files for the coordset inputs/outputs.
+//#define AXOM_DEBUG_MERGE_COORDSET_POINTS
+
+#if defined(AXOM_DEBUG_MERGE_COORDSET_POINTS)
+#include <conduit/conduit_relay_io_blueprint.hpp>
+#endif
 
 // Includes for appropriate round function.
 #if defined(AXOM_DEVICE_CODE)
@@ -76,7 +84,8 @@ struct Rounder<float>
 }  // end namespace detail
 
 /**
- * \brief Merge
+ * \brief Merge coordset points that are within a tolerance into the same point
+ *        and provide information on how it was done.
  *
  * \tparam ExecSpace The execution space where the algorithm runs.
  * \tparam CoordsetView The coordset view type.
@@ -130,7 +139,6 @@ public:
                axom::Array<axom::IndexType> &old2new) const
   {
     namespace bputils = axom::mir::utilities::blueprint;
-    AXOM_ANNOTATE_SCOPE("MergeCoordsetPoints");
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     // If the coordset is not explicit then there is nothing to do.
@@ -140,51 +148,24 @@ public:
       return false;
     }
 
+    // Adjust the name of the timer so we can see the coordinate type.
+    AXOM_ANNOTATE_SCOPE(axom::fmt::format("MergeCoordsetPoints<{}>", bputils::cpp2conduit<value_type>::name));
+
     // Get any options.
-    const value_type DEFAULT_TOLERANCE = 1.e-10;
-    value_type tolerance = DEFAULT_TOLERANCE;
+    const double DEFAULT_TOLERANCE = 1.e-10;
+    double tolerance = DEFAULT_TOLERANCE;
     if(n_options.has_child("tolerance"))
     {
-      tolerance = static_cast<value_type>(n_options["tolerance"].to_double());
+      tolerance = axom::utilities::abs(n_options["tolerance"].to_double());
+      SLIC_ASSERT(tolerance > 0.);
     }
 
     //--------------------------------------------------------------------------
-    AXOM_ANNOTATE_BEGIN("naming");
+    // Create names for the coordinates.
     using KeyType = std::uint64_t;
-
-    const auto nnodes = m_coordsetView.numberOfNodes();
-
-    axom::Array<KeyType> coordNames(nnodes, nnodes, allocatorID);
+    axom::Array<KeyType> coordNames;
+    createNames<KeyType>(coordNames, tolerance);
     auto coordNamesView = coordNames.view();
-    const auto deviceCoordsetView = m_coordsetView;
-    axom::for_all<ExecSpace>(
-      nnodes,
-      AXOM_LAMBDA(axom::IndexType index) {
-        // Get the current point.
-        const auto pt = deviceCoordsetView[index];
-
-        // Truncate the point components using the tolerance so we can eliminate
-        // precision beyond what we want with the tolerance. The idea is that points
-        // that are close enough will hash to the same name.
-        value_type truncated[CoordsetView::dimension()];
-        for(int d = 0; d < CoordsetView::dimension(); d++)
-        {
-          value_type value =
-            detail::Rounder<value_type>::execute(pt[d] / tolerance) * tolerance;
-          if(value > -tolerance && value < tolerance)
-          {
-            value = value_type {0};
-          }
-          truncated[d] = value;
-        }
-
-        // Make a name for this point
-        const void *tptr = static_cast<const void *>(truncated);
-        coordNamesView[index] = axom::mir::utilities::hash_bytes(
-          static_cast<const std::uint8_t *>(tptr),
-          sizeof(value_type) * CoordsetView::dimension());
-      });
-    AXOM_ANNOTATE_END("naming");
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("unique");
@@ -199,12 +180,14 @@ public:
     AXOM_ANNOTATE_END("unique");
 
     //--------------------------------------------------------------------------
-    bool merged = false;
+    const auto nnodes = m_coordsetView.numberOfNodes();
+    const bool merged = selectedIds.size() < nnodes;
     old2new = axom::Array<axom::IndexType>(nnodes, nnodes, allocatorID);
     auto old2newView = old2new.view();
-    if(selectedIds.size() < nnodes)
+    if(merged)
     {
       // There are fewer nodes in the selectedIds so we are able to combine nodes.
+      SLIC_INFO(axom::fmt::format("Merged {} nodes into {} nodes.", nnodes, selectedIds.size()));
 
       AXOM_ANNOTATE_BEGIN("old2new");
       // Make a map of nodes in the old coordset to nodes in the new coordset. We
@@ -227,9 +210,46 @@ public:
       slice.m_indicesView = selectedIdsView;
       conduit::Node n_sliced;
       css.execute(slice, n_coordset, n_sliced);
-      n_coordset.move(n_sliced);
 
-      merged = true;
+#if defined(AXOM_DEBUG_MERGE_COORDSET_POINTS)
+      // Add a mesh for the input point mesh.
+      conduit::Node n_mesh;
+      n_mesh["coordsets"][n_coordset.name()].set_external(n_coordset);
+      n_mesh["topologies/mesh/type"] = "unstructured";
+      n_mesh["topologies/mesh/coordset"] = n_coordset.name();
+      n_mesh["topologies/mesh/elements/shape"] = "point";
+      std::vector<int> conn(coordNamesView.size());
+      std::iota(conn.begin(), conn.end(), 0);
+      n_mesh["topologies/mesh/elements/connectivity"].set(conn);
+      n_mesh["topologies/mesh/type"] = "unstructured";
+      n_mesh["fields/coordNames/association"] = "vertex";
+      n_mesh["fields/coordNames/topology"] = "mesh";
+      n_mesh["fields/coordNames/values"].set_external(coordNamesView.data(), coordNamesView.size());
+
+      // Add a mesh for the output point mesh.
+      n_mesh["coordsets/output"].set_external(n_sliced);
+      n_mesh["topologies/merged/type"] = "unstructured";
+      n_mesh["topologies/merged/coordset"] = "output";
+      n_mesh["topologies/merged/elements/shape"] = "point";
+      std::vector<int> merged_conn(uniqueNamesView.size());
+      std::iota(merged_conn.begin(), merged_conn.end(), 0);
+      n_mesh["topologies/merged/elements/connectivity"].set(merged_conn);
+      n_mesh["topologies/merged/type"] = "unstructured";
+      n_mesh["fields/mergedCoordNames/association"] = "vertex";
+      n_mesh["fields/mergedCoordNames/topology"] = "merged";
+      n_mesh["fields/mergedCoordNames/values"].set_external(uniqueNamesView.data(), uniqueNamesView.size());
+
+      // Write files to examine the input and output coordsets.
+      conduit::Node n_host;
+      bputils::copy<SEQ_EXEC>(n_host, n_mesh);
+      std::string name(axom::execution_space<ExecSpace>::name());
+      name = name.substr(1, 3);
+      conduit::relay::io::blueprint::save_mesh(n_host, "merge_coordset_points_" + name, "hdf5");
+      conduit::relay::io::save(n_host, "merge_coordset_points_" + name + ".yaml", "yaml");
+#endif
+
+      // Move the sliced coordset to the input coordset.
+      n_coordset.move(n_sliced);
     }
     else
     {
@@ -246,6 +266,79 @@ public:
     }
 
     return merged;
+  }
+
+  /*!
+   * \brief Create names for the coordinates so we can merge them.
+   *
+   * \param[out] coordNames The "names" of the coordinates that will be used when merging.
+   * \param tolerance The tolerance used to merge points.
+   */
+  template <typename KeyType>
+  void createNames(axom::Array<KeyType> &coordNames, double tolerance) const
+  {
+    constexpr double smallTolerance = 1.e-6;
+
+    // When tolerances that are large enough, and the data are already float,
+    // try making names using float.
+    if(tolerance >= smallTolerance && std::is_same<value_type, float>::value)
+    {
+      createNamesInner<KeyType, float>(coordNames, tolerance);
+    }
+    else
+    {
+      // The tolerance is small enough to require more precision, or we have
+      // double coordinates.
+      createNamesInner<KeyType, double>(coordNames, tolerance);
+    }
+  }
+
+  /*!
+   * \brief Create names for the coordinates so we can merge them.
+   *
+   * \param[out] coordNames The "names" of the coordinates that will be used when merging.
+   * \param tolerance The tolerance used to merge points.
+   */
+  template <typename KeyType, typename Precision>
+  void createNamesInner(axom::Array<KeyType> &coordNames, double tolerance) const
+  {
+    AXOM_ANNOTATE_SCOPE(axom::fmt::format("createNames<{}>", cpp2conduit<Precision>::name));
+
+    const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+    const auto nnodes = m_coordsetView.numberOfNodes();
+    const double neg_tolerance = -tolerance;
+
+    coordNames = axom::Array<KeyType>(nnodes, nnodes, allocatorID);
+    auto coordNamesView = coordNames.view();
+    const auto deviceCoordsetView = m_coordsetView;
+    axom::for_all<ExecSpace>(
+      nnodes,
+      AXOM_LAMBDA(axom::IndexType index) {
+        // Get the current point.
+        const auto pt = deviceCoordsetView[index];
+
+        // Truncate the point components using the tolerance so we can eliminate
+        // precision beyond what we want with the tolerance. The idea is that points
+        // that are close enough will hash to the same name.
+        Precision truncated[CoordsetView::dimension()];
+        for(int d = 0; d < CoordsetView::dimension(); d++)
+        {
+          const Precision pointValue = static_cast<Precision>(pt[d]);
+          Precision value =
+            detail::Rounder<Precision>::execute(pointValue / tolerance) * tolerance;
+          if(value > neg_tolerance && value < tolerance)
+          {
+            value = Precision {0};
+          }
+          truncated[d] = value;
+        }
+
+        // Make a name for this point
+        const void *tptr = static_cast<const void *>(truncated);
+        coordNamesView[index] = axom::mir::utilities::hash_bytes(
+          static_cast<const std::uint8_t *>(tptr),
+          sizeof(Precision) * CoordsetView::dimension());
+      });
   }
 
   CoordsetView m_coordsetView;
