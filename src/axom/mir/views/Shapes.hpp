@@ -504,7 +504,7 @@ struct PolygonTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
   AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 1; }
   AXOM_HOST_DEVICE constexpr static IndexType maxNodesInFace() { return 20; }
-  AXOM_HOST_DEVICE constexpr static const char *name() { return "polygon"; }
+  AXOM_HOST_DEVICE constexpr static const char *name() { return "polygonal"; }
 };
 
 /*!
@@ -515,6 +515,9 @@ struct PolygonShape : public PolygonTraits
 {
   using ConnectivityType = ConnType;
   using ConnectivityView = axom::ArrayView<ConnectivityType>;
+  using ConnectivityStorage = ConnectivityType;
+  using ConnectivityStorageRef = ConnectivityType &;
+  using ConnectivityStorageConstRef = const ConnectivityType &;
 
   /*!
    * \brief Construct a shape.
@@ -522,11 +525,46 @@ struct PolygonShape : public PolygonTraits
   AXOM_HOST_DEVICE PolygonShape(const ConnectivityView &ids) : m_ids(ids) { }
 
   /*!
+   * \brief Return the number of nodes in the polygon.
+   *
+   * \return The number of nodes in the polygon.
+   */
+  AXOM_HOST_DEVICE IndexType numberOfNodes() const { return m_ids.size(); }
+
+  /*!
+   * \brief Get a specific id that makes up this shape.
+   *
+   * \return The i'th id that makes up this shape.
+   */
+  AXOM_HOST_DEVICE ConnectivityType getId(size_t index) const
+  {
+    SLIC_ASSERT(index < static_cast<size_t>(m_ids.size()));
+    return m_ids[index];
+  }
+
+  /*!
+   * \brief Get the storage for the ids that make up this shape.
+   *
+   * \return The container for the ids that make up this shape.
+   */
+  AXOM_HOST_DEVICE ConnectivityStorageRef getIdsStorage() { return m_ids; }
+
+  /*!
+   * \brief Get the storage for the ids that make up this shape.
+   *
+   * \return The container for the ids that make up this shape.
+   */
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const
+  {
+    return m_ids;
+  }
+
+  /*!
    * \brief Get the ids that make up this shape.
    *
    * \return A view containing the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE const ConnectivityView &getIds() const { return m_ids; }
+  AXOM_HOST_DEVICE ConnectivityView getIds() const { return m_ids; }
 
   /*!
    * \brief Get the ids for the requested face.

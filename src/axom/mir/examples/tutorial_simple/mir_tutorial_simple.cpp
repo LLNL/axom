@@ -99,6 +99,10 @@ struct Input
     {
       m_app.parse(argc, argv);
     }
+    catch(const axom::CLI::CallForHelp &e)
+    {
+      std::cout << m_app.help() << std::endl;
+    }
     catch(const axom::CLI::ParseError &e)
     {
       return m_app.exit(e);
