@@ -479,8 +479,7 @@ struct test_braid2d_mat
 {
   static void test(const std::string &type,
                    const std::string &mattype,
-                   const std::string &name
-  )
+                   const std::string &name)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();

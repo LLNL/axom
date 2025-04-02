@@ -59,8 +59,7 @@ struct test_Elvira3D
     return static_cast<int>(selected.size());
   }
 
-  static void test(const std::string &name,
-                   bool selectedZones = false)
+  static void test(const std::string &name, bool selectedZones = false)
   {
     namespace bputils = axom::mir::utilities::blueprint;
     namespace views = axom::mir::views;

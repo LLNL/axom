@@ -262,9 +262,9 @@ public:
     conduit::Node hostResult;
     bputils::copy<seq_exec>(hostResult, n_dev);
 
-    TestApp.saveVisualization("test2D", hostResult); 
+    TestApp.saveVisualization("test2D", hostResult);
 
-    // Handle baseline comparison.   
+    // Handle baseline comparison.
     EXPECT_TRUE(TestApp.test<ExecSpace>("test2D", hostResult));
   }
 
@@ -287,7 +287,7 @@ public:
     conduit::Node hostResult;
     bputils::copy<seq_exec>(hostResult, n_dev);
 
-    TestApp.saveVisualization("test3D", hostResult); 
+    TestApp.saveVisualization("test3D", hostResult);
 
     // Handle baseline comparison.
     EXPECT_TRUE(TestApp.test<ExecSpace>("test3D", hostResult));
@@ -315,7 +315,7 @@ public:
     conduit::Node hostResult;
     bputils::copy<seq_exec>(hostResult, n_dev);
 
-    TestApp.saveVisualization("testPH", hostResult); 
+    TestApp.saveVisualization("testPH", hostResult);
 
     // Handle baseline comparison.
     EXPECT_TRUE(TestApp.test<ExecSpace>("testPH", hostResult));

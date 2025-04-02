@@ -613,8 +613,12 @@ public:
   /*!
    * \brief Constructor.
    */
-  MIRTestApplication() : m_app(), m_annotationMode("none"), m_handler(false),
-    m_visualize(false), m_rebaseline()
+  MIRTestApplication()
+    : m_app()
+    , m_annotationMode("none")
+    , m_handler(false)
+    , m_visualize(false)
+    , m_rebaseline()
   {
     m_rebaseline.push_back("none");
   }
@@ -622,9 +626,7 @@ public:
   /*!
    * \brief Destructor
    */
-  ~MIRTestApplication()
-  {
-  }
+  ~MIRTestApplication() { }
 
   /*!
    * \brief Parse the command line and run the tests.
@@ -678,9 +680,9 @@ public:
     if(m_visualize)
     {
       AXOM_ANNOTATE_SCOPE("saveVisualization");
-    #if defined(AXOM_USE_HDF5)
+#if defined(AXOM_USE_HDF5)
       conduit::relay::io::blueprint::save_mesh(hostMesh, name, "hdf5");
-    #endif
+#endif
       conduit::relay::io::save(hostMesh, name + ".yaml", "yaml");
     }
   }
@@ -695,7 +697,9 @@ public:
    * \return true on success; false if the test did not pass.
    */
   template <typename ExecSpace = axom::SEQ_EXEC>
-  bool test(const std::string &name, const conduit::Node &currentMesh, double tolerance = 2.6e-6)
+  bool test(const std::string &name,
+            const conduit::Node &currentMesh,
+            double tolerance = 2.6e-6)
   {
     AXOM_ANNOTATE_SCOPE("test");
     bool retval = true;
@@ -703,8 +707,10 @@ public:
     const auto paths = baselinePaths<ExecSpace>();
     if(rebaseline(name))
     {
-      SLIC_INFO(axom::fmt::format("Saving new baseline for {} {}.", name, execution_name<ExecSpace>::name()));
-      saveBaseline(paths, baselineName, currentMesh); 
+      SLIC_INFO(axom::fmt::format("Saving new baseline for {} {}.",
+                                  name,
+                                  execution_name<ExecSpace>::name()));
+      saveBaseline(paths, baselineName, currentMesh);
     }
     else
     {
@@ -731,14 +737,18 @@ protected:
     m_app.add_flag("--handler", m_handler, "Enable Conduit handler.");
     m_app.add_flag("--visualize", m_visualize, "Save visualization files.");
     MIRTestApplication *This = this;
-    m_app.add_option("--rebaseline", m_rebaseline, "List of comma-separated test "
-       "names, or no arguments if we want to rebaseline all tests. If not "
-       "provided, no rebaselining is done.")
-       ->expected(0, 1) // Accept either no arguments or one argument
-       ->each([=](const std::string& input) {
-          // If an argument is provided, split it into a vector
-          This->m_rebaseline = axom::utilities::string::split(input, ',');
-        });
+    m_app
+      .add_option(
+        "--rebaseline",
+        m_rebaseline,
+        "List of comma-separated test "
+        "names, or no arguments if we want to rebaseline all tests. If not "
+        "provided, no rebaselining is done.")
+      ->expected(0, 1)  // Accept either no arguments or one argument
+      ->each([=](const std::string &input) {
+        // If an argument is provided, split it into a vector
+        This->m_rebaseline = axom::utilities::string::split(input, ',');
+      });
   }
 
   /*!
@@ -764,13 +774,16 @@ protected:
     else
     {
       // Rebaseline if name is in m_rebaseline.
-      retval = std::find(m_rebaseline.begin(), m_rebaseline.end(), name) != m_rebaseline.end();
+      retval = std::find(m_rebaseline.begin(), m_rebaseline.end(), name) !=
+        m_rebaseline.end();
     }
     return retval;
   }
 
   /// Conduit error handler that blocks (helpful for getting a stack in a debugger)
-  static void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
+  static void conduit_debug_err_handler(const std::string &s1,
+                                        const std::string &s2,
+                                        int i1)
   {
     std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
     // This is on purpose.
