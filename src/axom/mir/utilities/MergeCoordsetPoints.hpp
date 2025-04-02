@@ -153,7 +153,9 @@ public:
                                           bputils::cpp2conduit<value_type>::name));
 
     // Get any options.
-    const double DEFAULT_TOLERANCE = 1.e-10;
+    constexpr double DEFAULT_TOLERANCE = std::is_same<value_type, float>::value
+      ? (axom::numeric_limits<float>::epsilon() * 4.f)
+      : 1.e-10;
     double tolerance = DEFAULT_TOLERANCE;
     if(n_options.has_child("tolerance"))
     {

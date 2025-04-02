@@ -9,21 +9,16 @@
 #include "axom/mir.hpp"
 #include "axom/primal.hpp"
 #include "axom/mir/tests/mir_testing_data_helpers.hpp"
-
-//------------------------------------------------------------------------------
-
-// Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
-
-// Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
-
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
 std::string baselineDirectory()
 {
   return pjoin(dataDirectory(), "mir", "regression", "mir_elvira3d");
 }
+
+//------------------------------------------------------------------------------
+// Global test application object.
+MIRTestApplication TestApp;
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
@@ -64,7 +59,7 @@ struct test_Elvira3D
     return static_cast<int>(selected.size());
   }
 
-  static void test(const std::string &AXOM_UNUSED_PARAM(name),
+  static void test(const std::string &name,
                    bool selectedZones = false)
   {
     namespace bputils = axom::mir::utilities::blueprint;
@@ -80,15 +75,8 @@ struct test_Elvira3D
       AXOM_ANNOTATE_SCOPE("host_to_device");
       axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
     }
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
-    {
-      AXOM_ANNOTATE_SCOPE("save_original");
-  #if defined(AXOM_USE_HDF5)
-      conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
-  #endif
-      conduit::relay::io::save(hostMesh, name + "_orig.yaml", "yaml");
-    }
-#endif
+    // Save visualization, if enabled.
+    TestApp.saveVisualization(name + "_orig", hostMesh);
 
     //--------------------------------------------------------------------------
     const conduit::Node &n_coordset =
@@ -168,34 +156,18 @@ struct test_Elvira3D
       bputils::copy<seq_exec>(hostMIRMesh, deviceMIRMesh);
     }
 
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
-    {
-      AXOM_ANNOTATE_SCOPE("save_baseline");
-  #if defined(AXOM_USE_HDF5)
-      conduit::relay::io::blueprint::save_mesh(hostMIRMesh, name, "hdf5");
-  #endif
-      conduit::relay::io::save(hostMIRMesh, name + ".yaml", "yaml");
-    }
-#endif
+    // Save visualization of MIR mesh, if enabled.
+    TestApp.saveVisualization(name, hostMIRMesh);
 
     // Handle baseline comparison.
+#if 0
     // NOTE: Comparing against a baseline is turned off for now because on various
     //       backends, we do not get quite the same answer for new coordinates in
     //       clipped zones. This ultimately results in different coordset and
     //       connectivity values. Rather than compare the Conduit nodes, we skip
     //       it for now and compare material volumes before/after MIR.
-#if 0
-    {
-      AXOM_ANNOTATE_SCOPE("compare_baseline");
-      std::string baselineName(yamlRoot(name));
-      const auto paths = baselinePaths<ExecSpace>();
-  #if defined(AXOM_TESTING_GENERATE_BASELINES)
-      saveBaseline(paths, baselineName, hostMIRMesh);
-  #else
-      constexpr double tolerance = 2.6e-06;
-      EXPECT_TRUE(compareBaseline(paths, baselineName, hostMIRMesh, tolerance));
-  #endif
-    }
+    constexpr double tolerance = 2.6e-06;
+    EXPECT_TRUE(TestApp.test<ExecSpace>(name, hostMIRMesh, tolerance));
 #endif
     //--------------------------------------------------------------------------
     // Compute the total volumes on the original and MIR meshes.
@@ -242,6 +214,13 @@ struct test_Elvira3D
     }
   }
 
+  /*!
+   * \brief Sums the input array view.
+   *
+   * \param var An array view to sum.
+   *
+   * \return The sum of the input array view.
+   */
   static double variableSum(axom::ArrayView<double> var)
   {
     using reduce_policy =
@@ -381,64 +360,8 @@ TEST(mir_elvira3d, elvira3d_unibuffer_sel_hip)
 #endif
 
 //------------------------------------------------------------------------------
-void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
-{
-  std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
-  // This is on purpose.
-  while(1)
-    ;
-}
-
-//------------------------------------------------------------------------------
-
 int main(int argc, char *argv[])
 {
-  int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-
-  // Define command line options.
-  axom::CLI::App app;
-#if defined(AXOM_USE_CALIPER)
-  std::string annotationMode("none");
-  app.add_option("--caliper", annotationMode)
-    ->description(
-      "caliper annotation mode. Valid options include 'none' and 'report'. "
-      "Use 'help' to see full list.")
-    ->capture_default_str()
-    ->check(axom::utilities::ValidCaliperMode);
-#endif
-  bool handlerEnabled = false;
-  app.add_flag("--handler", handlerEnabled, "Enable Conduit handler.");
-
-  // Parse command line options.
-  try
-  {
-    app.parse(argc, argv);
-
-#if defined(AXOM_USE_CALIPER)
-    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-      annotationMode);
-#endif
-
-    axom::slic::SimpleLogger logger;  // create & initialize test logger,
-    if(handlerEnabled)
-    {
-      conduit::utils::set_error_handler(conduit_debug_err_handler);
-    }
-
-    result = RUN_ALL_TESTS();
-  }
-  catch(axom::CLI::CallForHelp &e)
-  {
-    std::cout << app.help() << std::endl;
-    result = 0;
-  }
-  catch(axom::CLI::ParseError &e)
-  {
-    // Handle other parsing errors
-    std::cerr << e.what() << std::endl;
-    result = app.exit(e);
-  }
-
-  return result;
+  return TestApp.execute(argc, argv);
 }

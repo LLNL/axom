@@ -10,6 +10,7 @@
 #include <conduit/conduit.hpp>
 #include <conduit/conduit_relay_io.hpp>
 #include <conduit/conduit_relay_io_blueprint.hpp>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -477,12 +478,6 @@ void saveBaseline(const std::string &filename, const conduit::Node &n)
   {
     SLIC_INFO(axom::fmt::format("Save baseline {}", file_with_ext));
     conduit::relay::io::save(n, file_with_ext, "yaml");
-
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
-    SLIC_INFO(axom::fmt::format("Save visualization files..."));
-    conduit::relay::io::blueprint::save_mesh(n, filename + "_hdf5", "hdf5");
-      //axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
-#endif
   }
   catch(...)
   {
@@ -606,4 +601,188 @@ bool compare_views(const Container1 &a, const Container2 &b)
   }
   return eq;
 }
+
+//------------------------------------------------------------------------------
+/*!
+ * \brief Base class for MIR test applications. It provides support for operations
+ *        such as comparing against Conduit baseline files.
+ */
+class MIRTestApplication
+{
+public:
+  /*!
+   * \brief Constructor.
+   */
+  MIRTestApplication() : m_app(), m_annotationMode("none"), m_handler(false),
+    m_visualize(false), m_rebaseline()
+  {
+    m_rebaseline.push_back("none");
+  }
+
+  /*!
+   * \brief Destructor
+   */
+  ~MIRTestApplication()
+  {
+  }
+
+  /*!
+   * \brief Parse the command line and run the tests.
+   */
+  int execute(int argc, char *argv[])
+  {
+    int result = 0;
+    initialize();
+
+    try
+    {
+      // Parse command line options.
+      m_app.parse(argc, argv);
+
+      // More initialization.
+#if defined(AXOM_USE_CALIPER)
+      axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+        m_annotationMode);
+#endif
+      axom::slic::SimpleLogger logger;
+      if(m_handler)
+      {
+        conduit::utils::set_error_handler(conduit_debug_err_handler);
+      }
+
+      // Run all the tests.
+      result = RUN_ALL_TESTS();
+    }
+    catch(axom::CLI::CallForHelp &e)
+    {
+      std::cout << m_app.help() << std::endl;
+      result = 0;
+    }
+    catch(axom::CLI::ParseError &e)
+    {
+      // Handle other parsing errors
+      std::cerr << e.what() << std::endl;
+      result = m_app.exit(e);
+    }
+    return result;
+  }
+
+  /*!
+   * \brief Save a mesh on the host to a file for visualization.
+   *
+   * \param name The root filename to use.
+   * \param hostMesh A Blueprint mesh.
+   */
+  void saveVisualization(const std::string &name, const conduit::Node &hostMesh)
+  {
+    if(m_visualize)
+    {
+      AXOM_ANNOTATE_SCOPE("saveVisualization");
+    #if defined(AXOM_USE_HDF5)
+      conduit::relay::io::blueprint::save_mesh(hostMesh, name, "hdf5");
+    #endif
+      conduit::relay::io::save(hostMesh, name + ".yaml", "yaml");
+    }
+  }
+
+  /*!
+   * \brief Perform a test or save a baseline, depending on the mode.
+   *
+   * \param name The name of the test (used for filenames)
+   * \param currentMesh The current mesh to be compared to a baseline (or saved, if rebaselining).
+   * \param tolerance The tolerance to use when comparing the Blueprint results.
+   *
+   * \return true on success; false if the test did not pass.
+   */
+  template <typename ExecSpace = axom::SEQ_EXEC>
+  bool test(const std::string &name, const conduit::Node &currentMesh, double tolerance = 2.6e-6)
+  {
+    AXOM_ANNOTATE_SCOPE("test");
+    bool retval = true;
+    std::string baselineName(yamlRoot(name));
+    const auto paths = baselinePaths<ExecSpace>();
+    if(rebaseline(name))
+    {
+      SLIC_INFO(axom::fmt::format("Saving new baseline for {} {}.", name, execution_name<ExecSpace>::name()));
+      saveBaseline(paths, baselineName, currentMesh); 
+    }
+    else
+    {
+      retval = compareBaseline(paths, baselineName, currentMesh, tolerance);
+    }
+    return retval;
+  }
+
+protected:
+  /*!
+   * \brief Initializes the class.
+   */
+  virtual void initialize()
+  {
+    // Define command line options.
+#if defined(AXOM_USE_CALIPER)
+    m_app.add_option("--caliper", m_annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
+    m_app.add_flag("--handler", m_handler, "Enable Conduit handler.");
+    m_app.add_flag("--visualize", m_visualize, "Save visualization files.");
+    MIRTestApplication *This = this;
+    m_app.add_option("--rebaseline", m_rebaseline, "List of comma-separated test "
+       "names, or no arguments if we want to rebaseline all tests. If not "
+       "provided, no rebaselining is done.")
+       ->expected(0, 1) // Accept either no arguments or one argument
+       ->each([=](const std::string& input) {
+          // If an argument is provided, split it into a vector
+          This->m_rebaseline = axom::utilities::string::split(input, ',');
+        });
+  }
+
+  /*!
+   * \brief Return whether we should rebaseline a test.
+   *
+   * \param name The name of the test.
+   *
+   * \return true if the test should be rebaselined; false otherwise.
+   */
+  bool rebaseline(const std::string &name)
+  {
+    bool retval = false;
+    if(m_rebaseline.size() == 1 && m_rebaseline[0] == "none")
+    {
+      // It does not look like the --rebaseline argument was given.
+      retval = false;
+    }
+    else if(m_rebaseline.empty())
+    {
+      // --rebaseline was given with no arguments. Rebaseline all.
+      retval = true;
+    }
+    else
+    {
+      // Rebaseline if name is in m_rebaseline.
+      retval = std::find(m_rebaseline.begin(), m_rebaseline.end(), name) != m_rebaseline.end();
+    }
+    return retval;
+  }
+
+  /// Conduit error handler that blocks (helpful for getting a stack in a debugger)
+  static void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
+  {
+    std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
+    // This is on purpose.
+    while(1)
+      ;
+  }
+
+  axom::CLI::App m_app;
+  std::string m_annotationMode;
+  bool m_handler;
+  bool m_visualize;
+  std::vector<std::string> m_rebaseline;
+};
+
 #endif

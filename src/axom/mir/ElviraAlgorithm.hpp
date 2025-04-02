@@ -445,6 +445,7 @@ protected:
       {
         tolerance = axom::numeric_limits<CoordType>::epsilon();
       }
+      SLIC_ASSERT(tolerance > 0.);
     }
     if(n_options.has_child("point_tolerance") &&
        n_options["point_tolerance"].dtype().is_number())
@@ -455,6 +456,7 @@ protected:
       {
         point_tolerance = axom::numeric_limits<CoordType>::epsilon();
       }
+      SLIC_ASSERT(point_tolerance > 0.);
     }
     int max_iterations = DEFAULT_MAX_ITERATIONS;
     if(n_options.has_child("max_iterations") &&

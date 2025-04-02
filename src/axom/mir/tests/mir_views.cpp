@@ -9,29 +9,22 @@
 #include "axom/mir.hpp"
 #include "axom/primal.hpp"
 #include "axom/mir/tests/mir_testing_data_helpers.hpp"
+#include "axom/mir/tests/mir_testing_helpers.hpp"
 
 #include <cmath>
 
 namespace bputils = axom::mir::utilities::blueprint;
 
-//------------------------------------------------------------------------------
-
-//#define DEBUGGING_TEST_CASES
-
-// Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
-
-// Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
-
-#include "axom/mir/tests/mir_testing_helpers.hpp"
-
 std::string baselineDirectory()
 {
   return pjoin(dataDirectory(), "mir", "regression", "mir_views");
 }
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+// Global test application object.
+MIRTestApplication TestApp;
+
+//------------------------------------------------------------------------------
 TEST(mir_views, shape2conduitName)
 {
   EXPECT_STREQ(axom::mir::views::LineShape<int>::name(), "line");
@@ -486,11 +479,7 @@ struct test_braid2d_mat
 {
   static void test(const std::string &type,
                    const std::string &mattype,
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
                    const std::string &name
-#else
-                   const std::string &AXOM_UNUSED_PARAM(name)
-#endif
   )
   {
     namespace bputils = axom::mir::utilities::blueprint;
@@ -505,9 +494,7 @@ struct test_braid2d_mat
     axom::mir::testing::data::braid(type, dims, hostMesh);
     axom::mir::testing::data::make_matset(mattype, "mesh", zoneDims, hostMesh);
     axom::mir::utilities::blueprint::copy<ExecSpace>(deviceMesh, hostMesh);
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
-    conduit::relay::io::blueprint::save_mesh(hostMesh, name + "_orig", "hdf5");
-#endif
+    TestApp.saveVisualization(name + "_orig", hostMesh);
 
     if(mattype == "unibuffer")
     {
@@ -825,25 +812,8 @@ matsets:
 }
 
 //------------------------------------------------------------------------------
-#if defined(DEBUGGING_TEST_CASES)
-void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
-{
-  std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
-  // This is on purpose.
-  while(1)
-    ;
-}
-#endif
-//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-  int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
-#if defined(DEBUGGING_TEST_CASES)
-  conduit::utils::set_error_handler(conduit_debug_err_handler);
-#endif
-  result = RUN_ALL_TESTS();
-  return result;
+  return TestApp.execute(argc, argv);
 }
