@@ -26,8 +26,8 @@ respective objects. An example of an empty document is shown below:
 
 The ``records`` list can contain ``Record`` objects and their inheritying types,
 such as ``Run`` objects. The ``relationships`` list can contain ``Relationship``
-objects. For more information on these objects, see `Records <./records>`_
-and `Relationships <./relationships>`_.
+objects. For more information on these objects, see `Records <../records>`_
+and `Relationships <../relationships>`_.
 
 --------------------
 Assembling Documents
