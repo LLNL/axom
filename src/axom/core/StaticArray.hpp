@@ -58,21 +58,6 @@ public:
   }
 
   /*!
-   * \brief Move Constructor
-   * \param obj The object to be moved.
-   */
-  AXOM_HOST_DEVICE StaticArray(StaticArray &&obj)
-    : StackArray<T, N>(obj)
-    , m_size(obj.m_size)
-  {
-    for(int i = 0; i < obj.m_size; i++)
-    {
-      StackArray<T, N>::m_data[i] = obj.StackArray<T, N>::m_data[i];
-    }
-    m_size = obj.m_size;
-  }
-
-  /*!
    * \brief Destructor.
    */
   AXOM_HOST_DEVICE ~StaticArray() { }
@@ -82,20 +67,6 @@ public:
    * \param obj The object to be copied.
    */
   AXOM_HOST_DEVICE StaticArray operator=(const StaticArray &obj)
-  {
-    for(int i = 0; i < obj.m_size; i++)
-    {
-      StackArray<T, N>::m_data[i] = obj.StackArray<T, N>::m_data[i];
-    }
-    m_size = obj.m_size;
-    return *this;
-  }
-
-  /*!
-   * \brief Move assignment operator.
-   * \param obj The object to be moved.
-   */
-  AXOM_HOST_DEVICE StaticArray operator=(StaticArray &&obj)
   {
     for(int i = 0; i < obj.m_size; i++)
     {
