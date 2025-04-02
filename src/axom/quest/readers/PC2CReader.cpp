@@ -23,10 +23,7 @@ constexpr int READER_FAILED = -1;
 }  // end anonymous namespace
 
 //------------------------------------------------------------------------------
-PC2CReader::PC2CReader(MPI_Comm comm) : m_comm(comm)
-{
-  MPI_Comm_rank(m_comm, &m_my_rank);
-}
+PC2CReader::PC2CReader(MPI_Comm comm) : m_comm(comm) { MPI_Comm_rank(m_comm, &m_my_rank); }
 
 //------------------------------------------------------------------------------
 int PC2CReader::read()

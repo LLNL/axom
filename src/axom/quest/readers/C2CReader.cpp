@@ -37,9 +37,8 @@ namespace quest
  *
  * \return The transformed 2D point.
  */
-inline primal::Point<double, 2> transformPoint(
-  const numerics::Matrix<double>& transform,
-  const primal::Point<double, 2>& pt)
+inline primal::Point<double, 2> transformPoint(const numerics::Matrix<double>& transform,
+                                               const primal::Point<double, 2>& pt)
 {
   // Turn the point2 into a vec4.
   double pt4[] = {pt[0], pt[1], 0., 1.}, newpt4[] = {0., 0., 0., 1.};
@@ -178,10 +177,8 @@ static void writeLines(const std::string& filename, const std::vector<Segment>& 
   for(int i = 0; i < npts; i += 3)
   {
     fprintf(f, "%1.16lf %1.16lf 0. ", S[i].point[0], S[i].point[1]);
-    if((i + 1) < npts)
-      fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 1].point[0], S[i + 1].point[1]);
-    if((i + 2) < npts)
-      fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 2].point[0], S[i + 2].point[1]);
+    if((i + 1) < npts) fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 1].point[0], S[i + 1].point[1]);
+    if((i + 2) < npts) fprintf(f, "%1.16lf %1.16lf 0. ", S[i + 2].point[0], S[i + 2].point[1]);
     fprintf(f, "\n");
   }
   fprintf(f, "\n");
@@ -212,8 +209,7 @@ struct NURBSInterpolator
   using PointType = primal::Point<double, 2>;
 
   // EPS is used for computing span intervals
-  NURBSInterpolator(const c2c::NURBSData& curve, double EPS = 1E-9)
-    : m_curve(curve)
+  NURBSInterpolator(const c2c::NURBSData& curve, double EPS = 1E-9) : m_curve(curve)
   {
     const int p = m_curve.order - 1;
     const int knotSize = m_curve.knots.size();
@@ -293,8 +289,7 @@ struct NURBSInterpolator
   double endParameter(int span = -1) const
   {
     const bool inRange = span >= 0 && span < numSpans();
-    return inRange ? m_spanIntervals[span].second
-                   : m_curve.knots[m_curve.knots.size() - 1];
+    return inRange ? m_spanIntervals[span].second : m_curve.knots[m_curve.knots.size() - 1];
   }
 
   /*!
@@ -403,10 +398,7 @@ struct NURBSInterpolator
    *
    * Implementation adapted from Algorithm A2.3 on pp. 72-73 of "The NURBS Book".
    */
-  void derivativeBasisFunctions(int span,
-                                double u,
-                                int n,
-                                std::vector<BasisVector>& ders) const
+  void derivativeBasisFunctions(int span, double u, int n, std::vector<BasisVector>& ders) const
   {
     const int p = m_curve.order - 1;
     const auto& U = m_curve.knots;
@@ -622,11 +614,10 @@ struct NURBSInterpolator
     if(d >= 2)
     {
       // 2nd derivative of curvature.
-      double E = 15. * (-yp * xpp + xp * ypp) *
-        pow(2. * xp * xpp + 2. * yp * ypp, 2.) /
+      double E = 15. * (-yp * xpp + xp * ypp) * pow(2. * xp * xpp + 2. * yp * ypp, 2.) /
         (4. * pow(xp2_plus_yp2, 7. / 2.));
-      double F = 3. * (2. * xp * xpp + 2. * yp * ypp) *
-        (-yp * xppp + xp * yppp) / pow(xp2_plus_yp2, 5. / 2.);
+      double F =
+        3. * (2. * xp * xpp + 2. * yp * ypp) * (-yp * xppp + xp * yppp) / pow(xp2_plus_yp2, 5. / 2.);
       double G = 3. * (-yp * xpp + xp * ypp) *
         (2. * (xpp * xpp) + 2. * (ypp * ypp) + 2. * xp * xppp + 2. * yp * yppp) /
         (2. * pow(xp2_plus_yp2, 5. / 2.));
@@ -651,11 +642,7 @@ struct NURBSInterpolator
   double revolvedVolume(const numerics::Matrix<double>& transform) const
   {
     // Use 5-point Gauss Quadrature.
-    const double X[] = {-0.906179845938664,
-                        -0.538469310105683,
-                        0,
-                        0.538469310105683,
-                        0.906179845938664};
+    const double X[] = {-0.906179845938664, -0.538469310105683, 0, 0.538469310105683, 0.906179845938664};
     const double W[] = {0.23692688505618908,
                         0.47862867049936647,
                         0.5688888888888889,
@@ -785,8 +772,7 @@ int C2CReader::readContour()
 {
   c2c::Contour contour = c2c::parseContour(m_fileName);
 
-  SLIC_INFO(
-    fmt::format("Loading contour with {} pieces", contour.getPieces().size()));
+  SLIC_INFO(fmt::format("Loading contour with {} pieces", contour.getPieces().size()));
 
   for(auto* piece : contour.getPieces())
   {
@@ -808,11 +794,9 @@ void C2CReader::log()
     sstr << fmt::format("Piece {}\n{{", index);
     sstr << fmt::format("\torder: {}\n", nurbs.order);
     sstr << fmt::format("\tknots: {}\n", fmt::join(nurbs.knots, " "));
-    sstr << fmt::format("\tknot spans: {}\n",
-                        NURBSInterpolator(nurbs).numSpans());
+    sstr << fmt::format("\tknot spans: {}\n", NURBSInterpolator(nurbs).numSpans());
     sstr << fmt::format("\tweights: {}\n", fmt::join(nurbs.weights, " "));
-    sstr << fmt::format("\tcontrol points: {}\n",
-                        fmt::join(nurbs.controlPoints, " "));
+    sstr << fmt::format("\tcontrol points: {}\n", fmt::join(nurbs.controlPoints, " "));
     sstr << "}\n";
     ++index;
   }
@@ -829,10 +813,8 @@ void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>*
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
   SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
-  SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
-                "C2C reader expects a segment mesh!");
-  SLIC_ERROR_IF(segmentsPerKnotSpan < 1,
-                "C2C reader: Need at least one segment per NURBs span");
+  SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT, "C2C reader expects a segment mesh!");
+  SLIC_ERROR_IF(segmentsPerKnotSpan < 1, "C2C reader: Need at least one segment per NURBs span");
 
   using PointType = primal::Point<double, 2>;
   using PointsArray = std::vector<PointType>;
@@ -917,25 +899,19 @@ void C2CReader::getLinearMeshUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>*
 }
 
 //---------------------------------------------------------------------------
-void C2CReader::getLinearMeshNonUniform(
-  mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
-  double percentError)
+void C2CReader::getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE>* mesh,
+                                        double percentError)
 {
   // Sanity checks
   SLIC_ERROR_IF(mesh == nullptr, "supplied mesh is null!");
   SLIC_ERROR_IF(mesh->getDimension() != 2, "C2C reader expects a 2D mesh!");
-  SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT,
-                "C2C reader expects a segment mesh!");
-  SLIC_ERROR_IF(
-    percentError <= 0.,
-    axom::fmt::format(
-      "C2C reader: percentError must be greater than 0. {} supplied.",
-      percentError));
+  SLIC_ERROR_IF(mesh->getCellType() != mint::SEGMENT, "C2C reader expects a segment mesh!");
+  SLIC_ERROR_IF(percentError <= 0.,
+                axom::fmt::format("C2C reader: percentError must be greater than 0. {} supplied.",
+                                  percentError));
   SLIC_ERROR_IF(
     percentError >= 100.,
-    axom::fmt::format(
-      "C2C reader: percentError must be less than 100. {} supplied.",
-      percentError));
+    axom::fmt::format("C2C reader: percentError must be less than 100. {} supplied.", percentError));
 
   using PointType = primal::Point<double, 2>;
 
@@ -1079,18 +1055,14 @@ void C2CReader::getLinearMeshNonUniform(
 
         right.next_u = (right.u + S[nextIndex].u) / 2.;
         PointType right_next = interpolator.at(right.next_u);
-        right.next_length[0] =
-          sqrt(primal::squared_distance(right.point, right_next));
-        right.next_length[1] =
-          sqrt(primal::squared_distance(right_next, S[nextIndex].point));
+        right.next_length[0] = sqrt(primal::squared_distance(right.point, right_next));
+        right.next_length[1] = sqrt(primal::squared_distance(right_next, S[nextIndex].point));
 
         left.length = left.next_length[0];
         left.next_u = (left.u + right.u) / 2.;
         PointType left_next = interpolator.at(left.next_u);
-        left.next_length[0] =
-          sqrt(primal::squared_distance(left.point, left_next));
-        left.next_length[1] =
-          sqrt(primal::squared_distance(left_next, right.point));
+        left.next_length[0] = sqrt(primal::squared_distance(left.point, left_next));
+        left.next_length[1] = sqrt(primal::squared_distance(left_next, right.point));
 
         // Insert the right segment after the left segment.
         S.insert(S.begin() + nextIndex, right);

@@ -13,8 +13,7 @@ int main(void)
   // Create a record of this specific study
   // This study has an ID of "study1", which has to be unique to this file
   axom::sina::ID studyID {"study1", axom::sina::IDType::Local};
-  std::unique_ptr<axom::sina::Record> study {
-    new axom::sina::Record {studyID, "UQ study"}};
+  std::unique_ptr<axom::sina::Record> study {new axom::sina::Record {studyID, "UQ study"}};
 
   // Create a run of "My Sim Code" version "1.2.3", which was run by "jdoe".
   // The run has an ID of "run1", which has to be unique to this file.

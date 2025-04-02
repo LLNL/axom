@@ -36,10 +36,7 @@ char const RELATIONSHIPS_KEY[] = "relationships";
 char const SAVE_TMP_FILE_EXTENSION[] = ".sina.tmp";
 }  // namespace
 
-void Document::add(std::unique_ptr<Record> record)
-{
-  records.emplace_back(std::move(record));
-}
+void Document::add(std::unique_ptr<Record> record) { records.emplace_back(std::move(record)); }
 
 void Document::add(Relationship relationship)
 {
@@ -64,8 +61,7 @@ conduit::Node Document::toNode() const
   return document;
 }
 
-void Document::createFromNode(conduit::Node const &asNode,
-                              RecordLoader const &recordLoader)
+void Document::createFromNode(conduit::Node const &asNode, RecordLoader const &recordLoader)
 {
   if(asNode.has_child(RECORDS_KEY))
   {
@@ -82,8 +78,7 @@ void Document::createFromNode(conduit::Node const &asNode,
     else
     {
       std::ostringstream message;
-      message << "The '" << RECORDS_KEY
-              << "' element of a document must be an array";
+      message << "The '" << RECORDS_KEY << "' element of a document must be an array";
       throw std::invalid_argument(message.str());
     }
   }
@@ -103,8 +98,7 @@ void Document::createFromNode(conduit::Node const &asNode,
     else
     {
       std::ostringstream message;
-      message << "The '" << RELATIONSHIPS_KEY
-              << "' element of a document must be an array";
+      message << "The '" << RELATIONSHIPS_KEY << "' element of a document must be an array";
       throw std::invalid_argument(message.str());
     }
   }

@@ -96,8 +96,7 @@ public:
     m_fcnFieldName = fcnField;
     m_fcnPath = "fields/" + fcnField;
     SLIC_ASSERT(m_dom->has_path(m_fcnPath));
-    SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() ==
-                "vertex");
+    SLIC_ASSERT(m_dom->fetch_existing(m_fcnPath + "/association").as_string() == "vertex");
     SLIC_ASSERT(m_dom->has_path(m_fcnPath + "/values"));
     m_impl->setFunctionField(fcnField);
   }
@@ -132,16 +131,10 @@ public:
   int32_t getDomainId(int32_t defaultId) const;
 
   //!@brief Get number of cells in the generated contour mesh.
-  axom::IndexType getContourCellCount() const
-  {
-    return m_impl->getContourCellCount();
-  }
+  axom::IndexType getContourCellCount() const { return m_impl->getContourCellCount(); }
 
   //!@brief Get number of nodes in the generated contour mesh.
-  axom::IndexType getContourNodeCount() const
-  {
-    return m_ndim * getContourCellCount();
-  }
+  axom::IndexType getContourNodeCount() const { return m_ndim * getContourCellCount(); }
 
   /*!
     @brief Base class for implementations templated on dimension DIM
@@ -203,8 +196,7 @@ public:
 
     virtual void clearDomain() = 0;
 
-    MarchingCubesDataParallelism m_dataParallelism =
-      MarchingCubesDataParallelism::byPolicy;
+    MarchingCubesDataParallelism m_dataParallelism = MarchingCubesDataParallelism::byPolicy;
 
     double m_contourVal = 0.0;
     int m_maskVal = 1;
@@ -224,8 +216,7 @@ private:
   int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
-  MarchingCubesDataParallelism m_dataParallelism =
-    MarchingCubesDataParallelism::byPolicy;
+  MarchingCubesDataParallelism m_dataParallelism = MarchingCubesDataParallelism::byPolicy;
 
   /*!
     \brief Computational mesh as a conduit::Node.

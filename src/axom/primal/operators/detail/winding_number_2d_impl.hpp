@@ -155,10 +155,8 @@ double linear_winding_number(const Point<T, 2>& q,
   }
 
   // Compute signed angle between vectors
-  double dotprod = axom::utilities::clampVal(
-    Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()),
-    -1.0,
-    1.0);
+  double dotprod =
+    axom::utilities::clampVal(Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()), -1.0, 1.0);
 
   return 0.5 * M_1_PI * acos(dotprod) * ((tri_area > 0) ? 1 : -1);
 }
@@ -262,10 +260,8 @@ double convex_endpoint_winding_number(const Point<T, 2>& q,
   }
 
   // Compute signed angle between vectors
-  double dotprod = axom::utilities::clampVal(
-    Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()),
-    -1.0,
-    1.0);
+  double dotprod =
+    axom::utilities::clampVal(Vector<T, 2>::dot_product(V1.unitVector(), V2.unitVector()), -1.0, 1.0);
   return 0.5 * M_1_PI * acos(dotprod) * ((tri_area > 0) ? 1 : -1);
 }
 
@@ -338,8 +334,7 @@ void construct_approximating_polygon(const Point<T, 2>& q,
   if(isConvexControlPolygon)
   {
     // Bezier curves are always contained in their convex control polygon
-    if(polygon_winding_number(q, controlPolygon, isOnEdge, includeBoundary, edge_tol) ==
-       0)
+    if(polygon_winding_number(q, controlPolygon, isOnEdge, includeBoundary, edge_tol) == 0)
     {
       return;
     }
@@ -444,19 +439,13 @@ double bezier_winding_number(const Point<T, 2>& q,
 
   // Compute the integer winding number of the closed curve
   bool isOnEdge = false;
-  double closed_curve_wn = detail::polygon_winding_number(q,
-                                                          approximating_polygon,
-                                                          isOnEdge,
-                                                          false,
-                                                          edge_tol);
+  double closed_curve_wn =
+    detail::polygon_winding_number(q, approximating_polygon, isOnEdge, false, edge_tol);
 
   // Compute the fractional value of the closed curve
   const int n = approximating_polygon.numVertices();
   const double closure_wn =
-    detail::linear_winding_number(q,
-                                  approximating_polygon[n - 1],
-                                  approximating_polygon[0],
-                                  edge_tol);
+    detail::linear_winding_number(q, approximating_polygon[n - 1], approximating_polygon[0], edge_tol);
 
   // If the point is on the boundary of the approximating polygon,
   //  or coincident with the curve (rare), then winding_number<polygon>
@@ -466,11 +455,10 @@ double bezier_winding_number(const Point<T, 2>& q,
     closed_curve_wn = closure_wn;
     for(int i = 1; i < n; ++i)
     {
-      closed_curve_wn +=
-        detail::linear_winding_number(q,
-                                      approximating_polygon[i - 1],
-                                      approximating_polygon[i],
-                                      edge_tol);
+      closed_curve_wn += detail::linear_winding_number(q,
+                                                       approximating_polygon[i - 1],
+                                                       approximating_polygon[i],
+                                                       edge_tol);
     }
   }
 
@@ -506,10 +494,7 @@ double nurbs_winding_number(const Point<T, 2>& q,
   // Early return is possible for most points + curves
   if(!n.boundingBox().expand(edge_tol).contains(q))
   {
-    return detail::linear_winding_number(q,
-                                         n[0],
-                                         n[n.getNumControlPoints() - 1],
-                                         edge_tol);
+    return detail::linear_winding_number(q, n[0], n[n.getNumControlPoints() - 1], edge_tol);
   }
 
   // Decompose the NURBS curve into Bezier segments

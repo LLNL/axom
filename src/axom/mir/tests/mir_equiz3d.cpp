@@ -20,23 +20,16 @@
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
-std::string baselineDirectory()
-{
-  return pjoin(dataDirectory(), "mir", "regression", "mir_equiz");
-}
+std::string baselineDirectory() { return pjoin(dataDirectory(), "mir", "regression", "mir_equiz"); }
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
-void braid3d_mat_test(const std::string &type,
-                      const std::string &mattype,
-                      const std::string &name)
+void braid3d_mat_test(const std::string &type, const std::string &mattype, const std::string &name)
 {
   namespace bputils = axom::mir::utilities::blueprint;
 
   axom::StackArray<axom::IndexType, 3> dims {11, 11, 11};
-  axom::StackArray<axom::IndexType, 3> zoneDims {dims[0] - 1,
-                                                 dims[1] - 1,
-                                                 dims[2] - 1};
+  axom::StackArray<axom::IndexType, 3> zoneDims {dims[0] - 1, dims[1] - 1, dims[2] - 1};
 
   // Create the data
   conduit::Node hostMesh, deviceMesh;
@@ -48,15 +41,14 @@ void braid3d_mat_test(const std::string &type,
 #endif
 
   // Make views.
-  auto coordsetView = axom::mir::views::make_explicit_coordset<double, 3>::view(
-    deviceMesh["coordsets/coords"]);
+  auto coordsetView =
+    axom::mir::views::make_explicit_coordset<double, 3>::view(deviceMesh["coordsets/coords"]);
   using CoordsetView = decltype(coordsetView);
 
   using ShapeType = axom::mir::views::HexShape<int>;
-  using TopologyView =
-    axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
-  auto connView = bputils::make_array_view<int>(
-    deviceMesh["topologies/mesh/elements/connectivity"]);
+  using TopologyView = axom::mir::views::UnstructuredTopologySingleShapeView<ShapeType>;
+  auto connView =
+    bputils::make_array_view<int>(deviceMesh["topologies/mesh/elements/connectivity"]);
   TopologyView topologyView(connView);
 
   conduit::Node deviceMIRMesh;
@@ -72,8 +64,7 @@ void braid3d_mat_test(const std::string &type,
                    bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
     // clang-format on
 
-    using MIR =
-      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
     options["matset"] = "mat";
@@ -165,8 +156,7 @@ int main(int argc, char *argv[])
     app.parse(argc, argv);
 
 #if defined(AXOM_USE_CALIPER)
-    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-      annotationMode);
+    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
 #endif
 
     axom::slic::SimpleLogger logger;  // create & initialize test logger,

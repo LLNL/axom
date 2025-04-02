@@ -142,8 +142,7 @@ AXOM_HOST_DEVICE static void qsortMultiple(Predicate &&predicate,
 
     if(low < high)
     {
-      const auto pivot_index =
-        partitionMultiple(predicate, low, high, values, args...);
+      const auto pivot_index = partitionMultiple(predicate, low, high, values, args...);
 
       stack[stack_count][0] = low;
       stack[stack_count][1] = pivot_index - 1;
@@ -245,10 +244,7 @@ AXOM_HOST_DEVICE inline static void sort_multiple_internal(Predicate &&predicate
 template <typename T>
 struct less_than
 {
-  AXOM_HOST_DEVICE inline bool operator()(const T &a, const T &b) const
-  {
-    return a < b;
-  }
+  AXOM_HOST_DEVICE inline bool operator()(const T &a, const T &b) const { return a < b; }
 };
 
 /*!
@@ -257,10 +253,7 @@ struct less_than
 template <typename T>
 struct greater_than
 {
-  AXOM_HOST_DEVICE inline bool operator()(const T &a, const T &b) const
-  {
-    return a > b;
-  }
+  AXOM_HOST_DEVICE inline bool operator()(const T &a, const T &b) const { return a > b; }
 };
 
 }  // end namespace detail

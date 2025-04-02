@@ -113,21 +113,13 @@ public:
     const conduit::Node &n_topo = n_topologies.fetch_existing(topoName);
     const std::string newTopoName = opts.topologyName(topoName);
     conduit::Node &n_newTopo = n_output["topologies/" + newTopoName];
-    makeTopology(selectedZonesView,
-                 dataSizes,
-                 extra,
-                 old2new.view(),
-                 n_topo,
-                 n_options,
-                 n_newTopo);
+    makeTopology(selectedZonesView, dataSizes, extra, old2new.view(), n_topo, n_options, n_newTopo);
 
     // Make a new coordset.
     SliceData nSlice;
     nSlice.m_indicesView = nodeSlice.view();
-    const std::string coordsetName =
-      n_topo.fetch_existing("coordset").as_string();
-    const conduit::Node &n_coordset =
-      n_input.fetch_existing("coordsets/" + coordsetName);
+    const std::string coordsetName = n_topo.fetch_existing("coordset").as_string();
+    const conduit::Node &n_coordset = n_input.fetch_existing("coordsets/" + coordsetName);
     const std::string newCoordsetName = opts.coordsetName(coordsetName);
     conduit::Node &n_newCoordset = n_output["coordsets/" + newCoordsetName];
     makeCoordset(nSlice, n_coordset, n_newCoordset);
@@ -157,8 +149,7 @@ public:
       n_origElements["association"] = "element";
       n_origElements["values"].set_allocator(c2a.getConduitAllocatorID());
       n_origElements["values"].set(
-        conduit::DataType(cpp2conduit<axom::IndexType>::id,
-                          selectedZonesView.size()));
+        conduit::DataType(cpp2conduit<axom::IndexType>::id, selectedZonesView.size()));
       axom::copy(n_origElements["values"].data_ptr(),
                  selectedZonesView.data(),
                  sizeof(axom::IndexType) * selectedZonesView.size());
@@ -187,9 +178,8 @@ protected:
    *
    * \return An array view containing the zone slice.
    */
-  axom::ArrayView<axom::IndexType> zoneSliceView(
-    const SelectedZonesView &selectedZonesView,
-    const Sizes &extra)
+  axom::ArrayView<axom::IndexType> zoneSliceView(const SelectedZonesView &selectedZonesView,
+                                                 const Sizes &extra)
   {
     axom::ArrayView<axom::IndexType> view;
     if(extra.zones > 0)
@@ -285,9 +275,8 @@ protected:
     sizes.zones = selectedZonesView.size();
     sizes.connectivity = newConnSize;
 
-    nodeSlice = axom::Array<axom::IndexType>(sizes.nodes + extra.nodes,
-                                             sizes.nodes + extra.nodes,
-                                             allocatorID);
+    nodeSlice =
+      axom::Array<axom::IndexType>(sizes.nodes + extra.nodes, sizes.nodes + extra.nodes, allocatorID);
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(
       sizes.nodes + extra.nodes,
@@ -357,9 +346,8 @@ protected:
 
     // Make an array of original node ids that we can use to "slice" the nodal data.
     old2new = axom::Array<ConnectivityType>(nnodes, nnodes, allocatorID);
-    nodeSlice = axom::Array<axom::IndexType>(newNumNodes + extra.nodes,
-                                             newNumNodes + extra.nodes,
-                                             allocatorID);
+    nodeSlice =
+      axom::Array<axom::IndexType>(newNumNodes + extra.nodes, newNumNodes + extra.nodes, allocatorID);
     auto old2newView = old2new.view();
     auto nodeSliceView = nodeSlice.view();
     axom::for_all<ExecSpace>(
@@ -431,14 +419,13 @@ protected:
 
       conduit::Node &n_sizes = n_newTopo["elements/sizes"];
       n_sizes.set_allocator(c2a.getConduitAllocatorID());
-      n_sizes.set(conduit::DataType(cpp2conduit<ConnectivityType>::id,
-                                    dataSizes.zones + extra.zones));
+      n_sizes.set(conduit::DataType(cpp2conduit<ConnectivityType>::id, dataSizes.zones + extra.zones));
       auto sizesView = bputils::make_array_view<ConnectivityType>(n_sizes);
 
       conduit::Node &n_offsets = n_newTopo["elements/offsets"];
       n_offsets.set_allocator(c2a.getConduitAllocatorID());
-      n_offsets.set(conduit::DataType(cpp2conduit<ConnectivityType>::id,
-                                      dataSizes.zones + extra.zones));
+      n_offsets.set(
+        conduit::DataType(cpp2conduit<ConnectivityType>::id, dataSizes.zones + extra.zones));
       auto offsetsView = bputils::make_array_view<ConnectivityType>(n_offsets);
 
       // Fill sizes, offsets
@@ -508,16 +495,14 @@ protected:
       // Handle shapes, if present.
       if(n_topo.has_path("elements/shapes"))
       {
-        const conduit::Node &n_shapes =
-          n_topo.fetch_existing("elements/shapes");
+        const conduit::Node &n_shapes = n_topo.fetch_existing("elements/shapes");
         auto shapesView = bputils::make_array_view<ConnectivityType>(n_shapes);
 
         conduit::Node &n_newShapes = n_newTopo["elements/shapes"];
         n_newShapes.set_allocator(c2a.getConduitAllocatorID());
-        n_newShapes.set(conduit::DataType(cpp2conduit<ConnectivityType>::id,
-                                          dataSizes.zones + extra.zones));
-        auto newShapesView =
-          bputils::make_array_view<ConnectivityType>(n_newShapes);
+        n_newShapes.set(
+          conduit::DataType(cpp2conduit<ConnectivityType>::id, dataSizes.zones + extra.zones));
+        auto newShapesView = bputils::make_array_view<ConnectivityType>(n_newShapes);
 
         const SelectedZonesView deviceSelectedZonesView(selectedZonesView);
         axom::for_all<ExecSpace>(
@@ -549,8 +534,7 @@ protected:
   {
     AXOM_ANNOTATE_SCOPE("makeCoordset");
     // _mir_utilities_coordsetslicer_begin
-    axom::mir::utilities::blueprint::CoordsetSlicer<ExecSpace, CoordsetView> cs(
-      m_coordsetView);
+    axom::mir::utilities::blueprint::CoordsetSlicer<ExecSpace, CoordsetView> cs(m_coordsetView);
     n_newCoordset.reset();
     cs.execute(nodeSlice, n_coordset, n_newCoordset);
     // _mir_utilities_coordsetslicer_end
@@ -601,8 +585,7 @@ protected:
    *
    * \return Returns the options topology name, if present. Otherwise, it returns the first topology name.
    */
-  std::string topologyName(const conduit::Node &n_input,
-                           const conduit::Node &n_options) const
+  std::string topologyName(const conduit::Node &n_input, const conduit::Node &n_options) const
   {
     std::string name;
     if(n_options.has_path("topology"))
@@ -683,8 +666,7 @@ protected:
  * \tparam MatsetView The matset view type on which the algorithm will run.
  */
 template <typename ExecSpace, typename TopologyView, typename CoordsetView, typename MatsetView>
-class ExtractZonesAndMatset
-  : public ExtractZones<ExecSpace, TopologyView, CoordsetView>
+class ExtractZonesAndMatset : public ExtractZones<ExecSpace, TopologyView, CoordsetView>
 {
 public:
   using SelectedZonesView = axom::ArrayView<axom::IndexType>;
@@ -731,9 +713,7 @@ public:
 
     // Make new matset.
     const std::string topoName =
-      ExtractZones<ExecSpace, TopologyView, CoordsetView>::topologyName(
-        n_input,
-        n_options);
+      ExtractZones<ExecSpace, TopologyView, CoordsetView>::topologyName(n_input, n_options);
     std::string mname = matsetName(n_input, topoName);
     if(!mname.empty())
     {
@@ -763,8 +743,7 @@ private:
    *
    * \return The name of the matset for the topology or an empty string if no matset was found.
    */
-  std::string matsetName(const conduit::Node &n_input,
-                         const std::string &topoName) const
+  std::string matsetName(const conduit::Node &n_input, const std::string &topoName) const
   {
     std::string matset;
     if(n_input.has_child("matsets"))

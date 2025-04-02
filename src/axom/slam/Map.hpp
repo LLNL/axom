@@ -65,12 +65,10 @@ namespace slam
 
 template <typename T,
           typename S = Set<>,
-          typename IndPol =
-            policies::STLVectorIndirection<typename S::PositionType, T>,
+          typename IndPol = policies::STLVectorIndirection<typename S::PositionType, T>,
           typename StrPol = policies::StrideOne<typename S::PositionType>,
           typename IfacePol = policies::ConcreteInterface>
-class Map : public StrPol,
-            public policies::MapInterface<IfacePol, typename S::PositionType>
+class Map : public StrPol, public policies::MapInterface<IfacePol, typename S::PositionType>
 {
 public:
   using DataType = T;
@@ -165,15 +163,14 @@ public:
     : StridePolicyType(shape)
     , m_set(theSet)
   {
-    m_data =
-      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
+    m_data = IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
 
   /// \overload
   template <typename USet,
             typename TSet = SetType,
-            typename Enable = typename std::enable_if<
-              !std::is_abstract<TSet>::value && std::is_base_of<TSet, USet>::value>::type>
+            typename Enable = typename std::enable_if<!std::is_abstract<TSet>::value &&
+                                                      std::is_base_of<TSet, USet>::value>::type>
   Map(const USet& theSet,
       DataType defaultValue = DataType(),
       ElementShape shape = StridePolicyType::DefaultSize(),
@@ -185,8 +182,7 @@ public:
                   "Argument set is of a more-derived type than the Map's set "
                   "type. This may lead to object slicing. Use Map's pointer "
                   "constructor instead to store polymorphic sets.");
-    m_data =
-      IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
+    m_data = IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID);
   }
 
   /**
@@ -203,11 +199,9 @@ public:
    */
   template <typename USet,
             typename TSet = SetType,
-            typename Enable = typename std::enable_if<
-              !std::is_abstract<TSet>::value && std::is_base_of<TSet, USet>::value>::type>
-  Map(const USet& theSet,
-      OrderedMap data,
-      ElementShape shape = StridePolicyType::DefaultSize())
+            typename Enable = typename std::enable_if<!std::is_abstract<TSet>::value &&
+                                                      std::is_base_of<TSet, USet>::value>::type>
+  Map(const USet& theSet, OrderedMap data, ElementShape shape = StridePolicyType::DefaultSize())
     : StridePolicyType(shape)
     , m_set(theSet)
     , m_data(std::move(data))
@@ -217,8 +211,7 @@ public:
                   "type. This may lead to object slicing. Use Map's pointer "
                   "constructor instead to store polymorphic sets.");
 
-    checkBackingSize(
-      std::integral_constant<bool, IndirectionPolicy::IsMutableBuffer> {});
+    checkBackingSize(std::integral_constant<bool, IndirectionPolicy::IsMutableBuffer> {});
   }
 
   /**
@@ -280,10 +273,7 @@ public:
   }
 
   /// \overload
-  AXOM_HOST_DEVICE ValueType operator()(SetPosition setIdx)
-  {
-    return value(setIdx, 0);
-  }
+  AXOM_HOST_DEVICE ValueType operator()(SetPosition setIdx) { return value(setIdx, 0); }
 
   /**
    * \brief Access the value associated with the given position in the set and
@@ -294,29 +284,21 @@ public:
    * \pre `0 <= compIdx[idim] < shape()[idim]`
    */
   template <typename... ComponentPos>
-  AXOM_HOST_DEVICE ConstValueType operator()(SetPosition setIdx,
-                                             ComponentPos... compIdx) const
+  AXOM_HOST_DEVICE ConstValueType operator()(SetPosition setIdx, ComponentPos... compIdx) const
   {
     return value(setIdx, compIdx...);
   }
 
   /// \overload
   template <typename... ComponentPos>
-  AXOM_HOST_DEVICE ValueType operator()(SetPosition setIdx,
-                                        ComponentPos... compIdx)
+  AXOM_HOST_DEVICE ValueType operator()(SetPosition setIdx, ComponentPos... compIdx)
   {
     return value(setIdx, compIdx...);
   }
 
-  AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx) const
-  {
-    return value(setIdx, 0);
-  }
+  AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx) const { return value(setIdx, 0); }
 
-  AXOM_HOST_DEVICE ValueType value(SetPosition setIdx)
-  {
-    return value(setIdx, 0);
-  }
+  AXOM_HOST_DEVICE ValueType value(SetPosition setIdx) { return value(setIdx, 0); }
 
   /**
    * \brief Access the value associated with the given position in the set and
@@ -327,15 +309,12 @@ public:
    * \pre `0 <= compIdx[idim] < shape()[idim]`
    */
   template <typename... ComponentPos>
-  AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx,
-                                        ComponentPos... compIdx) const
+  AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx, ComponentPos... compIdx) const
   {
-    static_assert(
-      sizeof...(ComponentPos) == StridePolicyType::NumDims,
-      "Invalid number of components provided for given Map's StridePolicy");
-    static_assert(
-      axom::detail::all_types_are_integral<ComponentPos...>::value,
-      "Map::value(...): index parameter pack must all be integral types.");
+    static_assert(sizeof...(ComponentPos) == StridePolicyType::NumDims,
+                  "Invalid number of components provided for given Map's StridePolicy");
+    static_assert(axom::detail::all_types_are_integral<ComponentPos...>::value,
+                  "Map::value(...): index parameter pack must all be integral types.");
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, compIdx...);
 #endif
@@ -348,12 +327,10 @@ public:
   template <typename... ComponentPos>
   AXOM_HOST_DEVICE ValueType value(SetPosition setIdx, ComponentPos... compIdx)
   {
-    static_assert(
-      sizeof...(ComponentPos) == StridePolicyType::NumDims,
-      "Invalid number of components provided for given Map's StridePolicy");
-    static_assert(
-      axom::detail::all_types_are_integral<ComponentPos...>::value,
-      "Map::value(...): index parameter pack must all be integral types.");
+    static_assert(sizeof...(ComponentPos) == StridePolicyType::NumDims,
+                  "Invalid number of components provided for given Map's StridePolicy");
+    static_assert(axom::detail::all_types_are_integral<ComponentPos...>::value,
+                  "Map::value(...): index parameter pack must all be integral types.");
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, compIdx...);
 #endif
@@ -396,10 +373,7 @@ public:
    *  an N-dimensional array with the number of values in each sub-component
    *  index.
    */
-  AXOM_HOST_DEVICE ElementShape shape() const
-  {
-    return StridePolicyType::shape();
-  }
+  AXOM_HOST_DEVICE ElementShape shape() const { return StridePolicyType::shape(); }
 
   /// @}
 
@@ -510,8 +484,7 @@ public:
     using IterBase::m_pos;
 
   public:
-    MapIterator(PositionType pos, MapConstPtr oMap) : IterBase(pos), m_map(oMap)
-    { }
+    MapIterator(PositionType pos, MapConstPtr oMap) : IterBase(pos), m_map(oMap) { }
 
     /**
      * \brief Returns the current iterator value.
@@ -521,10 +494,7 @@ public:
     AXOM_HOST_DEVICE pointer operator->() const { return &(*this); }
 
     /// \brief Returns the set element mapped by this iterator.
-    SetElement index() const
-    {
-      return m_map->index(this->m_pos / m_map->numComp());
-    }
+    SetElement index() const { return m_map->index(this->m_pos / m_map->numComp()); }
 
     /// \brief Returns the component index pointed to by this iterator.
     PositionType compIndex() const { return m_pos % m_map->numComp(); }
@@ -557,8 +527,7 @@ public:
    *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
   template <bool Const>
-  class MapRangeIterator
-    : public IteratorBase<MapRangeIterator<Const>, SetPosition>
+  class MapRangeIterator : public IteratorBase<MapRangeIterator<Const>, SetPosition>
   {
   public:
     using IterBase = IteratorBase<MapRangeIterator, SetPosition>;
@@ -579,8 +548,7 @@ public:
     using difference_type = SetPosition;
 
   private:
-    AXOM_HOST_DEVICE static StackArray<axom::IndexType, Dims + 1> fetchDims(
-      StrideIndexType shape)
+    AXOM_HOST_DEVICE static StackArray<axom::IndexType, Dims + 1> fetchDims(StrideIndexType shape)
     {
       return {0, shape};
     }
@@ -602,8 +570,7 @@ public:
     {
       StackArray<axom::IndexType, Dims + 1> dataDims = fetchDims(oMap->shape());
       dataDims[0] = m_map->size();
-      m_mapData =
-        axom::ArrayView<DataType, Dims + 1>(m_map->data_ptr(), dataDims);
+      m_mapData = axom::ArrayView<DataType, Dims + 1>(m_map->data_ptr(), dataDims);
       m_currRange = m_mapData[pos];
     }
 
@@ -675,28 +642,13 @@ public:  // Functions related to iteration
   iterator begin() { return iterator(0, this); }
   iterator end() { return iterator(size() * StridePolicyType::stride(), this); }
   const_iterator begin() const { return const_iterator(0, this); }
-  const_iterator end() const
-  {
-    return const_iterator(size() * StridePolicyType::stride(), this);
-  }
+  const_iterator end() const { return const_iterator(size() * StridePolicyType::stride(), this); }
 
-  RangeAdapter<iterator> range() const
-  {
-    return RangeAdapter<iterator> {begin(), end()};
-  }
+  RangeAdapter<iterator> range() const { return RangeAdapter<iterator> {begin(), end()}; }
 
-  AXOM_HOST_DEVICE range_iterator set_begin()
-  {
-    return range_iterator(this, 0);
-  }
-  AXOM_HOST_DEVICE range_iterator set_end()
-  {
-    return range_iterator(this, size());
-  }
-  AXOM_HOST_DEVICE const_range_iterator set_begin() const
-  {
-    return const_range_iterator(this, 0);
-  }
+  AXOM_HOST_DEVICE range_iterator set_begin() { return range_iterator(this, 0); }
+  AXOM_HOST_DEVICE range_iterator set_end() { return range_iterator(this, size()); }
+  AXOM_HOST_DEVICE const_range_iterator set_begin() const { return const_range_iterator(this, 0); }
   AXOM_HOST_DEVICE const_range_iterator set_end() const
   {
     return const_range_iterator(this, size());
@@ -723,20 +675,19 @@ private:
 
   inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx)) const
   {
-    SLIC_ASSERT_MSG(idx >= 0 && idx < SetPosition(m_data.size()),
-                    "Attempted to access element "
-                      << idx << " but map's data has size " << m_data.size());
+    SLIC_ASSERT_MSG(
+      idx >= 0 && idx < SetPosition(m_data.size()),
+      "Attempted to access element " << idx << " but map's data has size " << m_data.size());
   }
 
   template <typename ComponentIndex>
   inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
                                  ComponentIndex AXOM_DEBUG_PARAM(compIdx)) const
   {
-    SLIC_ASSERT_MSG(
-      setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
-      "Attempted to access element at ("
-        << setIdx << "," << compIdx << ",) but map's set has size " << size()
-        << " with " << numComp() << " components.");
+    SLIC_ASSERT_MSG(setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
+                    "Attempted to access element at (" << setIdx << "," << compIdx
+                                                       << ",) but map's set has size " << size()
+                                                       << " with " << numComp() << " components.");
   }
 
   template <typename... ComponentIndex>
@@ -758,21 +709,18 @@ private:
       fmt::join(indexArray, ", "),
       size(),
       fmt::join(this->shape(), ", "));
-    SLIC_ASSERT_MSG(setIdx >= 0 && setIdx < size() && validIndexes,
-                    invalid_message);
+    SLIC_ASSERT_MSG(setIdx >= 0 && setIdx < size() && validIndexes, invalid_message);
 #endif
   }
 
   template <typename ComponentIndex>
-  AXOM_HOST_DEVICE inline SetPosition componentOffset(
-    ComponentIndex componentIndex) const
+  AXOM_HOST_DEVICE inline SetPosition componentOffset(ComponentIndex componentIndex) const
   {
     return componentIndex;
   }
 
   template <typename... ComponentIndex>
-  AXOM_HOST_DEVICE inline SetPosition componentOffset(
-    ComponentIndex... componentIndex) const
+  AXOM_HOST_DEVICE inline SetPosition componentOffset(ComponentIndex... componentIndex) const
   {
     ElementShape indexArray {{componentIndex...}};
     ElementShape strides = StridePolicyType::strides();
@@ -788,8 +736,7 @@ private:
   // This (should) override the StridePolicy setStride(s) function.
   void setStride(SetPosition AXOM_UNUSED_PARAM(str))
   {
-    SLIC_ASSERT_MSG(false,
-                    "Stride should not be changed after construction of map.");
+    SLIC_ASSERT_MSG(false, "Stride should not be changed after construction of map.");
   }
 
   // If we can resize the underlying buffer, do so if the buffer is not large
@@ -847,16 +794,14 @@ bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
   }
   else
   {
-    if(static_cast<SetPosition>(m_data.size()) !=
-       m_set.get()->size() * StridePolicyType::stride())
+    if(static_cast<SetPosition>(m_data.size()) != m_set.get()->size() * StridePolicyType::stride())
     {
       if(verboseOutput)
       {
         errStr << "\n\t* the underlying set and its associated mapped data"
                << " have different sizes"
-               << " , underlying set has size " << m_set.get()->size()
-               << " with stride " << StridePolicyType::stride()
-               << " , data has size " << m_data.size();
+               << " , underlying set has size " << m_set.get()->size() << " with stride "
+               << StridePolicyType::stride() << " , data has size " << m_data.size();
       }
 
       bValid = false;
@@ -898,8 +843,7 @@ void Map<T, S, IndPol, StrPol, IfacePol>::print() const
     else
     {
       sstr << "** underlying set has size " << m_set.get()->size() << ": ";
-      sstr << "\n** the stride of the map is " << StridePolicyType::stride()
-           << ": ";
+      sstr << "\n** the stride of the map is " << StridePolicyType::stride() << ": ";
 
       sstr << "\n** Mapped data:";
       for(SetPosition idx = 0; idx < this->size(); ++idx)

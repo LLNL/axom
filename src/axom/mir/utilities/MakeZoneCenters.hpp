@@ -40,8 +40,7 @@ public:
    * \param topologyView The view for the input topology.
    * \param coordsetView The view for the input coordset.
    */
-  MakeZoneCenters(const TopologyView &topologyView,
-                  const CoordsetView &coordsetView)
+  MakeZoneCenters(const TopologyView &topologyView, const CoordsetView &coordsetView)
     : m_topologyView(topologyView)
     , m_coordsetView(coordsetView)
   { }
@@ -90,9 +89,8 @@ public:
       // Allocate data in the Conduit node and make a view.
       conduit::Node &comp = n_values[axes[i]];
       comp.set_allocator(c2a.getConduitAllocatorID());
-      comp.set(conduit::DataType(
-        axom::mir::utilities::blueprint::cpp2conduit<value_type>::id,
-        outputSize));
+      comp.set(conduit::DataType(axom::mir::utilities::blueprint::cpp2conduit<value_type>::id,
+                                 outputSize));
       compViews[i] = bputils::make_array_view<value_type>(comp);
     }
 
@@ -105,8 +103,7 @@ public:
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const auto zone = deviceTopoView.zone(zoneIndex);
         const axom::IndexType nnodes = zone.numberOfNodes();
-        const value_type weight =
-          static_cast<value_type>(1.) / static_cast<value_type>(nnodes);
+        const value_type weight = static_cast<value_type>(1.) / static_cast<value_type>(nnodes);
 
         VectorType blended {};
 
@@ -114,8 +111,7 @@ public:
         for(IndexType i = 0; i < nnodes; i++)
         {
           const auto index = zone.getId(i);
-          blended += (VectorType(deviceCoordsetView[index]) *
-                      static_cast<value_type>(weight));
+          blended += (VectorType(deviceCoordsetView[index]) * static_cast<value_type>(weight));
         }
 
         // Store the point into the Conduit component arrays.

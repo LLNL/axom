@@ -43,8 +43,7 @@ inline bool areTriangleIndicesDistinct(axom::IndexType* indices)
 {
   SLIC_ASSERT(indices != nullptr);
 
-  return indices[0] != indices[1] && indices[1] != indices[2] &&
-    indices[2] != indices[0];
+  return indices[0] != indices[1] && indices[1] != indices[2] && indices[2] != indices[0];
 }
 
 /* Find and report self-intersections and degenerate triangles
@@ -98,8 +97,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   // that also shares a UniformGrid bin.
   SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
 
-  std::vector<int>::iterator idx = nondegenerateIndices.begin(),
-                             ndgend = nondegenerateIndices.end();
+  std::vector<int>::iterator idx = nondegenerateIndices.begin(), ndgend = nondegenerateIndices.end();
   for(; idx != ndgend; ++idx)
   {
     // Retrieve the triangle at *idx and construct a bounding box around it
@@ -124,8 +122,7 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
     }
 
     std::sort(neighborTriangles.begin(), neighborTriangles.end());
-    std::vector<int>::iterator nend =
-      std::unique(neighborTriangles.begin(), neighborTriangles.end());
+    std::vector<int>::iterator nend = std::unique(neighborTriangles.begin(), neighborTriangles.end());
     std::vector<int>::iterator nit = neighborTriangles.begin();
 
     // test any remaining neighbor tris for intersection
@@ -162,8 +159,7 @@ WatertightStatus isSurfaceMeshWatertight(detail::UMesh* surface_mesh)
   constexpr int INTERNAL = 0;
 
   // Create fields to store boundary
-  int* bndry_face =
-    surface_mesh->createField<int>("bndry_face", mint::FACE_CENTERED);
+  int* bndry_face = surface_mesh->createField<int>("bndry_face", mint::FACE_CENTERED);
   int* boundary = surface_mesh->createField<int>("boundary", mint::CELL_CENTERED);
 
   // Mark boundary faces
@@ -201,8 +197,7 @@ WatertightStatus isSurfaceMeshWatertight(detail::UMesh* surface_mesh)
     SLIC_ASSERT(surface_mesh->getNumberOfCellFaces(icell) == 3);
     const IndexType* faceids = surface_mesh->getCellFaceIDs(icell);
 
-    if((bndry_face[faceids[0]] == ON_BOUNDARY) ||
-       (bndry_face[faceids[1]] == ON_BOUNDARY) ||
+    if((bndry_face[faceids[0]] == ON_BOUNDARY) || (bndry_face[faceids[1]] == ON_BOUNDARY) ||
        (bndry_face[faceids[2]] == ON_BOUNDARY))
     {
       boundary[icell] = ON_BOUNDARY;
@@ -231,14 +226,12 @@ void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
     auto seed = std::hash<IdxType> {}(pt[0]);
     for(int i = 1; i < GridCell::DIMENSION; ++i)
     {
-      seed ^=
-        std::hash<IdxType> {}(pt[i]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      seed ^= std::hash<IdxType> {}(pt[i]) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
     return seed;
   };
 
-  using GridCellToIndexMap =
-    std::unordered_map<GridCell, IdxType, decltype(point_hash)>;
+  using GridCellToIndexMap = std::unordered_map<GridCell, IdxType, decltype(point_hash)>;
 
   /// Implementation notes:
   ///
@@ -255,11 +248,9 @@ void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
   /// This can correspond to distances of at most 1.5 * eps * \sqrt(2)
   /// in the Euclidean norm.
 
-  SLIC_ASSERT_MSG(eps > 0.,
-                  "Epsilon must be greater than 0. Passed in value was " << eps);
-  SLIC_ASSERT_MSG(
-    surface_mesh != nullptr && *surface_mesh != nullptr,
-    "surface_mesh must be a valid pointer to a pointer to a triangle mesh");
+  SLIC_ASSERT_MSG(eps > 0., "Epsilon must be greater than 0. Passed in value was " << eps);
+  SLIC_ASSERT_MSG(surface_mesh != nullptr && *surface_mesh != nullptr,
+                  "surface_mesh must be a valid pointer to a pointer to a triangle mesh");
 
   int const DIM = 3;
   detail::UMesh* oldMesh = *surface_mesh;
@@ -270,9 +261,7 @@ void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
   std::vector<double> offsets;
   offsets.push_back(0);
   offsets.push_back(eps / 2.);
-  for(std::vector<double>::const_iterator it = offsets.begin();
-      it != offsets.end();
-      ++it)
+  for(std::vector<double>::const_iterator it = offsets.begin(); it != offsets.end(); ++it)
   {
     // We will build up a new triangle mesh with the welded indices
     detail::UMesh* newMesh = new detail::UMesh(DIM, mint::TRIANGLE);
@@ -304,8 +293,7 @@ void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
       vert[2] = z[i];
 
       // find the new vertex index; if not present, insert vertex into new mesh
-      auto res = vertexIndexMap.insert(
-        std::make_pair(lattice.gridCell(vert), uniqueVertCount));
+      auto res = vertexIndexMap.insert(std::make_pair(lattice.gridCell(vert), uniqueVertCount));
       if(res.second == true)
       {
         uniqueVertCount++;
@@ -320,9 +308,7 @@ void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
     const axom::IndexType numTris = oldMesh->getNumberOfCells();
     for(axom::IndexType i = 0; i < numTris; ++i)
     {
-      memcpy(triInds,
-             oldMesh->getCellNodeIDs(i),
-             NUM_TRI_VERTS * sizeof(axom::IndexType));
+      memcpy(triInds, oldMesh->getCellNodeIDs(i), NUM_TRI_VERTS * sizeof(axom::IndexType));
 
       for(int d = 0; d < NUM_TRI_VERTS; ++d)
       {
