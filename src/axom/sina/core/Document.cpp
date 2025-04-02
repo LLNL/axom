@@ -241,8 +241,7 @@ void restoreSlashes(const conduit::Node &modifiedNode, conduit::Node &restoredNo
       auto data_type = it.node().dtype();
 
       // Leaves empty keys empty but continues recursive call if its a list
-      if(data_type.is_string() || data_type.is_number() ||
-         data_type.is_object())
+      if(data_type.is_string() || data_type.is_number() || data_type.is_object())
       {
         newChild.set(it.node());
       }
