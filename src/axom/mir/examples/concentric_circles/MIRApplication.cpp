@@ -52,8 +52,8 @@ int MIRApplication::initialize(int argc, char **argv)
   app.add_option("--output", outputFilePath)
     ->description("The file path for HDF5/YAML output files");
   app.add_option("--dimension", dimension, "Specify the dimension (2 or 3)")
-    ->check(axom::CLI::Range(2, 3)) // Restrict the value to the range [2, 3]
-    ->required();             // Make the option required
+    ->check(axom::CLI::Range(2, 3))  // Restrict the value to the range [2, 3]
+    ->required();                    // Make the option required
   bool disable_write = !writeFiles;
   app.add_flag("--disable-write", disable_write)
     ->description("Disable writing data files");

@@ -194,7 +194,8 @@ struct test_Elvira3D
     double volumeSums[2] = {0., 0.};
     for(size_t i = 0; i < origTotalVolumes.size(); i++)
     {
-      const double origTotalVol = selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
+      const double origTotalVol =
+        selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
 
       SLIC_INFO(axom::fmt::format("Material {}: origVF = {}, mirVF = {}",
                                   i,
@@ -204,11 +205,14 @@ struct test_Elvira3D
       volumeSums[0] += origTotalVol;
       volumeSums[1] += mirTotalVolumes[i];
     }
-    EXPECT_NEAR(volumeSums[0], selectedZones ? mirExpectedVolume : expectedVolume, tolerance);
+    EXPECT_NEAR(volumeSums[0],
+                selectedZones ? mirExpectedVolume : expectedVolume,
+                tolerance);
     EXPECT_NEAR(volumeSums[1], mirExpectedVolume, tolerance);
     for(size_t i = 0; i < origTotalVolumes.size(); i++)
     {
-      const double origTotalVol = selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
+      const double origTotalVol =
+        selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
 
       EXPECT_NEAR(origTotalVol, mirTotalVolumes[i], tolerance);
     }

@@ -26,7 +26,9 @@ int runMIR(const conduit::Node &hostMesh,
     method = options["method"].as_string();
   }
   SLIC_INFO(axom::fmt::format("Using policy {} for {} {}D",
-                              axom::execution_space<ExecSpace>::name(), method, NDIMS));
+                              axom::execution_space<ExecSpace>::name(),
+                              method,
+                              NDIMS));
 
   // Check materials.
   constexpr int MAXMATERIALS = 20;
@@ -58,7 +60,8 @@ int runMIR(const conduit::Node &hostMesh,
     auto coordsetView = make_explicit_coordset<float, NDIMS>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
 
-    using ShapeType = typename std::conditional<NDIMS == 3, HexShape<int>, QuadShape<int>>::type;
+    using ShapeType =
+      typename std::conditional<NDIMS == 3, HexShape<int>, QuadShape<int>>::type;
     auto topologyView =
       make_unstructured_single_shape<ShapeType>::view(n_topology);
     using TopologyView = decltype(topologyView);
