@@ -34,7 +34,7 @@ public:
    */
   AXOM_HOST_DEVICE StaticArray() : StackArray<T, N>(), m_size(0)
   {
-#if defined(AXOM_DEBUG)
+#if !defined(NDEBUG)
     for(int i = 0; i < m_size; i++)
     {
       StackArray<T, N>::m_data[i] = T {};
@@ -129,7 +129,7 @@ public:
   void clear()
   {
     m_size = 0;
-#if defined(AXOM_DEBUG)
+#if !defined(NDEBUG)
     for(int i = 0; i < m_size; i++)
     {
       StackArray<T, N>::m_data[i] = T {};
