@@ -802,7 +802,8 @@ protected:
                   tolerance);
 
     //--------------------------------------------------------------------------
-    // Clean up the mesh so it has merged coordinates and merged faces.
+    // Clean up the mesh in 3D so it has merged coordinates and merged faces.
+    // This step does nothing in 2D at present.
     axom::Array<axom::IndexType> selectedIds;
     build.cleanMesh(n_newCoordset, point_tolerance, n_newTopo, selectedIds);
 
