@@ -776,14 +776,12 @@ protected:
 
     // Make the builder that will set up the Blueprint output.
     Builder build;
-    const std::string originalElementsField(
-      MIROptions(n_options).originalElementsField());
     build.allocate(numFragments,
                    n_newCoordset,
                    n_newTopo,
                    n_newFields,
                    n_newMatset,
-                   originalElementsField);
+                   n_options);
     if(n_matset.has_path("material_map"))
     {
       n_newMatset["material_map"].set(n_matset["material_map"]);

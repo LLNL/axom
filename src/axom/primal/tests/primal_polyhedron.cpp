@@ -81,7 +81,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
   int faces[NUM_FACES * 4];
   int face_size[NUM_FACES];
   int face_offset[NUM_FACES];
-  int face_count;
+  axom::IndexType face_count;
   poly.getFaces(faces, face_size, face_offset, face_count);
 
   // Verify we got the expected number of faces
@@ -97,7 +97,7 @@ TEST(primal_polyhedron, polyhedron_unit_cube)
                                       4, 5, 6, 7};
   // clang-format on
 
-  for(int f = 0; f < face_count; ++f)
+  for(axom::IndexType f = 0; f < face_count; ++f)
   {
     for(int f_index = face_offset[f]; f_index < face_offset[f] + face_size[f];
         f_index++)
@@ -689,7 +689,7 @@ TEST(primal_polyhedron, polygonal_cone)
     int faces[FACE_IDX_SIZE];
     int face_size[NUM_FACES];
     int face_offset[NUM_FACES];
-    int face_count;
+    axom::IndexType face_count;
     poly.getFaces(faces, face_size, face_offset, face_count);
 
     // Verify we got the expected number of faces

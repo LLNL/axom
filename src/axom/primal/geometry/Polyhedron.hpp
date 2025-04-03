@@ -421,6 +421,8 @@ public:
    * \brief Helper function to find the faces of the Polyhedron, assuming the
    *        vertex neighbors are in counter-clockwise ordering.
    *
+   * \tparam ConnectivityType The type to generate for the polyhedral face data.
+   *
    * \param [out] faces is the vertex indices for faces
    * \param [out] face_offset is the offset for each face
    * \param [out] face_size is the number of vertices for each face
@@ -437,8 +439,12 @@ public:
    *
    * \pre polyhedron vertex neighbors are defined
    */
+  template <typename ConnectivityType = int>
   AXOM_HOST_DEVICE
-  void getFaces(int* faces, int* face_size, int* face_offset, int& face_count) const
+  void getFaces(ConnectivityType* faces,
+                ConnectivityType* face_size,
+                ConnectivityType* face_offset,
+                axom::IndexType& face_count) const
   {
     std::int8_t curFaceIndex = 0;
     std::int8_t checkedSize = 0;
@@ -526,7 +532,7 @@ public:
    *
    * \return An array of planes that describe the faces.
    */
-  AXOM_HOST_DEVICE PlaneArrayType getFaces(int& numFaces) const
+  AXOM_HOST_DEVICE PlaneArrayType getFaces(axom::IndexType& numFaces) const
   {
     PlaneArrayType facePlanes;
     numFaces = 0;
@@ -535,18 +541,17 @@ public:
     int faces[MAX_VERTS * MAX_VERTS];
     int face_size[MAX_VERTS * 2];
     int face_offset[MAX_VERTS * 2];
-    int face_count;
-    getFaces(faces, face_size, face_offset, face_count);
+    getFaces<int>(faces, face_size, face_offset, numFaces);
 
     // Turn the faces to planes.
-    for(int i = 0; i < face_count; ++i)
+    for(axom::IndexType i = 0; i < numFaces; ++i)
     {
       const int i_offset = face_offset[i];
       const auto p0 = m_vertices[faces[i_offset]];
       const auto p1 = m_vertices[faces[i_offset + 1]];
       const auto p2 = m_vertices[faces[i_offset + 2]];
 
-      facePlanes[numFaces++] = axom::primal::make_plane(p0, p1, p2);
+      facePlanes[i] = axom::primal::make_plane(p0, p1, p2);
     }
     return facePlanes;
   }
@@ -594,12 +599,12 @@ public:
       int faces[MAX_VERTS * MAX_VERTS];
       int face_size[MAX_VERTS * 2];
       int face_offset[MAX_VERTS * 2];
-      int face_count;
+      axom::IndexType face_count;
       getFaces(faces, face_size, face_offset, face_count);
 
       const PointType& origin = m_vertices[0];
 
-      for(int i = 0; i < face_count; ++i)
+      for(axom::IndexType i = 0; i < face_count; ++i)
       {
         const int N = face_size[i];
         const int i_offset = face_offset[i];

@@ -170,7 +170,7 @@ public:
           // Where this face begins in se_conn.
           auto faceIds = se_conn.data() + offset;
           // Load the face's ids into faceIds in se_conn.
-          axom::IndexType numFaceIds;
+          axom::IndexType numFaceIds = 0;
           zone.getFace(fi, faceIds, numFaceIds);
           offset += numFaceIds;
 
