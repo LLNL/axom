@@ -1159,8 +1159,6 @@ AXOM_HOST_DEVICE void crc_sides(const value_type upcol[2][3],
   }
 
   norm3d(n2a[0], n2a[1], n3a);
-
-  return;
 }
 
 /*!
