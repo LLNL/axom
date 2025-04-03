@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,14 +8,17 @@
 
 #include <iostream>
 
-#include "benchmark/benchmark_api.h"
+#include "benchmark/benchmark.h"
 #include "axom/slic.hpp"
+
+// Uncomment the following line to enable larger test sizes
+// #define SLAM_BENCHMARK_LARGE_SIZES
 
 //------------------------------------------------------------------------------
 namespace
 {
-const int STRIDE = 7;
-const int OFFSET = 12;
+constexpr int STRIDE = 7;
+constexpr int OFFSET = 12;
 
 using IndexType = int;
 using IndexArray = IndexType*;
@@ -77,7 +80,7 @@ DataArray generateRandomDataField(int sz)
 class SetFixture : public ::benchmark::Fixture
 {
 public:
-  void SetUp()
+  void SetUp(const ::benchmark::State& /*state*/) override
   {
     volatile int str_vol = STRIDE;  // pass through volatile variable so the
     str = str_vol;                  // number is not a compile time constant
@@ -89,7 +92,7 @@ public:
     data = nullptr;
   }
 
-  void TearDown()
+  void TearDown(const ::benchmark::State& /*state*/) override
   {
     if(ind != nullptr)
     {
@@ -124,8 +127,11 @@ enum ArrSizes
 {
   S0 = 1 << 3,   // small
   S1 = 1 << 16,  // larger than  32K L1 cache
-  S2 = 1 << 19,  // Larger than 256K L2 cache
-  S3 = 1 << 25   // Larger than  25M L3 cache
+  S2 = 1 << 19   // Larger than 256K L2 cache
+#if defined(SLAM_BENCHMARK_LARGE_SIZES)
+  ,
+  S3 = 1 << 25  // Larger than  25M L3 cache
+#endif
 };
 
 void CustomArgs(benchmark::internal::Benchmark* b)
@@ -133,7 +139,9 @@ void CustomArgs(benchmark::internal::Benchmark* b)
   b->Arg(S0);
   b->Arg(S1);
   b->Arg(S2);
+#if defined(SLAM_BENCHMARK_LARGE_SIZES)
   b->Arg(S3);
+#endif
 }
 
 }  // namespace
@@ -156,11 +164,13 @@ void contig_sequence_compileTimeSize(benchmark::State& state)
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S0);
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S1);
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S2);
+#if defined(SLAM_BENCHMARK_LARGE_SIZES)
 BENCHMARK_TEMPLATE(contig_sequence_compileTimeSize, S3);
+#endif
 
 BENCHMARK_DEFINE_F(SetFixture, contig_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -176,7 +186,7 @@ BENCHMARK_REGISTER_F(SetFixture, contig_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, strided_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -192,7 +202,7 @@ BENCHMARK_REGISTER_F(SetFixture, strided_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -208,7 +218,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_sequence)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   while(state.KeepRunning())
   {
@@ -225,7 +235,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence)->Apply(CustomArgs);
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -245,7 +255,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered)->Apply(CustomArgs
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -266,7 +276,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -287,7 +297,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_offset)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_strided_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), false);
 
@@ -308,7 +318,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_strided_offset)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -328,7 +338,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted)->Apply(CustomArg
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -349,7 +359,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -370,7 +380,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_offset)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_strided_offset)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(maxIndex(sz), true);
 
@@ -391,7 +401,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_permuted_strided_offset)
 /// --------------------  Benchmarks for array indexing ---------------------
 BENCHMARK_DEFINE_F(SetFixture, contig_sequence_field)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -409,7 +419,7 @@ BENCHMARK_REGISTER_F(SetFixture, contig_sequence_field)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, strided_sequence_field)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -427,7 +437,7 @@ BENCHMARK_REGISTER_F(SetFixture, strided_sequence_field)->Apply(CustomArgs);
 
 BENCHMARK_DEFINE_F(SetFixture, offset_sequence_field)(benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -446,7 +456,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_sequence_field)->Apply(CustomArgs);
 BENCHMARK_DEFINE_F(SetFixture, offset_strided_sequence_field)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   data = generateRandomDataField(maxIndex(sz));
 
@@ -465,7 +475,7 @@ BENCHMARK_REGISTER_F(SetFixture, offset_strided_sequence_field)->Apply(CustomArg
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_ordered_field)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(sz, false);
   data = generateRandomDataField(maxIndex(sz));
@@ -495,7 +505,7 @@ BENCHMARK_REGISTER_F(SetFixture, indirection_sequence_ordered_field)
 BENCHMARK_DEFINE_F(SetFixture, indirection_sequence_permuted_field)
 (benchmark::State& state)
 {
-  const int sz = state.range_x();
+  const int sz = state.range(0);
 
   ind = generateRandomPermutationArray(sz, true);
   data = generateRandomDataField(maxIndex(sz));
@@ -529,7 +539,7 @@ int main(int argc, char* argv[])
   std::srand(std::time(NULL));
 
   ::benchmark::Initialize(&argc, argv);
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::SimpleLogger logger;
 
   ::benchmark::RunSpecifiedBenchmarks();
 

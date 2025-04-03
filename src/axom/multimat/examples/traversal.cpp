@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -213,6 +213,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
+    // _multimat_using_fields_dense_start
     auto map = mm.get2dField<double>("CellMat Array");
 
     for(int i = 0; i < mm.getNumberOfCells(); i++)
@@ -230,6 +231,7 @@ void various_traversal_methods(int nmats,
         }
       }
     }
+    // _multimat_using_fields_dense_end
   }
   timer.stop();
   SLIC_INFO("  Field2D: " << timer.elapsed() << " sec");
@@ -247,6 +249,7 @@ void various_traversal_methods(int nmats,
       // a Map pointer to point to a bivariateMap object
       //MultiMat::Field1D<double>& map = mm.get1dField<double>("CellMat Array");
 
+      //_multimat_using_fields_indexset_start
       auto map = mm.get2dField<double>("CellMat Array");
 
       for(int i = 0; i < mm.getNumberOfCells(); i++)
@@ -271,6 +274,7 @@ void various_traversal_methods(int nmats,
           }
         }
       }
+      //_multimat_using_fields_indexset_end
     }
     timer.stop();
     SLIC_INFO("  Field2D: " << timer.elapsed() << " sec");
@@ -326,6 +330,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
+    //_multimat_using_fields_iterator_start
     auto map2d = mm.get2dField<double>("CellMat Array");
     for(int i = 0; i < mm.getNumberOfCells() /*map2d.firstSetSize()*/; i++)
     {
@@ -341,6 +346,7 @@ void various_traversal_methods(int nmats,
         SLIC_ASSERT(iter(0) == iter.value(0));
       }
     }
+    //_multimat_using_fields_iterator_end
   }
   timer.stop();
   SLIC_INFO("  Field2D: " << timer.elapsed() << " sec");
@@ -374,6 +380,7 @@ void various_traversal_methods(int nmats,
   timer.reset();
   timer.start();
   {
+    // _multimat_using_fields_flatiter_start
     auto map2d = mm.get2dField<double>("CellMat Array");
     for(auto iter = map2d.set_begin(); iter != map2d.set_end(); ++iter)
     {
@@ -387,6 +394,7 @@ void various_traversal_methods(int nmats,
         sum += val;
       }
     }
+    // _multimat_using_fields_flatiter_end
   }
   timer.stop();
   SLIC_INFO("  Field2D: " << timer.elapsed() << " sec");

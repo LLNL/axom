@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -738,6 +738,7 @@ TEST(C_sidre_group, save_restore_simple)
   //  SIDRE_Group_save(root, "C_out_sidre_group_save_restore_simple","conduit");
 
   SIDRE_DataStore_print(ds);
+  SIDRE_DataStore_delete(ds);
 
   // Doesn't work yet.
 #if 0

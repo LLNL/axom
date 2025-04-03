@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,12 +13,12 @@
 #include "DataStore.hpp"
 
 // Other axom headers
+#include "axom/core/IndexedCollection.hpp"
+#include "axom/core/MapCollection.hpp"
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/streams/GenericOutputStream.hpp"
 
 // Sidre component headers
-#include "IndexedCollection.hpp"
-#include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "Group.hpp"
 #include "Attribute.hpp"

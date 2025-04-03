@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,9 +25,12 @@ set( primal_headers
     geometry/BoundingBox.hpp
     geometry/CurvedPolygon.hpp
     geometry/Hexahedron.hpp
+    geometry/KnotVector.hpp
+    geometry/Line.hpp
     geometry/OrientedBoundingBox.hpp
     geometry/OrientationResult.hpp
-    geometry/NumericArray.hpp
+    geometry/NURBSCurve.hpp
+    geometry/NURBSPatch.hpp
     geometry/Plane.hpp
     geometry/Point.hpp
     geometry/Polygon.hpp
@@ -63,9 +66,11 @@ set( primal_headers
     operators/detail/fuzzy_comparators.hpp
     operators/detail/intersect_bezier_impl.hpp
     operators/detail/intersect_bounding_box_impl.hpp
+    operators/detail/intersect_patch_impl.hpp
     operators/detail/intersect_impl.hpp
     operators/detail/intersect_ray_impl.hpp
-    operators/detail/winding_number_impl.hpp
+    operators/detail/winding_number_2d_impl.hpp
+    operators/detail/winding_number_3d_impl.hpp
      
     ## utils
     utils/ZipIndexable.hpp

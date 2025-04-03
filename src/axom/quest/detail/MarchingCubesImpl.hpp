@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -47,6 +47,8 @@ public:
   using MIdx = axom::StackArray<axom::IndexType, DIM>;
   using MDMapper = axom::MDMapping<DIM>;
   using FacetIdType = int;
+  using CrossingFlagType = axom::quest::MarchingCubes::CrossingFlagType;
+
   using LoopPolicy = typename execution_space<ExecSpace>::loop_policy;
   using ReducePolicy = typename execution_space<ExecSpace>::reduce_policy;
 #if defined(AXOM_USE_RAJA)
@@ -63,7 +65,7 @@ public:
 
   AXOM_HOST MarchingCubesImpl(int allocatorID,
                               axom::Array<std::uint16_t>& caseIdsFlat,
-                              axom::Array<std::uint16_t>& crossingFlags,
+                              axom::Array<CrossingFlagType>& crossingFlags,
                               axom::Array<axom::IndexType>& scannedFlags,
                               axom::Array<axom::IndexType>& facetIncrs)
     : m_allocatorID(allocatorID)
@@ -963,13 +965,21 @@ private:
   axom::Array<std::uint16_t>& m_caseIdsFlat;
 
   //!@brief Whether a parent cell crosses the contour.
-  axom::Array<std::uint16_t>& m_crossingFlags;
+  axom::Array<CrossingFlagType>& m_crossingFlags;
 
   //!@brief Prefix sum of m_crossingFlags
   axom::Array<axom::IndexType>& m_scannedFlags;
 
+  /*!
+    TODO: Facet increment values lie in [0, 5], but are wastefully
+    stored in 32 bits because of a ROCM scan implementation that adds
+    them in the input type without promoting them to the bigger output
+    type.  When ROCM supports the promotion and RAJA uses it, we can
+    change this type to something more efficient.
+  */
+  using FacetIncrsType = axom::IndexType;
   //!@brief Number of surface mesh facets added by each crossing.
-  axom::Array<axom::IndexType>& m_facetIncrs;
+  axom::Array<FacetIncrsType>& m_facetIncrs;
 
   //!@brief Number of parent cells crossing the contour surface.
   axom::IndexType m_crossingCount = 0;

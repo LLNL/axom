@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,6 +8,7 @@
 
 #include "axom/core/StackArray.hpp"
 
+#include "axom/core/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -59,7 +60,7 @@ public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
   using TetrahedronType = Tetrahedron<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
+  using NumArrayType = axom::NumericArray<T, NDIMS>;
 
   enum
   {
@@ -248,7 +249,7 @@ public:
    * \note Assumes tets is pre-allocated
    */
   AXOM_HOST_DEVICE
-  void triangulate(axom::StackArray<TetrahedronType, NUM_TRIANGULATE>& tets)
+  void triangulate(axom::StackArray<TetrahedronType, NUM_TRIANGULATE>& tets) const
   {
     // Hex center (hc)
     PointType hc = vertexMean();

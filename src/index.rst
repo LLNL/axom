@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level LICENSE file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -51,10 +51,12 @@ are identified.
    * Klee: Shaping specification and implementation
    * Lumberjack: Scalable parallel message logging and filtering
    * Mint: Mesh data model
+   * Mir: (Material interface reconstruction)
    * Multimat: Managing multimaterial field data
    * Primal: Computational geometry primitives
    * Quest: Querying on surface tool
    * Sidre: Simulation data repository
+   * Sina: Simulation insight and analysis
    * Slam: Set-theoretic lightweight API for meshes
    * Slic: Simple Logging Interface Code
    * Spin: Spatial index structures for managing and accelerating spatial searches
@@ -86,6 +88,9 @@ User guides and source code documentation are always linked on this site.
    * - Mint
      - :doc:`User Guide <axom/mint/docs/sphinx/index>`
      - `Source documentation <doxygen/html/minttop.html>`__
+   * - Mir
+     - :doc:`User Guide <axom/mir/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/mirtop.html>`__
    * - Multimat
      - :doc:`User Guide <axom/multimat/docs/sphinx/index>`
      - `Source documentation <doxygen/html/multimattop.html>`__
@@ -98,6 +103,9 @@ User guides and source code documentation are always linked on this site.
    * - Sidre
      - :doc:`User Guide <axom/sidre/docs/sphinx/index>`
      - `Source documentation <doxygen/html/sidretop.html>`__
+   * - Sina
+     - :doc:`User Guide <axom/sina/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/sinatop.html>`__
    * - Slam
      - :doc:`User Guide <axom/slam/docs/sphinx/index>`
      - `Source documentation <doxygen/html/slamtop.html>`__
@@ -119,6 +127,7 @@ Axom has the following inter-component dependencies:
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint depends on Slam, and optionally Sidre
+- Mir depends on Slic, Slam and Primal.
 - Multimat depends on Slic, and Slam
 - Inlet depends on Sidre, Slic, and Primal
 - Klee depends on Sidre, Slic, Inlet and Primal
@@ -181,7 +190,7 @@ Axom Copyright and License Information
 
 Please see the :ref:`axom-license`.
 
-Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC.
+Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
 
 LLNL-CODE-741217
@@ -202,10 +211,12 @@ LLNL-CODE-741217
    Klee (Shaping specification and implementation) <axom/klee/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
+   Mir (Material Interface Reconstruction) <axom/mir/docs/sphinx/index>
    Multimat (Multimaterial fields) <axom/multimat/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
    Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
    Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Sina (Write data in a common format) <axom/sina/docs/sphinx/index>
    Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
    Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
    Spin (Spatial indexes) <axom/spin/docs/sphinx/index>

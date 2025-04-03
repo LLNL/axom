@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,7 +12,7 @@
 #include "axom/core.hpp"
 #include "axom/core/NumericLimits.hpp"
 
-#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -394,7 +394,7 @@ OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts, int n)
   }
 
   numerics::Matrix<T> covar = numerics::Matrix<T>(NDIMS, NDIMS);
-  NumericArray<T, NDIMS> c;  // centroid
+  axom::NumericArray<T, NDIMS> c;  // centroid
 
   for(int i = 0; i < n; i++)
   {
@@ -403,7 +403,7 @@ OrientedBoundingBox<T, NDIMS>::OrientedBoundingBox(const PointType* pts, int n)
   c /= static_cast<T>(n);
 
   // save space for pts minus the centroid
-  NumericArray<T, NDIMS> diff;
+  axom::NumericArray<T, NDIMS> diff;
 
   for(int i = 0; i < n; i++)
   {
@@ -575,8 +575,8 @@ template <typename T, int NDIMS>
 OrientedBoundingBox<T, NDIMS>& OrientedBoundingBox<T, NDIMS>::shift(
   const Vector<T, NDIMS>& displacement)
 {
-  NumericArray<T, NDIMS>& coords = (this->m_c).array();
-  NumericArray<T, NDIMS> c;
+  axom::NumericArray<T, NDIMS>& coords = (this->m_c).array();
+  axom::NumericArray<T, NDIMS> c;
   for(int i = 0; i < NDIMS; i++)
   {
     c[i] = coords[i] + displacement[i];

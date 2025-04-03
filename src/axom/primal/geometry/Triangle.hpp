@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -259,7 +259,7 @@ public:
 
     // Find best projection plane for computing weights: xy, yz, xz
     // Use dimension from largest component of normal
-    const int pDim = (DIM == 2) ? 2 : primal::abs(u.array()).argMax();
+    const int pDim = (DIM == 2) ? 2 : axom::abs(u.array()).argMax();
     switch(pDim)
     {
     case 0:  // compute in yz plane

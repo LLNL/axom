@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -8,6 +8,7 @@
 
 // axom_utils includes
 #include "axom/core/Macros.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/numerics/matvecops.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -15,7 +16,6 @@
 
 // Primal includes
 #include "axom/primal/constants.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
 // C/C++ includes
@@ -155,13 +155,14 @@ std::ostream& operator<<(std::ostream& os, const Vector<T, NDIMS>& vec);
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
- * \see NumericArray
+ * \see axom::NumericArray
  * \see Point
  */
 template <typename T, int NDIMS>
 class Vector
 {
 public:
+  using NumericArray = axom::NumericArray<T, NDIMS>;
   using PointType = Point<T, NDIMS>;
   using CoordType = T;
 
@@ -181,7 +182,7 @@ public:
    * \param [in] arr The numeric array to copy from
    */
   AXOM_HOST_DEVICE
-  explicit Vector(const NumericArray<T, NDIMS>& arr) : m_components(arr) { }
+  explicit Vector(const NumericArray& arr) : m_components(arr) { }
 
   /*!
    * \brief Creates a vector from the first sz values of the input array.
@@ -248,10 +249,10 @@ public:
    * \brief Returns a reference to the underlying NumericArray.
    */
   AXOM_HOST_DEVICE
-  const NumericArray<T, NDIMS>& array() const { return m_components; }
+  const NumericArray& array() const { return m_components; }
 
   AXOM_HOST_DEVICE
-  NumericArray<T, NDIMS>& array() { return m_components; }
+  NumericArray& array() { return m_components; }
 
   /*!
    * \brief Returns a pointer to the underlying data.
@@ -419,7 +420,7 @@ public:
   static Vector make_vector(const T& x, const T& y, const T& z = 0.0);
 
 private:
-  NumericArray<T, NDIMS> m_components;
+  NumericArray m_components;
 };
 
 /// \name Pre-defined Vector types
@@ -523,9 +524,10 @@ AXOM_HOST_DEVICE inline void Vector<T, NDIMS>::negate()
 template <typename T, int NDIMS>
 AXOM_HOST_DEVICE inline bool Vector<T, NDIMS>::is_zero() const
 {
+  constexpr T zero = 0;
   for(int i = 0; i < NDIMS; ++i)
   {
-    if(!utilities::isNearlyEqual(m_components[i], 0.0))
+    if(!utilities::isNearlyEqual(m_components[i], zero))
     {
       return false;
     }

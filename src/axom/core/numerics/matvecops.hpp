@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -533,10 +533,11 @@ inline bool linspace(const T& x0, const T& x1, T* v, int N)
 
   const T h = (x1 - x0) / static_cast<T>(N - 1);
 
-  for(int i = 0; i < N; ++i)
+  for(int i = 0; i < N - 1; ++i)
   {
     v[i] = x0 + i * h;
   }
+  v[N - 1] = x1;
 
   return true;
 }

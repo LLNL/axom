@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -467,7 +467,7 @@ struct CandidateFinder<AccelType::UniformGrid, ExecSpace, FloatType>
       spatialIndexResolution =
         static_cast<IndexType>(1 + std::pow(this->m_aabbs.size(), 1 / 3.));
     }
-    m_resolutions = axom::primal::NumericArray<int, 3>(spatialIndexResolution);
+    m_resolutions = axom::NumericArray<int, 3>(spatialIndexResolution);
   }
 
   virtual axom::ArrayView<IndexType, 1, Space> getCandidates(
@@ -498,7 +498,7 @@ struct CandidateFinder<AccelType::UniformGrid, ExecSpace, FloatType>
   }
 
   BoxType m_globalBox;
-  primal::NumericArray<int, 3> m_resolutions;
+  NumericArray<int, 3> m_resolutions;
   axom::Array<IndexType> m_currCandidates;
 };
 

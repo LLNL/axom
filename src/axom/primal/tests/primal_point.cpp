@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 #include "axom/slic.hpp"
@@ -40,13 +41,15 @@ void check_point_policy()
 //------------------------------------------------------------------------------
 TEST(primal_point, point_default_constructor)
 {
-  static const int DIM = 2;
+  static const int DIM = 3;
   using CoordType = double;
   using QPoint = primal::Point<CoordType, DIM>;
 
   QPoint pt;
 
   EXPECT_EQ(pt[0], CoordType());
+  EXPECT_EQ(pt[1], CoordType());
+  EXPECT_EQ(pt[2], CoordType());
   EXPECT_EQ(pt.dimension(), DIM);
 }
 
@@ -172,7 +175,7 @@ TEST(primal_point, point_numericArray_constructor)
 {
   static const int DIM = 5;
   using CoordType = int;
-  using QArray = primal::NumericArray<CoordType, DIM>;
+  using QArray = axom::NumericArray<CoordType, DIM>;
   using QPoint = primal::Point<CoordType, DIM>;
 
   // Set elt i of input array to i

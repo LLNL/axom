@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -20,7 +20,7 @@ using GridCell = LatticeT::GridCell;
 using SpacePt = LatticeT::SpacePoint;
 using SpaceVector = LatticeT::SpaceVector;
 using BBox = LatticeT::SpatialBoundingBox;
-using IntArray = axom::primal::NumericArray<int, DIM>;
+using IntArray = axom::NumericArray<int, DIM>;
 }  // namespace lattice_1D
 
 // Define some helpful typedefs for 2D rectangular lattices
@@ -34,7 +34,7 @@ using GridCell = LatticeT::GridCell;
 using SpacePt = LatticeT::SpacePoint;
 using SpaceVector = LatticeT::SpaceVector;
 using BBox = LatticeT::SpatialBoundingBox;
-using IntArray = axom::primal::NumericArray<int, DIM>;
+using IntArray = axom::NumericArray<int, DIM>;
 }  // namespace lattice_2D
 
 // Define some helpful typedefs for 3D rectangular lattices
@@ -48,7 +48,7 @@ using GridCell = LatticeT::GridCell;
 using SpacePt = LatticeT::SpacePoint;
 using SpaceVector = LatticeT::SpaceVector;
 using BBox = LatticeT::SpatialBoundingBox;
-using IntArray = axom::primal::NumericArray<int, DIM>;
+using IntArray = axom::NumericArray<int, DIM>;
 }  // namespace lattice_3D
 
 TEST(spin_rectangle_lattice, lattice_ctor)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -15,7 +15,7 @@
 #include "axom/core/StackArray.hpp"
 
 #include "axom/primal/geometry/Hexahedron.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/core/NumericArray.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
@@ -73,7 +73,9 @@ public:
    */
   AXOM_HOST_DEVICE int getNumNeighbors(int vtx) const
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+#endif
     return num_nbrs[vtx];
   }
 
@@ -91,7 +93,9 @@ public:
    */
   AXOM_HOST_DEVICE VertexNbrs& operator[](int vtx)
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+#endif
     return getNeighbors(vtx);
   }
 
@@ -109,7 +113,9 @@ public:
    */
   AXOM_HOST_DEVICE VertexNbrs& getNeighbors(int vtx)
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+#endif
     return nbrs[vtx];
   }
 
@@ -124,7 +130,9 @@ public:
   AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx,
                                      std::initializer_list<std::int8_t> nbrIds)
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(num_nbrs[vtx] + nbrIds.size() <= MAX_NBRS_PER_VERT);
+#endif
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     for(std::int8_t nbr : nbrIds)
     {
@@ -144,7 +152,9 @@ public:
    */
   AXOM_HOST_DEVICE void addNeighbors(std::int8_t vtx, std::int8_t nbrId)
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
+#endif
     SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     std::int8_t idx_insert = num_nbrs[vtx];
     nbrs[vtx][idx_insert] = nbrId;
@@ -166,9 +176,13 @@ public:
                                             std::int8_t nbr,
                                             std::int8_t pos)
   {
+#if !defined(__HIP_DEVICE_COMPILE__)
     SLIC_ASSERT(num_nbrs[vtx] + 1 <= MAX_NBRS_PER_VERT);
-    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
     SLIC_ASSERT(pos <= num_nbrs[vtx]);
+#endif
+
+    SLIC_ASSERT(vtx >= 0 && vtx < MAX_VERTS);
+
     std::uint8_t old_nbrs[MAX_NBRS_PER_VERT];
     // copy elements from [pos, nnbrs)
     for(int ip = pos; ip < num_nbrs[vtx]; ip++)
@@ -253,7 +267,7 @@ class Polyhedron
 public:
   using PointType = Point<T, NDIMS>;
   using VectorType = Vector<T, NDIMS>;
-  using NumArrayType = NumericArray<T, NDIMS>;
+  using NumArrayType = axom::NumericArray<T, NDIMS>;
 
   constexpr static int MAX_VERTS = NeighborCollection::MAX_VERTS;
 

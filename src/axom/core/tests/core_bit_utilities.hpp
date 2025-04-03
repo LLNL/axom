@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -179,5 +179,35 @@ TEST(core_bit_utilities, countl_zero)
       }
     }
     EXPECT_EQ(bit, axom::utilities::countl_zero(rand_val));
+  }
+}
+
+TEST(core_bit_utilities, setbit_bitisset)
+{
+  const std::uint32_t pattern = 0xaaaaaaaa;
+  for(size_t bit = 0;
+      bit < axom::utilities::BitTraits<std::uint32_t>::BITS_PER_WORD;
+      bit++)
+  {
+    EXPECT_EQ(axom::utilities::bitIsSet(pattern, bit), ((bit & 1) == 1));
+  }
+
+  const bool bitvals[] = {false, true, true, false, true, true, false, true};
+  std::uint8_t value = 0;
+  for(size_t i = 0; i < axom::utilities::BitTraits<std::uint8_t>::BITS_PER_WORD;
+      i++)
+  {
+    axom::utilities::setBit(value, i, bitvals[i]);
+    for(size_t b = 0; b <= i; b++)
+    {
+      EXPECT_EQ(axom::utilities::bitIsSet(value, b), bitvals[b]);
+    }
+  }
+
+  for(size_t i = 0; i < axom::utilities::BitTraits<std::uint8_t>::BITS_PER_WORD;
+      i++)
+  {
+    axom::utilities::setBit(value, i, false);
+    EXPECT_EQ(axom::utilities::bitIsSet(value, i), false);
   }
 }

@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,6 +26,7 @@ set(core_serial_tests
     core_map.hpp
     core_flatmap.hpp
     core_memory_management.hpp
+    core_numeric_array.hpp
     core_numeric_limits.hpp
     core_Path.hpp
     core_stack_array.hpp
@@ -78,6 +79,22 @@ foreach(test_suite ${core_serial_tests})
     axom_add_test( NAME    ${test_suite}_serial
                    COMMAND core_serial_tests --gtest_filter=${test_suite}* )
 endforeach()
+
+#------------------------------------------------------------------------------
+# Test for ItemCollection classes
+#------------------------------------------------------------------------------
+
+axom_add_executable(NAME core_collections_test
+                    SOURCES core_collections.cpp
+                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                    DEPENDS_ON ${core_test_depends}
+                    FOLDER axom/core/tests
+                    )
+
+axom_add_test( NAME    core_collections
+               COMMAND core_collections_test
+             )
+
 
 #------------------------------------------------------------------------------
 # MPI GTests
@@ -173,4 +190,26 @@ foreach(_mode none report counts gputx)
   set_property(TEST ${_test_name}
                APPEND PROPERTY ENVIRONMENT  "CALI_LOG_VERBOSITY=2")
 endforeach()
+
+#------------------------------------------------------------------------------
+# Benchmarks
+#------------------------------------------------------------------------------
+if (ENABLE_BENCHMARKS)
+
+  set(core_benchmarks
+      core_benchmark_array.cpp )
+
+  foreach(test ${core_benchmarks})
+    get_filename_component(test_name ${test} NAME_WE)
+
+    axom_add_executable(NAME       ${test_name}
+                        SOURCES    ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON fmt core slic gbenchmark cli11
+                        FOLDER     axom/core/benchmarks)
+
+    blt_add_benchmark(NAME    ${test_name}
+                      COMMAND ${test_name} --benchmark_min_time=0.0001s)
+  endforeach()
+endif()
 

@@ -3,7 +3,7 @@ message(STATUS "CURRENT_INSTALLED_DIR -- ${CURRENT_INSTALLED_DIR}")
 message(STATUS "PORT -- ${PORT}")
 
 set(_copyright [=[
-Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 other Axom Project Developers. See the top-level LICENSE file for details.
 
 SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,7 +14,7 @@ set(_host-config_hdr [=[
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -167,6 +167,12 @@ set(_umpire_dep [=[
 set(UMPIRE_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 ]=])
 
+
+set(_opencascade_dep [=[
+
+set(OPENCASCADE_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+]=])
+
 set(_openmp_dep [=[
 
 # Setup OpenMP; fix MSVC linker error about unknown flag
@@ -198,7 +204,7 @@ else()
   file(APPEND ${_hc_file}.in "${_conduit_dep_off}")
 endif()
 
-foreach(_dep lua mfem openmp raja umpire)
+foreach(_dep lua mfem openmp raja umpire opencascade)
   if(${_dep} IN_LIST FEATURES)
     file(APPEND ${_hc_file}.in "${_${_dep}_dep}")
   else()

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1661,6 +1661,74 @@ TEST(primal_intersect, segment_aabb_3d_intersection)
 
     PointType ipt = seg.at(tmin);
     print_details(true, box, seg, ipt);
+  }
+}
+
+TEST(primal_intersect, sphere_aabb_2d_intersection)
+{
+  constexpr int DIM = 2;
+  using PointType = primal::Point<double, DIM>;
+  using SphereType = primal::Sphere<double, DIM>;
+  using BoxType = primal::BoundingBox<double, DIM>;
+
+  SphereType circle(PointType {1.0, 2.0}, 1.3);
+
+  // No overlap
+  {
+    BoxType box(PointType {3, 4}, PointType {4, 5});
+    EXPECT_FALSE(primal::intersect(circle, box));
+  }
+
+  // No overlap, but nearer
+  {
+    BoxType box(PointType {2, 3}, PointType {3, 4});
+    EXPECT_FALSE(primal::intersect(circle, box));
+  }
+
+  // Touching at a corner
+  {
+    double rt22 = std::sqrt(2.0) / 2.0;
+    BoxType box(PointType {circle.getRadius() * rt22 + circle.getCenter()[0],
+                           circle.getRadius() * rt22 + circle.getCenter()[1]},
+                PointType {3, 4});
+    EXPECT_TRUE(primal::intersect(circle, box));
+  }
+
+  // Touching at a tangent
+  {
+    BoxType box(PointType {-1, circle.getRadius() + circle.getCenter()[1]},
+                PointType {3, 4});
+    EXPECT_TRUE(primal::intersect(circle, box));
+  }
+
+  // Overlap at a corner
+  {
+    BoxType box(
+      PointType {circle.getCenter()[0] + 0.1, circle.getCenter()[1] + 0.1},
+      PointType {3, 4});
+    EXPECT_TRUE(primal::intersect(circle, box));
+  }
+
+  // Overlap at an edge
+  {
+    BoxType box(PointType {-1, 3}, PointType {3, 4});
+    EXPECT_TRUE(primal::intersect(circle, box));
+  }
+
+  // Box contains circle
+  {
+    BoxType box(
+      PointType {circle.getCenter()[0] - 1.5, circle.getCenter()[1] - 1.5},
+      PointType {circle.getCenter()[0] + 1.5, circle.getCenter()[1] + 1.5});
+    EXPECT_TRUE(primal::intersect(circle, box));
+  }
+
+  // Circle contains box
+  {
+    BoxType box(
+      PointType {circle.getCenter()[0] - 0.5, circle.getCenter()[1] - 0.5},
+      PointType {circle.getCenter()[0] + 0.5, circle.getCenter()[1] + 0.5});
+    EXPECT_TRUE(primal::intersect(circle, box));
   }
 }
 

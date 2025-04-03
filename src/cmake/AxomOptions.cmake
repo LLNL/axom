@@ -1,10 +1,24 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
 # Defines CMake options for Axom's build system
 #------------------------------------------------------------------------------
+
+option(AXOM_ENABLE_ASAN "Enable AddressSanitizer for memory checking (Clang or GCC only)" OFF)
+if(AXOM_ENABLE_ASAN)
+    if(NOT (C_COMPILER_FAMILY_IS_CLANG OR C_COMPILER_FAMILY_IS_GNU))
+        message(FATAL_ERROR "AXOM_ENABLE_ASAN only supports Clang and GCC")
+    endif()
+endif()
+
+option(AXOM_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer for undefined behavior detection (Clang or GCC only)" OFF)
+if(AXOM_ENABLE_UBSAN)
+    if(NOT (C_COMPILER_FAMILY_IS_CLANG OR C_COMPILER_FAMILY_IS_GNU))
+        message(FATAL_ERROR "AXOM_ENABLE_UBSAN only supports Clang and GCC")
+    endif()
+endif()
 
 option(AXOM_ENABLE_SPARSEHASH "Enables Sparsehash." ON)
 option(AXOM_ENABLE_ALL_COMPONENTS "Enables all components by default" ON)

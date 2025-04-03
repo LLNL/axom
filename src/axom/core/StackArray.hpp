@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,6 +9,8 @@
 #include "axom/config.hpp"       // for compile-time defines
 #include "axom/core/Macros.hpp"  // for axom macros
 #include "axom/core/Types.hpp"   // for axom types
+
+#include <iostream>
 
 namespace axom
 {
@@ -27,6 +29,14 @@ namespace axom
 template <typename T, int N>
 struct StackArray
 {
+  using value_type = T;
+
+  /*!
+   * \brief Return size of the array.
+   */
+  AXOM_HOST_DEVICE
+  constexpr static int size() { return N; }
+
   /*!
    * \brief Accessor, returns a reference to the value at the given index.
    *
@@ -54,6 +64,9 @@ struct StackArray
 
   AXOM_HOST_DEVICE
   constexpr operator const T*() const noexcept { return &m_data[0]; }
+
+  AXOM_HOST_DEVICE T* data() noexcept { return &m_data[0]; }
+  AXOM_HOST_DEVICE const T* data() const noexcept { return &m_data[0]; }
 
   /// @}
 
@@ -133,6 +146,28 @@ AXOM_HOST_DEVICE bool operator<(const StackArray<T, N>& lhs,
     }
   }
   return false;
+}
+
+/**
+ * \brief Print the StackArray to a stream.
+ * \param os The stream to use.
+ * \param obj The StackArray to print.
+ * \return The input stream.
+ */
+template <typename T, int N>
+std::ostream& operator<<(std::ostream& os, const StackArray<T, N>& obj)
+{
+  os << "(";
+  for(int i = 0; i < N; i++)
+  {
+    if(i > 0)
+    {
+      os << ", ";
+    }
+    os << obj.m_data[i];
+  }
+  os << ")";
+  return os;
 }
 
 } /* namespace axom */

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,14 +12,16 @@
   #include "conduit_relay_io_hdf5.hpp"
 #endif
 
+#include "axom/core/ListCollection.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/MapCollection.hpp"
 #include "axom/core/Path.hpp"
 
 // Sidre headers
-#include "ListCollection.hpp"
-#include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "DataStore.hpp"
+
+#include "axom/fmt.hpp"
 
 namespace axom
 {
@@ -963,7 +965,7 @@ View* Group::copyView(View* view)
  *
  *************************************************************************
  */
-View* Group::deepCopyView(View* view, int allocID)
+View* Group::deepCopyView(const View* view, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 
@@ -1402,7 +1404,7 @@ Group* Group::copyGroup(Group* group)
  *
  *************************************************************************
  */
-Group* Group::deepCopyGroup(Group* srcGroup, int allocID)
+Group* Group::deepCopyGroup(const Group* srcGroup, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 
@@ -1453,33 +1455,27 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
   bool hasSavedViews = false;
 
   // Dump the group's views
-  IndexType vidx = getFirstValidViewIndex();
-  while(indexIsValid(vidx))
+  for(const auto& view : this->views())
   {
-    const View* view = getView(vidx);
-
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
-                   SIDRE_GROUP_LOG_PREPEND
-                     << "'" << view->getName()
-                     << "' is the name of both a group and a view.");
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view.getName()),
+                   SIDRE_GROUP_LOG_PREPEND << axom::fmt::format(
+                     "'{}' is the name of both a group and a view",
+                     view.getName()));
 
-    if(attr == nullptr || view->hasAttributeValue(attr))
+    if(attr == nullptr || view.hasAttributeValue(attr))
     {
-      conduit::Node& child_node = m_is_list ? n.append() : n[view->getName()];
-      view->createNativeLayout(child_node);
+      conduit::Node& child_node = m_is_list ? n.append() : n[view.getName()];
+      view.createNativeLayout(child_node);
       hasSavedViews = true;
     }
-    vidx = getNextValidViewIndex(vidx);
   }
 
   // Recursively dump the child groups
-  IndexType gidx = getFirstValidGroupIndex();
-  while(indexIsValid(gidx))
+  for(const auto& group : this->groups())
   {
-    const Group* group = getGroup(gidx);
-    conduit::Node& child_node = m_is_list ? n.append() : n[group->getName()];
-    if(group->createNativeLayout(child_node, attr))
+    conduit::Node& child_node = m_is_list ? n.append() : n[group.getName()];
+    if(group.createNativeLayout(child_node, attr))
     {
       hasSavedViews = true;
     }
@@ -1487,14 +1483,13 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
     {
       if(m_is_list)
       {
-        n.remove(group->getName());
+        n.remove(group.getName());
       }
       else
       {
         n.remove(n.number_of_children() - 1);
       }
     }
-    gidx = getNextValidGroupIndex(gidx);
   }
 
   return hasSavedViews;
@@ -1518,9 +1513,9 @@ void Group::createNoDataLayout(Node& n, const Attribute* attr) const
   {
     // Check that the view's name is not also a child group name
     SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view.getName()),
-                   SIDRE_GROUP_LOG_PREPEND
-                     << "'" << view.getName()
-                     << "' is the name of both a group and a view.");
+                   SIDRE_GROUP_LOG_PREPEND << axom::fmt::format(
+                     "'{}' is the name of both a group and a view",
+                     view.getName()));
 
     if(attr == nullptr || view.hasAttributeValue(attr))
     {
@@ -1553,41 +1548,32 @@ bool Group::createExternalLayout(Node& n, const Attribute* attr) const
   bool hasExternalViews = false;
 
   // Dump the group's views
-  IndexType vidx = getFirstValidViewIndex();
-  while(indexIsValid(vidx))
+  for(const auto& view : this->views())
   {
-    const View* view = getView(vidx);
-
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
-                   SIDRE_GROUP_LOG_PREPEND
-                     << "'" << view->getName()
-                     << "' is the name of both a group and a view.");
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view.getName()),
+                   SIDRE_GROUP_LOG_PREPEND << axom::fmt::format(
+                     "'{}' is the name of both a group and a view.",
+                     view.getName()));
 
-    if(attr == nullptr || view->hasAttributeValue(attr))
+    if(attr == nullptr || view.hasAttributeValue(attr))
     {
-      if(view->isExternal())
+      if(view.isExternal())
       {
-        if(view->isDescribed())
+        if(view.isDescribed())
         {
-          conduit::Node& vnode = m_is_list ? n.append() : n[view->getName()];
-          view->createNativeLayout(vnode);
+          conduit::Node& vnode = m_is_list ? n.append() : n[view.getName()];
+          view.createNativeLayout(vnode);
         }
         hasExternalViews = true;
       }
     }
-
-    vidx = getNextValidViewIndex(vidx);
   }
 
-  // Recursively dump the child groups
-  IndexType gidx = getFirstValidGroupIndex();
-  while(indexIsValid(gidx))
+  for(const auto& group : this->groups())
   {
-    const Group* group = getGroup(gidx);
-
-    conduit::Node& gnode = m_is_list ? n.append() : n[group->getName()];
-    if(group->createExternalLayout(gnode, attr))
+    conduit::Node& gnode = m_is_list ? n.append() : n[group.getName()];
+    if(group.createExternalLayout(gnode, attr))
     {
       hasExternalViews = true;
     }
@@ -1600,11 +1586,9 @@ bool Group::createExternalLayout(Node& n, const Attribute* attr) const
       }
       else
       {
-        n.remove(group->getName());
+        n.remove(group.getName());
       }
     }
-
-    gidx = getNextValidGroupIndex(gidx);
   }
 
   return hasExternalViews;
@@ -1636,41 +1620,25 @@ void Group::print(std::ostream& os) const
 /*
  *************************************************************************
  *
- * Print given number of levels of Group sub-tree rooted at this
- * Group to stdout.
+ * Print sub-tree rooted at this Group to stdout, with level-based padding.
  *
  *************************************************************************
  */
 void Group::printTree(const int nlevels, std::ostream& os) const
 {
-  for(int i = 0; i < nlevels; ++i)
+  // lambda to generate the proper number of padding spaces
+  auto pad = [](int n) { return axom::fmt::format("{:>{}}", "", 4 * n); };
+
+  os << axom::fmt::format("{}Group {}\n", pad(nlevels), this->getName());
+
+  for(const auto& view : this->views())
   {
-    os << "    ";
-  }
-  os << "Group " << this->getName() << std::endl;
-
-  IndexType vidx = getFirstValidViewIndex();
-  while(indexIsValid(vidx))
-  {
-    const View* view = getView(vidx);
-
-    for(int i = 0; i < nlevels + 1; ++i)
-    {
-      os << "    ";
-    }
-    os << "View " << view->getName() << std::endl;
-
-    vidx = getNextValidViewIndex(vidx);
+    os << axom::fmt::format("{}View {}\n", pad(nlevels + 1), view.getName());
   }
 
-  IndexType gidx = getFirstValidGroupIndex();
-  while(indexIsValid(gidx))
+  for(const auto& group : this->groups())
   {
-    const Group* group = getGroup(gidx);
-
-    group->printTree(nlevels + 1, os);
-
-    gidx = getNextValidGroupIndex(gidx);
+    group.printTree(nlevels + 1, os);
   }
 }
 
@@ -1685,38 +1653,18 @@ void Group::copyToConduitNode(Node& n) const
 {
   n["name"] = m_name;
 
-  IndexType vidx = getFirstValidViewIndex();
-  while(indexIsValid(vidx))
+  for(const auto& view : this->views())
   {
-    const View* view = getView(vidx);
-    if(isUsingMap())
-    {
-      Node& v = n["views"].fetch(view->getName());
-      view->copyToConduitNode(v);
-    }
-    else
-    {
-      Node& v = n["views"].append();
-      view->copyToConduitNode(v);
-    }
-    vidx = getNextValidViewIndex(vidx);
+    Node& v =
+      isUsingMap() ? n["views"].fetch(view.getName()) : n["views"].append();
+    view.copyToConduitNode(v);
   }
 
-  IndexType gidx = getFirstValidGroupIndex();
-  while(indexIsValid(gidx))
+  for(const auto& group : this->groups())
   {
-    const Group* group = getGroup(gidx);
-    if(isUsingMap())
-    {
-      Node& g = n["groups"].fetch(group->getName());
-      group->copyToConduitNode(g);
-    }
-    else
-    {
-      Node& g = n["groups"].append();
-      group->copyToConduitNode(g);
-    }
-    gidx = getNextValidGroupIndex(gidx);
+    Node& g =
+      isUsingMap() ? n["groups"].fetch(group.getName()) : n["groups"].append();
+    group.copyToConduitNode(g);
   }
 }
 
@@ -1730,48 +1678,34 @@ void Group::copyToConduitNode(Node& n) const
 bool Group::isEquivalentTo(const Group* other, bool checkName) const
 {
   // Equality of names
-  bool is_equiv = true;
-  if(checkName)
-  {
-    is_equiv = (m_name == other->m_name);
-  }
+  bool is_equiv = checkName ? m_name == other->m_name : true;
 
   // Sizes of collections of child items must be equal
-  if(is_equiv)
-  {
-    is_equiv = (m_view_coll->getNumItems() == other->m_view_coll->getNumItems()) &&
-      (m_group_coll->getNumItems() == other->m_group_coll->getNumItems());
-  }
+  is_equiv = is_equiv &&
+    (m_view_coll->getNumItems() == other->m_view_coll->getNumItems()) &&
+    (m_group_coll->getNumItems() == other->m_group_coll->getNumItems());
 
   // Test equivalence of Views
   if(is_equiv)
   {
-    IndexType vidx = getFirstValidViewIndex();
-    while(is_equiv && indexIsValid(vidx))
+    for(const auto& view : this->views())
     {
-      const View* view = getView(vidx);
-      const std::string& name = view->getName();
+      const std::string& name = view.getName();
 
-      is_equiv =
-        other->hasChildView(name) && view->isEquivalentTo(other->getView(name));
-
-      vidx = getNextValidViewIndex(vidx);
+      is_equiv = is_equiv && other->hasChildView(name) &&
+        view.isEquivalentTo(other->getView(name));
     }
   }
 
   // Recursively call this method to test equivalence of child Groups
   if(is_equiv)
   {
-    IndexType gidx = getFirstValidGroupIndex();
-    while(is_equiv && indexIsValid(gidx))
+    for(const auto& group : this->groups())
     {
-      const Group* group = getGroup(gidx);
-      const std::string& name = group->getName();
+      const std::string& name = group.getName();
 
-      is_equiv = other->hasChildGroup(name) &&
-        group->isEquivalentTo(other->getGroup(name));
-
-      gidx = getNextValidGroupIndex(gidx);
+      is_equiv = is_equiv && other->hasChildGroup(name) &&
+        group.isEquivalentTo(other->getGroup(name));
     }
   }
 
@@ -2266,7 +2200,7 @@ bool Group::load(const hid_t& h5_id,
  *
  * Load External Data from an hdf5 file
  *
- * Note: this ASSUMES uses the "sidre_hdf5" protocol
+ * Note: this ASSUMES usage of the "sidre_hdf5" protocol
  *************************************************************************
  */
 bool Group::loadExternalData(const hid_t& h5_id)
@@ -2279,6 +2213,38 @@ bool Group::loadExternalData(const hid_t& h5_id)
     [&] { conduit::relay::io::hdf5_read(h5_id, "sidre/external", n); });
 
   return !(getDataStore()->getConduitErrorOccurred());
+}
+
+/*
+ *************************************************************************
+ *
+ * Load External Data from a path within an hdf5 file
+ *
+ * Note: this ASSUMES usage of the "sidre_hdf5" protocol
+ *************************************************************************
+ */
+bool Group::loadExternalData(const hid_t& h5_id, const std::string& group_path)
+{
+  bool success;
+  std::string delim(1, getPathDelimiter());
+  if(group_path.empty() || group_path == delim)
+  {
+    // An empty or trivial path means the load should read from the start of
+    // the file.
+    success = loadExternalData(h5_id);
+  }
+  else
+  {
+    Node n;
+    createExternalLayout(n);
+    ConduitErrorSuppressor checkConduitCall(getDataStore());
+
+    std::string read_path("sidre/external/" + group_path);
+
+    checkConduitCall([&] { conduit::relay::io::hdf5_read(h5_id, read_path, n); });
+    success = !(getDataStore()->getConduitErrorOccurred());
+  }
+  return success;
 }
 
 #endif /* AXOM_USE_HDF5 */
@@ -2558,22 +2524,19 @@ bool Group::exportTo(conduit::Node& result,
                      std::set<IndexType>& buffer_indices) const
 {
   result.set(DataType::object());
-  bool hasSavedViews = false;
 
+  bool hasSavedViews = false;
   if(getNumViews() > 0)
   {
     Node& vnode = result["views"];
-    IndexType vidx = getFirstValidViewIndex();
-    while(indexIsValid(vidx))
+    for(const auto& view : this->views())
     {
-      const View* view = getView(vidx);
-      if(attr == nullptr || view->hasAttributeValue(attr))
+      if(attr == nullptr || view.hasAttributeValue(attr))
       {
-        Node& n_view = m_is_list ? vnode.append() : vnode.fetch(view->getName());
-        view->exportTo(n_view, buffer_indices);
+        Node& n_view = m_is_list ? vnode.append() : vnode.fetch(view.getName());
+        view.exportTo(n_view, buffer_indices);
         hasSavedViews = true;
       }
-      vidx = getNextValidViewIndex(vidx);
     }
     if(!hasSavedViews)
     {
@@ -2585,16 +2548,12 @@ bool Group::exportTo(conduit::Node& result,
   if(getNumGroups() > 0)
   {
     Node& gnode = result["groups"];
-    IndexType gidx = getFirstValidGroupIndex();
-    while(indexIsValid(gidx))
+    for(const auto& group : this->groups())
     {
-      const Group* group = getGroup(gidx);
-      Node& n_group = m_is_list ? gnode.append() : gnode.fetch(group->getName());
-      bool hsv = group->exportTo(n_group, attr, buffer_indices);
+      Node& n_group = m_is_list ? gnode.append() : gnode.fetch(group.getName());
+      bool hsv = group.exportTo(n_group, attr, buffer_indices);
       hasSavedViews = hasSavedViews || hsv;
       hasSavedGroups = true;
-
-      gidx = getNextValidGroupIndex(gidx);
     }
     if(!hasSavedGroups)
     {

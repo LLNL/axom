@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -265,7 +265,7 @@ public:
 
     using ImplicitGridType = spin::ImplicitGrid<DIM, axom::SEQ_EXEC, IndexType>;
     using UniformGridType = spin::UniformGrid<IndexType, DIM>;
-    using NumericArrayType = primal::NumericArray<DataType, DIM>;
+    using NumericArrayType = NumericArray<DataType, DIM>;
     using axom::numerics::dot_product;
 
     bool valid = true;
@@ -276,8 +276,7 @@ public:
     const IndexType totalElements = m_mesh.elements().size();
     const IndexType res =
       axom::utilities::ceil(0.33 * std::pow(totalVertices, 1. / DIM));
-    UniformGridType grid(m_bounding_box,
-                         primal::NumericArray<int, DIM>(res).data());
+    UniformGridType grid(m_bounding_box, NumericArray<int, DIM>(res).data());
 
     // An array to cache the circumspheres associated with each element
     axom::Array<typename ElementType::SphereType> circumspheres(totalElements);
@@ -503,7 +502,7 @@ private:
   /// Helper struct to find the first element near a point to be inserted
   struct ElementFinder
   {
-    using NumericArrayType = primal::NumericArray<IndexType, DIM>;
+    using NumericArrayType = NumericArray<IndexType, DIM>;
     using LatticeType = spin::RectangularLattice<DIM, double, IndexType>;
 
     explicit ElementFinder() = default;

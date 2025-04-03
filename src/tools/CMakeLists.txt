@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -83,20 +83,7 @@ if(AXOM_ENABLE_QUEST)
         set (_policies "raja_seq")
         blt_list_append(TO _policies ELEMENTS "raja_omp" IF AXOM_ENABLE_OPENMP)
         blt_list_append(TO _policies ELEMENTS "raja_cuda" IF AXOM_ENABLE_CUDA)
-
-        # Test with HIP policy for select optimization flags.
-        # Check for Debug flags that have been overwritten.
-        if(AXOM_ENABLE_HIP)
-            if((CMAKE_BUILD_TYPE MATCHES "(Release|RelWithDebInfo)") OR
-              (CMAKE_BUILD_TYPE MATCHES "Debug" AND
-              CMAKE_CXX_FLAGS_DEBUG MATCHES "\-O1 \-g \-DNDEBUG"))
-                list(APPEND _policies "raja_hip")
-            else()
-              message(STATUS
-                "HIP policy for mesh_tester executable is not being tested"
-              )
-            endif()
-        endif()
+        blt_list_append(TO _policies ELEMENTS "raja_hip" IF AXOM_ENABLE_HIP)
 
         foreach(_method ${_methods})
             foreach(_policy ${_policies})

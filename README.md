@@ -1,5 +1,5 @@
 [comment]: # (#################################################################)
-[comment]: # (Copyright 2017-2024, Lawrence Livermore National Security, LLC)
+[comment]: # (Copyright 2017-2025, Lawrence Livermore National Security, LLC)
 [comment]: # (and Axom Project Developers. See the top-level LICENSE file)
 [comment]: # (for details.)
 [comment]: #
@@ -19,9 +19,9 @@ Axom provides robust, flexible software infrastructure for the development of mu
 Documentation
 -------------
 
-Latest docs on Develop branch: https://axom.readthedocs.io
+To access the latest docs for Axom: https://axom.readthedocs.io/en/develop/
 
-To access docs for other versions: https://readthedocs.org/projects/axom/
+To access another version of Axom docs, please expand the sub-window on the lower right of any Axom Document page.
 
 Getting Involved
 ----------------
@@ -56,7 +56,7 @@ Thanks to all of Axom's
 License
 -------
 
-Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC. 
+Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
 
 Copyrights and patents in the Axom project are retained by contributors.

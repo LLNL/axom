@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2025, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -100,11 +100,28 @@ public:
   ~Polygon() { m_vertices.clear(); }
 
   /*!
-   * \brief Copy assignment operator for Polygon. Suppress CUDA warnings for
-   *        dynamic axom::Array.
+   * \brief Copy assignment operator for Polygon (static array specialization).
+   *        Specializations are necessary to remove warnings.
    */
-  AXOM_SUPPRESS_HD_WARN
-  AXOM_HOST_DEVICE
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Static, int> = 0>
+  AXOM_HOST_DEVICE Polygon& operator=(const Polygon& other)
+  {
+    if(this == &other)
+    {
+      return *this;
+    }
+
+    m_vertices = other.m_vertices;
+    return *this;
+  }
+
+  /*!
+   * \brief Copy assignment operator for Polygon.
+   *        (dynamic array specialization)
+   */
+  template <PolygonArray P_ARRAY_TYPE = ARRAY_TYPE,
+            std::enable_if_t<P_ARRAY_TYPE == PolygonArray::Dynamic, int> = 0>
   Polygon& operator=(const Polygon& other)
   {
     if(this == &other)
@@ -414,7 +431,7 @@ public:
   bool isValid() const { return m_vertices.size() >= 3; }
 
 private:
-  ArrayType m_vertices;
+  ArrayType m_vertices {};
 };
 
 //------------------------------------------------------------------------------
