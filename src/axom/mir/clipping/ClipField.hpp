@@ -2105,7 +2105,7 @@ private:
                     conduit::Node &n_newCoordset) const
   {
     AXOM_ANNOTATE_SCOPE("makeCoordset");
-    // _mir_utilities_coordsetblender_start
+    // _mir_utilities_coordsetblender_begin
     axom::mir::utilities::blueprint::
       CoordsetBlender<ExecSpace, CoordsetView, axom::mir::utilities::blueprint::SelectSubsetPolicy>
         cb;

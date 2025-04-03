@@ -8,6 +8,7 @@
 
 #include "axom/mir/views/MaterialView.hpp"
 #include "axom/mir/views/NodeArrayView.hpp"
+#include "axom/mir/utilities/blueprint_utilities.hpp"
 
 #include <conduit/conduit_blueprint.hpp>
 
@@ -17,6 +18,34 @@ namespace mir
 {
 namespace views
 {
+
+/*!
+ * \brief Make a unibuffer matset view from a Conduit node.
+ */
+template <typename IntType, typename FloatType, size_t MAXMATERIALS = 20>
+struct make_unibuffer_matset
+{
+  using MatsetView = UnibufferMaterialView<IntType, FloatType, MAXMATERIALS>;
+
+  /*!
+   * \brief Wrap the Conduit node as a unibuffer matset view.
+   *
+   * \param n_matset The Conduit node that contains the matset.
+   *
+   * \return A UnibufferMaterialView.
+   */
+  static MatsetView view(const conduit::Node &n_matset)
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+    MatsetView m;
+    m.set(bputils::make_array_view<IntType>(n_matset["material_ids"]),
+          bputils::make_array_view<FloatType>(n_matset["volume_fractions"]),
+          bputils::make_array_view<IntType>(n_matset["sizes"]),
+          bputils::make_array_view<IntType>(n_matset["offsets"]),
+          bputils::make_array_view<IntType>(n_matset["indices"]));
+    return m;
+  }
+};
 
 /*!
  * \brief Dispatch a Conduit node containing a unibuffer matset to a function as the appropriate type of matset view.
