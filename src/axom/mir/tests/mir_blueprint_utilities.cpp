@@ -18,20 +18,14 @@
 namespace mir = axom::mir;
 namespace bputils = axom::mir::utilities::blueprint;
 
-//------------------------------------------------------------------------------
-
-// Uncomment to generate baselines
-//#define AXOM_TESTING_GENERATE_BASELINES
-
-// Uncomment to save visualization files for debugging (when making baselines)
-//#define AXOM_TESTING_SAVE_VISUALIZATION
-
-#include "axom/mir/tests/mir_testing_helpers.hpp"
-
 std::string baselineDirectory()
 {
   return pjoin(dataDirectory(), "mir", "regression", "mir_blueprint_utilities");
 }
+
+//------------------------------------------------------------------------------
+// Global test application object.
+MIRTestApplication TestApp;
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
@@ -177,19 +171,10 @@ struct test_make_unstructured
     conduit::Node hostResult;
     bputils::copy<axom::SEQ_EXEC>(hostResult, deviceResult);
 
-#if defined(AXOM_TESTING_SAVE_VISUALIZATION)
-    conduit::relay::io::blueprint::save_mesh(hostResult, "unstructured", "hdf5");
-    conduit::relay::io::save(hostResult, "unstructured.yaml", "yaml");
-#endif
+    TestApp.saveVisualization("unstructured", hostResult);
 
     // Handle baseline comparison.
-    const auto paths = baselinePaths<ExecSpace>();
-    std::string baselineName(yamlRoot("unstructured"));
-#if defined(AXOM_TESTING_GENERATE_BASELINES)
-    saveBaseline(paths, baselineName, hostResult);
-#else
-    EXPECT_TRUE(compareBaseline(paths, baselineName, hostResult));
-#endif
+    EXPECT_TRUE(TestApp.test<ExecSpace>("unstructured", hostResult));
   }
 
   static void create(conduit::Node &mesh)
@@ -960,62 +945,8 @@ TEST(mir_blueprint_utilities, mergecoordsetpoints_hip)
 #endif
 
 //------------------------------------------------------------------------------
-void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
-{
-  std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
-  // This is on purpose.
-  while(1)
-    ;
-}
-
-//------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
-  int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
-
-  axom::CLI::App app;
-#if defined(AXOM_USE_CALIPER)
-  std::string annotationMode("none");
-  app.add_option("--caliper", annotationMode)
-    ->description(
-      "caliper annotation mode. Valid options include 'none' and 'report'. "
-      "Use 'help' to see full list.")
-    ->capture_default_str()
-    ->check(axom::utilities::ValidCaliperMode);
-#endif
-  bool handlerEnabled = false;
-  app.add_flag("--handler", handlerEnabled, "Enable Conduit handler.");
-
-  // Parse command line options.
-  try
-  {
-    app.parse(argc, argv);
-
-#if defined(AXOM_USE_CALIPER)
-    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-      annotationMode);
-#endif
-
-    axom::slic::SimpleLogger logger;  // create & initialize test logger,
-    if(handlerEnabled)
-    {
-      conduit::utils::set_error_handler(conduit_debug_err_handler);
-    }
-
-    result = RUN_ALL_TESTS();
-  }
-  catch(axom::CLI::CallForHelp &e)
-  {
-    std::cout << app.help() << std::endl;
-    result = 0;
-  }
-  catch(axom::CLI::ParseError &e)
-  {
-    // Handle other parsing errors
-    std::cerr << e.what() << std::endl;
-    result = app.exit(e);
-  }
-
-  return result;
+  return TestApp.execute(argc, argv);
 }
