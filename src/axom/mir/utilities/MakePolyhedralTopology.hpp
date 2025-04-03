@@ -158,7 +158,6 @@ public:
     auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
 
     // Populate subelement connectivity and make names for the faces.
-    RAJA::ReduceSum<reduce_policy, axom::IndexType> reduceTotalStorage(0);
     axom::for_all<ExecSpace>(
       nzones,
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
