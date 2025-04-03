@@ -676,7 +676,8 @@ public:
       }
 
       // Get pointers to where this shape's faces should be stored in the subelement data.
-      ConnectivityType *subelement_connectivity = m_subelement_connectivity.data() +
+      ConnectivityType *subelement_connectivity =
+        m_subelement_connectivity.data() +
         fragmentOffset * (MAX_FACES_PER_FRAGMENT * MAX_POINTS_PER_FACE);
       ConnectivityType *subelement_sizes =
         m_subelement_sizes.data() + fragmentOffset * MAX_FACES_PER_FRAGMENT;
@@ -731,7 +732,7 @@ public:
       auto connOffset = fragmentOffset * MAX_FACES_PER_FRAGMENT;
       for(axom::IndexType i = 0; i < numFaces; i++)
       {
-        const auto idx =  static_cast<ConnectivityType>(connOffset + i);
+        const auto idx = static_cast<ConnectivityType>(connOffset + i);
         m_connectivity[idx] = idx;
       }
       m_sizes[fragmentOffset] = static_cast<ConnectivityType>(numFaces);

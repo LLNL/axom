@@ -440,11 +440,10 @@ public:
    * \pre polyhedron vertex neighbors are defined
    */
   template <typename ConnectivityType = int>
-  AXOM_HOST_DEVICE
-  void getFaces(ConnectivityType* faces,
-                ConnectivityType* face_size,
-                ConnectivityType* face_offset,
-                axom::IndexType& face_count) const
+  AXOM_HOST_DEVICE void getFaces(ConnectivityType* faces,
+                                 ConnectivityType* face_size,
+                                 ConnectivityType* face_offset,
+                                 axom::IndexType& face_count) const
   {
     std::int8_t curFaceIndex = 0;
     std::int8_t checkedSize = 0;

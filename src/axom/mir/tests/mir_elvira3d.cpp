@@ -127,15 +127,21 @@ struct test_Elvira3D
     using MirCoordsetView = decltype(mirCoordsetView);
 
     // Make polyhedral topology view.
-    using MirTopologyView = views::UnstructuredTopologyPolyhedralView<axom::IndexType>;
+    using MirTopologyView =
+      views::UnstructuredTopologyPolyhedralView<axom::IndexType>;
     const conduit::Node &n_mir_topology = deviceMIRMesh["topologies/mesh"];
-    MirTopologyView mirTopoView(
-      bputils::make_array_view<axom::IndexType>(n_mir_topology["subelements/connectivity"]),
-      bputils::make_array_view<axom::IndexType>(n_mir_topology["subelements/sizes"]),
-      bputils::make_array_view<axom::IndexType>(n_mir_topology["subelements/offsets"]),
-      bputils::make_array_view<axom::IndexType>(n_mir_topology["elements/connectivity"]),
-      bputils::make_array_view<axom::IndexType>(n_mir_topology["elements/sizes"]),
-      bputils::make_array_view<axom::IndexType>(n_mir_topology["elements/offsets"]));
+    MirTopologyView mirTopoView(bputils::make_array_view<axom::IndexType>(
+                                  n_mir_topology["subelements/connectivity"]),
+                                bputils::make_array_view<axom::IndexType>(
+                                  n_mir_topology["subelements/sizes"]),
+                                bputils::make_array_view<axom::IndexType>(
+                                  n_mir_topology["subelements/offsets"]),
+                                bputils::make_array_view<axom::IndexType>(
+                                  n_mir_topology["elements/connectivity"]),
+                                bputils::make_array_view<axom::IndexType>(
+                                  n_mir_topology["elements/sizes"]),
+                                bputils::make_array_view<axom::IndexType>(
+                                  n_mir_topology["elements/offsets"]));
 
     const conduit::Node &n_mir_matset = deviceMIRMesh["matsets/mat"];
     auto mirMatsetView =
