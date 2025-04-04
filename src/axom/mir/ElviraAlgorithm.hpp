@@ -854,6 +854,7 @@ protected:
           ClipResultType clippedShape;
           PointType range[2];
           PointType pt {};
+
           if(m == 0)
           {
             // First time through, operate on the inputShape.

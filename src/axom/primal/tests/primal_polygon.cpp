@@ -103,12 +103,10 @@ TEST(primal_polygon, containment)
   const bool useEvenOddRule = false;
   const bool includeBoundary = false;
   EXPECT_TRUE(in_polygon(PointType {-0.1, 0.0}, poly));
-  EXPECT_TRUE(
-    in_polygon(PointType {-0.1, 0.0}, poly, includeBoundary, useNonzeroRule));
+  EXPECT_TRUE(in_polygon(PointType {-0.1, 0.0}, poly, includeBoundary, useNonzeroRule));
 
   // false denotes evenodd protocol
-  EXPECT_FALSE(
-    in_polygon(PointType {-0.1, 0.0}, poly, includeBoundary, useEvenOddRule));
+  EXPECT_FALSE(in_polygon(PointType {-0.1, 0.0}, poly, includeBoundary, useEvenOddRule));
 
   // Test in/out on degenerate example in Hormann2001, Figure 6
   axom::Array<PointType> init_vertices(
@@ -156,8 +154,8 @@ TEST(primal_polygon, containment_invariants)
   EXPECT_FALSE(in_polygon(PointType {0.5, 0.75}, poly));
 
   // Verify checks up to rotation of vertices
-  vertices = axom::Array<PointType>(
-    {PointType {0, 0}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
+  vertices =
+    axom::Array<PointType>({PointType {0, 0}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
 
   for(int i = 0; i < 4; i++)
   {
@@ -178,11 +176,8 @@ TEST(primal_polygon, containment_edge)
   using PolygonType = axom::primal::Polygon<double, 2>;
   using PointType = axom::primal::Point<double, 2>;
 
-  axom::Array<PointType> vertices({PointType {0, 0},
-                                   PointType {0.5, 0.5},
-                                   PointType {1, 1},
-                                   PointType {1, 0},
-                                   PointType {0, 1}});
+  axom::Array<PointType> vertices(
+    {PointType {0, 0}, PointType {0.5, 0.5}, PointType {1, 1}, PointType {1, 0}, PointType {0, 1}});
   PolygonType poly(vertices);
 
   // Edge cases. Default is that points on edges are "outside".
@@ -190,38 +185,25 @@ TEST(primal_polygon, containment_edge)
   const bool includeBoundary = true;
   for(bool useNonzeroRule : {true, false})
   {
-    EXPECT_TRUE(
-      in_polygon(PointType {0, 0.5}, poly, includeBoundary, useNonzeroRule));
-    EXPECT_TRUE(
-      in_polygon(PointType {0.5, 0.5}, poly, includeBoundary, useNonzeroRule));
-    EXPECT_TRUE(
-      in_polygon(PointType {.25, .25}, poly, includeBoundary, useNonzeroRule));
-    EXPECT_TRUE(
-      in_polygon(PointType {.25, .75}, poly, includeBoundary, useNonzeroRule));
-    EXPECT_TRUE(
-      in_polygon(PointType {1, 0.5}, poly, includeBoundary, useNonzeroRule));
+    EXPECT_TRUE(in_polygon(PointType {0, 0.5}, poly, includeBoundary, useNonzeroRule));
+    EXPECT_TRUE(in_polygon(PointType {0.5, 0.5}, poly, includeBoundary, useNonzeroRule));
+    EXPECT_TRUE(in_polygon(PointType {.25, .25}, poly, includeBoundary, useNonzeroRule));
+    EXPECT_TRUE(in_polygon(PointType {.25, .75}, poly, includeBoundary, useNonzeroRule));
+    EXPECT_TRUE(in_polygon(PointType {1, 0.5}, poly, includeBoundary, useNonzeroRule));
   }
 
   for(bool useNonzeroRule : {true, false})
   {
-    EXPECT_FALSE(
-      in_polygon(PointType {0, 0.5}, poly, !includeBoundary, useNonzeroRule));
-    EXPECT_FALSE(
-      in_polygon(PointType {0.5, 0.5}, poly, !includeBoundary, useNonzeroRule));
-    EXPECT_FALSE(
-      in_polygon(PointType {.25, .25}, poly, !includeBoundary, useNonzeroRule));
-    EXPECT_FALSE(
-      in_polygon(PointType {.25, .75}, poly, !includeBoundary, useNonzeroRule));
-    EXPECT_FALSE(
-      in_polygon(PointType {1, 0.5}, poly, !includeBoundary, useNonzeroRule));
+    EXPECT_FALSE(in_polygon(PointType {0, 0.5}, poly, !includeBoundary, useNonzeroRule));
+    EXPECT_FALSE(in_polygon(PointType {0.5, 0.5}, poly, !includeBoundary, useNonzeroRule));
+    EXPECT_FALSE(in_polygon(PointType {.25, .25}, poly, !includeBoundary, useNonzeroRule));
+    EXPECT_FALSE(in_polygon(PointType {.25, .75}, poly, !includeBoundary, useNonzeroRule));
+    EXPECT_FALSE(in_polygon(PointType {1, 0.5}, poly, !includeBoundary, useNonzeroRule));
   }
 
   // Corner cases, where query is on a vertex
-  vertices = axom::Array<PointType>({PointType {0, 0},
-                                     PointType {0.5, 0},
-                                     PointType {1, 0},
-                                     PointType {1, 1},
-                                     PointType {0, 1}});
+  vertices = axom::Array<PointType>(
+    {PointType {0, 0}, PointType {0.5, 0}, PointType {1, 0}, PointType {1, 1}, PointType {0, 1}});
   poly = PolygonType(vertices);
 
   for(auto& vtx : vertices)
@@ -251,12 +233,12 @@ TEST(primal_polygon, convexity)
   poly.addVertex(PointType {0, 1});
   EXPECT_TRUE(is_convex(poly));
 
-  axom::Array<PointType> convex_verts = axom::Array<PointType>(
-    {PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
+  axom::Array<PointType> convex_verts =
+    axom::Array<PointType>({PointType {0, 0}, PointType {0, 1}, PointType {1, 1}, PointType {1, 0}});
   axom::Array<PointType> concave_verts = axom::Array<PointType>(
     {PointType {0, 0}, PointType {0, 1}, PointType {0.1, 0.1}, PointType {1, 0}});
-  axom::Array<PointType> nonsimple_verts = axom::Array<PointType>(
-    {PointType {0, 0}, PointType {1, 1}, PointType {0, 1}, PointType {1, 0}});
+  axom::Array<PointType> nonsimple_verts =
+    axom::Array<PointType>({PointType {0, 0}, PointType {1, 1}, PointType {0, 1}, PointType {1, 0}});
 
   poly.clear();
 
@@ -269,8 +251,7 @@ TEST(primal_polygon, convexity)
     }
 
     // Add midpoints between each duplicated vertex
-    poly.addVertex(
-      PointType::midpoint(convex_verts[i], convex_verts[(i + 1) % 4]));
+    poly.addVertex(PointType::midpoint(convex_verts[i], convex_verts[(i + 1) % 4]));
   }
 
   EXPECT_TRUE(is_convex(poly));
@@ -451,62 +432,59 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
     };
 
   // lambda to generate an affine transformation matrix for 2D points
-  auto generateTransformMatrix3D = [](const Point3D& scale,
-                                      const Point3D& translate,
-                                      const Vector3D& axis,
-                                      double angle) {
-    // create scaling matrix
-    auto sc_matx = TransformMatrix::identity(4);
-    {
-      sc_matx(0, 0) = scale[0];
-      sc_matx(1, 1) = scale[1];
-      sc_matx(2, 2) = scale[2];
-    }
+  auto generateTransformMatrix3D =
+    [](const Point3D& scale, const Point3D& translate, const Vector3D& axis, double angle) {
+      // create scaling matrix
+      auto sc_matx = TransformMatrix::identity(4);
+      {
+        sc_matx(0, 0) = scale[0];
+        sc_matx(1, 1) = scale[1];
+        sc_matx(2, 2) = scale[2];
+      }
 
-    // create rotation matrix
-    auto rot_matx = TransformMatrix::zeros(4, 4);
-    {
-      const double sinT = std::sin(angle);
-      const double cosT = std::cos(angle);
+      // create rotation matrix
+      auto rot_matx = TransformMatrix::zeros(4, 4);
+      {
+        const double sinT = std::sin(angle);
+        const double cosT = std::cos(angle);
 
-      const auto unitAxis = axis.unitVector();
-      const double& ux = unitAxis[0];
-      const double& uy = unitAxis[1];
-      const double& uz = unitAxis[2];
+        const auto unitAxis = axis.unitVector();
+        const double& ux = unitAxis[0];
+        const double& uy = unitAxis[1];
+        const double& uz = unitAxis[2];
 
-      rot_matx(0, 0) = cosT + ux * ux * (1 - cosT);
-      rot_matx(0, 1) = ux * uy * (1 - cosT) - uz * sinT;
-      rot_matx(0, 2) = ux * uz * (1 - cosT) + uy * sinT;
-      rot_matx(1, 0) = uy * ux * (1 - cosT) + uz * sinT;
-      rot_matx(1, 1) = cosT + uy * uy * (1 - cosT);
-      rot_matx(1, 2) = uy * uz * (1 - cosT) - ux * sinT;
-      rot_matx(2, 0) = uz * ux * (1 - cosT) - uy * sinT;
-      rot_matx(2, 1) = uz * uy * (1 - cosT) + ux * sinT;
-      rot_matx(2, 2) = cosT + uz * uz * (1 - cosT);
-      rot_matx(3, 3) = 1;
-    }
+        rot_matx(0, 0) = cosT + ux * ux * (1 - cosT);
+        rot_matx(0, 1) = ux * uy * (1 - cosT) - uz * sinT;
+        rot_matx(0, 2) = ux * uz * (1 - cosT) + uy * sinT;
+        rot_matx(1, 0) = uy * ux * (1 - cosT) + uz * sinT;
+        rot_matx(1, 1) = cosT + uy * uy * (1 - cosT);
+        rot_matx(1, 2) = uy * uz * (1 - cosT) - ux * sinT;
+        rot_matx(2, 0) = uz * ux * (1 - cosT) - uy * sinT;
+        rot_matx(2, 1) = uz * uy * (1 - cosT) + ux * sinT;
+        rot_matx(2, 2) = cosT + uz * uz * (1 - cosT);
+        rot_matx(3, 3) = 1;
+      }
 
-    // create translation matrix
-    auto tr_matx = TransformMatrix::identity(4);
-    {
-      tr_matx(0, 3) = translate[0];
-      tr_matx(1, 3) = translate[1];
-      tr_matx(2, 3) = translate[2];
-    }
+      // create translation matrix
+      auto tr_matx = TransformMatrix::identity(4);
+      {
+        tr_matx(0, 3) = translate[0];
+        tr_matx(1, 3) = translate[1];
+        tr_matx(2, 3) = translate[2];
+      }
 
-    // multiply them to get the final transform
-    TransformMatrix affine_matx1(4, 4);
-    matrix_multiply(rot_matx, sc_matx, affine_matx1);
-    TransformMatrix affine_matx2(4, 4);
-    matrix_multiply(tr_matx, affine_matx1, affine_matx2);
+      // multiply them to get the final transform
+      TransformMatrix affine_matx1(4, 4);
+      matrix_multiply(rot_matx, sc_matx, affine_matx1);
+      TransformMatrix affine_matx2(4, 4);
+      matrix_multiply(tr_matx, affine_matx1, affine_matx2);
 
-    EXPECT_NEAR(scale[0] * scale[1] * scale[2], determinant(affine_matx2), EPS);
-    return affine_matx2;
-  };
+      EXPECT_NEAR(scale[0] * scale[1] * scale[2], determinant(affine_matx2), EPS);
+      return affine_matx2;
+    };
 
   // lambda to transform a 2D polygon into 2D
-  auto transformedPolygon2d = [](const Polygon2D& poly,
-                                 const TransformMatrix& matx) {
+  auto transformedPolygon2d = [](const Polygon2D& poly, const TransformMatrix& matx) {
     Polygon2D xformed(poly.numVertices());
     for(int i = 0; i < poly.numVertices(); ++i)
     {
@@ -519,8 +497,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
   };
 
   // lambda to transform a 2D polygon into 3D
-  auto transformedPolygon3d = [](const Polygon2D& poly,
-                                 const TransformMatrix& matx) {
+  auto transformedPolygon3d = [](const Polygon2D& poly, const TransformMatrix& matx) {
     Polygon3D xformed(poly.numVertices());
     for(int i = 0; i < poly.numVertices(); ++i)
     {
@@ -566,8 +543,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
               auto affine_matx = generateTransformMatrix2D(sc, tr, theta);
               auto xformed_polygon = transformedPolygon2d(polygon2d, affine_matx);
 
-              const double expected_area =
-                unscaled_area * determinant(affine_matx);
+              const double expected_area = unscaled_area * determinant(affine_matx);
               EXPECT_NEAR(expected_area, xformed_polygon.signedArea(), EPS);
 
               if(nSides == 3)
@@ -600,13 +576,11 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
                 {
                   const auto sc = Point3D {sc_x, sc_y, 1.};
                   const auto tr = Point3D {tr_x, tr_y, tr_z};
-                  auto affine_matx =
-                    generateTransformMatrix3D(sc, tr, axis, theta);
-                  auto xformed_polygon =
-                    transformedPolygon3d(polygon2d, affine_matx);
+                  auto affine_matx = generateTransformMatrix3D(sc, tr, axis, theta);
+                  auto xformed_polygon = transformedPolygon3d(polygon2d, affine_matx);
 
-                  const auto expected_area = unscaled_area *
-                    axom::utilities::abs(determinant(affine_matx));
+                  const auto expected_area =
+                    unscaled_area * axom::utilities::abs(determinant(affine_matx));
                   EXPECT_NEAR(expected_area, xformed_polygon.area(), EPS);
 
                   if(nSides == 3)
@@ -689,11 +663,10 @@ TEST(primal_polygon, normal)
                             cos(angles[0]) * v1[1] + sin(angles[0]) * v2[1],
                             cos(angles[0]) * v1[2] + sin(angles[0]) * v2[2]});
     // Add a midpoint between angles 0 and 1
-    poly.addVertex(Point3D::midpoint(
-      poly[0],
-      Point3D {cos(angles[1]) * v1[0] + sin(angles[1]) * v2[0],
-               cos(angles[1]) * v1[1] + sin(angles[1]) * v2[1],
-               cos(angles[1]) * v1[2] + sin(angles[1]) * v2[2]}));
+    poly.addVertex(Point3D::midpoint(poly[0],
+                                     Point3D {cos(angles[1]) * v1[0] + sin(angles[1]) * v2[0],
+                                              cos(angles[1]) * v1[1] + sin(angles[1]) * v2[1],
+                                              cos(angles[1]) * v1[2] + sin(angles[1]) * v2[2]}));
 
     // Add the rest of the vertices
     for(int i = 1; i < 8; ++i)
@@ -743,8 +716,7 @@ TEST(primal_polygon, reverseOrientation)
 
   // Test an even number of vertices
   {
-    Polygon2D poly(
-      {Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}, Point2D {0, 1}});
+    Polygon2D poly({Point2D {0, 0}, Point2D {1, 0}, Point2D {1, 1}, Point2D {0, 1}});
     poly.reverseOrientation();
 
     EXPECT_NEAR(poly[0][0], 0, EPS);
@@ -807,11 +779,9 @@ void check_polygon_policy()
       poly_2d_view[i].clear();
 
       // Initialize to triangles
-      poly_3d_view[i] = Polygon3D({Point3D({0.0, 0.0, 0.0}),
-                                   Point3D({1.0, 0.0, 0.0}),
-                                   Point3D({1.0, 1.0, 0.0})});
-      poly_2d_view[i] = Polygon2D(
-        {Point2D({0.0, 0.0}), Point2D({1.0, 0.0}), Point2D({1.0, 1.0})});
+      poly_3d_view[i] =
+        Polygon3D({Point3D({0.0, 0.0, 0.0}), Point3D({1.0, 0.0, 0.0}), Point3D({1.0, 1.0, 0.0})});
+      poly_2d_view[i] = Polygon2D({Point2D({0.0, 0.0}), Point2D({1.0, 0.0}), Point2D({1.0, 1.0})});
 
       // Add a vertex to make squares
       (poly_3d_view[i]).addVertex(Point3D({0.0, 1.0, 0.0}));
@@ -837,20 +807,15 @@ void check_polygon_policy()
     });
 
   // Copy polygons and data back to host
-  axom::Array<Polygon3D> poly_3d_host =
-    axom::Array<Polygon3D>(poly_3d_device, host_allocator);
-  axom::Array<Polygon2D> poly_2d_host =
-    axom::Array<Polygon2D>(poly_2d_device, host_allocator);
+  axom::Array<Polygon3D> poly_3d_host = axom::Array<Polygon3D>(poly_3d_device, host_allocator);
+  axom::Array<Polygon2D> poly_2d_host = axom::Array<Polygon2D>(poly_2d_device, host_allocator);
   axom::Array<Point3D> vertex_mean_3d_host =
     axom::Array<Point3D>(vertex_mean_3d_device, host_allocator);
   axom::Array<Point2D> vertex_mean_2d_host =
     axom::Array<Point2D>(vertex_mean_2d_device, host_allocator);
-  axom::Array<double> area_3d_host =
-    axom::Array<double>(area_3d_device, host_allocator);
-  axom::Array<double> area_2d_host =
-    axom::Array<double>(area_2d_device, host_allocator);
-  axom::Array<Vector3D> normal_3d_host =
-    axom::Array<Vector3D>(normal_3d_device, host_allocator);
+  axom::Array<double> area_3d_host = axom::Array<double>(area_3d_device, host_allocator);
+  axom::Array<double> area_2d_host = axom::Array<double>(area_2d_device, host_allocator);
+  axom::Array<Vector3D> normal_3d_host = axom::Array<Vector3D>(normal_3d_device, host_allocator);
 
   // Verify values
   EXPECT_EQ(poly_3d_host[0].numVertices(), NUM_VERTS_SQUARE);
@@ -869,31 +834,19 @@ void check_polygon_policy()
 }
 
 //------------------------------------------------------------------------------
-TEST(primal_polygon, polygon_check_seq)
-{
-  check_polygon_policy<axom::SEQ_EXEC>();
-}
+TEST(primal_polygon, polygon_check_seq) { check_polygon_policy<axom::SEQ_EXEC>(); }
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
   #ifdef AXOM_USE_OPENMP
-TEST(primal_polygon, polygon_check_omp)
-{
-  check_polygon_policy<axom::OMP_EXEC>();
-}
+TEST(primal_polygon, polygon_check_omp) { check_polygon_policy<axom::OMP_EXEC>(); }
   #endif /* AXOM_USE_OPENMP */
 
   #ifdef AXOM_USE_CUDA
-TEST(primal_polygon, polygon_check_cuda)
-{
-  check_polygon_policy<axom::CUDA_EXEC<256>>();
-}
+TEST(primal_polygon, polygon_check_cuda) { check_polygon_policy<axom::CUDA_EXEC<256>>(); }
   #endif /* AXOM_USE_CUDA */
 
   #ifdef AXOM_USE_HIP
-TEST(primal_clip, polygon_check_hip)
-{
-  check_polygon_policy<axom::HIP_EXEC<256>>();
-}
+TEST(primal_clip, polygon_check_hip) { check_polygon_policy<axom::HIP_EXEC<256>>(); }
   #endif /* AXOM_USE_HIP */
 
 #endif /* AXOM_USE_RAJA && AXOM_USE_UMPIRE */

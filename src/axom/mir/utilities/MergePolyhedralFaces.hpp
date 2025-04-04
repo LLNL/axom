@@ -95,35 +95,40 @@ public:
     axom::for_all<ExecSpace>(
       totalFaces,
       AXOM_LAMBDA(axom::IndexType faceIndex) {
-        // Get size and offset for current face.
-        const auto numFaceIds = se_sizes[faceIndex];
-        const auto faceIds = se_conn.data() + se_offsets[faceIndex];
+        // Get size for current face.
+        const auto faceSize = static_cast<int>(se_sizes[faceIndex]);
+        SLIC_ASSERT(faceSize <= MaxPointsPerFace);
 
-#if !defined(AXOM_DEVICE_CODE)
-        SLIC_ASSERT_MSG(
-          numFaceIds <= MaxPointsPerFace,
-          axom::fmt::format("Face has {} points but it should have no more than {} points.",
-                            numFaceIds,
-                            MaxPointsPerFace));
-#endif
+        KeyType faceName {};
+        if(faceSize > 0)
+        {
+          // Get offset for current face.
+          const auto faceOffset = static_cast<axom::IndexType>(se_offsets[faceIndex]);
+          SLIC_ASSERT(faceOffset < se_conn.size());
 
-        // Make a name for this face.
-        faceNamesView[faceIndex] = namingView.makeName(faceIds, numFaceIds);
+          // Get the ids for the current face.
+          const auto faceIds = se_conn.data() + faceOffset;
+
+          // Make a name for the current face.
+          faceName = namingView.makeName(faceIds, faceSize);
+        }
+
+        faceNamesView[faceIndex] = faceName;
       });
     AXOM_ANNOTATE_END("naming");
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("unique");
     // The unique keys.
-    axom::Array<std::uint64_t> uniqueKeys;
+    axom::Array<KeyType> uniqueKeys;
     // The index of the sorted key in the original keys. We can use this to
     // determine which face to use.
     axom::Array<axom::IndexType> selectedFaces;
 
     // Make faces unique.
-    axom::mir::utilities::Unique<ExecSpace, std::uint64_t>::execute(faceNamesView,
-                                                                    uniqueKeys,
-                                                                    selectedFaces);
+    axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(faceNamesView,
+                                                              uniqueKeys,
+                                                              selectedFaces);
     const auto uniqueKeysView = uniqueKeys.view();
     const auto selectedFacesView = selectedFaces.view();
     AXOM_ANNOTATE_END("unique");

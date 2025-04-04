@@ -272,9 +272,6 @@ public:
     KeyType make_name_n(const IndexType *p, int n) const
     {
       KeyType retval {};
-#if !defined(AXOM_DEVICE_CODE)
-      SLIC_ASSERT_MSG(n <= MAXIDS, axom::fmt::format("({} <= {}) is false.", n, MAXIDS));
-#endif
       if(n == 3 && m_maxId <= Max20Bit)
       {
         // We can pack 3 values into the id lossless
@@ -339,7 +336,7 @@ public:
                                                       n * sizeof(std::uint32_t));
         retval = KeyIDHash | (k0 & PayloadMask);
       }
-      else
+      else if(n > 0)
       {
         IndexType sorted[MAXIDS];
         for(int i = 0; i < n; i++)

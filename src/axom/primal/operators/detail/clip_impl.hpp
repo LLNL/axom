@@ -60,10 +60,7 @@ inline bool isEven(int index) { return (index & 1) == 0; }
  * \see OrientedPlane enum
  */
 template <typename T, int NDIMS>
-int classifyPointAxisPlane(const Point<T, NDIMS>& pt,
-                           int index,
-                           T val,
-                           const double eps = 1e-8)
+int classifyPointAxisPlane(const Point<T, NDIMS>& pt, int index, T val, const double eps = 1e-8)
 {
   // Note: we are exploiting the fact that the planes are axis aligned
   // So the dot product is +/- the given coordinate.
@@ -135,10 +132,7 @@ Point<T, NDIMS> findIntersectionPoint(const Point<T, NDIMS>& a,
  * \see classifyPointAxisPlane for description of how index maps to coordinates.
  */
 template <typename T, int NDIMS>
-void clipAxisPlane(const Polygon<T, NDIMS>* prevPoly,
-                   Polygon<T, NDIMS>* currentPoly,
-                   int index,
-                   T val)
+void clipAxisPlane(const Polygon<T, NDIMS>* prevPoly, Polygon<T, NDIMS>* currentPoly, int index, T val)
 {
   using PointType = Point<T, NDIMS>;
 
@@ -298,8 +292,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
             {
               if(poly_nbrs[inext][ni] == iprev)
               {
-                inext = (ni == 0) ? poly_nbrs[inext][next_nbrs - 1]
-                                  : poly_nbrs[inext][ni - 1];
+                inext = (ni == 0) ? poly_nbrs[inext][next_nbrs - 1] : poly_nbrs[inext][ni - 1];
                 break;
               }
             }
@@ -309,8 +302,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
 
           // Remove neighbor from list if vertex found was already a neighbor or
           // is the vertex we are currently checking for.
-          if(poly_nbrs[vIndex][(j + 1) % poly_nbrs.getNumNeighbors(vIndex)] ==
-               inext ||
+          if(poly_nbrs[vIndex][(j + 1) % poly_nbrs.getNumNeighbors(vIndex)] == inext ||
              inext == vIndex)
           {
             poly_nbrs[vIndex][j] = -1;
@@ -355,8 +347,7 @@ AXOM_HOST_DEVICE void poly_clip_fix_nbrs(Polyhedron<T, NDIMS>& poly,
 }
 
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
-                                        const unsigned int clipped)
+AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly, const unsigned int clipped)
 {
   // Dictionary for old indices to new indices positions
   std::int8_t newIndices[Polyhedron<T, NDIMS>::MAX_VERTS] = {0};
@@ -393,8 +384,7 @@ AXOM_HOST_DEVICE void poly_clip_reindex(Polyhedron<T, NDIMS>& poly,
     {
       for(int j = 0; j < old_poly.getNumNeighbors(i); j++)
       {
-        poly.addNeighbors(newIndices[i],
-                          {newIndices[old_poly.getNeighbors()[i][j]]});
+        poly.addNeighbors(newIndices[i], {newIndices[old_poly.getNeighbors()[i][j]]});
       }
     }
   }
@@ -587,11 +577,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedronPolyhedron(
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
-  const Hexahedron<T, NDIMS>& hex,
-  const Tetrahedron<T, NDIMS>& tet,
-  double eps,
-  bool tryFixOrientation)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(const Hexahedron<T, NDIMS>& hex,
+                                                     const Tetrahedron<T, NDIMS>& tet,
+                                                     double eps,
+                                                     bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
@@ -609,8 +598,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   // Adjusts planes in case tetrahedron signed volume is negative
   if(tryFixOrientation)
   {
-    PolyhedronType tet_poly =
-      PolyhedronType::from_primitive(tet, tryFixOrientation);
+    PolyhedronType tet_poly = PolyhedronType::from_primitive(tet, tryFixOrientation);
     planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
     planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
     planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
@@ -646,8 +634,9 @@ struct HexFaces
  * \return A view containing the planes that make up the hex shape.
  */
 template <typename ShapeType, typename PlaneType>
-AXOM_HOST_DEVICE axom::ArrayView<PlaneType>
-getHexahedronPlanes(const ShapeType& shape, PlaneType* planes, double eps)
+AXOM_HOST_DEVICE axom::ArrayView<PlaneType> getHexahedronPlanes(const ShapeType& shape,
+                                                                PlaneType* planes,
+                                                                double eps)
 {
   /*
       3-------2
@@ -673,9 +662,8 @@ getHexahedronPlanes(const ShapeType& shape, PlaneType* planes, double eps)
   {
     const HexFaces& face = faces[f];
     // Make a plane with 3 points of the quad face.
-    planes[planeCount] = make_plane(shape[face.plane1Ids[0]],
-                                    shape[face.plane1Ids[1]],
-                                    shape[face.plane1Ids[2]]);
+    planes[planeCount] =
+      make_plane(shape[face.plane1Ids[0]], shape[face.plane1Ids[1]], shape[face.plane1Ids[2]]);
     // Get the signed distance to another point.
     const auto dist = planes[planeCount].signedDistance(shape[face.testId]);
     planeCount++;
@@ -686,9 +674,8 @@ getHexahedronPlanes(const ShapeType& shape, PlaneType* planes, double eps)
     if(axom::utilities::abs(dist) > eps)
     {
       // The plane was not planar enough. Add the other plane too.
-      planes[planeCount] = make_plane(shape[face.plane2Ids[0]],
-                                      shape[face.plane2Ids[1]],
-                                      shape[face.plane2Ids[2]]);
+      planes[planeCount] =
+        make_plane(shape[face.plane2Ids[0]], shape[face.plane2Ids[1]], shape[face.plane2Ids[2]]);
       planeCount++;
     }
   }
@@ -712,11 +699,10 @@ getHexahedronPlanes(const ShapeType& shape, PlaneType* planes, double eps)
  */
 
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
-  const Hexahedron<T, NDIMS>& hex1,
-  const Hexahedron<T, NDIMS>& hex2,
-  double eps,
-  bool tryFixOrientation)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(const Hexahedron<T, NDIMS>& hex1,
+                                                     const Hexahedron<T, NDIMS>& hex2,
+                                                     double eps,
+                                                     bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
@@ -732,8 +718,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
   // Adjusts planes in case hexhedron signed volume is negative
   if(tryFixOrientation)
   {
-    PolyhedronType hex2_poly =
-      PolyhedronType::from_primitive(hex2, tryFixOrientation);
+    PolyhedronType hex2_poly = PolyhedronType::from_primitive(hex2, tryFixOrientation);
     // Get planes from the Polyhedral version of the plane, which could have
     // reordered the points.
     planesView = getHexahedronPlanes(hex2_poly, planes, eps);
@@ -756,11 +741,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
-  const Octahedron<T, NDIMS>& oct,
-  const Tetrahedron<T, NDIMS>& tet,
-  double eps,
-  bool tryFixOrientation)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(const Octahedron<T, NDIMS>& oct,
+                                                     const Tetrahedron<T, NDIMS>& tet,
+                                                     double eps,
+                                                     bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
@@ -778,8 +762,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
   // Adjusts planes in case tetrahedron signed volume is negative
   if(tryFixOrientation)
   {
-    PolyhedronType tet_poly =
-      PolyhedronType::from_primitive(tet, tryFixOrientation);
+    PolyhedronType tet_poly = PolyhedronType::from_primitive(tet, tryFixOrientation);
     planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
     planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
     planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
@@ -805,11 +788,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipOctahedron(
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
-  const Tetrahedron<T, NDIMS>& tet1,
-  const Tetrahedron<T, NDIMS>& tet2,
-  double eps,
-  bool tryFixOrientation)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(const Tetrahedron<T, NDIMS>& tet1,
+                                                      const Tetrahedron<T, NDIMS>& tet2,
+                                                      double eps,
+                                                      bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
@@ -827,8 +809,7 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
   // Adjusts planes in case tetrahedron signed volume is negative
   if(tryFixOrientation)
   {
-    PolyhedronType tet_poly =
-      PolyhedronType::from_primitive(tet2, tryFixOrientation);
+    PolyhedronType tet_poly = PolyhedronType::from_primitive(tet2, tryFixOrientation);
     planes[0] = make_plane(tet_poly[1], tet_poly[3], tet_poly[2]);
     planes[1] = make_plane(tet_poly[0], tet_poly[2], tet_poly[3]);
     planes[2] = make_plane(tet_poly[0], tet_poly[3], tet_poly[1]);
@@ -867,11 +848,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *          non-positive and/or unexpected volume.
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
-  const Tetrahedron<T, NDIMS>& tet,
-  const Plane<T, NDIMS>& plane,
-  double eps,
-  bool tryFixOrientation)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(const Tetrahedron<T, NDIMS>& tet,
+                                                      const Plane<T, NDIMS>& plane,
+                                                      double eps,
+                                                      bool tryFixOrientation)
 {
   using PolyhedronType = Polyhedron<T, NDIMS>;
   PolyhedronType poly = PolyhedronType::from_primitive(tet, tryFixOrientation);
@@ -1003,10 +983,9 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   double eps = 1.e-10,
   bool tryFixOrientation = false)
 {
-  SLIC_ASSERT(
-    ARRAY_TYPE == axom::primal::PolygonArray::Dynamic ||
-    (ARRAY_TYPE == axom::primal::PolygonArray::Static &&
-     MAX_VERTS >= (subjectPolygon.numVertices() + clipPolygon.numVertices())));
+  SLIC_ASSERT(ARRAY_TYPE == axom::primal::PolygonArray::Dynamic ||
+              (ARRAY_TYPE == axom::primal::PolygonArray::Static &&
+               MAX_VERTS >= (subjectPolygon.numVertices() + clipPolygon.numVertices())));
 
   using PlaneType = Plane<T, 2>;
   using PolygonType = Polygon<T, 2, ARRAY_TYPE, MAX_VERTS>;
@@ -1032,8 +1011,7 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPolygon(
   // Iterate through edges of clip polygon, represented as planes
   for(int iEdge = 0; iEdge < numClipEdges; iEdge++)
   {
-    PlaneType plane =
-      make_plane(planePoints[iEdge], planePoints[(iEdge + 1) % numClipEdges]);
+    PlaneType plane = make_plane(planePoints[iEdge], planePoints[(iEdge + 1) % numClipEdges]);
 
     outputList = clipPolygonPlaneSimple(outputList, plane, eps);
   }  // end of iteration through edges of clip polygon
@@ -1067,8 +1045,7 @@ AXOM_HOST_DEVICE Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> clipPolygonPlane(
   }
 
   // Clip the plane.
-  return makeUniquePoints(clipPolygonPlaneSimple(outputList, clipPlane, eps),
-                          eps);
+  return makeUniquePoints(clipPolygonPlaneSimple(outputList, clipPlane, eps), eps);
 }
 
 }  // namespace detail
