@@ -457,10 +457,10 @@ template <typename ExecSpace,
           typename PHShape>
 class TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, PHShape, 3>
 {
-  static constexpr int MAX_POINTS_PER_FACE = 6;
-  static constexpr int MAX_FACES_PER_FRAGMENT = 7;
-  // Enough for hex with one corner cut off.
-  static constexpr int MAX_POINTS_PER_FRAGMENT = 10;
+  static constexpr int MAX_CUTS = MatsetView::MaxMaterials - 1;
+  static constexpr int MAX_POINTS_PER_FACE = 6 + MAX_CUTS;
+  static constexpr int MAX_FACES_PER_FRAGMENT = 6 + MAX_CUTS;
+  static constexpr int MAX_POINTS_PER_FRAGMENT = 8 + MAX_CUTS * 2;
 
   using CoordType = typename CoordsetView::value_type;
   using ConnectivityType = typename TopologyView::ConnectivityType;

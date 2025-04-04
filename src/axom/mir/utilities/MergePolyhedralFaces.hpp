@@ -78,7 +78,7 @@ public:
       se_conn.size(),
       AXOM_LAMBDA(axom::IndexType index) { reduceMaxNodeId.max(se_conn[index]); });
     const auto maxNodeId = reduceMaxNodeId.get();
-    SLIC_DEBUG(axom::fmt::format("MergePolyhedralFaces: maxNodeId={}", maxNodeId));
+    SLIC_INFO(axom::fmt::format("MergePolyhedralFaces: maxNodeId={}", maxNodeId));
     AXOM_ANNOTATE_END("maxnode");
 
     //--------------------------------------------------------------------------
