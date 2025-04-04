@@ -275,6 +275,7 @@ public:
     KeyType make_name_n(const IndexType *p, int n) const
     {
       KeyType retval {};
+      SLIC_ASSERT_MSG(n <= MAXIDS, axom::fmt::format("({} <= {}) is false.", n, MAXIDS));
       if(n == 3 && m_maxId <= Max20Bit)
       {
         // We can pack 3 values into the id lossless

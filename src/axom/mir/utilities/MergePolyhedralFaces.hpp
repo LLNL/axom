@@ -66,9 +66,9 @@ public:
     auto elem_sizes = bputils::make_array_view<ConnectivityType>(n_elem_sizes);
     auto elem_offsets =
       bputils::make_array_view<ConnectivityType>(n_elem_offsets);
-    auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
-    auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
-    auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
+    const auto se_conn = bputils::make_array_view<ConnectivityType>(n_se_conn);
+    const auto se_sizes = bputils::make_array_view<ConnectivityType>(n_se_sizes);
+    const auto se_offsets = bputils::make_array_view<ConnectivityType>(n_se_offsets);
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("maxnode");
@@ -78,11 +78,13 @@ public:
       se_conn.size(),
       AXOM_LAMBDA(axom::IndexType index) { reduceMaxNodeId.max(se_conn[index]); });
     const auto maxNodeId = reduceMaxNodeId.get();
+    SLIC_DEBUG(axom::fmt::format("MergePolyhedralFaces: maxNodeId={}", maxNodeId));
     AXOM_ANNOTATE_END("maxnode");
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("naming");
-    using NamingType = HashNaming<ConnectivityType, 5>;
+    constexpr int MaxPointsPerFace = 16;
+    using NamingType = HashNaming<ConnectivityType, MaxPointsPerFace>;
     using KeyType = typename NamingType::KeyType;
 
     NamingType naming;
@@ -98,6 +100,12 @@ public:
         // Get size and offset for current face.
         const auto numFaceIds = se_sizes[faceIndex];
         const auto faceIds = se_conn.data() + se_offsets[faceIndex];
+
+#if !defined(AXOM_DEVICE_CODE)
+        SLIC_ASSERT_MSG(numFaceIds <= MaxPointsPerFace,
+          axom::fmt::format("Face has {} points but it should have no more than {} points.",
+            numFaceIds, MaxPointsPerFace));
+#endif
 
         // Make a name for this face.
         faceNamesView[faceIndex] = namingView.makeName(faceIds, numFaceIds);

@@ -70,7 +70,7 @@ public:
     const auto nzones = m_topologyView.numberOfZones();
 
     //--------------------------------------------------------------------------
-    AXOM_ANNOTATE_BEGIN("counting");
+    AXOM_ANNOTATE_BEGIN("allocate");
     n_newTopo["type"] = "unstructured";
     n_newTopo["coordset"] = n_topo["coordset"].as_string();
     n_newTopo["elements/shape"] = "polyhedral";
@@ -89,7 +89,10 @@ public:
       conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id, nzones));
     auto elem_offsets =
       bputils::make_array_view<ConnectivityType>(n_elem_offsets);
+    AXOM_ANNOTATE_END("allocate");
 
+    //--------------------------------------------------------------------------
+    AXOM_ANNOTATE_BEGIN("counting");
     // Compute the total number of faces if they were all unique.
     RAJA::ReduceSum<reduce_policy, axom::IndexType> reduceTotalFaces(0),
       reduceTotalFaceStorage(0);
@@ -102,27 +105,31 @@ public:
       nzones,
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const auto zone = deviceTopologyView.zone(zoneIndex);
-        elem_sizes[zoneIndex] = zone.numberOfFaces();
-        reduceTotalFaces += zone.numberOfFaces();
+        const auto numFaces = zone.numberOfFaces();
+        elem_sizes[zoneIndex] = numFaces;
+        reduceTotalFaces += numFaces;
 
         axom::IndexType faceStorage = 0;
-        for(axom::IndexType fi = 0; fi < zone.numberOfFaces(); fi++)
+        for(axom::IndexType fi = 0; fi < numFaces; fi++)
         {
           faceStorage += zone.numberOfNodesInFace(fi);
         }
         zoneFaceSizesView[zoneIndex] = faceStorage;
         reduceTotalFaceStorage += faceStorage;
       });
-    axom::exclusive_scan<ExecSpace>(elem_sizes, elem_offsets);
-    axom::exclusive_scan<ExecSpace>(zoneFaceSizesView, zoneFaceOffsetsView);
-    zoneFaceSizes.clear();
     const axom::IndexType totalFaces = reduceTotalFaces.get();
     const axom::IndexType totalFaceStorage = reduceTotalFaceStorage.get();
     AXOM_ANNOTATE_END("counting");
 
     //--------------------------------------------------------------------------
-    AXOM_ANNOTATE_BEGIN("elements");
+    AXOM_ANNOTATE_BEGIN("offsets");
+    axom::exclusive_scan<ExecSpace>(elem_sizes, elem_offsets);
+    axom::exclusive_scan<ExecSpace>(zoneFaceSizesView, zoneFaceOffsetsView);
+    zoneFaceSizes.clear();
+    AXOM_ANNOTATE_END("offsets");
 
+    //--------------------------------------------------------------------------
+    AXOM_ANNOTATE_BEGIN("elements");
     conduit::Node &n_elem_conn = n_newTopo["elements/connectivity"];
     n_elem_conn.set_allocator(c2a.getConduitAllocatorID());
     n_elem_conn.set(
@@ -137,7 +144,6 @@ public:
 
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("subelements");
-
     // Allocate subelement connectivity
     conduit::Node &n_se_conn = n_newTopo["subelements/connectivity"];
     n_se_conn.set_allocator(c2a.getConduitAllocatorID());

@@ -457,7 +457,7 @@ template <typename ExecSpace,
           typename PHShape>
 class TopologyBuilder<ExecSpace, CoordsetView, TopologyView, MatsetView, PHShape, 3>
 {
-  static constexpr int MAX_POINTS_PER_FACE = 5;
+  static constexpr int MAX_POINTS_PER_FACE = 6;
   static constexpr int MAX_FACES_PER_FRAGMENT = 7;
   // Enough for hex with one corner cut off.
   static constexpr int MAX_POINTS_PER_FRAGMENT = 10;
@@ -720,6 +720,14 @@ public:
       {
         subelement_offsets[f] +=
           fragmentOffset * MAX_POINTS_PER_FACE * MAX_FACES_PER_FRAGMENT;
+
+#if !defined(AXOM_DEVICE_CODE)
+        // Make an instance so we can use it with fmt::format.
+        const int mpf = MAX_POINTS_PER_FACE;
+        SLIC_ASSERT_MSG(subelement_sizes[f] <= MAX_POINTS_PER_FACE,
+          axom::fmt::format("Zone {} has {} points in face {} but should have no more than {} points. shape=",
+            zoneIndex, subelement_sizes[f], f, mpf, shape));
+#endif
 
         for(ConnectivityType i = 0; i < subelement_sizes[f]; i++)
         {
