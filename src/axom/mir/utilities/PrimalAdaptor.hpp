@@ -343,7 +343,8 @@ struct PrimalAdaptor
    */
   AXOM_HOST_DEVICE BoundingBox getBoundingBox(axom::IndexType zi) const
   {
-    const auto nodeIds = m_topologyView.zone(zi).getIds();
+    const auto zone = m_topologyView.zone(zi);
+    const auto nodeIds = zone.getIds();
     const auto nnodes = nodeIds.size();
     BoundingBox b;
     for(axom::IndexType i = 0; i < nnodes; i++)
