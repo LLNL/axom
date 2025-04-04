@@ -43,10 +43,7 @@ public:
   void setLengthUnit(c2c::LengthUnit lengthUnit) { m_lengthUnit = lengthUnit; }
 
   /// Sets the threshold for welding vertices of adjacent Pieces of curves
-  void setVertexWeldingThreshold(double thresh)
-  {
-    m_vertexWeldThreshold = thresh;
-  }
+  void setVertexWeldingThreshold(double thresh) { m_vertexWeldThreshold = thresh; }
 
   /// Clears data associated with this reader
   void clear();
@@ -77,8 +74,7 @@ public:
    * \param[in] mesh The mesh object that will contain the linearized line segments.
    * \param[in] percentError A percent of error that is acceptable to stop refinement.
    */
-  void getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh,
-                               double percentError);
+  void getLinearMeshNonUniform(mint::UnstructuredMesh<mint::SINGLE_SHAPE> *mesh, double percentError);
 
   /*!
    * \brief Compute the revolved volume of the shape using quadrature.

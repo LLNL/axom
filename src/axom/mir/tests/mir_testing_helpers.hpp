@@ -99,10 +99,7 @@ void psplit(const std::string &filepath, std::string &path, std::string &filenam
 
 std::string dataDirectory() { return AXOM_DATA_DIR; }
 
-std::string testData(const std::string &filename)
-{
-  return pjoin(dataDirectory(), filename);
-}
+std::string testData(const std::string &filename) { return pjoin(dataDirectory(), filename); }
 
 std::string baselineDirectory();
 
@@ -148,8 +145,7 @@ bool compareConduit(const conduit::Node &n1,
       same &= diff <= tolerance;
       if(!same)
       {
-        info.append().set(
-          axom::fmt::format("\"{}\" fields differ at index {}.", n1.name(), i));
+        info.append().set(axom::fmt::format("\"{}\" fields differ at index {}.", n1.name(), i));
       }
     }
     info["maxdiff"][n1.name()] = maxdiff;
@@ -257,9 +253,7 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
 #if defined(AXOM_USE_HDF5)
           conduit::relay::io::blueprint::save_mesh(current, errFile, "hdf5");
 #endif
-          conduit::relay::io::blueprint::save_mesh(current,
-                                                   errFile + "_yaml",
-                                                   "yaml");
+          conduit::relay::io::blueprint::save_mesh(current, errFile + "_yaml", "yaml");
         }
         // We found a baseline so we can exit
         break;
@@ -267,8 +261,7 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
     }
     catch(...)
     {
-      SLIC_INFO(
-        axom::fmt::format("Could not load {} from {}!", baselineName, path));
+      SLIC_INFO(axom::fmt::format("Could not load {} from {}!", baselineName, path));
     }
   }
   if(!success && count == 0)
@@ -289,9 +282,7 @@ bool compare_views(const Container1 &a, const Container2 &b)
   }
   if(!eq)
   {
-    axom::fmt::format("a={{{}}}\nb={{{}}}",
-                      axom::fmt::join(a, ","),
-                      axom::fmt::join(b, ","));
+    axom::fmt::format("a={{{}}}\nb={{{}}}", axom::fmt::join(a, ","), axom::fmt::join(b, ","));
   }
   return eq;
 }

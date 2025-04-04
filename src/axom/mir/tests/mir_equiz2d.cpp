@@ -20,10 +20,7 @@
 
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
-std::string baselineDirectory()
-{
-  return pjoin(dataDirectory(), "mir", "regression", "mir_equiz");
-}
+std::string baselineDirectory() { return pjoin(dataDirectory(), "mir", "regression", "mir_equiz"); }
 
 //------------------------------------------------------------------------------
 TEST(mir_equiz, miralgorithm)
@@ -54,9 +51,7 @@ TEST(mir_equiz, materialinformation)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
-void braid2d_mat_test(const std::string &type,
-                      const std::string &mattype,
-                      const std::string &name)
+void braid2d_mat_test(const std::string &type, const std::string &mattype, const std::string &name)
 {
   namespace bputils = axom::mir::utilities::blueprint;
 
@@ -73,10 +68,9 @@ void braid2d_mat_test(const std::string &type,
 #endif
 
   // Make views.
-  auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(
-    deviceMesh["coordsets/coords"]);
-  auto topologyView =
-    axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
+  auto coordsetView =
+    axom::mir::views::make_uniform_coordset<2>::view(deviceMesh["coordsets/coords"]);
+  auto topologyView = axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
   using CoordsetView = decltype(coordsetView);
   using TopologyView = decltype(topologyView);
 
@@ -93,8 +87,7 @@ void braid2d_mat_test(const std::string &type,
                    bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
     // clang-format on
 
-    using MIR =
-      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
     options["matset"] = "mat";
@@ -186,8 +179,7 @@ int main(int argc, char *argv[])
     app.parse(argc, argv);
 
 #if defined(AXOM_USE_CALIPER)
-    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-      annotationMode);
+    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
 #endif
 
     axom::slic::SimpleLogger logger;  // create & initialize test logger,
