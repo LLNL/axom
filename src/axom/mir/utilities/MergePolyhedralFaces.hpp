@@ -126,9 +126,7 @@ public:
     axom::Array<axom::IndexType> selectedFaces;
 
     // Make faces unique.
-    axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(faceNamesView,
-                                                              uniqueKeys,
-                                                              selectedFaces);
+    axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(faceNamesView, uniqueKeys, selectedFaces);
     const auto uniqueKeysView = uniqueKeys.view();
     const auto selectedFacesView = selectedFaces.view();
     AXOM_ANNOTATE_END("unique");

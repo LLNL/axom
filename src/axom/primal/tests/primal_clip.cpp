@@ -1692,8 +1692,7 @@ TEST(primal_clip, polyhedron_plane)
       const Precision x = static_cast<Precision>(cos(a));
       const Precision y = static_cast<Precision>(sin(a));
 
-      verts[zi * nSides + s] =
-        static_cast<std::int8_t>(poly.addVertex(PointType {x, y, z}));
+      verts[zi * nSides + s] = static_cast<std::int8_t>(poly.addVertex(PointType {x, y, z}));
       a += dA;
     }
   }

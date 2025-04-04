@@ -66,7 +66,9 @@ struct BuildRelation
     const auto n = nodesView.size();
     axom::Array<value_type> keys(n, n, allocatorID);
     auto keysView = keys.view();
-    axom::for_all<ExecSpace>(n, AXOM_LAMBDA(axom::IndexType i) { keysView[i] = nodesView[i]; });
+    axom::for_all<ExecSpace>(
+      n,
+      AXOM_LAMBDA(axom::IndexType i) { keysView[i] = nodesView[i]; });
 
     // Sort the keys, zones in place. This sorts the zonesView which we want for output.
     RAJA::sort_pairs<loop_policy>(RAJA::make_span(keysView.data(), n),

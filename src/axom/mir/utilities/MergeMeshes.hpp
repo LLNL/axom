@@ -438,7 +438,9 @@ protected:
     using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     using value_type = typename ViewType::value_type;
     RAJA::ReduceSum<reduce_policy, value_type> sum(0);
-    axom::for_all<ExecSpace>(view.size(), AXOM_LAMBDA(axom::IndexType index) { sum += view[index]; });
+    axom::for_all<ExecSpace>(
+      view.size(),
+      AXOM_LAMBDA(axom::IndexType index) { sum += view[index]; });
     return static_cast<axom::IndexType>(sum.get());
   }
 

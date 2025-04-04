@@ -435,8 +435,7 @@ int winding_number(const Point<T, 3>& q,
   SLIC_ASSERT(poly.hasNeighbors());
   const int num_verts = poly.numVertices();
 
-  axom::Array<int> faces(num_verts * num_verts), face_size(2 * num_verts),
-    face_offset(2 * num_verts);
+  axom::Array<int> faces(num_verts * num_verts), face_size(2 * num_verts), face_offset(2 * num_verts);
   axom::IndexType face_count;
 
   poly.getFaces(faces.data(), face_size.data(), face_offset.data(), face_count);

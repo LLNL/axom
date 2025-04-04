@@ -725,15 +725,9 @@ public:
     {
       for(int j = i + 1; j < m_num_vertices; j++)
       {
-        if(axom::utilities::isNearlyEqual(m_vertices[i][0],
-                                          m_vertices[j][0],
-                                          typedEPS) &&
-           axom::utilities::isNearlyEqual(m_vertices[i][1],
-                                          m_vertices[j][1],
-                                          typedEPS) &&
-           axom::utilities::isNearlyEqual(m_vertices[i][2],
-                                          m_vertices[j][2],
-                                          typedEPS))
+        if(axom::utilities::isNearlyEqual(m_vertices[i][0], m_vertices[j][0], typedEPS) &&
+           axom::utilities::isNearlyEqual(m_vertices[i][1], m_vertices[j][1], typedEPS) &&
+           axom::utilities::isNearlyEqual(m_vertices[i][2], m_vertices[j][2], typedEPS))
         {
           return true;
         }

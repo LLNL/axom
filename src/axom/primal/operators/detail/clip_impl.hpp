@@ -489,11 +489,10 @@ AXOM_HOST_DEVICE void clipPolyhedron(Polyhedron<T, NDIMS>& poly,
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
-  const Tetrahedron<T, NDIMS>& tet,
-  const Polyhedron<T, NDIMS>& poly,
-  double eps,
-  bool tryFixOrientation)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(const Tetrahedron<T, NDIMS>& tet,
+                                                      const Polyhedron<T, NDIMS>& poly,
+                                                      double eps,
+                                                      bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
@@ -520,11 +519,10 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipTetrahedron(
  *
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
-  const Hexahedron<T, NDIMS>& hex,
-  const Polyhedron<T, NDIMS>& poly,
-  double eps,
-  bool tryFixOrientation)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(const Hexahedron<T, NDIMS>& hex,
+                                                     const Polyhedron<T, NDIMS>& poly,
+                                                     double eps,
+                                                     bool tryFixOrientation)
 {
   using PlaneType = Plane<T, NDIMS>;
   using PolyhedronType = Polyhedron<T, NDIMS>;
@@ -547,10 +545,9 @@ AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipHexahedron(
  * \param [in] eps The tolerance for plane point orientation
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedronPolyhedron(
-  const Polyhedron<T, NDIMS>& poly1,
-  const Polyhedron<T, NDIMS>& poly2,
-  double eps)
+AXOM_HOST_DEVICE Polyhedron<T, NDIMS> clipPolyhedronPolyhedron(const Polyhedron<T, NDIMS>& poly1,
+                                                               const Polyhedron<T, NDIMS>& poly2,
+                                                               double eps)
 {
   using PlaneType = Plane<T, NDIMS>;
 
