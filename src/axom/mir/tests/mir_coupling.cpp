@@ -189,9 +189,7 @@ template <typename ExecSpace>
 class test_coupling
 {
 public:
-  static void test2D(const std::string &name,
-                     bool selectedZones = false,
-                     bool stridedStructured = false)
+  static void test2D(const std::string &name, bool selectedZones = false, bool stridedStructured = false)
   {
     // Make the 2D input mesh.
     conduit::Node n_mesh;
@@ -233,11 +231,9 @@ private:
     if(stridedStructured)
     {
       // Adjust the mesh so we have the right names.
-      n_mesh["coordsets/coarse_strided_coords"].set(
-        n_mesh["coordsets/coarse_coords"]);
+      n_mesh["coordsets/coarse_strided_coords"].set(n_mesh["coordsets/coarse_coords"]);
       n_mesh["topologies/coarse_strided/coordset"] = "coarse_strided_coords";
-      n_mesh["matsets/coarse_strided_matset"].set(
-        n_mesh["matsets/coarse_matset"]);
+      n_mesh["matsets/coarse_strided_matset"].set(n_mesh["matsets/coarse_matset"]);
       n_mesh["matsets/coarse_strided_matset/topology"] = "coarse_strided";
       n_mesh.remove("coordsets/coarse_coords");
       n_mesh.remove("topologies/coarse");
@@ -259,31 +255,17 @@ private:
     namespace bputils = axom::mir::utilities::blueprint;
 
     // Wrap the coarse mesh in views.
-    const conduit::Node &n_topology =
-      n_input[axom::fmt::format("topologies/{}", input_prefix)];
+    const conduit::Node &n_topology = n_input[axom::fmt::format("topologies/{}", input_prefix)];
 
     if(stridedStructured)
     {
-      auto topologyView =
-        axom::mir::views::make_strided_structured<2>::view(n_topology);
-      mir2D(topologyView,
-            input_prefix,
-            n_input,
-            output_prefix,
-            n_output,
-            selectedZones,
-            stridedStructured);
+      auto topologyView = axom::mir::views::make_strided_structured<2>::view(n_topology);
+      mir2D(topologyView, input_prefix, n_input, output_prefix, n_output, selectedZones, stridedStructured);
     }
     else
     {
       auto topologyView = axom::mir::views::make_structured<2>::view(n_topology);
-      mir2D(topologyView,
-            input_prefix,
-            n_input,
-            output_prefix,
-            n_output,
-            selectedZones,
-            stridedStructured);
+      mir2D(topologyView, input_prefix, n_input, output_prefix, n_output, selectedZones, stridedStructured);
     }
   }
 
@@ -300,26 +282,21 @@ private:
     SLIC_INFO(axom::fmt::format("mir2D {} to {}", input_prefix, output_prefix));
 
     // Wrap the input mesh in views.
-    const conduit::Node &n_coordset =
-      n_input[axom::fmt::format("coordsets/{}_coords", input_prefix)];
-    const conduit::Node &n_matset =
-      n_input[axom::fmt::format("matsets/{}_matset", input_prefix)];
+    const conduit::Node &n_coordset = n_input[axom::fmt::format("coordsets/{}_coords", input_prefix)];
+    const conduit::Node &n_matset = n_input[axom::fmt::format("matsets/{}_matset", input_prefix)];
 
-    auto coordsetView =
-      axom::mir::views::make_uniform_coordset<2>::view(n_coordset);
+    auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(n_coordset);
     using CoordsetView = decltype(coordsetView);
 
     // Get the indexing policy from the TopologyView type.
     using IndexingPolicy = typename TopologyView::IndexingPolicy;
 
     auto matsetView =
-      axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(
-        n_matset);
+      axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_matset);
     using MatsetView = decltype(matsetView);
 
     // Do MIR on the mesh.
-    using MIR =
-      axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
+    using MIR = axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
     // Select that matset we'll operate on.
@@ -340,8 +317,7 @@ private:
   {
     if(stridedStructured)
     {
-      n_options["selectedZones"].set(
-        std::vector<axom::IndexType> {0, 1, 3, 4, 6, 7});
+      n_options["selectedZones"].set(std::vector<axom::IndexType> {0, 1, 3, 4, 6, 7});
     }
     else
     {
@@ -357,16 +333,15 @@ private:
 
     if(stridedStructured)
     {
-      n_selectedZones.set(std::vector<axom::IndexType> {
-        52, 53, 54, 55, 64,  65,  66,  67,  76,  77,  78,  79,
-        88, 89, 90, 91, 100, 101, 102, 103, 112, 113, 114, 115});
+      n_selectedZones.set(std::vector<axom::IndexType> {52,  53,  54,  55,  64,  65,  66,  67,
+                                                        76,  77,  78,  79,  88,  89,  90,  91,
+                                                        100, 101, 102, 103, 112, 113, 114, 115});
     }
     else
     {
       n_selectedZones.set(std::vector<axom::IndexType> {
-        50, 51, 52,  53,  54,  55,  62,  63,  64,  65,  66,  67,
-        74, 75, 76,  77,  78,  79,  86,  87,  88,  89,  90,  91,
-        98, 99, 100, 101, 102, 103, 110, 111, 112, 113, 114, 115});
+        50, 51, 52, 53, 54, 55, 62, 63, 64,  65,  66,  67,  74,  75,  76,  77,  78,  79,
+        86, 87, 88, 89, 90, 91, 98, 99, 100, 101, 102, 103, 110, 111, 112, 113, 114, 115});
     }
   }
 
@@ -383,41 +358,32 @@ private:
     const conduit::Node &n_src_topology = n_src["topologies/postmir"];
     const conduit::Node &n_src_matset = n_src["matsets/postmir_matset"];
 
-    auto srcCoordsetView =
-      axom::mir::views::make_explicit_coordset<double, 2>::view(n_src_coordset);
+    auto srcCoordsetView = axom::mir::views::make_explicit_coordset<double, 2>::view(n_src_coordset);
     using SrcCoordsetView = decltype(srcCoordsetView);
 
     // 2D Elvira makes polygonal meshes
     using SrcShapeType = axom::mir::views::PolygonShape<axom::IndexType>;
     auto srcTopologyView =
-      axom::mir::views::make_unstructured_single_shape<SrcShapeType>::view(
-        n_src_topology);
+      axom::mir::views::make_unstructured_single_shape<SrcShapeType>::view(n_src_topology);
     using SrcTopologyView = decltype(srcTopologyView);
 
     auto srcMatsetView =
-      axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(
-        n_src_matset);
+      axom::mir::views::make_unibuffer_matset<std::int64_t, double, 4>::view(n_src_matset);
     using SrcMatsetView = decltype(srcMatsetView);
 
     // Wrap the target mesh (fine)
     const conduit::Node &n_target_coordset = n_target["coordsets/fine_coords"];
     const conduit::Node &n_target_topology = n_target["topologies/fine"];
 
-    auto targetCoordsetView =
-      axom::mir::views::make_uniform_coordset<2>::view(n_target_coordset);
+    auto targetCoordsetView = axom::mir::views::make_uniform_coordset<2>::view(n_target_coordset);
     using TargetCoordsetView = decltype(targetCoordsetView);
 
-    auto targetTopologyView =
-      axom::mir::views::make_structured<2>::view(n_target_topology);
+    auto targetTopologyView = axom::mir::views::make_structured<2>::view(n_target_topology);
     using TargetTopologyView = decltype(targetTopologyView);
 
     // Make new a new matset on the target topology to record material overlaps.
-    using Mapper = bputils::TopologyMapper<ExecSpace,
-                                           SrcTopologyView,
-                                           SrcCoordsetView,
-                                           SrcMatsetView,
-                                           TargetTopologyView,
-                                           TargetCoordsetView>;
+    using Mapper =
+      bputils::TopologyMapper<ExecSpace, SrcTopologyView, SrcCoordsetView, SrcMatsetView, TargetTopologyView, TargetCoordsetView>;
     Mapper mapper(srcTopologyView,
                   srcCoordsetView,
                   srcMatsetView,

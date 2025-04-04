@@ -11,10 +11,7 @@
 #include "axom/mir/tests/mir_testing_data_helpers.hpp"
 #include "axom/mir/tests/mir_testing_helpers.hpp"
 
-std::string baselineDirectory()
-{
-  return pjoin(dataDirectory(), "mir", "regression", "mir_equiz");
-}
+std::string baselineDirectory() { return pjoin(dataDirectory(), "mir", "regression", "mir_equiz"); }
 
 //------------------------------------------------------------------------------
 // Global test application object.
@@ -49,9 +46,7 @@ TEST(mir_equiz, materialinformation)
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace>
-void braid2d_mat_test(const std::string &type,
-                      const std::string &mattype,
-                      const std::string &name)
+void braid2d_mat_test(const std::string &type, const std::string &mattype, const std::string &name)
 {
   namespace bputils = axom::mir::utilities::blueprint;
 
@@ -66,10 +61,9 @@ void braid2d_mat_test(const std::string &type,
   TestApp.saveVisualization(name + "_orig", hostMesh);
 
   // Make views.
-  auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(
-    deviceMesh["coordsets/coords"]);
-  auto topologyView =
-    axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
+  auto coordsetView =
+    axom::mir::views::make_uniform_coordset<2>::view(deviceMesh["coordsets/coords"]);
+  auto topologyView = axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
   using CoordsetView = decltype(coordsetView);
   using TopologyView = decltype(topologyView);
 
@@ -86,8 +80,7 @@ void braid2d_mat_test(const std::string &type,
                    bputils::make_array_view<int>(deviceMesh["matsets/mat/indices"]));
     // clang-format on
 
-    using MIR =
-      axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
+    using MIR = axom::mir::EquiZAlgorithm<ExecSpace, TopologyView, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node options;
     options["matset"] = "mat";

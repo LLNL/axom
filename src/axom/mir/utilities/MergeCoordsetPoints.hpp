@@ -101,9 +101,7 @@ public:
    *
    * \param coordsetView The coordset view that wraps the coordset to be modified.
    */
-  MergeCoordsetPoints(const CoordsetView &coordsetView)
-    : m_coordsetView(coordsetView)
-  { }
+  MergeCoordsetPoints(const CoordsetView &coordsetView) : m_coordsetView(coordsetView) { }
 
   /*!
    * \brief Merge the coordset points using a tolerance and pass out an array of the
@@ -149,8 +147,8 @@ public:
     }
 
     // Adjust the name of the timer so we can see the coordinate type.
-    AXOM_ANNOTATE_SCOPE(axom::fmt::format("MergeCoordsetPoints<{}>",
-                                          bputils::cpp2conduit<value_type>::name));
+    AXOM_ANNOTATE_SCOPE(
+      axom::fmt::format("MergeCoordsetPoints<{}>", bputils::cpp2conduit<value_type>::name));
 
     // Get any options.
     constexpr double DEFAULT_TOLERANCE = std::is_same<value_type, float>::value
@@ -175,9 +173,7 @@ public:
 
     // Make faces unique.
     axom::Array<KeyType> uniqueNames;
-    axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(coordNamesView,
-                                                              uniqueNames,
-                                                              selectedIds);
+    axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(coordNamesView, uniqueNames, selectedIds);
     const auto uniqueNamesView = uniqueNames.view();
     const auto selectedIdsView = selectedIds.view();
     AXOM_ANNOTATE_END("unique");
@@ -190,9 +186,7 @@ public:
     if(merged)
     {
       // There are fewer nodes in the selectedIds so we are able to combine nodes.
-      SLIC_INFO(axom::fmt::format("Merged {} nodes into {} nodes.",
-                                  nnodes,
-                                  selectedIds.size()));
+      SLIC_INFO(axom::fmt::format("Merged {} nodes into {} nodes.", nnodes, selectedIds.size()));
 
       AXOM_ANNOTATE_BEGIN("old2new");
       // Make a map of nodes in the old coordset to nodes in the new coordset. We
@@ -229,8 +223,7 @@ public:
       n_mesh["topologies/mesh/type"] = "unstructured";
       n_mesh["fields/coordNames/association"] = "vertex";
       n_mesh["fields/coordNames/topology"] = "mesh";
-      n_mesh["fields/coordNames/values"].set_external(coordNamesView.data(),
-                                                      coordNamesView.size());
+      n_mesh["fields/coordNames/values"].set_external(coordNamesView.data(), coordNamesView.size());
 
       // Add a mesh for the output point mesh.
       n_mesh["coordsets/output"].set_external(n_sliced);
@@ -243,21 +236,16 @@ public:
       n_mesh["topologies/merged/type"] = "unstructured";
       n_mesh["fields/mergedCoordNames/association"] = "vertex";
       n_mesh["fields/mergedCoordNames/topology"] = "merged";
-      n_mesh["fields/mergedCoordNames/values"].set_external(
-        uniqueNamesView.data(),
-        uniqueNamesView.size());
+      n_mesh["fields/mergedCoordNames/values"].set_external(uniqueNamesView.data(),
+                                                            uniqueNamesView.size());
 
       // Write files to examine the input and output coordsets.
       conduit::Node n_host;
       bputils::copy<SEQ_EXEC>(n_host, n_mesh);
       std::string name(axom::execution_space<ExecSpace>::name());
       name = name.substr(1, 3);
-      conduit::relay::io::blueprint::save_mesh(n_host,
-                                               "merge_coordset_points_" + name,
-                                               "hdf5");
-      conduit::relay::io::save(n_host,
-                               "merge_coordset_points_" + name + ".yaml",
-                               "yaml");
+      conduit::relay::io::blueprint::save_mesh(n_host, "merge_coordset_points_" + name, "hdf5");
+      conduit::relay::io::save(n_host, "merge_coordset_points_" + name + ".yaml", "yaml");
 #endif
 
       // Move the sliced coordset to the input coordset.
@@ -314,8 +302,7 @@ public:
   template <typename KeyType, typename Precision>
   void createNamesInner(axom::Array<KeyType> &coordNames, double tolerance) const
   {
-    AXOM_ANNOTATE_SCOPE(
-      axom::fmt::format("createNames<{}>", cpp2conduit<Precision>::name));
+    AXOM_ANNOTATE_SCOPE(axom::fmt::format("createNames<{}>", cpp2conduit<Precision>::name));
 
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     const auto nnodes = m_coordsetView.numberOfNodes();
@@ -337,9 +324,7 @@ public:
         for(int d = 0; d < CoordsetView::dimension(); d++)
         {
           const Precision pointValue = static_cast<Precision>(pt[d]);
-          Precision value =
-            detail::Rounder<Precision>::execute(pointValue / tolerance) *
-            tolerance;
+          Precision value = detail::Rounder<Precision>::execute(pointValue / tolerance) * tolerance;
           if(value > neg_tolerance && value < tolerance)
           {
             value = Precision {0};
@@ -349,9 +334,9 @@ public:
 
         // Make a name for this point
         const void *tptr = static_cast<const void *>(truncated);
-        coordNamesView[index] = axom::mir::utilities::hash_bytes(
-          static_cast<const std::uint8_t *>(tptr),
-          sizeof(Precision) * CoordsetView::dimension());
+        coordNamesView[index] =
+          axom::mir::utilities::hash_bytes(static_cast<const std::uint8_t *>(tptr),
+                                           sizeof(Precision) * CoordsetView::dimension());
       });
   }
 

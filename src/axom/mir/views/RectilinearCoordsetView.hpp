@@ -41,8 +41,7 @@ public:
    * \param y The second coordinate component.
    */
   AXOM_HOST_DEVICE
-  RectilinearCoordsetView2(const axom::ArrayView<DataType> &x,
-                           const axom::ArrayView<DataType> &y)
+  RectilinearCoordsetView2(const axom::ArrayView<DataType> &x, const axom::ArrayView<DataType> &y)
     : m_coordinates {x, y}
     , m_indexing(LogicalIndex {{x.size(), y.size()}})
   { }
@@ -66,10 +65,7 @@ public:
    * \return The indexing that contains the mesh logical sizes.
    */
   AXOM_HOST_DEVICE
-  const StructuredIndexing<IndexType, 2> &indexing() const
-  {
-    return m_indexing;
-  }
+  const StructuredIndexing<IndexType, 2> &indexing() const { return m_indexing; }
 
   /*!
    * \brief Get a coordinate array view for a dimension.
@@ -94,8 +90,7 @@ public:
   AXOM_HOST_DEVICE
   PointType getPoint(LogicalIndex vertex_index) const
   {
-    const DataType X[2] = {m_coordinates[0][vertex_index[0]],
-                           m_coordinates[1][vertex_index[1]]};
+    const DataType X[2] = {m_coordinates[0][vertex_index[0]], m_coordinates[1][vertex_index[1]]};
     return PointType(X);
   }
 
@@ -120,10 +115,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType operator[](LogicalIndex vertex_index) const
-  {
-    return getPoint(vertex_index);
-  }
+  PointType operator[](LogicalIndex vertex_index) const { return getPoint(vertex_index); }
 
   /*!
    * \brief Return the requested point from the coordset.
@@ -192,10 +184,7 @@ public:
    * \return The indexing that contains the mesh logical sizes.
    */
   AXOM_HOST_DEVICE
-  const StructuredIndexing<IndexType, 3> &indexing() const
-  {
-    return m_indexing;
-  }
+  const StructuredIndexing<IndexType, 3> &indexing() const { return m_indexing; }
 
   /*!
    * \brief Get a coordinate array view for a dimension.
@@ -247,10 +236,7 @@ public:
    * \return A point that corresponds to \a vertex_index.
    */
   AXOM_HOST_DEVICE
-  PointType operator[](LogicalIndex vertex_index) const
-  {
-    return getPoint(vertex_index);
-  }
+  PointType operator[](LogicalIndex vertex_index) const { return getPoint(vertex_index); }
 
   /*!
    * \brief Return the requested point from the coordset.

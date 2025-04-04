@@ -33,8 +33,7 @@ struct NumberOfZones<ShapeType, false>
    * \brief Compute number of zones using either sizes or connSize and knowledge
    *        of a shape with a static number of nodes per zone.
    */
-  AXOM_HOST_DEVICE static axom::IndexType execute(axom::IndexType sizesSize,
-                                                  axom::IndexType connSize)
+  AXOM_HOST_DEVICE static axom::IndexType execute(axom::IndexType sizesSize, axom::IndexType connSize)
   {
     return (sizesSize != 0) ? sizesSize : (connSize / ShapeType::numberOfNodes());
   }
@@ -47,9 +46,8 @@ struct NumberOfZones<ShapeType, true>
   /*!
    * \brief Compute number of zones using sizes. A variable-sized shape must have provided sizes.
    */
-  AXOM_HOST_DEVICE static axom::IndexType execute(
-    axom::IndexType sizesSize,
-    axom::IndexType AXOM_UNUSED_PARAM(connSize))
+  AXOM_HOST_DEVICE static axom::IndexType execute(axom::IndexType sizesSize,
+                                                  axom::IndexType AXOM_UNUSED_PARAM(connSize))
   {
     return sizesSize;
   }
@@ -112,10 +110,7 @@ public:
    *
    * \return The dimension of the shape.
    */
-  AXOM_HOST_DEVICE static constexpr int dimension()
-  {
-    return ShapeType::dimension();
-  }
+  AXOM_HOST_DEVICE static constexpr int dimension() { return ShapeType::dimension(); }
 
   /*!
    * \brief Return the number of zones.
@@ -134,20 +129,14 @@ public:
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE inline IndexType connectivitySize() const
-  {
-    return m_connectivityView.size();
-  }
+  AXOM_HOST_DEVICE inline IndexType connectivitySize() const { return m_connectivityView.size(); }
 
   /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const
-  {
-    return m_indexing;
-  }
+  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const { return m_indexing; }
 
   /*!
    * \brief Return a zone.
@@ -163,9 +152,8 @@ public:
   {
     SLIC_ASSERT(zoneIndex < numberOfZones());
 
-    return ShapeType(
-      ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
-                       m_sizesView[zoneIndex]));
+    return ShapeType(ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
+                                      m_sizesView[zoneIndex]));
   }
 
   template <bool _variable_size = ShapeType::is_variable_size()>
@@ -177,15 +165,13 @@ public:
     ConnectivityView shapeIdsView {};
     if(m_sizesView.empty())
     {
-      shapeIdsView = ConnectivityView(
-        m_connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
-        ShapeType::numberOfNodes());
+      shapeIdsView = ConnectivityView(m_connectivityView.data() + ShapeType::zoneOffset(zoneIndex),
+                                      ShapeType::numberOfNodes());
     }
     else
     {
-      shapeIdsView =
-        ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
-                         m_sizesView[zoneIndex]);
+      shapeIdsView = ConnectivityView(m_connectivityView.data() + m_offsetsView[zoneIndex],
+                                      m_sizesView[zoneIndex]);
     }
     return ShapeType(shapeIdsView);
   }

@@ -59,8 +59,7 @@ struct PointTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 0; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 1; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
-    int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 1;
   }
@@ -68,10 +67,7 @@ struct PointTraits
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 0; }
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 0; }
-  AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex)
-  {
-    return zoneIndex;
-  }
+  AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex) { return zoneIndex; }
 
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 1> getFace(
     IndexType AXOM_DEBUG_PARAM(faceIndex))
@@ -107,8 +103,7 @@ struct LineTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 1; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 2; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
-    int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 2;
   }
@@ -128,8 +123,7 @@ struct LineTraits
     return StackArray<IndexType, 2> {0, 1};
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
-    int /*edgeIndex*/)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int /*edgeIndex*/)
   {
     return axom::StackArray<IndexType, 2> {0, 1};
   }
@@ -161,8 +155,7 @@ struct TriTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 3; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
-    int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 3;
   }
@@ -182,8 +175,7 @@ struct TriTraits
     return StackArray<IndexType, 3> {0, 1, 2};
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
-    int edgeIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
     const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {2, 0}};
     return edges[edgeIndex];
@@ -216,8 +208,7 @@ struct QuadTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 2; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 4; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
-    int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 4;
   }
@@ -237,8 +228,7 @@ struct QuadTraits
     return StackArray<IndexType, 4> {0, 1, 2, 3};
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
-    int edgeIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
     const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}};
     return edges[edgeIndex];
@@ -277,8 +267,7 @@ struct TetTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 3; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 4; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
-    int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 3;
   }
@@ -291,22 +280,16 @@ struct TetTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(
-    IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 3> getFace(IndexType faceIndex)
   {
-    const axom::StackArray<IndexType, 3> faces[] = {{0, 1, 3},
-                                                    {1, 2, 3},
-                                                    {2, 0, 3},
-                                                    {0, 2, 1}};
+    const axom::StackArray<IndexType, 3> faces[] = {{0, 1, 3}, {1, 2, 3}, {2, 0, 3}, {0, 2, 1}};
     assert(faceIndex >= 0 && faceIndex < numberOfFaces());
     return faces[faceIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
-    int edgeIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
-    const axom::StackArray<IndexType, 2> edges[] =
-      {{0, 1}, {1, 2}, {2, 0}, {0, 3}, {1, 3}, {2, 3}};
+    const axom::StackArray<IndexType, 2> edges[] = {{0, 1}, {1, 2}, {2, 0}, {0, 3}, {1, 3}, {2, 3}};
     return edges[edgeIndex];
   }
 
@@ -357,8 +340,7 @@ struct PyramidTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(
-    IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
   {
     const axom::StackArray<IndexType, 4> faces[] = {{3, 2, 1, 0},
                                                     {0, 1, 4, -1},
@@ -369,8 +351,7 @@ struct PyramidTraits
     return faces[faceIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
-    int edgeIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
     const axom::StackArray<IndexType, 2> edges[] =
       {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {0, 4}, {1, 4}, {2, 4}, {3, 4}};
@@ -426,8 +407,7 @@ struct WedgeTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(
-    IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
   {
     const axom::StackArray<IndexType, 4> faces[] = {{0, 2, 1, -1},
                                                     {3, 4, 5, -1},
@@ -438,8 +418,7 @@ struct WedgeTraits
     return faces[faceIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
-    int edgeIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
     const axom::StackArray<IndexType, 2> edges[] =
       {{0, 1}, {1, 2}, {2, 0}, {3, 4}, {4, 5}, {5, 3}, {0, 3}, {1, 4}, {2, 5}};
@@ -480,8 +459,7 @@ struct HexTraits
   AXOM_HOST_DEVICE constexpr static IndexType dimension() { return 3; }
 
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 8; }
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(
-    int AXOM_UNUSED_PARAM(faceIndex))
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
     return 4;
   }
@@ -494,34 +472,18 @@ struct HexTraits
     return numberOfNodes() * zoneIndex;
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(
-    IndexType faceIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 4> getFace(IndexType faceIndex)
   {
-    const axom::StackArray<IndexType, 4> faces[] = {{3, 0, 4, 7},
-                                                    {1, 2, 6, 5},
-                                                    {0, 1, 5, 4},
-                                                    {3, 7, 6, 2},
-                                                    {0, 3, 2, 1},
-                                                    {4, 5, 6, 7}};
+    const axom::StackArray<IndexType, 4> faces[] =
+      {{3, 0, 4, 7}, {1, 2, 6, 5}, {0, 1, 5, 4}, {3, 7, 6, 2}, {0, 3, 2, 1}, {4, 5, 6, 7}};
     assert(faceIndex >= 0 && faceIndex < numberOfFaces());
     return faces[faceIndex];
   }
 
-  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
-    int edgeIndex)
+  AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(int edgeIndex)
   {
-    const axom::StackArray<IndexType, 2> edges[] = {{0, 1},
-                                                    {1, 2},
-                                                    {2, 3},
-                                                    {3, 0},
-                                                    {4, 5},
-                                                    {5, 6},
-                                                    {6, 7},
-                                                    {7, 4},
-                                                    {0, 4},
-                                                    {1, 5},
-                                                    {3, 7},
-                                                    {2, 6}};
+    const axom::StackArray<IndexType, 2> edges[] =
+      {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {3, 7}, {2, 6}};
     return edges[edgeIndex];
   }
 
@@ -598,10 +560,7 @@ struct PolygonShape : public PolygonTraits
    *
    * \return The container for the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const
-  {
-    return m_ids;
-  }
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const { return m_ids; }
 
   /*!
    * \brief Get the ids that make up this shape.
@@ -694,10 +653,7 @@ struct Shape : public ShapeTraits
    *
    * \return The container for the ids that make up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const
-  {
-    return m_ids;
-  }
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getIdsStorage() const { return m_ids; }
 
   /*!
    * \brief Get the ids that make up this shape as a view.
@@ -706,8 +662,7 @@ struct Shape : public ShapeTraits
    */
   AXOM_HOST_DEVICE ConnectivityView getIds() const
   {
-    return ConnectivityView(const_cast<ConnectivityType *>(m_ids.data()),
-                            m_ids.size());
+    return ConnectivityView(const_cast<ConnectivityType *>(m_ids.data()), m_ids.size());
   }
 
   /*!
@@ -715,10 +670,7 @@ struct Shape : public ShapeTraits
    *
    * \return The unique ids that make up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityStorageConstRef getUniqueIds() const
-  {
-    return m_ids;
-  }
+  AXOM_HOST_DEVICE ConnectivityStorageConstRef getUniqueIds() const { return m_ids; }
 
   /*!
    * \brief Get the ids for the requested face.
@@ -742,10 +694,9 @@ struct Shape : public ShapeTraits
   }
 
   template <int _ndims = ShapeTraits::dimension()>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, void>::type getFace(
-    axom::IndexType faceIndex,
-    ConnectivityType *ids,
-    axom::IndexType &numIds) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, void>::type getFace(axom::IndexType faceIndex,
+                                                                            ConnectivityType *ids,
+                                                                            axom::IndexType &numIds) const
   {
     numIds = ShapeTraits::numberOfNodesInFace(faceIndex);
     const auto faceIds = ShapeTraits::getFace(faceIndex);
@@ -771,51 +722,37 @@ private:
 template <typename ConnType>
 using LineShape =
   Shape<LineTraits,
-        typename std::conditional<std::is_integral<ConnType>::value,
-                                  axom::ArrayView<ConnType>,
-                                  ConnType>::type>;
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
 template <typename ConnType>
 using TriShape =
   Shape<TriTraits,
-        typename std::conditional<std::is_integral<ConnType>::value,
-                                  axom::ArrayView<ConnType>,
-                                  ConnType>::type>;
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
 template <typename ConnType>
 using QuadShape =
   Shape<QuadTraits,
-        typename std::conditional<std::is_integral<ConnType>::value,
-                                  axom::ArrayView<ConnType>,
-                                  ConnType>::type>;
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
 template <typename ConnType>
 using TetShape =
   Shape<TetTraits,
-        typename std::conditional<std::is_integral<ConnType>::value,
-                                  axom::ArrayView<ConnType>,
-                                  ConnType>::type>;
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
 template <typename ConnType>
 using PyramidShape =
   Shape<PyramidTraits,
-        typename std::conditional<std::is_integral<ConnType>::value,
-                                  axom::ArrayView<ConnType>,
-                                  ConnType>::type>;
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
 template <typename ConnType>
 using WedgeShape =
   Shape<WedgeTraits,
-        typename std::conditional<std::is_integral<ConnType>::value,
-                                  axom::ArrayView<ConnType>,
-                                  ConnType>::type>;
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 
 template <typename ConnType>
 using HexShape =
   Shape<HexTraits,
-        typename std::conditional<std::is_integral<ConnType>::value,
-                                  axom::ArrayView<ConnType>,
-                                  ConnType>::type>;
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
 /// @}
 
 /*!
@@ -842,9 +779,7 @@ struct VariableShape
    * \param ids The ids that describe the shape.
    */
   AXOM_HOST_DEVICE
-  VariableShape(int shapeId, ConnectivityStorageConstRef ids)
-    : m_shapeId(shapeId)
-    , m_ids(ids)
+  VariableShape(int shapeId, ConnectivityStorageConstRef ids) : m_shapeId(shapeId), m_ids(ids)
   {
     SLIC_ASSERT(shapeId >= Point_ShapeID && shapeId <= Hex_ShapeID);
   }
@@ -1111,10 +1046,7 @@ struct VariableShape
    *
    * \return The i'th id that makes up this shape.
    */
-  AXOM_HOST_DEVICE ConnectivityType getId(IndexType index) const
-  {
-    return m_ids[index];
-  }
+  AXOM_HOST_DEVICE ConnectivityType getId(IndexType index) const { return m_ids[index]; }
 
   /*!
    * \brief Get the ids that make up this shape.

@@ -55,10 +55,7 @@ struct StridedStructuredIndexing
    * \brief Return whether the view supports strided structured indexing.
    * \return true
    */
-  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing()
-  {
-    return true;
-  }
+  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing() { return true; }
 
   /*!
    * \brief constructor
@@ -158,8 +155,8 @@ struct StridedStructuredIndexing
    */
   /// @{
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type
-  GlobalToGlobal(IndexType global) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type GlobalToGlobal(
+    IndexType global) const
   {
     LogicalIndex gl;
     gl[0] = global;
@@ -167,8 +164,8 @@ struct StridedStructuredIndexing
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type
-  GlobalToGlobal(IndexType global) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type GlobalToGlobal(
+    IndexType global) const
   {
     LogicalIndex gl;
     gl[0] = global % m_strides[1];
@@ -177,8 +174,8 @@ struct StridedStructuredIndexing
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type
-  GlobalToGlobal(IndexType global) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type GlobalToGlobal(
+    IndexType global) const
   {
     LogicalIndex gl;
     gl[0] = global % m_strides[1];
@@ -254,8 +251,8 @@ struct StridedStructuredIndexing
   /// @{
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type
-  IndexToLogicalIndex(IndexType index) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type IndexToLogicalIndex(
+    IndexType index) const
   {
     LogicalIndex logical;
     logical[0] = index;
@@ -263,8 +260,8 @@ struct StridedStructuredIndexing
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type
-  IndexToLogicalIndex(IndexType index) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type IndexToLogicalIndex(
+    IndexType index) const
   {
     LogicalIndex logical;
     const auto nx = m_dimensions[0];
@@ -274,8 +271,8 @@ struct StridedStructuredIndexing
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type
-  IndexToLogicalIndex(IndexType index) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type IndexToLogicalIndex(
+    IndexType index) const
   {
     LogicalIndex logical;
     const auto nx = m_dimensions[0];
@@ -333,10 +330,7 @@ struct StridedStructuredIndexing
    * \return True if the index is within the index, false otherwise.
    */
   AXOM_HOST_DEVICE
-  bool contains(IndexType index) const
-  {
-    return contains(IndexToLogicalIndex(index));
-  }
+  bool contains(IndexType index) const { return contains(IndexToLogicalIndex(index)); }
 
   /*!
    * \brief Expand the current StridedStructuredIndexing by one in each dimension.
@@ -345,9 +339,7 @@ struct StridedStructuredIndexing
    */
   /// @{
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-    typename std::enable_if<_ndims == 1, StridedStructuredIndexing>::type
-    expand() const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, StridedStructuredIndexing>::type expand() const
   {
     StridedStructuredIndexing retval(*this);
     retval.m_dimensions[0]++;
@@ -355,9 +347,7 @@ struct StridedStructuredIndexing
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-    typename std::enable_if<_ndims == 2, StridedStructuredIndexing>::type
-    expand() const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, StridedStructuredIndexing>::type expand() const
   {
     StridedStructuredIndexing retval(*this);
     retval.m_dimensions[0]++;
@@ -367,9 +357,7 @@ struct StridedStructuredIndexing
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE
-    typename std::enable_if<_ndims == 3, StridedStructuredIndexing>::type
-    expand() const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, StridedStructuredIndexing>::type expand() const
   {
     StridedStructuredIndexing retval(*this);
     retval.m_dimensions[0]++;

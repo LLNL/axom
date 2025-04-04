@@ -13,10 +13,7 @@
 
 std::string baselineDirectory()
 {
-  return pjoin(dataDirectory(),
-               "mir",
-               "regression",
-               "mir_make_polyhedral_topology");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_make_polyhedral_topology");
 }
 //------------------------------------------------------------------------------
 // Global test application object.
@@ -55,59 +52,50 @@ struct make_polyhedral
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
-        n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     //_mir_utilities_makepolyhedraltopology_end
     else if(type == "tets")
     {
-      auto topologyView =
-        views::make_unstructured_single_shape<views::TetShape<int>>::view(n_input);
+      auto topologyView = views::make_unstructured_single_shape<views::TetShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
-        n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else if(type == "pyramids")
     {
       auto topologyView =
-        views::make_unstructured_single_shape<views::PyramidShape<int>>::view(
-          n_input);
+        views::make_unstructured_single_shape<views::PyramidShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
-        n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else if(type == "wedges")
     {
       auto topologyView =
-        views::make_unstructured_single_shape<views::WedgeShape<int>>::view(
-          n_input);
+        views::make_unstructured_single_shape<views::WedgeShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
-        n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else if(type == "hexs")
     {
-      auto topologyView =
-        views::make_unstructured_single_shape<views::HexShape<int>>::view(n_input);
+      auto topologyView = views::make_unstructured_single_shape<views::HexShape<int>>::view(n_input);
       using TopologyView = decltype(topologyView);
       using ConnectivityType = typename TopologyView::ConnectivityType;
 
       bputils::MakePolyhedralTopology<ExecSpace, TopologyView> mp(topologyView);
       mp.execute(n_input, n_output);
-      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(
-        n_output);
+      bputils::MergePolyhedralFaces<ExecSpace, ConnectivityType>::execute(n_output);
     }
     else
     {

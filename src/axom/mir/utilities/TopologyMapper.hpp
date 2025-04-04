@@ -46,10 +46,9 @@ namespace detail
  */
 AXOM_SUPPRESS_HD_WARN
 template <typename T, axom::primal::PolygonArray ARRAY_TYPE, int MAX_VERTS>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::primal::Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> &shape1,
-  const axom::primal::Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> &shape1,
+                                     const axom::primal::Polygon<T, 2, ARRAY_TYPE, MAX_VERTS> &shape2,
+                                     double eps = 1.e-10)
 {
   constexpr bool tryFixOrientation = false;
   const auto p = axom::primal::clip(shape1, shape2, eps, tryFixOrientation);
@@ -96,14 +95,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Tetrahedron<T, 3> &shap
 }
 
 template <typename T>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::primal::Tetrahedron<T, 3> &shape1,
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Tetrahedron<T, 3> &shape1,
+                                     const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
+                                     double eps = 1.e-10)
 {
   const bool tryFixOrientation = false;
-  auto clipped =
-    axom::primal::Polyhedron<T, 3>::from_primitive(shape1, tryFixOrientation);
+  auto clipped = axom::primal::Polyhedron<T, 3>::from_primitive(shape1, tryFixOrientation);
   axom::primal::detail::clipPolyhedron(clipped, shape2.getFaces(), eps);
   return clipped.volume();
 }
@@ -137,14 +134,12 @@ AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Hexahedron<T, 3> &shape
 }
 
 template <typename T>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::primal::Hexahedron<T, 3> &shape1,
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Hexahedron<T, 3> &shape1,
+                                     const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
+                                     double eps = 1.e-10)
 {
   const bool tryFixOrientation = false;
-  auto clipped =
-    axom::primal::Polyhedron<T, 3>::from_primitive(shape1, tryFixOrientation);
+  auto clipped = axom::primal::Polyhedron<T, 3>::from_primitive(shape1, tryFixOrientation);
   axom::primal::detail::clipPolyhedron(clipped, shape2.getFaces(), eps);
   return clipped.volume();
 }
@@ -178,10 +173,9 @@ AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Polyhedron<T, 3> &shape
 }
 
 template <typename T>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::primal::Polyhedron<T, 3> &shape1,
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::primal::Polyhedron<T, 3> &shape1,
+                                     const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
+                                     double eps = 1.e-10)
 {
   auto clipped = shape1;
   axom::primal::detail::clipPolyhedron(clipped, shape2.getFaces(), eps);
@@ -190,64 +184,57 @@ AXOM_HOST_DEVICE double shapeOverlap(
 
 // PolyhedralFaces first
 template <typename T>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
-  const axom::primal::Tetrahedron<T, 3> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
+                                     const axom::primal::Tetrahedron<T, 3> &shape2,
+                                     double eps = 1.e-10)
 {
   return shapeOverlap(shape2, shape1, eps);
 }
 
 template <typename T>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
-  const axom::primal::Hexahedron<T, 3> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
+                                     const axom::primal::Hexahedron<T, 3> &shape2,
+                                     double eps = 1.e-10)
 {
   return shapeOverlap(shape2, shape1, eps);
 }
 
 template <typename T>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
-  const axom::primal::Polyhedron<T, 3> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
+                                     const axom::primal::Polyhedron<T, 3> &shape2,
+                                     double eps = 1.e-10)
 {
   return shapeOverlap(shape2, shape1, eps);
 }
 
 template <typename T>
-AXOM_HOST_DEVICE double shapeOverlap(
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
-  const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
-  double eps = 1.e-10)
+AXOM_HOST_DEVICE double shapeOverlap(const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape1,
+                                     const axom::mir::utilities::blueprint::PolyhedralFaces<T> &shape2,
+                                     double eps = 1.e-10)
 {
   using PointType = axom::primal::Point<T, 3>;
   // Find largest plane offset.
   T maxOffset {};
   for(const auto &plane : shape1.getFaces())
   {
-    maxOffset =
-      axom::utilities::max(maxOffset, axom::utilities::abs(plane.getOffset()));
+    maxOffset = axom::utilities::max(maxOffset, axom::utilities::abs(plane.getOffset()));
   }
   for(const auto &plane : shape2.getFaces())
   {
-    maxOffset =
-      axom::utilities::max(maxOffset, axom::utilities::abs(plane.getOffset()));
+    maxOffset = axom::utilities::max(maxOffset, axom::utilities::abs(plane.getOffset()));
   }
   // maxOffset is a radius from the origin. Make it bigger so we can use it as the bounds of a hex.
   maxOffset *= T {2};
 
   // Make a hex to clip
-  axom::primal::Hexahedron<T, 3> hex(
-    PointType {-maxOffset, -maxOffset, -maxOffset},
-    PointType {maxOffset, -maxOffset, -maxOffset},
-    PointType {maxOffset, maxOffset, -maxOffset},
-    PointType {-maxOffset, maxOffset, -maxOffset},
-    PointType {-maxOffset, -maxOffset, maxOffset},
-    PointType {maxOffset, -maxOffset, maxOffset},
-    PointType {maxOffset, maxOffset, maxOffset},
-    PointType {-maxOffset, maxOffset, maxOffset});
+  axom::primal::Hexahedron<T, 3> hex(PointType {-maxOffset, -maxOffset, -maxOffset},
+                                     PointType {maxOffset, -maxOffset, -maxOffset},
+                                     PointType {maxOffset, maxOffset, -maxOffset},
+                                     PointType {-maxOffset, maxOffset, -maxOffset},
+                                     PointType {-maxOffset, -maxOffset, maxOffset},
+                                     PointType {maxOffset, -maxOffset, maxOffset},
+                                     PointType {maxOffset, maxOffset, maxOffset},
+                                     PointType {-maxOffset, maxOffset, maxOffset});
   // Turn the large hex polyhedral and then clip by all planes.
   auto clipped = axom::primal::Polyhedron<T, 3>::from_primitive(hex);
   axom::primal::detail::clipPolyhedron(clipped, shape1.getFaces(), eps);
@@ -298,14 +285,8 @@ AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
   }
   else if(id == axom::mir::views::Hex_ShapeID)
   {
-    axom::primal::Hexahedron<T, 3> hex(shape1[0],
-                                       shape1[1],
-                                       shape1[2],
-                                       shape1[3],
-                                       shape1[4],
-                                       shape1[5],
-                                       shape1[6],
-                                       shape1[7]);
+    axom::primal::Hexahedron<T, 3>
+      hex(shape1[0], shape1[1], shape1[2], shape1[3], shape1[4], shape1[5], shape1[6], shape1[7]);
     retval = shapeOverlap(hex, shape2, eps);
   }
   else
@@ -354,14 +335,8 @@ AXOM_HOST_DEVICE double shapeOverlap(const Shape1Type &shape1,
   }
   else if(id == axom::mir::views::Hex_ShapeID)
   {
-    axom::primal::Hexahedron<T, 3> hex(shape2[0],
-                                       shape2[1],
-                                       shape2[2],
-                                       shape2[3],
-                                       shape2[4],
-                                       shape2[5],
-                                       shape2[6],
-                                       shape2[7]);
+    axom::primal::Hexahedron<T, 3>
+      hex(shape2[0], shape2[1], shape2[2], shape2[3], shape2[4], shape2[5], shape2[6], shape2[7]);
     retval = shapeOverlap(shape1, hex, eps);
   }
   else
@@ -410,14 +385,8 @@ AXOM_HOST_DEVICE double shapeOverlap(const VariableShape<T, 3> &shape1,
   }
   else if(id == axom::mir::views::Hex_ShapeID)
   {
-    axom::primal::Hexahedron<T, 3> hex(shape2[0],
-                                       shape2[1],
-                                       shape2[2],
-                                       shape2[3],
-                                       shape2[4],
-                                       shape2[5],
-                                       shape2[6],
-                                       shape2[7]);
+    axom::primal::Hexahedron<T, 3>
+      hex(shape2[0], shape2[1], shape2[2], shape2[3], shape2[4], shape2[5], shape2[6], shape2[7]);
     retval = shapeOverlap(shape1, hex, eps);
   }
   else
@@ -519,8 +488,7 @@ public:
     AXOM_ANNOTATE_SCOPE("TopologyMapper::execute");
     namespace bputils = axom::mir::utilities::blueprint;
 
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     // Pick output matset types (use input types)
     using MatIntType = typename SrcMatsetView::IndexType;
     using MatFloatType = typename SrcMatsetView::FloatType;
@@ -539,9 +507,7 @@ public:
     bputils::copy<ExecSpace>(n_options_copy, n_options);
 
     // Ensure required options exist.
-    const char *required[] = {SRC_MATSET_NAME,
-                              TARGET_TOPOLOGY_NAME,
-                              TARGET_MATSET_NAME};
+    const char *required[] = {SRC_MATSET_NAME, TARGET_TOPOLOGY_NAME, TARGET_MATSET_NAME};
     for(const auto &key : required)
     {
       if(!n_options_copy.has_path(key))
@@ -551,16 +517,12 @@ public:
       }
     }
     const std::string srcMatsetName = n_options_copy[SRC_MATSET_NAME].as_string();
-    const std::string targetTopologyName =
-      n_options_copy[TARGET_TOPOLOGY_NAME].as_string();
-    const std::string targetMatsetName =
-      n_options_copy[TARGET_MATSET_NAME].as_string();
+    const std::string targetTopologyName = n_options_copy[TARGET_TOPOLOGY_NAME].as_string();
+    const std::string targetMatsetName = n_options_copy[TARGET_MATSET_NAME].as_string();
 
     // Look at the source mesh's matset. Count the number of materials.
-    const conduit::Node &n_matset =
-      n_srcMesh.fetch_existing("matsets/" + srcMatsetName);
-    const conduit::Node &n_materialMap =
-      n_matset.fetch_existing("material_map");
+    const conduit::Node &n_matset = n_srcMesh.fetch_existing("matsets/" + srcMatsetName);
+    const conduit::Node &n_materialMap = n_matset.fetch_existing("material_map");
     const auto nmats = n_materialMap.number_of_children();
     const auto numMaterialSlots = nmats + 1;  // leave space for empty material.
 
@@ -582,9 +544,7 @@ public:
     using src_value_type = typename SrcCoordsetView::value_type;
     AXOM_ANNOTATE_BEGIN("bbox");
     const auto srcView = m_srcView;
-    SelectedZones<ExecSpace> srcSelection(srcView.numberOfZones(),
-                                          n_options_copy,
-                                          SRC_SELECTED_ZONES);
+    SelectedZones<ExecSpace> srcSelection(srcView.numberOfZones(), n_options_copy, SRC_SELECTED_ZONES);
     srcSelection.setSorted(false);
     const auto srcSelectionView = srcSelection.view();
     const axom::IndexType nSrcZones = srcSelectionView.size();
@@ -596,8 +556,7 @@ public:
         const auto zi = srcSelectionView[index];
         srcBoundingBoxesView[index] = srcView.getBoundingBox(zi);
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
-        std::cout << "source zone " << zi
-                  << ": bbox=" << srcBoundingBoxesView[index] << std::endl;
+        std::cout << "source zone " << zi << ": bbox=" << srcBoundingBoxesView[index] << std::endl;
 #endif
       });
     AXOM_ANNOTATE_END("bbox");
@@ -607,9 +566,7 @@ public:
     AXOM_ANNOTATE_BEGIN("target");
     const auto targetView = m_targetView;
     const auto nTargetZones = targetView.numberOfZones();
-    SelectedZones<ExecSpace> targetSelection(nTargetZones,
-                                             n_options_copy,
-                                             TARGET_SELECTED_ZONES);
+    SelectedZones<ExecSpace> targetSelection(nTargetZones, n_options_copy, TARGET_SELECTED_ZONES);
     targetSelection.setSorted(false);
     const auto targetSelectionView = targetSelection.view();
     AXOM_ANNOTATE_END("target");
@@ -645,14 +602,11 @@ public:
     n_offsets.set_allocator(c2a.getConduitAllocatorID());
 
     n_volume_fractions.set(
-      conduit::DataType(bputils::cpp2conduit<MatFloatType>::id,
-                        numMaterialSlots * nTargetZones));
-    n_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id,
-                                         numMaterialSlots * nTargetZones));
-    n_sizes.set(
-      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
-    n_offsets.set(
-      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
+      conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, numMaterialSlots * nTargetZones));
+    n_material_ids.set(
+      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, numMaterialSlots * nTargetZones));
+    n_sizes.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
+    n_offsets.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, nTargetZones));
     // n_indices are allocated later
 
     // Wrap the output matset data in some array views.
@@ -678,30 +632,27 @@ public:
         const auto targetBBox = targetView.getBoundingBox(zi);
         const auto targetShape = targetView.getShape(zi);
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
-        std::cout << "-------------------------------\ntarget zone " << zi
-                  << ": " << targetShape << ", bbox=" << targetBBox << std::endl;
+        std::cout << "-------------------------------\ntarget zone " << zi << ": " << targetShape
+                  << ", bbox=" << targetBBox << std::endl;
 #endif
         // Get the area or volume of the target shape (depends on the dimension).
         double targetAmount =
-          ComputeShapeAmount<TargetCoordsetView::dimension()>::execute(
-            targetShape);
+          ComputeShapeAmount<TargetCoordsetView::dimension()>::execute(targetShape);
 
         // Handle intersection in-depth of the bounding boxes intersected.
-        auto handleIntersection = [&](std::int32_t currentNode,
-                                      const std::int32_t *leafNodes) {
+        auto handleIntersection = [&](std::int32_t currentNode, const std::int32_t *leafNodes) {
           const auto srcBboxIndex = leafNodes[currentNode];
           const auto srcZone = srcSelectionView[srcBboxIndex];
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
-          std::cout << "handleIntersection: targetZone=" << zi
-                    << ", srcZone=" << srcZone << std::endl;
+          std::cout << "handleIntersection: targetZone=" << zi << ", srcZone=" << srcZone
+                    << std::endl;
 #endif
           // Get the current zone as a primal shape.
           const auto srcShape = srcView.getShape(srcZone);
 
           // Determine the overlap of the src and target shapes.
           constexpr double eps = 1.e-6;
-          const double srcOverlapsTarget =
-            detail::shapeOverlap(srcShape, targetShape, eps);
+          const double srcOverlapsTarget = detail::shapeOverlap(srcShape, targetShape, eps);
 
           if(srcOverlapsTarget > 0.)
           {
@@ -720,8 +671,7 @@ public:
                       << "\t\ttargetShape=" << targetShape << std::endl
                       << "\t\tsrcShape=" << srcShape << std::endl
                       << "\t\tmat=" << mat << std::endl
-                      << "\t\tsrcOverlapsTarget=" << srcOverlapsTarget
-                      << std::endl
+                      << "\t\tsrcOverlapsTarget=" << srcOverlapsTarget << std::endl
                       << "\t\ttargetAmount=" << targetAmount << std::endl
                       << "\t\tvf=" << vf << std::endl;
 #endif
@@ -742,8 +692,8 @@ public:
               else if(matids[m] == MaterialEmpty)
               {
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
-                std::cout << "\t\tAdded new slot " << m << ", mat=" << mat
-                          << ", vf=" << vf << std::endl;
+                std::cout << "\t\tAdded new slot " << m << ", mat=" << mat << ", vf=" << vf
+                          << std::endl;
 #endif
                 matids[m] = mat;
                 vfs[m] = vf;
@@ -761,12 +711,11 @@ public:
         };
 
         // This predicate determines whether 2 bboxes intersect.
-        auto bbIsect = [](const SrcBoundingBox &queryBbox,
-                          const SrcBoundingBox &bvhBbox) -> bool {
+        auto bbIsect = [](const SrcBoundingBox &queryBbox, const SrcBoundingBox &bvhBbox) -> bool {
           bool rv = queryBbox.intersectsWith(bvhBbox);
 #if defined(AXOM_DEBUG_TOPOLOGY_MAPPER) && !defined(AXOM_DEVICE_CODE)
-          std::cout << "bbIsect: rv=" << rv << ", q=" << queryBbox
-                    << ", bvh=" << bvhBbox << std::endl;
+          std::cout << "bbIsect: rv=" << rv << ", q=" << queryBbox << ", bvh=" << bvhBbox
+                    << std::endl;
 #endif
           return rv;
         };
@@ -817,20 +766,16 @@ public:
     // All the contributions have been added to the target matset. Finish building it.
     AXOM_ANNOTATE_BEGIN("finish");
     axom::exclusive_scan<ExecSpace>(sizes, offsets);
-    n_indices.set(
-      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
+    n_indices.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
     auto indices = make_array_view<MatIntType>(n_indices);
 
     // The volume_fractions and material_ids arrays contain gaps that we can compress out.
     conduit::Node n_new_volume_fractions, n_new_material_ids;
     n_new_volume_fractions.set_allocator(c2a.getConduitAllocatorID());
     n_new_material_ids.set_allocator(c2a.getConduitAllocatorID());
-    n_new_volume_fractions.set(
-      conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, totalSize));
-    n_new_material_ids.set(
-      conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
-    auto new_volume_fractions =
-      make_array_view<MatFloatType>(n_new_volume_fractions);
+    n_new_volume_fractions.set(conduit::DataType(bputils::cpp2conduit<MatFloatType>::id, totalSize));
+    n_new_material_ids.set(conduit::DataType(bputils::cpp2conduit<MatIntType>::id, totalSize));
+    auto new_volume_fractions = make_array_view<MatFloatType>(n_new_volume_fractions);
     auto new_material_ids = make_array_view<MatIntType>(n_new_material_ids);
     axom::for_all<ExecSpace>(
       nTargetZones,

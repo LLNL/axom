@@ -38,8 +38,7 @@ coords:
     conduit::Node n_coordset;
     initialize(yaml, n_coordset);
 
-    auto coordsetView =
-      views::make_uniform_coordset<2>::view(n_coordset["coords"]);
+    auto coordsetView = views::make_uniform_coordset<2>::view(n_coordset["coords"]);
     using CoordsetView = decltype(coordsetView);
     bputils::CoordsetExtents<ExecSpace, CoordsetView> exts(coordsetView);
     double extents[4];
@@ -74,8 +73,7 @@ coords:
     conduit::Node n_coordset;
     initialize(yaml, n_coordset);
 
-    auto coordsetView =
-      views::make_uniform_coordset<3>::view(n_coordset["coords"]);
+    auto coordsetView = views::make_uniform_coordset<3>::view(n_coordset["coords"]);
     using CoordsetView = decltype(coordsetView);
     bputils::CoordsetExtents<ExecSpace, CoordsetView> exts(coordsetView);
     double extents[6];
@@ -103,8 +101,7 @@ coords:
     conduit::Node n_coordset;
     initialize(yaml, n_coordset);
 
-    auto coordsetView =
-      views::make_rectilinear_coordset<double, 2>::view(n_coordset["coords"]);
+    auto coordsetView = views::make_rectilinear_coordset<double, 2>::view(n_coordset["coords"]);
     using CoordsetView = decltype(coordsetView);
     bputils::CoordsetExtents<ExecSpace, CoordsetView> exts(coordsetView);
     double extents[4];
@@ -131,8 +128,7 @@ coords:
     conduit::Node n_coordset;
     initialize(yaml, n_coordset);
 
-    auto coordsetView =
-      views::make_rectilinear_coordset<double, 3>::view(n_coordset["coords"]);
+    auto coordsetView = views::make_rectilinear_coordset<double, 3>::view(n_coordset["coords"]);
     using CoordsetView = decltype(coordsetView);
     bputils::CoordsetExtents<ExecSpace, CoordsetView> exts(coordsetView);
     double extents[6];
@@ -160,8 +156,7 @@ coords:
     conduit::Node n_coordset;
     initialize(yaml, n_coordset);
 
-    auto coordsetView =
-      views::make_explicit_coordset<double, 2>::view(n_coordset["coords"]);
+    auto coordsetView = views::make_explicit_coordset<double, 2>::view(n_coordset["coords"]);
     using CoordsetView = decltype(coordsetView);
     bputils::CoordsetExtents<ExecSpace, CoordsetView> exts(coordsetView);
     double extents[4];
@@ -188,8 +183,7 @@ coords:
     conduit::Node n_coordset;
     initialize(yaml, n_coordset);
 
-    auto coordsetView =
-      views::make_explicit_coordset<double, 3>::view(n_coordset["coords"]);
+    auto coordsetView = views::make_explicit_coordset<double, 3>::view(n_coordset["coords"]);
     using CoordsetView = decltype(coordsetView);
     bputils::CoordsetExtents<ExecSpace, CoordsetView> exts(coordsetView);
     double extents[6];
@@ -385,8 +379,7 @@ void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int
 {
   std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
   // This is on purpose.
-  while(1)
-    ;
+  while(1);
 }
 
 //------------------------------------------------------------------------------
@@ -416,8 +409,7 @@ int main(int argc, char *argv[])
     app.parse(argc, argv);
 
 #if defined(AXOM_USE_CALIPER)
-    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-      annotationMode);
+    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
 #endif
 
     axom::slic::SimpleLogger logger;  // create & initialize test logger,

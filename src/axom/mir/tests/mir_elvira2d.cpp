@@ -24,9 +24,7 @@ MIRTestApplication TestApp;
 template <typename ExecSpace>
 struct braid2d_mat_test
 {
-  static void initialize(const std::string &type,
-                         const std::string &mattype,
-                         conduit::Node &n_mesh)
+  static void initialize(const std::string &type, const std::string &mattype, conduit::Node &n_mesh)
   {
     axom::StackArray<axom::IndexType, 2> dims {10, 10};
     axom::StackArray<axom::IndexType, 2> zoneDims {dims[0] - 1, dims[1] - 1};
@@ -37,8 +35,7 @@ struct braid2d_mat_test
   // Select a chunk of clean and mixed zones.
   static void selectZones(conduit::Node &n_options)
   {
-    n_options["selectedZones"].set(
-      std::vector<axom::IndexType> {30, 31, 32, 39, 40, 41, 48, 49, 50});
+    n_options["selectedZones"].set(std::vector<axom::IndexType> {30, 31, 32, 39, 40, 41, 48, 49, 50});
   }
 
   static void test(const std::string &type,
@@ -56,10 +53,9 @@ struct braid2d_mat_test
 
     // _elvira_mir_start
     // Make views.
-    auto coordsetView = axom::mir::views::make_uniform_coordset<2>::view(
-      deviceMesh["coordsets/coords"]);
-    auto topologyView =
-      axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
+    auto coordsetView =
+      axom::mir::views::make_uniform_coordset<2>::view(deviceMesh["coordsets/coords"]);
+    auto topologyView = axom::mir::views::make_uniform<2>::view(deviceMesh["topologies/mesh"]);
     using CoordsetView = decltype(coordsetView);
     using TopologyView = decltype(topologyView);
     using IndexingPolicy = typename TopologyView::IndexingPolicy;
@@ -68,12 +64,10 @@ struct braid2d_mat_test
     if(mattype == "unibuffer")
     {
       auto matsetView =
-        axom::mir::views::make_unibuffer_matset<int, float, 3>::view(
-          deviceMesh["matsets/mat"]);
+        axom::mir::views::make_unibuffer_matset<int, float, 3>::view(deviceMesh["matsets/mat"]);
       using MatsetView = decltype(matsetView);
 
-      using MIR =
-        axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
+      using MIR = axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
       MIR m(topologyView, coordsetView, matsetView);
       conduit::Node options;
       options["matset"] = "mat";
@@ -101,38 +95,28 @@ struct braid2d_mat_test
 TEST(mir_elvira, elvira_uniform_unibuffer_seq)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_seq");
-  braid2d_mat_test<seq_exec>::test("uniform",
-                                   "unibuffer",
-                                   "elvira_uniform_unibuffer");
+  braid2d_mat_test<seq_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer");
 }
 
 TEST(mir_elvira, elvira_uniform_unibuffer_sel_seq)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_seq");
   constexpr bool selectZones = true;
-  braid2d_mat_test<seq_exec>::test("uniform",
-                                   "unibuffer",
-                                   "elvira_uniform_unibuffer_sel",
-                                   selectZones);
+  braid2d_mat_test<seq_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer_sel", selectZones);
 }
 
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_elvira, elvira_uniform_unibuffer_omp)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_omp");
-  braid2d_mat_test<omp_exec>::test("uniform",
-                                   "unibuffer",
-                                   "elvira_uniform_unibuffer");
+  braid2d_mat_test<omp_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer");
 }
 
 TEST(mir_elvira, elvira_uniform_unibuffer_sel_omp)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_omp");
   constexpr bool selectZones = true;
-  braid2d_mat_test<omp_exec>::test("uniform",
-                                   "unibuffer",
-                                   "elvira_uniform_unibuffer_sel",
-                                   selectZones);
+  braid2d_mat_test<omp_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer_sel", selectZones);
 }
 #endif
 
@@ -140,19 +124,14 @@ TEST(mir_elvira, elvira_uniform_unibuffer_sel_omp)
 TEST(mir_elvira, elvira_uniform_unibuffer_cuda)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_cuda");
-  braid2d_mat_test<cuda_exec>::test("uniform",
-                                    "unibuffer",
-                                    "elvira_uniform_unibuffer");
+  braid2d_mat_test<cuda_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer");
 }
 
 TEST(mir_elvira, elvira_uniform_unibuffer_sel_cuda)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_cuda");
   constexpr bool selectZones = true;
-  braid2d_mat_test<cuda_exec>::test("uniform",
-                                    "unibuffer",
-                                    "elvira_uniform_unibuffer_sel",
-                                    selectZones);
+  braid2d_mat_test<cuda_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer_sel", selectZones);
 }
 #endif
 
@@ -160,19 +139,14 @@ TEST(mir_elvira, elvira_uniform_unibuffer_sel_cuda)
 TEST(mir_elvira, elvira_uniform_unibuffer_hip)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_hip");
-  braid2d_mat_test<hip_exec>::test("uniform",
-                                   "unibuffer",
-                                   "elvira_uniform_unibuffer");
+  braid2d_mat_test<hip_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer");
 }
 
 TEST(mir_elvira, elvira_uniform_unibuffer_sel_hip)
 {
   AXOM_ANNOTATE_SCOPE("elvira_uniform_unibuffer_sel_hip");
   constexpr bool selectZones = true;
-  braid2d_mat_test<hip_exec>::test("uniform",
-                                   "unibuffer",
-                                   "elvira_uniform_unibuffer_sel",
-                                   selectZones);
+  braid2d_mat_test<hip_exec>::test("uniform", "unibuffer", "elvira_uniform_unibuffer_sel", selectZones);
 }
 #endif
 

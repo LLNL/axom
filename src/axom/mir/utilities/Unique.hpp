@@ -105,8 +105,7 @@ struct Unique
                       axom::Array<axom::IndexType> &sindices)
   {
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     // Make a copy of the keys and make original indices.
@@ -140,8 +139,7 @@ struct Unique
     axom::for_all<ExecSpace>(
       n,
       AXOM_LAMBDA(axom::IndexType i) {
-        const axom::IndexType m =
-          (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
+        const axom::IndexType m = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
         mask_view[i] = m;
         mask_sum += m;
       });

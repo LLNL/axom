@@ -44,8 +44,7 @@ int MIRApplication::initialize(int argc, char **argv)
   app.add_option("--gridsize", gridSize)
     ->check(axom::CLI::PositiveNumber)
     ->description("The number of zones along an axis.");
-  app.add_option("--method", method)
-    ->description("The MIR method name (equiz, elvira)");
+  app.add_option("--method", method)->description("The MIR method name (equiz, elvira)");
   app.add_option("--numcircles", numCircles)
     ->check(axom::CLI::PositiveNumber)
     ->description("The number of circles to use for material creation.");
@@ -54,8 +53,7 @@ int MIRApplication::initialize(int argc, char **argv)
   app.add_option("--dimension", dimension, "Specify the dimension (2 or 3)")
     ->check(axom::CLI::Range(2, 3));  // Restrict the value to the range [2, 3]
   bool disable_write = !writeFiles;
-  app.add_flag("--disable-write", disable_write)
-    ->description("Disable writing data files");
+  app.add_flag("--disable-write", disable_write)->description("Disable writing data files");
 
 #if defined(AXOM_USE_CALIPER)
   app.add_option("--caliper", annotationMode)
@@ -82,8 +80,7 @@ int MIRApplication::initialize(int argc, char **argv)
 #endif
   app.add_option("-p, --policy", policy, pol_sstr.str())
     ->capture_default_str()
-    ->transform(
-      axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
+    ->transform(axom::CLI::CheckedTransformer(axom::runtime_policy::s_nameToPolicy));
 
   // Parse command line options.
   int retval = 0;
@@ -116,8 +113,7 @@ int MIRApplication::execute()
     conduit::utils::set_error_handler(conduit_debug_err_handler);
   }
 #if defined(AXOM_USE_CALIPER)
-  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-    annotationMode);
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
 #endif
   int retval = 0;
   try
@@ -213,8 +209,7 @@ int MIRApplication::runMIR()
     SLIC_ERROR("Unhandled policy.");
   }
   timer.stop();
-  SLIC_INFO("Material interface reconstruction time: "
-            << timer.elapsedTimeInMilliSec() << " ms.");
+  SLIC_INFO("Material interface reconstruction time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
   // Output results
   if(writeFiles)
@@ -241,13 +236,9 @@ void MIRApplication::saveMesh(const conduit::Node &n_mesh, const std::string &pa
 }
 
 //--------------------------------------------------------------------------------
-void MIRApplication::conduit_debug_err_handler(const std::string &s1,
-                                               const std::string &s2,
-                                               int i1)
+void MIRApplication::conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
 {
-  SLIC_ERROR(
-    axom::fmt::format("Error from Conduit: s1={}, s2={}, i1={}", s1, s2, i1));
+  SLIC_ERROR(axom::fmt::format("Error from Conduit: s1={}, s2={}, i1={}", s1, s2, i1));
   // This is on purpose.
-  while(1)
-    ;
+  while(1);
 }

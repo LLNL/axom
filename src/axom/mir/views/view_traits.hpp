@@ -45,10 +45,7 @@ template <typename TopologyView>
 struct view_traits
 {
   static constexpr bool supports_strided_structured() { return false; }
-  static constexpr int selected_shapes()
-  {
-    return shapes_for_dimension(TopologyView::dimension());
-  }
+  static constexpr int selected_shapes() { return shapes_for_dimension(TopologyView::dimension()); }
 };
 
 /// If StructuredTopologyView was instantiated with StridedStructuredIndexing
@@ -86,24 +83,18 @@ struct array_view_traits
  *        ArrayView<> names. This can be helpful when the ArrayView comes into
  *        a lambda as an auto argument.
  */
-#define AXOM_MAKE_TRAIT(TYPE)                           \
-  template <>                                           \
-  struct array_view_traits<axom::ArrayView<TYPE>>       \
-  {                                                     \
-    using value_type = TYPE;                            \
-    static constexpr const char* name()                 \
-    {                                                   \
-      return "axom::ArrayView<" #TYPE ">";              \
-    }                                                   \
-  };                                                    \
-  template <>                                           \
-  struct array_view_traits<axom::ArrayView<const TYPE>> \
-  {                                                     \
-    using value_type = const TYPE;                      \
-    static constexpr const char* name()                 \
-    {                                                   \
-      return "axom::ArrayView<const " #TYPE ">";        \
-    }                                                   \
+#define AXOM_MAKE_TRAIT(TYPE)                                                          \
+  template <>                                                                          \
+  struct array_view_traits<axom::ArrayView<TYPE>>                                      \
+  {                                                                                    \
+    using value_type = TYPE;                                                           \
+    static constexpr const char* name() { return "axom::ArrayView<" #TYPE ">"; }       \
+  };                                                                                   \
+  template <>                                                                          \
+  struct array_view_traits<axom::ArrayView<const TYPE>>                                \
+  {                                                                                    \
+    using value_type = const TYPE;                                                     \
+    static constexpr const char* name() { return "axom::ArrayView<const " #TYPE ">"; } \
   };
 
 AXOM_MAKE_TRAIT(std::uint8_t)

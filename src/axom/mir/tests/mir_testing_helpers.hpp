@@ -100,10 +100,7 @@ void psplit(const std::string &filepath, std::string &path, std::string &filenam
 
 std::string dataDirectory() { return AXOM_DATA_DIR; }
 
-std::string testData(const std::string &filename)
-{
-  return pjoin(dataDirectory(), filename);
-}
+std::string testData(const std::string &filename) { return pjoin(dataDirectory(), filename); }
 
 std::string baselineDirectory();
 
@@ -134,10 +131,7 @@ void printNode(const conduit::Node &n)
 template <typename T>
 struct compareValue
 {
-  static inline bool compare(T v1, T v2, T AXOM_UNUSED_PARAM(tolerance))
-  {
-    return v1 == v2;
-  }
+  static inline bool compare(T v1, T v2, T AXOM_UNUSED_PARAM(tolerance)) { return v1 == v2; }
 };
 
 template <>
@@ -184,18 +178,14 @@ bool compareArray(const conduit::Node &n1,
     int errorCount = 0;
     for(int i = 0; i < a1.number_of_elements(); i++)
     {
-      const T diff =
-        axom::utilities::max(a1[i], a2[i]) - axom::utilities::min(a1[i], a2[i]);
+      const T diff = axom::utilities::max(a1[i], a2[i]) - axom::utilities::min(a1[i], a2[i]);
       maxdiff = std::max(diff, maxdiff);
       if(!compareValue<T>::compare(a1[i], a2[i], tolerance))
       {
         if(errorCount < errorLimit)
         {
           errors.append().set(
-            axom::fmt::format("Difference at index {}. ({} != {})",
-                              i,
-                              a1[i],
-                              a2[i]));
+            axom::fmt::format("Difference at index {}. ({} != {})", i, a1[i], a2[i]));
         }
         errorCount++;
         if(errorCount == errorLimit + 1)
@@ -230,10 +220,7 @@ bool compareScalar(const conduit::Node &n1,
   return same;
 }
 
-bool compareNode(const conduit::Node &n1,
-                 const conduit::Node &n2,
-                 double tolerance,
-                 conduit::Node &info)
+bool compareNode(const conduit::Node &n1, const conduit::Node &n2, double tolerance, conduit::Node &info)
 {
   bool same = false;
   // String
@@ -246,8 +233,7 @@ bool compareNode(const conduit::Node &n1,
         axom::fmt::format("\"{}\" != \"{}\"", n1.as_string(), n2.as_string()));
     }
   }
-  else if(n1.dtype().number_of_elements() > 1 ||
-          n2.dtype().number_of_elements() > 1)
+  else if(n1.dtype().number_of_elements() > 1 || n2.dtype().number_of_elements() > 1)
   {
     // Array comparison.
     if(n1.dtype().id() == n1.dtype().id())
@@ -255,77 +241,52 @@ bool compareNode(const conduit::Node &n1,
       // Types are equal
       if(n1.dtype().is_int8())
       {
-        same = compareArray<conduit::int8>(n1,
-                                           n2,
-                                           n1.as_int8_accessor(),
-                                           n2.as_int8_accessor(),
-                                           info);
+        same =
+          compareArray<conduit::int8>(n1, n2, n1.as_int8_accessor(), n2.as_int8_accessor(), info);
       }
       else if(n1.dtype().is_int16())
       {
-        same = compareArray<conduit::int16>(n1,
-                                            n2,
-                                            n1.as_int16_accessor(),
-                                            n2.as_int16_accessor(),
-                                            info);
+        same =
+          compareArray<conduit::int16>(n1, n2, n1.as_int16_accessor(), n2.as_int16_accessor(), info);
       }
       else if(n1.dtype().is_int32())
       {
-        same = compareArray<conduit::int32>(n1,
-                                            n2,
-                                            n1.as_int32_accessor(),
-                                            n2.as_int32_accessor(),
-                                            info);
+        same =
+          compareArray<conduit::int32>(n1, n2, n1.as_int32_accessor(), n2.as_int32_accessor(), info);
       }
       else if(n1.dtype().is_int64())
       {
-        same = compareArray<conduit::int64>(n1,
-                                            n2,
-                                            n1.as_int64_accessor(),
-                                            n2.as_int64_accessor(),
-                                            info);
+        same =
+          compareArray<conduit::int64>(n1, n2, n1.as_int64_accessor(), n2.as_int64_accessor(), info);
       }
       else if(n1.dtype().is_uint8())
       {
-        same = compareArray<conduit::uint8>(n1,
-                                            n2,
-                                            n1.as_uint8_accessor(),
-                                            n2.as_uint8_accessor(),
-                                            info);
+        same =
+          compareArray<conduit::uint8>(n1, n2, n1.as_uint8_accessor(), n2.as_uint8_accessor(), info);
       }
       else if(n1.dtype().is_uint16())
       {
-        same = compareArray<conduit::uint16>(n1,
-                                             n2,
-                                             n1.as_uint16_accessor(),
-                                             n2.as_uint16_accessor(),
-                                             info);
+        same =
+          compareArray<conduit::uint16>(n1, n2, n1.as_uint16_accessor(), n2.as_uint16_accessor(), info);
       }
       else if(n1.dtype().is_uint32())
       {
-        same = compareArray<conduit::uint32>(n1,
-                                             n2,
-                                             n1.as_uint32_accessor(),
-                                             n2.as_uint32_accessor(),
-                                             info);
+        same =
+          compareArray<conduit::uint32>(n1, n2, n1.as_uint32_accessor(), n2.as_uint32_accessor(), info);
       }
       else if(n1.dtype().is_uint64())
       {
-        same = compareArray<conduit::uint64>(n1,
-                                             n2,
-                                             n1.as_uint64_accessor(),
-                                             n2.as_uint64_accessor(),
-                                             info);
+        same =
+          compareArray<conduit::uint64>(n1, n2, n1.as_uint64_accessor(), n2.as_uint64_accessor(), info);
       }
       else if(n1.dtype().is_float32())
       {
-        same = compareArray<conduit::float32>(
-          n1,
-          n2,
-          n1.as_float32_accessor(),
-          n2.as_float32_accessor(),
-          info,
-          static_cast<conduit::float32>(tolerance));
+        same = compareArray<conduit::float32>(n1,
+                                              n2,
+                                              n1.as_float32_accessor(),
+                                              n2.as_float32_accessor(),
+                                              info,
+                                              static_cast<conduit::float32>(tolerance));
       }
       else if(n1.dtype().is_float64())
       {
@@ -354,11 +315,8 @@ bool compareNode(const conduit::Node &n1,
     }
     else
     {
-      same = compareArray<conduit::index_t>(n1,
-                                            n2,
-                                            n1.as_index_t_accessor(),
-                                            n2.as_index_t_accessor(),
-                                            info);
+      same =
+        compareArray<conduit::index_t>(n1, n2, n1.as_index_t_accessor(), n2.as_index_t_accessor(), info);
     }
   }
   else
@@ -366,69 +324,54 @@ bool compareNode(const conduit::Node &n1,
     // Scalars.
     if(n1.dtype().is_int8())
     {
-      same =
-        compareScalar<conduit::int8>(n1, n2, n1.to_int8(), n2.to_int8(), info);
+      same = compareScalar<conduit::int8>(n1, n2, n1.to_int8(), n2.to_int8(), info);
     }
     else if(n1.dtype().is_int16())
     {
-      same =
-        compareScalar<conduit::int16>(n1, n2, n1.to_int16(), n2.to_int16(), info);
+      same = compareScalar<conduit::int16>(n1, n2, n1.to_int16(), n2.to_int16(), info);
     }
     else if(n1.dtype().is_int32())
     {
-      same =
-        compareScalar<conduit::int32>(n1, n2, n1.to_int32(), n2.to_int32(), info);
+      same = compareScalar<conduit::int32>(n1, n2, n1.to_int32(), n2.to_int32(), info);
     }
     else if(n1.dtype().is_int64())
     {
-      same =
-        compareScalar<conduit::int64>(n1, n2, n1.to_int64(), n2.to_int64(), info);
+      same = compareScalar<conduit::int64>(n1, n2, n1.to_int64(), n2.to_int64(), info);
     }
     else if(n1.dtype().is_uint8())
     {
-      same =
-        compareScalar<conduit::uint8>(n1, n2, n1.to_uint8(), n2.to_uint8(), info);
+      same = compareScalar<conduit::uint8>(n1, n2, n1.to_uint8(), n2.to_uint8(), info);
     }
     else if(n1.dtype().is_uint16())
     {
-      same =
-        compareScalar<conduit::uint16>(n1, n2, n1.to_uint16(), n2.to_uint16(), info);
+      same = compareScalar<conduit::uint16>(n1, n2, n1.to_uint16(), n2.to_uint16(), info);
     }
     else if(n1.dtype().is_uint32())
     {
-      same =
-        compareScalar<conduit::uint32>(n1, n2, n1.to_uint32(), n2.to_uint32(), info);
+      same = compareScalar<conduit::uint32>(n1, n2, n1.to_uint32(), n2.to_uint32(), info);
     }
     else if(n1.dtype().is_uint64())
     {
-      same =
-        compareScalar<conduit::uint64>(n1, n2, n1.to_uint64(), n2.to_uint64(), info);
+      same = compareScalar<conduit::uint64>(n1, n2, n1.to_uint64(), n2.to_uint64(), info);
     }
     else if(n1.dtype().is_float32())
     {
-      same = compareScalar<conduit::float32>(
-        n1,
-        n2,
-        n1.to_float32(),
-        n2.to_float32(),
-        info,
-        static_cast<conduit::float32>(tolerance));
+      same = compareScalar<conduit::float32>(n1,
+                                             n2,
+                                             n1.to_float32(),
+                                             n2.to_float32(),
+                                             info,
+                                             static_cast<conduit::float32>(tolerance));
     }
     else if(n1.dtype().is_float64())
     {
-      same = compareScalar<conduit::float64>(n1,
-                                             n2,
-                                             n1.to_float64(),
-                                             n2.to_float64(),
-                                             info,
-                                             tolerance);
+      same =
+        compareScalar<conduit::float64>(n1, n2, n1.to_float64(), n2.to_float64(), info, tolerance);
     }
     else
     {
       info[n1.path()]["errors"].set(
-        axom::fmt::format("Error comparing \"{}\" and \"{}\"",
-                          n1.dtype().name(),
-                          n2.dtype().name()));
+        axom::fmt::format("Error comparing \"{}\" and \"{}\"", n1.dtype().name(), n2.dtype().name()));
       same = false;
     }
   }
@@ -556,9 +499,7 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
 #if defined(AXOM_USE_HDF5)
           conduit::relay::io::blueprint::save_mesh(current, errFile, "hdf5");
 #endif
-          conduit::relay::io::blueprint::save_mesh(current,
-                                                   errFile + "_yaml",
-                                                   "yaml");
+          conduit::relay::io::blueprint::save_mesh(current, errFile + "_yaml", "yaml");
         }
         // We found a baseline so we can exit
         break;
@@ -566,15 +507,11 @@ bool compareBaseline(const std::vector<std::string> &baselinePaths,
     }
     catch(conduit::Error &e)
     {
-      SLIC_INFO(axom::fmt::format("Could not load {} from {}! {}",
-                                  baselineName,
-                                  path,
-                                  e.message()));
+      SLIC_INFO(axom::fmt::format("Could not load {} from {}! {}", baselineName, path, e.message()));
     }
     catch(...)
     {
-      SLIC_INFO(
-        axom::fmt::format("Could not load {} from {}!", baselineName, path));
+      SLIC_INFO(axom::fmt::format("Could not load {} from {}!", baselineName, path));
     }
   }
   if(!success && count == 0)
@@ -595,9 +532,7 @@ bool compare_views(const Container1 &a, const Container2 &b)
   }
   if(!eq)
   {
-    axom::fmt::format("a={{{}}}\nb={{{}}}",
-                      axom::fmt::join(a, ","),
-                      axom::fmt::join(b, ","));
+    axom::fmt::format("a={{{}}}\nb={{{}}}", axom::fmt::join(a, ","), axom::fmt::join(b, ","));
   }
   return eq;
 }
@@ -643,8 +578,7 @@ public:
 
       // More initialization.
 #if defined(AXOM_USE_CALIPER)
-      axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-        m_annotationMode);
+      axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(m_annotationMode);
 #endif
       axom::slic::SimpleLogger logger;
       if(m_handler)
@@ -697,9 +631,7 @@ public:
    * \return true on success; false if the test did not pass.
    */
   template <typename ExecSpace = axom::SEQ_EXEC>
-  bool test(const std::string &name,
-            const conduit::Node &currentMesh,
-            double tolerance = 2.6e-6)
+  bool test(const std::string &name, const conduit::Node &currentMesh, double tolerance = 2.6e-6)
   {
     AXOM_ANNOTATE_SCOPE("test");
     bool retval = true;
@@ -707,9 +639,8 @@ public:
     const auto paths = baselinePaths<ExecSpace>();
     if(rebaseline(name))
     {
-      SLIC_INFO(axom::fmt::format("Saving new baseline for {} {}.",
-                                  name,
-                                  execution_name<ExecSpace>::name()));
+      SLIC_INFO(
+        axom::fmt::format("Saving new baseline for {} {}.", name, execution_name<ExecSpace>::name()));
       saveBaseline(paths, baselineName, currentMesh);
     }
     else
@@ -738,12 +669,11 @@ protected:
     m_app.add_flag("--visualize", m_visualize, "Save visualization files.");
     MIRTestApplication *This = this;
     m_app
-      .add_option(
-        "--rebaseline",
-        m_rebaseline,
-        "List of comma-separated test "
-        "names, or no arguments if we want to rebaseline all tests. If not "
-        "provided, no rebaselining is done.")
+      .add_option("--rebaseline",
+                  m_rebaseline,
+                  "List of comma-separated test "
+                  "names, or no arguments if we want to rebaseline all tests. If not "
+                  "provided, no rebaselining is done.")
       ->expected(0, 1)  // Accept either no arguments or one argument
       ->each([=](const std::string &input) {
         // If an argument is provided, split it into a vector
@@ -774,21 +704,17 @@ protected:
     else
     {
       // Rebaseline if name is in m_rebaseline.
-      retval = std::find(m_rebaseline.begin(), m_rebaseline.end(), name) !=
-        m_rebaseline.end();
+      retval = std::find(m_rebaseline.begin(), m_rebaseline.end(), name) != m_rebaseline.end();
     }
     return retval;
   }
 
   /// Conduit error handler that blocks (helpful for getting a stack in a debugger)
-  static void conduit_debug_err_handler(const std::string &s1,
-                                        const std::string &s2,
-                                        int i1)
+  static void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1)
   {
     std::cout << "s1=" << s1 << ", s2=" << s2 << ", i1=" << i1 << std::endl;
     // This is on purpose.
-    while(1)
-      ;
+    while(1);
   }
 
   axom::CLI::App m_app;

@@ -78,10 +78,8 @@ struct test_Elvira3D
     TestApp.saveVisualization(name + "_orig", hostMesh);
 
     //--------------------------------------------------------------------------
-    const conduit::Node &n_coordset =
-      deviceMesh.fetch_existing("coordsets/coords");
-    const conduit::Node &n_topology =
-      deviceMesh.fetch_existing("topologies/mesh");
+    const conduit::Node &n_coordset = deviceMesh.fetch_existing("coordsets/coords");
+    const conduit::Node &n_topology = deviceMesh.fetch_existing("topologies/mesh");
     const conduit::Node &n_matset = deviceMesh.fetch_existing("matsets/mat");
 
     // Make views.
@@ -96,8 +94,7 @@ struct test_Elvira3D
     using MatsetView = decltype(matsetView);
 
     // Do MIR
-    using MIR =
-      axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
+    using MIR = axom::mir::ElviraAlgorithm<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>;
     MIR m(topologyView, coordsetView, matsetView);
     conduit::Node deviceMIRMesh;
     conduit::Node options;
@@ -114,42 +111,32 @@ struct test_Elvira3D
     //--------------------------------------------------------------------------
     // Compute volumes for original mesh as a field.
     AXOM_ANNOTATE_BEGIN("volume");
-    bputils::MakeZoneVolumes<ExecSpace, TopologyView, CoordsetView> origZV(
-      topologyView,
-      coordsetView);
+    bputils::MakeZoneVolumes<ExecSpace, TopologyView, CoordsetView> origZV(topologyView,
+                                                                           coordsetView);
     origZV.execute(n_topology, n_coordset, deviceMesh["fields/volume"]);
 
     //--------------------------------------------------------------------------
     // Compute volumes for MIR mesh as a field.
     conduit::Node &n_mir_coordset = deviceMIRMesh["coordsets/coords"];
-    auto mirCoordsetView =
-      views::make_explicit_coordset<float, 3>::view(n_mir_coordset);
+    auto mirCoordsetView = views::make_explicit_coordset<float, 3>::view(n_mir_coordset);
     using MirCoordsetView = decltype(mirCoordsetView);
 
     // Make polyhedral topology view.
-    using MirTopologyView =
-      views::UnstructuredTopologyPolyhedralView<axom::IndexType>;
+    using MirTopologyView = views::UnstructuredTopologyPolyhedralView<axom::IndexType>;
     const conduit::Node &n_mir_topology = deviceMIRMesh["topologies/mesh"];
-    MirTopologyView mirTopoView(bputils::make_array_view<axom::IndexType>(
-                                  n_mir_topology["subelements/connectivity"]),
-                                bputils::make_array_view<axom::IndexType>(
-                                  n_mir_topology["subelements/sizes"]),
-                                bputils::make_array_view<axom::IndexType>(
-                                  n_mir_topology["subelements/offsets"]),
-                                bputils::make_array_view<axom::IndexType>(
-                                  n_mir_topology["elements/connectivity"]),
-                                bputils::make_array_view<axom::IndexType>(
-                                  n_mir_topology["elements/sizes"]),
-                                bputils::make_array_view<axom::IndexType>(
-                                  n_mir_topology["elements/offsets"]));
+    MirTopologyView mirTopoView(
+      bputils::make_array_view<axom::IndexType>(n_mir_topology["subelements/connectivity"]),
+      bputils::make_array_view<axom::IndexType>(n_mir_topology["subelements/sizes"]),
+      bputils::make_array_view<axom::IndexType>(n_mir_topology["subelements/offsets"]),
+      bputils::make_array_view<axom::IndexType>(n_mir_topology["elements/connectivity"]),
+      bputils::make_array_view<axom::IndexType>(n_mir_topology["elements/sizes"]),
+      bputils::make_array_view<axom::IndexType>(n_mir_topology["elements/offsets"]));
 
     const conduit::Node &n_mir_matset = deviceMIRMesh["matsets/mat"];
-    auto mirMatsetView =
-      views::make_unibuffer_matset<int, float, 3>::view(n_mir_matset);
+    auto mirMatsetView = views::make_unibuffer_matset<int, float, 3>::view(n_mir_matset);
 
-    bputils::MakeZoneVolumes<ExecSpace, MirTopologyView, MirCoordsetView> mirZV(
-      mirTopoView,
-      mirCoordsetView);
+    bputils::MakeZoneVolumes<ExecSpace, MirTopologyView, MirCoordsetView> mirZV(mirTopoView,
+                                                                                mirCoordsetView);
     mirZV.execute(n_mir_topology, n_mir_coordset, deviceMIRMesh["fields/volume"]);
     AXOM_ANNOTATE_END("volume");
 
@@ -176,49 +163,37 @@ struct test_Elvira3D
     // Compute the total volumes on the original and MIR meshes.
     constexpr double tolerance = 3.e-5;
 
-    const auto orig_volume =
-      bputils::make_array_view<double>(deviceMesh["fields/volume/values"]);
+    const auto orig_volume = bputils::make_array_view<double>(deviceMesh["fields/volume/values"]);
     EXPECT_NEAR(expectedVolume, variableSum(orig_volume), tolerance);
     const auto origMatInfo = views::materials(n_matset);
-    const auto origTotalVolumes =
-      sumMaterialVolumes(matsetView, orig_volume, origMatInfo);
+    const auto origTotalVolumes = sumMaterialVolumes(matsetView, orig_volume, origMatInfo);
 
-    const auto mir_volume =
-      bputils::make_array_view<double>(deviceMIRMesh["fields/volume/values"]);
+    const auto mir_volume = bputils::make_array_view<double>(deviceMIRMesh["fields/volume/values"]);
     EXPECT_NEAR(mirExpectedVolume, variableSum(mir_volume), tolerance);
     const auto mirMatInfo = views::materials(n_mir_matset);
-    const auto mirTotalVolumes =
-      sumMaterialVolumes(mirMatsetView, mir_volume, mirMatInfo);
+    const auto mirTotalVolumes = sumMaterialVolumes(mirMatsetView, mir_volume, mirMatInfo);
 
     //--------------------------------------------------------------------------
     // comparisons
     EXPECT_EQ(origTotalVolumes.size(), mirTotalVolumes.size());
     // Expected values for the total volumes when we use selected zones.
-    const double selectedZonesTotalVolume[] = {35.73998360180606,
-                                               292.443992377414,
-                                               455.8160238981947};
+    const double selectedZonesTotalVolume[] = {35.73998360180606, 292.443992377414, 455.8160238981947};
     double volumeSums[2] = {0., 0.};
     for(size_t i = 0; i < origTotalVolumes.size(); i++)
     {
-      const double origTotalVol =
-        selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
+      const double origTotalVol = selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
 
-      SLIC_INFO(axom::fmt::format("Material {}: origVF = {}, mirVF = {}",
-                                  i,
-                                  origTotalVol,
-                                  mirTotalVolumes[i]));
+      SLIC_INFO(
+        axom::fmt::format("Material {}: origVF = {}, mirVF = {}", i, origTotalVol, mirTotalVolumes[i]));
 
       volumeSums[0] += origTotalVol;
       volumeSums[1] += mirTotalVolumes[i];
     }
-    EXPECT_NEAR(volumeSums[0],
-                selectedZones ? mirExpectedVolume : expectedVolume,
-                tolerance);
+    EXPECT_NEAR(volumeSums[0], selectedZones ? mirExpectedVolume : expectedVolume, tolerance);
     EXPECT_NEAR(volumeSums[1], mirExpectedVolume, tolerance);
     for(size_t i = 0; i < origTotalVolumes.size(); i++)
     {
-      const double origTotalVol =
-        selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
+      const double origTotalVol = selectedZones ? selectedZonesTotalVolume[i] : origTotalVolumes[i];
 
       EXPECT_NEAR(origTotalVol, mirTotalVolumes[i], tolerance);
     }
@@ -233,12 +208,9 @@ struct test_Elvira3D
    */
   static double variableSum(axom::ArrayView<double> var)
   {
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     RAJA::ReduceSum<reduce_policy, double> reduceVar(0.);
-    axom::for_all<ExecSpace>(
-      var.size(),
-      AXOM_LAMBDA(axom::IndexType i) { reduceVar += var[i]; });
+    axom::for_all<ExecSpace>(var.size(), AXOM_LAMBDA(axom::IndexType i) { reduceVar += var[i]; });
     return reduceVar.get();
   }
 
@@ -252,13 +224,11 @@ struct test_Elvira3D
    * \return A vector of volumes on the host, 1 element per material.
    */
   template <typename MatsetView>
-  static std::vector<double> sumMaterialVolumes(
-    MatsetView matsetView,
-    axom::ArrayView<double> zoneVolumes,
-    const axom::mir::views::MaterialInformation &matInfo)
+  static std::vector<double> sumMaterialVolumes(MatsetView matsetView,
+                                                axom::ArrayView<double> zoneVolumes,
+                                                const axom::mir::views::MaterialInformation &matInfo)
   {
-    using atomic_policy =
-      typename axom::execution_space<ExecSpace>::atomic_policy;
+    using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     AXOM_ANNOTATE_SCOPE("sumMaterialVolumes");
 
@@ -270,8 +240,7 @@ struct test_Elvira3D
     {
       sortedIdsHost[mi++] = mat.number;
     }
-    axom::utilities::Sorting<int>::sort(sortedIdsHost.data(),
-                                        sortedIdsHost.size());
+    axom::utilities::Sorting<int>::sort(sortedIdsHost.data(), sortedIdsHost.size());
     axom::Array<int> sortedIds(nmats, nmats, allocatorID);
     axom::copy(sortedIds.data(), sortedIdsHost.data(), nmats * sizeof(int));
     auto sortedIdsView = sortedIds.view();
@@ -279,9 +248,7 @@ struct test_Elvira3D
     // Compute the total volumes for each material.
     axom::Array<double> totalVolume(nmats, nmats, allocatorID);
     auto totalVolumeView = totalVolume.view();
-    axom::for_all<ExecSpace>(
-      nmats,
-      AXOM_LAMBDA(axom::IndexType i) { totalVolumeView[i] = 0.; });
+    axom::for_all<ExecSpace>(nmats, AXOM_LAMBDA(axom::IndexType i) { totalVolumeView[i] = 0.; });
     axom::for_all<ExecSpace>(
       matsetView.numberOfZones(),
       AXOM_LAMBDA(axom::IndexType zi) {
@@ -297,8 +264,7 @@ struct test_Elvira3D
           SLIC_ASSERT(index >= 0 && index < nmats);
 
           // Use an atomic to sum the value.
-          RAJA::atomicAdd<atomic_policy>(totalVolumeView.data() + index,
-                                         zoneVolumes[zi] * vfs[i]);
+          RAJA::atomicAdd<atomic_policy>(totalVolumeView.data() + index, zoneVolumes[zi] * vfs[i]);
         }
       });
 

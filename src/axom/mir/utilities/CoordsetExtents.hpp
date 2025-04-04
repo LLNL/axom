@@ -44,11 +44,9 @@ struct ComputeCoordsetExtents
    * \param[out] extentsView A view on the device that contains extents,
    *                         stored: xmin, xmax, ymin, ymax, zmin, zmax.
    */
-  static void computeExtents(CoordsetView coordsetView,
-                             axom::ArrayView<double> extentsView)
+  static void computeExtents(CoordsetView coordsetView, axom::ArrayView<double> extentsView)
   {
-    using atomic_policy =
-      typename axom::execution_space<ExecSpace>::atomic_policy;
+    using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
     AXOM_ANNOTATE_SCOPE("computeExtents");
 
     axom::for_all<ExecSpace>(
@@ -80,10 +78,7 @@ struct ComputeCoordsetExtents
  * Specialization for UniformCoordsetView that does less work.
  */
 template <typename ExecSpace, typename DataType, int NDIMS>
-struct ComputeCoordsetExtents<ExecSpace,
-                              axom::mir::views::UniformCoordsetView<DataType, NDIMS>,
-                              DataType,
-                              NDIMS>
+struct ComputeCoordsetExtents<ExecSpace, axom::mir::views::UniformCoordsetView<DataType, NDIMS>, DataType, NDIMS>
 {
   using CoordsetView = axom::mir::views::UniformCoordsetView<DataType, NDIMS>;
 
@@ -94,8 +89,7 @@ struct ComputeCoordsetExtents<ExecSpace,
    * \param[out] extentsView A view on the device that contains extents,
    *                         stored: xmin, xmax, ymin, ymax, zmin, zmax.
    */
-  static void computeExtents(CoordsetView coordsetView,
-                             axom::ArrayView<double> extentsView)
+  static void computeExtents(CoordsetView coordsetView, axom::ArrayView<double> extentsView)
   {
     AXOM_ANNOTATE_SCOPE("computeExtentsUniform");
     axom::for_all<ExecSpace>(
@@ -103,8 +97,7 @@ struct ComputeCoordsetExtents<ExecSpace,
       AXOM_LAMBDA(axom::IndexType d) {
         const auto n = coordsetView.indexing().logicalDimensions()[d] - 1;
         extentsView[2 * d] = coordsetView.origin()[d];
-        extentsView[2 * d + 1] =
-          coordsetView.origin()[d] + coordsetView.spacing()[d] * n;
+        extentsView[2 * d + 1] = coordsetView.origin()[d] + coordsetView.spacing()[d] * n;
       });
   }
 };
@@ -122,10 +115,10 @@ class ComputeCoordsetExtents<
   NDIMS>
 {
 public:
-  using CoordsetView = typename std::conditional<
-    NDIMS == 3,
-    axom::mir::views::RectilinearCoordsetView3<DataType>,
-    axom::mir::views::RectilinearCoordsetView2<DataType>>::type;
+  using CoordsetView =
+    typename std::conditional<NDIMS == 3,
+                              axom::mir::views::RectilinearCoordsetView3<DataType>,
+                              axom::mir::views::RectilinearCoordsetView2<DataType>>::type;
 
   /*!
    * \brief Compute the spatial extents of the coordset into a device array.
@@ -134,8 +127,7 @@ public:
    * \param[out] extentsView A view on the device that contains extents,
    *                         stored: xmin, xmax, ymin, ymax, zmin, zmax.
    */
-  static void computeExtents(CoordsetView coordsetView,
-                             axom::ArrayView<double> extentsView)
+  static void computeExtents(CoordsetView coordsetView, axom::ArrayView<double> extentsView)
   {
     AXOM_ANNOTATE_SCOPE("computeExtentsRectilinear");
     axom::for_all<ExecSpace>(
@@ -167,9 +159,7 @@ public:
    *
    * \param coordsetView The coordset view that wraps the coordset to be examined.
    */
-  CoordsetExtents(const CoordsetView &coordsetView)
-    : m_coordsetView(coordsetView)
-  { }
+  CoordsetExtents(const CoordsetView &coordsetView) : m_coordsetView(coordsetView) { }
 
   /*!
    * \brief Compute the spatial extents of the coordset and bring results to the host.
@@ -199,11 +189,10 @@ public:
       extentsView.size(),
       AXOM_LAMBDA(axom::IndexType index) { extentsView[index] = 0.; });
     // Use the appropriate specialization to compute the extents.
-    using Implementation =
-      detail::ComputeCoordsetExtents<ExecSpace,
-                                     CoordsetView,
-                                     typename CoordsetView::value_type,
-                                     CoordsetView::dimension()>;
+    using Implementation = detail::ComputeCoordsetExtents<ExecSpace,
+                                                          CoordsetView,
+                                                          typename CoordsetView::value_type,
+                                                          CoordsetView::dimension()>;
     Implementation::computeExtents(m_coordsetView, extentsView);
   }
 

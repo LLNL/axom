@@ -186,9 +186,7 @@ AXOM_HOST_DEVICE inline void norm2d(value_type n2[2], value_type n3[3])
  * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
-AXOM_HOST_DEVICE void norm3d(const value_type A[2],
-                             const value_type B[2],
-                             value_type n3[3])
+AXOM_HOST_DEVICE void norm3d(const value_type A[2], const value_type B[2], value_type n3[3])
 {
   constexpr value_type PTINY = 1.e-15;
 
@@ -262,8 +260,7 @@ AXOM_HOST_DEVICE inline void n_sort(const value_type n[3],  // input vector
  * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
-AXOM_HOST_DEVICE value_type
-vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
+AXOM_HOST_DEVICE value_type vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
 {
   value_type vf = 0.0, dd1, dd2, dd3;
   enum
@@ -334,8 +331,7 @@ vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
 
       dd1 = d - n1;
       dd2 = d - n2;
-      vf =
-        one6 * (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2) / (n1 * n2 * n3);
+      vf = one6 * (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2) / (n1 * n2 * n3);
       break;
 
     case cut_hex:
@@ -343,9 +339,7 @@ vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
       dd1 = d - n1;
       dd2 = d - n2;
       dd3 = d - n3;
-      vf = one6 *
-        (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2 - dd3 * dd3 * dd3) /
-        (n1 * n2 * n3);
+      vf = one6 * (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2 - dd3 * dd3 * dd3) / (n1 * n2 * n3);
       break;
 
     case cut_quadb:
@@ -744,11 +738,7 @@ AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
  * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
-AXOM_HOST_DEVICE void vf_3cube(value_type n[3],
-                               value_type pd,
-                               value_type *vfs,
-                               const int *ivf,
-                               int k)
+AXOM_HOST_DEVICE void vf_3cube(value_type n[3], value_type pd, value_type *vfs, const int *ivf, int k)
 {
   // Find node of lowest d
   // as 0 or 1 offset for each coord.
@@ -804,8 +794,7 @@ AXOM_HOST_DEVICE void elvira2xy(const value_type *vf, value_type n[3])
                  (vf[center] - vf[top]) * (vf[center] - vf[top]));
   variance[1] = ((vf[center] - vf[left]) * (vf[center] - vf[left]) +
                  (vf[center] - vf[right]) * (vf[center] - vf[right]));
-  const auto direction =
-    (variance[0] < variance[1]) ? Direction::HORIZONTAL : Direction::VERTICAL;
+  const auto direction = (variance[0] < variance[1]) ? Direction::HORIZONTAL : Direction::VERTICAL;
 
   // Compute normals
   Result2D<value_type> result;
@@ -903,8 +892,7 @@ AXOM_HOST_DEVICE value_type det_variance(const value_type *vf, const int *ivf)
 template <typename value_type>
 AXOM_HOST_DEVICE void pick_elv(Result2D<value_type> elv2d[2], const value_type *vf)
 {
-  const int ivf[19] =
-    {1, 3, 4, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 21, 22, 23, 25};
+  const int ivf[19] = {1, 3, 4, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 21, 22, 23, 25};
   const int idiff[5] = {0, 0, 1, 2, 2};
   const int jdiff[5] = {0, 2, 1, 0, 2};
   const value_type chfac[5] = {1.0, 1.0, 0.25, 1.0, 1.0};
@@ -1172,8 +1160,7 @@ AXOM_HOST_DEVICE void crc_sides(const value_type upcol[2][3],
  * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
-AXOM_HOST_DEVICE value_type
-missvol2(value_type vf, value_type c0, value_type cx, value_type cy)
+AXOM_HOST_DEVICE value_type missvol2(value_type vf, value_type c0, value_type cx, value_type cy)
 {
   value_type v[4], f[4], vm;
   value_type cs, sign;
@@ -1302,13 +1289,10 @@ AXOM_HOST_DEVICE void correct1(Result2D<value_type> elv2d[2],
   const int p2 = 3 - p0 - p1;
 
   value_type n30[3];
-  norm3d(elv2d[0].normal[elv2d[0].difference_used],
-         elv2d[1].normal[elv2d[1].difference_used],
-         n30);
+  norm3d(elv2d[0].normal[elv2d[0].difference_used], elv2d[1].normal[elv2d[1].difference_used], n30);
 
   // Ensure correct order.
-  if((n30[2] * n30[2] >= n30[1] * n30[1]) &&
-     (n30[2] * n30[2] >= n30[0] * n30[0]) &&
+  if((n30[2] * n30[2] >= n30[1] * n30[1]) && (n30[2] * n30[2] >= n30[0] * n30[0]) &&
 
      (n30[0] * n30[0] > 0.0) &&  // Do not correct if 0 component.
      (n30[1] * n30[1] > 0.0))
@@ -1420,10 +1404,7 @@ AXOM_HOST_DEVICE void elvira3d(const value_type *vf, value_type n[3])
   for(int dir = 0; dir < 2; dir++)
   {
     plane = (plane + 1) % 3;
-    elvira2d(elv2d[dir],
-             vf,
-             stencil2d[plane],
-             (dir == 0) ? Direction::VERTICAL : Direction::HORIZONTAL);
+    elvira2d(elv2d[dir], vf, stencil2d[plane], (dir == 0) ? Direction::VERTICAL : Direction::HORIZONTAL);
     elv2d[dir].plane = plane;
   }
 
@@ -1592,10 +1573,7 @@ AXOM_HOST_DEVICE void computeJacobian(const value_type *xcst,
  * \return The stencil size for dimension \a NDIMS.
  */
 AXOM_HOST_DEVICE
-constexpr int getStencilSize(int NDIMS)
-{
-  return (NDIMS == 3) ? 27 : ((NDIMS == 2) ? 9 : 3);
-}
+constexpr int getStencilSize(int NDIMS) { return (NDIMS == 3) ? 27 : ((NDIMS == 2) ? 9 : 3); }
 
 /*! 
  * \brief Base template for a class that invokes ELVIRA on various dimension data.
