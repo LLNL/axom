@@ -19,6 +19,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- The ``axom::mir::ElviraAlgorithm`` class, which performs material interface reconstruction using
+  the ELVIRA algorithm was enhanced so it supports 3D structured mesh inputs. The output mesh is a
+  Blueprint mesh with a 3D polyhedral unstructured topology.
+- Adds ``axom::mir::MakePolyhedralTopology`` class that takes an input Blueprint topology and turns
+  it into a polyhedral topology. The mesh will contain duplicate faces, which can later be merged.
+- Adds ``axom::mir::MergePolyhedralFaces`` class that merges face Blueprint polyhedral face
+  definitions that use the same node ids. The subelement connectivity information is rewritten using
+  the merged faces and then the element connectivity is rewritten to reference the new face definitions.
+- Adds ``axom::mir::MergeCoordsetPoints`` class that merges coordset points, within a tolerance. The
+  class returns an array containing the indices of the points that made it into the revised coordset,
+  as well as a map of old point indices to new point indices, which can be used to revise fields.
+- Exposed primal clip operations that support clipping various shapes with a plane.
+
 ## [Version 0.11.0] - Release date 2025-04-02
 
 ###  Added
@@ -27,9 +41,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   to split any input zones that contain multiple materials into zones that contain a single material.
   The Mir component provides an implementation of the Equi-Z MIR algorithm, which is a visualization-
   oriented algorithm that produces smooth interfaces between zones and their neighbors. The Mir
-  component also provides an ELVIRA algorithm, which reconstructs materials on structured meshes,
-  creating polygonal and polyhedral shapes in the output mesh. The ELVIRA algorithm preserves
-  volume fractions in the reconstructed shapes.
+  component also provides a 2D ELVIRA algorithm, which reconstructs polygonal shapes and preserves
+  volume fractions.
 - Support in `quest::IntersectionShaper` for Blueprint mesh stored in a `conduit::Node`
   or `sidre::Group`.
 - Adds new CMake configuration options, `AXOM_ENABLE_ASAN` and `AXOM_ENABLE_UBSAN`, to enable/disable AddressSanitizer and UndefinedBehaviorSanitizer respectively in Axom. Default is OFF for both.
