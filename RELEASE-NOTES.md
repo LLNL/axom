@@ -19,6 +19,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- The ``axom::mir::ElviraAlgorithm`` class, which performs material interface reconstruction using
+  the ELVIRA algorithm was enhanced so it supports 3D structured mesh inputs. The output mesh is a
+  Blueprint mesh with a 3D polyhedral unstructured topology.
+- Adds ``axom::mir::MakePolyhedralTopology`` class that takes an input Blueprint topology and turns
+  it into a polyhedral topology. The mesh will contain duplicate faces, which can later be merged.
+- Adds ``axom::mir::MergePolyhedralFaces`` class that merges face Blueprint polyhedral face
+  definitions that use the same node ids. The subelement connectivity information is rewritten using
+  the merged faces and then the element connectivity is rewritten to reference the new face definitions.
+- Adds ``axom::mir::MergeCoordsetPoints`` class that merges coordset points, within a tolerance. The
+  class returns an array containing the indices of the points that made it into the revised coordset,
+  as well as a map of old point indices to new point indices, which can be used to revise fields.
+- Exposed primal clip operations that support clipping various shapes with a plane.
+
 ## [Version 0.11.0] - Release date 2025-04-02
 
 ###  Added
