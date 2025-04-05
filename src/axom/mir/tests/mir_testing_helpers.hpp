@@ -553,6 +553,7 @@ public:
     , m_annotationMode("none")
     , m_handler(false)
     , m_visualize(false)
+    , m_rebaseline_raw()
     , m_rebaseline()
   {
     m_rebaseline.push_back("none");
@@ -569,14 +570,31 @@ public:
   int execute(int argc, char *argv[])
   {
     int result = 0;
-    initialize();
 
     try
     {
+    // Define command line options.
+#if defined(AXOM_USE_CALIPER)
+    m_app.add_option("--caliper", m_annotationMode)
+      ->description(
+        "caliper annotation mode. Valid options include 'none' and 'report'. "
+        "Use 'help' to see full list.")
+      ->capture_default_str()
+      ->check(axom::utilities::ValidCaliperMode);
+#endif
+    m_app.add_flag("--handler", m_handler, "Enable Conduit handler.");
+    m_app.add_flag("--visualize", m_visualize, "Save visualization files.");
+    m_app.add_option("--rebaseline",
+                  m_rebaseline_raw,
+                  "List of comma-separated test "
+                  "names, or \"all\" if you want to rebaseline all tests.")
+      ->expected(1);
+
       // Parse command line options.
       m_app.parse(argc, argv);
 
       // More initialization.
+      initialize();
 #if defined(AXOM_USE_CALIPER)
       axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(m_annotationMode);
 #endif
@@ -656,29 +674,19 @@ protected:
    */
   virtual void initialize()
   {
-    // Define command line options.
-#if defined(AXOM_USE_CALIPER)
-    m_app.add_option("--caliper", m_annotationMode)
-      ->description(
-        "caliper annotation mode. Valid options include 'none' and 'report'. "
-        "Use 'help' to see full list.")
-      ->capture_default_str()
-      ->check(axom::utilities::ValidCaliperMode);
-#endif
-    m_app.add_flag("--handler", m_handler, "Enable Conduit handler.");
-    m_app.add_flag("--visualize", m_visualize, "Save visualization files.");
-    MIRTestApplication *This = this;
-    m_app
-      .add_option("--rebaseline",
-                  m_rebaseline,
-                  "List of comma-separated test "
-                  "names, or no arguments if we want to rebaseline all tests. If not "
-                  "provided, no rebaselining is done.")
-      ->expected(0, 1)  // Accept either no arguments or one argument
-      ->each([=](const std::string &input) {
-        // If an argument is provided, split it into a vector
-        This->m_rebaseline = axom::utilities::string::split(input, ',');
-      });
+    // If an argument is provided, split it into a vector
+    if(!m_rebaseline_raw.empty())
+    {
+      const auto testNames = axom::utilities::string::split(m_rebaseline_raw, ',');
+      if(testNames.size() == 1 && testNames[0] == "all")
+      {
+        m_rebaseline.clear();
+      }
+      else if(!testNames.empty())
+      {
+        m_rebaseline = testNames;
+      }
+    }
   }
 
   /*!
@@ -698,7 +706,7 @@ protected:
     }
     else if(m_rebaseline.empty())
     {
-      // --rebaseline was given with no arguments. Rebaseline all.
+      // --rebaseline all was given. Rebaseline all.
       retval = true;
     }
     else
@@ -722,6 +730,7 @@ protected:
   std::string m_annotationMode;
   bool m_handler;
   bool m_visualize;
+  std::string m_rebaseline_raw;
   std::vector<std::string> m_rebaseline;
 };
 

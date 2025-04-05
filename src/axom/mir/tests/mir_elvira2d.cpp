@@ -71,6 +71,7 @@ struct braid2d_mat_test
       MIR m(topologyView, coordsetView, matsetView);
       conduit::Node options;
       options["matset"] = "mat";
+      options["normal"] = 1;
       if(selectedZones)
       {
         selectZones(options);

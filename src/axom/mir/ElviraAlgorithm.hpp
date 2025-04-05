@@ -454,7 +454,6 @@ protected:
     //--------------------------------------------------------------------------
     // Count the number of fragments we'll make for the mixed zones.
     AXOM_ANNOTATE_BEGIN("counting");
-    RAJA::ReduceSum<reduce_policy, axom::IndexType> num_reduce(0);
 
     const auto nzones = mixedZonesView.size();
     axom::Array<axom::IndexType> matCount(nzones, nzones, allocatorID);
@@ -465,17 +464,32 @@ protected:
     // Get the material count per zone and the zone number (in case of strided structured)
     const TopologyView deviceTopologyView(m_topologyView);
     const MatsetView deviceMatsetView(m_matsetView);
+    RAJA::ReduceSum<reduce_policy, axom::IndexType> num_reduce(0);
+    RAJA::ReduceMax<reduce_policy, axom::IndexType> reduce_maxcuts(0);
     axom::for_all<ExecSpace>(
       mixedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
+        // Get the material data for the zone.
         const auto zoneIndex = mixedZonesView[szIndex];
         const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
         const auto nmats = deviceMatsetView.numberOfMaterials(matZoneIndex);
+
+        // Save some material information for later.
         matCountView[szIndex] = nmats;
         matZoneView[szIndex] = zoneIndex;
+
+        // Sum total materials
         num_reduce += nmats;
+
+        // The number of times we cut a zone is the number of materials in the zone minus one.
+        reduce_maxcuts.max(nmats - 1);
       });
     const auto numFragments = num_reduce.get();
+    const auto maxCuts = reduce_maxcuts.get();
+    SLIC_ASSERT(numFragments > 0);
+    SLIC_ASSERT(maxCuts > 0);
+    SLIC_INFO(axom::fmt::format("ElviraAlgorithm: numFragments: {}, maxCuts: {}", numFragments, maxCuts));
+
 #if defined(AXOM_ELVIRA_GATHER_INFO)
     if(!axom::execution_space<ExecSpace>::onDevice())
     {
@@ -738,7 +752,8 @@ protected:
 
     // Make the builder that will set up the Blueprint output.
     Builder build;
-    build.allocate(numFragments, n_newCoordset, n_newTopo, n_newFields, n_newMatset, n_options);
+    build.allocate(numFragments, maxCuts, n_newCoordset, n_newTopo, n_newFields, n_newMatset,
+                   n_options);
     if(n_matset.has_path("material_map"))
     {
       n_newMatset["material_map"].set(n_matset["material_map"]);
