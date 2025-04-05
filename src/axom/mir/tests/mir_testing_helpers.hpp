@@ -573,22 +573,23 @@ public:
 
     try
     {
-    // Define command line options.
+      // Define command line options.
 #if defined(AXOM_USE_CALIPER)
-    m_app.add_option("--caliper", m_annotationMode)
-      ->description(
-        "caliper annotation mode. Valid options include 'none' and 'report'. "
-        "Use 'help' to see full list.")
-      ->capture_default_str()
-      ->check(axom::utilities::ValidCaliperMode);
+      m_app.add_option("--caliper", m_annotationMode)
+        ->description(
+          "caliper annotation mode. Valid options include 'none' and 'report'. "
+          "Use 'help' to see full list.")
+        ->capture_default_str()
+        ->check(axom::utilities::ValidCaliperMode);
 #endif
-    m_app.add_flag("--handler", m_handler, "Enable Conduit handler.");
-    m_app.add_flag("--visualize", m_visualize, "Save visualization files.");
-    m_app.add_option("--rebaseline",
-                  m_rebaseline_raw,
-                  "List of comma-separated test "
-                  "names, or \"all\" if you want to rebaseline all tests.")
-      ->expected(1);
+      m_app.add_flag("--handler", m_handler, "Enable Conduit handler.");
+      m_app.add_flag("--visualize", m_visualize, "Save visualization files.");
+      m_app
+        .add_option("--rebaseline",
+                    m_rebaseline_raw,
+                    "List of comma-separated test "
+                    "names, or \"all\" if you want to rebaseline all tests.")
+        ->expected(1);
 
       // Parse command line options.
       m_app.parse(argc, argv);

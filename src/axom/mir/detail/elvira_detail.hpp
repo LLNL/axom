@@ -527,8 +527,9 @@ public:
       n_topology["subelements/shape"] = "polygonal";
       conduit::Node &n_se_conn = n_topology["subelements/connectivity"];
       n_se_conn.set_allocator(c2a.getConduitAllocatorID());
-      n_se_conn.set(conduit::DataType(bputils::cpp2conduit<ConnectivityType>::id,
-                                      numFragments * m_view.m_MAX_FACES_PER_FRAGMENT * m_view.m_MAX_POINTS_PER_FACE));
+      n_se_conn.set(conduit::DataType(
+        bputils::cpp2conduit<ConnectivityType>::id,
+        numFragments * m_view.m_MAX_FACES_PER_FRAGMENT * m_view.m_MAX_POINTS_PER_FACE));
       m_view.m_subelement_connectivity = bputils::make_array_view<ConnectivityType>(n_se_conn);
       axom::mir::utilities::fill<ExecSpace>(m_view.m_subelement_connectivity, UnusedValue);
 
