@@ -685,7 +685,7 @@ public:
         SLIC_ASSERT_MSG(
           subelement_sizes[f] <= m_MAX_POINTS_PER_FACE,
           axom::fmt::format(
-            "Zone {} has {} points in face {} but should have no more than {} points. shape=",
+            "Zone {} has {} points in face {} but should have no more than {} points. shape={}",
             zoneIndex,
             subelement_sizes[f],
             f,
