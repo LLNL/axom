@@ -223,11 +223,12 @@ void restoreSlashes(const conduit::Node &modifiedNode, conduit::Node &restoredNo
     {
       it.next();
       conduit::Node &newChild = restoredNode.append();
+      auto data_type = it.node().dtype();
 
       // Leaves empty nodes empty, if null data is set the
       // Document breaks
 
-      if(it.node().dtype().is_string() || it.node().dtype().is_number())
+      if(data_type.is_string() || data_type.is_number())
       {
         newChild.set(it.node());  // Lists need .set
       }
@@ -250,14 +251,14 @@ void restoreSlashes(const conduit::Node &modifiedNode, conduit::Node &restoredNo
 
       // Initialize a new node for the restored key
       conduit::Node &newChild = restoredNode.add_child(restoredKey);
+      auto data_type = it.node().dtype();
 
       // Leaves empty keys empty but continues recursive call if its a list
-      if(it.node().dtype().is_string() || it.node().dtype().is_number() ||
-         it.node().dtype().is_object())
+      if(data_type.is_string() || data_type.is_number() || data_type.is_object())
       {
         newChild.set(it.node());
       }
-      else if(it.node().dtype().is_list())
+      else if(data_type.is_list())
       {
         restoreSlashes(it.node(), newChild);  // Handle nested lists
       }

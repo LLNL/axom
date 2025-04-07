@@ -11,6 +11,8 @@
 #include "axom/mir/utilities/CoordsetSlicer.hpp"
 #include "axom/mir/utilities/FieldSlicer.hpp"
 #include "axom/mir/utilities/MatsetSlicer.hpp"
+#include "axom/mir/Options.hpp"
+#include "axom/mir/MIROptions.hpp"
 
 // RAJA
 #if defined(AXOM_USE_RAJA)
@@ -103,11 +105,14 @@ public:
       dataSizes = nodeMap(selectedZonesView, extra, old2new, nodeSlice);
     }
 
+    Options opts(n_options);
+
     // Make a new output topology.
     const conduit::Node &n_topologies = n_input.fetch_existing("topologies");
     const std::string topoName = topologyName(n_input, n_options);
     const conduit::Node &n_topo = n_topologies.fetch_existing(topoName);
-    conduit::Node &n_newTopo = n_output["topologies/" + topoName];
+    const std::string newTopoName = opts.topologyName(topoName);
+    conduit::Node &n_newTopo = n_output["topologies/" + newTopoName];
     makeTopology(selectedZonesView,
                  dataSizes,
                  extra,
@@ -123,8 +128,12 @@ public:
       n_topo.fetch_existing("coordset").as_string();
     const conduit::Node &n_coordset =
       n_input.fetch_existing("coordsets/" + coordsetName);
-    conduit::Node &n_newCoordset = n_output["coordsets/" + coordsetName];
+    const std::string newCoordsetName = opts.coordsetName(coordsetName);
+    conduit::Node &n_newCoordset = n_output["coordsets/" + newCoordsetName];
     makeCoordset(nSlice, n_coordset, n_newCoordset);
+
+    // Update the coordset name in the topo.
+    n_newTopo["coordset"] = newCoordsetName;
 
     // Make new fields. If originalZones are present, they'll be sliced there.
     bool makeOriginalZones = true;
@@ -134,8 +143,8 @@ public:
       conduit::Node &n_newFields = n_output["fields"];
       SliceData zSlice;
       zSlice.m_indicesView = zoneSliceView(selectedZonesView, extra);
-      makeOriginalZones = !n_fields.has_child("originalZones");
-      makeFields(nSlice, zSlice, n_fields, n_newFields);
+      makeOriginalZones = !n_fields.has_child("originalElements");
+      makeFields(nSlice, zSlice, newTopoName, n_fields, n_newFields);
     }
 
     // Make originalElements.
@@ -143,13 +152,14 @@ public:
     {
       bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
 
-      conduit::Node &n_origZones = n_output["fields/originalElements"];
-      n_origZones["topology"] = topoName;
-      n_origZones["association"] = "element";
-      n_origZones["values"].set_allocator(c2a.getConduitAllocatorID());
-      n_origZones["values"].set(conduit::DataType(cpp2conduit<axom::IndexType>::id,
-                                                  selectedZonesView.size()));
-      axom::copy(n_origZones["values"].data_ptr(),
+      conduit::Node &n_origElements = n_output["fields/originalElements"];
+      n_origElements["topology"] = newTopoName;
+      n_origElements["association"] = "element";
+      n_origElements["values"].set_allocator(c2a.getConduitAllocatorID());
+      n_origElements["values"].set(
+        conduit::DataType(cpp2conduit<axom::IndexType>::id,
+                          selectedZonesView.size()));
+      axom::copy(n_origElements["values"].data_ptr(),
                  selectedZonesView.data(),
                  sizeof(axom::IndexType) * selectedZonesView.size());
     }
@@ -551,15 +561,20 @@ protected:
    *
    * \param nodeSlice Node slice information.
    * \param zoneSlice Zone slice information.
+   * \param newTopoName The name of the new topology for the field.
    * \param n_fields The input fields.
    * \param n_newFields The output fields.
    */
   void makeFields(const SliceData &nodeSlice,
                   const SliceData &zoneSlice,
+                  const std::string &newTopoName,
                   const conduit::Node &n_fields,
                   conduit::Node &n_newFields) const
   {
     AXOM_ANNOTATE_SCOPE("makeFields");
+
+    // TODO: Change this to be more like ClipField::makeFields so it supports strided-structured.
+
     for(conduit::index_t i = 0; i < n_fields.number_of_children(); i++)
     {
       const conduit::Node &n_field = n_fields[i];
@@ -574,6 +589,7 @@ protected:
       {
         fs.execute(nodeSlice, n_field, n_newField);
       }
+      n_newField["topology"] = newTopoName;
     }
   }
 
@@ -722,8 +738,15 @@ public:
     if(!mname.empty())
     {
       const conduit::Node &n_matset = n_input.fetch_existing("matsets/" + mname);
-      conduit::Node &n_newMatset = n_output["matsets/" + mname];
+      MIROptions opts(n_options);
+
+      const std::string newMatsetName = opts.matsetName(mname);
+      conduit::Node &n_newMatset = n_output["matsets/" + newMatsetName];
       makeMatset(selectedZonesView, n_matset, n_newMatset);
+
+      // Update the topology name in the matset.
+      const std::string newTopoName = opts.topologyName(topoName);
+      n_newMatset["topology"] = newTopoName;
     }
   }
 
@@ -767,17 +790,42 @@ private:
    * \param n_matset The input matset.
    * \param n_newMatset A node that will contain the new matset.
    */
-  void makeMatset(const SelectedZonesView &selectedZonesView,
+  void makeMatset(const SelectedZonesView selectedZonesView,
                   const conduit::Node &n_matset,
                   conduit::Node &n_newMatset) const
   {
     AXOM_ANNOTATE_SCOPE("makeMatset");
-    // _mir_utilities_matsetslicer_begin
-    MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
-    SliceData zSlice;
-    zSlice.m_indicesView = selectedZonesView;
-    ms.execute(zSlice, n_matset, n_newMatset);
-    // _mir_utilities_matsetslicer_end
+    // TODO: Make this "if constexpr" when Axom allows that.
+    if(axom::mir::views::view_traits<TopologyView>::supports_strided_structured())
+    {
+      // If the topology view supports strided structured then we need to convert the
+      // selected zones to "global" values to pull out the right zones from the material.
+      const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
+      const auto nzones = selectedZonesView.size();
+      axom::Array<axom::IndexType> matZoneIds(nzones, nzones, allocatorID);
+      auto matZoneIdsView = matZoneIds.view();
+      const TopologyView deviceTopologyView(
+        ExtractZones<ExecSpace, TopologyView, CoordsetView>::m_topologyView);
+      axom::for_all<ExecSpace>(
+        selectedZonesView.size(),
+        AXOM_LAMBDA(axom::IndexType index) {
+          matZoneIdsView[index] =
+            deviceTopologyView.indexing().LocalToGlobal(selectedZonesView[index]);
+        });
+      MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
+      SliceData zSlice;
+      zSlice.m_indicesView = matZoneIdsView;
+      ms.execute(zSlice, n_matset, n_newMatset);
+    }
+    else
+    {
+      // _mir_utilities_matsetslicer_begin
+      MatsetSlicer<ExecSpace, MatsetView> ms(m_matsetView);
+      SliceData zSlice;
+      zSlice.m_indicesView = selectedZonesView;
+      ms.execute(zSlice, n_matset, n_newMatset);
+      // _mir_utilities_matsetslicer_end
+    }
   }
 
   MatsetView m_matsetView;

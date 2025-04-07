@@ -74,9 +74,20 @@ struct execution_name<hip_exec>
 #endif
 
 //------------------------------------------------------------------------------
-std::string pjoin(const std::string &path, const std::string &filename)
+std::string pjoin(const std::string &str) { return str; }
+
+std::string pjoin(const char *str) { return std::string(str); }
+
+template <typename... Args>
+std::string pjoin(const std::string &str, Args... args)
 {
-  return axom::utilities::filesystem::joinPath(path, filename);
+  return axom::utilities::filesystem::joinPath(str, pjoin(args...));
+}
+
+template <typename... Args>
+std::string pjoin(const char *str, Args... args)
+{
+  return axom::utilities::filesystem::joinPath(std::string(str), pjoin(args...));
 }
 
 void psplit(const std::string &filepath, std::string &path, std::string &filename)
@@ -166,7 +177,7 @@ void saveBaseline(const std::string &filename, const conduit::Node &n)
 #if defined(AXOM_TESTING_SAVE_VISUALIZATION) && defined(AXOM_USE_HDF5)
     SLIC_INFO(axom::fmt::format("Save visualization files..."));
     conduit::relay::io::blueprint::save_mesh(n, filename + "_hdf5", "hdf5");
-    axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
+      //axom::mir::utilities::blueprint::save_vtk(n, filename + "_vtk.vtk");
 #endif
   }
   catch(...)

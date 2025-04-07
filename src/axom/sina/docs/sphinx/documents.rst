@@ -26,8 +26,8 @@ respective objects. An example of an empty document is shown below:
 
 The ``records`` list can contain ``Record`` objects and their inheritying types,
 such as ``Run`` objects. The ``relationships`` list can contain ``Relationship``
-objects. For more information on these objects, see `Records <./records>`_
-and `Relationships <./relationships>`_.
+objects. For more information on these objects, see :doc:`Records <records>`
+and :doc:`Relationships <relationships>`.
 
 --------------------
 Assembling Documents
@@ -113,7 +113,7 @@ Generating Documents From HDF5
 
 In addition to assembling ``Document`` instances from existing JSON files, it
 is possible to generate ``Document`` objects from existing HDF5 files using
-conduit.
+Conduit.
 
 When Axom is configured with HDF5 support, Sina's ``saveDocument()`` and ``loadDocument()`` 
 functions support HDF5 assembly through the `Protocol::HDF5` argument.  The functions will 
@@ -149,3 +149,12 @@ properly queried:
 
     Number of Records: 2
     Number of Relationships: 1
+
+------------------------------
+Filetype Comparisons
+------------------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   hdf5_vs_json

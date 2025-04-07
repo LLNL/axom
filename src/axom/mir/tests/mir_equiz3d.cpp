@@ -22,7 +22,7 @@
 
 std::string baselineDirectory()
 {
-  return pjoin(pjoin(pjoin(dataDirectory(), "mir"), "regression"), "mir_equiz");
+  return pjoin(dataDirectory(), "mir", "regression", "mir_equiz");
 }
 
 //------------------------------------------------------------------------------
@@ -141,17 +141,12 @@ void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int
 }
 
 //------------------------------------------------------------------------------
-
 int main(int argc, char *argv[])
 {
   int result = 0;
   ::testing::InitGoogleTest(&argc, argv);
 
-  // Define command line options.
-  bool handler = false;
   axom::CLI::App app;
-  app.add_option("--handler", handler)
-    ->description("Install a custom error handler that loops forever.");
 #if defined(AXOM_USE_CALIPER)
   std::string annotationMode("none");
   app.add_option("--caliper", annotationMode)
@@ -161,20 +156,38 @@ int main(int argc, char *argv[])
     ->capture_default_str()
     ->check(axom::utilities::ValidCaliperMode);
 #endif
+  bool handlerEnabled = false;
+  app.add_flag("--handler", handlerEnabled, "Enable Conduit handler.");
+
   // Parse command line options.
-  app.parse(argc, argv);
+  try
+  {
+    app.parse(argc, argv);
 
 #if defined(AXOM_USE_CALIPER)
-  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-    annotationMode);
+    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
+      annotationMode);
 #endif
 
-  axom::slic::SimpleLogger logger;  // create & initialize test logger,
-  if(handler)
+    axom::slic::SimpleLogger logger;  // create & initialize test logger,
+    if(handlerEnabled)
+    {
+      conduit::utils::set_error_handler(conduit_debug_err_handler);
+    }
+
+    result = RUN_ALL_TESTS();
+  }
+  catch(axom::CLI::CallForHelp &e)
   {
-    conduit::utils::set_error_handler(conduit_debug_err_handler);
+    std::cout << app.help() << std::endl;
+    result = 0;
+  }
+  catch(axom::CLI::ParseError &e)
+  {
+    // Handle other parsing errors
+    std::cerr << e.what() << std::endl;
+    result = app.exit(e);
   }
 
-  result = RUN_ALL_TESTS();
   return result;
 }

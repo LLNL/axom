@@ -24,6 +24,7 @@
 
 #include <utility>
 #include <string>
+#include <vector>
 
 namespace axom
 {
@@ -317,6 +318,16 @@ bool fillFromNode(const conduit::Node &n,
 //------------------------------------------------------------------------------
 
 /*!
+ * \brief Return the names of the axes for a coordset.
+ *
+ * \param n_input A Conduit node containing a coordset.
+ *
+ * \return A vector containing the names of the coordset's axes.
+ */
+std::vector<std::string> coordsetAxes(const conduit::Node &n_input);
+
+//------------------------------------------------------------------------------
+/*!
  * \brief Returns the input index (no changes).
  */
 struct DirectIndexing
@@ -412,6 +423,7 @@ struct SSVertexFieldIndexing
   Indexing m_fieldIndexing {};
 };
 
+//------------------------------------------------------------------------------
 /*!
  * \brief Get the min/max values for the data in a Conduit node or ArrayView.
  *
@@ -468,6 +480,41 @@ struct MinMax
   }
 };
 
+//------------------------------------------------------------------------------
+/*!
+ * \brief Base template for computing a shape's area or volume.
+ */
+template <int NDIMS>
+struct ComputeShapeAmount
+{ };
+
+/*!
+ * \brief 2D specialization for shapes to compute area.
+ */
+template <>
+struct ComputeShapeAmount<2>
+{
+  template <typename ShapeType>
+  static inline AXOM_HOST_DEVICE double execute(const ShapeType &shape)
+  {
+    return shape.area();
+  }
+};
+
+/*!
+ * \brief 3D specialization for shapes to compute volume.
+ */
+template <>
+struct ComputeShapeAmount<3>
+{
+  template <typename ShapeType>
+  static inline AXOM_HOST_DEVICE double execute(const ShapeType &shape)
+  {
+    return shape.volume();
+  }
+};
+
+//------------------------------------------------------------------------------
 /*!
  * \brief Save a Blueprint mesh to a legacy ASCII VTK file.
  *

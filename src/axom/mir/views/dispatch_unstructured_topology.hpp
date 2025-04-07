@@ -26,6 +26,54 @@ namespace views
 constexpr int AnyShape = -1;
 
 /*!
+ * \brief This class instantiates a topology view for an unstructured mesh that contains a
+ *        single shape.
+ *
+ * \tparam ShapeType A shape class such as axom::mir::views::TriShape<int>
+ */
+template <typename ShapeType>
+struct make_unstructured_single_shape
+{
+  using TopologyView = UnstructuredTopologySingleShapeView<ShapeType>;
+  using ConnectivityType = typename TopologyView::ConnectivityType;
+
+  /*!
+   * \brief Instantiate a topology view from a Conduit node.
+   *
+   * \param n_topo The node that contains the topology.
+   *
+   * \return The topology view that wraps the Conduit data.
+   */
+  static TopologyView view(const conduit::Node &n_topo)
+  {
+    namespace bputils = axom::mir::utilities::blueprint;
+
+    const std::string shape = n_topo["elements/shape"].as_string();
+    SLIC_ASSERT(n_topo["type"].as_string() == "unstructured");
+    SLIC_ASSERT(shape == ShapeType::name());
+
+    // Connectivity must exist.
+    auto connView = bputils::make_array_view<ConnectivityType>(
+      n_topo["elements/connectivity"]);
+
+    // Use sizes and offsets if they are present.
+    if(n_topo.has_path("elements/sizes") && n_topo.has_path("elements/offsets"))
+    {
+      auto sizesView =
+        bputils::make_array_view<ConnectivityType>(n_topo["elements/sizes"]);
+      auto offsetsView =
+        bputils::make_array_view<ConnectivityType>(n_topo["elements/offsets"]);
+      return TopologyView(connView, sizesView, offsetsView);
+    }
+
+    // Polygonal must have specified sizes, offsets.
+    SLIC_ASSERT(std::string("shape") != axom::mir::views::PolygonTraits::name());
+
+    return TopologyView(connView);
+  }
+};
+
+/*!
  * \brief This function dispatches a Conduit polyhedral unstructured topology.
  *
  * \tparam FuncType The function/lambda type that will be invoked on the view.

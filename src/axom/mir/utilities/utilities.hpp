@@ -59,6 +59,24 @@ struct accumulation_traits<unsigned long>
 
 //------------------------------------------------------------------------------
 /*!
+ * \brief Fill an ArrayView with a value.
+ *
+ * \tparam ExecSpace The execution space where the fill will be done.
+ * \tparam T The data type of the values in the ArrayView.
+ *
+ * \param view The ArrayView being filled.
+ * \param fillValue The value to be used for filling the ArrayView.
+ */
+template <typename ExecSpace, typename T>
+void fill(axom::ArrayView<T> view, T fillValue)
+{
+  axom::for_all<ExecSpace>(
+    view.size(),
+    AXOM_LAMBDA(axom::IndexType index) { view[index] = fillValue; });
+}
+
+//------------------------------------------------------------------------------
+/*!
  * \brief Use binary search to find the index of the \a value in the supplied
  *        sorted view.
  *
@@ -428,8 +446,9 @@ struct Unique
    * \param[out] skeys     A sorted unique array of keys produced from keys_orig_view.
    * \param[out] sindices  An array of indices that indicate where in the original view the keys came from.
    *
+   * \note key_orig_view is passed by value so it does not require a local copy to capture it.
    */
-  static void execute(const axom::ArrayView<KeyType> &keys_orig_view,
+  static void execute(const axom::ArrayView<KeyType> keys_orig_view,
                       axom::Array<KeyType> &skeys,
                       axom::Array<axom::IndexType> &sindices)
   {
