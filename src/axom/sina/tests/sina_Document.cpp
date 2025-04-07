@@ -340,8 +340,7 @@ TEST(Document, create_fromJson_roundtrip_json)
   std::string orig_json =
     "{\"records\": [{\"type\": \"test_rec\",\"id\": "
     "\"test\"}],\"relationships\": []}";
-  axom::sina::Document myDocument =
-    Document(orig_json, createRecordLoaderWithAllKnownTypes());
+  axom::sina::Document myDocument = Document(orig_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(0, myDocument.getRelationships().size());
   ASSERT_EQ(1, myDocument.getRecords().size());
   EXPECT_EQ("test_rec", myDocument.getRecords()[0]->getType());
@@ -351,8 +350,7 @@ TEST(Document, create_fromJson_roundtrip_json)
 
 TEST(Document, create_fromJson_full_json)
 {
-  axom::sina::Document myDocument =
-    Document(long_json, createRecordLoaderWithAllKnownTypes());
+  axom::sina::Document myDocument = Document(long_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(2, myDocument.getRelationships().size());
   auto &records1 = myDocument.getRecords();
   EXPECT_EQ(4, records1.size());
@@ -360,8 +358,7 @@ TEST(Document, create_fromJson_full_json)
 
 TEST(Document, create_fromJson_value_check_json)
 {
-  axom::sina::Document myDocument =
-    Document(data_json, createRecordLoaderWithAllKnownTypes());
+  axom::sina::Document myDocument = Document(data_json, createRecordLoaderWithAllKnownTypes());
   EXPECT_EQ(0, myDocument.getRelationships().size());
   auto &records1 = myDocument.getRecords();
   EXPECT_EQ(1, records1.size());
@@ -456,8 +453,7 @@ TEST(Document, create_fromJson_roundtrip_hdf5)
   std::string orig_json =
     "{\"records\": [{\"type\": \"test_rec\",\"id\": "
     "\"test\"}],\"relationships\": []}";
-  axom::sina::Document myDocument =
-    Document(orig_json, createRecordLoaderWithAllKnownTypes());
+  axom::sina::Document myDocument = Document(orig_json, createRecordLoaderWithAllKnownTypes());
   saveDocument(myDocument, "round_json.hdf5", Protocol::HDF5);
   Document loadedDocument = loadDocument("round_json.hdf5", Protocol::HDF5);
   EXPECT_EQ(0, loadedDocument.getRelationships().size());
@@ -469,8 +465,7 @@ TEST(Document, create_fromJson_roundtrip_hdf5)
 
 TEST(Document, create_fromJson_full_hdf5)
 {
-  axom::sina::Document myDocument =
-    Document(long_json, createRecordLoaderWithAllKnownTypes());
+  axom::sina::Document myDocument = Document(long_json, createRecordLoaderWithAllKnownTypes());
   saveDocument(myDocument, "long_json.hdf5", Protocol::HDF5);
   Document loadedDocument = loadDocument("long_json.hdf5", Protocol::HDF5);
   EXPECT_EQ(2, loadedDocument.getRelationships().size());
@@ -480,8 +475,7 @@ TEST(Document, create_fromJson_full_hdf5)
 
 TEST(Document, create_fromJson_value_check_hdf5)
 {
-  axom::sina::Document myDocument =
-    Document(data_json, createRecordLoaderWithAllKnownTypes());
+  axom::sina::Document myDocument = Document(data_json, createRecordLoaderWithAllKnownTypes());
   std::vector<std::string> expected_string_vals = {"z", "o", "o"};
   saveDocument(myDocument, "data_json.hdf5", Protocol::HDF5);
   Document loadedDocument = loadDocument("data_json.hdf5", Protocol::HDF5);
@@ -507,8 +501,7 @@ TEST(Document, saveDocument_hdf5)
   }
 
   Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+  document.add(std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
   saveDocument(document, tmpFile.getName() + ".hdf5", Protocol::HDF5);
 

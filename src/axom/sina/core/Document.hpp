@@ -268,8 +268,7 @@ inline std::string getSinaFileFormatVersion()
  * \param protocol the type of file being loaded, default = JSON
  * \return the loaded Document
  */
-Document loadDocument(std::string const &path,
-                      Protocol protocol = Protocol::JSON);
+Document loadDocument(std::string const &path, Protocol protocol = Protocol::JSON);
 
 /**
  * \brief Load a document from the given path.

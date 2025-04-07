@@ -138,8 +138,7 @@ void load()
 {
   axom::sina::Document doc1 = axom::sina::loadDocument("my_output.json");
 #ifdef AXOM_USE_HDF5
-  axom::sina::Document doc2 =
-    axom::sina::loadDocument("my_output.hdf5", axom::sina::Protocol::HDF5);
+  axom::sina::Document doc2 = axom::sina::loadDocument("my_output.hdf5", axom::sina::Protocol::HDF5);
 #endif
 }
 
