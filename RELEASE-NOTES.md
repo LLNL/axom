@@ -21,17 +21,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Added
 - The ``axom::mir::ElviraAlgorithm`` class, which performs material interface reconstruction using
-  the ELVIRA algorithm was enhanced so it supports 3D structured mesh inputs. The output mesh is a
-  Blueprint mesh with a 3D polyhedral unstructured topology.
-- Adds ``axom::mir::MakePolyhedralTopology`` class that takes an input Blueprint topology and turns
-  it into a polyhedral topology. The mesh will contain duplicate faces, which can later be merged.
-- Adds ``axom::mir::MergePolyhedralFaces`` class that merges face Blueprint polyhedral face
-  definitions that use the same node ids. The subelement connectivity information is rewritten using
-  the merged faces and then the element connectivity is rewritten to reference the new face definitions.
-- Adds ``axom::mir::MergeCoordsetPoints`` class that merges coordset points, within a tolerance. The
-  class returns an array containing the indices of the points that made it into the revised coordset,
-  as well as a map of old point indices to new point indices, which can be used to revise fields.
-- Exposed primal clip operations that support clipping various shapes with a plane.
+  the ELVIRA algorithm, was enhanced so it supports 3D structured mesh inputs. The output mesh is a
+  Blueprint mesh with a 3D unstructured polyhedral topology.
+- Adds ``axom::mir::utilities::blueprint::MakePolyhedralTopology`` class that takes an input Blueprint
+  topology and turns it into a polyhedral topology. The mesh will contain duplicate faces, which can
+  later be merged.
+- Adds ``axom::mir::utilities::blueprint::MergePolyhedralFaces`` class that merges face Blueprint
+  polyhedral face definitions where faces consist of the same set of node ids. The mesh's subelement
+  connectivity information is rewritten so it contains the merged face definitions. The mesh's 
+  element connectivity is also rewritten so it references the new face definitions.
+- Adds ``axom::mir::utilities::blueprint::MergeCoordsetPoints`` class that merges coordset points,
+  within a tolerance. The class returns an array containing the indices of the points that made it
+  into the revised coordset, as well as a map of old point indices to new point indices, which can
+  be used to revise fields.
+- Exposed primal clip operations for clipping various shapes with a plane.
 
 ## [Version 0.11.0] - Release date 2025-04-02
 
