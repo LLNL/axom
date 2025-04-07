@@ -41,8 +41,7 @@ public:
    * \param topologyView The view for the input topology.
    * \param coordsetView The view for the input coordset.
    */
-  MakeZoneVolumes(const TopologyView &topologyView,
-                  const CoordsetView &coordsetView)
+  MakeZoneVolumes(const TopologyView &topologyView, const CoordsetView &coordsetView)
     : m_topologyView(topologyView)
     , m_coordsetView(coordsetView)
   { }
@@ -84,8 +83,7 @@ public:
         const auto shape = deviceShapeView.getShape(zoneIndex);
 
         // Get the area or volume of the target shape (depends on the dimension).
-        double amount =
-          ComputeShapeAmount<CoordsetView::dimension()>::execute(shape);
+        double amount = ComputeShapeAmount<CoordsetView::dimension()>::execute(shape);
 
         valuesView[zoneIndex] = amount;
       });

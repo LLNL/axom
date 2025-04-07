@@ -75,8 +75,7 @@ void MIRAlgorithm::executeSetup(const conduit::Node &n_domain,
   newMatset["topology"] = newTopoName;
 
   // Execute the algorithm on the domain.
-  if(n_domain.has_path("state"))
-    copyState(n_domain["state"], n_newDomain["state"]);
+  if(n_domain.has_path("state")) copyState(n_domain["state"], n_newDomain["state"]);
   if(n_domain.has_path("fields"))
   {
     conduit::Node &newFields = n_newDomain["fields"];
@@ -109,8 +108,7 @@ void MIRAlgorithm::executeSetup(const conduit::Node &n_domain,
   }
 }
 
-void MIRAlgorithm::copyState(const conduit::Node &srcState,
-                             conduit::Node &destState) const
+void MIRAlgorithm::copyState(const conduit::Node &srcState, conduit::Node &destState) const
 {
   for(conduit::index_t i = 0; i < srcState.number_of_children(); i++)
     destState[srcState[i].name()].set(srcState[i]);
@@ -128,8 +126,7 @@ void MIRAlgorithm::printNode(const conduit::Node &n) const
   n_host.to_summary_string_stream(std::cout, options);
 }
 
-void MIRAlgorithm::saveMesh(const conduit::Node &n_mesh,
-                            const std::string &filebase) const
+void MIRAlgorithm::saveMesh(const conduit::Node &n_mesh, const std::string &filebase) const
 {
   // Make sure data are on host.
   conduit::Node n_mesh_host;

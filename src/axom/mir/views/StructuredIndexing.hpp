@@ -36,10 +36,7 @@ public:
    * \brief Return whether the view supports strided structured indexing.
    * \return false
    */
-  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing()
-  {
-    return false;
-  }
+  AXOM_HOST_DEVICE static constexpr bool supports_strided_structured_indexing() { return false; }
 
   /*!
    * \brief constructor
@@ -115,10 +112,7 @@ public:
    * \return The global logical index.
    */
   AXOM_HOST_DEVICE
-  inline LogicalIndex GlobalToGlobal(IndexType global) const
-  {
-    return IndexToLogicalIndex(global);
-  }
+  inline LogicalIndex GlobalToGlobal(IndexType global) const { return IndexToLogicalIndex(global); }
 
   /*!
    * \brief Turn global logical index to local logical index. no-op.
@@ -126,10 +120,7 @@ public:
    * \return Same as the input in this case.
    */
   AXOM_HOST_DEVICE
-  inline LogicalIndex GlobalToLocal(const LogicalIndex &index) const
-  {
-    return index;
-  }
+  inline LogicalIndex GlobalToLocal(const LogicalIndex &index) const { return index; }
 
   /*!
    * \brief Turn global index to local index. no-op.
@@ -145,10 +136,7 @@ public:
    * \return Same as the input in this case.
    */
   AXOM_HOST_DEVICE
-  inline LogicalIndex LocalToGlobal(const LogicalIndex &index) const
-  {
-    return index;
-  }
+  inline LogicalIndex LocalToGlobal(const LogicalIndex &index) const { return index; }
 
   /*!
    * \brief Turn local index to global index. no-op.
@@ -168,8 +156,8 @@ public:
   /// @{
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type
-  IndexToLogicalIndex(IndexType index) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, LogicalIndex>::type IndexToLogicalIndex(
+    IndexType index) const
   {
     LogicalIndex logical;
     logical[0] = index;
@@ -177,8 +165,8 @@ public:
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type
-  IndexToLogicalIndex(IndexType index) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, LogicalIndex>::type IndexToLogicalIndex(
+    IndexType index) const
   {
     LogicalIndex logical;
     const auto nx = m_dimensions[0];
@@ -188,8 +176,8 @@ public:
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type
-  IndexToLogicalIndex(IndexType index) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, LogicalIndex>::type IndexToLogicalIndex(
+    IndexType index) const
   {
     LogicalIndex logical;
     const auto nx = m_dimensions[0];
@@ -211,25 +199,25 @@ public:
    */
   /// @{
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, IndexType>::type
-  LogicalIndexToIndex(const LogicalIndex &logical) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 1, IndexType>::type LogicalIndexToIndex(
+    const LogicalIndex &logical) const
   {
     return logical[0];
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, IndexType>::type
-  LogicalIndexToIndex(const LogicalIndex &logical) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 2, IndexType>::type LogicalIndexToIndex(
+    const LogicalIndex &logical) const
   {
     return logical[1] * m_dimensions[0] + logical[0];
   }
 
   template <int _ndims = NDIMS>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, IndexType>::type
-  LogicalIndexToIndex(const LogicalIndex &logical) const
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, IndexType>::type LogicalIndexToIndex(
+    const LogicalIndex &logical) const
   {
-    return (logical[2] * m_dimensions[1] * m_dimensions[0]) +
-      (logical[1] * m_dimensions[0]) + logical[0];
+    return (logical[2] * m_dimensions[1] * m_dimensions[0]) + (logical[1] * m_dimensions[0]) +
+      logical[0];
   }
 
   /// @}
@@ -260,10 +248,7 @@ public:
    * \return True if the index is within the index, false otherwise.
    */
   AXOM_HOST_DEVICE
-  bool contains(IndexType index) const
-  {
-    return contains(IndexToLogicalIndex(index));
-  }
+  bool contains(IndexType index) const { return contains(IndexToLogicalIndex(index)); }
 
   /*!
    * \brief Expand the current StructuredIndexing by one in each dimension.

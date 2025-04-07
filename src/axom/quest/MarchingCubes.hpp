@@ -195,10 +195,9 @@ public:
     data to host memory.  To access the data without deep-copying, see
     the other output methods in this name group.
   */
-  void populateContourMesh(
-    axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
-    const std::string &cellIdField = {},
-    const std::string &domainIdField = {}) const;
+  void populateContourMesh(axom::mint::UnstructuredMesh<axom::mint::SINGLE_SHAPE> &mesh,
+                           const std::string &cellIdField = {},
+                           const std::string &domainIdField = {}) const;
 
   /*!
     @brief Return view of facet corner node indices (connectivity) Array.
@@ -217,10 +216,7 @@ public:
     The array shape is (getContourNodeCount(), <spatial dimension>), where
     the second index is the spatial index.
   */
-  axom::ArrayView<const double, 2> getContourNodeCoords() const
-  {
-    return m_facetNodeCoords.view();
-  }
+  axom::ArrayView<const double, 2> getContourNodeCoords() const { return m_facetNodeCoords.view(); }
 
   /*!
     @brief Return view of parent cell indices Array.
@@ -306,8 +302,7 @@ private:
   int m_allocatorID = axom::INVALID_ALLOCATOR_ID;
 
   //@brief Choice of full or partial data-parallelism, or byPolicy.
-  MarchingCubesDataParallelism m_dataParallelism =
-    MarchingCubesDataParallelism::byPolicy;
+  MarchingCubesDataParallelism m_dataParallelism = MarchingCubesDataParallelism::byPolicy;
 
   //!@brief Number of domains.
   axom::IndexType m_domainCount;

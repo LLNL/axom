@@ -29,24 +29,17 @@ template <typename TopologyView, typename CoordsetView>
 struct PrimalAdaptor
 {
   using value_type = typename CoordsetView::value_type;
-  using Polygon = axom::primal::Polygon<value_type,
-                                        CoordsetView::dimension(),
-                                        axom::primal::PolygonArray::Static>;
-  using Tetrahedron =
-    axom::primal::Tetrahedron<value_type, CoordsetView::dimension()>;
-  using Hexahedron =
-    axom::primal::Hexahedron<value_type, CoordsetView::dimension()>;
-  using BoundingBox =
-    axom::primal::BoundingBox<value_type, CoordsetView::dimension()>;
+  using Polygon =
+    axom::primal::Polygon<value_type, CoordsetView::dimension(), axom::primal::PolygonArray::Static>;
+  using Tetrahedron = axom::primal::Tetrahedron<value_type, CoordsetView::dimension()>;
+  using Hexahedron = axom::primal::Hexahedron<value_type, CoordsetView::dimension()>;
+  using BoundingBox = axom::primal::BoundingBox<value_type, CoordsetView::dimension()>;
 
   /*!
    * \brief Return the number of zones in the associated topology view.
    * \return The number of zones in the associated topology view.
    */
-  AXOM_HOST_DEVICE axom::IndexType numberOfZones() const
-  {
-    return m_topologyView.numberOfZones();
-  }
+  AXOM_HOST_DEVICE axom::IndexType numberOfZones() const { return m_topologyView.numberOfZones(); }
 
   /*!
    * \brief Return the bounding box for the zi'th zone.
@@ -78,8 +71,7 @@ struct PrimalAdaptor
    * \return A Polygon that represents the zone from the input topology.
    */
   template <int TDIM = CoordsetView::dimension()>
-  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, Polygon>::type getShape(
-    axom::IndexType zi) const
+  AXOM_HOST_DEVICE typename std::enable_if<TDIM == 2, Polygon>::type getShape(axom::IndexType zi) const
   {
     const auto zone = m_topologyView.zone(zi);
     Polygon p;
@@ -97,12 +89,10 @@ struct PrimalAdaptor
    *
    * \return A Tetrahedron that represents the zone from the input topology.
    */
-  template <int TDIM = CoordsetView::dimension(),
-            typename ShapeType = typename TopologyView::ShapeType>
+  template <int TDIM = CoordsetView::dimension(), typename ShapeType = typename TopologyView::ShapeType>
   AXOM_HOST_DEVICE typename std::enable_if<
     TDIM == 3 &&
-      std::is_same<ShapeType,
-                   axom::mir::views::TetShape<typename ShapeType::ConnectivityStorage>>::value,
+      std::is_same<ShapeType, axom::mir::views::TetShape<typename ShapeType::ConnectivityStorage>>::value,
     Tetrahedron>::type
   getShape(axom::IndexType zi) const
   {
@@ -120,12 +110,10 @@ struct PrimalAdaptor
    *
    * \return A Hexahedron that represents the zone from the input topology.
    */
-  template <int TDIM = CoordsetView::dimension(),
-            typename ShapeType = typename TopologyView::ShapeType>
+  template <int TDIM = CoordsetView::dimension(), typename ShapeType = typename TopologyView::ShapeType>
   AXOM_HOST_DEVICE typename std::enable_if<
     TDIM == 3 &&
-      std::is_same<ShapeType,
-                   axom::mir::views::HexShape<typename ShapeType::ConnectivityStorage>>::value,
+      std::is_same<ShapeType, axom::mir::views::HexShape<typename ShapeType::ConnectivityStorage>>::value,
     Hexahedron>::type
   getShape(axom::IndexType zi) const
   {
@@ -150,17 +138,12 @@ struct PrimalAdaptor
    *         VariableShape is used because primal lacks Pyramid, Wedge classes and
    *         because if we're using this, we might have a mesh with mixed zone types.
    */
-  template <int TDIM = CoordsetView::dimension(),
-            typename ShapeType = typename TopologyView::ShapeType>
+  template <int TDIM = CoordsetView::dimension(), typename ShapeType = typename TopologyView::ShapeType>
   AXOM_HOST_DEVICE typename std::enable_if<
     (TDIM == 3) &&
-      (std::is_same<ShapeType,
-                    axom::mir::views::PyramidShape<typename ShapeType::ConnectivityType>>::value ||
-       std::is_same<ShapeType,
-                    axom::mir::views::WedgeShape<typename ShapeType::ConnectivityType>>::value ||
-       std::is_same<
-         ShapeType,
-         axom::mir::views::VariableShape<typename ShapeType::ConnectivityType>>::value),
+      (std::is_same<ShapeType, axom::mir::views::PyramidShape<typename ShapeType::ConnectivityType>>::value ||
+       std::is_same<ShapeType, axom::mir::views::WedgeShape<typename ShapeType::ConnectivityType>>::value ||
+       std::is_same<ShapeType, axom::mir::views::VariableShape<typename ShapeType::ConnectivityType>>::value),
     VariableShape<value_type, 3>>::type
   getShape(axom::IndexType zi) const
   {

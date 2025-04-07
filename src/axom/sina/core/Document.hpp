@@ -191,10 +191,7 @@ public:
      *
      * \return the list of relationships
      */
-  RelationshipList const &getRelationships() const noexcept
-  {
-    return relationships;
-  }
+  RelationshipList const &getRelationships() const noexcept { return relationships; }
 
   /**
      * \brief Convert this document to a conduit Node.
@@ -233,8 +230,7 @@ private:
   /**
      * Constructor helper method, extracts info from a conduit Node.
      */
-  void createFromNode(conduit::Node const &asNode,
-                      RecordLoader const &recordLoader);
+  void createFromNode(conduit::Node const &asNode, RecordLoader const &recordLoader);
   RecordList records;
   RelationshipList relationships;
 };
