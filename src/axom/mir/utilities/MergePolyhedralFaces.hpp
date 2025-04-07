@@ -48,7 +48,7 @@ public:
     namespace bputils = axom::mir::utilities::blueprint;
     using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
-    SLIC_ASSERT(n_topo["elements/shape"].as_string() == "polyhedral");
+    SLIC_ASSERT(n_topo.fetch_existing("elements/shape").as_string() == "polyhedral");
 
     AXOM_ANNOTATE_SCOPE("MergePolyhedralFaces");
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;

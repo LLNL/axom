@@ -171,7 +171,7 @@ public:
     //--------------------------------------------------------------------------
     AXOM_ANNOTATE_BEGIN("unique");
 
-    // Make faces unique.
+    // Make points unique.
     axom::Array<KeyType> uniqueNames;
     axom::mir::utilities::Unique<ExecSpace, KeyType>::execute(coordNamesView, uniqueNames, selectedIds);
     const auto uniqueNamesView = uniqueNames.view();
