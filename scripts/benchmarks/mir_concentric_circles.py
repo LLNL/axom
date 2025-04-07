@@ -65,14 +65,19 @@ def read_timings(filename, searchKey):
   Read a single Caliper log and pull out the timings we want.
   """
   retval = "" # no data
-  try:   
+  try:
     lines = open(filename, "rt").readlines()
     print(f"Reading {filename}")
     for line in lines:
       pos = line.find(searchKey)
       if pos != -1:
         toks = [x for x in line.split() if x != '']
-        retval = float(toks[2]) # timings (I)
+        #print(toks)
+        try:
+          retval = float(toks[2]) # timings (I)
+        except ValueError:
+          # The line had our searchKey but was not a Caliper line.
+          continue
         break
   except:
     print(f"Error reading {filename}")
