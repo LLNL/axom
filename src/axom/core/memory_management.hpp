@@ -59,8 +59,7 @@ enum class MemorySpace
  * \param [in] resource_type the Umpire resource type
  * \return ID the id of the predefined umpire allocator.
  */
-inline int getUmpireResourceAllocatorID(
-  umpire::resource::MemoryResourceType resource_type)
+inline int getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType resource_type)
 {
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator alloc = rm.getAllocator(resource_type);
@@ -180,9 +179,7 @@ inline void deallocate(T*& p) noexcept;
  * Otherwise, it is unused.
  */
 template <typename T>
-inline T* reallocate(T* p,
-                     std::size_t n,
-                     int allocID = getDefaultAllocatorID()) noexcept;
+inline T* reallocate(T* p, std::size_t n, int allocID = getDefaultAllocatorID()) noexcept;
 
 /*!
  * \brief Copies memory from the source to the destination.
@@ -300,8 +297,7 @@ inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept
 
   if(rm.hasAllocator(const_cast<void*>(src)))
   {
-    srcRecord = const_cast<AllocationRecord*>(
-      rm.findAllocationRecord(const_cast<void*>(src)));
+    srcRecord = const_cast<AllocationRecord*>(rm.findAllocationRecord(const_cast<void*>(src)));
     srcStrategy = srcRecord->strategy;
   }
 
@@ -336,8 +332,7 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
-  auto umpResType =
-    rm.getAllocator(allocatorId).getAllocationStrategy()->getTraits().resource;
+  auto umpResType = rm.getAllocator(allocatorId).getAllocationStrategy()->getTraits().resource;
   switch(umpResType)
   {
   case ump_res_type::host:
@@ -353,6 +348,8 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
   default:
     return MemorySpace::Dynamic;
   }
+#else
+  return MemorySpace::Dynamic;
 #endif
 }
 
@@ -361,36 +358,31 @@ inline MemorySpace getAllocatorSpace(int allocatorId)
 template <>
 inline int getAllocatorID<MemorySpace::Host>()
 {
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Host);
+  return axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Host);
 }
 
 template <>
 inline int getAllocatorID<MemorySpace::Device>()
 {
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Device);
+  return axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Device);
 }
 
 template <>
 inline int getAllocatorID<MemorySpace::Unified>()
 {
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Unified);
+  return axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Unified);
 }
 
 template <>
 inline int getAllocatorID<MemorySpace::Pinned>()
 {
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Pinned);
+  return axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Pinned);
 }
 
 template <>
 inline int getAllocatorID<MemorySpace::Constant>()
 {
-  return axom::getUmpireResourceAllocatorID(
-    umpire::resource::MemoryResourceType::Constant);
+  return axom::getUmpireResourceAllocatorID(umpire::resource::MemoryResourceType::Constant);
 }
 
 #endif
@@ -407,14 +399,10 @@ inline int getAllocatorID<MemorySpace::Constant>()
 #if defined(AXOM_USE_UMPIRE)
 inline bool isDeviceAllocator(int allocator_id)
 {
-  return axom::detail::getAllocatorSpace(allocator_id) ==
-    axom::MemorySpace::Device;
+  return axom::detail::getAllocatorSpace(allocator_id) == axom::MemorySpace::Device;
 }
 #else
-inline bool isDeviceAllocator(int AXOM_UNUSED_PARAM(allocator_id))
-{
-  return false;
-}
+inline bool isDeviceAllocator(int AXOM_UNUSED_PARAM(allocator_id)) { return false; }
 #endif
 
 }  // namespace axom
