@@ -253,7 +253,18 @@ extern "C" void sina_add_file_(char *filename, char *mime_type)
   }
 }
 
-extern "C" void write_sina_document_(char *input_fn)
+extern "C" void write_sina_document_protocol_(char *input_fn, int *protocol)
+{
+  std::string filename(input_fn);
+  axom::sina::Protocol proto = static_cast<axom::sina::Protocol>(*protocol);
+  // Save everything
+  if(sina_document)
+  {
+    axom::sina::saveDocument(*sina_document, filename.c_str(), proto);
+  }
+}
+
+extern "C" void write_sina_document_noprotocol_(char *input_fn)
 {
   std::string filename(input_fn);
   // Save everything
