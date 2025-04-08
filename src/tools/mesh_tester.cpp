@@ -149,14 +149,13 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
 void Input::parse(int argc, char** argv, axom::CLI::App& app)
 {
   app
-    .add_option(
-      "-m, --method",
-      method,
-      "Method to use. \n"
-      "Set to 'bvh' to use the bounding volume hierarchy spatial index.\n"
-      "Set to 'naive' to use the naive algorithm (without a spatial index).\n"
-      "Set to 'uniform' to use the uniform grid spatial index.\n"
-      "Set to 'implicit' to use the implicit grid spatial index.")
+    .add_option("-m, --method",
+                method,
+                "Method to use. \n"
+                "Set to 'bvh' to use the bounding volume hierarchy spatial index.\n"
+                "Set to 'naive' to use the naive algorithm (without a spatial index).\n"
+                "Set to 'uniform' to use the uniform grid spatial index.\n"
+                "Set to 'implicit' to use the implicit grid spatial index.")
     ->capture_default_str()
     ->check(axom::CLI::IsMember {Input::s_validMethods});
 
@@ -190,9 +189,7 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     ->capture_default_str()
     ->transform(axom::CLI::CheckedTransformer(Input::s_validPolicies));
 
-  app.add_option("-i,--infile", stlInput, "The STL input file")
-    ->required()
-    ->check(axom::CLI::ExistingFile);
+  app.add_option("-i,--infile", stlInput, "The STL input file")->required()->check(axom::CLI::ExistingFile);
 
   app.add_option("-o,--outfile",
                  vtkOutput,
@@ -201,26 +198,20 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
                  "Collisions mesh will end with '.collisions.vtk' and \n"
                  "welded mesh will end with '.welded.vtk'.");
 
-  app
-    .add_option("--weldThresh",
-                weldThreshold,
-                "Distance threshold for welding vertices.")
+  app.add_option("--weldThresh", weldThreshold, "Distance threshold for welding vertices.")
     ->capture_default_str();
 
   app
-    .add_option(
-      "--intersectionThresh",
-      intersectionThreshold,
-      "Tolerance threshold to use when testing for intersecting triangles")
+    .add_option("--intersectionThresh",
+                intersectionThreshold,
+                "Tolerance threshold to use when testing for intersecting triangles")
     ->capture_default_str();
 
-  app.add_flag(
-    "--skipWeld",
-    skipWeld,
-    "Don't weld vertices (useful for testing, not helpful otherwise).");
+  app.add_flag("--skipWeld",
+               skipWeld,
+               "Don't weld vertices (useful for testing, not helpful otherwise).");
 
-  app.add_flag("-v,--verbose", verboseOutput, "Increase logging verbosity.")
-    ->capture_default_str();
+  app.add_flag("-v,--verbose", verboseOutput, "Increase logging verbosity.")->capture_default_str();
 
   app.get_formatter()->column_width(76);
 
@@ -233,33 +224,23 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
   // Output parsed information
   SLIC_INFO(
     "Using parameter values: "
-    << "\n  method = " << method
-    << (method == "uniform" ? " (use uniform grid)" : "")
+    << "\n  method = " << method << (method == "uniform" ? " (use uniform grid)" : "")
     << (method == "naive" ? " (use naive algorithm)" : "")
     << (method == "bvh" ? " (use bounding volume hierarchy)" : "")
     << (method == "uniform" ? "\n  resolution = " + std::to_string(resolution) : "")
     << (method == "naive" || method == "bvh" ? "\n  policy = " : "")
     << (method == "naive" || method == "bvh" ? std::to_string(policy) : "")
-    << ((method == "naive" || method == "bvh") && policy == seq
-          ? " (use sequential policy)"
-          : "")
+    << ((method == "naive" || method == "bvh") && policy == seq ? " (use sequential policy)" : "")
     << ((method == "naive" || method == "bvh") && policy == raja_seq
           ? " (use RAJA sequential policy)"
           : "")
-    << ((method == "naive" || method == "bvh") && policy == raja_omp
-          ? " (use RAJA OpenMP policy)"
-          : "")
-    << ((method == "naive" || method == "bvh") && policy == raja_cuda
-          ? " (use RAJA CUDA policy)"
-          : "")
-    << ((method == "naive" || method == "bvh") && policy == raja_hip
-          ? " (use RAJA HIP policy)"
-          : "")
-    << "\n  weld threshold = " << weldThreshold << "\n  "
-    << (skipWeld ? "" : "not ") << "skipping weld"
-    << "\n  intersection tolerance = " << intersectionThreshold
-    << "\n  infile = " << stlInput << "\n  collisions outfile = "
-    << collisionsMeshName() << "\n  weld outfile = " << weldMeshName());
+    << ((method == "naive" || method == "bvh") && policy == raja_omp ? " (use RAJA OpenMP policy)" : "")
+    << ((method == "naive" || method == "bvh") && policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
+    << ((method == "naive" || method == "bvh") && policy == raja_hip ? " (use RAJA HIP policy)" : "")
+    << "\n  weld threshold = " << weldThreshold << "\n  " << (skipWeld ? "" : "not ") << "skipping weld"
+    << "\n  intersection tolerance = " << intersectionThreshold << "\n  infile = " << stlInput
+    << "\n  collisions outfile = " << collisionsMeshName()
+    << "\n  weld outfile = " << weldMeshName());
 }
 
 void Input::fixOutfilePath()
@@ -296,14 +277,11 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 
 AXOM_HOST_DEVICE bool checkTT(Triangle3& t1, Triangle3& t2, double EPS);
 
-std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
-  mint::Mesh* surface_mesh,
-  std::vector<int>& degenerate,
-  double EPS);
+std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
+                                                            std::vector<int>& degenerate,
+                                                            double EPS);
 
-void announceMeshProblems(int triangleCount,
-                          int intersectPairCount,
-                          int degenerateCount);
+void announceMeshProblems(int triangleCount, int intersectPairCount, int degenerateCount);
 
 void saveProblemFlagsToMesh(mint::Mesh* surface_mesh,
                             const std::vector<std::pair<int, int>>& c,
@@ -352,10 +330,9 @@ inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
   return tri;
 }
 
-std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
-  mint::Mesh* surface_mesh,
-  std::vector<int>& degenerate,
-  double EPS)
+std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
+                                                            std::vector<int>& degenerate,
+                                                            double EPS)
 {
   SLIC_INFO("Running naive intersection algorithm.");
 
@@ -399,14 +376,12 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
 
 #if defined(AXOM_USE_RAJA)
 template <typename ExecSpace>
-std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
-  mint::Mesh* surface_mesh,
-  std::vector<int>& degenerate,
-  double EPS)
+std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_mesh,
+                                                            std::vector<int>& degenerate,
+                                                            double EPS)
 {
   SLIC_INFO("Running naive intersection algorithm "
-            << " in execution Space: "
-            << axom::execution_space<ExecSpace>::name());
+            << " in execution Space: " << axom::execution_space<ExecSpace>::name());
 
   // Get allocators
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
@@ -433,17 +408,15 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
   RAJA::RangeSegment row_range(0, ncells);
   RAJA::RangeSegment col_range(0, ncells);
 
-  using KERNEL_POL =
-    typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
+  using KERNEL_POL = typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
   using REDUCE_POL = typename axom::execution_space<ExecSpace>::reduce_policy;
   using ATOMIC_POL = typename axom::execution_space<ExecSpace>::atomic_policy;
 
   RAJA::ReduceSum<REDUCE_POL, int> numIntersect(0);
 
   // Copy triangles to device
-  axom::Array<Triangle3> tris_d = on_device
-    ? axom::Array<Triangle3>(tris_h, device_allocator)
-    : axom::Array<Triangle3>();
+  axom::Array<Triangle3> tris_d =
+    on_device ? axom::Array<Triangle3>(tris_h, device_allocator) : axom::Array<Triangle3>();
 
   auto tris_v = on_device ? tris_d.view() : tris_h.view();
 
@@ -461,14 +434,11 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
     });
 
   // Allocation to hold intersection pairs and counter to know where to store
-  axom::Array<int> intersections_d(numIntersect.get() * 2,
-                                   numIntersect.get() * 2,
-                                   device_allocator);
+  axom::Array<int> intersections_d(numIntersect.get() * 2, numIntersect.get() * 2, device_allocator);
   axom::Array<int> counter_h(1, 1, host_allocator);
   counter_h[0] = 0;
-  axom::Array<int> counter_d = on_device
-    ? axom::Array<int>(counter_h, device_allocator)
-    : axom::Array<int>();
+  axom::Array<int> counter_d =
+    on_device ? axom::Array<int>(counter_h, device_allocator) : axom::Array<int>();
 
   auto intersections_v = intersections_d.view();
   auto counter_v = on_device ? counter_d.view() : counter_h.view();
@@ -489,9 +459,8 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
     });
 
   // Copy intersections to host
-  axom::Array<int> intersections_h = on_device
-    ? axom::Array<int>(intersections_d, host_allocator)
-    : std::move(intersections_d);
+  axom::Array<int> intersections_h =
+    on_device ? axom::Array<int>(intersections_d, host_allocator) : std::move(intersections_d);
 
   // Initialize pairs of clashes
   for(auto i = 0; i < numIntersect.get() * 2; i += 2)
@@ -503,13 +472,10 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(
 }
 #endif  // defined(AXOM_USE_RAJA)
 
-void announceMeshProblems(int triangleCount,
-                          int intersectPairCount,
-                          int degenerateCount)
+void announceMeshProblems(int triangleCount, int intersectPairCount, int degenerateCount)
 {
   std::cout << triangleCount << " triangles, with " << intersectPairCount
-            << " intersecting tri pairs, " << degenerateCount
-            << " degenerate tris." << std::endl;
+            << " intersecting tri pairs, " << degenerateCount << " degenerate tris." << std::endl;
 }
 
 void saveProblemFlagsToMesh(mint::Mesh* mesh,
@@ -518,10 +484,8 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
 {
   // Create new Field variables to hold degenerate and intersecting info
   const int num_cells = mesh->getNumberOfCells();
-  int* intersectptr =
-    mesh->createField<int>("nbr_intersection", mint::CELL_CENTERED);
-  int* dgnptr =
-    mesh->createField<int>("degenerate_triangles", mint::CELL_CENTERED);
+  int* intersectptr = mesh->createField<int>("nbr_intersection", mint::CELL_CENTERED);
+  int* dgnptr = mesh->createField<int>("degenerate_triangles", mint::CELL_CENTERED);
 
   // Initialize everything to 0
   for(int i = 0; i < num_cells; ++i)
@@ -585,10 +549,8 @@ void initializeLogger()
 
   // Customize logging levels and formatting
   std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream* defaultStream =
-    new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream* compactStream =
-    new slic::GenericOutputStream(&std::cout, slicFormatStr);
+  slic::GenericOutputStream* defaultStream = new slic::GenericOutputStream(&std::cout);
+  slic::GenericOutputStream* compactStream = new slic::GenericOutputStream(&std::cout, slicFormatStr);
 
   slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
   slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
@@ -660,9 +622,8 @@ int main(int argc, char** argv)
 
     timer.stop();
     SLIC_INFO("Vertex welding took " << timer.elapsedTimeInSec() << " seconds.");
-    SLIC_INFO("After welding, mesh has "
-              << surface_mesh->getNumberOfNodes() << " vertices and "
-              << surface_mesh->getNumberOfCells() << " triangles.");
+    SLIC_INFO("After welding, mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
+                                         << surface_mesh->getNumberOfCells() << " triangles.");
   }
 
   // Detect collisions
@@ -678,39 +639,31 @@ int main(int argc, char** argv)
       switch(params.policy)
       {
       case seq:
-        collisions = naiveIntersectionAlgorithm(surface_mesh,
-                                                degenerate,
-                                                params.intersectionThreshold);
+        collisions =
+          naiveIntersectionAlgorithm(surface_mesh, degenerate, params.intersectionThreshold);
         break;
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       case raja_seq:
         collisions =
-          naiveIntersectionAlgorithm<seq_exec>(surface_mesh,
-                                               degenerate,
-                                               params.intersectionThreshold);
+          naiveIntersectionAlgorithm<seq_exec>(surface_mesh, degenerate, params.intersectionThreshold);
         break;
   #ifdef AXOM_USE_OPENMP
       case raja_omp:
         collisions =
-          naiveIntersectionAlgorithm<omp_exec>(surface_mesh,
-                                               degenerate,
-                                               params.intersectionThreshold);
+          naiveIntersectionAlgorithm<omp_exec>(surface_mesh, degenerate, params.intersectionThreshold);
         break;
   #endif
   #ifdef AXOM_USE_CUDA
       case raja_cuda:
-        collisions =
-          naiveIntersectionAlgorithm<cuda_exec>(surface_mesh,
-                                                degenerate,
-                                                params.intersectionThreshold);
+        collisions = naiveIntersectionAlgorithm<cuda_exec>(surface_mesh,
+                                                           degenerate,
+                                                           params.intersectionThreshold);
         break;
   #endif
   #if defined(AXOM_USE_HIP)
       case raja_hip:
         collisions =
-          naiveIntersectionAlgorithm<hip_exec>(surface_mesh,
-                                               degenerate,
-                                               params.intersectionThreshold);
+          naiveIntersectionAlgorithm<hip_exec>(surface_mesh, degenerate, params.intersectionThreshold);
         break;
   #endif
 #endif  // AXOM_USE_RAJA && AXOM_USE_UMPIRE
@@ -730,45 +683,40 @@ int main(int argc, char** argv)
           "BVH was compiled with RAJA - seq and raja_seq execution "
           "will be equivalent");
 #endif
-        quest::findTriMeshIntersectionsBVH<seq_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsBVH<seq_exec, double>(surface_mesh,
+                                                             collisions,
+                                                             degenerate,
+                                                             params.intersectionThreshold);
         break;
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
       case raja_seq:
-        quest::findTriMeshIntersectionsBVH<seq_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsBVH<seq_exec, double>(surface_mesh,
+                                                             collisions,
+                                                             degenerate,
+                                                             params.intersectionThreshold);
         break;
   #ifdef AXOM_USE_OPENMP
       case raja_omp:
-        quest::findTriMeshIntersectionsBVH<omp_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsBVH<omp_exec, double>(surface_mesh,
+                                                             collisions,
+                                                             degenerate,
+                                                             params.intersectionThreshold);
         break;
   #endif
   #ifdef AXOM_USE_CUDA
       case raja_cuda:
-        quest::findTriMeshIntersectionsBVH<cuda_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsBVH<cuda_exec, double>(surface_mesh,
+                                                              collisions,
+                                                              degenerate,
+                                                              params.intersectionThreshold);
         break;
   #endif
   #if defined(AXOM_USE_HIP)
       case raja_hip:
-        quest::findTriMeshIntersectionsBVH<hip_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsBVH<hip_exec, double>(surface_mesh,
+                                                             collisions,
+                                                             degenerate,
+                                                             params.intersectionThreshold);
         break;
   #endif
 #endif  // AXOM_USE_RAJA && AXOM_USE_UMPIRE
@@ -787,50 +735,45 @@ int main(int argc, char** argv)
           "ImplicitGrid was compiled with RAJA - seq and raja_seq "
           "execution will be equivalent");
 #endif
-        quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(surface_mesh,
+                                                                      collisions,
+                                                                      degenerate,
+                                                                      params.resolution,
+                                                                      params.intersectionThreshold);
         break;
 #ifdef AXOM_USE_RAJA
       case raja_seq:
-        quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(surface_mesh,
+                                                                      collisions,
+                                                                      degenerate,
+                                                                      params.resolution,
+                                                                      params.intersectionThreshold);
         break;
   #ifdef AXOM_USE_OPENMP
       case raja_omp:
-        quest::findTriMeshIntersectionsImplicitGrid<omp_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsImplicitGrid<omp_exec, double>(surface_mesh,
+                                                                      collisions,
+                                                                      degenerate,
+                                                                      params.resolution,
+                                                                      params.intersectionThreshold);
         break;
   #endif
   #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case raja_cuda:
-        quest::findTriMeshIntersectionsImplicitGrid<cuda_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsImplicitGrid<cuda_exec, double>(surface_mesh,
+                                                                       collisions,
+                                                                       degenerate,
+                                                                       params.resolution,
+                                                                       params.intersectionThreshold);
         break;
   #endif
   #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case raja_hip:
-        quest::findTriMeshIntersectionsImplicitGrid<hip_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsImplicitGrid<hip_exec, double>(surface_mesh,
+                                                                      collisions,
+                                                                      degenerate,
+                                                                      params.resolution,
+                                                                      params.intersectionThreshold);
         break;
   #endif
 #endif  // AXOM_USE_RAJA
@@ -855,41 +798,37 @@ int main(int argc, char** argv)
         break;
 #ifdef AXOM_USE_RAJA
       case raja_seq:
-        quest::findTriMeshIntersectionsUniformGrid<seq_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsUniformGrid<seq_exec, double>(surface_mesh,
+                                                                     collisions,
+                                                                     degenerate,
+                                                                     params.resolution,
+                                                                     params.intersectionThreshold);
         break;
   #ifdef AXOM_USE_OPENMP
       case raja_omp:
-        quest::findTriMeshIntersectionsUniformGrid<omp_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsUniformGrid<omp_exec, double>(surface_mesh,
+                                                                     collisions,
+                                                                     degenerate,
+                                                                     params.resolution,
+                                                                     params.intersectionThreshold);
         break;
   #endif
   #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
       case raja_cuda:
-        quest::findTriMeshIntersectionsUniformGrid<cuda_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsUniformGrid<cuda_exec, double>(surface_mesh,
+                                                                      collisions,
+                                                                      degenerate,
+                                                                      params.resolution,
+                                                                      params.intersectionThreshold);
         break;
   #endif
   #if defined(AXOM_USE_HIP) && defined(AXOM_USE_UMPIRE)
       case raja_hip:
-        quest::findTriMeshIntersectionsUniformGrid<hip_exec, double>(
-          surface_mesh,
-          collisions,
-          degenerate,
-          params.resolution,
-          params.intersectionThreshold);
+        quest::findTriMeshIntersectionsUniformGrid<hip_exec, double>(surface_mesh,
+                                                                     collisions,
+                                                                     degenerate,
+                                                                     params.resolution,
+                                                                     params.intersectionThreshold);
         break;
   #endif
 #endif  // AXOM_USE_RAJA
@@ -899,8 +838,7 @@ int main(int argc, char** argv)
       }
     }
     timer.stop();
-    SLIC_INFO("Detecting intersecting triangles took "
-              << timer.elapsedTimeInSec() << " seconds.");
+    SLIC_INFO("Detecting intersecting triangles took " << timer.elapsedTimeInSec() << " seconds.");
 
     announceMeshProblems(surface_mesh->getNumberOfCells(),
                          static_cast<int>(collisions.size()),
@@ -927,10 +865,8 @@ int main(int argc, char** argv)
         auto t1 = getMeshTriangle(i.first, surface_mesh);
         auto t2 = getMeshTriangle(i.second, surface_mesh);
 
-        SLIC_INFO("  Triangle " << i.first << " -- " << std::setprecision(17)
-                                << t1);
-        SLIC_INFO("  Triangle " << i.second << " -- " << std::setprecision(17)
-                                << t2 << "\n");
+        SLIC_INFO("  Triangle " << i.first << " -- " << std::setprecision(17) << t1);
+        SLIC_INFO("  Triangle " << i.second << " -- " << std::setprecision(17) << t2 << "\n");
       }
     }
   }
@@ -964,8 +900,7 @@ int main(int argc, char** argv)
       break;
     }
     // _report_watertight_end
-    SLIC_INFO("Testing for watertightness took " << timer2.elapsedTimeInSec()
-                                                 << " seconds.");
+    SLIC_INFO("Testing for watertightness took " << timer2.elapsedTimeInSec() << " seconds.");
 
     mint::write_vtk(surface_mesh, params.weldMeshName());
   }

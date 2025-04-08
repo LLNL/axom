@@ -213,8 +213,7 @@ AXOM_HOST_DEVICE inline void n_sort(const value_type n[3],  // input vector
  * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
-AXOM_HOST_DEVICE value_type
-vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
+AXOM_HOST_DEVICE value_type vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
 {
   value_type vf = 0.0, dd1, dd2, dd3;
   enum
@@ -285,8 +284,7 @@ vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
 
       dd1 = d - n1;
       dd2 = d - n2;
-      vf =
-        one6 * (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2) / (n1 * n2 * n3);
+      vf = one6 * (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2) / (n1 * n2 * n3);
       break;
 
     case cut_hex:
@@ -294,9 +292,7 @@ vf_1cube(value_type d, value_type n1, value_type n2, value_type n3)
       dd1 = d - n1;
       dd2 = d - n2;
       dd3 = d - n3;
-      vf = one6 *
-        (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2 - dd3 * dd3 * dd3) /
-        (n1 * n2 * n3);
+      vf = one6 * (d * d * d - dd1 * dd1 * dd1 - dd2 * dd2 * dd2 - dd3 * dd3 * dd3) / (n1 * n2 * n3);
       break;
 
     case cut_quadb:
@@ -694,11 +690,7 @@ AXOM_HOST_DEVICE value_type d_3cube(const value_type n[3], value_type vf13)
  * \note Adapted from code by Jeff Grandy
  */
 template <typename value_type>
-AXOM_HOST_DEVICE void vf_3cube(value_type n[3],
-                               value_type pd,
-                               value_type *vfs,
-                               const int *ivf,
-                               int k)
+AXOM_HOST_DEVICE void vf_3cube(value_type n[3], value_type pd, value_type *vfs, const int *ivf, int k)
 {
   /* find node of lowest d */
   /* as 0 or 1 offset for each coord.  */
@@ -754,8 +746,7 @@ AXOM_HOST_DEVICE void elvira2xy(const value_type *vf, value_type n[3])
                  (vf[center] - vf[top]) * (vf[center] - vf[top]));
   variance[1] = ((vf[center] - vf[left]) * (vf[center] - vf[left]) +
                  (vf[center] - vf[right]) * (vf[center] - vf[right]));
-  const auto direction =
-    (variance[0] < variance[1]) ? Direction::HORIZONTAL : Direction::VERTICAL;
+  const auto direction = (variance[0] < variance[1]) ? Direction::HORIZONTAL : Direction::VERTICAL;
 
   // Compute normals
   Result2D<value_type> result;
@@ -982,10 +973,7 @@ AXOM_HOST_DEVICE void computeJacobian(const value_type *xcst,
  * \return The stencil size for dimension \a NDIMS.
  */
 AXOM_HOST_DEVICE
-constexpr int getStencilSize(int NDIMS)
-{
-  return (NDIMS == 3) ? 27 : ((NDIMS == 2) ? 9 : 3);
-}
+constexpr int getStencilSize(int NDIMS) { return (NDIMS == 3) ? 27 : ((NDIMS == 2) ? 9 : 3); }
 
 /*! 
  * \brief Base template for a class that invokes ELVIRA on various dimension data.

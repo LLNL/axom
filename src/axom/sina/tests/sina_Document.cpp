@@ -401,9 +401,8 @@ TEST(Document, toNode_records)
   auto numRecords = sizeof(expectedIds) / sizeof(expectedIds[0]);
   for(std::size_t i = 0; i < numRecords; ++i)
   {
-    document.add(std::make_unique<TestRecord<std::string>>(expectedIds[i],
-                                                           TEST_RECORD_TYPE,
-                                                           expectedValues[i]));
+    document.add(
+      std::make_unique<TestRecord<std::string>>(expectedIds[i], TEST_RECORD_TYPE, expectedValues[i]));
   }
 
   auto asNode = document.toNode();
@@ -548,8 +547,7 @@ TEST(Document, saveDocument_json)
   }
 
   Document document;
-  document.add(
-    std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
+  document.add(std::make_unique<Record>(ID {"the id", IDType::Global}, "the type"));
 
   saveDocument(document, tmpFile.getName() + ".json");
 
@@ -586,13 +584,11 @@ TEST(Document, load_specifiedRecordLoader)
     return std::make_unique<RecordType>(
       getRequiredString("id", asNode, "Test type"),
       getRequiredString("type", asNode, "Test type"),
-      static_cast<int>(
-        getRequiredField(TEST_RECORD_VALUE_KEY, asNode, "Test type").as_int64()));
+      static_cast<int>(getRequiredField(TEST_RECORD_VALUE_KEY, asNode, "Test type").as_int64()));
   });
   Document loadedDocument = loadDocument(file.getName(), loader);
   ASSERT_EQ(1u, loadedDocument.getRecords().size());
-  auto loadedRecord =
-    dynamic_cast<RecordType const *>(loadedDocument.getRecords()[0].get());
+  auto loadedRecord = dynamic_cast<RecordType const *>(loadedDocument.getRecords()[0].get());
   ASSERT_NE(nullptr, loadedRecord);
   EXPECT_EQ(123, loadedRecord->getValue());
 }
@@ -600,10 +596,7 @@ TEST(Document, load_specifiedRecordLoader)
 TEST(Document, load_defaultRecordLoaders)
 {
   auto originalRun =
-    std::make_unique<axom::sina::Run>(ID {"the ID", IDType::Global},
-                                      "the app",
-                                      "1.2.3",
-                                      "jdoe");
+    std::make_unique<axom::sina::Run>(ID {"the ID", IDType::Global}, "the app", "1.2.3", "jdoe");
   Document originalDocument;
   originalDocument.add(std::move(originalRun));
 
@@ -615,8 +608,7 @@ TEST(Document, load_defaultRecordLoaders)
 
   Document loadedDocument = loadDocument(file.getName());
   ASSERT_EQ(1u, loadedDocument.getRecords().size());
-  auto loadedRun =
-    dynamic_cast<axom::sina::Run const *>(loadedDocument.getRecords()[0].get());
+  auto loadedRun = dynamic_cast<axom::sina::Run const *>(loadedDocument.getRecords()[0].get());
   EXPECT_NE(nullptr, loadedRun);
 }
 

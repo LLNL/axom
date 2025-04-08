@@ -74,8 +74,7 @@ static int ShapeID_to_vtk_cell(int shape_value)
   return vtktype;
 }
 
-static void save_unstructured_vtk(const conduit::Node &mesh,
-                                  const std::string &path)
+static void save_unstructured_vtk(const conduit::Node &mesh, const std::string &path)
 {
   FILE *file = fopen(path.c_str(), "wt");
   if(file == nullptr)
@@ -118,10 +117,7 @@ static void save_unstructured_vtk(const conduit::Node &mesh,
       for(size_t i = 0; i < num_points; ++i)
       {
         const auto p = coordsetView[i];
-        fprintf(file,
-                "%f %f 0\n",
-                static_cast<float>(p[0]),
-                static_cast<float>(p[1]));
+        fprintf(file, "%f %f 0\n", static_cast<float>(p[0]), static_cast<float>(p[1]));
       }
     }
   });
@@ -177,8 +173,8 @@ static void save_unstructured_vtk(const conduit::Node &mesh,
   }
   else
   {
-    const auto type = ShapeID_to_vtk_cell(
-      axom::mir::views::shapeNameToID(elements["shape"].as_string()));
+    const auto type =
+      ShapeID_to_vtk_cell(axom::mir::views::shapeNameToID(elements["shape"].as_string()));
     for(size_t i = 0; i < num_cells; ++i)
     {
       fprintf(file, "%d\n", type);

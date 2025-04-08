@@ -64,18 +64,15 @@ static axom::float64 calculatePercentOverlapMonteCarlo(int gridSize,
   {
     // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
     const int numSamples = std::min(gridSize, 20);
-    float delta_x = axom::utilities::abs(quadP2[0] - quadP1[0]) /
-      static_cast<float>(numSamples - 1);
-    float delta_y = axom::utilities::abs(quadP0[1] - quadP1[1]) /
-      static_cast<float>(numSamples - 1);
+    float delta_x = axom::utilities::abs(quadP2[0] - quadP1[0]) / static_cast<float>(numSamples - 1);
+    float delta_y = axom::utilities::abs(quadP0[1] - quadP1[1]) / static_cast<float>(numSamples - 1);
     int countOverlap = 0;
     for(int y = 0; y < numSamples; ++y)
     {
       for(int x = 0; x < numSamples; ++x)
       {
         PointType samplePoint({delta_x * x + quadP1[0], delta_y * y + quadP1[1]});
-        if(primal::squared_distance(samplePoint, circleCenter) < dRSq)
-          ++countOverlap;
+        if(primal::squared_distance(samplePoint, circleCenter) < dRSq) ++countOverlap;
       }
     }
     return static_cast<axom::float64>(countOverlap) /
@@ -104,12 +101,11 @@ int materialAtPoint(const PointType& samplePoint,
 
 //--------------------------------------------------------------------------------
 template <typename TopologyView, typename CoordsetView>
-void generateSphericalVolumeFractions(
-  TopologyView topologyView,
-  CoordsetView coordsetView,
-  int gridSize,
-  int numSpheres,
-  std::vector<std::vector<axom::float64>>& materialVolumeFractionsData)
+void generateSphericalVolumeFractions(TopologyView topologyView,
+                                      CoordsetView coordsetView,
+                                      int gridSize,
+                                      int numSpheres,
+                                      std::vector<std::vector<axom::float64>>& materialVolumeFractionsData)
 {
   using PointType = typename CoordsetView::PointType;
   AXOM_ANNOTATE_SCOPE("generateSphericalVolumeFractions");
@@ -127,8 +123,7 @@ void generateSphericalVolumeFractions(
   if(numSpheres <= 1)
     radiusDelta = (maxRadius - minRadius);
   else
-    radiusDelta =
-      (maxRadius - minRadius) / static_cast<axom::float64>(numSpheres - 1);
+    radiusDelta = (maxRadius - minRadius) / static_cast<axom::float64>(numSpheres - 1);
 
   for(int i = 0; i < numSpheres; ++i)
   {
@@ -159,8 +154,7 @@ void generateSphericalVolumeFractions(
     int cornerMats[8];
     for(int i = 0; i < 8; i++)
     {
-      cornerMats[i] =
-        materialAtPoint(coordsetView[zone.getId(i)], sphereCenter, sphereRadii2);
+      cornerMats[i] = materialAtPoint(coordsetView[zone.getId(i)], sphereCenter, sphereRadii2);
     }
     // See whether the materials are all the same at the corners.
     bool allSame = true;
@@ -188,12 +182,9 @@ void generateSphericalVolumeFractions(
       const auto v3 = coordsetView[zone.getId(3)];
       const auto v4 = coordsetView[zone.getId(4)];
 
-      float delta_x =
-        axom::utilities::abs(v1[0] - v0[0]) / static_cast<float>(numSamples - 1);
-      float delta_y =
-        axom::utilities::abs(v3[1] - v0[1]) / static_cast<float>(numSamples - 1);
-      float delta_z =
-        axom::utilities::abs(v4[2] - v0[2]) / static_cast<float>(numSamples - 1);
+      float delta_x = axom::utilities::abs(v1[0] - v0[0]) / static_cast<float>(numSamples - 1);
+      float delta_y = axom::utilities::abs(v3[1] - v0[1]) / static_cast<float>(numSamples - 1);
+      float delta_z = axom::utilities::abs(v4[2] - v0[2]) / static_cast<float>(numSamples - 1);
 
       for(int z = 0; z < numSamples; ++z)
       {
@@ -201,13 +192,11 @@ void generateSphericalVolumeFractions(
         {
           for(int x = 0; x < numSamples; ++x)
           {
-            const PointType samplePoint(
-              {static_cast<float>(delta_x * x + v0[0]),
-               static_cast<float>(delta_y * y + v0[1]),
-               static_cast<float>(delta_z * z + v0[2])});
+            const PointType samplePoint({static_cast<float>(delta_x * x + v0[0]),
+                                         static_cast<float>(delta_y * y + v0[1]),
+                                         static_cast<float>(delta_z * z + v0[2])});
 
-            const int mat =
-              materialAtPoint(samplePoint, sphereCenter, sphereRadii2);
+            const int mat = materialAtPoint(samplePoint, sphereCenter, sphereRadii2);
             materialCount[mat]++;
           }
         }
@@ -215,8 +204,7 @@ void generateSphericalVolumeFractions(
     }
 
     // Assign the element volume fractions based on the count of the samples in each circle
-    const axom::float64 scale =
-      1. / static_cast<axom::float64>(numSamples * numSamples * numSamples);
+    const axom::float64 scale = 1. / static_cast<axom::float64>(numSamples * numSamples * numSamples);
     for(int matID = 0; matID < numMaterials; ++matID)
     {
       materialVolumeFractionsData[matID][eID] = materialCount[matID] * scale;
@@ -488,13 +476,11 @@ void MeshTester::initTestCaseFour(conduit::Node& mesh)
 
   // Make views
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
-  CoordsetView coordsetView(
-    bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
-    bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
-  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<
-    axom::mir::views::QuadShape<int>>;
-  TopoView topoView(bputils::make_array_view<int>(
-    mesh["topologies/mesh/elements/connectivity"]));
+  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView =
+    axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
 
   // Add material
   const Point2 circleCenter({1.5, 1.5});
@@ -519,13 +505,11 @@ void MeshTester::createUniformGridTestCaseMesh(int gridSize,
 
   // Make views
   using CoordsetView = axom::mir::views::ExplicitCoordsetView<float, 2>;
-  CoordsetView coordsetView(
-    bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
-    bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
-  using TopoView = axom::mir::views::UnstructuredTopologySingleShapeView<
-    axom::mir::views::QuadShape<int>>;
-  TopoView topoView(bputils::make_array_view<int>(
-    mesh["topologies/mesh/elements/connectivity"]));
+  CoordsetView coordsetView(bputils::make_array_view<float>(mesh["coordsets/coords/values/x"]),
+                            bputils::make_array_view<float>(mesh["coordsets/coords/values/y"]));
+  using TopoView =
+    axom::mir::views::UnstructuredTopologySingleShapeView<axom::mir::views::QuadShape<int>>;
+  TopoView topoView(bputils::make_array_view<int>(mesh["topologies/mesh/elements/connectivity"]));
 
   // Add material
   int numSamples = 100;
@@ -598,11 +582,10 @@ void MeshTester::generateGrid(int gridSize, conduit::Node& mesh)
 }
 
 //--------------------------------------------------------------------------------
-static void addMaterial(
-  axom::IndexType numElements,
-  int numMaterials,
-  const std::vector<std::vector<axom::float64>>& materialVolumeFractionsData,
-  conduit::Node& mesh)
+static void addMaterial(axom::IndexType numElements,
+                        int numMaterials,
+                        const std::vector<std::vector<axom::float64>>& materialVolumeFractionsData,
+                        conduit::Node& mesh)
 {
   AXOM_ANNOTATE_SCOPE("addMaterial");
   // Figure out the material buffers from the volume fractions.
@@ -659,27 +642,23 @@ void addConcentricCircleMaterial(const TopoView& topoView,
   AXOM_ANNOTATE_SCOPE("addConcentricCircleMaterial");
   // Generate the element volume fractions with concentric circles
   int numMaterials = circleRadii.size() + 1;
-  int defaultMaterialID =
-    numMaterials - 1;  // default material is always the last index
+  int defaultMaterialID = numMaterials - 1;  // default material is always the last index
 
   // Initialize all material volume fractions to 0
-  std::vector<std::vector<axom::float64>> materialVolumeFractionsData(
-    numMaterials);
+  std::vector<std::vector<axom::float64>> materialVolumeFractionsData(numMaterials);
   constexpr int MAXMATERIALS = 100;
   axom::StackArray<axom::ArrayView<axom::float64>, MAXMATERIALS> matvfViews;
   for(int i = 0; i < numMaterials; ++i)
   {
     const auto len = topoView.numberOfZones();
     materialVolumeFractionsData[i].resize(len, 0.);
-    matvfViews[i] =
-      axom::ArrayView<axom::float64>(materialVolumeFractionsData[i].data(), len);
+    matvfViews[i] = axom::ArrayView<axom::float64>(materialVolumeFractionsData[i].data(), len);
   }
   // Make a vector of radius^2.
   std::vector<axom::float64> circleRadii2;
   for(const auto& r : circleRadii) circleRadii2.push_back(r * r);
 
-  auto circleRadii2View =
-    axom::ArrayView<axom::float64>(circleRadii2.data(), circleRadii2.size());
+  auto circleRadii2View = axom::ArrayView<axom::float64>(circleRadii2.data(), circleRadii2.size());
   const int numCircles = circleRadii2.size();
 
   // Use the uniform sampling method to generate volume fractions for each material
@@ -695,10 +674,8 @@ void addConcentricCircleMaterial(const TopoView& topoView,
       const auto v2 = coordsetView[zone.getId(2)];
 
       // Run the uniform sampling to determine how much of the current cell is composed of each material
-      float delta_x =
-        axom::utilities::abs(v1[0] - v0[0]) / (float)(numSamples - 1);
-      float delta_y =
-        axom::utilities::abs(v2[1] - v1[1]) / (float)(numSamples - 1);
+      float delta_x = axom::utilities::abs(v1[0] - v0[0]) / (float)(numSamples - 1);
+      float delta_y = axom::utilities::abs(v2[1] - v1[1]) / (float)(numSamples - 1);
 
       // If the corners are all in the same circle then we can skip checking for mix.
       int circle = defaultMaterialID;
@@ -739,9 +716,7 @@ void addConcentricCircleMaterial(const TopoView& topoView,
           {
             const float xc = static_cast<float>(delta_x * x + v0[0]);
             bool isPointSampled = false;
-            const auto dist2 =
-              primal::squared_distance(MeshTester::Point2({xc, yc}),
-                                       circleCenter);
+            const auto dist2 = primal::squared_distance(MeshTester::Point2({xc, yc}), circleCenter);
             for(int cID = 0; cID < numCircles && !isPointSampled; ++cID)
             {
               if(dist2 < circleRadii2View[cID])
@@ -759,8 +734,7 @@ void addConcentricCircleMaterial(const TopoView& topoView,
         }
 
         // Assign the element volume fractions based on the count of the samples in each circle
-        const axom::float64 ns2 =
-          static_cast<axom::float64>(numSamples * numSamples);
+        const axom::float64 ns2 = static_cast<axom::float64>(numSamples * numSamples);
         for(int matID = 0; matID < numMaterials; ++matID)
         {
           matvfViews[matID][eID] /= ns2;
@@ -768,10 +742,7 @@ void addConcentricCircleMaterial(const TopoView& topoView,
       }
     });
 
-  addMaterial(topoView.numberOfZones(),
-              numMaterials,
-              materialVolumeFractionsData,
-              mesh);
+  addMaterial(topoView.numberOfZones(), numMaterials, materialVolumeFractionsData, mesh);
 }
 
 //--------------------------------------------------------------------------------
@@ -780,16 +751,12 @@ void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& m
   // Generate the mesh topology
   generateGrid(gridSize, mesh);
 
-  Point2 circleCenter(
-    {gridSize / 2.f,
-     gridSize / 2.f});  // all circles are centered around the same point
+  Point2 circleCenter({gridSize / 2.f, gridSize / 2.f});  // all circles are centered around the same point
 
   // Initialize the radii of the circles
   std::vector<axom::float64> circleRadii;
-  axom::float64 maxRadius =
-    gridSize / 2.4;  // Note: The choice of divisor is arbitrary
-  axom::float64 minRadius =
-    gridSize / 8;  // Note: The choice of divisor is arbitrary
+  axom::float64 maxRadius = gridSize / 2.4;  // Note: The choice of divisor is arbitrary
+  axom::float64 minRadius = gridSize / 8;    // Note: The choice of divisor is arbitrary
 
   axom::float64 radiusDelta;
   if(numCircles <= 1)
@@ -824,8 +791,7 @@ void MeshTester::initTestCaseFive(int gridSize, int numCircles, conduit::Node& m
   else
   {
     using ShapeType = QuadShape<int>;
-    auto topologyView =
-      make_unstructured_single_shape<ShapeType>::view(n_topology);
+    auto topologyView = make_unstructured_single_shape<ShapeType>::view(n_topology);
     using TopologyView = decltype(topologyView);
 
     // Add the material
@@ -931,26 +897,19 @@ void MeshTester::initTestCaseSix(int gridSize, int numSpheres, conduit::Node& me
                                      gridSize,
                                      numSpheres,
                                      materialVolumeFractionsData);
-    addMaterial(topologyView.numberOfZones(),
-                numMaterials,
-                materialVolumeFractionsData,
-                mesh);
+    addMaterial(topologyView.numberOfZones(), numMaterials, materialVolumeFractionsData, mesh);
   }
   else
   {
     using ShapeType = HexShape<int>;
-    auto topologyView =
-      make_unstructured_single_shape<ShapeType>::view(n_topology);
+    auto topologyView = make_unstructured_single_shape<ShapeType>::view(n_topology);
 
     generateSphericalVolumeFractions(topologyView,
                                      coordsetView,
                                      gridSize,
                                      numSpheres,
                                      materialVolumeFractionsData);
-    addMaterial(topologyView.numberOfZones(),
-                numMaterials,
-                materialVolumeFractionsData,
-                mesh);
+    addMaterial(topologyView.numberOfZones(), numMaterials, materialVolumeFractionsData, mesh);
   }
 }
 

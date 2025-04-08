@@ -39,10 +39,8 @@ protected:
     // We'll translate the X,Y coordinates for the domain.
     const float xShift = static_cast<float>(domI * gridSize);
     const float yShift = static_cast<float>(domJ * gridSize);
-    auto xcView =
-      bputils::make_array_view<float>(n_mesh["coordsets/coords/values/x"]);
-    auto ycView =
-      bputils::make_array_view<float>(n_mesh["coordsets/coords/values/y"]);
+    auto xcView = bputils::make_array_view<float>(n_mesh["coordsets/coords/values/x"]);
+    auto ycView = bputils::make_array_view<float>(n_mesh["coordsets/coords/values/y"]);
     for(axom::IndexType i = 0; i < xcView.size(); i++)
     {
       xcView[i] += xShift;
@@ -56,18 +54,14 @@ protected:
    * \param path The filepath where the file will be saved.
    * \param n_mesh The mesh to be saved.
    */
-  virtual void saveMesh(const conduit::Node &n_mesh,
-                        const std::string &path) override
+  virtual void saveMesh(const conduit::Node &n_mesh, const std::string &path) override
   {
 #if defined(CONDUIT_RELAY_IO_HDF5_ENABLED)
     std::string protocol("hdf5");
 #else
     std::string protocol("yaml");
 #endif
-    conduit::relay::mpi::io::blueprint::save_mesh(n_mesh,
-                                                  path,
-                                                  protocol,
-                                                  MPI_COMM_WORLD);
+    conduit::relay::mpi::io::blueprint::save_mesh(n_mesh, path, protocol, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
   }
 };

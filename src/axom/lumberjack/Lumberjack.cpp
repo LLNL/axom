@@ -20,9 +20,7 @@ namespace axom
 {
 namespace lumberjack
 {
-void Lumberjack::initialize(Communicator* communicator,
-                            int ranksLimit,
-                            bool isCommunicatorOwned)
+void Lumberjack::initialize(Communicator* communicator, int ranksLimit, bool isCommunicatorOwned)
 {
   if(m_isInitialized == false)
   {
@@ -94,10 +92,7 @@ void Lumberjack::clearCombiners()
   m_combiners.clear();
 }
 
-const std::vector<Message*>& Lumberjack::getMessages() const
-{
-  return m_messages;
-}
+const std::vector<Message*>& Lumberjack::getMessages() const { return m_messages; }
 
 void Lumberjack::ranksLimit(int value)
 {
@@ -116,10 +111,7 @@ void Lumberjack::clearMessages()
   m_messages.clear();
 }
 
-void Lumberjack::queueMessage(const std::string& text)
-{
-  queueMessage(text, "", -1, 0, "");
-}
+void Lumberjack::queueMessage(const std::string& text) { queueMessage(text, "", -1, 0, ""); }
 
 void Lumberjack::queueMessage(const std::string& text,
                               const std::string& fileName,
@@ -127,8 +119,7 @@ void Lumberjack::queueMessage(const std::string& text,
                               int level,
                               const std::string& tag)
 {
-  Message* mi =
-    new Message(text, m_communicator->rank(), fileName, lineNumber, level, tag);
+  Message* mi = new Message(text, m_communicator->rank(), fileName, lineNumber, level, tag);
   m_messages.push_back(mi);
 }
 
@@ -145,8 +136,7 @@ void Lumberjack::pushMessagesOnce()
 
   m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
-  if(!m_communicator->isOutputNode() &&
-     !isPackedMessagesEmpty(packedMessagesToBeSent))
+  if(!m_communicator->isOutputNode() && !isPackedMessagesEmpty(packedMessagesToBeSent))
   {
     delete[] packedMessagesToBeSent;
   }
@@ -177,8 +167,7 @@ void Lumberjack::pushMessagesFully()
 
     m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
-    if(!m_communicator->isOutputNode() &&
-       !isPackedMessagesEmpty(packedMessagesToBeSent))
+    if(!m_communicator->isOutputNode() && !isPackedMessagesEmpty(packedMessagesToBeSent))
     {
       delete[] packedMessagesToBeSent;
     }
@@ -196,8 +185,7 @@ void Lumberjack::pushMessagesFully()
 
 bool Lumberjack::isOutputNode() { return m_communicator->isOutputNode(); }
 
-void Lumberjack::setCommunicator(Communicator* communicator,
-                                 bool isCommunicatorOwned)
+void Lumberjack::setCommunicator(Communicator* communicator, bool isCommunicatorOwned)
 {
   if(m_isCommunicatorOwned && m_communicator != nullptr)
   {
@@ -232,9 +220,8 @@ void Lumberjack::combineMessages()
     {
       for(int combinerIndex = 0; combinerIndex < combinersSize; ++combinerIndex)
       {
-        if(m_combiners[combinerIndex]->shouldMessagesBeCombined(
-             *finalMessages[finalIndex],
-             *m_messages[allIndex]))
+        if(m_combiners[combinerIndex]->shouldMessagesBeCombined(*finalMessages[finalIndex],
+                                                                *m_messages[allIndex]))
         {
           m_combiners[combinerIndex]->combine(*finalMessages[finalIndex],
                                               *m_messages[allIndex],

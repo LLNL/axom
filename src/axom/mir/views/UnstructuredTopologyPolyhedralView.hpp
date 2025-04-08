@@ -100,10 +100,7 @@ public:
       return nnodes;
     }
 
-    AXOM_HOST_DEVICE IndexType numberOfFaces() const
-    {
-      return m_data.m_element_sizes[m_zoneIndex];
-    }
+    AXOM_HOST_DEVICE IndexType numberOfFaces() const { return m_data.m_element_sizes[m_zoneIndex]; }
 
     AXOM_HOST_DEVICE IndexType numberOfNodesInFace(int faceIndex) const
     {
@@ -166,9 +163,8 @@ public:
         m_data.m_element_sizes[m_zoneIndex]);
       const auto faceId = element_face_ids[faceIndex];
 
-      return ConnectivityView(
-        m_data.m_subelement_conn.data() + m_data.m_subelement_offsets[faceId],
-        m_data.m_subelement_sizes[faceId]);
+      return ConnectivityView(m_data.m_subelement_conn.data() + m_data.m_subelement_offsets[faceId],
+                              m_data.m_subelement_sizes[faceId]);
     }
 
   private:
@@ -238,10 +234,7 @@ public:
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const
-  {
-    return m_data.m_indexing;
-  }
+  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const { return m_data.m_indexing; }
 
   /*!
    * \brief Return a zone.

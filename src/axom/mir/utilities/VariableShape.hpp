@@ -52,10 +52,7 @@ public:
    * \brief Add a point to the shape.
    * \param pt The point to add.
    */
-  AXOM_HOST_DEVICE void push_back(const PointType &pt)
-  {
-    m_points.push_back(pt);
-  }
+  AXOM_HOST_DEVICE void push_back(const PointType &pt) { m_points.push_back(pt); }
 
   /*!
    * \brief Return the \a index'th point.
@@ -76,10 +73,7 @@ public:
     double retval = 0.;
     if(m_shapeId == axom::mir::views::Tet_ShapeID)
     {
-      axom::primal::Tetrahedron<T, 3> tet(m_points[0],
-                                          m_points[1],
-                                          m_points[2],
-                                          m_points[3]);
+      axom::primal::Tetrahedron<T, 3> tet(m_points[0], m_points[1], m_points[2], m_points[3]);
       retval = tet.volume();
     }
     else if(m_shapeId == axom::mir::views::Pyramid_ShapeID)
@@ -126,14 +120,8 @@ public:
   AXOM_HOST_DEVICE void splitPyramid(axom::primal::Tetrahedron<T, NDIMS> tets[2]) const
   {
     assert(m_shapeId == axom::mir::views::Pyramid_ShapeID);
-    tets[0] = axom::primal::Tetrahedron<T, NDIMS>(m_points[0],
-                                                  m_points[1],
-                                                  m_points[3],
-                                                  m_points[4]);
-    tets[1] = axom::primal::Tetrahedron<T, NDIMS>(m_points[1],
-                                                  m_points[2],
-                                                  m_points[3],
-                                                  m_points[4]);
+    tets[0] = axom::primal::Tetrahedron<T, NDIMS>(m_points[0], m_points[1], m_points[3], m_points[4]);
+    tets[1] = axom::primal::Tetrahedron<T, NDIMS>(m_points[1], m_points[2], m_points[3], m_points[4]);
   }
 
   /*!
@@ -143,18 +131,9 @@ public:
   AXOM_HOST_DEVICE void splitWedge(axom::primal::Tetrahedron<T, NDIMS> tets[3]) const
   {
     assert(m_shapeId == axom::mir::views::Wedge_ShapeID);
-    tets[0] = axom::primal::Tetrahedron<T, NDIMS>(m_points[0],
-                                                  m_points[1],
-                                                  m_points[2],
-                                                  m_points[3]);
-    tets[1] = axom::primal::Tetrahedron<T, NDIMS>(m_points[3],
-                                                  m_points[1],
-                                                  m_points[2],
-                                                  m_points[5]);
-    tets[2] = axom::primal::Tetrahedron<T, NDIMS>(m_points[3],
-                                                  m_points[4],
-                                                  m_points[1],
-                                                  m_points[5]);
+    tets[0] = axom::primal::Tetrahedron<T, NDIMS>(m_points[0], m_points[1], m_points[2], m_points[3]);
+    tets[1] = axom::primal::Tetrahedron<T, NDIMS>(m_points[3], m_points[1], m_points[2], m_points[5]);
+    tets[2] = axom::primal::Tetrahedron<T, NDIMS>(m_points[3], m_points[4], m_points[1], m_points[5]);
   }
 
   int m_shapeId;

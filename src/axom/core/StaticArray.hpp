@@ -46,9 +46,7 @@ public:
    * \brief Copy Constructor
    * \param obj The object to be copied.
    */
-  AXOM_HOST_DEVICE StaticArray(const StaticArray &obj)
-    : StackArray<T, N>(obj)
-    , m_size(obj.m_size)
+  AXOM_HOST_DEVICE StaticArray(const StaticArray &obj) : StackArray<T, N>(obj), m_size(obj.m_size)
   {
     for(int i = 0; i < obj.m_size; i++)
     {
@@ -61,9 +59,7 @@ public:
    * \brief Move Constructor
    * \param obj The object to be moved.
    */
-  AXOM_HOST_DEVICE StaticArray(StaticArray &&obj)
-    : StackArray<T, N>(obj)
-    , m_size(obj.m_size)
+  AXOM_HOST_DEVICE StaticArray(StaticArray &&obj) : StackArray<T, N>(obj), m_size(obj.m_size)
   {
     for(int i = 0; i < obj.m_size; i++)
     {
@@ -111,10 +107,7 @@ public:
    * \return The capacity of the static array
    */
   AXOM_HOST_DEVICE
-  constexpr axom::IndexType capacity() const
-  {
-    return static_cast<axom::IndexType>(N);
-  }
+  constexpr axom::IndexType capacity() const { return static_cast<axom::IndexType>(N); }
 
   /*!
    * \brief Returns the size of the static array

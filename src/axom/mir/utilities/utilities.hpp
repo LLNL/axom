@@ -252,13 +252,10 @@ public:
     AXOM_HOST_DEVICE
     inline KeyType make_name_2(IndexType p0, IndexType p1) const
     {
-      SLIC_ASSERT(static_cast<KeyType>(p0) <= Max31Bit &&
-                  static_cast<KeyType>(p1) <= Max31Bit);
+      SLIC_ASSERT(static_cast<KeyType>(p0) <= Max31Bit && static_cast<KeyType>(p1) <= Max31Bit);
       // Store p0 and p1 both in the 64-bit key as 31-bit integers
-      KeyType k0 =
-        (static_cast<KeyType>(axom::utilities::min(p0, p1)) & Max31Bit);
-      KeyType k1 =
-        (static_cast<KeyType>(axom::utilities::max(p0, p1)) & Max31Bit);
+      KeyType k0 = (static_cast<KeyType>(axom::utilities::min(p0, p1)) & Max31Bit);
+      KeyType k1 = (static_cast<KeyType>(axom::utilities::max(p0, p1)) & Max31Bit);
       return KeyIDPair | (k0 << 31) | k1;
     }
 
@@ -316,9 +313,8 @@ public:
 
         // Make a hash from the narrowed ids
         void *ptr = static_cast<void *>(sorted);
-        KeyType k0 =
-          axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr),
-                                           n * sizeof(std::uint16_t));
+        KeyType k0 = axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr),
+                                                      n * sizeof(std::uint16_t));
         retval = KeyIDHash | (k0 & PayloadMask);
       }
       else if(m_maxId < Max32Bit)
@@ -333,9 +329,8 @@ public:
 
         // Make a hash from the narrowed ids
         void *ptr = static_cast<void *>(sorted);
-        KeyType k0 =
-          axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr),
-                                           n * sizeof(std::uint32_t));
+        KeyType k0 = axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr),
+                                                      n * sizeof(std::uint32_t));
         retval = KeyIDHash | (k0 & PayloadMask);
       }
       else
@@ -350,8 +345,7 @@ public:
         // Make a hash from the ids
         void *ptr = static_cast<void *>(sorted);
         KeyType k0 =
-          axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr),
-                                           n * sizeof(IndexType));
+          axom::mir::utilities::hash_bytes(static_cast<std::uint8_t *>(ptr), n * sizeof(IndexType));
         retval = KeyIDHash | (k0 & PayloadMask);
       }
       return retval;
@@ -363,10 +357,7 @@ public:
   // Host-callable methods
 
   /// Make a name from the array of ids.
-  KeyType makeName(const IndexType *p, int n) const
-  {
-    return m_view.makeName(p, n);
-  }
+  KeyType makeName(const IndexType *p, int n) const { return m_view.makeName(p, n); }
 
   /*!
    * \brief Set the max number of nodes, which can help with id packing/narrowing.
@@ -418,8 +409,7 @@ public:
         auto p1 = (key >> 30) & Max15Bit;
         auto p2 = (key >> 15) & Max15Bit;
         auto p3 = (key)&Max15Bit;
-        ss << "pack(" << std::hex << p0 << ", " << p1 << ", " << p2 << ", "
-           << p3 << ")";
+        ss << "pack(" << std::hex << p0 << ", " << p1 << ", " << p2 << ", " << p3 << ")";
       }
     }
     return ss.str();
@@ -453,8 +443,7 @@ struct Unique
                       axom::Array<axom::IndexType> &sindices)
   {
     using loop_policy = typename axom::execution_space<ExecSpace>::loop_policy;
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     // Make a copy of the keys and make original indices.
@@ -481,8 +470,7 @@ struct Unique
     axom::for_all<ExecSpace>(
       n,
       AXOM_LAMBDA(axom::IndexType i) {
-        const axom::IndexType m =
-          (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
+        const axom::IndexType m = (i >= 1) ? ((keys_view[i] != keys_view[i - 1]) ? 1 : 0) : 1;
         mask_view[i] = m;
         mask_sum += m;
       });

@@ -19,7 +19,16 @@
 #include "axom/json.hpp"
 #include "axom/config.hpp"
 #include "axom/core/Path.hpp"
+
+#include "axom/config.hpp"
+#include "axom/core/Path.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
+
+#include "conduit.hpp"
+#ifdef AXOM_USE_HDF5
+  #include "conduit_relay.hpp"
+  #include "conduit_relay_io/utilities/StringUtilities.hpp"
+#endif
 
 #include "conduit.hpp"
 #ifdef AXOM_USE_HDF5
@@ -93,10 +102,7 @@ std::string get_supported_file_types()
   return types;
 }
 
-void Document::add(std::unique_ptr<Record> record)
-{
-  records.emplace_back(std::move(record));
-}
+void Document::add(std::unique_ptr<Record> record) { records.emplace_back(std::move(record)); }
 
 void Document::add(Relationship relationship)
 {
@@ -121,13 +127,11 @@ conduit::Node Document::toNode() const
   return document;
 }
 
-void Document::createFromNode(const conduit::Node &asNode,
-                              const RecordLoader &recordLoader)
+void Document::createFromNode(const conduit::Node &asNode, const RecordLoader &recordLoader)
 {
   conduit::Node nodeCopy = asNode;
 
-  auto processChildNodes = [&](const char *key,
-                               std::function<void(conduit::Node &)> addFunc) {
+  auto processChildNodes = [&](const char *key, std::function<void(conduit::Node &)> addFunc) {
     if(nodeCopy.has_child(key))
     {
       conduit::Node &childNodes = nodeCopy[key];
@@ -138,8 +142,7 @@ void Document::createFromNode(const conduit::Node &asNode,
          childNodes.dtype().is_string())
       {
         std::ostringstream message;
-        message << "The '" << key
-                << "' element of a document cannot be a primitive value.";
+        message << "The '" << key << "' element of a document cannot be a primitive value.";
         throw std::invalid_argument(message.str());
       }
 
@@ -154,8 +157,7 @@ void Document::createFromNode(const conduit::Node &asNode,
       if(!childNodes.dtype().is_list())
       {
         std::ostringstream message;
-        message << "The '" << key
-                << "' element of a document must be an array/list.";
+        message << "The '" << key << "' element of a document must be an array/list.";
         throw std::invalid_argument(message.str());
       }
 
@@ -168,13 +170,10 @@ void Document::createFromNode(const conduit::Node &asNode,
       }
     }
   };
-  processChildNodes(RECORDS_KEY, [&](conduit::Node &record) {
-    add(recordLoader.load(record));
-  });
+  processChildNodes(RECORDS_KEY, [&](conduit::Node &record) { add(recordLoader.load(record)); });
 
-  processChildNodes(RELATIONSHIPS_KEY, [&](conduit::Node &relationship) {
-    add(Relationship {relationship});
-  });
+  processChildNodes(RELATIONSHIPS_KEY,
+                    [&](conduit::Node &relationship) { add(Relationship {relationship}); });
 }
 
 Document::Document(conduit::Node const &asNode, RecordLoader const &recordLoader)
@@ -196,8 +195,7 @@ void removeSlashes(const conduit::Node &originalNode, conduit::Node &modifiedNod
   {
     it.next();
     std::string key = it.name();
-    std::string modifiedKey =
-      axom::utilities::string::replaceAllInstances(key, "/", slashSubstitute);
+    std::string modifiedKey = axom::utilities::string::replaceAllInstances(key, "/", slashSubstitute);
 
     modifiedNode[modifiedKey] = it.node();
 
@@ -299,6 +297,8 @@ void Document::toHDF5(const std::string &filename) const
 }
 #endif
 
+//
+
 std::string Document::toJson(conduit::index_t indent,
                              conduit::index_t depth,
                              const std::string &pad,
@@ -307,9 +307,7 @@ std::string Document::toJson(conduit::index_t indent,
   return this->toNode().to_json("json", indent, depth, pad, eoe);
 }
 
-void saveDocument(Document const &document,
-                  std::string const &fileName,
-                  Protocol protocol)
+void saveDocument(Document const &document, std::string const &fileName, Protocol protocol)
 {
   // It is a common use case for users to want to overwrite their files as
   // the simulation progresses. However, this operation should be atomic so
@@ -363,9 +361,7 @@ Document loadDocument(std::string const &path, Protocol protocol)
   return loadDocument(path, createRecordLoaderWithAllKnownTypes(), protocol);
 }
 
-Document loadDocument(std::string const &path,
-                      RecordLoader const &recordLoader,
-                      Protocol protocol)
+Document loadDocument(std::string const &path, RecordLoader const &recordLoader, Protocol protocol)
 {
   conduit::Node node, modifiedNode;
   std::ostringstream file_contents;

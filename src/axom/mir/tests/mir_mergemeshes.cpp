@@ -205,8 +205,7 @@ int main(int argc, char *argv[])
     app.parse(argc, argv);
 
 #if defined(AXOM_USE_CALIPER)
-    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(
-      annotationMode);
+    axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
 #endif
 
     axom::slic::SimpleLogger logger;  // create & initialize test logger,

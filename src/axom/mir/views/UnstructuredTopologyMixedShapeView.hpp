@@ -127,8 +127,7 @@ public:
     SLIC_ASSERT(m_shapes.size() != 0);
     SLIC_ASSERT(m_sizes.size() != 0);
     SLIC_ASSERT(m_offsets.size() != 0);
-    SLIC_ASSERT(m_offsets.size() == m_sizes.size() &&
-                m_offsets.size() == m_shapes.size());
+    SLIC_ASSERT(m_offsets.size() == m_sizes.size() && m_offsets.size() == m_shapes.size());
   }
 
   /*!
@@ -143,30 +142,21 @@ public:
    *
    * \return The number of zones.
    */
-  AXOM_HOST_DEVICE inline IndexType numberOfZones() const
-  {
-    return m_sizes.size();
-  }
+  AXOM_HOST_DEVICE inline IndexType numberOfZones() const { return m_sizes.size(); }
 
   /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE inline IndexType connectivitySize() const
-  {
-    return m_connectivity.size();
-  }
+  AXOM_HOST_DEVICE inline IndexType connectivitySize() const { return m_connectivity.size(); }
 
   /*!
    * \brief Return the size of the connectivity.
    *
    * \return The size of the connectivity.
    */
-  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const
-  {
-    return m_indexing;
-  }
+  AXOM_HOST_DEVICE inline const IndexingPolicy &indexing() const { return m_indexing; }
 
   /*!
    * \brief Return a zone.

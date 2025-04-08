@@ -192,10 +192,7 @@ public:
      *
      * \return the list of relationships
      */
-  RelationshipList const &getRelationships() const noexcept
-  {
-    return relationships;
-  }
+  RelationshipList const &getRelationships() const noexcept { return relationships; }
 
   /**
      * \brief Convert this document to a conduit Node.
@@ -234,8 +231,7 @@ private:
   /**
      * Constructor helper method, extracts info from a conduit Node.
      */
-  void createFromNode(conduit::Node const &asNode,
-                      RecordLoader const &recordLoader);
+  void createFromNode(conduit::Node const &asNode, RecordLoader const &recordLoader);
   RecordList records;
   RelationshipList relationships;
 };
@@ -273,8 +269,7 @@ inline std::string getSinaFileFormatVersion()
  * \param protocol the type of file being loaded, default = JSON
  * \return the loaded Document
  */
-Document loadDocument(std::string const &path,
-                      Protocol protocol = Protocol::JSON);
+Document loadDocument(std::string const &path, Protocol protocol = Protocol::JSON);
 
 /**
  * \brief Load a document from the given path.
@@ -290,33 +285,6 @@ Document loadDocument(std::string const &path,
                       RecordLoader const &recordLoader,
                       Protocol protocol = Protocol::JSON);
 
-/**
- * \brief Append the data, user defined content, and curves/curve sets of a Sina Document
- *        to an existing JSON file
- *
- * \param jsonFilePath the path to the JSON file
- * \param newData a Sina Document containing the new data to append
- * \param data_protocol protocol for handling datum duplicates.
- * \param udc_protocol protocol for handling user defined content duplicates.
- *                            1 = take the new value. 2 = keep the old value. 3/Other = Cancel the append.
- * 
- * \return true if appended successfully, false if the append fails
- */
-bool append_to_json(const std::string& jsonFilePath, Document const &newData, const int data_protocol = 2, const int udc_protocol = 2);
-
-/**
- * \brief Append the data, user defined content, and curves/curve sets of a Sina Document
- *        to an existing HDF5 file
- *
- * \param hdf5FilePath the path to the HDF5 file
- * \param new_data a vector of the new data to append
- * \param data_protocol protocol for handling datum duplicates.
- * \param udc_protocol protocol for handling user defined content duplicates.
- *                            1 = take the new value. 2 = keep the old value. 3/Other = Cancel the append.
- * 
- * \return true if appended successfully, false if the append fails
- */
-bool append_to_hdf5(const std::string& hdf5FilePath, Document const &newData, const int data_protocol = 2, const int udc_protocol = 2);
 }  // namespace sina
 }  // namespace axom
 

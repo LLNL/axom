@@ -40,18 +40,14 @@ void NonCollectiveRootCommunicator::finalize() { MPI_Comm_free(&m_mpiComm); }
 
 int NonCollectiveRootCommunicator::rank() { return m_mpiCommRank; }
 
-void NonCollectiveRootCommunicator::ranksLimit(int value)
-{
-  m_ranksLimit = value;
-}
+void NonCollectiveRootCommunicator::ranksLimit(int value) { m_ranksLimit = value; }
 
 int NonCollectiveRootCommunicator::ranksLimit() { return m_ranksLimit; }
 
 int NonCollectiveRootCommunicator::numPushesToFlush() { return 1; }
 
-void NonCollectiveRootCommunicator::push(
-  const char* packedMessagesToBeSent,
-  std::vector<const char*>& receivedPackedMessages)
+void NonCollectiveRootCommunicator::push(const char* packedMessagesToBeSent,
+                                         std::vector<const char*>& receivedPackedMessages)
 {
   if(m_mpiCommRank == 0)
   {
