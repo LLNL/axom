@@ -892,7 +892,7 @@ protected:
           else
           {
             // In subsequent iterations, the clippedShape is the input and it
-            // can have a different type then inputShape.
+            // can have a different type than inputShape.
 
             // Compute start and end points along which to move the plane origin.
             detail::computeRange(remaining, normal, range);
