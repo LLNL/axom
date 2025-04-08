@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"
+#include "axom/config.hpp"
 #include "axom/sina.hpp"
 
 #include <utility>
