@@ -49,6 +49,7 @@ set(core_headers
 
     ## detail
     detail/FlatTable.hpp
+    detail/FlatMapOps.hpp
 
     ## core
     AnnotationMacros.hpp
