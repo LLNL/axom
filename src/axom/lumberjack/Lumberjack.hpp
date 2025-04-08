@@ -59,9 +59,7 @@ public:
    * responsible for freeing communication object when finalize() is called.
    *****************************************************************************
    */
-  void initialize(Communicator* communicator,
-                  int ranksLimit,
-                  bool isCommunicatorOwned = false);
+  void initialize(Communicator* communicator, int ranksLimit, bool isCommunicatorOwned = false);
 
   /*!
    *****************************************************************************

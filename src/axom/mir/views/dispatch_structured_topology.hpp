@@ -80,10 +80,7 @@ struct make_strided_structured<3>
    * \param topo The node containing the topology.
    * \return The topology view.
    */
-  static TopoView view(const conduit::Node &topo)
-  {
-    return TopoView(indexing(topo));
-  }
+  static TopoView view(const conduit::Node &topo) { return TopoView(indexing(topo)); }
 };
 
 /*!
@@ -130,10 +127,7 @@ struct make_strided_structured<2>
    * \param topo The node containing the topology.
    * \return The topology view.
    */
-  static TopoView view(const conduit::Node &topo)
-  {
-    return TopoView(indexing(topo));
-  }
+  static TopoView view(const conduit::Node &topo) { return TopoView(indexing(topo)); }
 };
 
 /*!
@@ -172,10 +166,7 @@ struct make_strided_structured<1>
    * \param topo The node containing the topology.
    * \return The topology view.
    */
-  static TopoView view(const conduit::Node &topo)
-  {
-    return TopoView(indexing(topo));
-  }
+  static TopoView view(const conduit::Node &topo) { return TopoView(indexing(topo)); }
 };
 
 /*!
@@ -215,10 +206,7 @@ struct make_structured<3>
    * \param topo The node containing the topology.
    * \return The topology view.
    */
-  static TopoView view(const conduit::Node &topo)
-  {
-    return TopoView(indexing(topo));
-  }
+  static TopoView view(const conduit::Node &topo) { return TopoView(indexing(topo)); }
 };
 
 /*!
@@ -249,10 +237,7 @@ struct make_structured<2>
    * \param topo The node containing the topology.
    * \return The topology view.
    */
-  static TopoView view(const conduit::Node &topo)
-  {
-    return TopoView(indexing(topo));
-  }
+  static TopoView view(const conduit::Node &topo) { return TopoView(indexing(topo)); }
 };
 
 /*!
@@ -283,10 +268,7 @@ struct make_structured<1>
    * \param topo The node containing the topology.
    * \return The topology view.
    */
-  static TopoView view(const conduit::Node &topo)
-  {
-    return TopoView(indexing(topo));
-  }
+  static TopoView view(const conduit::Node &topo) { return TopoView(indexing(topo)); }
 };
 
 //------------------------------------------------------------------------------
@@ -427,8 +409,7 @@ struct dispatch_any_structured_topology<true, 3, FuncType>
     const std::string type = topo.fetch_existing("type").as_string();
     const std::string shape("hex");
 
-    if(type == "structured" && topo.has_path(offsetsKey) &&
-       topo.has_path(stridesKey))
+    if(type == "structured" && topo.has_path(offsetsKey) && topo.has_path(stridesKey))
     {
       auto topoView = make_strided_structured<3>::view(topo);
       func(shape, topoView);
@@ -466,8 +447,7 @@ struct dispatch_any_structured_topology<true, 2, FuncType>
     const std::string offsetsKey("offsets"), stridesKey("strides");
     const std::string type = topo.fetch_existing("type").as_string();
     const std::string shape("quad");
-    if(type == "structured" && topo.has_path(offsetsKey) &&
-       topo.has_path(stridesKey))
+    if(type == "structured" && topo.has_path(offsetsKey) && topo.has_path(stridesKey))
     {
       auto topoView = make_strided_structured<2>::view(topo);
       func(shape, topoView);
@@ -539,22 +519,19 @@ void dispatch_structured_topology(const conduit::Node &topo, FuncType &&func)
   switch(ndims)
   {
   case 3:
-    internal::dispatch_only_structured_topology<
-      dimension_selected(SelectedDimensions, 3),
-      3,
-      FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(
+      topo,
+      std::forward<FuncType>(func));
     break;
   case 2:
-    internal::dispatch_only_structured_topology<
-      dimension_selected(SelectedDimensions, 2),
-      2,
-      FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(
+      topo,
+      std::forward<FuncType>(func));
     break;
   case 1:
-    internal::dispatch_only_structured_topology<
-      dimension_selected(SelectedDimensions, 1),
-      1,
-      FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_only_structured_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(
+      topo,
+      std::forward<FuncType>(func));
     break;
   default:
     break;
@@ -579,22 +556,19 @@ void dispatch_structured_topologies(const conduit::Node &topo, FuncType &&func)
   switch(ndims)
   {
   case 3:
-    internal::dispatch_any_structured_topology<
-      dimension_selected(SelectedDimensions, 3),
-      3,
-      FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 3), 3, FuncType>::execute(
+      topo,
+      std::forward<FuncType>(func));
     break;
   case 2:
-    internal::dispatch_any_structured_topology<
-      dimension_selected(SelectedDimensions, 2),
-      2,
-      FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 2), 2, FuncType>::execute(
+      topo,
+      std::forward<FuncType>(func));
     break;
   case 1:
-    internal::dispatch_any_structured_topology<
-      dimension_selected(SelectedDimensions, 1),
-      1,
-      FuncType>::execute(topo, std::forward<FuncType>(func));
+    internal::dispatch_any_structured_topology<dimension_selected(SelectedDimensions, 1), 1, FuncType>::execute(
+      topo,
+      std::forward<FuncType>(func));
     break;
   default:
     break;

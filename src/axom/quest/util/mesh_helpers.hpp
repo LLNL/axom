@@ -137,25 +137,21 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh_2d(
   the same allocator id, even if the intermediate steps have to
   transfers memory to and from another space.
 */
-void convert_blueprint_structured_explicit_to_unstructured_3d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName,
-  axom::runtime_policy::Policy runtimePolicy);
+void convert_blueprint_structured_explicit_to_unstructured_3d(axom::sidre::Group* meshGrp,
+                                                              const std::string& topoName,
+                                                              axom::runtime_policy::Policy runtimePolicy);
 
 template <typename ExecSpace>
-void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName);
+void convert_blueprint_structured_explicit_to_unstructured_impl_3d(axom::sidre::Group* meshGrp,
+                                                                   const std::string& topoName);
 
-void convert_blueprint_structured_explicit_to_unstructured_2d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName,
-  axom::runtime_policy::Policy runtimePolicy);
+void convert_blueprint_structured_explicit_to_unstructured_2d(axom::sidre::Group* meshGrp,
+                                                              const std::string& topoName,
+                                                              axom::runtime_policy::Policy runtimePolicy);
 
 template <typename ExecSpace>
-void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName);
+void convert_blueprint_structured_explicit_to_unstructured_impl_2d(axom::sidre::Group* meshGrp,
+                                                                   const std::string& topoName);
 
   #if defined(AXOM_USE_CONDUIT)
 /*!

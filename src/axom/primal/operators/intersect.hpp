@@ -145,10 +145,7 @@ bool intersect(const Triangle<T, 3>& tri, const Ray<T, 3>& ray, T& t)
  * \note \a t and \a p only valid when function returns true
  */
 template <typename T>
-bool intersect(const Triangle<T, 3>& tri,
-               const Ray<T, 3>& ray,
-               T& t,
-               Point<double, 3>& p)
+bool intersect(const Triangle<T, 3>& tri, const Ray<T, 3>& ray, T& t, Point<double, 3>& p)
 {
   bool retval = detail::intersect_tri_ray(tri, ray, t, p);
 
@@ -205,10 +202,7 @@ bool intersect(const Triangle<T, 3>& tri, const Segment<T, 3>& seg, T& t)
  * \note \a t and \a p only valid when function returns true
  */
 template <typename T>
-bool intersect(const Triangle<T, 3>& tri,
-               const Segment<T, 3>& seg,
-               T& t,
-               Point<double, 3>& p)
+bool intersect(const Triangle<T, 3>& tri, const Segment<T, 3>& seg, T& t, Point<double, 3>& p)
 {
   bool retval = detail::intersect_tri_segment(tri, seg, t, p);
 
@@ -242,11 +236,7 @@ bool intersect(const Triangle<T, 3>& tri,
  * \see primal::Segment
  */
 template <typename T>
-bool intersect(const Ray<T, 2>& R,
-               const Segment<T, 2>& S,
-               T& ray_param,
-               T& seg_param,
-               const T EPS = 1e-8)
+bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, T& ray_param, T& seg_param, const T EPS = 1e-8)
 {
   return detail::intersect_ray(R, S, ray_param, seg_param, EPS);
 }
@@ -288,10 +278,7 @@ bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, T& ray_param)
  * \see primal::Point
  */
 template <typename T>
-bool intersect(const Ray<T, 2>& R,
-               const Segment<T, 2>& S,
-               Point<T, 2>& ip,
-               const T EPS = 1e-8)
+bool intersect(const Ray<T, 2>& R, const Segment<T, 2>& S, Point<T, 2>& ip, const T EPS = 1e-8)
 {
   T ray_param;
   T seg_param;
@@ -321,9 +308,7 @@ bool intersect(const Ray<T, 2>& R,
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
-                                const BoundingBox<T, DIM>& bb,
-                                Point<T, DIM>& ip)
+AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R, const BoundingBox<T, DIM>& bb, Point<T, DIM>& ip)
 {
   return detail::intersect_ray(R, bb, ip);
 }
@@ -344,8 +329,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
-                                const BoundingBox<T, DIM>& bb)
+AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R, const BoundingBox<T, DIM>& bb)
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
@@ -375,9 +359,7 @@ AXOM_HOST_DEVICE bool intersect(const Ray<T, DIM>& R,
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
-                                const BoundingBox<T, DIM>& bb,
-                                Point<T, DIM>& ip)
+AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L, const BoundingBox<T, DIM>& bb, Point<T, DIM>& ip)
 {
   return detail::intersect_line(L, bb, ip);
 }
@@ -397,8 +379,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
  *  Real Time Collision Detection by Christer Ericson.
  */
 template <typename T, int DIM>
-AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
-                                const BoundingBox<T, DIM>& bb)
+AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L, const BoundingBox<T, DIM>& bb)
 {
   AXOM_STATIC_ASSERT(std::is_floating_point<T>::value);
 
@@ -407,11 +388,7 @@ AXOM_HOST_DEVICE bool intersect(const Line<T, DIM>& L,
 
   const T EPS = numerics::floating_point_limits<T>::epsilon();
 
-  return detail::intersect_ray(Ray<T, DIM>(L.origin(), L.direction()),
-                               bb,
-                               tmin,
-                               tmax,
-                               EPS);
+  return detail::intersect_ray(Ray<T, DIM>(L.origin(), L.direction()), bb, tmin, tmax, EPS);
 }
 /// @}
 
@@ -446,8 +423,7 @@ bool intersect(const Segment<T, DIM>& S,
   tmin = static_cast<T>(0);
   tmax = static_cast<T>(segLength);
 
-  bool intersects = segLength > 0. &&
-    detail::intersect_ray(Ray<T, DIM>(S), bb, tmin, tmax, EPS);
+  bool intersects = segLength > 0. && detail::intersect_ray(Ray<T, DIM>(S), bb, tmin, tmax, EPS);
 
   // Scale parametric coordinates with respect to the segment
   if(intersects)
@@ -494,8 +470,7 @@ bool intersect(const Segment<T, DIM>& S, const BoundingBox<T, DIM>& bb)
  * \return true iff bb1 intersects with bb2, otherwise, false.
  */
 template <typename T, int DIM>
-AXOM_HOST_DEVICE bool intersect(const BoundingBox<T, DIM>& bb1,
-                                const BoundingBox<T, DIM>& bb2)
+AXOM_HOST_DEVICE bool intersect(const BoundingBox<T, DIM>& bb1, const BoundingBox<T, DIM>& bb2)
 {
   return bb1.intersectsWith(bb2);
 }
@@ -517,9 +492,7 @@ AXOM_HOST_DEVICE bool intersect(const BoundingBox<T, DIM>& bb1,
  * \return status true iff s1 intersects with s2, otherwise, false.
  */
 template <typename T, int DIM>
-bool intersect(const Sphere<T, DIM>& s1,
-               const Sphere<T, DIM>& s2,
-               double TOL = 1.e-9)
+bool intersect(const Sphere<T, DIM>& s1, const Sphere<T, DIM>& s2, double TOL = 1.e-9)
 {
   return s1.intersectsWith(s2, TOL);
 }
@@ -538,8 +511,7 @@ bool intersect(const Sphere<T, 2>& circle, const BoundingBox<T, 2>& bb)
   T dx = axom::utilities::clampVal(center[0], bb.getMin()[0], bb.getMax()[0]);
   T dy = axom::utilities::clampVal(center[1], bb.getMin()[1], bb.getMax()[1]);
 
-  if((center[0] - dx) * (center[0] - dx) + (center[1] - dy) * (center[1] - dy) >=
-     radius * radius)
+  if((center[0] - dx) * (center[0] - dx) + (center[1] - dy) * (center[1] - dy) >= radius * radius)
   {
     return false;
   }
@@ -591,8 +563,7 @@ bool intersect(const Sphere<T, 2>& circle,
     // Scale the intersection parameters back into the span of the NURBS curve
     for(int j = 0; j < temp_curve_p.size(); ++j)
     {
-      curve_params.push_back(
-        knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
+      curve_params.push_back(knot_vals[i] + temp_curve_p[j] * (knot_vals[i + 1] - knot_vals[i]));
       circle_params.push_back(temp_circle_p[j]);
     }
   }
@@ -605,8 +576,7 @@ bool intersect(const Sphere<T, 2>& circle,
 /// @{
 
 template <typename T>
-bool intersect(const OrientedBoundingBox<T, 1>& b1,
-               const OrientedBoundingBox<T, 1>& b2)
+bool intersect(const OrientedBoundingBox<T, 1>& b1, const OrientedBoundingBox<T, 1>& b2)
 {
   return detail::intersect_obb1D_obb1D(b1, b2);
 }
@@ -618,8 +588,7 @@ bool intersect(const OrientedBoundingBox<T, 1>& b1,
  * \return true iff b1 intersects with b2, otherwise, false.
  */
 template <typename T>
-bool intersect(const OrientedBoundingBox<T, 2>& b1,
-               const OrientedBoundingBox<T, 2>& b2)
+bool intersect(const OrientedBoundingBox<T, 2>& b1, const OrientedBoundingBox<T, 2>& b2)
 {
   return detail::intersect_obb2D_obb2D(b1, b2);
 }
@@ -729,15 +698,7 @@ bool intersect(const Ray<T, 2>& r,
   // for efficiency, linearity check actually uses a squared tolerance
   const double sq_tol = tol * tol;
 
-  return detail::intersect_ray_bezier(r,
-                                      c,
-                                      rp,
-                                      cp,
-                                      sq_tol,
-                                      EPS,
-                                      c.getOrder(),
-                                      offset,
-                                      scale);
+  return detail::intersect_ray_bezier(r, c, rp, cp, sq_tol, EPS, c.getOrder(), offset, scale);
 }
 
 /*!
@@ -1058,10 +1019,8 @@ bool intersect(const Ray<T, 3>& ray,
       for(int k = 0; k < tcc.size(); ++k)
       {
         tc.push_back(tcc[k]);
-        uc.push_back(
-          axom::utilities::lerp(knot_vals_u[i], knot_vals_u[i + 1], ucc[k]));
-        vc.push_back(
-          axom::utilities::lerp(knot_vals_v[j], knot_vals_v[j + 1], vcc[k]));
+        uc.push_back(axom::utilities::lerp(knot_vals_u[i], knot_vals_u[i + 1], ucc[k]));
+        vc.push_back(axom::utilities::lerp(knot_vals_v[j], knot_vals_v[j + 1], vcc[k]));
       }
     }
   }

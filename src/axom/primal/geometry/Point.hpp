@@ -30,15 +30,13 @@ class Point;
  * \brief Equality comparison operator for points
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE bool operator==(const Point<T, NDIMS>& lhs,
-                                 const Point<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator==(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Inequality comparison operator for points
  */
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE bool operator!=(const Point<T, NDIMS>& lhs,
-                                 const Point<T, NDIMS>& rhs);
+AXOM_HOST_DEVICE bool operator!=(const Point<T, NDIMS>& lhs, const Point<T, NDIMS>& rhs);
 
 /*!
  * \brief Overloaded output operator for points
@@ -106,8 +104,7 @@ public:
    * behaves the same way as the constructor which takes a pointer and size.
    */
   AXOM_HOST_DEVICE
-  Point(std::initializer_list<T> values)
-    : Point {values.begin(), static_cast<int>(values.size())}
+  Point(std::initializer_list<T> values) : Point {values.begin(), static_cast<int>(values.size())}
   { }
 
   /*!
@@ -178,10 +175,7 @@ public:
    * \brief Inequality operator for points
    */
   AXOM_HOST_DEVICE
-  friend inline bool operator!=(const Point& lhs, const Point& rhs)
-  {
-    return !(lhs == rhs);
-  }
+  friend inline bool operator!=(const Point& lhs, const Point& rhs) { return !(lhs == rhs); }
 
   /*!
    * \brief Simple formatted print of a point instance
@@ -272,9 +266,7 @@ namespace primal
 {
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
-                                                                    const T& y,
-                                                                    const T& z)
+AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x, const T& y, const T& z)
 {
   T tmp_array[3] = {x, y, z};
   return Point(tmp_array, NDIMS);
@@ -282,9 +274,8 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::make_point(const T& x,
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(
-  const Point<T, NDIMS>& A,
-  const Point<T, NDIMS>& B)
+AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(const Point<T, NDIMS>& A,
+                                                                  const Point<T, NDIMS>& B)
 {
   Point<T, NDIMS> mid_point;
 
@@ -298,8 +289,9 @@ AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::midpoint(
 
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
-AXOM_HOST_DEVICE inline Point<T, NDIMS>
-Point<T, NDIMS>::lerp(const Point<T, NDIMS>& A, const Point<T, NDIMS>& B, T alpha)
+AXOM_HOST_DEVICE inline Point<T, NDIMS> Point<T, NDIMS>::lerp(const Point<T, NDIMS>& A,
+                                                              const Point<T, NDIMS>& B,
+                                                              T alpha)
 {
   PointType res;
   const T beta = 1. - alpha;

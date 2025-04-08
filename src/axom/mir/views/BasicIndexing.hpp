@@ -74,9 +74,7 @@ public:
 
   AXOM_HOST_DEVICE inline axom::IndexType clamp(axom::IndexType index) const
   {
-    return axom::utilities::clampVal(index,
-                                     axom::IndexType(0),
-                                     axom::IndexType(m_size - 1));
+    return axom::utilities::clampVal(index, axom::IndexType(0), axom::IndexType(m_size - 1));
   }
 
   axom::IndexType m_size {0};

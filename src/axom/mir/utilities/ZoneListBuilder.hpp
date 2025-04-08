@@ -65,10 +65,8 @@ public:
                axom::Array<axom::IndexType> &cleanIndices,
                axom::Array<axom::IndexType> &mixedIndices) const
   {
-    using atomic_policy =
-      typename axom::execution_space<ExecSpace>::atomic_policy;
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
     AXOM_ANNOTATE_SCOPE("ZoneListBuilder");
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
@@ -86,8 +84,7 @@ public:
       AXOM_LAMBDA(axom::IndexType zoneIndex) {
         const auto zone = deviceTopologyView.zone(zoneIndex);
 
-        const auto matZoneIndex =
-          deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
         const int nmats = deviceMatsetView.numberOfMaterials(matZoneIndex);
 
         const auto nnodesThisZone = zone.numberOfNodes();
@@ -153,9 +150,7 @@ public:
       AXOM_ANNOTATE_BEGIN("mixedIndices");
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(axom::IndexType index) {
-          maskView[index] = (maskView[index] == 1) ? 0 : 1;
-        });
+        AXOM_LAMBDA(axom::IndexType index) { maskView[index] = (maskView[index] == 1) ? 0 : 1; });
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
       const int nMixed = nzones - nClean;
       mixedIndices = axom::Array<axom::IndexType>(nMixed, nMixed, allocatorID);
@@ -203,10 +198,8 @@ public:
                axom::Array<axom::IndexType> &cleanIndices,
                axom::Array<axom::IndexType> &mixedIndices) const
   {
-    using atomic_policy =
-      typename axom::execution_space<ExecSpace>::atomic_policy;
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using atomic_policy = typename axom::execution_space<ExecSpace>::atomic_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
     AXOM_ANNOTATE_SCOPE("ZoneListBuilder");
     SLIC_ASSERT(selectedZonesView.size() > 0);
@@ -227,8 +220,7 @@ public:
         const auto zoneIndex = selectedZonesView[szIndex];
         const auto zone = deviceTopologyView.zone(zoneIndex);
 
-        const auto matZoneIndex =
-          deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
         const int nmats = deviceMatsetView.numberOfMaterials(matZoneIndex);
 
         const auto nnodesThisZone = zone.numberOfNodes();
@@ -295,9 +287,7 @@ public:
       AXOM_ANNOTATE_BEGIN("mixedIndices");
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(axom::IndexType index) {
-          maskView[index] = (maskView[index] == 1) ? 0 : 1;
-        });
+        AXOM_LAMBDA(axom::IndexType index) { maskView[index] = (maskView[index] == 1) ? 0 : 1; });
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
       const int nMixed = nzones - nClean;
       mixedIndices = axom::Array<axom::IndexType>(nMixed, nMixed, allocatorID);
@@ -322,9 +312,7 @@ public:
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(axom::IndexType index) {
-          mixedIndicesView[index] = selectedZonesView[index];
-        });
+        AXOM_LAMBDA(axom::IndexType index) { mixedIndicesView[index] = selectedZonesView[index]; });
     }
   }
 
@@ -342,8 +330,7 @@ public:
                axom::Array<axom::IndexType> &cleanIndices,
                axom::Array<axom::IndexType> &mixedIndices) const
   {
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
 
     AXOM_ANNOTATE_BEGIN("mask");
@@ -357,12 +344,10 @@ public:
       selectedZonesView.size(),
       AXOM_LAMBDA(axom::IndexType szIndex) {
         const auto zoneIndex = selectedZonesView[szIndex];
-        const auto matZoneIndex =
-          deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
+        const auto matZoneIndex = deviceTopologyView.indexing().LocalToGlobal(zoneIndex);
 
         // clean zone == 1, mixed zone = 0
-        const int ival =
-          (deviceMatsetView.numberOfMaterials(matZoneIndex) == 1) ? 1 : 0;
+        const int ival = (deviceMatsetView.numberOfMaterials(matZoneIndex) == 1) ? 1 : 0;
         maskView[szIndex] = ival;
         mask_reduce += ival;
       });
@@ -379,16 +364,14 @@ public:
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
       // Fill in clean zone ids.
-      cleanIndices =
-        axom::Array<axom::IndexType>(numCleanZones, numCleanZones, allocatorID);
+      cleanIndices = axom::Array<axom::IndexType>(numCleanZones, numCleanZones, allocatorID);
       auto cleanIndicesView = cleanIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
         AXOM_LAMBDA(axom::IndexType szIndex) {
           if(maskView[szIndex] > 0)
           {
-            cleanIndicesView[maskOffsetsView[szIndex]] =
-              selectedZonesView[szIndex];
+            cleanIndicesView[maskOffsetsView[szIndex]] = selectedZonesView[szIndex];
           }
           maskView[szIndex] = (maskView[szIndex] > 0) ? 0 : 1;
         });
@@ -396,16 +379,14 @@ public:
       axom::exclusive_scan<ExecSpace>(maskView, maskOffsetsView);
 
       // Fill in mixed zone ids.
-      mixedIndices =
-        axom::Array<axom::IndexType>(numMixedZones, numMixedZones, allocatorID);
+      mixedIndices = axom::Array<axom::IndexType>(numMixedZones, numMixedZones, allocatorID);
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
         AXOM_LAMBDA(axom::IndexType szIndex) {
           if(maskView[szIndex] > 0)
           {
-            mixedIndicesView[maskOffsetsView[szIndex]] =
-              selectedZonesView[szIndex];
+            mixedIndicesView[maskOffsetsView[szIndex]] = selectedZonesView[szIndex];
           }
         });
     }
@@ -418,9 +399,7 @@ public:
       auto cleanIndicesView = cleanIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(axom::IndexType index) {
-          cleanIndicesView[index] = selectedZonesView[index];
-        });
+        AXOM_LAMBDA(axom::IndexType index) { cleanIndicesView[index] = selectedZonesView[index]; });
 
       mixedIndices = axom::Array<axom::IndexType>();
     }
@@ -435,9 +414,7 @@ public:
       auto mixedIndicesView = mixedIndices.view();
       axom::for_all<ExecSpace>(
         nzones,
-        AXOM_LAMBDA(axom::IndexType index) {
-          mixedIndicesView[index] = selectedZonesView[index];
-        });
+        AXOM_LAMBDA(axom::IndexType index) { mixedIndicesView[index] = selectedZonesView[index]; });
     }
   }
 
