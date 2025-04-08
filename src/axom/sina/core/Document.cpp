@@ -27,13 +27,8 @@
 #include "conduit.hpp"
 #ifdef AXOM_USE_HDF5
   #include "conduit_relay.hpp"
-  #include "conduit_relay_io/utilities/StringUtilities.hpp"
-#endif
-
-#include "conduit.hpp"
-#ifdef AXOM_USE_HDF5
-  #include "conduit_relay.hpp"
   #include "conduit_relay_io.hpp"
+  #include "conduit_relay_io_hdf5.hpp"
 #endif
 
 #include <functional>
@@ -48,9 +43,6 @@
 #include <stdexcept>
 #include <algorithm>
 #include "conduit.hpp"
-#include "conduit_relay.hpp"
-#include "conduit_relay_io.hpp"
-#include "conduit_relay_io_hdf5.hpp"
 
 
 using json = nlohmann::json;

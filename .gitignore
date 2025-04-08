@@ -21,11 +21,3 @@ uberenv_libs
 .idea
 *.opendb
 scripts/make_local_branch_from_fork_pr.sh
-oslic-toss_4_x86_64-clang@14.0.6.cmake
-.spack_patched
-host-configs/ruby-toss_4_x86_64_ib-clang@14.0.6.cmake
-scripts/spack/configs/toss_4_x86_64/spack.yaml
-host-configs/ruby-toss_4_x86_64_ib-clang@14.0.6.cmake
-host-configs/ruby-toss_4_x86_64_ib-clang@14.0.6.cmake
-scripts/spack/configs/toss_4_x86_64_ib/spack.yaml
-scripts/spack/configs/toss_4_x86_64_ib/spack.yaml
