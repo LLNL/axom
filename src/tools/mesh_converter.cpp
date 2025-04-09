@@ -23,6 +23,17 @@ namespace primal = axom::primal;
 namespace quest = axom::quest;
 namespace spin = axom::spin;
 
+/**
+ * This class represents a simplicial mesh
+ * 
+ * It uses slam to encode the vertices and simplices (zones) of a simplicial mesh 
+ * as well as the connectivity relation from the simplices to vertices,
+ * but does not represent other entities (e.g. edges, faces) 
+ * or relations (like adjacency or vertex-simplex incidences).
+ * 
+ * It Can be used to represent both tetrahedral meshes (TOPO_DIM=3) 
+ * and triangle meshes (TOPO_DIM=2).
+ */
 template <int TOPO_DIM, int SPACE_DIM = 3>
 struct SimplicialMesh
 {
@@ -49,9 +60,13 @@ public:
   using Vertices =
     slam::Map<PointType, NodeSet, slam::policies::ArrayIndirection<PositionType, PointType>>;
 
+  static_assert(TOPO_DIM <= SPACE_DIM, "TOPO_DIM must be less than or equal to SPACE_DIM");
+  static_assert(TOPO_DIM >= 1, "TOPO_DIM must be greater than 0");
+
 public:
   SimplicialMesh(int num_verts = 0, int num_zones = 0) { reset(num_verts, num_zones); }
 
+  /// Resets the internal sets and relations and ensures we have the right sizes
   void reset(int num_verts = 0, int num_zones = 0)
   {
     nodeSet = NodeSet(num_verts);
@@ -68,6 +83,7 @@ public:
     this->checkValid();
   }
 
+  /// Checks the validity of the mesh
   bool checkValid(bool verboseOutput = false) const
   {
     SLIC_ASSERT(nodeSet.isValid(verboseOutput));
@@ -81,6 +97,12 @@ public:
     return true;
   }
 
+  /**
+   *  \brief Reindexes the mesh to remove duplicate vertices
+   * 
+   *  \param remap_verts a map from old vertex indices to new vertex indices
+   *  \param uniqueVertCount the number of unique vertices in the mesh
+   */
   void reindexMesh(const axom::Array<PositionType>& remap_verts, int uniqueVertCount)
   {
     // update node set and vertices
@@ -121,6 +143,7 @@ public:
   ZoneToNodeRelation znRel;
   Vertices coords;
 
+private:
   axom::Array<PositionType> m_zn;
 };
 
@@ -142,7 +165,8 @@ TetMesh loadProe(const std::string& filename, bool verbose)
     reader.setFileName(filename);
 
     reader.read();
-    SLIC_INFO(axom::fmt::format("Input mesh has {} vertices and {} tets",
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Input mesh has {:L} vertices and {:L} tets",
                                 reader.getNumNodes(),
                                 reader.getNumTets()));
 
@@ -188,6 +212,7 @@ TetMesh loadProe(const std::string& filename, bool verbose)
                         slam_mesh.coords[index_tet[3]]);
     };
 
+    int orientation_fixes = 0;
     for(auto t : slam_mesh.zoneSet)
     {
       const axom::IndexType* connec = mint_mesh->getCellNodeIDs(t);
@@ -201,8 +226,13 @@ TetMesh loadProe(const std::string& filename, bool verbose)
       if(spatialTet(tet).signedVolume() < 0.)
       {
         axom::utilities::swap(tet[2], tet[3]);
+        ++orientation_fixes;
       }
     }
+    SLIC_INFO_IF(verbose,
+                 axom::fmt::format(axom::utilities::locale(),
+                                   "Fixed orientations of {:L} tetrahedra",
+                                   orientation_fixes));
   }
 
   slam_mesh.checkValid(verbose);
@@ -211,10 +241,10 @@ TetMesh loadProe(const std::string& filename, bool verbose)
 }
 
 /// Welds all vertices in the tet mesh that are within \a weldThresh of each other
-void weldVertices(TetMesh& mesh, double weldThresh, bool verbose)
+void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
 {
-  SLIC_ASSERT_MSG(weldThresh > 0.,
-                  "Welding threshold must be greater than 0. Passed in value was " << weldThresh);
+  SLIC_ASSERT_MSG(weld_thresh > 0.,
+                  "Welding threshold must be greater than 0. Passed in value was " << weld_thresh);
 
   /// compute bounding box of mesh
   axom::primal::BoundingBox<double, 3> meshBB;
@@ -242,42 +272,49 @@ void weldVertices(TetMesh& mesh, double weldThresh, bool verbose)
 
   // Run welding algorithm twice -- on the original grid and on a slightly translated grid
   // This ensures that the grid resolution doesn't affect the results
-  for(const auto& offset : {TetMesh::PointType(0.), TetMesh::PointType(weldThresh / 2.)})
+  for(const auto& offset : {TetMesh::PointType(0.), TetMesh::PointType(weld_thresh / 2.)})
   {
     // We're going to find the unique indices for the welded vertices
-    const int numVerts = mesh.nodeSet.size();
-    int uniqueVertCount = 0;
+    const int num_verts = mesh.nodeSet.size();
+    int unique_vert_count = 0;
+    int weld_count = 0;
 
     // Set up the lattice for quantizing points to an integer lattice
     TetMesh::PointType origin(meshBB.getMin().array() - offset.array());
-    Lattice3 lattice(origin, Lattice3::SpaceVector(TetMesh::PointType(weldThresh)));
+    Lattice3 lattice(origin, Lattice3::SpaceVector(TetMesh::PointType(weld_thresh)));
 
     // A hashmap from GridCells to the new vertex indices
     using GridCellToIndexMap = std::unordered_map<GridCell, IdxType, decltype(point_hash)>;
-    GridCellToIndexMap vertexIndexMap(numVerts, point_hash);
+    GridCellToIndexMap vertexIndexMap(num_verts, point_hash);
 
-    axom::Array<TetMesh::PositionType> vertex_remap(numVerts);
+    axom::Array<TetMesh::PositionType> vertex_remap(num_verts);
     for(auto n : mesh.nodeSet)
     {
       // find the new vertex index; if not already present, we'll keep this vertex
       auto res =
-        vertexIndexMap.insert(std::make_pair(lattice.gridCell(mesh.coords[n]), uniqueVertCount));
+        vertexIndexMap.insert(std::make_pair(lattice.gridCell(mesh.coords[n]), unique_vert_count));
       if(res.second == true)
       {
-        uniqueVertCount++;
+        unique_vert_count++;
+      }
+      else
+      {
+        weld_count++;
       }
       vertex_remap[n] = static_cast<TetMesh::PositionType>(res.first->second);
     }
 
     // Finally, update the mesh using the new vertex mapping
-    mesh.reindexMesh(vertex_remap, uniqueVertCount);
+    mesh.reindexMesh(vertex_remap, unique_vert_count);
 
-    SLIC_INFO_IF(
-      verbose,
-      axom::fmt::format("After reindexing with offset = {}, mesh has {} vertices and {} tets",
-                        offset[0],
-                        mesh.nodeSet.size(),
-                        mesh.zoneSet.size()));
+    SLIC_INFO_IF(verbose,
+                 axom::fmt::format(axom::utilities::locale(),
+                                   "Welded {:L} vertices while reindexing with offset = {}. Mesh "
+                                   "now has {:L} vertices and {:L} tets.",
+                                   weld_count,
+                                   offset[0],
+                                   mesh.nodeSet.size(),
+                                   mesh.zoneSet.size()));
   }
 }
 
@@ -333,7 +370,8 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
       }
     }
   }
-  SLIC_INFO(axom::fmt::format("Retained {} boundary faces, out of {}",
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "Retained {:L} boundary faces, out of {:L}",
                               unmatched_faces.size(),
                               tet_mesh.znRel.totalSize()));
 
@@ -343,11 +381,10 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
   tri_mesh.reset(num_verts, num_triangles);
 
   SLIC_INFO_IF(verbose,
-               axom::fmt::format(
-                 "Triangle mesh has {} vertices and {} triangles, for a total of {} tv entities",
-                 tri_mesh.nodeSet.size(),
-                 tri_mesh.zoneSet.size(),
-                 tri_mesh.znRel.totalSize()));
+               axom::fmt::format(axom::utilities::locale(),
+                                 "Triangle mesh has {:L} vertices and {:L} triangles",
+                                 tri_mesh.nodeSet.size(),
+                                 tri_mesh.zoneSet.size()));
 
   // 1. copy the vertices
   // Since STL doesn't care about vertex indices, our tri mesh will have all vertices from the tet mesh
@@ -464,14 +501,17 @@ int main(int argc, char** argv)
 
   // Weld all vertices that are within \a weldThresole
   weldVertices(tet_mesh, weld_threshold, verbose);
-  SLIC_INFO(axom::fmt::format("After welding, tet mesh has {} vertices and {} tets",
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "After welding, tet mesh has {:L} vertices and {:L} tets",
                               tet_mesh.nodeSet.size(),
                               tet_mesh.zoneSet.size()));
 
   // Create a tri mesh of (non-degenerate) boundary faces
   TriMesh tri_mesh;
   extractBoundaryFaces(tet_mesh, tri_mesh, verbose);
-  SLIC_INFO(axom::fmt::format("Boundary triangle mesh has {} triangles", tri_mesh.zoneSet.size()));
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "Boundary triangle mesh has {:L} triangles",
+                              tri_mesh.zoneSet.size()));
 
   // Saves the result to an STL mesh
   bool success = writeSTL(tri_mesh, output_file);
