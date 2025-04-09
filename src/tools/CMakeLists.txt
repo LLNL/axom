@@ -160,3 +160,26 @@ if( AXOM_ENABLE_SIDRE AND AXOM_ENABLE_PRIMAL AND
             )
 
 endif()
+
+#------------------------------------------------------------------------------
+# mesh_converter is a utility that converts between mesh formats
+#------------------------------------------------------------------------------
+if(AXOM_ENABLE_QUEST)
+    set(mesh_converter_sources
+        mesh_converter.cpp
+    )
+    set(mesh_converter_depends
+        axom
+        )
+
+    axom_add_executable(
+        NAME        mesh_converter
+        SOURCES     ${mesh_converter_sources}
+        OUTPUT_DIR  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${mesh_converter_depends}
+        FOLDER      axom/examples
+        )
+    install(TARGETS              mesh_converter
+            DESTINATION          bin
+            )
+endif()

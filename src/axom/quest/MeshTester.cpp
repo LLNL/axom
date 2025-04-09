@@ -258,16 +258,13 @@ void weldTriMeshVertices(detail::UMesh** surface_mesh, double eps)
   detail::SpatialBoundingBox meshBB = compute_bounds(oldMesh).expand(eps);
 
   // Run the algorithm twice -- on the original grid and a translated grid
-  std::vector<double> offsets;
-  offsets.push_back(0);
-  offsets.push_back(eps / 2.);
-  for(std::vector<double>::const_iterator it = offsets.begin(); it != offsets.end(); ++it)
+  for(const auto& offset : {detail::Point3(0.), detail::Point3(eps / 2.)})
   {
     // We will build up a new triangle mesh with the welded indices
     detail::UMesh* newMesh = new detail::UMesh(DIM, mint::TRIANGLE);
 
     // Set up the lattice for quantizing points to an integer lattice
-    detail::Point3 origin(meshBB.getMin().array() - detail::Point3(*it).array());
+    detail::Point3 origin(meshBB.getMin().array() - offset.array());
     Lattice3 lattice(origin, Lattice3::SpaceVector(detail::Point3(eps)));
 
     // First, find unique indices for the welded vertices
