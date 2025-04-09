@@ -443,10 +443,11 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
                               const nlohmann::json &existing_curve_sets,
                               const std::string recordId)
 {
-  for(auto &[curveSetId, existing_curve_set] : existing_curve_sets.items())
+  for(auto &item: existing_curve_sets.items())
   {
     // Create an alias to avoid capturing the structured binding directly.
-    auto &ecs = existing_curve_set;
+    auto &curveSetId = item.key();
+    auto &ecs = item.value();
 
     if(new_curve_sets.find(curveSetId) != new_curve_sets.end())
     {
@@ -456,9 +457,9 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
       std::set<std::string> existingDepKeys;
       if(ecs.contains("dependent"))
       {
-        for(auto &[key, val] : ecs["dependent"].items())
+        for(auto &item : ecs["dependent"].items())
         {
-          existingDepKeys.insert(key);
+          existingDepKeys.insert(item.key());
         }
       }
 
@@ -486,9 +487,9 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
       std::set<std::string> existingIndepKeys;
       if(ecs.contains("independent"))
       {
-        for(auto &[key, val] : ecs["independent"].items())
+        for(auto &item : ecs["independent"].items())
         {
-          existingIndepKeys.insert(key);
+          existingIndepKeys.insert(item.key());
         }
       }
 
@@ -584,12 +585,14 @@ bool append_to_json(const std::string &jsonFilePath,
           auto &new_curve_sets = new_record->getCurveSets();
           for(auto &new_curve_set : new_curve_sets)
           {
-            auto &[new_cs_key, new_cs_values] = new_curve_set;
+            auto &new_cs_key = new_curve_set.first;
+            auto &new_cs_values = new_curve_set.second;
             auto cs_key = new_cs_key;
 
             for(auto &new_dependent : new_cs_values.getDependentCurves())
             {
-              auto &[new_dep_key, new_dep_values] = new_dependent;
+              auto &new_dep_key = new_dependent.first;
+              auto &new_dep_values = new_dependent.second;
               auto dep_key = new_dep_key;  // local copy for lambda capture
               for(const auto &value : new_dep_values.getValues())
               {
@@ -603,7 +606,8 @@ bool append_to_json(const std::string &jsonFilePath,
             // For independent curves.
             for(auto &new_independent : new_cs_values.getIndependentCurves())
             {
-              auto &[new_indep_key, new_indep_values] = new_independent;
+              auto &new_indep_key = new_independent.first;
+              auto &new_indep_values = new_independent.second;
               auto indep_key = new_indep_key;  // local copy for lambda capture
               for(const auto &value : new_indep_values.getValues())
               {
@@ -625,7 +629,8 @@ bool append_to_json(const std::string &jsonFilePath,
           auto &new_data_sets = new_record->getData();
           for(auto &new_data : new_data_sets)
           {
-            auto &[new_data_key, new_data_pair] = new_data;
+            auto &new_data_key = new_data.first;
+            auto &new_data_pair = new_data.second;
             auto data_key = new_data_key;  // local copy for capture
             nlohmann::json obj = nlohmann::json::parse(new_data_pair.toNode().to_json());
             if(existing_data_sets.contains(data_key))
