@@ -6,6 +6,8 @@
 // Axom includes
 #include "axom/quest/MeshTester.hpp"
 
+#include "axom/fmt.hpp"
+
 namespace axom
 {
 namespace quest
@@ -29,7 +31,7 @@ inline detail::SpatialBoundingBox compute_bounds(detail::UMesh* mesh)
     pt[2] = z[i];
 
     meshBB.addPoint(pt);
-  }  // END for all nodes
+  }
 
   if(numNodes > 0)
   {
@@ -95,7 +97,8 @@ void findTriMeshIntersections(detail::UMesh* surface_mesh,
   // Iterate through triangle indices *idx.
   // Check against each other triangle with index greater than the index *idx
   // that also shares a UniformGrid bin.
-  SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
+  SLIC_INFO(
+    axom::fmt::format(axom::utilities::locale(), "Checking mesh with a total of {:L} cells", ncells));
 
   std::vector<int>::iterator idx = nondegenerateIndices.begin(), ndgend = nondegenerateIndices.end();
   for(; idx != ndgend; ++idx)

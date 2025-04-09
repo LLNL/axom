@@ -14,7 +14,7 @@
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 // _read_stl_include2_end
 #include "axom/mint/mesh/UniformMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"  // for write_vtk
+#include "axom/mint/utils/vtk_utils.hpp"
 
 #include "axom/primal.hpp"
 #include "axom/spin/UniformGrid.hpp"
@@ -26,12 +26,12 @@
 #include "axom/quest/MeshTester.hpp"
 // _check_repair_include_end
 
-// RAJA
+#include "axom/fmt.hpp"
+
 #ifdef AXOM_USE_RAJA
   #include "RAJA/RAJA.hpp"
 #endif
 
-// RAJA policies
 #include "axom/core/execution/nested_for_exec.hpp"
 
 using seq_exec = axom::SEQ_EXEC;
@@ -342,7 +342,8 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_
   std::vector<std::pair<int, int>> retval;
 
   const int ncells = surface_mesh->getNumberOfCells();
-  SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
+  SLIC_INFO(
+    axom::fmt::format(axom::utilities::locale(), "Checking mesh with a total of {:L} cells.", ncells));
 
   Triangle3 t1 = Triangle3();
   Triangle3 t2 = Triangle3();
@@ -380,8 +381,8 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_
                                                             std::vector<int>& degenerate,
                                                             double EPS)
 {
-  SLIC_INFO("Running naive intersection algorithm "
-            << " in execution Space: " << axom::execution_space<ExecSpace>::name());
+  SLIC_INFO("Running naive intersection algorithm in execution Space: "
+            << axom::execution_space<ExecSpace>::name());
 
   // Get allocators
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
@@ -391,7 +392,8 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_
   std::vector<std::pair<int, int>> retval;
 
   const int ncells = surface_mesh->getNumberOfCells();
-  SLIC_INFO("Checking mesh with a total of " << ncells << " cells.");
+  SLIC_INFO(
+    axom::fmt::format(axom::utilities::locale(), "Checking mesh with a total of {:L} cells.", ncells));
 
   axom::Array<Triangle3> tris_h(ncells, ncells, host_allocator);
 
@@ -576,8 +578,7 @@ int main(int argc, char** argv)
 {
   initializeLogger();
 
-  SLIC_INFO("Axom Version:"
-            << " [" << axom::getVersion() << "]");
+  SLIC_INFO(axom::fmt::format("Axom Version: [{}]", axom::getVersion()));
 
   // Parse the command line arguments
   Input params;
@@ -607,8 +608,10 @@ int main(int argc, char** argv)
   delete reader;
   reader = nullptr;
 
-  SLIC_INFO("Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
-                        << surface_mesh->getNumberOfCells() << " triangles.");
+  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                              "Mesh has {:L} vertices and {:L} triangles",
+                              surface_mesh->getNumberOfNodes(),
+                              surface_mesh->getNumberOfCells()));
   // _read_stl_file_end
 
   // Vertex welding
@@ -622,8 +625,10 @@ int main(int argc, char** argv)
 
     timer.stop();
     SLIC_INFO("Vertex welding took " << timer.elapsedTimeInSec() << " seconds.");
-    SLIC_INFO("After welding, mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
-                                         << surface_mesh->getNumberOfCells() << " triangles.");
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "After welding, mesh has {:L} vertices and {:L} triangles",
+                                surface_mesh->getNumberOfNodes(),
+                                surface_mesh->getNumberOfCells()));
   }
 
   // Detect collisions
@@ -679,9 +684,7 @@ int main(int argc, char** argv)
       {
       case seq:
 #ifdef AXOM_USE_RAJA
-        SLIC_INFO(
-          "BVH was compiled with RAJA - seq and raja_seq execution "
-          "will be equivalent");
+        SLIC_INFO("BVH was compiled with RAJA - seq and raja_seq execution will be equivalent");
 #endif
         quest::findTriMeshIntersectionsBVH<seq_exec, double>(surface_mesh,
                                                              collisions,
@@ -732,8 +735,7 @@ int main(int argc, char** argv)
       case seq:
 #ifdef AXOM_USE_RAJA
         SLIC_INFO(
-          "ImplicitGrid was compiled with RAJA - seq and raja_seq "
-          "execution will be equivalent");
+          "ImplicitGrid was compiled with RAJA - seq and raja_seq execution will be equivalent");
 #endif
         quest::findTriMeshIntersectionsImplicitGrid<seq_exec, double>(surface_mesh,
                                                                       collisions,
@@ -888,15 +890,13 @@ int main(int argc, char** argv)
     switch(wtstat)
     {
     case quest::WatertightStatus::WATERTIGHT:
-      std::cout << "The mesh is watertight." << std::endl;
+      SLIC_INFO("The mesh is watertight.");
       break;
     case quest::WatertightStatus::NOT_WATERTIGHT:
-      std::cout << "The mesh is not watertight: at least one "
-                << "boundary edge was detected." << std::endl;
+      SLIC_INFO("The mesh is not watertight: at least one boundary edge was detected.");
       break;
     default:
-      std::cout << "An error was encountered while checking." << std::endl
-                << "This may be due to a non-manifold mesh." << std::endl;
+      SLIC_INFO("An error was encountered while checking. This may be due to a non-manifold mesh.");
       break;
     }
     // _report_watertight_end
