@@ -285,7 +285,7 @@ Document loadDocument(std::string const &path,
                       RecordLoader const &recordLoader,
                       Protocol protocol = Protocol::JSON);
 
-                      /**
+/**
  * \brief Append the data, user defined content, and curves/curve sets of a Sina Document
  *        to an existing JSON file
  *
@@ -297,7 +297,10 @@ Document loadDocument(std::string const &path,
  * 
  * \return true if appended successfully, false if the append fails
  */
-bool append_to_json(const std::string& jsonFilePath, Document const &newData, const int data_protocol = 2, const int udc_protocol = 2);
+bool append_to_json(const std::string &jsonFilePath,
+                    Document const &newData,
+                    const int data_protocol = 2,
+                    const int udc_protocol = 2);
 
 /**
  * \brief Append the data, user defined content, and curves/curve sets of a Sina Document
@@ -311,10 +314,12 @@ bool append_to_json(const std::string& jsonFilePath, Document const &newData, co
  * 
  * \return true if appended successfully, false if the append fails
  */
-bool append_to_hdf5(const std::string& hdf5FilePath, Document const &newData, const int data_protocol = 2, const int udc_protocol = 2);
+bool append_to_hdf5(const std::string &hdf5FilePath,
+                    Document const &newData,
+                    const int data_protocol = 2,
+                    const int udc_protocol = 2);
 
 }  // namespace sina
 }  // namespace axom
 
 #endif  //SINA_DOCUMENT_HPP
-
