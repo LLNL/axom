@@ -443,7 +443,7 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
                               const nlohmann::json &existing_curve_sets,
                               const std::string recordId)
 {
-  for(auto &item: existing_curve_sets.items())
+  for(auto &item : existing_curve_sets.items())
   {
     // Create an alias to avoid capturing the structured binding directly.
     auto &curveSetId = item.key();
