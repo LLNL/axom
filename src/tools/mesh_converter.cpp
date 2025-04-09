@@ -154,6 +154,8 @@ using TriMesh = SimplicialMesh<2, 3>;  // Surface triangle mesh in 3D
 /// Fixes orientations of the tets, but defers fixing degeneracies until the vertices have been welded
 TetMesh loadProe(const std::string& filename, bool verbose)
 {
+  AXOM_ANNOTATE_SCOPE("load Pro-E file");
+
   namespace mint = axom::mint;
 
   SLIC_INFO(axom::fmt::format("Reading pro-e file: '{}' ...", filename));
@@ -243,6 +245,7 @@ TetMesh loadProe(const std::string& filename, bool verbose)
 /// Welds all vertices in the tet mesh that are within \a weldThresh of each other
 void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
 {
+  AXOM_ANNOTATE_SCOPE("weld vertices");
   SLIC_ASSERT_MSG(weld_thresh > 0.,
                   "Welding threshold must be greater than 0. Passed in value was " << weld_thresh);
 
@@ -321,6 +324,8 @@ void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
 /// Creates a \a tri_mesh out of the boundary faces of the \a tet_mesh
 void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbose)
 {
+  AXOM_ANNOTATE_SCOPE("extract boundary faces");
+
   using PositionType = TetMesh::PositionType;
   using IndexTriple = std::tuple<PositionType, PositionType, PositionType>;
   using ZoneFacePair = std::pair<PositionType, int>;
@@ -341,94 +346,101 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
     return std::make_pair(std::make_tuple(idx0, idx1, idx2), face);
   };
 
-  for(auto t : tet_mesh.zoneSet)
   {
-    auto tet = tet_mesh.znRel[t];
-
-    if(is_degenerate(tet))
+    AXOM_ANNOTATE_SCOPE("find unmatched faces");
+    for(auto t : tet_mesh.zoneSet)
     {
-      continue;
-    }
+      auto tet = tet_mesh.znRel[t];
 
-    // assume input tet mesh is a manifold w/ boundaries
-    // internal faces will appear twice; boundary faces once
-    for(auto triple_face : {create_tuple(tet[1], tet[2], tet[3], 0),
-                            create_tuple(tet[0], tet[2], tet[3], 1),
-                            create_tuple(tet[0], tet[1], tet[3], 2),
-                            create_tuple(tet[0], tet[1], tet[2], 3)})
-    {
-      const auto it = unmatched_faces.find(triple_face.first);
-      if(it != unmatched_faces.end())
+      if(is_degenerate(tet))
       {
-        // SLIC_INFO(axom::fmt::format("Removing triple {}", triple_face.first));
-        unmatched_faces.erase(it);
+        continue;
       }
-      else
+
+      // assume input tet mesh is a manifold w/ boundaries
+      // internal faces will appear twice; boundary faces once
+      for(auto triple_face : {create_tuple(tet[1], tet[2], tet[3], 0),
+                              create_tuple(tet[0], tet[2], tet[3], 1),
+                              create_tuple(tet[0], tet[1], tet[3], 2),
+                              create_tuple(tet[0], tet[1], tet[2], 3)})
       {
-        // SLIC_INFO(axom::fmt::format("Adding triple {}", triple_face.first));
-        unmatched_faces.insert({triple_face.first, std::make_pair(t, triple_face.second)});
+        const auto it = unmatched_faces.find(triple_face.first);
+        if(it != unmatched_faces.end())
+        {
+          // SLIC_INFO(axom::fmt::format("Removing triple {}", triple_face.first));
+          unmatched_faces.erase(it);
+        }
+        else
+        {
+          // SLIC_INFO(axom::fmt::format("Adding triple {}", triple_face.first));
+          unmatched_faces.insert({triple_face.first, std::make_pair(t, triple_face.second)});
+        }
       }
     }
+    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
+                                "Retained {:L} boundary faces, out of {:L}",
+                                unmatched_faces.size(),
+                                tet_mesh.znRel.totalSize()));
   }
-  SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-                              "Retained {:L} boundary faces, out of {:L}",
-                              unmatched_faces.size(),
-                              tet_mesh.znRel.totalSize()));
 
   /// Copy the boundary faces into the triangle mesh
-  const int num_verts = tet_mesh.nodeSet.size();
-  const int num_triangles = unmatched_faces.size();
-  tri_mesh.reset(num_verts, num_triangles);
-
-  SLIC_INFO_IF(verbose,
-               axom::fmt::format(axom::utilities::locale(),
-                                 "Triangle mesh has {:L} vertices and {:L} triangles",
-                                 tri_mesh.nodeSet.size(),
-                                 tri_mesh.zoneSet.size()));
-
-  // 1. copy the vertices
-  // Since STL doesn't care about vertex indices, our tri mesh will have all vertices from the tet mesh
-  // Alternatively, we could process this a bit more and keep only the referenced boundary vertices
-  for(auto n : tet_mesh.nodeSet)
   {
-    tri_mesh.coords[n] = tet_mesh.coords[n];
-  }
+    AXOM_ANNOTATE_SCOPE("create triangle mesh");
 
-  // 2. copy the boundary triangles
-  int curr = 0;
-  for(const auto& kv : unmatched_faces)
-  {
-    // SLIC_INFO_IF(verbose, axom::fmt::format("Adding face {} for triple {}", curr, kv.first));
+    const int num_verts = tet_mesh.nodeSet.size();
+    const int num_triangles = unmatched_faces.size();
+    tri_mesh.reset(num_verts, num_triangles);
 
-    const auto zone = kv.second.first;
-    auto tet = tet_mesh.znRel[zone];
+    SLIC_INFO_IF(verbose,
+                 axom::fmt::format(axom::utilities::locale(),
+                                   "Triangle mesh has {:L} vertices and {:L} triangles",
+                                   tri_mesh.nodeSet.size(),
+                                   tri_mesh.zoneSet.size()));
 
-    const int face = kv.second.second;
-    auto tri = tri_mesh.znRel[curr++];
-
-    // Note -- the triple was sorted, so we go back to the indices from the face's owning tet
-    switch(face)
+    // 1. copy the vertices
+    // Since STL doesn't care about vertex indices, our tri mesh will have all vertices from the tet mesh
+    // Alternatively, we could process this a bit more and keep only the referenced boundary vertices
+    for(auto n : tet_mesh.nodeSet)
     {
-    case 0:
-      tri[0] = tet[1];
-      tri[1] = tet[2];
-      tri[2] = tet[3];
-      break;
-    case 1:
-      tri[0] = tet[0];
-      tri[1] = tet[3];
-      tri[2] = tet[2];
-      break;
-    case 2:
-      tri[0] = tet[0];
-      tri[1] = tet[1];
-      tri[2] = tet[3];
-      break;
-    case 3:
-      tri[0] = tet[0];
-      tri[1] = tet[2];
-      tri[2] = tet[1];
-      break;
+      tri_mesh.coords[n] = tet_mesh.coords[n];
+    }
+
+    // 2. copy the boundary triangles
+    int curr = 0;
+    for(const auto& kv : unmatched_faces)
+    {
+      // SLIC_INFO_IF(verbose, axom::fmt::format("Adding face {} for triple {}", curr, kv.first));
+
+      const auto zone = kv.second.first;
+      auto tet = tet_mesh.znRel[zone];
+
+      const int face = kv.second.second;
+      auto tri = tri_mesh.znRel[curr++];
+
+      // Note -- the triple was sorted, so we go back to the indices from the face's owning tet
+      switch(face)
+      {
+      case 0:
+        tri[0] = tet[1];
+        tri[1] = tet[2];
+        tri[2] = tet[3];
+        break;
+      case 1:
+        tri[0] = tet[0];
+        tri[1] = tet[3];
+        tri[2] = tet[2];
+        break;
+      case 2:
+        tri[0] = tet[0];
+        tri[1] = tet[1];
+        tri[2] = tet[3];
+        break;
+      case 3:
+        tri[0] = tet[0];
+        tri[1] = tet[2];
+        tri[2] = tet[1];
+        break;
+      }
     }
   }
 }
@@ -436,6 +448,8 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
 /// Write the triangle mesh out as an ascii STL mesh
 bool writeSTL(const TriMesh& tri_mesh, const std::string& filename)
 {
+  AXOM_ANNOTATE_SCOPE("write STL mesh");
+
   axom::fmt::memory_buffer out;
 
   axom::fmt::format_to(std::back_inserter(out), "solid AxomMesh\n");
@@ -494,7 +508,21 @@ int main(int argc, char** argv)
   bool verbose = false;
   app.add_flag("-v,--verbose", verbose, "Enable verbose output");
 
+#ifdef AXOM_USE_CALIPER
+  std::string annotationMode {"none"};
+  app.add_option("--caliper", annotationMode)
+    ->description(
+      "caliper annotation mode. Valid options include 'none' and 'report'. "
+      "Use 'help' to see full list.")
+    ->capture_default_str()
+    ->check(axom::utilities::ValidCaliperMode);
+#endif
+
   CLI11_PARSE(app, argc, argv);
+
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(annotationMode);
+
+  AXOM_ANNOTATE_SCOPE("mesh_converter");
 
   // Load the ProE mesh, fixing tet orientations along the way
   TetMesh tet_mesh = loadProe(input_file, verbose);
