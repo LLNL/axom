@@ -19,11 +19,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
-## [Version 0.11.0] - Release date 2025-04-02
-
 ###  Added
 - New `axom::MALLOC_ALLOCATOR_ID` is for using malloc and free
   even when axom is con figured with Umpire support.
+
+## [Version 0.11.0] - Release date 2025-04-02
+
+###  Added
 - Added a new "Mir" Axom component for accelerated Material Interface Reconstruction (MIR) algorithms.
   MIR algorithms take Blueprint meshes with a matset and they use the matset's material information
   to split any input zones that contain multiple materials into zones that contain a single material.
