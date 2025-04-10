@@ -16,10 +16,6 @@
 #include "axom/sina/core/CurveSet.hpp"
 #include "axom/sina/core/Curve.hpp"
 #include "axom/sina/core/Record.hpp"
-#include "axom/json.hpp"
-#include "axom/config.hpp"
-#include "axom/core/Path.hpp"
-
 #include "axom/config.hpp"
 #include "axom/core/Path.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -42,9 +38,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-#include "conduit.hpp"
-
-using json = nlohmann::json;
 
 namespace axom
 {
@@ -440,39 +433,38 @@ bool validate_curves_unified(const CurveMap &new_curves,
 }
 
 bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
-                              const nlohmann::json &existing_curve_sets,
+                              const conduit::Node &existing_curve_sets,
                               const std::string recordId)
 {
-  for(auto &item : existing_curve_sets.items())
+  // Iterate over the keys in the existing curve sets node.
+  for(const auto &curveSetId : existing_curve_sets.child_names())
   {
-    // Create an alias to avoid capturing the structured binding directly.
-    auto &curveSetId = item.key();
-    auto &ecs = item.value();
+    const conduit::Node &ecs = existing_curve_sets[curveSetId];
 
     if(new_curve_sets.find(curveSetId) != new_curve_sets.end())
     {
       const auto &new_curve_set = new_curve_sets.at(curveSetId);
 
-      // Validate dependent curves.
+      // --- Validate Dependent Curves ---
       std::set<std::string> existingDepKeys;
-      if(ecs.contains("dependent"))
+      if(ecs.has_child("dependent"))
       {
-        for(auto &item : ecs["dependent"].items())
+        for(const auto &dep_key : ecs["dependent"].child_names())
         {
-          existingDepKeys.insert(item.key());
+          existingDepKeys.insert(dep_key);
         }
       }
-
+      // Use a lambda to get the current size of the dependent curve array.
       auto getExistingDepSize = [&ecs](const std::string &key) -> int {
-        if(ecs.contains("dependent") && ecs["dependent"].contains(key))
+        if(ecs.has_child("dependent") && ecs["dependent"].has_child(key))
         {
-          return static_cast<int>(ecs["dependent"][key]["value"].size());
+          return static_cast<int>(ecs["dependent"][key]["value"].dtype().number_of_elements());
         }
         return -1;
       };
 
       if(!new_curve_set.getDependentCurves().empty() &&
-         !validate_curves_unified(new_curve_set.getDependentCurves(),
+          !validate_curves_unified(new_curve_set.getDependentCurves(),
                                   existingDepKeys,
                                   getExistingDepSize,
                                   "dependent",
@@ -483,26 +475,25 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
         return false;
       }
 
-      // Validate independent curves.
+      // --- Validate Independent Curves ---
       std::set<std::string> existingIndepKeys;
-      if(ecs.contains("independent"))
+      if(ecs.has_child("independent"))
       {
-        for(auto &item : ecs["independent"].items())
+        for(const auto &indep_key : ecs["independent"].child_names())
         {
-          existingIndepKeys.insert(item.key());
+          existingIndepKeys.insert(indep_key);
         }
       }
-
       auto getExistingIndepSize = [&ecs](const std::string &key) -> int {
-        if(ecs.contains("independent") && ecs["independent"].contains(key))
+        if(ecs.has_child("independent") && ecs["independent"].has_child(key))
         {
-          return static_cast<int>(ecs["independent"][key]["value"].size());
+          return static_cast<int>(ecs["independent"][key]["value"].dtype().number_of_elements());
         }
         return -1;
       };
 
       if(!new_curve_set.getIndependentCurves().empty() &&
-         !validate_curves_unified(new_curve_set.getIndependentCurves(),
+          !validate_curves_unified(new_curve_set.getIndependentCurves(),
                                   existingIndepKeys,
                                   getExistingIndepSize,
                                   "independent",
@@ -515,8 +506,8 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
     }
     else
     {
-      std::cerr << "Curve set " << curveSetId << " not found in new data for record " << recordId
-                << std::endl;
+      std::cerr << "Curve set " << curveSetId
+                << " not found in new data for record " << recordId << std::endl;
       return false;
     }
   }
@@ -528,26 +519,18 @@ bool append_to_json(const std::string &jsonFilePath,
                     const int data_protocol,
                     const int udc_protocol)
 {
-  std::ifstream file(jsonFilePath);
-  if(!file.is_open())
-  {
-    std::cerr << "Error opening file: " << jsonFilePath << std::endl;
-    return false;
-  }
-
-  nlohmann::json j;
+  conduit::Node root;
   try
   {
-    file >> j;
+      root.load(jsonFilePath, "json");
   }
-  catch(const nlohmann::json::parse_error &e)
+  catch(const std::exception &e)
   {
-    std::cerr << "JSON parsing error: " << e.what() << std::endl;
-    return false;
+      std::cerr << "Error loading JSON file: " << e.what() << std::endl;
+      return false;
   }
-  file.close();
 
-  if(j["records"].size() != newData.getRecords().size())
+  if(root["records"].number_of_children() != newData.getRecords().size())
   {
     std::cerr << "Mismatch in the number of records." << std::endl;
     return false;
@@ -557,11 +540,12 @@ bool append_to_json(const std::string &jsonFilePath,
 
   for(auto &new_record : newData.getRecords())
   {
-    for(auto &existing_record : j["records"])
+    for(conduit::index_t i = 0; i < root["records"].number_of_children(); ++i)
     {
+      conduit::Node &existing_record = root["records"].child(i);
       if(!validate_curve_sets_json(new_record->getCurveSets(),
                                    existing_record["curve_sets"],
-                                   existing_record["id"]))
+                                   existing_record["id"].as_string()))
       {
         return false;
       }
@@ -571,76 +555,104 @@ bool append_to_json(const std::string &jsonFilePath,
   for(auto &new_record : newData.getRecords())
   {
     bool found = false;
-    for(auto &existing_record : j["records"])
+    for (int i = 0; i < root["records"].number_of_children(); ++i)
     {
-      if(new_record->getId().getId() == existing_record["id"])
+      conduit::Node &existing_record = root["records"].child(i);
+
+      if(new_record->getId().getId() == existing_record["id"].as_string())
       {
         found = true;
         // ----------------------
         // Queue update of CURVE SETS.
         // ----------------------
-        if((new_record->getCurveSets().size() > 0) && existing_record.contains("curve_sets"))
+        // Example: processing the curve_sets section for a given record.
+        if ((new_record->getCurveSets().size() > 0) && existing_record.has_child("curve_sets"))
         {
-          nlohmann::json &existing_curve_sets = existing_record["curve_sets"];
-          auto &new_curve_sets = new_record->getCurveSets();
-          for(auto &new_curve_set : new_curve_sets)
-          {
-            auto &new_cs_key = new_curve_set.first;
-            auto &new_cs_values = new_curve_set.second;
-            auto cs_key = new_cs_key;
-
-            for(auto &new_dependent : new_cs_values.getDependentCurves())
+            conduit::Node &existing_curve_sets = existing_record["curve_sets"];
+            auto &new_curve_sets = new_record->getCurveSets();
+            for (auto &new_curve_set : new_curve_sets)
             {
-              auto &new_dep_key = new_dependent.first;
-              auto &new_dep_values = new_dependent.second;
-              auto dep_key = new_dep_key;  // local copy for lambda capture
-              for(const auto &value : new_dep_values.getValues())
-              {
-                write_queue.push_back([&existing_curve_sets, cs_key, dep_key, value]() {
-                  existing_curve_sets[cs_key]["dependent"][dep_key]["value"].push_back(
-                    static_cast<double>(value));
-                });
-              }
-            }
+                auto cs_key = new_curve_set.first;
+                auto &new_cs_values = new_curve_set.second;
 
-            // For independent curves.
-            for(auto &new_independent : new_cs_values.getIndependentCurves())
-            {
-              auto &new_indep_key = new_independent.first;
-              auto &new_indep_values = new_independent.second;
-              auto indep_key = new_indep_key;  // local copy for lambda capture
-              for(const auto &value : new_indep_values.getValues())
-              {
-                write_queue.push_back([&existing_curve_sets, cs_key, indep_key, value]() {
-                  existing_curve_sets[cs_key]["independent"][indep_key]["value"].push_back(
-                    static_cast<double>(value));
-                });
-              }
+                // Queue merging of dependent curves.
+                for (auto &new_dependent : new_cs_values.getDependentCurves())
+                {
+                    // Get the key and make a copy of the new dependent values.
+                    auto dep_key = new_dependent.first;
+                    auto new_dep_vals = new_dependent.second.getValues(); // copy values for lambda capture
+        
+                    write_queue.push_back([cs_key, dep_key, new_dep_vals, &existing_curve_sets]() {
+                        // Access the existing values node for this dependent curve.
+                        conduit::Node &existing_vals_node = existing_curve_sets[cs_key]["dependent"][dep_key]["value"];
+                        std::vector<double> merged_values;
+        
+                        conduit::index_t num_elems = existing_vals_node.dtype().number_of_elements();
+                        for (conduit::index_t i = 0; i < num_elems; i++)
+                        {
+                          merged_values.push_back(existing_vals_node.as_double_array()[i]);
+                        }
+
+                        for (const auto &val : new_dep_vals)
+                        {
+                            merged_values.push_back(static_cast<double>(val));
+                        }
+                        // Reset and update the node with merged values.
+                        existing_vals_node.reset();
+                        existing_vals_node.set(merged_values);
+                    });
+                }
+        
+                // Queue merging of independent curves.
+                for (auto &new_independent : new_cs_values.getIndependentCurves())
+                {
+                    auto indep_key = new_independent.first;
+                    auto new_indep_vals = new_independent.second.getValues(); // copy for lambda capture
+        
+                    write_queue.push_back([cs_key, indep_key, new_indep_vals, &existing_curve_sets]() {
+                        conduit::Node &existing_vals_node = existing_curve_sets[cs_key]["independent"][indep_key]["value"];
+                        std::vector<double> merged_values;
+
+                        conduit::index_t num_elems = existing_vals_node.dtype().number_of_elements();
+                        for (conduit::index_t i = 0; i < num_elems; i++)
+                        {
+                          merged_values.push_back(existing_vals_node.as_double_array()[i]);
+                        }
+
+                        for (const auto &val : new_indep_vals)
+                        {
+                            merged_values.push_back(static_cast<double>(val));
+                        }
+                        existing_vals_node.reset();
+                        existing_vals_node.set(merged_values);
+                    });
+                }
             }
-          }
         }
 
         // ----------------------
         // Queue update of DATA VALUES.
         // ----------------------
-        if((new_record->getData().size() > 0) && existing_record.contains("data"))
+        if((new_record->getData().size() > 0) && existing_record.has_child("data"))
         {
-          nlohmann::json &existing_data_sets = existing_record["data"];
+          conduit::Node &existing_data_sets = existing_record["data"];
           auto &new_data_sets = new_record->getData();
           for(auto &new_data : new_data_sets)
           {
             auto &new_data_key = new_data.first;
             auto &new_data_pair = new_data.second;
             auto data_key = new_data_key;  // local copy for capture
-            nlohmann::json obj = nlohmann::json::parse(new_data_pair.toNode().to_json());
-            if(existing_data_sets.contains(data_key))
+            conduit::Node obj;
+            obj.parse(new_data_pair.toNode().to_json(), "json");
+            if(existing_data_sets.has_child(data_key))
             {
               // Duplicate Handling
               switch(data_protocol)
               {
               case 1:
-                write_queue.push_back(
-                  [&existing_data_sets, data_key, obj]() { existing_data_sets[data_key] = obj; });
+                write_queue.push_back([&existing_data_sets, data_key, obj]() {
+                  existing_data_sets[data_key].update(obj);
+                });
                 break;
               case 2:
                 break;
@@ -656,8 +668,9 @@ bool append_to_json(const std::string &jsonFilePath,
             }
             else
             {
-              write_queue.push_back(
-                [&existing_data_sets, data_key, obj]() { existing_data_sets[data_key] = obj; });
+              write_queue.push_back([&existing_data_sets, data_key, obj]() {
+                existing_data_sets[data_key].update(obj);
+              });
             }
           }
         }
@@ -666,20 +679,21 @@ bool append_to_json(const std::string &jsonFilePath,
         // Queue update of USER DEFINED CONTENT.
         // ----------------------
         if((!new_record->getUserDefinedContent().dtype().is_empty()) &&
-           existing_record.contains("user_defined"))
+           existing_record.has_child("user_defined"))
         {
-          nlohmann::json &existing_udc = existing_record["user_defined"];
+          conduit::Node &existing_udc = existing_record["user_defined"];
           auto &new_udc = new_record->getUserDefinedContent();
           for(auto &udc : new_udc.children())
           {
             std::string udc_name = udc.name();
-            if(existing_record["user_defined"].contains(udc_name))
+            if(existing_record["user_defined"].has_child(udc_name))
             {
               switch(udc_protocol)
               {
               case 1:
-                write_queue.push_back(
-                  [&existing_udc, udc_name, udc]() { existing_udc[udc_name] = udc.as_string(); });
+                write_queue.push_back([&existing_udc, udc_name, udc]() {
+                  existing_udc[udc_name].set(udc.as_string());
+                });
                 break;
               case 2:
                 break;
@@ -694,8 +708,9 @@ bool append_to_json(const std::string &jsonFilePath,
             }
             else
             {
-              write_queue.push_back(
-                [&existing_udc, udc_name, udc]() { existing_udc[udc_name] = udc.as_string(); });
+              write_queue.push_back([&existing_udc, udc_name, udc]() {
+                existing_udc[udc_name].set(udc.as_string());
+              });
             }
           }
         }
@@ -703,8 +718,9 @@ bool append_to_json(const std::string &jsonFilePath,
     }
     if(!found)
     {
-      nlohmann::json obj = nlohmann::json::parse(new_record->toNode().to_json());
-      write_queue.push_back([&j, obj]() { j["records"][j["records"].size()] = obj; });
+      conduit::Node obj;
+      obj.parse(new_record->toNode().to_json(), "json");
+      write_queue.push_back([&root, obj]() { root["records"].append().update(obj); });
     }
   }
 
@@ -722,14 +738,15 @@ bool append_to_json(const std::string &jsonFilePath,
     }
   }
 
-  std::ofstream outFile(jsonFilePath);
-  if(!outFile.is_open())
+  try
   {
-    std::cerr << "Error saving updated JSON to file!" << std::endl;
-    return false;
+      root.save(jsonFilePath, "json");
   }
-  outFile << j.dump(4);
-  outFile.close();
+  catch(const std::exception &e)
+  {
+      std::cerr << "Error saving JSON file: " << e.what() << std::endl;
+      return false;
+  }
 
   return true;
 }

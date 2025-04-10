@@ -11,25 +11,11 @@
 #include "axom/sina/tests/TestRecord.hpp"
 
 #include "conduit.hpp"
-#include "conduit_relay.hpp"
-#include "conduit_relay_io.hpp"
-
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
-
-#include "axom/config.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
-
-#include "axom/sina/core/Document.hpp"
-#include "axom/sina/core/Run.hpp"
-#include "axom/sina/tests/TestRecord.hpp"
-
-#include "conduit.hpp"
-#include "conduit_relay.hpp"
-#include "conduit_relay_io.hpp"
-
-#include "gtest/gtest.h"
-#include "gmock/gmock.h"
+#ifdef AXOM_USE_HDF5
+  #include "conduit_relay.hpp"
+  #include "conduit_relay_io.hpp"
+  #include "conduit_relay_io_hdf5.hpp"
+#endif
 
 #include <cstdio>
 #include <fstream>
@@ -40,20 +26,10 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "axom/core/utilities/FileUtilities.hpp"
-#include "axom/sina/core/Document.hpp"
-#include "axom/sina/core/Run.hpp"
 #include "axom/json.hpp"
 #include "axom/sina/tests/TestRecord.hpp"
-#include "conduit.hpp"
-#include "conduit_relay.hpp"
-#include "conduit_relay_io.hpp"
 #include "axom/sina/core/CurveSet.hpp"
 #include "axom/sina/core/Record.hpp"
-#include "conduit.hpp"
-#include "conduit_relay.hpp"
-#include "conduit_relay_io.hpp"
-#include "conduit_relay_io_hdf5.hpp"
 
 namespace axom
 {
@@ -63,6 +39,8 @@ namespace testing
 {
 namespace
 {
+
+// TODO: Remove Json.hpp
 
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
@@ -629,12 +607,12 @@ TEST(Document, test_append_to_json)
               "curve_sets": {
                   "1": {
                       "dependent": {
-                          "0": { "value": [1, 2] },
-                          "1": { "value": [10, 20] }
+                          "0": { "value": [1.0, 2.0] },
+                          "1": { "value": [10.0, 20.0] }
                       },
                       "independent": {
-                          "0": { "value": [4, 5] },
-                          "1": { "value": [7, 8] }
+                          "0": { "value": [4.0, 5.0] },
+                          "1": { "value": [7.0, 8.0] }
                       }
                   }
               }
@@ -645,12 +623,12 @@ TEST(Document, test_append_to_json)
               "curve_sets": {
                   "1": {
                       "dependent": {
-                          "0": { "value": [1, 2] },
-                          "1": { "value": [10, 20] }
+                          "0": { "value": [1.0, 2.0] },
+                          "1": { "value": [10.0, 20.0] }
                       },
                       "independent": {
-                          "0": { "value": [4, 5] },
-                          "1": { "value": [7, 8] }
+                          "0": { "value": [4.0, 5.0] },
+                          "1": { "value": [7.0, 8.0] }
                       }
                   }
               }
