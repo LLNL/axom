@@ -57,6 +57,12 @@ public:
   { }
 
   /*!
+   * \brief Destructor
+   *
+   */
+  virtual ~ExtractZones() = default;
+
+  /*!
    * \brief Select zones from the input mesh by id and output them in the output mesh.
    *
    * \param selectedZonesView A view that contains the selected zone ids.
@@ -386,13 +392,13 @@ protected:
    * \param n_topo The input topology.
    * \param n_newTopo A node to contain the new topology.
    */
-  void makeTopology(const SelectedZonesView selectedZonesView,
-                    const Sizes &dataSizes,
-                    const Sizes &extra,
-                    const axom::ArrayView<ConnectivityType> &old2newView,
-                    const conduit::Node &n_topo,
-                    const conduit::Node &n_options,
-                    conduit::Node &n_newTopo) const
+  virtual void makeTopology(const SelectedZonesView selectedZonesView,
+                            const Sizes &dataSizes,
+                            const Sizes &extra,
+                            const axom::ArrayView<ConnectivityType> &old2newView,
+                            const conduit::Node &n_topo,
+                            const conduit::Node &n_options,
+                            conduit::Node &n_newTopo) const
   {
     AXOM_ANNOTATE_SCOPE("makeTopology");
     namespace bputils = axom::mir::utilities::blueprint;
@@ -402,7 +408,9 @@ protected:
     if(shape == "polyhedron")
     {
       // TODO: Handle polyhedron shape.
-      // NOTE: We could know whether we can have PH topos if the TopologyView handles PH zones. Maybe this method is separated out and partially specialized.
+      // NOTE: We could know whether we can have PH topos if the TopologyView
+      //       handles PH zones. Maybe this method is separated out and partially
+      //       specialized.
       SLIC_ERROR("Polyhedron is not handled yet.");
     }
     else
@@ -687,6 +695,11 @@ public:
   { }
 
   /*!
+   * \brief Destructor
+   */
+  virtual ~ExtractZonesAndMatset() = default;
+
+  /*!
    * \brief Select zones from the input mesh by id and output them in the output mesh.
    *
    * \param selectedZonesView A view that contains the selected zone ids.
@@ -733,7 +746,7 @@ public:
 
 // The following members are protected (unless using CUDA)
 #if !defined(__CUDACC__)
-private:
+protected:
 #endif
 
   /*!
