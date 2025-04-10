@@ -101,22 +101,25 @@ public:
    *  \brief Reindexes the mesh to remove duplicate vertices
    * 
    *  \param remap_verts a map from old vertex indices to new vertex indices
+   *  \param retained_verts a bitset indicating which vertices to retain
    *  \param uniqueVertCount the number of unique vertices in the mesh
    */
-  void reindexMesh(const axom::Array<PositionType>& remap_verts, int uniqueVertCount)
+  void reindexMesh(const axom::Array<PositionType>& remap_verts,
+                   const slam::BitSet& retained_verts,
+                   int uniqueVertCount)
   {
     // update node set and vertices
     {
       NodeSet newNodeSet(uniqueVertCount);
       Vertices newCoords(&newNodeSet);
       PositionType curr = 0;
-      for(auto n : nodeSet)
+
+      for(auto n = retained_verts.find_first(); n != slam::BitSet::npos;
+          n = retained_verts.find_next(n))
       {
-        if(remap_verts[n] == n)
-        {
-          newCoords[curr++] = coords[n];
-        }
+        newCoords[curr++] = coords[n];
       }
+
       nodeSet = newNodeSet;
       coords = newCoords;
     }
@@ -291,24 +294,27 @@ void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
     GridCellToIndexMap vertexIndexMap(num_verts, point_hash);
 
     axom::Array<TetMesh::PositionType> vertex_remap(num_verts);
+    slam::BitSet retained_verts(num_verts);
     for(auto n : mesh.nodeSet)
     {
       // find the new vertex index; if not already present, we'll keep this vertex
-      auto res =
-        vertexIndexMap.insert(std::make_pair(lattice.gridCell(mesh.coords[n]), unique_vert_count));
+      auto res = vertexIndexMap.insert({lattice.gridCell(mesh.coords[n]), n});
       if(res.second == true)
       {
-        unique_vert_count++;
+        vertex_remap[n] = unique_vert_count++;
+        retained_verts.set(n);
       }
       else
       {
+        const auto prev_vertex_idx = res.first->second;
+        SLIC_ASSERT(prev_vertex_idx < n);
         weld_count++;
+        vertex_remap[n] = vertex_remap[prev_vertex_idx];
       }
-      vertex_remap[n] = static_cast<TetMesh::PositionType>(res.first->second);
     }
 
     // Finally, update the mesh using the new vertex mapping
-    mesh.reindexMesh(vertex_remap, unique_vert_count);
+    mesh.reindexMesh(vertex_remap, retained_verts, unique_vert_count);
 
     SLIC_INFO_IF(verbose,
                  axom::fmt::format(axom::utilities::locale(),
@@ -348,12 +354,15 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
 
   {
     AXOM_ANNOTATE_SCOPE("find unmatched faces");
+
+    int degenerate_count = 0;
     for(auto t : tet_mesh.zoneSet)
     {
       auto tet = tet_mesh.znRel[t];
 
       if(is_degenerate(tet))
       {
+        ++degenerate_count;
         continue;
       }
 
@@ -377,10 +386,12 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
         }
       }
     }
-    SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
-                                "Retained {:L} boundary faces, out of {:L}",
-                                unmatched_faces.size(),
-                                tet_mesh.znRel.totalSize()));
+    SLIC_INFO(axom::fmt::format(
+      axom::utilities::locale(),
+      "Retained {:L} boundary faces, out of {:L} (and skipped {:L} degenerate tets)",
+      unmatched_faces.size(),
+      tet_mesh.znRel.totalSize(),
+      degenerate_count));
   }
 
   /// Copy the boundary faces into the triangle mesh
