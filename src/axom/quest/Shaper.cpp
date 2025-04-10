@@ -103,8 +103,7 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   , m_shapeSet(shapeSet)
 #if defined(AXOM_USE_CONDUIT)
   , m_bpGrp(nullptr)
-  , m_bpTopo(topo.empty() ? bpNode.fetch_existing("topologies").child(0).name()
-                          : topo)
+  , m_bpTopo(topo.empty() ? bpNode.fetch_existing("topologies").child(0).name() : topo)
   , m_bpNodeExt(&bpNode)
   , m_bpNodeInt()
 #endif
@@ -119,30 +118,25 @@ Shaper::Shaper(RuntimePolicy execPolicy,
   m_bpGrp->importConduitTreeExternal(bpNode);
 
   // We want unstructured topo but can accomodate structured.
-  const std::string topoType = bpNode.fetch_existing("topologies")
-                                 .fetch_existing(m_bpTopo)
-                                 .fetch_existing("type")
-                                 .as_string();
+  const std::string topoType =
+    bpNode.fetch_existing("topologies").fetch_existing(m_bpTopo).fetch_existing("type").as_string();
 
   if(topoType == "structured")
   {
     AXOM_ANNOTATE_SCOPE("Shaper::convertStructured");
-    const std::string shapeType =
-      bpNode.fetch_existing("topologies/mesh/elements/shape").as_string();
+    const std::string shapeType = bpNode.fetch_existing("topologies/mesh/elements/shape").as_string();
 
     if(shapeType == "hex")
     {
-      axom::quest::util::convert_blueprint_structured_explicit_to_unstructured_3d(
-        m_bpGrp,
-        m_bpTopo,
-        m_execPolicy);
+      axom::quest::util::convert_blueprint_structured_explicit_to_unstructured_3d(m_bpGrp,
+                                                                                  m_bpTopo,
+                                                                                  m_execPolicy);
     }
     else if(shapeType == "quad")
     {
-      axom::quest::util::convert_blueprint_structured_explicit_to_unstructured_2d(
-        m_bpGrp,
-        m_bpTopo,
-        m_execPolicy);
+      axom::quest::util::convert_blueprint_structured_explicit_to_unstructured_2d(m_bpGrp,
+                                                                                  m_bpTopo,
+                                                                                  m_execPolicy);
     }
     else
     {
@@ -183,9 +177,7 @@ void Shaper::setSamplesPerKnotSpan(int nSamples)
   using axom::utilities::clampLower;
   SLIC_WARNING_IF(
     nSamples < 1,
-    axom::fmt::format(
-      "Samples per knot span must be at least 1. Provided value was {}",
-      nSamples));
+    axom::fmt::format("Samples per knot span must be at least 1. Provided value was {}", nSamples));
 
   m_samplesPerKnotSpan = clampLower(nSamples, 1);
 }
@@ -194,9 +186,7 @@ void Shaper::setVertexWeldThreshold(double threshold)
 {
   SLIC_WARNING_IF(
     threshold <= 0.,
-    axom::fmt::format(
-      "Vertex weld threshold should be positive Provided value was {}",
-      threshold));
+    axom::fmt::format("Vertex weld threshold should be positive Provided value was {}", threshold));
 
   m_vertexWeldThreshold = threshold;
 }
@@ -204,35 +194,28 @@ void Shaper::setVertexWeldThreshold(double threshold)
 void Shaper::setPercentError(double percent)
 {
   using axom::utilities::clampVal;
-  SLIC_WARNING_IF(
-    percent <= MINIMUM_PERCENT_ERROR,
-    axom::fmt::format("Percent error must be greater than {}. Provided value "
-                      "was {}. Dynamic refinement will not be used.",
-                      MINIMUM_PERCENT_ERROR,
-                      percent));
+  SLIC_WARNING_IF(percent <= MINIMUM_PERCENT_ERROR,
+                  axom::fmt::format("Percent error must be greater than {}. Provided value "
+                                    "was {}. Dynamic refinement will not be used.",
+                                    MINIMUM_PERCENT_ERROR,
+                                    percent));
   SLIC_WARNING_IF(percent > MAXIMUM_PERCENT_ERROR,
-                  axom::fmt::format(
-                    "Percent error must be less than {}. Provided value was {}",
-                    MAXIMUM_PERCENT_ERROR,
-                    percent));
+                  axom::fmt::format("Percent error must be less than {}. Provided value was {}",
+                                    MAXIMUM_PERCENT_ERROR,
+                                    percent));
   if(percent <= MINIMUM_PERCENT_ERROR)
   {
     m_refinementType = DiscreteShape::RefinementUniformSegments;
   }
-  m_percentError =
-    clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
+  m_percentError = clampVal(percent, MINIMUM_PERCENT_ERROR, MAXIMUM_PERCENT_ERROR);
 }
 
-void Shaper::setRefinementType(Shaper::RefinementType t)
-{
-  m_refinementType = t;
-}
+void Shaper::setRefinementType(Shaper::RefinementType t) { m_refinementType = t; }
 
 bool Shaper::isValidFormat(const std::string& format) const
 {
-  return (format == "stl" || format == "proe" || format == "c2c" ||
-          format == "blueprint-tets" || format == "tet3D" ||
-          format == "hex3D" || format == "plane3D" || format == "sphere3D" ||
+  return (format == "stl" || format == "proe" || format == "c2c" || format == "blueprint-tets" ||
+          format == "tet3D" || format == "hex3D" || format == "plane3D" || format == "sphere3D" ||
           format == "sor3D" || format == "none");
 }
 
@@ -245,21 +228,17 @@ void Shaper::loadShape(const klee::Shape& shape)
   loadShapeInternal(shape, m_percentError, revolved);
 }
 
-void Shaper::loadShapeInternal(const klee::Shape& shape,
-                               double percentError,
-                               double& revolvedVolume)
+void Shaper::loadShapeInternal(const klee::Shape& shape, double percentError, double& revolvedVolume)
 {
   AXOM_ANNOTATE_SCOPE("Shaper::loadShapeInternal");
-  internal::ScopedLogLevelChanger logLevelChanger(
-    this->isVerbose() ? slic::message::Debug : slic::message::Warning);
+  internal::ScopedLogLevelChanger logLevelChanger(this->isVerbose() ? slic::message::Debug
+                                                                    : slic::message::Warning);
 
-  SLIC_INFO(axom::fmt::format(
-    "{:-^80}",
-    axom::fmt::format(" Loading shape '{}' ", shape.getName())));
+  SLIC_INFO(axom::fmt::format("{:-^80}", axom::fmt::format(" Loading shape '{}' ", shape.getName())));
 
-  SLIC_ASSERT_MSG(this->isValidFormat(shape.getGeometry().getFormat()),
-                  axom::fmt::format("Shape has unsupported format: '{}",
-                                    shape.getGeometry().getFormat()));
+  SLIC_ASSERT_MSG(
+    this->isValidFormat(shape.getGeometry().getFormat()),
+    axom::fmt::format("Shape has unsupported format: '{}", shape.getGeometry().getFormat()));
 
   // Code for discretizing shapes has been factored into DiscreteShape class.
   DiscreteShape discreteShape(shape, m_dataStore.getRoot(), m_prefixPath);
@@ -287,8 +266,7 @@ bool Shaper::verifyInputMesh(std::string& whyBad) const
     rval = conduit::blueprint::mesh::verify(m_bpNodeInt, info);
     if(rval)
     {
-      std::string topoType =
-        m_bpNodeInt.fetch("topologies")[m_bpTopo]["type"].as_string();
+      std::string topoType = m_bpNodeInt.fetch("topologies")[m_bpTopo]["type"].as_string();
       rval = topoType == "unstructured";
       info[0].set_string("Topology is not unstructured.");
     }

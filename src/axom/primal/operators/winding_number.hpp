@@ -55,9 +55,7 @@ namespace primal
  * \return The GWN
  */
 template <typename T>
-double winding_number(const Point<T, 2>& q,
-                      const Segment<T, 2>& s,
-                      double edge_tol = 1e-8)
+double winding_number(const Point<T, 2>& q, const Segment<T, 2>& s, double edge_tol = 1e-8)
 {
   return detail::linear_winding_number(q, s[0], s[1], edge_tol);
 }
@@ -80,11 +78,10 @@ int winding_number(const Point<T, 2>& q,
                    bool includeBoundary = false,
                    double edge_tol = 1e-8)
 {
-  return winding_number(
-    q,
-    Polygon<T, 2>(axom::Array<Point<T, 2>>({tri[0], tri[1], tri[2]})),
-    includeBoundary,
-    edge_tol);
+  return winding_number(q,
+                        Polygon<T, 2>(axom::Array<Point<T, 2>>({tri[0], tri[1], tri[2]})),
+                        includeBoundary,
+                        edge_tol);
 }
 
 /*!
@@ -304,8 +301,8 @@ double winding_number(const Point<T, 3>& q,
     return 0;
   }
 
-  const double denom = a_norm * b_norm * c_norm + a_norm * b.dot(c) +
-    b_norm * a.dot(c) + c_norm * a.dot(b);
+  const double denom =
+    a_norm * b_norm * c_norm + a_norm * b.dot(c) + b_norm * a.dot(c) + c_norm * a.dot(b);
 
   // Handle direct cases where argument to atan is undefined
   if(axom::utilities::isNearlyEqual(denom, 0.0, EPS))
@@ -379,11 +376,8 @@ double winding_number(const Point<T, 3>& q,
   double wn = 0.0;
   for(int i = 0; i < num_verts - 2; ++i)
   {
-    wn += winding_number(q,
-                         Triangle<T, 3>(poly[0], poly[i + 1], poly[i + 2]),
-                         isOnFace,
-                         edge_tol,
-                         EPS);
+    wn +=
+      winding_number(q, Triangle<T, 3>(poly[0], poly[i + 1], poly[i + 2]), isOnFace, edge_tol, EPS);
   }
 
   return wn;
@@ -441,8 +435,7 @@ int winding_number(const Point<T, 3>& q,
   SLIC_ASSERT(poly.hasNeighbors());
   const int num_verts = poly.numVertices();
 
-  axom::Array<int> faces(num_verts * num_verts), face_size(2 * num_verts),
-    face_offset(2 * num_verts);
+  axom::Array<int> faces(num_verts * num_verts), face_size(2 * num_verts), face_offset(2 * num_verts);
   int face_count;
 
   poly.getFaces(faces.data(), face_size.data(), face_offset.data(), face_count);
@@ -529,9 +522,8 @@ double winding_number(const Point<T, 3>& q,
     BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(0.0 + edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(q, bPatch.evaluate(0.0, 0.0 + edge_offset)),
-        squared_distance(q, bPatch.evaluate(0.0 + edge_offset, 0.0))));
+      sqrt(axom::utilities::min(squared_distance(q, bPatch.evaluate(0.0, 0.0 + edge_offset)),
+                                squared_distance(q, bPatch.evaluate(0.0 + edge_offset, 0.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(q, p2, new_edge_tol, quad_tol, EPS, depth + 1) +
@@ -543,9 +535,8 @@ double winding_number(const Point<T, 3>& q,
     BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(1.0 - edge_offset, 0.0 + edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(q, bPatch.evaluate(1.0, 0.0 + edge_offset)),
-        squared_distance(q, bPatch.evaluate(1.0 - edge_offset, 0.0))));
+      sqrt(axom::utilities::min(squared_distance(q, bPatch.evaluate(1.0, 0.0 + edge_offset)),
+                                squared_distance(q, bPatch.evaluate(1.0 - edge_offset, 0.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(q, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
@@ -557,9 +548,8 @@ double winding_number(const Point<T, 3>& q,
     BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(0.0 + edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(q, bPatch.evaluate(0.0 + edge_offset, 1.0)),
-        squared_distance(q, bPatch.evaluate(0.0, 1.0 - edge_offset))));
+      sqrt(axom::utilities::min(squared_distance(q, bPatch.evaluate(0.0 + edge_offset, 1.0)),
+                                squared_distance(q, bPatch.evaluate(0.0, 1.0 - edge_offset))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(q, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
@@ -571,9 +561,8 @@ double winding_number(const Point<T, 3>& q,
     BezierPatch<T, 3> p1, p2, p3, p4;
     bPatch.split(1.0 - edge_offset, 1.0 - edge_offset, p1, p2, p3, p4);
     double new_edge_tol = 0.5 *
-      sqrt(axom::utilities::min(
-        squared_distance(q, bPatch.evaluate(1.0, 1.0 - edge_offset)),
-        squared_distance(q, bPatch.evaluate(1.0 - edge_offset, 1.0))));
+      sqrt(axom::utilities::min(squared_distance(q, bPatch.evaluate(1.0, 1.0 - edge_offset)),
+                                squared_distance(q, bPatch.evaluate(1.0 - edge_offset, 1.0))));
     new_edge_tol = axom::utilities::min(new_edge_tol, edge_tol);
 
     return winding_number(q, p1, new_edge_tol, quad_tol, EPS, depth + 1) +
@@ -631,8 +620,7 @@ double winding_number(const Point<T, 3>& q,
 
     // Lambda to generate a 3D rotation matrix from an angle and axis
     // Formulation from https://en.wikipedia.org/wiki/Rotation_matrix#Axis_and_angle
-    auto angleAxisRotMatrix =
-      [](double theta, const Vector<T, 3>& axis) -> numerics::Matrix<T> {
+    auto angleAxisRotMatrix = [](double theta, const Vector<T, 3>& axis) -> numerics::Matrix<T> {
       const auto unitized = axis.unitVector();
       const double x = unitized[0], y = unitized[1], z = unitized[2];
       const double c = cos(theta), s = sin(theta), C = 1 - c;
@@ -655,13 +643,11 @@ double winding_number(const Point<T, 3>& q,
     };
 
     // Lambda to rotate the input point using the provided rotation matrix
-    auto rotate_point = [&q](const numerics::Matrix<T>& matx,
-                             const Point<T, 3> input) -> Point<T, 3> {
+    auto rotate_point = [&q](const numerics::Matrix<T>& matx, const Point<T, 3> input) -> Point<T, 3> {
       Vector<T, 3> shifted(q, input);
       Vector<T, 3> rotated;
       numerics::matrix_vector_multiply(matx, shifted.data(), rotated.data());
-      return Point<T, 3>(
-        {rotated[0] + q[0], rotated[1] + q[1], rotated[2] + q[2]});
+      return Point<T, 3>({rotated[0] + q[0], rotated[1] + q[1], rotated[2] + q[2]});
     };
 
     // Find vector from query to the bounding box
@@ -747,11 +733,7 @@ double winding_number(const Point<T, 3>& q,
   double wn = 0;
   for(int n = 0; n < 4; ++n)
   {
-    wn += detail::stokes_winding_number(q,
-                                        boundingPoly[n],
-                                        field_direction,
-                                        quad_npts,
-                                        quad_tol);
+    wn += detail::stokes_winding_number(q, boundingPoly[n], field_direction, quad_npts, quad_tol);
   }
 
   return wn;

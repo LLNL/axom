@@ -68,8 +68,7 @@ double stokes_winding_number(const Point<T, 3>& q,
 {
   // Generate the quadrature rules in parameter space
   static mfem::IntegrationRules my_IntRules(0, mfem::Quadrature1D::GaussLegendre);
-  const mfem::IntegrationRule& quad_rule =
-    my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
+  const mfem::IntegrationRule& quad_rule = my_IntRules.Get(mfem::Geometry::SEGMENT, 2 * npts - 1);
 
   double quadrature = 0.0;
   for(int qi = 0; qi < quad_rule.GetNPoints(); ++qi)
@@ -111,18 +110,18 @@ double stokes_winding_number(const Point<T, 3>& q,
   switch(ax)
   {
   case(SingularityAxis::x):
-    needs_adapt = (q[1] - centroid[1]) * (q[1] - centroid[1]) +
-        (q[2] - centroid[2]) * (q[2] - centroid[2]) <=
+    needs_adapt =
+      (q[1] - centroid[1]) * (q[1] - centroid[1]) + (q[2] - centroid[2]) * (q[2] - centroid[2]) <=
       cBox.range().squared_norm();
     break;
   case(SingularityAxis::y):
-    needs_adapt = (q[0] - centroid[0]) * (q[0] - centroid[0]) +
-        (q[2] - centroid[2]) * (q[2] - centroid[2]) <=
+    needs_adapt =
+      (q[0] - centroid[0]) * (q[0] - centroid[0]) + (q[2] - centroid[2]) * (q[2] - centroid[2]) <=
       cBox.range().squared_norm();
     break;
   case(SingularityAxis::z):
-    needs_adapt = (q[0] - centroid[0]) * (q[0] - centroid[0]) *
-        (q[1] - centroid[1]) * (q[1] - centroid[1]) <=
+    needs_adapt =
+      (q[0] - centroid[0]) * (q[0] - centroid[0]) * (q[1] - centroid[1]) * (q[1] - centroid[1]) <=
       cBox.range().squared_norm();
     break;
   case(SingularityAxis::rotated):
@@ -132,12 +131,7 @@ double stokes_winding_number(const Point<T, 3>& q,
 
   if(needs_adapt)
   {
-    return stokes_winding_number_adaptive(q,
-                                          curve,
-                                          ax,
-                                          quad_rule,
-                                          quadrature,
-                                          quad_tol);
+    return stokes_winding_number_adaptive(q, curve, ax, quad_rule, quadrature, quad_tol);
   }
 
   return 0.25 * M_1_PI * quadrature;
@@ -215,10 +209,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& q,
 
   constexpr int MAX_DEPTH = 12;
   if(depth >= MAX_DEPTH ||
-     axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1],
-                                            quad_coarse,
-                                            quad_tol,
-                                            1e-10))
+     axom::utilities::isNearlyEqualRelative(quad_fine[0] + quad_fine[1], quad_coarse, quad_tol, 1e-10))
   {
     return 0.25 * M_1_PI * (quad_fine[0] + quad_fine[1]);
   }
@@ -231,13 +222,7 @@ double stokes_winding_number_adaptive(const Point<T, 3>& q,
                                           quad_fine[0],
                                           quad_tol,
                                           depth + 1) +
-      stokes_winding_number_adaptive(q,
-                                     subcurves[1],
-                                     ax,
-                                     quad_rule,
-                                     quad_fine[1],
-                                     quad_tol,
-                                     depth + 1);
+      stokes_winding_number_adaptive(q, subcurves[1], ax, quad_rule, quad_fine[1], quad_tol, depth + 1);
   }
 }
 #endif

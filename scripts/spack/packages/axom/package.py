@@ -177,12 +177,14 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on(f"raja {ext_cuda_dep}", when=f"+raja {ext_cuda_dep}")
         depends_on(f"umpire {ext_cuda_dep}", when=f"+umpire {ext_cuda_dep}")
         depends_on(f"caliper {ext_cuda_dep}", when=f"+profiling {ext_cuda_dep}")
+        depends_on(f"mfem {ext_cuda_dep}", when=f"+mfem {ext_cuda_dep}")
 
     for val in ROCmPackage.amdgpu_targets:
         ext_rocm_dep = f"+rocm amdgpu_target={val}"
         depends_on(f"raja {ext_rocm_dep}", when=f"+raja {ext_rocm_dep}")
         depends_on(f"umpire {ext_rocm_dep}", when=f"+umpire {ext_rocm_dep}")
         depends_on(f"caliper {ext_rocm_dep}", when=f"+profiling {ext_rocm_dep}")
+        depends_on(f"mfem {ext_rocm_dep}", when=f"+mfem {ext_rocm_dep}")
 
     depends_on("rocprim", when="+rocm")
 
@@ -205,7 +207,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("py-sphinx")
         depends_on("py-shroud")
         depends_on("py-jsonschema")
-        depends_on("llvm+clang@14", type="build")
+
+        # Need clang@14 for clang-format
+        # (ENABLE_CLANGFORMAT will be OFF if not the exact version)
+        depends_on("llvm+clang@14", type="build", when="~rocm")
+        depends_on("llvm", type="build", when="+rocm")
 
     # -----------------------------------------------------------------------
     # Conflicts
@@ -333,10 +339,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             entries.append(cmake_cache_option("ENABLE_HIP", True))
 
-            rocm_root = os.path.dirname(spec["llvm-amdgpu"].prefix)
-            entries.append(cmake_cache_path("ROCM_PATH", rocm_root))
+            hip_link_flags = ""
 
-            hip_link_flags = "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
+            rocm_root = os.path.dirname(spec["llvm-amdgpu"].prefix)
+            entries.append(cmake_cache_path("ROCM_ROOT_DIR", rocm_root))
 
             # Recommended MPI flags
             hip_link_flags += "-lxpmem "
@@ -349,6 +355,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             # Fixes for mpi for rocm until wrapper paths are fixed
             # These flags are already part of the wrapped compilers on TOSS4 systems
             if spec.satisfies("+fortran") and self.is_fortran_compiler("amdflang"):
+
                 hip_link_flags += "-Wl,--disable-new-dtags "
 
                 if spec.satisfies("^hip@6.0.0:"):
@@ -357,7 +364,17 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                     )
                 else:
                     hip_link_flags += "-L{0}/llvm/lib -Wl,-rpath,{0}/llvm/lib ".format(rocm_root)
+
+                # Only amdclang requires this path; cray compiler fails if this is included
+                hip_link_flags += "-L{0}/lib -Wl,-rpath,{0}/lib ".format(rocm_root)
+
                 hip_link_flags += "-lpgmath -lflang -lflangrti -lompstub "
+
+            # Additional library path for cray compiler
+            if self.spec.satisfies("%cce"):
+                hip_link_flags += "-L/opt/cray/pe/cce/{0}/cce/x86_64/lib -Wl,-rpath,/opt/cray/pe/cce/{0}/cce/x86_64/lib ".format(
+                                        self.spec.compiler.version
+                                    )
 
             # Remove extra link library for crayftn
             if spec.satisfies("+fortran") and self.is_fortran_compiler("crayftn"):
@@ -558,11 +575,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             path2 = os.path.realpath(spec["doxygen"].prefix)
             self.find_path_replacement(path1, path2, path_replacements, "DEVTOOLS_ROOT", entries)
 
-        if spec.satisfies("+devtools") and spec.satisfies("^llvm"):
+        if spec.satisfies("+devtools") and spec.satisfies("^llvm@14"):
             clang_fmt_path = spec["llvm"].prefix.bin.join("clang-format")
             entries.append(cmake_cache_path("CLANGFORMAT_EXECUTABLE", clang_fmt_path))
         else:
-            entries.append("# ClangFormat disabled due to llvm and devtools not in spec\n")
+            entries.append("# ClangFormat disabled since llvm@14 and devtools not in spec\n")
             entries.append(cmake_cache_option("ENABLE_CLANGFORMAT", False))
 
         if spec.satisfies("+python") or spec.satisfies("+devtools"):
