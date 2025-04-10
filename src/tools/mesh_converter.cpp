@@ -567,15 +567,15 @@ bool writeSTL(const TriMesh& tri_mesh, const std::string& filename)
     const auto& v2 = tri_mesh.coords[tri[2]];
     const auto n = primal::Vector<double, 3>::cross_product(v1 - v0, v2 - v0);
 
-    fmt::format_to(std::back_inserter(out), "  facet normal {} {} {}\n", n[0], n[1], n[2]);
-    fmt::format_to(std::back_inserter(out), "    outer loop\n");
-    fmt::format_to(std::back_inserter(out), "      vertex {} {} {}\n", v0[0], v0[1], v0[2]);
-    fmt::format_to(std::back_inserter(out), "      vertex {} {} {}\n", v1[0], v1[1], v1[2]);
-    fmt::format_to(std::back_inserter(out), "      vertex {} {} {}\n", v2[0], v2[1], v2[2]);
-    fmt::format_to(std::back_inserter(out), "    endloop\n");
-    fmt::format_to(std::back_inserter(out), "  endfacet\n");
+    axom::fmt::format_to(std::back_inserter(out), "  facet normal {} {} {}\n", n[0], n[1], n[2]);
+    axom::fmt::format_to(std::back_inserter(out), "    outer loop\n");
+    axom::fmt::format_to(std::back_inserter(out), "      vertex {} {} {}\n", v0[0], v0[1], v0[2]);
+    axom::fmt::format_to(std::back_inserter(out), "      vertex {} {} {}\n", v1[0], v1[1], v1[2]);
+    axom::fmt::format_to(std::back_inserter(out), "      vertex {} {} {}\n", v2[0], v2[1], v2[2]);
+    axom::fmt::format_to(std::back_inserter(out), "    endloop\n");
+    axom::fmt::format_to(std::back_inserter(out), "  endfacet\n");
   }
-  fmt::format_to(std::back_inserter(out), "endsolid AxomMesh\n");
+  axom::fmt::format_to(std::back_inserter(out), "endsolid AxomMesh\n");
 
   std::ofstream stl_file(filename);
   if(!stl_file.is_open())
@@ -619,8 +619,8 @@ int main(int argc, char** argv)
   bool verbose = false;
   app.add_flag("-v,--verbose", verbose, "Enable verbose output");
 
-#ifdef AXOM_USE_CALIPER
   std::string annotationMode {"none"};
+#ifdef AXOM_USE_CALIPER
   app.add_option("--caliper", annotationMode)
     ->description(
       "caliper annotation mode. Valid options include 'none' and 'report'. "
