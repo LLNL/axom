@@ -390,6 +390,7 @@ protected:
    * \param extra Extra sizes for connectivity, sizes, etc.
    * \param old2newView A view that lets us map old node numbers to new node numbers.
    * \param n_topo The input topology.
+   * \param n_options A node containing the options.
    * \param n_newTopo A node to contain the new topology.
    */
   virtual void makeTopology(const SelectedZonesView selectedZonesView,

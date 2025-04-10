@@ -548,7 +548,7 @@ struct test_extractzones_ph
 
 TEST(mir_blueprint_utilities, extractzones_ph_seq) { test_extractzones_ph<seq_exec>::test("extractzones_ph", false); }
 TEST(mir_blueprint_utilities, extractzones_ph_sel_seq) { test_extractzones_ph<seq_exec>::test("extractzones_ph_sel", true); }
-#if 0
+
 #if defined(AXOM_USE_OPENMP)
 TEST(mir_blueprint_utilities, extractzones_ph_omp) { test_extractzones_ph<omp_exec>::test("extractzones_ph", false); }
 TEST(mir_blueprint_utilities, extractzones_ph_sel_omp) { test_extractzones_ph<omp_exec>::test("extractzones_ph_sel", true); }
@@ -562,7 +562,6 @@ TEST(mir_blueprint_utilities, extractzones_ph_sel_cuda) { test_extractzones_ph<c
 #if defined(AXOM_USE_HIP)
 TEST(mir_blueprint_utilities, extractzones_ph_hip) { test_extractzones_ph<hip_exec>::test("extractzones_ph", false); }
 TEST(mir_blueprint_utilities, extractzones_ph_sel_hip) { test_extractzones_ph<hip_exec>::test("extractzones_ph_sel", true); }
-#endif
 #endif
 
 //------------------------------------------------------------------------------

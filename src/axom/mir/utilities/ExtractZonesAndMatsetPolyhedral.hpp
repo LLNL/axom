@@ -19,8 +19,6 @@
   #include "RAJA/RAJA.hpp"
 #endif
 
-#define AXOM_DEBUG_EXTRACT_ZONES_PH
-
 namespace axom
 {
 namespace mir
@@ -31,11 +29,14 @@ namespace blueprint
 {
 
 /*!
- * \brief Make a new topology and coordset by extracting certain zones from the input mesh.
+ * \brief Make a new polyhedral topology, coordset, and matset by extracting selected
+ *        zones from the input 3D structured mesh. We make assumptions for structured 3D
+ *        meshes that let us make unique faces by construction.
  *
  * \tparam ExecSpace The execution space where the algorithm will run.
- * \tparam TopologyView The topology view type on which the algorithm will run.
- * \tparam MatsetView The matset view type on which the algorithm will run.
+ * \tparam IndexPolicy The structured indexing policy used in the topology.
+ * \tparam CoordsetView The coordset view type.
+ * \tparam MatsetView The matset view type.
  */
 template <typename ExecSpace, typename IndexPolicy, typename CoordsetView, typename MatsetView>
 class ExtractZonesAndMatsetPolyhedral : public ExtractZonesAndMatset<ExecSpace, axom::mir::views::StructuredTopologyView<IndexPolicy>, CoordsetView, MatsetView>
@@ -68,14 +69,22 @@ public:
    */
   virtual ~ExtractZonesAndMatsetPolyhedral() = default;
 
+// The following members are private (unless using CUDA)
+#if !defined(__CUDACC__)
+protected:
+#endif
+
   /*!
-   * \brief Make the output topology for just the selected zones.
+   * \brief Make the output topology for just the selected zones. This is an
+   *        override of the base class' behavior and we make assumptions for
+   *        3D structured topologies to help make faces more easily.
    *
    * \param selectedZonesView A view that contains the ids of the zones to extract.
    * \param dataSizes Array sizes for connectivity, sizes, etc.
    * \param extra Extra sizes for connectivity, sizes, etc.
    * \param old2newView A view that lets us map old node numbers to new node numbers.
    * \param n_topo The input topology.
+   * \param n_options A node containing the options (ignored).
    * \param n_newTopo A node to contain the new topology.
    */
   virtual void makeTopology(const SelectedZonesView selectedZonesView,
@@ -108,20 +117,11 @@ public:
     axom::Array<std::uint8_t> zoneFlags(nzones, nzones, allocatorID);
     auto zoneFlagsView = zoneFlags.view();
     zoneFlags.fill(ZoneEmpty);
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-    std::cout << "selectedZones={";
-#endif
     axom::for_all<ExecSpace>(numSelectedZones, AXOM_LAMBDA(axom::IndexType szIndex)
     {
       const auto zoneIndex = selectedZonesView[szIndex];
       zoneFlagsView[zoneIndex] = ZoneSelected;
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-      std::cout << zoneIndex << ", ";
-#endif
     });
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-    std::cout << "}\n";
-#endif
     AXOM_ANNOTATE_END("select");
 
     //--------------------------------------------------------------------------
@@ -142,9 +142,6 @@ public:
       const auto zoneIndex = selectedZonesView[szIndex];
       const auto logicalIndex = deviceTopologyView.indexing().IndexToLogicalIndex(zoneIndex);
 
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-      std::cout << "zone " << zoneIndex << " (" << logicalIndex << ") defines faces {";
-#endif
       int faceCount = 0;
       std::uint8_t zf = ZoneEmpty;
       const int faceOrder[] = {0,2,4,1,3,5};
@@ -178,19 +175,10 @@ public:
           makeFace = (zoneFlagsView[neighbor] & ZoneSelected) == 0;
         }
 
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-        if(makeFace)
-        {
-          std::cout << queryFace << ", ";
-        }
-#endif
-
         zf |= makeFace ? (1 << queryFace) : 0;
         faceCount += makeFace ? 1 : 0;
       }
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-      std::cout << "}\n";
-#endif
+
       zoneFlagsView[zoneIndex] |= zf;
       zoneFaceSizesView[zoneIndex] = faceCount;
       faceCount_reduce += faceCount;
@@ -283,19 +271,10 @@ public:
           // Map the face's node ids to the new coordset.
           const auto faceId = zoneFaceOffsetsView[zoneIndex] + localFace;
           const auto offset = faceId * PointsPerQuad;
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-          std::cout << "Zone " << zoneIndex << " making face " << faceId << ": {";
-#endif
           for(int idx = 0; idx < numIds; idx++)
           {
             seConnView[offset + idx] = old2newView[ids[idx]];
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-          std::cout << old2newView[ids[idx]] << ", ";
-#endif
           }
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-          std::cout << "}, queryFace=" << queryFace << ", offset=" << offset << "\n";
-#endif
           localFace++;
         }
       }
@@ -319,10 +298,6 @@ public:
       const auto zoneIndex = selectedZonesView[szIndex];
       const auto zf = zoneFlagsView[zoneIndex];
 
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-      std::cout << "Zone " << zoneIndex << "\n";
-#endif
-
       int localFace = 0, connOffset = 0;
       // Query faces in this order so we do all the low faces then all the high faces.
       const int faceOrder[] = {0,2,4,1,3,5};
@@ -335,10 +310,6 @@ public:
         {
           const ConnectivityType faceId = zoneFaceOffsetsView[zoneIndex] + localFace;
           connView[szIndex * FacesPerHex + connOffset] = faceId;
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-          std::cout << "\tconn[" << connOffset << "] = " << faceId << " (local)\n";
-#endif
-
           localFace++;
           connOffset++;
         }
@@ -356,23 +327,10 @@ public:
           const int neighborQueryFace = (fi < 3) ? (queryFace + 1) : (queryFace - 1);
           const bool neighborDefinesFace = (nzf & (1 << neighborQueryFace)) > 0;
 
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-          std::cout << "\tNeighbor " << logicalNeighbor << ", dim=" << dim
-                    << ", delta=" << delta
-                    << ", nzf=" << (int)nzf
-                    << ", neighborQueryFace=" << neighborQueryFace
-                    << ", neighborDefinesFace=" << neighborDefinesFace
-                    << std::endl;
-#endif
-
           if(neighborDefinesFace)
           {
             const ConnectivityType faceId = zoneFaceOffsetsView[neighbor] + dim;
             connView[szIndex * FacesPerHex + connOffset] = faceId;
-#ifdef AXOM_DEBUG_EXTRACT_ZONES_PH
-          std::cout << "\tconn[" << connOffset << "] = " << faceId << " (neighbor) " << ", dim=" << dim << "\n";
-#endif
-
             connOffset++;
           }
         }
