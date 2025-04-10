@@ -36,13 +36,18 @@ constexpr int MALLOC_ALLOCATOR_ID = -3;   //!< Refers to MemorySpace::Malloc
  * \brief Memory spaces supported by Array-like types
  *
  * This abstraction is not implemented using Umpire's MemoryResourceType enum
- * in order to also include a "Dynamic" option as a default template parameter
- * for Array-like types
+ * in order to also include
+ * - a "Malloc" option that uses malloc and free.
+ * - a "Dynamic" option as a default template parameter
+ *   for use in Array-like types (see axom::Array).  If using
+ *   Umpire, "Dynamic" refers to the default Umpire allocator.
+ *   If not using Umpire, "Dynamic" falls back on "Malloc".
+ *   (See axom::setDefaultAllocator() and axom::getDefaultAllocator().)
  */
 enum class MemorySpace
 {
-  Dynamic,  //!< Refers to Umpire's current default allocator
   Malloc,   //!< Host memory using malloc, free and realloc
+  Dynamic,  //!< Refers to Umpire's current default allocator
 #ifdef AXOM_USE_UMPIRE
   Host,     //!< Umpire's host memory space
   Device,   //!< Umpire's device memory space
