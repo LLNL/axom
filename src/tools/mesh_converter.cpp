@@ -268,9 +268,11 @@ bool loadProe(const std::string& filename, TetMesh& slam_mesh, bool verbose)
   return true;
 }
 
-void computeEdgeHistogram(const TetMesh& mesh)
+template <typename MeshType>
+void computeEdgeHistogram(const MeshType& mesh)
 {
-  AXOM_ANNOTATE_SCOPE("compute edge histogram");
+  AXOM_ANNOTATE_SCOPE(axom::fmt::format("compute {} edge histogram",
+                                        std::is_same<MeshType, TriMesh>::value ? "tri" : "tet"));
 
   using MinMaxRange = primal::BoundingBox<double, 1>;
   using LengthType = MinMaxRange::PointType;
@@ -286,29 +288,25 @@ void computeEdgeHistogram(const TetMesh& mesh)
 
   using Segment = primal::Segment<double, 3>;
 
-  mesh.checkValid(true);
-
   for(auto t : mesh.zoneSet)
   {
-    auto tet = mesh.znRel[t];
+    auto simplex = mesh.znRel[t];
 
-    // Add all edges of the tetrahedron to the histogram
-    // Note: this will count edges from neighboring tets more than once
-    for(const auto& e : {std::make_pair(tet[0], tet[1]),
-                         std::make_pair(tet[0], tet[2]),
-                         std::make_pair(tet[0], tet[3]),
-                         std::make_pair(tet[1], tet[2]),
-                         std::make_pair(tet[1], tet[3]),
-                         std::make_pair(tet[2], tet[3])})
+    // Add all edges of the simplex to the histogram
+    // Note: this will count edges from neighboring simplexes more than once
+    // but is still a useful way to undertand the distribution of edge lengths
+    for(int i = 0; i < MeshType::NODES_PER_ZONE; ++i)
     {
-      const double len = Segment(mesh.getVertex(e.first), mesh.getVertex(e.second)).length();
+      for(int j = i + 1; j < MeshType::NODES_PER_ZONE; ++j)
+      {
+        const double len = Segment(mesh.getVertex(simplex[i]), mesh.getVertex(simplex[j])).length();
+        meshEdgeLenRange.addPoint(LengthType {len});
 
-      meshEdgeLenRange.addPoint(LengthType {len});
-
-      int expBase2;
-      std::frexp(len, &expBase2);
-      edgeLenHist[expBase2]++;
-      edgeLenRangeMap[expBase2].addPoint(LengthType {len});
+        int expBase2;
+        std::frexp(len, &expBase2);
+        edgeLenHist[expBase2]++;
+        edgeLenRangeMap[expBase2].addPoint(LengthType {len});
+      }
     }
   }
 
@@ -659,6 +657,11 @@ int main(int argc, char** argv)
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Boundary triangle mesh has {:L} triangles",
                               tri_mesh.zoneSet.size()));
+
+  if(compute_edge_histogram)
+  {
+    computeEdgeHistogram(tri_mesh);
+  }
 
   // Saves the result to an STL mesh
   bool save_success = writeSTL(tri_mesh, output_file);
