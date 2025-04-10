@@ -60,8 +60,15 @@ public:
   using Vertices =
     slam::Map<PointType, NodeSet, slam::policies::ArrayIndirection<PositionType, PointType>>;
 
+  // Define the SimplexType based on the topological dimension
+  using SimplexType = std::conditional_t<
+    TOPO_DIM == 3,
+    primal::Tetrahedron<double, SPACE_DIM>,
+    std::conditional_t<TOPO_DIM == 2, primal::Triangle<double, SPACE_DIM>, primal::Segment<double, SPACE_DIM>>>;
+
+  static_assert(SPACE_DIM <= 3, "SPACE_DIM can be at most 3");
   static_assert(TOPO_DIM <= SPACE_DIM, "TOPO_DIM must be less than or equal to SPACE_DIM");
-  static_assert(TOPO_DIM >= 1, "TOPO_DIM must be greater than 0");
+  static_assert(1 <= TOPO_DIM, "TOPO_DIM must be greater than 0");
 
 public:
   SimplicialMesh(int num_verts = 0, int num_zones = 0) { reset(num_verts, num_zones); }
@@ -139,6 +146,32 @@ public:
     checkValid();
   }
 
+  PointType getVertex(PositionType index) const { return coords[index]; }
+
+  /// \brief Returns the segment corresponding to the given index (for TOPO_DIM == 1).
+  template <int D = TOPO_DIM, typename std::enable_if<D == 1, int>::type = 0>
+  SimplexType getSimplex(PositionType index) const
+  {
+    const auto zone = znRel[index];
+    return SimplexType(coords[zone[0]], coords[zone[1]]);
+  }
+
+  /// \brief Returns the triangle corresponding to the given index (for TOPO_DIM == 2).
+  template <int D = TOPO_DIM, typename std::enable_if<D == 2, int>::type = 0>
+  SimplexType getSimplex(PositionType index) const
+  {
+    const auto zone = znRel[index];
+    return SimplexType(coords[zone[0]], coords[zone[1]], coords[zone[2]]);
+  }
+
+  /// \brief Returns the tetrahedron corresponding to the given index (for TOPO_DIM == 3).
+  template <int D = TOPO_DIM, typename std::enable_if<D == 3, int>::type = 0>
+  SimplexType getSimplex(PositionType index) const
+  {
+    const auto zone = znRel[index];
+    return SimplexType(coords[zone[0]], coords[zone[1]], coords[zone[2]], coords[zone[3]]);
+  }
+
 public:
   NodeSet nodeSet;
   ZoneSet zoneSet;
@@ -155,7 +188,7 @@ using TriMesh = SimplicialMesh<2, 3>;  // Surface triangle mesh in 3D
 
 /// Loads the pro-e tet mesh and returns a TetMesh instance
 /// Fixes orientations of the tets, but defers fixing degeneracies until the vertices have been welded
-TetMesh loadProe(const std::string& filename, bool verbose)
+bool loadProe(const std::string& filename, TetMesh& slam_mesh, bool verbose)
 {
   AXOM_ANNOTATE_SCOPE("load Pro-E file");
 
@@ -181,7 +214,7 @@ TetMesh loadProe(const std::string& filename, bool verbose)
   if(mint_mesh == nullptr)
   {
     SLIC_ERROR("Mesh is null after reading the proe file.");
-    return TetMesh();
+    return false;
   }
 
   if(verbose)
@@ -192,7 +225,7 @@ TetMesh loadProe(const std::string& filename, bool verbose)
   }
 
   /// convert from mint to our slam-based TetMesh
-  TetMesh slam_mesh(mint_mesh->getNumberOfNodes(), mint_mesh->getNumberOfCells());
+  slam_mesh.reset(mint_mesh->getNumberOfNodes(), mint_mesh->getNumberOfCells());
 
   // copy vertex data
   {
@@ -207,16 +240,6 @@ TetMesh loadProe(const std::string& filename, bool verbose)
 
   // copy tet-vertex connectivity data
   {
-    using SpatialTet = primal::Tetrahedron<double, 3>;
-    using IndexTet = decltype(slam_mesh.znRel[0]);
-
-    auto spatialTet = [&](IndexTet index_tet) -> SpatialTet {
-      return SpatialTet(slam_mesh.coords[index_tet[0]],
-                        slam_mesh.coords[index_tet[1]],
-                        slam_mesh.coords[index_tet[2]],
-                        slam_mesh.coords[index_tet[3]]);
-    };
-
     int orientation_fixes = 0;
     for(auto t : slam_mesh.zoneSet)
     {
@@ -228,7 +251,7 @@ TetMesh loadProe(const std::string& filename, bool verbose)
       tet[3] = connec[3];
 
       // fix orientations -- tets should not have negative volumes
-      if(spatialTet(tet).signedVolume() < 0.)
+      if(slam_mesh.getSimplex(t).signedVolume() < 0.)
       {
         axom::utilities::swap(tet[2], tet[3]);
         ++orientation_fixes;
@@ -242,7 +265,81 @@ TetMesh loadProe(const std::string& filename, bool verbose)
 
   slam_mesh.checkValid(verbose);
 
-  return slam_mesh;
+  return true;
+}
+
+void computeEdgeHistogram(const TetMesh& mesh)
+{
+  AXOM_ANNOTATE_SCOPE("compute edge histogram");
+
+  using MinMaxRange = primal::BoundingBox<double, 1>;
+  using LengthType = MinMaxRange::PointType;
+
+  MinMaxRange meshEdgeLenRange;
+
+  // simple binning based on the exponent
+  using LogHistogram = std::map<int, int>;
+  LogHistogram edgeLenHist;  // Create histogram of edge lengths (log scale)
+
+  using LogRangeMap = std::map<int, MinMaxRange>;
+  LogRangeMap edgeLenRangeMap;  // Tracks range of edge lengths at each scale
+
+  using Segment = primal::Segment<double, 3>;
+
+  mesh.checkValid(true);
+
+  for(auto t : mesh.zoneSet)
+  {
+    auto tet = mesh.znRel[t];
+
+    // Add all edges of the tetrahedron to the histogram
+    // Note: this will count edges from neighboring tets more than once
+    for(const auto& e : {std::make_pair(tet[0], tet[1]),
+                         std::make_pair(tet[0], tet[2]),
+                         std::make_pair(tet[0], tet[3]),
+                         std::make_pair(tet[1], tet[2]),
+                         std::make_pair(tet[1], tet[3]),
+                         std::make_pair(tet[2], tet[3])})
+    {
+      const double len = Segment(mesh.getVertex(e.first), mesh.getVertex(e.second)).length();
+
+      meshEdgeLenRange.addPoint(LengthType {len});
+
+      int expBase2;
+      std::frexp(len, &expBase2);
+      edgeLenHist[expBase2]++;
+      edgeLenRangeMap[expBase2].addPoint(LengthType {len});
+    }
+  }
+
+  // Print the edge length histogram
+  {
+    axom::fmt::memory_buffer out;
+    axom::fmt::format_to(std::back_inserter(out), "Edge Length Histogram:\n");
+    for(const auto& entry : edgeLenHist)
+    {
+      axom::fmt::format_to(std::back_inserter(out),
+                           axom::utilities::locale(),
+                           "  2^{}: {:L} edges\n",
+                           entry.first,
+                           entry.second);
+    }
+    SLIC_INFO(axom::fmt::to_string(out));
+  }
+  // Print the edge length ranges for each bin
+  {
+    axom::fmt::memory_buffer out;
+    axom::fmt::format_to(std::back_inserter(out), "Edge Length Ranges:\n");
+    for(const auto& entry : edgeLenRangeMap)
+    {
+      axom::fmt::format_to(std::back_inserter(out),
+                           "  2^{}: [{}, {}]\n",
+                           entry.first,
+                           entry.second.getMin()[0],
+                           entry.second.getMax()[0]);
+    }
+    SLIC_INFO(axom::fmt::to_string(out));
+  }
 }
 
 /// Welds all vertices in the tet mesh that are within \a weldThresh of each other
@@ -516,6 +613,11 @@ int main(int argc, char** argv)
     ->description("Threshold for welding vertices")
     ->capture_default_str();
 
+  bool compute_edge_histogram = false;
+  app.add_flag("--edge-histogram", compute_edge_histogram)
+    ->description("Compute and display the edge histogram")
+    ->capture_default_str();
+
   bool verbose = false;
   app.add_flag("-v,--verbose", verbose, "Enable verbose output");
 
@@ -536,7 +638,13 @@ int main(int argc, char** argv)
   AXOM_ANNOTATE_SCOPE("mesh_converter");
 
   // Load the ProE mesh, fixing tet orientations along the way
-  TetMesh tet_mesh = loadProe(input_file, verbose);
+  TetMesh tet_mesh;
+  bool load_success = loadProe(input_file, tet_mesh, verbose);
+
+  if(compute_edge_histogram)
+  {
+    computeEdgeHistogram(tet_mesh);
+  }
 
   // Weld all vertices that are within \a weldThresole
   weldVertices(tet_mesh, weld_threshold, verbose);
@@ -553,7 +661,7 @@ int main(int argc, char** argv)
                               tri_mesh.zoneSet.size()));
 
   // Saves the result to an STL mesh
-  bool success = writeSTL(tri_mesh, output_file);
+  bool save_success = writeSTL(tri_mesh, output_file);
 
-  return success ? 0 : 1;
+  return load_success && save_success ? 0 : 1;
 }
