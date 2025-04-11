@@ -462,7 +462,7 @@ struct test_extractzones_ph
   static void test(const std::string &name, bool selectZones)
   {
     constexpr int MAXMATERIALS = 5;
-    const int gridSize = 7; // TODO: up this
+    const int gridSize = 7;  // TODO: up this
     const int numCircles = 2;
     SLIC_ASSERT(numCircles + 1 <= MAXMATERIALS);
 
@@ -485,12 +485,12 @@ struct test_extractzones_ph
         for(int i = 0; i < gridSize; i++)
         {
           // Halfway up on Y, checkerboard the zones
-          if(selectZones && (j > gridSize / 2) && ((i+j+k) % 2 == 0))
+          if(selectZones && (j > gridSize / 2) && ((i + j + k) % 2 == 0))
           {
             continue;
           }
 
-          int zoneIndex = k*gridSize*gridSize + j*gridSize + i;
+          int zoneIndex = k * gridSize * gridSize + j * gridSize + i;
           ids.push_back(zoneIndex);
         }
       }
@@ -519,10 +519,8 @@ struct test_extractzones_ph
     using MatsetView = decltype(matsetView);
 
     // Pull out selected zones as polyhedral zones
-    bputils::ExtractZonesAndMatsetPolyhedral<ExecSpace, IndexingPolicy, CoordsetView, MatsetView> extract(
-      topologyView,
-      coordsetView,
-      matsetView);
+    bputils::ExtractZonesAndMatsetPolyhedral<ExecSpace, IndexingPolicy, CoordsetView, MatsetView>
+      extract(topologyView, coordsetView, matsetView);
     conduit::Node newDeviceMesh, options;
     extract.execute(selectedZones.view(), deviceMesh, options, newDeviceMesh);
 
@@ -546,22 +544,46 @@ struct test_extractzones_ph
   }
 };
 
-TEST(mir_blueprint_utilities, extractzones_ph_seq) { test_extractzones_ph<seq_exec>::test("extractzones_ph", false); }
-TEST(mir_blueprint_utilities, extractzones_ph_sel_seq) { test_extractzones_ph<seq_exec>::test("extractzones_ph_sel", true); }
+TEST(mir_blueprint_utilities, extractzones_ph_seq)
+{
+  test_extractzones_ph<seq_exec>::test("extractzones_ph", false);
+}
+TEST(mir_blueprint_utilities, extractzones_ph_sel_seq)
+{
+  test_extractzones_ph<seq_exec>::test("extractzones_ph_sel", true);
+}
 
 #if defined(AXOM_USE_OPENMP)
-TEST(mir_blueprint_utilities, extractzones_ph_omp) { test_extractzones_ph<omp_exec>::test("extractzones_ph", false); }
-TEST(mir_blueprint_utilities, extractzones_ph_sel_omp) { test_extractzones_ph<omp_exec>::test("extractzones_ph_sel", true); }
+TEST(mir_blueprint_utilities, extractzones_ph_omp)
+{
+  test_extractzones_ph<omp_exec>::test("extractzones_ph", false);
+}
+TEST(mir_blueprint_utilities, extractzones_ph_sel_omp)
+{
+  test_extractzones_ph<omp_exec>::test("extractzones_ph_sel", true);
+}
 #endif
 
 #if defined(AXOM_USE_CUDA)
-TEST(mir_blueprint_utilities, extractzones_ph_cuda) { test_extractzones_ph<cuda_exec>::test("extractzones_ph", false); }
-TEST(mir_blueprint_utilities, extractzones_ph_sel_cuda) { test_extractzones_ph<cuda_exec>::test("extractzones_ph_sel", true); }
+TEST(mir_blueprint_utilities, extractzones_ph_cuda)
+{
+  test_extractzones_ph<cuda_exec>::test("extractzones_ph", false);
+}
+TEST(mir_blueprint_utilities, extractzones_ph_sel_cuda)
+{
+  test_extractzones_ph<cuda_exec>::test("extractzones_ph_sel", true);
+}
 #endif
 
 #if defined(AXOM_USE_HIP)
-TEST(mir_blueprint_utilities, extractzones_ph_hip) { test_extractzones_ph<hip_exec>::test("extractzones_ph", false); }
-TEST(mir_blueprint_utilities, extractzones_ph_sel_hip) { test_extractzones_ph<hip_exec>::test("extractzones_ph_sel", true); }
+TEST(mir_blueprint_utilities, extractzones_ph_hip)
+{
+  test_extractzones_ph<hip_exec>::test("extractzones_ph", false);
+}
+TEST(mir_blueprint_utilities, extractzones_ph_sel_hip)
+{
+  test_extractzones_ph<hip_exec>::test("extractzones_ph_sel", true);
+}
 #endif
 
 //------------------------------------------------------------------------------

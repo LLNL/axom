@@ -376,9 +376,14 @@ protected:
     }
 
     // Make the clean mesh.
-    using CleanOutput = detail::MakeCleanOutput<ExecSpace, TopologyView, CoordsetView, MatsetView, IndexPolicy::dimension()>;
-    CleanOutput::execute(cleanZones, n_root, n_ezopts,
-                         m_topologyView, m_coordsetView, m_matsetView,
+    using CleanOutput =
+      detail::MakeCleanOutput<ExecSpace, TopologyView, CoordsetView, MatsetView, IndexPolicy::dimension()>;
+    CleanOutput::execute(cleanZones,
+                         n_root,
+                         n_ezopts,
+                         m_topologyView,
+                         m_coordsetView,
+                         m_matsetView,
                          n_cleanOutput);
 
 #if defined(AXOM_ELVIRA_DEBUG)
