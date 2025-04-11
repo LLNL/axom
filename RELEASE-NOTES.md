@@ -19,6 +19,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+###  Added
+- New `axom::MALLOC_ALLOCATOR_ID` is for using malloc and free
+  even when axom is con figured with Umpire support.
+
 ## [Version 0.11.0] - Release date 2025-04-02
 
 ###  Added
