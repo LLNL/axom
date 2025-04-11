@@ -79,7 +79,7 @@ struct PointTraits
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int AXOM_UNUSED_PARAM(edgeIndex))
   {
-    return axom::StackArray<IndexType, 2>();
+    return axom::StackArray<IndexType, 2>{0, 0};
   }
 
   AXOM_HOST_DEVICE constexpr static const char *name() { return "point"; }
@@ -105,11 +105,11 @@ struct LineTraits
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodes() { return 2; }
   AXOM_HOST_DEVICE constexpr static IndexType numberOfNodesInFace(int AXOM_UNUSED_PARAM(faceIndex))
   {
-    return 2;
+    return 0;
   }
   AXOM_HOST_DEVICE constexpr static IndexType maxNodesInFace() { return 2; }
 
-  AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 1; }
+  AXOM_HOST_DEVICE constexpr static IndexType numberOfFaces() { return 0; }
   AXOM_HOST_DEVICE constexpr static IndexType numberOfEdges() { return 1; }
   AXOM_HOST_DEVICE constexpr static IndexType zoneOffset(int zoneIndex)
   {
@@ -588,6 +588,23 @@ struct PolygonShape : public PolygonTraits
     }
   }
 
+  /*!
+   * \brief Return the number of edges in the polygon.
+   * \return The number of edges.
+   */
+  AXOM_HOST_DEVICE IndexType numberOfEdges() const { return m_ids.size(); }
+
+  /*!
+   * \brief Return the number of nodes in the face.
+   * \return The number of nodes in the 1 face.
+   */
+  AXOM_HOST_DEVICE IndexType numberOfNodesInFace(int) const { return m_ids.size(); }
+
+  /*!
+   * \brief Return the specified edge.
+   * \param edgeIndex The index of the edge to return.
+   * \return The 2 point ids in the edge.
+   */
   AXOM_HOST_DEVICE axom::StackArray<IndexType, 2> getEdge(int edgeIndex) const
   {
     const auto p0 = edgeIndex % m_ids.size();
@@ -682,7 +699,7 @@ struct Shape : public ShapeTraits
   /// @{
   template <int _ndims = ShapeTraits::dimension()>
     AXOM_HOST_DEVICE typename std::enable_if <
-    _ndims<3, void>::type getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex),
+    (_ndims == 2), void>::type getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex),
                                   ConnectivityType *ids,
                                   axom::IndexType &numIds) const
   {
@@ -694,7 +711,7 @@ struct Shape : public ShapeTraits
   }
 
   template <int _ndims = ShapeTraits::dimension()>
-  AXOM_HOST_DEVICE typename std::enable_if<_ndims == 3, void>::type getFace(axom::IndexType faceIndex,
+  AXOM_HOST_DEVICE typename std::enable_if<_ndims != 2, void>::type getFace(axom::IndexType faceIndex,
                                                                             ConnectivityType *ids,
                                                                             axom::IndexType &numIds) const
   {
@@ -719,6 +736,11 @@ private:
  *                  type is passed, an axom::ArrayView will be used. 
  */
 /// @{
+template <typename ConnType>
+using PointShape =
+  Shape<PointTraits,
+        typename std::conditional<std::is_integral<ConnType>::value, axom::ArrayView<ConnType>, ConnType>::type>;
+
 template <typename ConnType>
 using LineShape =
   Shape<LineTraits,
@@ -798,6 +820,9 @@ struct VariableShape
     IndexType dim = 2;
     switch(m_shapeId)
     {
+    case Point_ShapeID:
+      dim = PointTraits::dimension();
+      break;
     case Line_ShapeID:
       dim = LineTraits::dimension();
       break;
@@ -833,6 +858,9 @@ struct VariableShape
     IndexType nnodes = 0;
     switch(m_shapeId)
     {
+    case Point_ShapeID:
+      nnodes = PointTraits::numberOfNodesInFace(faceIndex);
+      break;
     case Line_ShapeID:
       nnodes = LineTraits::numberOfNodesInFace(faceIndex);
       break;
@@ -863,7 +891,8 @@ struct VariableShape
 
   AXOM_HOST_DEVICE static constexpr IndexType maxNodesInFace()
   {
-    IndexType nnodes = LineTraits::maxNodesInFace();
+    IndexType nnodes = PointTraits::maxNodesInFace();
+    nnodes = std::max(nnodes, LineTraits::maxNodesInFace());
     nnodes = std::max(nnodes, TriTraits::maxNodesInFace());
     nnodes = std::max(nnodes, QuadTraits::maxNodesInFace());
     nnodes = std::max(nnodes, PolygonTraits::maxNodesInFace());
@@ -879,6 +908,9 @@ struct VariableShape
     IndexType nfaces = 0;
     switch(m_shapeId)
     {
+    case Point_ShapeID:
+      nfaces = PointTraits::numberOfFaces();
+      break;
     case Line_ShapeID:
       nfaces = LineTraits::numberOfFaces();
       break;
@@ -913,6 +945,8 @@ struct VariableShape
   {
     switch(m_shapeId)
     {
+    case Point_ShapeID:
+      // Falls through
     case Line_ShapeID:
       // Falls through
     case Tri_ShapeID:
@@ -976,6 +1010,9 @@ struct VariableShape
     IndexType nedges = 0;
     switch(m_shapeId)
     {
+    case Point_ShapeID:
+      nedges = PointTraits::numberOfEdges();
+      break;
     case Line_ShapeID:
       nedges = LineTraits::numberOfEdges();
       break;
@@ -1009,6 +1046,9 @@ struct VariableShape
     axom::StackArray<IndexType, 2> edge;
     switch(m_shapeId)
     {
+    case Point_ShapeID:
+      edge = PointTraits::getEdge(edgeIndex);
+      break;
     case Line_ShapeID:
       edge = LineTraits::getEdge(edgeIndex);
       break;
@@ -1072,7 +1112,9 @@ private:
 inline int shapeNameToID(const std::string &name)
 {
   int id = Invalid_ShapeID;
-  if(name == LineTraits::name())
+  if(name == PointTraits::name())
+    id = Point_ShapeID;
+  else if(name == LineTraits::name())
     id = Line_ShapeID;
   else if(name == TriTraits::name())
     id = Tri_ShapeID;
