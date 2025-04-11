@@ -316,25 +316,16 @@ void computeEdgeHistogram(const MeshType& mesh)
     axom::fmt::format_to(std::back_inserter(out), "Edge Length Histogram:\n");
     for(const auto& entry : edgeLenHist)
     {
+      const auto key = entry.first;
+      const auto count = entry.second;
+      const auto& length_range = edgeLenRangeMap[key];
       axom::fmt::format_to(std::back_inserter(out),
                            axom::utilities::locale(),
-                           "  2^{}: {:L} edges\n",
-                           entry.first,
-                           entry.second);
-    }
-    SLIC_INFO(axom::fmt::to_string(out));
-  }
-  // Print the edge length ranges for each bin
-  {
-    axom::fmt::memory_buffer out;
-    axom::fmt::format_to(std::back_inserter(out), "Edge Length Ranges:\n");
-    for(const auto& entry : edgeLenRangeMap)
-    {
-      axom::fmt::format_to(std::back_inserter(out),
-                           "  2^{}: [{}, {}]\n",
-                           entry.first,
-                           entry.second.getMin()[0],
-                           entry.second.getMax()[0]);
+                           "  2^{}: \t{:>10L} edges\t length range: [{:.4e} {:.4e}]\n",
+                           key,
+                           count,
+                           length_range.getMin()[0],
+                           length_range.getMax()[0]);
     }
     SLIC_INFO(axom::fmt::to_string(out));
   }
