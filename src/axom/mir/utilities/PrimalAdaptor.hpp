@@ -93,8 +93,8 @@ struct AveragePoints
   AXOM_HOST_DEVICE inline PointType get() const
   {
     return (numPoints > 0)
-         ?  PointType ( sum.array() * (static_cast<T>(1.) / static_cast<T>(numPoints)))
-         :  PointType {}; 
+      ? PointType(sum.array() * (static_cast<T>(1.) / static_cast<T>(numPoints)))
+      : PointType {};
   }
 
   VectorType sum {};
