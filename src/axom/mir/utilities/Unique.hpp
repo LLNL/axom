@@ -95,8 +95,12 @@ struct Unique
    * \brief This function makes a unique array of values from an input list of keys.
    *
    * \param[in] keys_orig_view The input view that contains the input keys to be made unique.
-   * \param[out] skeys     A sorted unique array of keys produced from keys_orig_view.
-   * \param[out] sindices  An array of indices that indicate where in the original view the keys came from.
+   * \param[out] skeys     A sorted unique array of keys produced from \a keys_orig_view.
+   *                       If there were duplicates in \a keys_orig_view then the size
+   *                       will be smaller since duplicates will have been removed.
+   * \param[out] sindices  An array of indices that indicate where in the original
+   *                       view the keys came from. This array contains the same number
+   *                       of elements as \a skeys.
    *
    * \note key_orig_view is passed by value so it does not require a local copy to capture it.
    */
