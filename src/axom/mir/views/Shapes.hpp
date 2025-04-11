@@ -79,7 +79,7 @@ struct PointTraits
   AXOM_HOST_DEVICE constexpr static axom::StackArray<IndexType, 2> getEdge(
     int AXOM_UNUSED_PARAM(edgeIndex))
   {
-    return axom::StackArray<IndexType, 2>{0, 0};
+    return axom::StackArray<IndexType, 2> {0, 0};
   }
 
   AXOM_HOST_DEVICE constexpr static const char *name() { return "point"; }
@@ -698,10 +698,10 @@ struct Shape : public ShapeTraits
    */
   /// @{
   template <int _ndims = ShapeTraits::dimension()>
-    AXOM_HOST_DEVICE typename std::enable_if <
-    (_ndims == 2), void>::type getFace(axom::IndexType AXOM_UNUSED_PARAM(faceIndex),
-                                  ConnectivityType *ids,
-                                  axom::IndexType &numIds) const
+  AXOM_HOST_DEVICE typename std::enable_if<(_ndims == 2), void>::type getFace(
+    axom::IndexType AXOM_UNUSED_PARAM(faceIndex),
+    ConnectivityType *ids,
+    axom::IndexType &numIds) const
   {
     numIds = static_cast<axom::IndexType>(m_ids.size());
     for(axom::IndexType i = 0; i < numIds; i++)

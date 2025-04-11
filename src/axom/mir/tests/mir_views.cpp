@@ -80,7 +80,7 @@ void compareShapes(const ShapeType &shape1, const VariableShapeType &shape2)
 
     axom::IndexType numIds1 = 0, numIds2 = 0;
     shape1.getFace(i, face1, numIds1);
-    shape2.getFace(i, face2, numIds2);   
+    shape2.getFace(i, face2, numIds2);
     EXPECT_EQ(numIds1, numIds2);
     for(axom::IndexType j = 0; j < numIds1; j++)
     {
@@ -101,7 +101,8 @@ TEST(mir_views, shape_faces)
   views::PointShape<ConnType> pointShape(axom::ArrayView<ConnType>(point_ids, 1));
   EXPECT_EQ(pointShape.numberOfFaces(), 0);
   EXPECT_EQ(pointShape.getId(0), point_ids[0]);
-  views::VariableShape<ConnType> pointVarShape(views::Point_ShapeID, axom::ArrayView<ConnType>(point_ids, 1));
+  views::VariableShape<ConnType> pointVarShape(views::Point_ShapeID,
+                                               axom::ArrayView<ConnType>(point_ids, 1));
   compareShapes(pointShape, pointVarShape);
 
   // Line
@@ -112,7 +113,8 @@ TEST(mir_views, shape_faces)
   EXPECT_EQ(numIds, 0);
   EXPECT_EQ(lineShape.getId(0), line_ids[0]);
   EXPECT_EQ(lineShape.getId(1), line_ids[1]);
-  views::VariableShape<ConnType> lineVarShape(views::Line_ShapeID, axom::ArrayView<ConnType>(line_ids, 2));
+  views::VariableShape<ConnType> lineVarShape(views::Line_ShapeID,
+                                              axom::ArrayView<ConnType>(line_ids, 2));
   compareShapes(lineShape, lineVarShape);
 
   // Tri
@@ -127,7 +129,8 @@ TEST(mir_views, shape_faces)
   EXPECT_EQ(triShape.getId(0), tri_ids[0]);
   EXPECT_EQ(triShape.getId(1), tri_ids[1]);
   EXPECT_EQ(triShape.getId(2), tri_ids[2]);
-  views::VariableShape<ConnType> triVarShape(views::Tri_ShapeID, axom::ArrayView<ConnType>(tri_ids, 3));
+  views::VariableShape<ConnType> triVarShape(views::Tri_ShapeID,
+                                             axom::ArrayView<ConnType>(tri_ids, 3));
   compareShapes(triShape, triVarShape);
 
   // Quad
@@ -144,7 +147,8 @@ TEST(mir_views, shape_faces)
   EXPECT_EQ(quadShape.getId(1), quad_ids[1]);
   EXPECT_EQ(quadShape.getId(2), quad_ids[2]);
   EXPECT_EQ(quadShape.getId(3), quad_ids[3]);
-  views::VariableShape<ConnType> quadVarShape(views::Quad_ShapeID, axom::ArrayView<ConnType>(quad_ids, 4));
+  views::VariableShape<ConnType> quadVarShape(views::Quad_ShapeID,
+                                              axom::ArrayView<ConnType>(quad_ids, 4));
   compareShapes(quadShape, quadVarShape);
 
   // Polygon
@@ -163,7 +167,8 @@ TEST(mir_views, shape_faces)
   EXPECT_EQ(polyShape.getId(2), polygon_ids[2]);
   EXPECT_EQ(polyShape.getId(3), polygon_ids[3]);
   EXPECT_EQ(polyShape.getId(4), polygon_ids[4]);
-  views::VariableShape<ConnType> polyVarShape(views::Polygon_ShapeID, axom::ArrayView<ConnType>(polygon_ids, 5));
+  views::VariableShape<ConnType> polyVarShape(views::Polygon_ShapeID,
+                                              axom::ArrayView<ConnType>(polygon_ids, 5));
   compareShapes(polyShape, polyVarShape);
 
   // Tet
@@ -181,7 +186,8 @@ TEST(mir_views, shape_faces)
       EXPECT_EQ(face[i], tet_faces[f][i]);
     }
   }
-  views::VariableShape<ConnType> tetVarShape(views::Tet_ShapeID, axom::ArrayView<ConnType>(tet_ids, 4));
+  views::VariableShape<ConnType> tetVarShape(views::Tet_ShapeID,
+                                             axom::ArrayView<ConnType>(tet_ids, 4));
   compareShapes(tetShape, tetVarShape);
 
   // Pyramid
@@ -203,7 +209,8 @@ TEST(mir_views, shape_faces)
       EXPECT_EQ(face[i], pyr_faces[f][i]);
     }
   }
-  views::VariableShape<ConnType> pyrVarShape(views::Pyramid_ShapeID, axom::ArrayView<ConnType>(pyr_ids, 5));
+  views::VariableShape<ConnType> pyrVarShape(views::Pyramid_ShapeID,
+                                             axom::ArrayView<ConnType>(pyr_ids, 5));
   compareShapes(pyrShape, pyrVarShape);
 
   // Wedge
@@ -225,7 +232,8 @@ TEST(mir_views, shape_faces)
       EXPECT_EQ(face[i], wed_faces[f][i]);
     }
   }
-  views::VariableShape<ConnType> wedVarShape(views::Wedge_ShapeID, axom::ArrayView<ConnType>(wed_ids, 6));
+  views::VariableShape<ConnType> wedVarShape(views::Wedge_ShapeID,
+                                             axom::ArrayView<ConnType>(wed_ids, 6));
   compareShapes(wedShape, wedVarShape);
 
   // Hex
@@ -248,7 +256,8 @@ TEST(mir_views, shape_faces)
       EXPECT_EQ(face[i], hex_faces[f][i]);
     }
   }
-  views::VariableShape<ConnType> hexVarShape(views::Hex_ShapeID, axom::ArrayView<ConnType>(hex_ids, 8));
+  views::VariableShape<ConnType> hexVarShape(views::Hex_ShapeID,
+                                             axom::ArrayView<ConnType>(hex_ids, 8));
   compareShapes(hexShape, hexVarShape);
 }
 
