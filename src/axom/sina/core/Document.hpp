@@ -19,7 +19,6 @@
 #include "axom/config.hpp"
 #include "axom/sina/core/Record.hpp"
 #include "axom/sina/core/Relationship.hpp"
-#include "axom/json.hpp"
 
 #include "conduit.hpp"
 

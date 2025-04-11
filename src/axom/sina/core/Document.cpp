@@ -464,7 +464,7 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
       };
 
       if(!new_curve_set.getDependentCurves().empty() &&
-          !validate_curves_unified(new_curve_set.getDependentCurves(),
+         !validate_curves_unified(new_curve_set.getDependentCurves(),
                                   existingDepKeys,
                                   getExistingDepSize,
                                   "dependent",
@@ -493,7 +493,7 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
       };
 
       if(!new_curve_set.getIndependentCurves().empty() &&
-          !validate_curves_unified(new_curve_set.getIndependentCurves(),
+         !validate_curves_unified(new_curve_set.getIndependentCurves(),
                                   existingIndepKeys,
                                   getExistingIndepSize,
                                   "independent",
@@ -506,8 +506,8 @@ bool validate_curve_sets_json(const DataHolder::CurveSetMap new_curve_sets,
     }
     else
     {
-      std::cerr << "Curve set " << curveSetId
-                << " not found in new data for record " << recordId << std::endl;
+      std::cerr << "Curve set " << curveSetId << " not found in new data for record " << recordId
+                << std::endl;
       return false;
     }
   }
@@ -522,12 +522,12 @@ bool append_to_json(const std::string &jsonFilePath,
   conduit::Node root;
   try
   {
-      root.load(jsonFilePath, "json");
+    root.load(jsonFilePath, "json");
   }
   catch(const std::exception &e)
   {
-      std::cerr << "Error loading JSON file: " << e.what() << std::endl;
-      return false;
+    std::cerr << "Error loading JSON file: " << e.what() << std::endl;
+    return false;
   }
 
   if(root["records"].number_of_children() != newData.getRecords().size())
@@ -555,7 +555,7 @@ bool append_to_json(const std::string &jsonFilePath,
   for(auto &new_record : newData.getRecords())
   {
     bool found = false;
-    for (int i = 0; i < root["records"].number_of_children(); ++i)
+    for(int i = 0; i < root["records"].number_of_children(); ++i)
     {
       conduit::Node &existing_record = root["records"].child(i);
 
@@ -566,68 +566,70 @@ bool append_to_json(const std::string &jsonFilePath,
         // Queue update of CURVE SETS.
         // ----------------------
         // Example: processing the curve_sets section for a given record.
-        if ((new_record->getCurveSets().size() > 0) && existing_record.has_child("curve_sets"))
+        if((new_record->getCurveSets().size() > 0) && existing_record.has_child("curve_sets"))
         {
-            conduit::Node &existing_curve_sets = existing_record["curve_sets"];
-            auto &new_curve_sets = new_record->getCurveSets();
-            for (auto &new_curve_set : new_curve_sets)
+          conduit::Node &existing_curve_sets = existing_record["curve_sets"];
+          auto &new_curve_sets = new_record->getCurveSets();
+          for(auto &new_curve_set : new_curve_sets)
+          {
+            auto cs_key = new_curve_set.first;
+            auto &new_cs_values = new_curve_set.second;
+
+            // Queue merging of dependent curves.
+            for(auto &new_dependent : new_cs_values.getDependentCurves())
             {
-                auto cs_key = new_curve_set.first;
-                auto &new_cs_values = new_curve_set.second;
+              // Get the key and make a copy of the new dependent values.
+              auto dep_key = new_dependent.first;
+              auto new_dep_vals = new_dependent.second.getValues();  // copy values for lambda capture
 
-                // Queue merging of dependent curves.
-                for (auto &new_dependent : new_cs_values.getDependentCurves())
+              write_queue.push_back([cs_key, dep_key, new_dep_vals, &existing_curve_sets]() {
+                // Access the existing values node for this dependent curve.
+                conduit::Node &existing_vals_node =
+                  existing_curve_sets[cs_key]["dependent"][dep_key]["value"];
+                std::vector<double> merged_values;
+
+                conduit::index_t num_elems = existing_vals_node.dtype().number_of_elements();
+                for(conduit::index_t i = 0; i < num_elems; i++)
                 {
-                    // Get the key and make a copy of the new dependent values.
-                    auto dep_key = new_dependent.first;
-                    auto new_dep_vals = new_dependent.second.getValues(); // copy values for lambda capture
-        
-                    write_queue.push_back([cs_key, dep_key, new_dep_vals, &existing_curve_sets]() {
-                        // Access the existing values node for this dependent curve.
-                        conduit::Node &existing_vals_node = existing_curve_sets[cs_key]["dependent"][dep_key]["value"];
-                        std::vector<double> merged_values;
-        
-                        conduit::index_t num_elems = existing_vals_node.dtype().number_of_elements();
-                        for (conduit::index_t i = 0; i < num_elems; i++)
-                        {
-                          merged_values.push_back(existing_vals_node.as_double_array()[i]);
-                        }
-
-                        for (const auto &val : new_dep_vals)
-                        {
-                            merged_values.push_back(static_cast<double>(val));
-                        }
-                        // Reset and update the node with merged values.
-                        existing_vals_node.reset();
-                        existing_vals_node.set(merged_values);
-                    });
+                  merged_values.push_back(existing_vals_node.as_double_array()[i]);
                 }
-        
-                // Queue merging of independent curves.
-                for (auto &new_independent : new_cs_values.getIndependentCurves())
+
+                for(const auto &val : new_dep_vals)
                 {
-                    auto indep_key = new_independent.first;
-                    auto new_indep_vals = new_independent.second.getValues(); // copy for lambda capture
-        
-                    write_queue.push_back([cs_key, indep_key, new_indep_vals, &existing_curve_sets]() {
-                        conduit::Node &existing_vals_node = existing_curve_sets[cs_key]["independent"][indep_key]["value"];
-                        std::vector<double> merged_values;
-
-                        conduit::index_t num_elems = existing_vals_node.dtype().number_of_elements();
-                        for (conduit::index_t i = 0; i < num_elems; i++)
-                        {
-                          merged_values.push_back(existing_vals_node.as_double_array()[i]);
-                        }
-
-                        for (const auto &val : new_indep_vals)
-                        {
-                            merged_values.push_back(static_cast<double>(val));
-                        }
-                        existing_vals_node.reset();
-                        existing_vals_node.set(merged_values);
-                    });
+                  merged_values.push_back(static_cast<double>(val));
                 }
+                // Reset and update the node with merged values.
+                existing_vals_node.reset();
+                existing_vals_node.set(merged_values);
+              });
             }
+
+            // Queue merging of independent curves.
+            for(auto &new_independent : new_cs_values.getIndependentCurves())
+            {
+              auto indep_key = new_independent.first;
+              auto new_indep_vals = new_independent.second.getValues();  // copy for lambda capture
+
+              write_queue.push_back([cs_key, indep_key, new_indep_vals, &existing_curve_sets]() {
+                conduit::Node &existing_vals_node =
+                  existing_curve_sets[cs_key]["independent"][indep_key]["value"];
+                std::vector<double> merged_values;
+
+                conduit::index_t num_elems = existing_vals_node.dtype().number_of_elements();
+                for(conduit::index_t i = 0; i < num_elems; i++)
+                {
+                  merged_values.push_back(existing_vals_node.as_double_array()[i]);
+                }
+
+                for(const auto &val : new_indep_vals)
+                {
+                  merged_values.push_back(static_cast<double>(val));
+                }
+                existing_vals_node.reset();
+                existing_vals_node.set(merged_values);
+              });
+            }
+          }
         }
 
         // ----------------------
@@ -708,9 +710,8 @@ bool append_to_json(const std::string &jsonFilePath,
             }
             else
             {
-              write_queue.push_back([&existing_udc, udc_name, udc]() {
-                existing_udc[udc_name].set(udc.as_string());
-              });
+              write_queue.push_back(
+                [&existing_udc, udc_name, udc]() { existing_udc[udc_name].set(udc.as_string()); });
             }
           }
         }
@@ -740,12 +741,12 @@ bool append_to_json(const std::string &jsonFilePath,
 
   try
   {
-      root.save(jsonFilePath, "json");
+    root.save(jsonFilePath, "json");
   }
   catch(const std::exception &e)
   {
-      std::cerr << "Error saving JSON file: " << e.what() << std::endl;
-      return false;
+    std::cerr << "Error saving JSON file: " << e.what() << std::endl;
+    return false;
   }
 
   return true;

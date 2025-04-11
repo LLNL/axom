@@ -26,7 +26,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "axom/json.hpp"
 #include "axom/sina/tests/TestRecord.hpp"
 #include "axom/sina/core/CurveSet.hpp"
 #include "axom/sina/core/Record.hpp"
@@ -39,8 +38,6 @@ namespace testing
 {
 namespace
 {
-
-// TODO: Remove Json.hpp
 
 using ::testing::ElementsAre;
 using ::testing::HasSubstr;
@@ -224,73 +221,49 @@ std::vector<double> node_to_double_vector(const conduit::Node &node)
 }
 
 // We need to call these asserts multiple times for the append failures
-void ValidateJsonRecordsUnchanged(const nlohmann::json &j, const std::string &context = "")
+void ValidateRecordsUnchanged(const conduit::Node &root, const std::string &context = "")
 {
+  std::vector<double> expected, actual;
   SCOPED_TRACE("Validation context: " + context);
 
-  ASSERT_EQ(j["records"].size(), 2);
-  const auto &rec0 = j["records"][0];
-  ASSERT_EQ(rec0["id"], "bar1");
-  ASSERT_EQ(rec0["type"], "foo1");
-  ASSERT_EQ(rec0["data"]["scal1"]["value"], "hello!");
-  ASSERT_FALSE(rec0["data"].contains("scal2"));
-  ASSERT_EQ(rec0["user_defined"]["hello"], "and");
-  ASSERT_EQ(rec0["curve_sets"]["1"]["dependent"]["0"]["value"], nlohmann::json({1, 2}));
-  ASSERT_EQ(rec0["curve_sets"]["1"]["dependent"]["1"]["value"], nlohmann::json({10, 20}));
-  ASSERT_EQ(rec0["curve_sets"]["1"]["independent"]["0"]["value"], nlohmann::json({4, 5}));
-  ASSERT_EQ(rec0["curve_sets"]["1"]["independent"]["1"]["value"], nlohmann::json({7, 8}));
-  ASSERT_FALSE(rec0["curve_sets"].contains("2"));
-  const auto &rec1 = j["records"][1];
-  ASSERT_EQ(rec1["id"], "bar2");
-  ASSERT_EQ(rec1["type"], "foo2");
-  ASSERT_EQ(rec1["curve_sets"]["1"]["dependent"]["0"]["value"], nlohmann::json({1, 2}));
-  ASSERT_EQ(rec1["curve_sets"]["1"]["dependent"]["1"]["value"], nlohmann::json({10, 20}));
-  ASSERT_EQ(rec1["curve_sets"]["1"]["independent"]["0"]["value"], nlohmann::json({4, 5}));
-  ASSERT_EQ(rec1["curve_sets"]["1"]["independent"]["1"]["value"], nlohmann::json({7, 8}));
-}
+  ASSERT_EQ(root["records"].number_of_children(), 2);
 
-#ifdef AXOM_USE_HDF5
-void ValidateHDF5RecordsUnchanged(const conduit::Node root, const std::string &context = "")
-{
-  // Fatal Errors used here since a changed file throws off every test
-  SCOPED_TRACE("Validation context: " + context);
+  const conduit::Node &rec0 = root["records"].child(0);
+  ASSERT_EQ(rec0["id"].as_string(), "bar1");
+  ASSERT_EQ(rec0["type"].as_string(), "foo1");
+  ASSERT_EQ(rec0["data"]["scal1"]["value"].as_string(), "hello!");
+  ASSERT_FALSE(rec0["data"].has_child("scal2"));
+  ASSERT_EQ(rec0["user_defined"]["hello"].as_string(), "and");
+  expected = {1.0, 2.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["dependent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {10.0, 20.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["dependent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {4.0, 5.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["independent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {7.0, 8.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["independent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  ASSERT_FALSE(rec0["curve_sets"].has_child("2"));
 
-  ASSERT_FALSE(root.has_path("records/2"));
-  ASSERT_EQ(root["records/0/type"].as_string(), "foo1");
-  ASSERT_EQ(root["records/0/id"].as_string(), "bar1");
-  ASSERT_EQ(root["records/0/data/scal1/value"].as_string(), "hello!");
-  ASSERT_FALSE(root.has_path("records/0/data/scal2"));
-  ASSERT_EQ(root["records/0/user_defined/hello"].as_string(), "and");
-  const conduit::Node &cs0 = root["records/0/curve_sets/1"];
-  std::vector<double> dep0_vec = node_to_double_vector(cs0["dependent/0/value"]);
-  std::vector<double> expected_dep0 = {1.0, 2.0};
-  ASSERT_EQ(dep0_vec, expected_dep0);
-  std::vector<double> dep1_vec = node_to_double_vector(cs0["dependent/1/value"]);
-  std::vector<double> expected_dep1 = {10.0, 20.0};
-  ASSERT_EQ(dep1_vec, expected_dep1);
-  std::vector<double> ind0_vec = node_to_double_vector(cs0["independent/0/value"]);
-  std::vector<double> expected_ind0 = {4.0, 5.0};
-  ASSERT_EQ(ind0_vec, expected_ind0);
-  std::vector<double> ind1_vec = node_to_double_vector(cs0["independent/1/value"]);
-  std::vector<double> expected_ind1 = {7.0, 8.0};
-  ASSERT_FALSE(root.has_path("records/0/curve_sets/2"));
-  ASSERT_EQ(root["records/1/type"].as_string(), "foo2");
-  ASSERT_EQ(root["records/1/id"].as_string(), "bar2");
-  const conduit::Node &cs1 = root["records/1/curve_sets/1"];
-  std::vector<double> rec1_dep0 = node_to_double_vector(cs1["dependent/0/value"]);
-  std::vector<double> expected_rec1_dep0 = {1.0, 2.0};
-  ASSERT_EQ(rec1_dep0, expected_rec1_dep0);
-  std::vector<double> rec1_dep1 = node_to_double_vector(cs1["dependent/1/value"]);
-  std::vector<double> expected_rec1_dep1 = {10.0, 20.0};
-  ASSERT_EQ(rec1_dep1, expected_rec1_dep1);
-  std::vector<double> rec1_ind0 = node_to_double_vector(cs1["independent/0/value"]);
-  std::vector<double> expected_rec1_ind0 = {4.0, 5.0};
-  ASSERT_EQ(rec1_ind0, expected_rec1_ind0);
-  std::vector<double> rec1_ind1 = node_to_double_vector(cs1["independent/1/value"]);
-  std::vector<double> expected_rec1_ind1 = {7.0, 8.0};
-  ASSERT_EQ(rec1_ind1, expected_rec1_ind1);
+  const conduit::Node &rec1 = root["records"].child(1);
+  ASSERT_EQ(rec1["id"].as_string(), "bar2");
+  ASSERT_EQ(rec1["type"].as_string(), "foo2");
+  expected = {1.0, 2.0};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["dependent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {10.0, 20.0};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["dependent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {4.0, 5.0};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["independent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {7.0, 8.0};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["independent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
 }
-#endif
 
 // Tests
 TEST(Document, create_fromNode_empty)
@@ -642,48 +615,79 @@ TEST(Document, test_append_to_json)
   bool result = append_to_json(jsonFilePath, new_doc, 1, 1);
   ASSERT_TRUE(result);
 
-  std::ifstream updatedFile(jsonFilePath);
-  nlohmann::json j;
-  updatedFile >> j;
+  conduit::Node root;
+  root.load(jsonFilePath, "json");
+  std::vector<double> expected, actual;
 
-  ASSERT_EQ(j["records"].size(), 3);
+  ASSERT_EQ(root["records"].number_of_children(), 3);
 
   // ----- Record 0 -----
-  const auto &rec0 = j["records"][0];
-  ASSERT_EQ(rec0["id"], "bar1");
-  ASSERT_EQ(rec0["type"], "foo1");
-  ASSERT_EQ(rec0["data"]["scal1"]["value"], "goodbye!");
-  ASSERT_EQ(rec0["data"]["scal2"]["value"], "goodbye!");
-  ASSERT_EQ(rec0["user_defined"]["hello"], "goodbye");
-
-  ASSERT_EQ(rec0["curve_sets"]["1"]["dependent"]["0"]["value"], nlohmann::json({1, 2, 1.0, 1.0}));
-  ASSERT_EQ(rec0["curve_sets"]["1"]["dependent"]["1"]["value"], nlohmann::json({10, 20, 8.0, 9.0}));
-  ASSERT_EQ(rec0["curve_sets"]["1"]["independent"]["0"]["value"], nlohmann::json({4, 5, 4.0, 5.0}));
-  ASSERT_EQ(rec0["curve_sets"]["1"]["independent"]["1"]["value"], nlohmann::json({7, 8, 7.0, 9.0}));
-  ASSERT_EQ(rec0["curve_sets"]["2"]["dependent"]["0"]["value"], nlohmann::json({1.0, 1.0}));
-  ASSERT_EQ(rec0["curve_sets"]["2"]["dependent"]["1"]["value"], nlohmann::json({10.0, 10.0}));
-  ASSERT_EQ(rec0["curve_sets"]["2"]["independent"]["0"]["value"], nlohmann::json({4.0, 4.0}));
-  ASSERT_EQ(rec0["curve_sets"]["2"]["independent"]["1"]["value"], nlohmann::json({7.0, 7.0}));
+  const conduit::Node &rec0 = root["records"].child(0);
+  ASSERT_EQ(rec0["id"].as_string(), "bar1");
+  ASSERT_EQ(rec0["type"].as_string(), "foo1");
+  ASSERT_EQ(rec0["data"]["scal1"]["value"].as_string(), "goodbye!");
+  ASSERT_EQ(rec0["data"]["scal2"]["value"].as_string(), "goodbye!");
+  ASSERT_EQ(rec0["user_defined"]["hello"].as_string(), "goodbye");
+  expected = {1, 2, 1.0, 1.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["dependent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {10, 20, 8.0, 9.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["dependent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {4, 5, 4.0, 5.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["independent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {7, 8, 7.0, 9.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["1"]["independent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {1.0, 1.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["2"]["dependent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {10.0, 10.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["2"]["dependent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {4.0, 4.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["2"]["independent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {7.0, 7.0};
+  actual = node_to_double_vector(rec0["curve_sets"]["2"]["independent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
 
   // ----- Record 1 -----
-  const auto &rec1 = j["records"][1];
-  ASSERT_EQ(rec1["id"], "bar2");
-  ASSERT_EQ(rec1["type"], "foo2");
+  const conduit::Node &rec1 = root["records"].child(1);
+  ASSERT_EQ(rec1["id"].as_string(), "bar2");
+  ASSERT_EQ(rec1["type"].as_string(), "foo2");
 
-  ASSERT_EQ(rec1["curve_sets"]["1"]["dependent"]["0"]["value"], nlohmann::json({1, 2}));
-  ASSERT_EQ(rec1["curve_sets"]["1"]["dependent"]["1"]["value"], nlohmann::json({10, 20}));
-  ASSERT_EQ(rec1["curve_sets"]["1"]["independent"]["0"]["value"], nlohmann::json({4, 5}));
-  ASSERT_EQ(rec1["curve_sets"]["1"]["independent"]["1"]["value"], nlohmann::json({7, 8}));
+  expected = {1, 2};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["dependent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {10, 20};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["dependent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {4, 5};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["independent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {7, 8};
+  actual = node_to_double_vector(rec1["curve_sets"]["1"]["independent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
 
   // ----- Record 2 -----
-  const auto &rec2 = j["records"][2];
-  ASSERT_EQ(rec2["id"], "bar3");
-  ASSERT_EQ(rec2["type"], "foo2");
+  const conduit::Node &rec2 = root["records"].child(2);
+  ASSERT_EQ(rec2["id"].as_string(), "bar3");
+  ASSERT_EQ(rec2["type"].as_string(), "foo2");
 
-  ASSERT_EQ(rec2["curve_sets"]["1"]["dependent"]["0"]["value"], nlohmann::json({1.0, 1.0}));
-  ASSERT_EQ(rec2["curve_sets"]["1"]["dependent"]["1"]["value"], nlohmann::json({10.0, 10.0}));
-  ASSERT_EQ(rec2["curve_sets"]["1"]["independent"]["0"]["value"], nlohmann::json({4.0, 4.0}));
-  ASSERT_EQ(rec2["curve_sets"]["1"]["independent"]["1"]["value"], nlohmann::json({7.0, 7.0}));
+  expected = {1.0, 1.0};
+  actual = node_to_double_vector(rec2["curve_sets"]["1"]["dependent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {10.0, 10.0};
+  actual = node_to_double_vector(rec2["curve_sets"]["1"]["dependent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {4.0, 4.0};
+  actual = node_to_double_vector(rec2["curve_sets"]["1"]["independent"]["0"]["value"]);
+  ASSERT_EQ(actual, expected);
+  expected = {7.0, 7.0};
+  actual = node_to_double_vector(rec2["curve_sets"]["1"]["independent"]["1"]["value"]);
+  ASSERT_EQ(actual, expected);
 }
 
 TEST(Document, test_append_to_json_failures)
@@ -712,12 +716,12 @@ TEST(Document, test_append_to_json_failures)
             "curve_sets": {
                 "1": {
                     "dependent": {
-                        "0": { "value": [1, 2] },
-                        "1": { "value": [10, 20] }
+                        "0": { "value": [1.0, 2.0] },
+                        "1": { "value": [10.0, 20.0] }
                     },
                     "independent": {
-                        "0": { "value": [4, 5] },
-                        "1": { "value": [7, 8] }
+                        "0": { "value": [4.0, 5.0] },
+                        "1": { "value": [7.0, 8.0] }
                     }
                 }
             }
@@ -728,91 +732,94 @@ TEST(Document, test_append_to_json_failures)
             "curve_sets": {
                 "1": {
                     "dependent": {
-                        "0": { "value": [1, 2] },
-                        "1": { "value": [10, 20] }
+                        "0": { "value": [1.0, 2.0] },
+                        "1": { "value": [10.0, 20.0] }
                     },
                     "independent": {
-                        "0": { "value": [4, 5] },
-                        "1": { "value": [7, 8] }
+                        "0": { "value": [4.0, 5.0] },
+                        "1": { "value": [7.0, 8.0] }
                     }
                 }
             }
         }
     ]
-})";
+  })";
   testFile.close();
 
   // ---- Failure 1 ----
   SCOPED_TRACE("Attempting Case 1");
   std::string f1_data = ([](std::string s) {
-    auto j = nlohmann::json::parse(s);
-    j["records"][0]["curve_sets"]["1"]["dependent"]["0"]["value"] = {1, 1, 1};
-    return j.dump();
+    conduit::Node tmp;
+    tmp.parse(s, "json");
+    conduit::Node &valNode = tmp["records"].child(0)["curve_sets"]["1"]["dependent"]["0"]["value"];
+    valNode.reset();
+    std::vector<double> new_val = {1, 1, 1};
+    valNode.set(new_val);
+    return tmp.to_json();
   })(new_data);
 
   axom::sina::Document new_doc = Document(f1_data, createRecordLoaderWithAllKnownTypes());
-
   bool result = append_to_json(jsonFilePath, new_doc, 1, 1);
   ASSERT_FALSE(result);
-  std::ifstream f1_updatedFile(jsonFilePath);
-  nlohmann::json j;
-  f1_updatedFile >> j;
-  ValidateJsonRecordsUnchanged(j, "Case 1: Checking if File Was Changed");
+  conduit::Node j;
+  j.load(jsonFilePath, "json");
+  ValidateRecordsUnchanged(j, "Case 1: Checking if File Was Changed");
 
   // ---- Failure 2 ----
   SCOPED_TRACE("Attempting Case 2");
   std::string f2_data = ([](std::string s) {
-    auto j = nlohmann::json::parse(s);
-    auto &curve_set1 = j["records"][0]["curve_sets"]["1"];
-    curve_set1["dependent"].clear();
-    curve_set1["dependent"]["2"] = {{"value", {1}}};
-    curve_set1.erase("independent");
-    return j.dump();
+    conduit::Node tmp;
+    tmp.parse(s, "json");
+    conduit::Node &curve_set1 = tmp["records"].child(0)["curve_sets"]["1"];
+    if(curve_set1.has_child("dependent")) curve_set1["dependent"].reset();
+    conduit::Node &newDep = curve_set1["dependent"]["2"];
+    newDep.reset();
+    std::vector<double> newVal = {1};
+    newDep["value"].set(newVal);
+    if(curve_set1.has_child("independent")) curve_set1["independent"].reset();
+    return tmp.to_json();
   })(new_data);
 
   new_doc = Document(f2_data, createRecordLoaderWithAllKnownTypes());
-
   result = append_to_json(jsonFilePath, new_doc, 1, 1);
   ASSERT_FALSE(result);
-  std::ifstream f2_updatedFile(jsonFilePath);
-  f2_updatedFile >> j;
-  ValidateJsonRecordsUnchanged(j, "Case 2: Checking if File Was Changed");
+  j.load(jsonFilePath, "json");
+  ValidateRecordsUnchanged(j, "Case 2: Checking if File Was Changed");
 
   // ---- Failure 3 ----
   SCOPED_TRACE("Attempting Case 3");
   std::string f3_data = ([](std::string s) {
-    auto j = nlohmann::json::parse(s);
-    j["records"][0]["curve_sets"]["1"]["independent"]["1"]["value"] = {1, 1, 1};
-    return j.dump();
+    conduit::Node tmp;
+    tmp.parse(s, "json");
+    conduit::Node &valNode =
+      tmp["records"].child(0)["curve_sets"]["1"]["independent"]["1"]["value"];
+    valNode.reset();
+    std::vector<double> new_val = {1, 1, 1};
+    valNode.set(new_val);
+    return tmp.to_json();
   })(new_data);
 
   new_doc = Document(f3_data, createRecordLoaderWithAllKnownTypes());
-
   result = append_to_json(jsonFilePath, new_doc, 1, 1);
   ASSERT_FALSE(result);
-  std::ifstream f3_updatedFile(jsonFilePath);
-  f3_updatedFile >> j;
-  ValidateJsonRecordsUnchanged(j, "Case 3: Checking if File Was Changed");
+  j.load(jsonFilePath, "json");
+  ValidateRecordsUnchanged(j, "Case 3: Checking if File Was Changed");
 
   // ---- Failure 4 ----
   SCOPED_TRACE("Attempting Case 4");
   new_doc = Document(new_data, createRecordLoaderWithAllKnownTypes());
-
   result = append_to_json(jsonFilePath, new_doc, 3, 1);
   ASSERT_FALSE(result);
-  std::ifstream f4_updatedFile(jsonFilePath);
-  f4_updatedFile >> j;
-  ValidateJsonRecordsUnchanged(j, "Case 4: Checking if File Was Changed");
+  j.load(jsonFilePath, "json");
+  ValidateRecordsUnchanged(j, "Case 4: Checking if File Was Changed");
 
   // ---- Failure 5 ----
   SCOPED_TRACE("Attempting Case 5");
   new_doc = Document(new_data, createRecordLoaderWithAllKnownTypes());
-
   result = append_to_json(jsonFilePath, new_doc, 1, 3);
   ASSERT_FALSE(result);
-  std::ifstream f5_updatedFile(jsonFilePath);
-  f5_updatedFile >> j;
-  ValidateJsonRecordsUnchanged(j, "Case 5: Checking if File Was Changed");
+  j.load(jsonFilePath, "json");
+  ValidateRecordsUnchanged(j, "Case 5: Checking if File Was Changed");
 
   // ---- Assert Error Messages ----
   std::cerr.rdbuf(origBuffer);
@@ -1020,9 +1027,13 @@ TEST(Document, test_append_to_hdf5_failures)
   // ---- Failure 1 ----
   SCOPED_TRACE("Attempting Case 1");
   std::string f1_data = ([](std::string s) {
-    auto j = nlohmann::json::parse(s);
-    j["records"][0]["curve_sets"]["1"]["dependent"]["0"]["value"] = {1, 1, 1};
-    return j.dump();
+    conduit::Node tmp;
+    tmp.parse(s, "json");
+    conduit::Node &valNode = tmp["records"].child(0)["curve_sets"]["1"]["dependent"]["0"]["value"];
+    valNode.reset();
+    std::vector<double> new_val = {1, 1, 1};
+    valNode.set(new_val);
+    return tmp.to_json();
   })(new_data);
 
   axom::sina::Document new_doc = Document(f1_data, createRecordLoaderWithAllKnownTypes());
@@ -1031,17 +1042,21 @@ TEST(Document, test_append_to_hdf5_failures)
   ASSERT_FALSE(result);
   conduit::Node root;
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 1: Checking if File Was Changed");
+  ValidateRecordsUnchanged(root, "Case 1: Checking if File Was Changed");
 
   // ---- Failure 2 ----
   SCOPED_TRACE("Attempting Case 2");
   std::string f2_data = ([](std::string s) {
-    auto j = nlohmann::json::parse(s);
-    auto &curve_set1 = j["records"][0]["curve_sets"]["1"];
-    curve_set1["dependent"].clear();
-    curve_set1["dependent"]["2"] = {{"value", {1}}};
-    curve_set1.erase("independent");
-    return j.dump();
+    conduit::Node tmp;
+    tmp.parse(s, "json");
+    conduit::Node &curve_set1 = tmp["records"].child(0)["curve_sets"]["1"];
+    if(curve_set1.has_child("dependent")) curve_set1["dependent"].reset();
+    conduit::Node &newDep = curve_set1["dependent"]["2"];
+    newDep.reset();
+    std::vector<double> newVal = {1};
+    newDep["value"].set(newVal);
+    if(curve_set1.has_child("independent")) curve_set1["independent"].reset();
+    return tmp.to_json();
   })(new_data);
 
   new_doc = Document(f2_data, createRecordLoaderWithAllKnownTypes());
@@ -1049,14 +1064,19 @@ TEST(Document, test_append_to_hdf5_failures)
   result = append_to_hdf5(hdf5FilePath, new_doc, 1, 1);
   ASSERT_FALSE(result);
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 2: Checking if File Was Changed");
+  ValidateRecordsUnchanged(root, "Case 2: Checking if File Was Changed");
 
   // ---- Failure 3 ----
   SCOPED_TRACE("Attempting Case 3");
   std::string f3_data = ([](std::string s) {
-    auto j = nlohmann::json::parse(s);
-    j["records"][0]["curve_sets"]["1"]["independent"]["1"]["value"] = {1, 1, 1};
-    return j.dump();
+    conduit::Node tmp;
+    tmp.parse(s, "json");
+    conduit::Node &valNode =
+      tmp["records"].child(0)["curve_sets"]["1"]["independent"]["1"]["value"];
+    valNode.reset();
+    std::vector<double> new_val = {1, 1, 1};
+    valNode.set(new_val);
+    return tmp.to_json();
   })(new_data);
 
   new_doc = Document(f3_data, createRecordLoaderWithAllKnownTypes());
@@ -1064,7 +1084,7 @@ TEST(Document, test_append_to_hdf5_failures)
   result = append_to_hdf5(hdf5FilePath, new_doc, 1, 1);
   ASSERT_FALSE(result);
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 3: Checking if File Was Changed");
+  ValidateRecordsUnchanged(root, "Case 3: Checking if File Was Changed");
 
   // ---- Failure 4 ----
   SCOPED_TRACE("Attempting Case 4");
@@ -1073,7 +1093,7 @@ TEST(Document, test_append_to_hdf5_failures)
   result = append_to_hdf5(hdf5FilePath, new_doc, 3, 1);
   ASSERT_FALSE(result);
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 4: Checking if File Was Changed");
+  ValidateRecordsUnchanged(root, "Case 4: Checking if File Was Changed");
 
   // ---- Failure 5 ----
   SCOPED_TRACE("Attempting Case 5");
@@ -1082,7 +1102,7 @@ TEST(Document, test_append_to_hdf5_failures)
   result = append_to_hdf5(hdf5FilePath, new_doc, 1, 3);
   ASSERT_FALSE(result);
   conduit::relay::io::hdf5_read(hdf5FilePath, root);
-  ValidateHDF5RecordsUnchanged(root, "Case 5: Checking if File Was Changed");
+  ValidateRecordsUnchanged(root, "Case 5: Checking if File Was Changed");
 
   // ---- Assert Error Messages ----
   std::cerr.rdbuf(origBuffer);
