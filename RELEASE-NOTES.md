@@ -20,6 +20,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- New `axom::MALLOC_ALLOCATOR_ID` is for using malloc and free
+  even when axom is configured with Umpire support.
 - The ``axom::mir::ElviraAlgorithm`` class, which performs material interface reconstruction using
   the ELVIRA algorithm, was enhanced so it supports 3D structured mesh inputs. The output mesh is a
   Blueprint mesh with a 3D unstructured polyhedral topology.
