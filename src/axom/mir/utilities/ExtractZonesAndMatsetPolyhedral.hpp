@@ -95,7 +95,7 @@ protected:
                     const conduit::Node &AXOM_UNUSED_PARAM(n_options),
                     conduit::Node &n_newTopo) const override
   {
-    AXOM_ANNOTATE_SCOPE("makeTopology");
+    AXOM_ANNOTATE_SCOPE("makeTopology(polyhedral)");
     namespace bputils = axom::mir::utilities::blueprint;
     const int allocatorID = axom::execution_space<ExecSpace>::allocatorID();
     bputils::ConduitAllocateThroughAxom<ExecSpace> c2a;
