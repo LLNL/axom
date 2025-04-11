@@ -102,6 +102,7 @@ struct Input
   std::string vtkOutput {""};
   std::string method {"uniform"};
   RuntimePolicy policy {seq};
+  std::string annotationMode {"none"};
 
   int resolution {0};
   double weldThreshold {1e-6};
@@ -213,6 +214,15 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
 
   app.add_flag("-v,--verbose", verboseOutput, "Increase logging verbosity.")->capture_default_str();
 
+#ifdef AXOM_USE_CALIPER
+  app.add_option("--caliper", annotationMode)
+    ->description(
+      "caliper annotation mode. Valid options include 'none' and 'report'. "
+      "Use 'help' to see full list.")
+    ->capture_default_str()
+    ->check(axom::utilities::ValidCaliperMode);
+#endif
+
   app.get_formatter()->column_width(76);
 
   // Could throw an exception
@@ -221,26 +231,44 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
   // Fix any options that need fixing
   fixOutfilePath();
 
+  // clang-format off
+  const std::string method_str =
+    axom::fmt::format("\n  method = {} {}", method, [this]() -> std::string {
+      if(this->method == "uniform")    { return axom::fmt::format(" (use uniform grid)\n  resolution = {}", this->resolution); }
+      else if(this->method == "naive") { return " (use naive algorithm)"; }
+      else if(this->method == "bvh")   { return " (use bounding volume hierarchy)"; }
+      else                             { return "";}
+    }());
+
+  const std::string policy_str = (method == "naive" || method == "bvh")
+    ? axom::fmt::format("\n  policy = {} {}", policy,
+      [this]() -> std::string {
+        switch(this->policy)
+        {
+        case seq:       return " (use sequential policy)";
+        case raja_omp:  return " (use RAJA OpenMP policy)";
+        case raja_cuda: return " (use RAJA CUDA policy)";
+        case raja_hip:  return " (use RAJA HIP policy)";
+        case raja_seq:  return " (use RAJA sequential policy)";
+        default:        return "";
+        }
+      }())
+    : "";
+  // clang-format on
+
   // Output parsed information
-  SLIC_INFO(
-    "Using parameter values: "
-    << "\n  method = " << method << (method == "uniform" ? " (use uniform grid)" : "")
-    << (method == "naive" ? " (use naive algorithm)" : "")
-    << (method == "bvh" ? " (use bounding volume hierarchy)" : "")
-    << (method == "uniform" ? "\n  resolution = " + std::to_string(resolution) : "")
-    << (method == "naive" || method == "bvh" ? "\n  policy = " : "")
-    << (method == "naive" || method == "bvh" ? std::to_string(policy) : "")
-    << ((method == "naive" || method == "bvh") && policy == seq ? " (use sequential policy)" : "")
-    << ((method == "naive" || method == "bvh") && policy == raja_seq
-          ? " (use RAJA sequential policy)"
-          : "")
-    << ((method == "naive" || method == "bvh") && policy == raja_omp ? " (use RAJA OpenMP policy)" : "")
-    << ((method == "naive" || method == "bvh") && policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
-    << ((method == "naive" || method == "bvh") && policy == raja_hip ? " (use RAJA HIP policy)" : "")
-    << "\n  weld threshold = " << weldThreshold << "\n  " << (skipWeld ? "" : "not ") << "skipping weld"
-    << "\n  intersection tolerance = " << intersectionThreshold << "\n  infile = " << stlInput
-    << "\n  collisions outfile = " << collisionsMeshName()
-    << "\n  weld outfile = " << weldMeshName());
+  SLIC_INFO("Using parameter values: "  //
+            << method_str               //
+            << policy_str
+#ifdef AXOM_USE_CALIPER
+            << axom::fmt::format("\n  annotation mode = '{}'", annotationMode)
+#endif
+            << (skipWeld ? "\n  skipping weld"
+                         : axom::fmt::format("\n  weld threshold = {}", weldThreshold))
+            << axom::fmt::format("\n  intersection tolerance = {}", intersectionThreshold)
+            << axom::fmt::format("\n  infile = '{}'", stlInput)
+            << axom::fmt::format("\n  collisions outfile = '{}'", collisionsMeshName())
+            << axom::fmt::format("\n  weld outfile = '{}'", weldMeshName()));
 }
 
 void Input::fixOutfilePath()
