@@ -72,7 +72,10 @@ public:
    * \param startRunning Indicates whether to start the timer
    *        during construction (default is false)
    */
-  Timer(bool startRunning = false) : m_running(startRunning)
+  Timer(bool startRunning = false)
+    : m_running(startRunning)
+    , m_summedTime(0)
+    , m_periodCount(0)
   {
     if(m_running)
     {
@@ -96,6 +99,8 @@ public:
   {
     m_stopTime = ClockType::now();
     m_running = false;
+    m_summedTime = m_summedTime + m_stopTime - m_startTime;
+    ++m_periodCount;
   }
 
   /*!
@@ -144,13 +149,47 @@ public:
   }
 
   /*!
+   * @brief Returns the time in seconds summed across
+   * all start-stop periods since the last reset().
+   * \return the summed time in seconds.
+   */
+  double summed() { return summedTimeInSec(); }
+
+  /*!
+   * @brief Returns the time in seconds summed across
+   * all start-stop periods since the last reset().
+   * \return the summed time in seconds.
+   */
+  double summedTimeInSec()
+  {
+    if(m_running)
+    {
+      stop();
+    }
+    return m_summedTime.count();
+  }
+
+  /*!
+   * @brief Returns number of start-stop periods since the last reset().
+   * \return the number of start-stop periods.
+   */
+  size_t periodCount()
+  {
+    return m_periodCount;
+  }
+
+  /*!
    * \brief Resets the timer.
    * \post this->elapsed()==0.0
+   * \post this->summedTimeInSec()==0.0
+   * \post this->periodCount()==0
    */
   void reset()
   {
     m_running = false;
     m_startTime = m_stopTime = TimeStruct();
+    m_summedTime = TimeDiff(0);
+    m_periodCount = 0;
   }
 
 private:
@@ -160,6 +199,8 @@ private:
   TimeStruct m_startTime;
   TimeStruct m_stopTime;
   bool m_running;
+  TimeDiff m_summedTime;
+  size_t m_periodCount;
 };
 
 }  // namespace utilities

@@ -55,3 +55,34 @@ TEST(utils_Timer, timer_check_duration)
   EXPECT_GE(e, 1.0);
   EXPECT_LT(e, 2.0);
 }
+
+TEST(utils_Timer, timer_check_sum)
+{
+  const int N = 3;
+  axom::utilities::Timer t1(false);
+  axom::utilities::Timer t2(false);
+  for(int n = 0; n < N; ++n)
+  {
+    t2.start();
+    t1.start();
+    sleep(1);
+    t1.stop();
+    sleep(1);
+    t2.stop();
+  }
+
+  std::cout << "t1 measured: " << t1.summed() << "s in " << t1.periodCount() << " periods" << std::endl;
+  std::cout << "t2 measured: " << t2.summed() << "s in " << t2.periodCount() << " periods" << std::endl;
+
+  EXPECT_EQ(t1.periodCount(), N);
+  EXPECT_EQ(t2.periodCount(), N);
+
+  // Estimated inaccuracy per start-stop period.
+  // from the C++ code, function call, etc.
+  const double tol = 1.4e-4;
+
+  EXPECT_GE(t1.summed()/N, 1 - tol);
+  EXPECT_LE(t1.summed()/N, 1 + tol);
+  EXPECT_GE(t2.summed()/N, 2 - tol);
+  EXPECT_LE(t2.summed()/N, 2 + tol);
+}
