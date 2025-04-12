@@ -29,7 +29,7 @@ namespace transforms
 template <typename T = double>
 Matrix<T> xRotation(double angleRad, int ndims = 3)
 {
-  assert(ndims >= 3 && ndims <= 4); 
+  assert(ndims >= 3 && ndims <= 4);
   Matrix<T> M = Matrix<T>::identity(ndims);
   const T cosA = static_cast<T>(cos(angleRad));
   const T sinA = static_cast<T>(sin(angleRad));
@@ -104,7 +104,7 @@ Matrix<T> scale(T s, int ndims = 3)
   assert(ndims >= 2 && ndims <= 4);
   Matrix<T> M = Matrix<T>::identity(ndims);
   for(int i = 0; i < std::min(3, ndims); i++)
-  {  
+  {
     M(i, i) = s;
   }
 
@@ -177,8 +177,8 @@ Matrix<T> translate(T tx, T ty, T tz)
   return M;
 }
 
-} // end namespace transforms
-} // end namespace numerics
-} // end namespace axom
+}  // end namespace transforms
+}  // end namespace numerics
+}  // end namespace axom
 
 #endif

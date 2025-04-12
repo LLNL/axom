@@ -474,7 +474,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
     Polygon3D xformed(poly.numVertices());
     for(int i = 0; i < poly.numVertices(); ++i)
     {
-      Point3D in{poly[i][0], poly[i][1], 0.};
+      Point3D in {poly[i][0], poly[i][1], 0.};
       xformed.addVertex(axom::primal::transform_point(in, matx));
     }
     return xformed;
@@ -852,13 +852,13 @@ struct test_regular_polygon
 
     // 2D shapes.
     int index = 0;
-    for(int nSides : std::vector<int>{3, 4, 5, 8})
+    for(int nSides : std::vector<int> {3, 4, 5, 8})
     {
       // Make shape.
       const auto s1 = axom::primal::regular_polygon<double, 2, Storage, MAXVERTS>(nSides);
       comparePolygons(s1, result2d(index++));
       // std::cout << s1 << // std::endl;
- 
+
       // Make shape scaled 2.
       const auto s2 = axom::primal::regular_polygon<double, 2, Storage, MAXVERTS>(nSides, 1., scale2);
       comparePolygons(s2, result2d(index++));
@@ -877,13 +877,13 @@ struct test_regular_polygon
 
     // 3D shapes
     index = 0;
-    for(int nSides : std::vector<int>{3, 4, 5, 8})
+    for(int nSides : std::vector<int> {3, 4, 5, 8})
     {
       // Make shape.
       const auto s1 = axom::primal::regular_polygon<double, 3, Storage, MAXVERTS>(nSides);
       comparePolygons(s1, result3d(index++));
       // std::cout << s1 << // std::endl;
- 
+
       // Make shape scaled 2.
       const auto s2 = axom::primal::regular_polygon<double, 3, Storage, MAXVERTS>(nSides, 1., scale3);
       comparePolygons(s2, result3d(index++));
@@ -929,7 +929,7 @@ struct test_regular_polygon
     axom::primal::Polygon<double, 2, Storage, MAXVERTS> poly;
     for(int i = 0; i < sizes[index]; i++)
     {
-      poly.addVertex(axom::primal::Point<double, 2>(pts + 2*offsets[index] + 2*i));
+      poly.addVertex(axom::primal::Point<double, 2>(pts + 2 * offsets[index] + 2 * i));
     }
     return poly;
   }
@@ -962,14 +962,14 @@ struct test_regular_polygon
     axom::primal::Polygon<double, 3, Storage, MAXVERTS> poly;
     for(int i = 0; i < sizes[index]; i++)
     {
-      poly.addVertex(axom::primal::Point<double, 3>(pts + 3*offsets[index] + 3*i));
+      poly.addVertex(axom::primal::Point<double, 3>(pts + 3 * offsets[index] + 3 * i));
     }
     return poly;
   }
 
   template <int _ndims>
-  static void comparePolygons(const axom::primal::Polygon<double, _ndims, Storage, MAXVERTS> &p1,
-                              const axom::primal::Polygon<double, _ndims, Storage, MAXVERTS> &p2,
+  static void comparePolygons(const axom::primal::Polygon<double, _ndims, Storage, MAXVERTS>& p1,
+                              const axom::primal::Polygon<double, _ndims, Storage, MAXVERTS>& p2,
                               double eps = 5.e-6)
   {
     EXPECT_EQ(p1.numVertices(), p2.numVertices());

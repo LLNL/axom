@@ -455,7 +455,10 @@ std::ostream& operator<<(std::ostream& os, const Polygon<T, NDIMS, ARRAY_TYPE, M
  * \note This is host-only function.
  */
 template <typename T, int NDIMS, PolygonArray ARRAY_TYPE = PolygonArray::Dynamic, int MAX_VERTS = DEFAULT_MAX_NUM_VERTICES>
-Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS> regular_polygon(int nSides, T radius = T{1}, const axom::numerics::Matrix<T> &transform = axom::numerics::Matrix<T>::identity(NDIMS))
+Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS> regular_polygon(
+  int nSides,
+  T radius = T {1},
+  const axom::numerics::Matrix<T>& transform = axom::numerics::Matrix<T>::identity(NDIMS))
 {
   using PointType = typename axom::primal::Point<T, NDIMS>;
 
@@ -468,8 +471,7 @@ Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS> regular_polygon(int nSides, T radius = 
   Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS> poly;
   for(int s = 0; s < nSides; s++)
   {
-    PointType pt{radius * static_cast<T>(cos(a)),
-                 radius * static_cast<T>(sin(a))};
+    PointType pt {radius * static_cast<T>(cos(a)), radius * static_cast<T>(sin(a))};
 
     // Add the transformed point to the polygon.
     poly.addVertex(transform_point(pt, transform));

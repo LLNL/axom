@@ -340,7 +340,9 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt)
  * \note We allow a matrix 1 rank larger than NDIMS so we can perform translations.
  */
 template <typename T, int NDIMS>
-Point<T, NDIMS> transform_point(const Point<T, NDIMS> &pt, const axom::numerics::Matrix<T> &transform = axom::numerics::Matrix<T>::identity(NDIMS))
+Point<T, NDIMS> transform_point(
+  const Point<T, NDIMS>& pt,
+  const axom::numerics::Matrix<T>& transform = axom::numerics::Matrix<T>::identity(NDIMS))
 {
   const int nr = transform.getNumRows();
   SLIC_ASSERT(nr == transform.getNumColumns());
@@ -355,7 +357,7 @@ Point<T, NDIMS> transform_point(const Point<T, NDIMS> &pt, const axom::numerics:
   }
   if(nr > NDIMS)
   {
-    vec[nr - 1] = T{1};
+    vec[nr - 1] = T {1};
   }
 
   // Transform the point.
