@@ -112,6 +112,45 @@ Matrix<T> scale(T s, int ndims = 3)
 }
 
 /*!
+ * \brief Return scaling matrix.
+ *
+ * \param sx The scaling value in x.
+ * \param sy The scaling value in y.
+ * \param sz The scaling value in z.
+ * \param ndims The number of dimension to make for the Matrix. It needs to be 2, 3, or 4.
+ *
+ * \return A Matrix containing the scaling transform.
+ */
+template <typename T = double>
+Matrix<T> scale(T sx, T sy, T sz, int ndims = 3)
+{
+  assert(ndims >= 2 && ndims <= 4);
+  Matrix<T> M = Matrix<T>::identity(ndims);
+  M(0, 0) = sx;
+  M(1, 1) = sy;
+  if(ndims > 2)
+  {
+    M(2, 2) = sz;
+  }
+  return M;
+}
+
+/*!
+ * \brief Return scaling matrix.
+ *
+ * \param sx The scaling value in x.
+ * \param sy The scaling value in y.
+ * \param ndims The number of dimension to make for the Matrix. It needs to be 2, 3, or 4.
+ *
+ * \return A Matrix containing the scaling transform.
+ */
+template <typename T = double>
+Matrix<T> scale(T sx, T sy, int ndims = 3)
+{
+  return scale(sx, sy, 1., ndims);
+}
+
+/*!
  * \brief Return translation matrix.
  *
  * \param tx The translation in x.

@@ -395,30 +395,13 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
   auto generateTransformMatrix2D =
     [](const Point2D& scale, const Point2D& translate, double rotation_angle) {
       // create scaling matrix
-      auto sc_matx = TransformMatrix::identity(3);
-      {
-        sc_matx(0, 0) = scale[0];
-        sc_matx(1, 1) = scale[1];
-      }
+      auto sc_matx = axom::numerics::transforms::scale(scale[0], scale[1], 3);
 
       // create rotation matrix
-      auto rot_matx = TransformMatrix::identity(3);
-      {
-        const double sinT = std::sin(rotation_angle);
-        const double cosT = std::cos(rotation_angle);
-
-        rot_matx(0, 0) = cosT;
-        rot_matx(0, 1) = -sinT;
-        rot_matx(1, 0) = sinT;
-        rot_matx(1, 1) = cosT;
-      }
+      auto rot_matx = axom::numerics::transforms::zRotation(rotation_angle, 3);
 
       // create translation matrix
-      auto tr_matx = TransformMatrix::identity(3);
-      {
-        tr_matx(0, 2) = translate[0];
-        tr_matx(1, 2) = translate[1];
-      }
+      auto tr_matx = axom::numerics::transforms::translate(translate[0], translate[1]);
 
       // multiply them to get the final transform
       TransformMatrix affine_matx1(3, 3);
@@ -435,12 +418,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
   auto generateTransformMatrix3D =
     [](const Point3D& scale, const Point3D& translate, const Vector3D& axis, double angle) {
       // create scaling matrix
-      auto sc_matx = TransformMatrix::identity(4);
-      {
-        sc_matx(0, 0) = scale[0];
-        sc_matx(1, 1) = scale[1];
-        sc_matx(2, 2) = scale[2];
-      }
+      auto sc_matx = axom::numerics::transforms::scale(scale[0], scale[1], scale[2], 4);
 
       // create rotation matrix
       auto rot_matx = TransformMatrix::zeros(4, 4);
@@ -466,12 +444,7 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
       }
 
       // create translation matrix
-      auto tr_matx = TransformMatrix::identity(4);
-      {
-        tr_matx(0, 3) = translate[0];
-        tr_matx(1, 3) = translate[1];
-        tr_matx(2, 3) = translate[2];
-      }
+      auto tr_matx = axom::numerics::transforms::translate(translate[0], translate[1], translate[2]);
 
       // multiply them to get the final transform
       TransformMatrix affine_matx1(4, 4);
@@ -501,10 +474,8 @@ TEST(primal_polygon, area_2d_3d_affine_transforms)
     Polygon3D xformed(poly.numVertices());
     for(int i = 0; i < poly.numVertices(); ++i)
     {
-      const double vec_in[4] = {poly[i][0], poly[i][1], 0., 1.};
-      double vec_out[4] = {0., 0., 0., 0.};
-      axom::numerics::matrix_vector_multiply(matx, vec_in, vec_out);
-      xformed.addVertex(Point3D {vec_out[0], vec_out[1], vec_out[2]});
+      Point3D in{poly[i][0], poly[i][1], 0.};
+      xformed.addVertex(axom::primal::transform_point(in, matx));
     }
     return xformed;
   };
