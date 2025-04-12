@@ -342,27 +342,28 @@ std::ostream& operator<<(std::ostream& os, const Point<T, NDIMS>& pt)
 template <typename T, int NDIMS>
 Point<T, NDIMS> transform_point(const Point<T, NDIMS> &pt, const axom::numerics::Matrix<T> &transform = axom::numerics::Matrix<T>::identity(NDIMS))
 {
-  SLIC_ASSERT(transform.getNumRows() == transform.getNumColumns());
-  SLIC_ASSERT(transform.getNumRows() == NDIMS || transform.getNumRows() == (NDIMS + 1));
+  const int nr = transform.getNumRows();
+  SLIC_ASSERT(nr == transform.getNumColumns());
+  SLIC_ASSERT(nr == NDIMS || nr == (NDIMS + 1));
+  SLIC_ASSERT(nr > 0 && nr <= 4);
 
   // Make a column vector to hold the point.
-  const int nr = transform.getNumRows();
-  axom::numerics::Matrix<T> vec(nr, 1, T{0});
+  T vec[4] = {0, 0, 0, 0};
   for(int row = 0; row < NDIMS; row++)
   {
-    vec(row, 0) = pt[row];
+    vec[row] = pt[row];
   }
   if(nr > NDIMS)
   {
-    vec(nr - 1, 0) = T{1};
+    vec[nr - 1] = T{1};
   }
 
   // Transform the point.
-  axom::numerics::Matrix<T> transformedPt(nr, 1, T{0});
-  axom::numerics::matrix_multiply(transform, vec, transformedPt);
+  T transformedPt[4] = {0, 0, 0, 0};
+  axom::numerics::matrix_vector_multiply(transform, vec, transformedPt);
 
   // Return the transformed point.
-  return Point<T, NDIMS>(transformedPt.data());
+  return Point<T, NDIMS>(transformedPt);
 }
 
 }  // namespace primal
