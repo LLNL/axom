@@ -75,7 +75,7 @@ public:
   Timer(bool startRunning = false)
     : m_running(startRunning)
     , m_summedTime(0)
-    , m_periodCount(0)
+    , m_cycleCount(0)
   {
     if(m_running)
     {
@@ -100,7 +100,7 @@ public:
     m_stopTime = ClockType::now();
     m_running = false;
     m_summedTime = m_summedTime + m_stopTime - m_startTime;
-    ++m_periodCount;
+    ++m_cycleCount;
   }
 
   /*!
@@ -150,14 +150,14 @@ public:
 
   /*!
    * @brief Returns the time in seconds summed across
-   * all start-stop periods since the last reset().
+   * all start-stop cycles since the last reset().
    * \return the summed time in seconds.
    */
   double summed() { return summedTimeInSec(); }
 
   /*!
    * @brief Returns the time in seconds summed across
-   * all start-stop periods since the last reset().
+   * all start-stop cycles since the last reset().
    * \return the summed time in seconds.
    */
   double summedTimeInSec()
@@ -170,26 +170,26 @@ public:
   }
 
   /*!
-   * @brief Returns number of start-stop periods since the last reset().
-   * \return the number of start-stop periods.
+   * @brief Returns number of start/stop cycles since the last reset().
+   * \return the number of start-stop cycles.
    */
-  size_t periodCount()
+  size_t cycleCount()
   {
-    return m_periodCount;
+    return m_cycleCount;
   }
 
   /*!
    * \brief Resets the timer.
    * \post this->elapsed()==0.0
    * \post this->summedTimeInSec()==0.0
-   * \post this->periodCount()==0
+   * \post this->cycleCount()==0
    */
   void reset()
   {
     m_running = false;
     m_startTime = m_stopTime = TimeStruct();
     m_summedTime = TimeDiff(0);
-    m_periodCount = 0;
+    m_cycleCount = 0;
   }
 
 private:
@@ -200,7 +200,7 @@ private:
   TimeStruct m_stopTime;
   bool m_running;
   TimeDiff m_summedTime;
-  size_t m_periodCount;
+  size_t m_cycleCount;
 };
 
 }  // namespace utilities

@@ -610,7 +610,7 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
     double minCompute, maxCompute, sumCompute;
     getDoubleMinMax(t.summedTimeInSec(), minCompute, maxCompute, sumCompute);
 
-    const auto count = t.periodCount();
+    const auto count = t.cycleCount();
     if(count > 1)
     {
       SLIC_INFO(axom::fmt::format("'{}' took {{avg:{}, min:{}, max:{}}} seconds (avg of {} samples)",

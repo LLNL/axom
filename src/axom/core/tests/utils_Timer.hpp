@@ -71,13 +71,13 @@ TEST(utils_Timer, timer_check_sum)
     t2.stop();
   }
 
-  std::cout << "t1 measured: " << t1.summed() << "s in " << t1.periodCount() << " periods" << std::endl;
-  std::cout << "t2 measured: " << t2.summed() << "s in " << t2.periodCount() << " periods" << std::endl;
+  std::cout << "t1 measured: " << t1.summed() << "s in " << t1.cycleCount() << " cycles" << std::endl;
+  std::cout << "t2 measured: " << t2.summed() << "s in " << t2.cycleCount() << " cycles" << std::endl;
 
-  EXPECT_EQ(t1.periodCount(), N);
-  EXPECT_EQ(t2.periodCount(), N);
+  EXPECT_EQ(t1.cycleCount(), N);
+  EXPECT_EQ(t2.cycleCount(), N);
 
-  // Estimated inaccuracy per start-stop period.
+  // Estimated inaccuracy per start-stop cycle.
   // from the C++ code, function call, etc.
   const double tol = 1.4e-4;
 
