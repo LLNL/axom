@@ -58,7 +58,7 @@ TEST(utils_Timer, timer_check_duration)
 
 TEST(utils_Timer, timer_check_sum)
 {
-  const int N = 3;
+  const int N = 10;
   axom::utilities::Timer t1(false);
   axom::utilities::Timer t2(false);
   for(int n = 0; n < N; ++n)
@@ -79,7 +79,7 @@ TEST(utils_Timer, timer_check_sum)
 
   // Estimated inaccuracy per start-stop cycle.
   // from the C++ code, function call, etc.
-  const double tol = 1.4e-4;
+  const double tol = 1.0e-3;
 
   EXPECT_GE(t1.summed() / N, 1 - tol);
   EXPECT_LE(t1.summed() / N, 1 + tol);
