@@ -613,12 +613,13 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
     const auto count = t.cycleCount();
     if(count > 1)
     {
-      SLIC_INFO(axom::fmt::format("'{}' took {{avg:{}, min:{}, max:{}}} seconds (avg of {} samples)",
-                                  description,
-                                  sumCompute/count / numRanks,
-                                  minCompute/count,
-                                  maxCompute/count,
-                                  count));
+      SLIC_INFO(
+        axom::fmt::format("'{}' took {{avg:{}, min:{}, max:{}}} seconds (avg of {} samples)",
+                          description,
+                          sumCompute / count / numRanks,
+                          minCompute / count,
+                          maxCompute / count,
+                          count));
     }
     else
     {
@@ -839,9 +840,8 @@ struct ContourTestBase
       {
         AXOM_ANNOTATE_SCOPE("MCInit");
         initializationTimer.start();
-        mcPtr = std::make_unique<quest::MarchingCubes>(params.policy,
-                                                       s_allocatorId,
-                                                       params.dataParallelism);
+        mcPtr =
+          std::make_unique<quest::MarchingCubes>(params.policy, s_allocatorId, params.dataParallelism);
         mcPtr->setMesh(computationalMesh.asConduitNode(), "mesh", "mask");
         initializationTimer.stop();
       }
@@ -873,15 +873,28 @@ struct ContourTestBase
           for(int iMask = 0; iMask < params.maskCount; ++iMask)
           {
             mc.setMaskValue(iMask);
-            if(i == 0) { contourTimerM.start(); } else { contourTimer.start(); }
+            if(i == 0)
+            {
+              contourTimerM.start();
+            }
+            else
+            {
+              contourTimer.start();
+            }
             mc.computeIsocontour(params.contourVal);
-            if(i == 0) { contourTimerM.stop(); } else { contourTimer.stop(); }
+            if(i == 0)
+            {
+              contourTimerM.stop();
+            }
+            else
+            {
+              contourTimer.stop();
+            }
           }
           m_strategyFacetPrefixSum.push_back(mc.getContourFacetCount());
         }
       }
       contourGenLoopTimer.stop();
-
     }
     objectRepLoopTimer.stop();
     AXOM_ANNOTATE_END(objectLoopName);
@@ -1778,8 +1791,7 @@ int main(int argc, char** argv)
     exit(retval);
   }
 
-  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(
-    params.annotationMode);
+  axom::utilities::raii::AnnotationsWrapper annotation_raii_wrapper(params.annotationMode);
   axom::utilities::Timer questMarchingCubesExample(false);
   questMarchingCubesExample.start();
   AXOM_ANNOTATE_SCOPE("quest marching cubes example");

@@ -72,10 +72,7 @@ public:
    * \param startRunning Indicates whether to start the timer
    *        during construction (default is false)
    */
-  Timer(bool startRunning = false)
-    : m_running(startRunning)
-    , m_summedTime(0)
-    , m_cycleCount(0)
+  Timer(bool startRunning = false) : m_running(startRunning), m_summedTime(0), m_cycleCount(0)
   {
     if(m_running)
     {
@@ -173,10 +170,7 @@ public:
    * @brief Returns number of start/stop cycles since the last reset().
    * \return the number of start-stop cycles.
    */
-  size_t cycleCount()
-  {
-    return m_cycleCount;
-  }
+  size_t cycleCount() { return m_cycleCount; }
 
   /*!
    * \brief Resets the timer.

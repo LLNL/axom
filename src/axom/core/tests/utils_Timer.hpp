@@ -81,8 +81,8 @@ TEST(utils_Timer, timer_check_sum)
   // from the C++ code, function call, etc.
   const double tol = 1.4e-4;
 
-  EXPECT_GE(t1.summed()/N, 1 - tol);
-  EXPECT_LE(t1.summed()/N, 1 + tol);
-  EXPECT_GE(t2.summed()/N, 2 - tol);
-  EXPECT_LE(t2.summed()/N, 2 + tol);
+  EXPECT_GE(t1.summed() / N, 1 - tol);
+  EXPECT_LE(t1.summed() / N, 1 + tol);
+  EXPECT_GE(t2.summed() / N, 2 - tol);
+  EXPECT_LE(t2.summed() / N, 2 + tol);
 }
