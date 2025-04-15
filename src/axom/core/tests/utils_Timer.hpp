@@ -77,9 +77,14 @@ TEST(utils_Timer, timer_check_sum)
   EXPECT_EQ(t1.cycleCount(), N);
   EXPECT_EQ(t2.cycleCount(), N);
 
-  // Estimated inaccuracy per start-stop cycle.
-  // from the C++ code, function call, etc.
-  const double tol = 1.4e-4;
+  // Inaccuracy per start-stop cycle, estimated from sample runs.
+#if defined(_WIN32)
+  const double tol = 0.03;
+#elif defined(__OSX__) || defined(__APPLE__)
+  const double tol = 0.2;
+#else
+  const double tol = 0.0004;
+#endif
 
   EXPECT_GE(t1.summed() / N, 1 - tol);
   EXPECT_LE(t1.summed() / N, 1 + tol);
