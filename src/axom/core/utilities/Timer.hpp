@@ -96,7 +96,7 @@ public:
   {
     m_stopTime = ClockType::now();
     m_running = false;
-    m_summedTime = m_summedTime + m_stopTime - m_startTime;
+    m_summedTime += m_stopTime - m_startTime;
     ++m_cycleCount;
   }
 
