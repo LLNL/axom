@@ -31,14 +31,19 @@ namespace axom
 {
 
 /*!
-  TODO: The name isn't great.  How about ConduitMemory or ConduitAllocator MemoryForConduit?
-
-  @brief Object to handle Conduit memory operations by delegating to Axom.
+  @brief Object to do Conduit memory operations through Axom.
 
   This class has no public constructor.  Use instanceForAxomId(int
   axomAllocId) to access the instance for a specific Axom allocator
   id.  The construction registers the appropriate callbacks with
   Conduit, including the required memset and memcopy callbacks.
+
+  Allocator ids have a 1-to-1 relationship with allocators.
+
+  Axom's allocator is an extension of the Umpire allocator
+  when Umpire is used.  Conduit's allocator is opaque, but when used
+  by this class, it is associated with an Axom allocator (which is
+  an Umpire allocator).
 
   Examples for setting Conduit allocator ids when you have Axom
   allocator ids:
