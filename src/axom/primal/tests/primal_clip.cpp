@@ -11,6 +11,7 @@
 #include "axom/core/Types.hpp"
 #include "axom/core/execution/for_all.hpp"
 #include "axom/core/memory_management.hpp"
+#include "axom/core/numerics/transforms.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -1672,7 +1673,6 @@ TEST(primal_clip, polyhedron_plane)
   using PolyhedronType = axom::primal::Polyhedron<Precision, 3>;
   using PlaneType = axom::primal::Plane<Precision, 3>;
   using VectorType = typename PlaneType::VectorType;
-  using PointType = typename PlaneType::PointType;
 
   constexpr double EPS = 2e-7;
 
@@ -1680,20 +1680,15 @@ TEST(primal_clip, polyhedron_plane)
 
   // Add vertices for 2 octagons to the polyhedron.
   constexpr int nSides = 8;
-  constexpr double dA = (2. * M_PI) / static_cast<double>(nSides);
-  constexpr double a0 = dA * 0.5;
   std::int8_t verts[nSides * 2];
   for(int zi = 0; zi < 2; zi++)
   {
     const Precision z = zi;
-    double a = a0;
+    const Precision zero{0};
+    const auto base = axom::primal::regular_polygon<Precision, 3>(nSides, Precision{1}, axom::numerics::transforms::translate(zero, zero, z));
     for(int s = 0; s < nSides; s++)
     {
-      const Precision x = static_cast<Precision>(cos(a));
-      const Precision y = static_cast<Precision>(sin(a));
-
-      verts[zi * nSides + s] = static_cast<std::int8_t>(poly.addVertex(PointType {x, y, z}));
-      a += dA;
+      verts[zi * nSides + s] = static_cast<std::int8_t>(poly.addVertex(base[s]));
     }
   }
 
