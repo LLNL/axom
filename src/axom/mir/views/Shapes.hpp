@@ -693,7 +693,9 @@ struct Shape : public ShapeTraits
    * \brief Get the ids for the requested face.
    *
    * \param faceIndex The index of the desired face.
-   * \param[out] ids A buffer that will contain the ids.
+   * \param[out] ids A buffer that will contain the ids. The buffer must be large enough
+   *                 to accommodate the largest number of ids that could be returned, which
+   *                 can be obtained in most cases from the maxNodesInFace() method.
    * \param[out] numIds The number of ids returned for the face.
    */
   /// @{
