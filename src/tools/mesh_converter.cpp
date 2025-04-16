@@ -3,6 +3,17 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/**
+ * \file mesh_converter.cpp
+ * \brief This file contains a utility to convert between different mesh formats
+ *
+ * The first supported conversion is from a volumetric tetrahedral mesh in the Pro-E
+ * format to a surface mesh in the STL format containing all the boundary triangles
+ * from the tet mesh.
+ *
+ * More conversions are expected to follow.
+ */
+
 // Axom includes
 #include "axom/config.hpp"
 #include "axom/core.hpp"
