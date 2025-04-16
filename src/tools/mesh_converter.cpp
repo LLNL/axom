@@ -70,7 +70,9 @@ public:
   /// types for maps
   using Vertices =
     slam::Map<PointType, NodeSet, slam::policies::ArrayIndirection<PositionType, PointType>>;
-
+  using VertexArray =
+    typename slam::policies::ArrayIndirection<PositionType, PointType>::IndirectionBufferType;
+  using VertexMapBuilder = typename Vertices::MapBuilder;
   // Define the SimplexType based on the topological dimension
   using SimplexType = std::conditional_t<
     TOPO_DIM == 3,
@@ -96,7 +98,8 @@ public:
       typename ZNBuilder::IndicesSetBuilder().size(m_zn.size()).data(&m_zn));
 
     // set up the vertex coords
-    coords = Vertices(&nodeSet);
+    m_coords.resize(nodeSet.size());
+    coords = VertexMapBuilder().set(&nodeSet).data(m_coords.data());
 
     this->checkValid();
   }
@@ -126,18 +129,18 @@ public:
   {
     // update node set and vertices
     {
-      NodeSet newNodeSet(uniqueVertCount);
-      Vertices newCoords(&newNodeSet);
+      VertexArray newCoords(axom::ArrayOptions::Uninitialized {}, uniqueVertCount, uniqueVertCount);
       PositionType curr = 0;
-
       for(auto n = retained_verts.find_first(); n != slam::BitSet::npos;
           n = retained_verts.find_next(n))
       {
         newCoords[curr++] = coords[n];
       }
+      SLIC_ASSERT(curr == uniqueVertCount);
 
-      nodeSet = newNodeSet;
-      coords = newCoords;
+      std::swap(newCoords, m_coords);
+      nodeSet = NodeSet(uniqueVertCount);
+      coords = VertexMapBuilder().set(&nodeSet).data(m_coords.data());
     }
 
     // no change to zoneSet
@@ -190,6 +193,7 @@ public:
 
 private:
   axom::Array<PositionType> m_zn;
+  VertexArray m_coords;
 };
 
 using TetMesh = SimplicialMesh<3, 3>;  // Volumetric tetrahedral mesh in 3D
