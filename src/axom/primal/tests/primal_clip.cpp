@@ -1684,8 +1684,11 @@ TEST(primal_clip, polyhedron_plane)
   for(int zi = 0; zi < 2; zi++)
   {
     const Precision z = zi;
-    const Precision zero{0};
-    const auto base = axom::primal::regular_polygon<Precision, 3>(nSides, Precision{1}, axom::numerics::transforms::translate(zero, zero, z));
+    const Precision zero {0};
+    const auto base = axom::primal::regular_polygon<Precision, 3>(
+      nSides,
+      Precision {1},
+      axom::numerics::transforms::translate(zero, zero, z));
     for(int s = 0; s < nSides; s++)
     {
       verts[zi * nSides + s] = static_cast<std::int8_t>(poly.addVertex(base[s]));
