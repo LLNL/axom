@@ -989,7 +989,7 @@ TEST(primal_polyhedron, polyhedron_non_planar)
   poly.addVertex({0, 0, 0});
   poly.addVertex({1, 0, 0});
   poly.addVertex({1, 1, 0});
-  poly.addVertex({0, 2, 0}); // Move this vertex up
+  poly.addVertex({0, 2, 0});  // Move this vertex up
   poly.addVertex({0, 0, 1});
   poly.addVertex({1, 0, 1});
   poly.addVertex({1, 1, 1});

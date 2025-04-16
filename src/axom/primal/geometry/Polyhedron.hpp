@@ -518,7 +518,9 @@ public:
    *
    * \return An array of planes that describe the faces.
    */
-  AXOM_HOST_DEVICE PlaneArrayType getFaces(axom::IndexType& numFaces, bool divideNonPlanarFaces = true, double eps = 1.e-8) const
+  AXOM_HOST_DEVICE PlaneArrayType getFaces(axom::IndexType& numFaces,
+                                           bool divideNonPlanarFaces = true,
+                                           double eps = 1.e-8) const
   {
     PlaneArrayType facePlanes;
     numFaces = 0;
