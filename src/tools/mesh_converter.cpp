@@ -93,15 +93,13 @@ public:
   /// Checks the validity of the mesh
   bool checkValid(bool verboseOutput = false) const
   {
-    SLIC_ASSERT(nodeSet.isValid(verboseOutput));
-    SLIC_ASSERT(zoneSet.isValid(verboseOutput));
-    if(nodeSet.size() > 0 && zoneSet.size() > 0)
-    {
-      SLIC_ASSERT(znRel.isValid(verboseOutput));
-    }
-    SLIC_ASSERT(coords.isValid(verboseOutput));
+    const bool nodes_valid = nodeSet.isValid(verboseOutput);
+    const bool zones_valid = zoneSet.isValid(verboseOutput);
+    const bool zn_valid =
+      (nodeSet.size() > 0 && zoneSet.size() > 0) ? znRel.isValid(verboseOutput) : true;
+    const bool coords_valid = coords.isValid(verboseOutput);
 
-    return true;
+    return nodes_valid && zones_valid && zn_valid && coords_valid;
   }
 
   /**
@@ -420,8 +418,10 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
 
   using PositionType = TetMesh::PositionType;
   using IndexTriple = std::tuple<PositionType, PositionType, PositionType>;
-  using ZoneFacePair = std::pair<PositionType, int>;
-  std::map<IndexTriple, ZoneFacePair> unmatched_faces;
+
+  const int max_facets = tet_mesh.zoneSet.size() * 4;
+  axom::Array<std::pair<IndexTriple, int>> facets(0, max_facets);
+  slam::BitSet unmatched(max_facets);
 
   auto is_degenerate = [](const auto& tet) -> bool {
     return tet[0] == tet[1] || tet[0] == tet[2] || tet[0] == tet[3]  //
@@ -431,11 +431,24 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
 
   // we sort the vertex indices to avoid order dependence,
   // but keep the association to the original tet face so we don't mess up the orientations
-  auto create_tuple = [](PositionType idx0, PositionType idx1, PositionType idx2, int face) {
-    axom::utilities::detail::ifswap(idx0, idx1);
-    axom::utilities::detail::ifswap(idx1, idx2);
-    axom::utilities::detail::ifswap(idx0, idx1);
-    return std::make_pair(std::make_tuple(idx0, idx1, idx2), face);
+  auto create_tuple = [](PositionType idx0, PositionType idx1, PositionType idx2) {
+    int num_swaps = 0;
+    if(idx0 > idx1)
+    {
+      axom::utilities::swap(idx0, idx1);
+      ++num_swaps;
+    }
+    if(idx1 > idx2)
+    {
+      axom::utilities::swap(idx1, idx2);
+      ++num_swaps;
+    }
+    if(idx0 > idx1)
+    {
+      axom::utilities::swap(idx0, idx1);
+      ++num_swaps;
+    }
+    return std::make_pair(std::make_tuple(idx0, idx1, idx2), num_swaps);
   };
 
   {
@@ -454,29 +467,47 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
 
       // assume input tet mesh is a manifold w/ boundaries
       // internal faces will appear twice; boundary faces once
-      for(auto triple_face : {create_tuple(tet[1], tet[2], tet[3], 0),
-                              create_tuple(tet[0], tet[2], tet[3], 1),
-                              create_tuple(tet[0], tet[1], tet[3], 2),
-                              create_tuple(tet[0], tet[1], tet[2], 3)})
+      for(auto triple_face : {create_tuple(tet[1], tet[2], tet[3]),
+                              create_tuple(tet[0], tet[3], tet[2]),
+                              create_tuple(tet[0], tet[1], tet[3]),
+                              create_tuple(tet[0], tet[2], tet[1])})
       {
-        const auto it = unmatched_faces.find(triple_face.first);
-        if(it != unmatched_faces.end())
-        {
-          // SLIC_INFO(axom::fmt::format("Removing triple {}", triple_face.first));
-          unmatched_faces.erase(it);
-        }
-        else
-        {
-          // SLIC_INFO(axom::fmt::format("Adding triple {}", triple_face.first));
-          unmatched_faces.insert({triple_face.first, std::make_pair(t, triple_face.second)});
-        }
+        facets.emplace_back(triple_face);
       }
     }
+    // Sort unmatched_faces using a custom sort function
+    std::sort(facets.begin(),
+              facets.end(),
+              [](const std::pair<IndexTriple, int>& a, const std::pair<IndexTriple, int>& b) {
+                return a.first < b.first;
+              });
+
+    auto differ = [](const auto& a, const auto& b) { return a.first != b.first; };
+
+    for(int i = 1; i < facets.size() - 1; ++i)
+    {
+      if(differ(facets[i], facets[i - 1]) && differ(facets[i], facets[i + 1]))
+      {
+        unmatched.set(i);
+      }
+    }
+    if(facets.size() > 2)
+    {
+      if(differ(facets[0], facets[1]))
+      {
+        unmatched.set(0);
+      }
+      if(differ(facets[facets.size() - 2], facets[facets.size() - 1]))
+      {
+        unmatched.set(facets.size() - 1);
+      }
+    }
+
     SLIC_INFO(axom::fmt::format(
       axom::utilities::locale(),
       "Retained {:L} boundary faces, out of {:L} (and skipped {:L} degenerate tets)",
-      unmatched_faces.size(),
-      tet_mesh.znRel.totalSize(),
+      unmatched.count(),
+      max_facets,
       degenerate_count));
   }
 
@@ -485,7 +516,7 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
     AXOM_ANNOTATE_SCOPE("create triangle mesh");
 
     const int num_verts = tet_mesh.nodeSet.size();
-    const int num_triangles = unmatched_faces.size();
+    const int num_triangles = unmatched.count();
     tri_mesh.reset(num_verts, num_triangles);
 
     SLIC_INFO_IF(verbose,
@@ -504,40 +535,17 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
 
     // 2. copy the boundary triangles
     int curr = 0;
-    for(const auto& kv : unmatched_faces)
+    for(auto idx = unmatched.find_first(); idx != slam::BitSet::npos; idx = unmatched.find_next(idx))
     {
-      // SLIC_INFO_IF(verbose, axom::fmt::format("Adding face {} for triple {}", curr, kv.first));
+      const auto& kv = facets[idx];
+      const auto face_triple = kv.first;
+      const bool swap_orient = kv.second % 2 == 0;
 
-      const auto zone = kv.second.first;
-      auto tet = tet_mesh.znRel[zone];
-
-      const int face = kv.second.second;
+      // Note -- the triple was sorted, use the number of swaps to determine the orientation
       auto tri = tri_mesh.znRel[curr++];
-
-      // Note -- the triple was sorted, so we go back to the indices from the face's owning tet
-      switch(face)
-      {
-      case 0:
-        tri[0] = tet[1];
-        tri[1] = tet[2];
-        tri[2] = tet[3];
-        break;
-      case 1:
-        tri[0] = tet[0];
-        tri[1] = tet[3];
-        tri[2] = tet[2];
-        break;
-      case 2:
-        tri[0] = tet[0];
-        tri[1] = tet[1];
-        tri[2] = tet[3];
-        break;
-      case 3:
-        tri[0] = tet[0];
-        tri[1] = tet[2];
-        tri[2] = tet[1];
-        break;
-      }
+      tri[0] = std::get<0>(face_triple);
+      tri[swap_orient ? 1 : 2] = std::get<1>(face_triple);
+      tri[swap_orient ? 2 : 1] = std::get<2>(face_triple);
     }
   }
 }
