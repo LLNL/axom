@@ -257,13 +257,17 @@ void Input::parse(int argc, char** argv, axom::CLI::App& app)
     : "";
   // clang-format on
 
+#ifdef AXOM_USE_CALIPER
+  const std::string annotation_str = axom::fmt::format("\n  annotation mode = '{}'", annotationMode);
+#else
+  const std::string annotation_str {};
+#endif
+
   // Output parsed information
   SLIC_INFO("Using parameter values: "  //
             << method_str               //
-            << policy_str
-#ifdef AXOM_USE_CALIPER
-            << axom::fmt::format("\n  annotation mode = '{}'", annotationMode)
-#endif
+            << policy_str               //
+            << annotation_str
             << (skipWeld ? "\n  skipping weld"
                          : axom::fmt::format("\n  weld threshold = {}", weldThreshold))
             << axom::fmt::format("\n  intersection tolerance = {}", intersectionThreshold)
