@@ -1678,7 +1678,7 @@ TEST(primal_clip, polyhedron_plane)
 
   PolyhedronType poly;
 
-  // Add vertices for 10-gon to the polyhedron.
+  // Add vertices for 2 octagons to the polyhedron.
   constexpr int nSides = 8;
   constexpr double dA = (2. * M_PI) / static_cast<double>(nSides);
   constexpr double a0 = dA * 0.5;
