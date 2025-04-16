@@ -70,6 +70,7 @@ using seq_exec = axom::SEQ_EXEC;
 #include <vector>
 #include <map>
 #include <iomanip>
+#include <memory>
 
 // _read_stl_typedefs_start
 using namespace axom;
@@ -363,6 +364,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_
                                                             double EPS)
 {
   SLIC_INFO("Running naive intersection algorithm.");
+  AXOM_ANNOTATE_SCOPE("weldTriMeshVertices");
 
   // For each triangle, check for intersection against
   // every other triangle with a greater index in the mesh, excluding
@@ -411,6 +413,7 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_
 {
   SLIC_INFO("Running naive intersection algorithm in execution Space: "
             << axom::execution_space<ExecSpace>::name());
+  AXOM_ANNOTATE_SCOPE("naiveIntersectionAlgorithm");
 
   // Get allocators
   constexpr bool on_device = axom::execution_space<ExecSpace>::onDevice();
@@ -504,8 +507,12 @@ std::vector<std::pair<int, int>> naiveIntersectionAlgorithm(mint::Mesh* surface_
 
 void announceMeshProblems(int triangleCount, int intersectPairCount, int degenerateCount)
 {
-  std::cout << triangleCount << " triangles, with " << intersectPairCount
-            << " intersecting tri pairs, " << degenerateCount << " degenerate tris." << std::endl;
+  SLIC_INFO(
+    axom::fmt::format(axom::utilities::locale(),
+                      "{:L} triangles, with {:L} intersecting tri pairs {:L} degenerate tris.",
+                      triangleCount,
+                      intersectPairCount,
+                      degenerateCount));
 }
 
 void saveProblemFlagsToMesh(mint::Mesh* mesh,
@@ -571,22 +578,29 @@ bool writeCollisions(const std::vector<std::pair<int, int>>& c,
   return true;
 }
 
-void initializeLogger()
+/// Simple RAII struct to set up and tear down slic-based logger
+struct MeshTesterRAIILogger
 {
-  // Initialize the SLIC logger
-  slic::initialize();
-  slic::setLoggingMsgLevel(axom::slic::message::Debug);
+  MeshTesterRAIILogger()
+  {
+    // Initialize the SLIC logger
+    slic::initialize();
+    slic::setLoggingMsgLevel(axom::slic::message::Debug);
 
-  // Customize logging levels and formatting
-  std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream* defaultStream = new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream* compactStream = new slic::GenericOutputStream(&std::cout, slicFormatStr);
+    // Customize logging levels and formatting
+    std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
+    slic::GenericOutputStream* defaultStream = new slic::GenericOutputStream(&std::cout);
+    slic::GenericOutputStream* compactStream =
+      new slic::GenericOutputStream(&std::cout, slicFormatStr);
 
-  slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
-  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
-  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
-  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Debug);
-}
+    slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
+    slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
+    slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
+    slic::addStreamToMsgLevel(compactStream, axom::slic::message::Debug);
+  }
+
+  ~MeshTesterRAIILogger() { slic::finalize(); }
+};
 
 /*!
  * The mesh tester checks a triangulated surface mesh for several problems.
@@ -604,7 +618,7 @@ void initializeLogger()
 
 int main(int argc, char** argv)
 {
-  initializeLogger();
+  MeshTesterRAIILogger raii_logger;
 
   SLIC_INFO(axom::fmt::format("Axom Version: [{}]", axom::getVersion()));
 
@@ -621,20 +635,22 @@ int main(int argc, char** argv)
     return app.exit(e);
   }
 
+  axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(params.annotationMode);
+
+  AXOM_ANNOTATE_SCOPE("mesh_tester");
+
   // _read_stl_file_start
   // Read file
-  SLIC_INFO("Reading file: '" << params.stlInput << "'...\n");
-  quest::STLReader* reader = new quest::STLReader();
-  reader->setFileName(params.stlInput);
-  reader->read();
-
-  // Get surface mesh
   UMesh* surface_mesh = new UMesh(3, mint::TRIANGLE);
-  reader->getMesh(surface_mesh);
+  {
+    SLIC_INFO("Reading file: '" << params.stlInput << "'...\n");
+    AXOM_ANNOTATE_SCOPE("load stl mesh");
+    auto reader = std::make_unique<quest::STLReader>();
+    reader->setFileName(params.stlInput);
+    reader->read();
 
-  // Delete the reader
-  delete reader;
-  reader = nullptr;
+    reader->getMesh(surface_mesh);
+  }
 
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Mesh has {:L} vertices and {:L} triangles",
@@ -645,6 +661,7 @@ int main(int argc, char** argv)
   // Vertex welding
   if(!params.skipWeld)
   {
+    AXOM_ANNOTATE_SCOPE("weld triangles");
     axom::utilities::Timer timer(true);
 
     // _check_repair_weld_start
@@ -661,6 +678,8 @@ int main(int argc, char** argv)
 
   // Detect collisions
   {
+    AXOM_ANNOTATE_SCOPE("detect collisions");
+
     // _check_repair_intersections_containers_start
     std::vector<std::pair<int, int>> collisions;
     std::vector<int> degenerate;
@@ -870,33 +889,36 @@ int main(int argc, char** argv)
     timer.stop();
     SLIC_INFO("Detecting intersecting triangles took " << timer.elapsedTimeInSec() << " seconds.");
 
-    announceMeshProblems(surface_mesh->getNumberOfCells(),
-                         static_cast<int>(collisions.size()),
-                         static_cast<int>(degenerate.size()));
-
-    saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
-
-    if(!writeAnnotatedMesh(surface_mesh, params.collisionsMeshName()))
     {
-      SLIC_ERROR("Couldn't write results to " << params.collisionsMeshName());
-    }
+      AXOM_ANNOTATE_SCOPE("print collisions");
+      announceMeshProblems(surface_mesh->getNumberOfCells(),
+                           static_cast<int>(collisions.size()),
+                           static_cast<int>(degenerate.size()));
 
-    if(!writeCollisions(collisions, degenerate, params.collisionsTextName()))
-    {
-      SLIC_ERROR("Couldn't write results to " << params.collisionsTextName());
-    }
+      saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
 
-    if(params.verboseOutput && !collisions.empty())
-    {
-      SLIC_INFO("Intersecting triangle pairs:");
-      // Initialize pairs of clashes
-      for(auto i : collisions)
+      if(!writeAnnotatedMesh(surface_mesh, params.collisionsMeshName()))
       {
-        auto t1 = getMeshTriangle(i.first, surface_mesh);
-        auto t2 = getMeshTriangle(i.second, surface_mesh);
+        SLIC_ERROR("Couldn't write results to " << params.collisionsMeshName());
+      }
 
-        SLIC_INFO("  Triangle " << i.first << " -- " << std::setprecision(17) << t1);
-        SLIC_INFO("  Triangle " << i.second << " -- " << std::setprecision(17) << t2 << "\n");
+      if(!writeCollisions(collisions, degenerate, params.collisionsTextName()))
+      {
+        SLIC_ERROR("Couldn't write results to " << params.collisionsTextName());
+      }
+
+      if(params.verboseOutput && !collisions.empty())
+      {
+        SLIC_INFO("Intersecting triangle pairs:");
+        // Initialize pairs of clashes
+        for(auto i : collisions)
+        {
+          auto t1 = getMeshTriangle(i.first, surface_mesh);
+          auto t2 = getMeshTriangle(i.second, surface_mesh);
+
+          SLIC_INFO("  Triangle " << i.first << " -- " << std::setprecision(17) << t1);
+          SLIC_INFO("  Triangle " << i.second << " -- " << std::setprecision(17) << t2 << "\n");
+        }
       }
     }
   }
@@ -908,6 +930,8 @@ int main(int argc, char** argv)
   }
   else
   {
+    AXOM_ANNOTATE_SCOPE("check watertight");
+
     SLIC_INFO("Checking for watertight mesh.");
     axom::utilities::Timer timer2(true);
     // _check_watertight_start
@@ -918,19 +942,23 @@ int main(int argc, char** argv)
     switch(wtstat)
     {
     case quest::WatertightStatus::WATERTIGHT:
-      SLIC_INFO("The mesh is watertight.");
+      SLIC_INFO("  The mesh is watertight.");
       break;
     case quest::WatertightStatus::NOT_WATERTIGHT:
-      SLIC_INFO("The mesh is not watertight: at least one boundary edge was detected.");
+      SLIC_INFO("  The mesh is not watertight: at least one boundary edge was detected.");
       break;
     default:
-      SLIC_INFO("An error was encountered while checking. This may be due to a non-manifold mesh.");
+      SLIC_INFO(
+        "  An error was encountered while checking. This may be due to a non-manifold mesh.");
       break;
     }
     // _report_watertight_end
     SLIC_INFO("Testing for watertightness took " << timer2.elapsedTimeInSec() << " seconds.");
 
-    mint::write_vtk(surface_mesh, params.weldMeshName());
+    {
+      AXOM_ANNOTATE_SCOPE("save vtk mesh");
+      mint::write_vtk(surface_mesh, params.weldMeshName());
+    }
   }
 
   // Delete the mesh
