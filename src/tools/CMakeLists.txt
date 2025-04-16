@@ -182,4 +182,13 @@ if(AXOM_ENABLE_QUEST)
     install(TARGETS              mesh_converter
             DESTINATION          bin
             )
+
+    # Add unit tests
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
+        axom_add_test(
+            NAME    mesh_converter_cup
+            COMMAND mesh_converter -i "${AXOM_DATA_DIR}/quest/cup.proe" -o cup.stl)
+        set_tests_properties(mesh_converter_cup 
+            PROPERTIES PASS_REGULAR_EXPRESSION  "Retained 272 boundary faces")
+    endif()
 endif()
