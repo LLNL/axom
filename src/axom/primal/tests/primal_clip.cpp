@@ -1695,7 +1695,11 @@ TEST(primal_clip, polyhedron_plane)
 
   //----------------------------------------------------------------------------
   // Make the same shape tipped over (to test transforms)
-  const auto poly2 = axom::primal::regular_prism<Precision>(nSides, 1.f, 1.f, axom::numerics::transforms::xRotation<Precision>(-M_PI/2, 4));
+  const auto poly2 = axom::primal::regular_prism<Precision>(
+    nSides,
+    1.f,
+    1.f,
+    axom::numerics::transforms::xRotation<Precision>(-M_PI / 2, 4));
   PlaneType plane2(VectorType {0.f, 1.f, 0.f}, 0.5f);
 
   // Clip away half of the polyhedron.

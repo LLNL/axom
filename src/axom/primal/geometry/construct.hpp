@@ -69,7 +69,11 @@ Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS> regular_polygon(
  * \param transform An optional 4x4 matrix transformation.
  */
 template <typename T>
-Polyhedron<T, 3> regular_prism(int numSides, T radius = 1, T height = 1, const axom::numerics::Matrix<T> &transform = axom::numerics::Matrix<T>::identity(4))
+Polyhedron<T, 3> regular_prism(
+  int numSides,
+  T radius = 1,
+  T height = 1,
+  const axom::numerics::Matrix<T>& transform = axom::numerics::Matrix<T>::identity(4))
 {
   constexpr int MAX_VERTS = Polyhedron<T, 3>::MAX_VERTS;
 
