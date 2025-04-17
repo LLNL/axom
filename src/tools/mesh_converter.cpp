@@ -35,31 +35,38 @@ namespace quest = axom::quest;
 namespace spin = axom::spin;
 
 /**
- * This class represents a simplicial mesh
+ * This class represents a topological data structure for a basic simplicial mesh
  * 
- * It uses slam to encode the vertices and simplices (zones) of a simplicial mesh 
+ * It uses slam to encode the vertices and simplices (zones) of the mesh
  * as well as the connectivity relation from the simplices to vertices,
  * but does not represent other entities (e.g. edges, faces) 
  * or relations (like adjacency or vertex-simplex incidences).
  * 
- * It Can be used to represent both tetrahedral meshes (TOPO_DIM=3) 
+ * To distinguish between the topological data and the spatial primitives, 
+ * this class uses the terms `node` and `zone` for the topological indices
+ * and the terms `vertex` and `simplex` (or specifically, `segment`, `triangle`
+ * and `tetrahedron`) for the spatial primitives.
+ * 
+ * In particular class can be used to represent both tetrahedral meshes (TOPO_DIM=3) 
  * and triangle meshes (TOPO_DIM=2).
  */
 template <int TOPO_DIM, int SPACE_DIM = 3>
-struct SimplicialMesh
+class SimplicialMesh
 {
 public:
   static constexpr int NODES_PER_ZONE = TOPO_DIM + 1;
+  static_assert(SPACE_DIM <= 3, "SPACE_DIM can be at most 3");
+  static_assert(TOPO_DIM <= SPACE_DIM, "TOPO_DIM must be less than or equal to SPACE_DIM");
+  static_assert(1 <= TOPO_DIM, "TOPO_DIM must be greater than 0");
 
+  // types for the mesh's sets
   using PositionType = slam::DefaultPositionType;
-
-  // types for sets
   using ElementType = slam::DefaultElementType;
   using PointType = primal::Point<double, SPACE_DIM>;
   using NodeSet = slam::PositionSet<PositionType, ElementType>;
   using ZoneSet = slam::PositionSet<PositionType, ElementType>;
 
-  // types for relations
+  // types for the mesh's relations
   using Indir = slam::policies::ArrayIndirection<PositionType, ElementType>;
   using ZNStride = slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE>;
   using ConstantCardinality = slam::policies::ConstantCardinality<PositionType, ZNStride>;
@@ -67,39 +74,82 @@ public:
     typename slam::StaticRelation<PositionType, ElementType, ConstantCardinality, Indir, ZoneSet, NodeSet>;
   using ZNBuilder = typename ZoneToNodeRelation::RelationBuilder;
 
-  /// types for maps
+  /// types for the mesh's maps
   using Vertices =
     slam::Map<PointType, NodeSet, slam::policies::ArrayIndirection<PositionType, PointType>>;
   using VertexArray =
     typename slam::policies::ArrayIndirection<PositionType, PointType>::IndirectionBufferType;
   using VertexMapBuilder = typename Vertices::MapBuilder;
+
   // Define the SimplexType based on the topological dimension
   using SimplexType = std::conditional_t<
     TOPO_DIM == 3,
     primal::Tetrahedron<double, SPACE_DIM>,
     std::conditional_t<TOPO_DIM == 2, primal::Triangle<double, SPACE_DIM>, primal::Segment<double, SPACE_DIM>>>;
 
-  static_assert(SPACE_DIM <= 3, "SPACE_DIM can be at most 3");
-  static_assert(TOPO_DIM <= SPACE_DIM, "TOPO_DIM must be less than or equal to SPACE_DIM");
-  static_assert(1 <= TOPO_DIM, "TOPO_DIM must be greater than 0");
-
 public:
   SimplicialMesh(int num_verts = 0, int num_zones = 0) { reset(num_verts, num_zones); }
 
+  /// \brief Returns a reference to the mesh's node set representing the node indices
+  const NodeSet& nodes() const { return m_node_set; }
+  NodeSet& nodes() { return m_node_set; }
+
+  /// \brief Returns a reference to the mesh's zones set representing the zone indices
+  const ZoneSet& zones() const { return m_zone_set; }
+  ZoneSet& zones() { return m_zone_set; }
+
+  /// \brief Returns the \a OrderedSet of vertex indices for the zone at index \a zone_index
+  // \note These are lightweight views on the data, so we return by value
+  const auto zone(PositionType zone_index) const { return m_zn_rel[zone_index]; }
+  auto zone(PositionType zone_index) { return m_zn_rel[zone_index]; }
+
+  /// \brief Returns the position in space of the vertex at index \a vertex_index
+  const PointType& vertex(PositionType vertex_index) const { return m_coords_map[vertex_index]; }
+  PointType& vertex(PositionType vertex_index) { return m_coords_map[vertex_index]; }
+
+  /// \brief Returns the segment corresponding to the given index (for TOPO_DIM == 1).
+  template <int D = TOPO_DIM, typename std::enable_if<D == 1, int>::type = 0>
+  SimplexType getSimplex(PositionType index) const
+  {
+    const auto z = zone(index);
+    return SimplexType(vertex(z[0]), vertex(z[1]));
+  }
+
+  /// \brief Returns the triangle corresponding to the given index (for TOPO_DIM == 2).
+  template <int D = TOPO_DIM, typename std::enable_if<D == 2, int>::type = 0>
+  SimplexType getSimplex(PositionType index) const
+  {
+    const auto z = zone(index);
+    return SimplexType(vertex(z[0]), vertex(z[1]), vertex(z[2]));
+  }
+
+  /// \brief Returns the tetrahedron corresponding to the given index (for TOPO_DIM == 3).
+  template <int D = TOPO_DIM, typename std::enable_if<D == 3, int>::type = 0>
+  SimplexType getSimplex(PositionType index) const
+  {
+    const auto z = zone(index);
+    return SimplexType(vertex(z[0]), vertex(z[1]), vertex(z[2]), vertex(z[3]));
+  }
+
+public:
   /// Resets the internal sets and relations and ensures we have the right sizes
   void reset(int num_verts = 0, int num_zones = 0)
   {
-    nodeSet = NodeSet(num_verts);
-    zoneSet = ZoneSet(num_zones);
+    m_node_set = NodeSet(num_verts);
+    m_zone_set = ZoneSet(num_zones);
 
     // set up the zone-node relation
-    m_zn.resize(zoneSet.size() * NODES_PER_ZONE);
-    znRel = ZNBuilder().fromSet(&zoneSet).toSet(&nodeSet).indices(
-      typename ZNBuilder::IndicesSetBuilder().size(m_zn.size()).data(&m_zn));
+    m_zn_connectivity_array.resize(m_zone_set.size() * NODES_PER_ZONE);
+    m_zn_rel = ZNBuilder()
+                 .fromSet(&m_zone_set)
+                 .toSet(&m_node_set)
+                 .indices(typename ZNBuilder::IndicesSetBuilder()
+                            .size(m_zn_connectivity_array.size())
+                            .data(&m_zn_connectivity_array));
 
     // set up the vertex coords
-    m_coords.resize(nodeSet.size());
-    coords = VertexMapBuilder().set(&nodeSet).data(m_coords.data());
+    m_coordinate_array.resize(m_node_set.size());
+    m_coords_map = VertexMapBuilder().set(&m_node_set).data(m_coordinate_array.data());
 
     this->checkValid();
   }
@@ -107,11 +157,11 @@ public:
   /// Checks the validity of the mesh
   bool checkValid(bool verboseOutput = false) const
   {
-    const bool nodes_valid = nodeSet.isValid(verboseOutput);
-    const bool zones_valid = zoneSet.isValid(verboseOutput);
+    const bool nodes_valid = m_node_set.isValid(verboseOutput);
+    const bool zones_valid = m_zone_set.isValid(verboseOutput);
     const bool zn_valid =
-      (nodeSet.size() > 0 && zoneSet.size() > 0) ? znRel.isValid(verboseOutput) : true;
-    const bool coords_valid = coords.isValid(verboseOutput);
+      (m_node_set.size() > 0 && m_zone_set.size() > 0) ? m_zn_rel.isValid(verboseOutput) : true;
+    const bool coords_valid = m_coords_map.isValid(verboseOutput);
 
     return nodes_valid && zones_valid && zn_valid && coords_valid;
   }
@@ -129,71 +179,52 @@ public:
   {
     // update node set and vertices
     {
-      VertexArray newCoords(axom::ArrayOptions::Uninitialized {}, uniqueVertCount, uniqueVertCount);
+      VertexArray new_coords_array(axom::ArrayOptions::Uninitialized {},
+                                   uniqueVertCount,
+                                   uniqueVertCount);
       PositionType curr = 0;
       for(auto n = retained_verts.find_first(); n != slam::BitSet::npos;
           n = retained_verts.find_next(n))
       {
-        newCoords[curr++] = coords[n];
+        new_coords_array[curr++] = m_coords_map[n];
       }
       SLIC_ASSERT(curr == uniqueVertCount);
 
-      std::swap(newCoords, m_coords);
-      nodeSet = NodeSet(uniqueVertCount);
-      coords = VertexMapBuilder().set(&nodeSet).data(m_coords.data());
+      std::swap(new_coords_array, m_coordinate_array);
+      m_node_set = NodeSet(uniqueVertCount);
+      m_coords_map = VertexMapBuilder().set(&m_node_set).data(m_coordinate_array.data());
     }
 
     // no change to zoneSet
 
     // update zn data (we can do it directly rather than go through the relation)
-    for(int i = 0; i < m_zn.size(); ++i)
+    for(int i = 0; i < m_zn_connectivity_array.size(); ++i)
     {
-      m_zn[i] = remap_verts[m_zn[i]];
+      m_zn_connectivity_array[i] = remap_verts[m_zn_connectivity_array[i]];
     }
 
     // update zn relation
-    znRel = ZNBuilder().fromSet(&zoneSet).toSet(&nodeSet).indices(
-      typename ZNBuilder::IndicesSetBuilder().size(m_zn.size()).data(&m_zn));
+    m_zn_rel = ZNBuilder()
+                 .fromSet(&m_zone_set)
+                 .toSet(&m_node_set)
+                 .indices(typename ZNBuilder::IndicesSetBuilder()
+                            .size(m_zn_connectivity_array.size())
+                            .data(&m_zn_connectivity_array));
 
     checkValid();
   }
 
-  PointType getVertex(PositionType index) const { return coords[index]; }
-
-  /// \brief Returns the segment corresponding to the given index (for TOPO_DIM == 1).
-  template <int D = TOPO_DIM, typename std::enable_if<D == 1, int>::type = 0>
-  SimplexType getSimplex(PositionType index) const
-  {
-    const auto zone = znRel[index];
-    return SimplexType(coords[zone[0]], coords[zone[1]]);
-  }
-
-  /// \brief Returns the triangle corresponding to the given index (for TOPO_DIM == 2).
-  template <int D = TOPO_DIM, typename std::enable_if<D == 2, int>::type = 0>
-  SimplexType getSimplex(PositionType index) const
-  {
-    const auto zone = znRel[index];
-    return SimplexType(coords[zone[0]], coords[zone[1]], coords[zone[2]]);
-  }
-
-  /// \brief Returns the tetrahedron corresponding to the given index (for TOPO_DIM == 3).
-  template <int D = TOPO_DIM, typename std::enable_if<D == 3, int>::type = 0>
-  SimplexType getSimplex(PositionType index) const
-  {
-    const auto zone = znRel[index];
-    return SimplexType(coords[zone[0]], coords[zone[1]], coords[zone[2]], coords[zone[3]]);
-  }
-
-public:
-  NodeSet nodeSet;
-  ZoneSet zoneSet;
-
-  ZoneToNodeRelation znRel;
-  Vertices coords;
+private:
+  // this section contains the sets, relations and maps for the mesh
+  NodeSet m_node_set;
+  ZoneSet m_zone_set;
+  Vertices m_coords_map;
+  ZoneToNodeRelation m_zn_rel;
 
 private:
-  axom::Array<PositionType> m_zn;
-  VertexArray m_coords;
+  // this section contains the underlying storage for the mesh data
+  axom::Array<PositionType> m_zn_connectivity_array;
+  VertexArray m_coordinate_array;
 };
 
 using TetMesh = SimplicialMesh<3, 3>;  // Volumetric tetrahedral mesh in 3D
@@ -245,26 +276,26 @@ bool loadProe(const std::string& filename, TetMesh& slam_mesh, bool verbose)
     const double* x = mint_mesh->getCoordinateArray(mint::X_COORDINATE);
     const double* y = mint_mesh->getCoordinateArray(mint::Y_COORDINATE);
     const double* z = mint_mesh->getCoordinateArray(mint::Z_COORDINATE);
-    for(auto n : slam_mesh.nodeSet)
+    for(auto n : slam_mesh.nodes())
     {
-      slam_mesh.coords[n] = TetMesh::PointType {x[n], y[n], z[n]};
+      slam_mesh.vertex(n) = TetMesh::PointType {x[n], y[n], z[n]};
     }
   }
 
   // copy tet-vertex connectivity data
   {
     int orientation_fixes = 0;
-    for(auto t : slam_mesh.zoneSet)
+    for(auto z : slam_mesh.zones())
     {
-      const axom::IndexType* connec = mint_mesh->getCellNodeIDs(t);
-      auto tet = slam_mesh.znRel[t];
+      const axom::IndexType* connec = mint_mesh->getCellNodeIDs(z);
+      auto tet = slam_mesh.zone(z);
       tet[0] = connec[0];
       tet[1] = connec[1];
       tet[2] = connec[2];
       tet[3] = connec[3];
 
       // fix orientations -- tets should not have negative volumes
-      if(slam_mesh.getSimplex(t).signedVolume() < 0.)
+      if(slam_mesh.getSimplex(z).signedVolume() < 0.)
       {
         axom::utilities::swap(tet[2], tet[3]);
         ++orientation_fixes;
@@ -301,9 +332,9 @@ void computeEdgeHistogram(const MeshType& mesh)
 
   using Segment = primal::Segment<double, 3>;
 
-  for(auto t : mesh.zoneSet)
+  for(auto z : mesh.zones())
   {
-    auto simplex = mesh.znRel[t];
+    auto zone = mesh.zone(z);
 
     // Add all edges of the simplex to the histogram
     // Note: this will count edges from neighboring simplexes more than once
@@ -312,7 +343,7 @@ void computeEdgeHistogram(const MeshType& mesh)
     {
       for(int j = i + 1; j < MeshType::NODES_PER_ZONE; ++j)
       {
-        const double len = Segment(mesh.getVertex(simplex[i]), mesh.getVertex(simplex[j])).length();
+        const double len = Segment(mesh.vertex(zone[i]), mesh.vertex(zone[j])).length();
         meshEdgeLenRange.addPoint(LengthType {len});
 
         int expBase2;
@@ -353,9 +384,9 @@ void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
 
   /// compute bounding box of mesh
   axom::primal::BoundingBox<double, 3> meshBB;
-  for(auto n : mesh.nodeSet)
+  for(auto n : mesh.nodes())
   {
-    meshBB.addPoint(mesh.coords[n]);
+    meshBB.addPoint(mesh.vertex(n));
   }
   SLIC_INFO(axom::fmt::format("Bounding box of mesh: {}", meshBB));
 
@@ -380,7 +411,7 @@ void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
   for(const auto& offset : {TetMesh::PointType(0.), TetMesh::PointType(weld_thresh / 2.)})
   {
     // We're going to find the unique indices for the welded vertices
-    const int num_verts = mesh.nodeSet.size();
+    const int num_verts = mesh.nodes().size();
     int unique_vert_count = 0;
     int weld_count = 0;
 
@@ -394,10 +425,10 @@ void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
 
     axom::Array<TetMesh::PositionType> vertex_remap(num_verts);
     slam::BitSet retained_verts(num_verts);
-    for(auto n : mesh.nodeSet)
+    for(auto n : mesh.nodes())
     {
       // find the new vertex index; if not already present, we'll keep this vertex
-      auto res = vertexIndexMap.insert({lattice.gridCell(mesh.coords[n]), n});
+      auto res = vertexIndexMap.insert({lattice.gridCell(mesh.vertex(n)), n});
       if(res.second == true)
       {
         vertex_remap[n] = unique_vert_count++;
@@ -421,8 +452,8 @@ void weldVertices(TetMesh& mesh, double weld_thresh, bool verbose)
                                    "now has {:L} vertices and {:L} tets.",
                                    weld_count,
                                    offset[0],
-                                   mesh.nodeSet.size(),
-                                   mesh.zoneSet.size()));
+                                   mesh.nodes().size(),
+                                   mesh.zones().size()));
   }
 }
 
@@ -434,7 +465,7 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
   using PositionType = TetMesh::PositionType;
   using IndexTriple = std::tuple<PositionType, PositionType, PositionType>;
 
-  const int max_facets = tet_mesh.zoneSet.size() * 4;
+  const int max_facets = tet_mesh.zones().size() * 4;
   axom::Array<std::pair<IndexTriple, int>> facets(0, max_facets);
   slam::BitSet unmatched(max_facets);
 
@@ -470,11 +501,11 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
     AXOM_ANNOTATE_SCOPE("find unmatched faces");
 
     int degenerate_count = 0;
-    for(auto t : tet_mesh.zoneSet)
+    for(auto z : tet_mesh.zones())
     {
-      auto tet = tet_mesh.znRel[t];
+      auto zone = tet_mesh.zone(z);
 
-      if(is_degenerate(tet))
+      if(is_degenerate(zone))
       {
         ++degenerate_count;
         continue;
@@ -482,10 +513,10 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
 
       // assume input tet mesh is a manifold w/ boundaries
       // internal faces will appear twice; boundary faces once
-      for(auto triple_face : {create_tuple(tet[1], tet[2], tet[3]),
-                              create_tuple(tet[0], tet[3], tet[2]),
-                              create_tuple(tet[0], tet[1], tet[3]),
-                              create_tuple(tet[0], tet[2], tet[1])})
+      for(auto triple_face : {create_tuple(zone[1], zone[2], zone[3]),
+                              create_tuple(zone[0], zone[3], zone[2]),
+                              create_tuple(zone[0], zone[1], zone[3]),
+                              create_tuple(zone[0], zone[2], zone[1])})
       {
         facets.emplace_back(triple_face);
       }
@@ -530,22 +561,22 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
   {
     AXOM_ANNOTATE_SCOPE("create triangle mesh");
 
-    const int num_verts = tet_mesh.nodeSet.size();
+    const int num_verts = tet_mesh.nodes().size();
     const int num_triangles = unmatched.count();
     tri_mesh.reset(num_verts, num_triangles);
 
     SLIC_INFO_IF(verbose,
                  axom::fmt::format(axom::utilities::locale(),
                                    "Triangle mesh has {:L} vertices and {:L} triangles",
-                                   tri_mesh.nodeSet.size(),
-                                   tri_mesh.zoneSet.size()));
+                                   tri_mesh.nodes().size(),
+                                   tri_mesh.zones().size()));
 
     // 1. copy the vertices
     // Since STL doesn't care about vertex indices, our tri mesh will have all vertices from the tet mesh
     // Alternatively, we could process this a bit more and keep only the referenced boundary vertices
-    for(auto n : tet_mesh.nodeSet)
+    for(auto n : tet_mesh.nodes())
     {
-      tri_mesh.coords[n] = tet_mesh.coords[n];
+      tri_mesh.vertex(n) = tet_mesh.vertex(n);
     }
 
     // 2. copy the boundary triangles
@@ -557,7 +588,7 @@ void extractBoundaryFaces(const TetMesh& tet_mesh, TriMesh& tri_mesh, bool verbo
       const bool swap_orient = kv.second % 2 == 0;
 
       // Note -- the triple was sorted, use the number of swaps to determine the orientation
-      auto tri = tri_mesh.znRel[curr++];
+      auto tri = tri_mesh.zone(curr++);
       tri[0] = std::get<0>(face_triple);
       tri[swap_orient ? 1 : 2] = std::get<1>(face_triple);
       tri[swap_orient ? 2 : 1] = std::get<2>(face_triple);
@@ -573,13 +604,13 @@ bool writeSTL(const TriMesh& tri_mesh, const std::string& filename)
   axom::fmt::memory_buffer out;
 
   axom::fmt::format_to(std::back_inserter(out), "solid AxomMesh\n");
-  for(auto t : tri_mesh.zoneSet)
+  for(auto z : tri_mesh.zones())
   {
-    auto tri = tri_mesh.znRel[t];
-    const auto& v0 = tri_mesh.coords[tri[0]];
-    const auto& v1 = tri_mesh.coords[tri[1]];
-    const auto& v2 = tri_mesh.coords[tri[2]];
-    const auto n = primal::Vector<double, 3>::cross_product(v1 - v0, v2 - v0);
+    const auto tri = tri_mesh.getSimplex(z);
+    const auto& v0 = tri[0];
+    const auto& v1 = tri[1];
+    const auto& v2 = tri[2];
+    const auto n = tri.normal();
 
     axom::fmt::format_to(std::back_inserter(out), "  facet normal {} {} {}\n", n[0], n[1], n[2]);
     axom::fmt::format_to(std::back_inserter(out), "    outer loop\n");
@@ -662,15 +693,15 @@ int main(int argc, char** argv)
   weldVertices(tet_mesh, weld_threshold, verbose);
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "After welding, tet mesh has {:L} vertices and {:L} tets",
-                              tet_mesh.nodeSet.size(),
-                              tet_mesh.zoneSet.size()));
+                              tet_mesh.nodes().size(),
+                              tet_mesh.zones().size()));
 
   // Create a tri mesh of (non-degenerate) boundary faces
   TriMesh tri_mesh;
   extractBoundaryFaces(tet_mesh, tri_mesh, verbose);
   SLIC_INFO(axom::fmt::format(axom::utilities::locale(),
                               "Boundary triangle mesh has {:L} triangles",
-                              tri_mesh.zoneSet.size()));
+                              tri_mesh.zones().size()));
 
   if(compute_edge_histogram)
   {
