@@ -2068,9 +2068,11 @@ TEST(sidre_view, reallocate_to)
       std::cout << "Testing transfering allocator id " << origAllocId << " to "
                 << testAllocId << std::endl;
 
+      auto viewToAllocatorId = [=](const View&) { return testAllocId; };
+
       Group* testGrp = ds.getRoot()->createGroup("testGrp");
       testGrp->deepCopyGroupToSelf(orig);
-      testGrp->reallocateTo(testAllocId);
+      testGrp->reallocateTo(viewToAllocatorId);
       if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(testAllocId))
       {
         std::cout << "test group:" << std::endl;

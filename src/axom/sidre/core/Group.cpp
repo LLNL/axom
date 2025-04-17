@@ -1535,40 +1535,6 @@ Group* Group::deepCopyGroupToSelf(const Group* srcGroup)
 /*
  *************************************************************************
  *
- * Reallocate data to a different allocator.
- *
- *************************************************************************
- */
-Group* Group::reallocateTo(int newAllocId,
-                           const std::function<bool(const View&)>& pred)
-{
-  SLIC_ASSERT(newAllocId != INVALID_ALLOCATOR_ID);
-
-  for(auto& grp : groups())
-  {
-    grp.reallocateTo(newAllocId, pred);
-  }
-
-  for(auto& view : views())
-  {
-    if(view.m_state != View::State::EXTERNAL && pred(view))
-    {
-      view.reallocateTo(newAllocId);
-    }
-  }
-
-  return this;
-}
-
-Group* Group::reallocateTo(int newAllocId)
-{
-  return reallocateTo(
-    std::function<int(const View&)> {[=](const View&) { return newAllocId; }});
-}
-
-/*
- *************************************************************************
- *
  * Reallocate data to View-specific allocators.
  *
  *************************************************************************

@@ -316,30 +316,6 @@ public:
   }
 
   /*!
-   * \brief Reallocate all View data to a new allocator.
-   *
-   * \return pointer to this Group object.
-   *
-   * This does NOT change any Group's default allocator.
-   */
-  Group* reallocateTo(int newAllocId);
-
-  /*!
-   * \brief Reallocate data to a new allocator, with a predicate for
-   * selecting a subset of Views to reallocate.
-   *
-   * \param [i] pred A predicate that returns true for Views that are
-   *   subject to reallocation to the new allocator and false for Views
-   *   that are not.
-   *
-   * \return pointer to this Group object.
-   *
-   * This does NOT change any Group's default allocator.
-   */
-  Group* reallocateTo(int newAllocId,
-                      const std::function<bool(const View&)>& pred);
-
-  /*!
    * \brief Reallocate data to View-specific allocators.
    *
    * \param [i] viewToAllocatorId A function that returns the allocator

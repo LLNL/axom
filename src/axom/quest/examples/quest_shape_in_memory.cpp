@@ -579,7 +579,11 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 
   // State group is optional to blueprint, and we don't use it, but mint checks for it.
   meshGrp->createGroup("state");
-  meshGrp->reallocateTo(hostAllocId, selectScalarAndStringViews);
+
+  auto hostAllocForScalarAndStringViews =
+    [](const axom::sidre::View& v)
+      { return (v.isScalar() || v.isString()) ? hostAllocId : axom::INVALID_ALLOCATOR_ID; };
+  meshGrp->reallocateTo(hostAllocForScalarAndStringViews);
 
   return meshGrp;
 }
@@ -2024,9 +2028,13 @@ int main(int argc, char** argv)
   if(params.useBlueprintSidre() || params.useBlueprintConduit())
   {
     // The shaper created some blueprint nodes that we need to move to the host.
+    auto hostAllocForScalarAndStringViews =
+      [](const axom::sidre::View& v)
+        { return (v.isScalar() || v.isString()) ? hostAllocId : axom::INVALID_ALLOCATOR_ID; };
+
     if(compMeshGrp->getDefaultAllocatorID() != hostAllocId)
     {
-      compMeshGrp->reallocateTo(hostAllocId, selectScalarAndStringViews);
+      compMeshGrp->reallocateTo(hostAllocForScalarAndStringViews);
       compMeshNode = std::make_shared<conduit::Node>();
       compMeshGrp->createNativeLayout(*compMeshNode);
     }
