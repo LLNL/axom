@@ -71,8 +71,8 @@ TEST(utils_Timer, timer_check_sum)
     t2.stop();
   }
 
-  std::cout << "t1 measured: " << t1.summed() << "s in " << t1.cycleCount() << " cycles" << std::endl;
-  std::cout << "t2 measured: " << t2.summed() << "s in " << t2.cycleCount() << " cycles" << std::endl;
+  std::cout << "t1 measured: " << t1.elapsed() << "s in " << t1.cycleCount() << " cycles" << std::endl;
+  std::cout << "t2 measured: " << t2.elapsed() << "s in " << t2.cycleCount() << " cycles" << std::endl;
 
   EXPECT_EQ(t1.cycleCount(), N);
   EXPECT_EQ(t2.cycleCount(), N);
@@ -86,8 +86,8 @@ TEST(utils_Timer, timer_check_sum)
   const double tol = 0.0004;
 #endif
 
-  EXPECT_GE(t1.summed() / N, 1 - tol);
-  EXPECT_LE(t1.summed() / N, 1 + tol);
-  EXPECT_GE(t2.summed() / N, 2 - tol);
-  EXPECT_LE(t2.summed() / N, 2 + tol);
+  EXPECT_GE(t1.elapsed() / N, 1 - tol);
+  EXPECT_LE(t1.elapsed() / N, 1 + tol);
+  EXPECT_GE(t2.elapsed() / N, 2 - tol);
+  EXPECT_LE(t2.elapsed() / N, 2 + tol);
 }

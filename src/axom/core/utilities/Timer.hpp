@@ -101,13 +101,13 @@ public:
   }
 
   /*!
-   * \brief Returns the elapsed time in seconds.
+   * \brief Returns the elapsed time in seconds of all cycles since the last reset.
    * \return t the elapsed time in seconds.
    */
   double elapsed() { return elapsedTimeInSec(); };
 
   /*!
-   * \brief Returns the elapsed time in seconds.
+   * \brief Returns the elapsed time in seconds of all cycles since the last reset.
    * \return t the elapsed time in seconds.
    */
   double elapsedTimeInSec()
@@ -116,11 +116,11 @@ public:
     {
       stop();
     }
-    return clockDiff().count();
+    return m_summedTime.count();
   }
 
   /*!
-   * \brief Returns the elapsed time in milliseconds.
+   * \brief Returns the elapsed time in milliseconds of all cycles since the last reset.
    * \return t the elapsed time in milliseconds.
    */
   double elapsedTimeInMilliSec()
@@ -129,11 +129,11 @@ public:
     {
       stop();
     }
-    return std::chrono::duration_cast<MilliTimeDiff>(clockDiff()).count();
+    return std::chrono::duration_cast<MilliTimeDiff>(m_summedTime).count();
   }
 
   /*!
-   * \brief Returns the elapsed time in microseconds.
+   * \brief Returns the elapsed time in microseconds of all cycles since the last reset.
    * \return t the elapsed time in microseconds.
    */
   double elapsedTimeInMicroSec()
@@ -142,28 +142,7 @@ public:
     {
       stop();
     }
-    return std::chrono::duration_cast<MicroTimeDiff>(clockDiff()).count();
-  }
-
-  /*!
-   * @brief Returns the time in seconds summed across
-   * all start-stop cycles since the last reset().
-   * \return the summed time in seconds.
-   */
-  double summed() { return summedTimeInSec(); }
-
-  /*!
-   * @brief Returns the time in seconds summed across
-   * all start-stop cycles since the last reset().
-   * \return the summed time in seconds.
-   */
-  double summedTimeInSec()
-  {
-    if(m_running)
-    {
-      stop();
-    }
-    return m_summedTime.count();
+    return std::chrono::duration_cast<MicroTimeDiff>(m_summedTime).count();
   }
 
   /*!
@@ -175,7 +154,7 @@ public:
   /*!
    * \brief Resets the timer.
    * \post this->elapsed()==0.0
-   * \post this->summedTimeInSec()==0.0
+   * \post this->elapsedTimeInSec()==0.0
    * \post this->cycleCount()==0
    */
   void reset()
@@ -187,9 +166,6 @@ public:
   }
 
 private:
-  /*! \brief Computes the difference between start() and stop() */
-  TimeDiff clockDiff() const { return m_stopTime - m_startTime; }
-
   TimeStruct m_startTime;
   TimeStruct m_stopTime;
   bool m_running;

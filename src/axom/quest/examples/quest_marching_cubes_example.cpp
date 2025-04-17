@@ -608,7 +608,7 @@ void printTimingStats(axom::utilities::Timer& t, const std::string& description)
 
   {
     double minCompute, maxCompute, sumCompute;
-    getDoubleMinMax(t.summedTimeInSec(), minCompute, maxCompute, sumCompute);
+    getDoubleMinMax(t.elapsedTimeInSec(), minCompute, maxCompute, sumCompute);
 
     const auto count = t.cycleCount();
     if(count > 1)
