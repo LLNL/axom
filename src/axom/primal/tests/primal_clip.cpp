@@ -12,6 +12,7 @@
 #include "axom/core/execution/for_all.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/numerics/transforms.hpp"
+#include "axom/core/numerics/constants.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -1699,7 +1700,7 @@ TEST(primal_clip, polyhedron_plane)
     nSides,
     1.f,
     1.f,
-    axom::numerics::transforms::xRotation<Precision>(-M_PI / 2, 4));
+    axom::numerics::transforms::xRotation<Precision>(-axom::numerics::constants::pi() / 2, 4));
   PlaneType plane2(VectorType {0.f, 1.f, 0.f}, 0.5f);
 
   // Clip away half of the polyhedron.
@@ -2094,7 +2095,7 @@ TEST(primal_clip, polygon_clip_regression)
   expectedPoly.addVertex(Point2D {148.f, 142.f});
 
   // Comparisons
-  constexpr float EPS = 1.6e-5;
+  constexpr float EPS = 1.6e-5f;
   EXPECT_EQ(clippedShape.numVertices(), 4);
   for(int i = 0; i < 4; i++)
   {

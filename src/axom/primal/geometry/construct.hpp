@@ -9,6 +9,7 @@
 #include "axom/slic.hpp"
 #include "axom/core/numerics/Matrix.hpp"
 #include "axom/core/numerics/matvecops.hpp"
+#include "axom/core/numerics/constants.hpp"
 #include "axom/primal/geometry/Polygon.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 
@@ -43,8 +44,8 @@ Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS> regular_polygon(
   SLIC_ASSERT(nSides >= 3);
   SLIC_ASSERT(transform.getNumRows() == transform.getNumColumns());
 
-  const double dA = (2. * M_PI) / static_cast<double>(nSides);
-  const double a0 = dA * 0.5 - M_PI / 2.;
+  const double dA = (2. * axom::numerics::constants::pi()) / static_cast<double>(nSides);
+  const double a0 = dA * 0.5 - axom::numerics::constants::pi() / 2.;
   double a = a0;
   Polygon<T, NDIMS, ARRAY_TYPE, MAX_VERTS> poly;
   for(int s = 0; s < nSides; s++)
