@@ -892,9 +892,18 @@ bool intersect(const Ray<T, 3>& ray,
                                           svc,
                                           EPS,
                                           true);
-    for(int i = 0; i < stc.size(); i++) { tc.push_back(stc[i]); }
-    for(int i = 0; i < suc.size(); i++) { uc.push_back(suc[i]); }
-    for(int i = 0; i < svc.size(); i++) { vc.push_back(svc[i]); }
+    for(int i = 0; i < stc.size(); i++)
+    {
+      tc.push_back(stc[i]);
+    }
+    for(int i = 0; i < suc.size(); i++)
+    {
+      uc.push_back(suc[i]);
+    }
+    for(int i = 0; i < svc.size(); i++)
+    {
+      vc.push_back(svc[i]);
+    }
   }
   else
   {

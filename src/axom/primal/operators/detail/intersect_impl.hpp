@@ -1631,7 +1631,9 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
   double bu = Vector3::scalar_triple_product(q10, line.direction(), e11) - au - cu;
 
   // Rescale the coefficients to avoid (some) numerical issues
-  double su = axom::utilities::max(axom::utilities::abs(au), axom::utilities::max(axom::utilities::abs(bu), axom::utilities::abs(cu)));
+  double su =
+    axom::utilities::max(axom::utilities::abs(au),
+                         axom::utilities::max(axom::utilities::abs(bu), axom::utilities::abs(cu)));
   au /= su;
   bu /= su;
   cu /= su;
@@ -1759,7 +1761,9 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     double cv = Vector3::dot_product(qm, line.direction());
     double bv = Vector3::scalar_triple_product(q01, line.direction(), e01) - av - cv;
 
-    double sv = axom::utilities::max(axom::utilities::abs(av), axom::utilities::max(axom::utilities::abs(bv), axom::utilities::abs(cv)));
+    double sv =
+      axom::utilities::max(axom::utilities::abs(av),
+                           axom::utilities::max(axom::utilities::abs(bv), axom::utilities::abs(cv)));
     av /= sv;
     bv /= sv;
     cv /= sv;
