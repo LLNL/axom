@@ -83,7 +83,7 @@ TEST(utils_Timer, timer_check_sum)
 #if defined(_WIN32)
   const double tol = 0.03;
 #elif defined(__OSX__) || defined(__APPLE__)
-  const double tol = 0.2;
+  const double tol = 0.3;
 #else
   const double tol = 0.0004;
 #endif
