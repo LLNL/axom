@@ -1610,9 +1610,9 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
                                           const Point3& p10,
                                           const Point3& p11,
                                           const Point3& p01,
-                                          axom::Array<double>& t,
-                                          axom::Array<double>& u,
-                                          axom::Array<double>& v,
+                                          axom::StaticArray<double, 2>& t,
+                                          axom::StaticArray<double, 2>& u,
+                                          axom::StaticArray<double, 2>& v,
                                           double EPS = 1e-8,
                                           bool isRay = false)
 {
@@ -1631,7 +1631,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
   double bu = Vector3::scalar_triple_product(q10, line.direction(), e11) - au - cu;
 
   // Rescale the coefficients to avoid (some) numerical issues
-  double su = std::max(std::fabs(au), std::max(fabs(bu), fabs(cu)));
+  double su = axom::utilities::max(axom::utilities::abs(au), axom::utilities::max(axom::utilities::abs(bu), axom::utilities::abs(cu)));
   au /= su;
   bu /= su;
   cu /= su;
@@ -1705,7 +1705,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
           const double t1 = Vector3::dot_product(pa, line.direction());
           const double t2 = Vector3::dot_product(pa + pb, line.direction());
 
-          if(!isRay || std::min(t1, t2) > 0.0)
+          if(!isRay || axom::utilities::min(t1, t2) > 0.0)
           {
             // Always an intersection in this case
             t.push_back(0.5 * (t1 + t2));
@@ -1759,7 +1759,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
     double cv = Vector3::dot_product(qm, line.direction());
     double bv = Vector3::scalar_triple_product(q01, line.direction(), e01) - av - cv;
 
-    double sv = std::max(std::fabs(av), std::max(fabs(bv), fabs(cv)));
+    double sv = axom::utilities::max(axom::utilities::abs(av), axom::utilities::max(axom::utilities::abs(bv), axom::utilities::abs(cv)));
     av /= sv;
     bv /= sv;
     cv /= sv;
@@ -1839,7 +1839,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
           const double t1 = Vector3::dot_product(pa, line.direction());
           const double t2 = Vector3::dot_product(pa + pb, line.direction());
 
-          if(!isRay || std::min(t1, t2) > 0.0)
+          if(!isRay || axom::utilities::min(t1, t2) > 0.0)
           {
             // Always an intersection in this case
             t.push_back(0.5 * (t1 + t2));
@@ -1856,7 +1856,7 @@ inline bool intersect_line_bilinear_patch(const Line<double, 3>& line,
             if(t1 == t2)
             {
               t.push_back(0.5 * t1);
-              v.push_back(0.5);
+              u.push_back(0.5);
             }
             else if(t1 < t2)
             {

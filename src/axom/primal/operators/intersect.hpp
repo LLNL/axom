@@ -881,16 +881,20 @@ bool intersect(const Ray<T, 3>& ray,
   else if(order_u == 1 && order_v == 1)
   {
     primal::Line<T, 3> line(ray.origin(), ray.direction());
+    StaticArray<T, 2> stc, suc, svc;
     detail::intersect_line_bilinear_patch(line,
                                           patch(0, 0),
                                           patch(order_u, 0),
                                           patch(order_u, order_v),
                                           patch(0, order_v),
-                                          tc,
-                                          uc,
-                                          vc,
+                                          stc,
+                                          suc,
+                                          svc,
                                           EPS,
                                           true);
+    for(int i = 0; i < stc.size(); i++) { tc.push_back(stc[i]); }
+    for(int i = 0; i < suc.size(); i++) { uc.push_back(suc[i]); }
+    for(int i = 0; i < svc.size(); i++) { vc.push_back(svc[i]); }
   }
   else
   {
