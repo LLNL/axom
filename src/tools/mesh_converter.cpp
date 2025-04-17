@@ -232,7 +232,7 @@ using TriMesh = SimplicialMesh<2, 3>;  // Surface triangle mesh in 3D
 
 /// Loads the pro-e tet mesh and returns a TetMesh instance
 /// Fixes orientations of the tets, but defers fixing degeneracies until the vertices have been welded
-bool loadProe(const std::string& filename, TetMesh& slam_mesh, bool verbose)
+bool loadProe(const std::string& filename, TetMesh& slam_mesh, bool dump_debug_meshes, bool verbose)
 {
   AXOM_ANNOTATE_SCOPE("load Pro-E file");
 
@@ -243,6 +243,7 @@ bool loadProe(const std::string& filename, TetMesh& slam_mesh, bool verbose)
   /// read pro-e mesh into a mint unstructured mesh
   auto mint_mesh = std::make_unique<mint::UnstructuredMesh<mint::SINGLE_SHAPE>>(3, axom::mint::TET);
   {
+    AXOM_ANNOTATE_SCOPE("read Pro-E mesh");
     axom::quest::ProEReader reader;
     reader.setFileName(filename);
 
@@ -261,55 +262,59 @@ bool loadProe(const std::string& filename, TetMesh& slam_mesh, bool verbose)
     return false;
   }
 
-  if(verbose)
+  if(dump_debug_meshes)
   {
-    std::string vtk_output_file = "proe_tet.vtk";
+    AXOM_ANNOTATE_SCOPE("dump vtk tet mesh");
+    const std::string vtk_output_file = "proe_tet.vtk";
     mint::write_vtk(mint_mesh.get(), vtk_output_file);
     SLIC_INFO("Saved tet mesh to VTK file: " << vtk_output_file);
   }
 
   /// convert from mint to our slam-based TetMesh
-  slam_mesh.reset(mint_mesh->getNumberOfNodes(), mint_mesh->getNumberOfCells());
-
-  // copy vertex data
   {
-    const double* x = mint_mesh->getCoordinateArray(mint::X_COORDINATE);
-    const double* y = mint_mesh->getCoordinateArray(mint::Y_COORDINATE);
-    const double* z = mint_mesh->getCoordinateArray(mint::Z_COORDINATE);
-    for(auto n : slam_mesh.nodes())
-    {
-      slam_mesh.vertex(n) = TetMesh::PointType {x[n], y[n], z[n]};
-    }
-  }
+    AXOM_ANNOTATE_SCOPE("convert to simplicial mesh");
+    slam_mesh.reset(mint_mesh->getNumberOfNodes(), mint_mesh->getNumberOfCells());
 
-  // copy tet-vertex connectivity data
-  {
-    int orientation_fixes = 0;
-    for(auto z : slam_mesh.zones())
+    // copy vertex data
     {
-      const axom::IndexType* connec = mint_mesh->getCellNodeIDs(z);
-      auto tet = slam_mesh.zone(z);
-      tet[0] = connec[0];
-      tet[1] = connec[1];
-      tet[2] = connec[2];
-      tet[3] = connec[3];
-
-      // fix orientations -- tets should not have negative volumes
-      if(slam_mesh.getSimplex(z).signedVolume() < 0.)
+      const double* x = mint_mesh->getCoordinateArray(mint::X_COORDINATE);
+      const double* y = mint_mesh->getCoordinateArray(mint::Y_COORDINATE);
+      const double* z = mint_mesh->getCoordinateArray(mint::Z_COORDINATE);
+      for(auto n : slam_mesh.nodes())
       {
-        axom::utilities::swap(tet[2], tet[3]);
-        ++orientation_fixes;
+        slam_mesh.vertex(n) = TetMesh::PointType {x[n], y[n], z[n]};
       }
     }
-    SLIC_INFO_IF(verbose,
-                 axom::fmt::format(axom::utilities::locale(),
-                                   "Fixed orientations of {:L} tetrahedra",
-                                   orientation_fixes));
+
+    // copy tet-vertex connectivity data
+    {
+      int orientation_fixes = 0;
+      for(auto z : slam_mesh.zones())
+      {
+        const axom::IndexType* connec = mint_mesh->getCellNodeIDs(z);
+        auto tet = slam_mesh.zone(z);
+        tet[0] = connec[0];
+        tet[1] = connec[1];
+        tet[2] = connec[2];
+        tet[3] = connec[3];
+
+        // fix orientations -- tets should not have negative volumes
+        if(slam_mesh.getSimplex(z).signedVolume() < 0.)
+        {
+          axom::utilities::swap(tet[2], tet[3]);
+          ++orientation_fixes;
+        }
+      }
+      SLIC_INFO_IF(verbose,
+                   axom::fmt::format(axom::utilities::locale(),
+                                     "Fixed orientations of {:L} tetrahedra",
+                                     orientation_fixes));
+    }
   }
 
-  slam_mesh.checkValid(verbose);
+  bool is_valid = slam_mesh.checkValid(verbose);
 
-  return true;
+  return is_valid;
 }
 
 template <typename MeshType>
@@ -338,7 +343,7 @@ void computeEdgeHistogram(const MeshType& mesh)
 
     // Add all edges of the simplex to the histogram
     // Note: this will count edges from neighboring simplexes more than once
-    // but is still a useful way to undertand the distribution of edge lengths
+    // but is still a useful way to understand the distribution of edge lengths
     for(int i = 0; i < MeshType::NODES_PER_ZONE; ++i)
     {
       for(int j = i + 1; j < MeshType::NODES_PER_ZONE; ++j)
@@ -661,6 +666,11 @@ int main(int argc, char** argv)
     ->description("Compute and display the edge histogram")
     ->capture_default_str();
 
+  bool dump_debug_meshes = false;
+  app.add_flag("-d,--dump-debug-mesh", dump_debug_meshes)
+    ->description("Dump intermediate meshes as an aid for debugging and visualization")
+    ->capture_default_str();
+
   bool verbose = false;
   app.add_flag("-v,--verbose", verbose, "Enable verbose output");
 
@@ -682,7 +692,7 @@ int main(int argc, char** argv)
 
   // Load the ProE mesh, fixing tet orientations along the way
   TetMesh tet_mesh;
-  bool load_success = loadProe(input_file, tet_mesh, verbose);
+  const bool load_success = loadProe(input_file, tet_mesh, dump_debug_meshes, verbose);
 
   if(compute_edge_histogram)
   {
@@ -709,7 +719,7 @@ int main(int argc, char** argv)
   }
 
   // Saves the result to an STL mesh
-  bool save_success = writeSTL(tri_mesh, output_file);
+  const bool save_success = writeSTL(tri_mesh, output_file);
 
   return load_success && save_success ? 0 : 1;
 }
