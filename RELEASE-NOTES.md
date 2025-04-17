@@ -20,9 +20,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ###  Added
-- New `Timer::summed()` method reports the sum of all start/stop cycles since the last `reset()`.
 - New `axom::MALLOC_ALLOCATOR_ID` is for using malloc and free
-  even when axom is con figured with Umpire support.
+  even when axom is configured with Umpire support.
+
+###  Changed
+- Fixed `Timer::elapsed*()` methods so they properly report the sum of all start/stop cycles
+  since the last `reset()`.
 
 ## [Version 0.11.0] - Release date 2025-04-02
 
