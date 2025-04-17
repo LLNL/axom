@@ -109,6 +109,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     variant("raja", default=True, description="Build with raja")
 
+    variant("int64", default=False, description="Use 64bit integers for IndexType")
+
     varmsg = "Build development tools (such as Sphinx, Doxygen, etc...)"
     variant("devtools", default=False, description=varmsg)
 
@@ -630,6 +632,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         options.append(self.define_from_variant("AXOM_ENABLE_TOOLS", "tools"))
         if self.spec.satisfies("~raja") or self.spec.satisfies("+umpire"):
             options.append("-DAXOM_ENABLE_MIR:BOOL=OFF")
+
+        options.append(self.define_from_variant("AXOM_USE_64BIT_INDEXTYPE", "int64"))
 
         return options
 
