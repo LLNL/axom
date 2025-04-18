@@ -288,29 +288,28 @@ TEST_F(TetrahedronTest, barycentric)
   TestVec testData;
 
   // Test the four vertices
-  testData.push_back(std::make_pair(pt[0], RPoint {1., 0., 0., 0.}));
-  testData.push_back(std::make_pair(pt[1], RPoint {0., 1., 0., 0.}));
-  testData.push_back(std::make_pair(pt[2], RPoint {0., 0., 1., 0.}));
-  testData.push_back(std::make_pair(pt[3], RPoint {0., 0., 0., 1.}));
+  testData.emplace_back(pt[0], RPoint {1., 0., 0., 0.});
+  testData.emplace_back(pt[1], RPoint {0., 1., 0., 0.});
+  testData.emplace_back(pt[2], RPoint {0., 0., 1., 0.});
+  testData.emplace_back(pt[3], RPoint {0., 0., 0., 1.});
 
   // Test the edge midpoints
-  testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[1]), RPoint {0.5, 0.5, 0., 0.}));
-  testData.push_back(std::make_pair(QPoint::midpoint(pt[1], pt[2]), RPoint {0., 0.5, 0.5, 0.}));
-  testData.push_back(std::make_pair(QPoint::midpoint(pt[2], pt[3]), RPoint {0., 0., 0.5, 0.5}));
-  testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[2]), RPoint {0.5, 0., 0.5, 0.}));
-  testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[3]), RPoint {0.5, 0., 0., 0.5}));
-  testData.push_back(std::make_pair(QPoint::midpoint(pt[1], pt[3]), RPoint {0., 0.5, 0., 0.5}));
+  testData.emplace_back(QPoint::midpoint(pt[0], pt[1]), RPoint {0.5, 0.5, 0., 0.});
+  testData.emplace_back(QPoint::midpoint(pt[1], pt[2]), RPoint {0., 0.5, 0.5, 0.});
+  testData.emplace_back(QPoint::midpoint(pt[2], pt[3]), RPoint {0., 0., 0.5, 0.5});
+  testData.emplace_back(QPoint::midpoint(pt[0], pt[2]), RPoint {0.5, 0., 0.5, 0.});
+  testData.emplace_back(QPoint::midpoint(pt[0], pt[3]), RPoint {0.5, 0., 0., 0.5});
+  testData.emplace_back(QPoint::midpoint(pt[1], pt[3]), RPoint {0., 0.5, 0., 0.5});
 
   // Test the centroid
   constexpr double quarter = 1. / 4.;
-  testData.push_back(std::make_pair(
+  testData.emplace_back(
     QPoint(quarter * (pt[0].array() + pt[1].array() + pt[2].array() + pt[3].array())),
-    RPoint {quarter, quarter, quarter, quarter}));
+    RPoint {quarter, quarter, quarter, quarter});
 
   // Test a point outside the tetrahedron
-  testData.push_back(
-    std::make_pair(QPoint(-0.4 * pt[0].array() + 1.2 * pt[1].array() + 0.2 * pt[2].array()),
-                   RPoint {-0.4, 1.2, 0.2, 0.}));
+  testData.emplace_back(QPoint(-0.4 * pt[0].array() + 1.2 * pt[1].array() + 0.2 * pt[2].array()),
+                        RPoint {-0.4, 1.2, 0.2, 0.});
 
   // Now run the actual tests
   for(const auto& data : testData)
@@ -348,43 +347,38 @@ TEST_F(TetrahedronTest, barycentric_skipNormalization)
     TestVec testData;
 
     // Test the four vertices
-    testData.push_back(std::make_pair(pt[0], RPoint {1., 0., 0., 0.}));
-    testData.push_back(std::make_pair(pt[1], RPoint {0., 1., 0., 0.}));
-    testData.push_back(std::make_pair(pt[2], RPoint {0., 0., 1., 0.}));
-    testData.push_back(std::make_pair(pt[3], RPoint {0., 0., 0., 1.}));
+    testData.emplace_back(pt[0], RPoint {1., 0., 0., 0.});
+    testData.emplace_back(pt[1], RPoint {0., 1., 0., 0.});
+    testData.emplace_back(pt[2], RPoint {0., 0., 1., 0.});
+    testData.emplace_back(pt[3], RPoint {0., 0., 0., 1.});
 
     // Test the edge midpoints
-    testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[1]), RPoint {0.5, 0.5, 0., 0.}));
-    testData.push_back(std::make_pair(QPoint::midpoint(pt[1], pt[2]), RPoint {0., 0.5, 0.5, 0.}));
-    testData.push_back(std::make_pair(QPoint::midpoint(pt[2], pt[3]), RPoint {0., 0., 0.5, 0.5}));
-    testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[2]), RPoint {0.5, 0., 0.5, 0.}));
-    testData.push_back(std::make_pair(QPoint::midpoint(pt[0], pt[3]), RPoint {0.5, 0., 0., 0.5}));
-    testData.push_back(std::make_pair(QPoint::midpoint(pt[1], pt[3]), RPoint {0., 0.5, 0., 0.5}));
+    testData.emplace_back(QPoint::midpoint(pt[0], pt[1]), RPoint {0.5, 0.5, 0., 0.});
+    testData.emplace_back(QPoint::midpoint(pt[1], pt[2]), RPoint {0., 0.5, 0.5, 0.});
+    testData.emplace_back(QPoint::midpoint(pt[2], pt[3]), RPoint {0., 0., 0.5, 0.5});
+    testData.emplace_back(QPoint::midpoint(pt[0], pt[2]), RPoint {0.5, 0., 0.5, 0.});
+    testData.emplace_back(QPoint::midpoint(pt[0], pt[3]), RPoint {0.5, 0., 0., 0.5});
+    testData.emplace_back(QPoint::midpoint(pt[1], pt[3]), RPoint {0., 0.5, 0., 0.5});
 
     // Test the face midpoints
     constexpr double one_third = 1. / 3.;
-    testData.push_back(
-      std::make_pair(QPoint(one_third * (pt[0].array() + pt[1].array() + pt[2].array())),
-                     RPoint {one_third, one_third, one_third, 0.}));
-    testData.push_back(
-      std::make_pair(QPoint(one_third * (pt[0].array() + pt[1].array() + pt[3].array())),
-                     RPoint {one_third, one_third, 0., one_third}));
-    testData.push_back(
-      std::make_pair(QPoint(one_third * (pt[0].array() + pt[2].array() + pt[3].array())),
-                     RPoint {one_third, 0., one_third, one_third}));
-    testData.push_back(
-      std::make_pair(QPoint(one_third * (pt[1].array() + pt[2].array() + pt[3].array())),
-                     RPoint {0., one_third, one_third, one_third}));
+    testData.emplace_back(QPoint(one_third * (pt[0].array() + pt[1].array() + pt[2].array())),
+                          RPoint {one_third, one_third, one_third, 0.});
+    testData.emplace_back(QPoint(one_third * (pt[0].array() + pt[1].array() + pt[3].array())),
+                          RPoint {one_third, one_third, 0., one_third});
+    testData.emplace_back(QPoint(one_third * (pt[0].array() + pt[2].array() + pt[3].array())),
+                          RPoint {one_third, 0., one_third, one_third});
+    testData.emplace_back(QPoint(one_third * (pt[1].array() + pt[2].array() + pt[3].array())),
+                          RPoint {0., one_third, one_third, one_third});
 
     // Test the centroid
-    testData.push_back(
-      std::make_pair(QPoint(.25 * (pt[0].array() + pt[1].array() + pt[2].array() + pt[3].array())),
-                     RPoint {.25, .25, .25, .25}));
+    testData.emplace_back(
+      QPoint(.25 * (pt[0].array() + pt[1].array() + pt[2].array() + pt[3].array())),
+      RPoint {.25, .25, .25, .25});
 
     // Test a point outside the tetrahedron
-    testData.push_back(
-      std::make_pair(QPoint(-0.4 * pt[0].array() + 1.2 * pt[1].array() + 0.2 * pt[2].array()),
-                     RPoint {-0.4, 1.2, 0.2, 0.}));
+    testData.emplace_back(QPoint(-0.4 * pt[0].array() + 1.2 * pt[1].array() + 0.2 * pt[2].array()),
+                          RPoint {-0.4, 1.2, 0.2, 0.});
 
     // Now run the actual tests
     for(const auto& data : testData)
@@ -428,16 +422,11 @@ TEST_F(TetrahedronTest, tetrahedron_roundtrip_bary_to_physical)
   using QTet = TetrahedronTest::QTet;
   using RPoint = primal::Point<CoordType, QTet::NUM_VERTS>;
 
-  // Test tets
-  std::vector<QTet> tets = {this->getTet(0),
-                            this->getTet(1),
-                            this->getTet(2),
-                            this->getTet(3),
-                            this->getTet(4)};
-
   // Compute circumsphere of test triangles and test some points
-  for(const auto& tet : tets)
+  for(int i = 0; i < this->numTetrahedra(); ++i)
   {
+    const auto& tet = this->getTet(i);
+
     // test vertices
     {
       RPoint b_in[4] = {RPoint {1., 0., 0., 0.},
@@ -510,8 +499,9 @@ TEST_F(TetrahedronTest, tetrahedron_roundtrip_bary_to_physical)
 
       // test tet barycenters
       {
-        RPoint b_in {.25, .25, .25, .25};
-        QPoint p_exp(.25 * (tet[0].array() + tet[1].array() + tet[2].array() + tet[3].array()));
+        constexpr double quarter = 1. / 4.;
+        RPoint b_in {quarter, quarter, quarter, quarter};
+        QPoint p_exp(quarter * (tet[0].array() + tet[1].array() + tet[2].array() + tet[3].array()));
 
         QPoint b2p = tet.baryToPhysical(b_in);
         EXPECT_NEAR(0., primal::squared_distance(p_exp, b2p), EPS);
@@ -556,14 +546,15 @@ TEST_F(TetrahedronTest, tetrahedron_containment)
   using RPoint = primal::Point<CoordType, QTet::NUM_VERTS>;
 
   // Test tets
-  for(const auto& tet :
-      {this->getTet(0), this->getTet(1), this->getTet(2), this->getTet(3), this->getTet(4)})
+  for(int i = 0; i < this->numTetrahedra(); ++i)
   {
+    const auto& tet = this->getTet(i);
+
     for(auto face_dim :
         {TetrahedronFace::VERTEX, TetrahedronFace::EDGE, TetrahedronFace::FACET, TetrahedronFace::CELL})
     {
       // check that the face midpoints are inside the tet
-      for(auto pt : tetrahedronFaceMidpoints(tet, face_dim))
+      for(const auto& pt : tetrahedronFaceMidpoints(tet, face_dim))
       {
         EXPECT_TRUE(tet.contains(pt, EPS));
       }
@@ -594,7 +585,6 @@ TEST_F(TetrahedronTest, tetrahedron_containment)
 TEST_F(TetrahedronTest, tet_3D_circumsphere)
 {
   using CoordType = TetrahedronTest::CoordType;
-  using QTet = TetrahedronTest::QTet;
   using QSphere = primal::Sphere<CoordType, 3>;
   using RPoint = primal::Point<CoordType, 4>;
   const double EPS = 1e-9;
@@ -606,7 +596,7 @@ TEST_F(TetrahedronTest, tet_3D_circumsphere)
   // Compute circumsphere of test tetrahedra and test some points
   for(int ti = 0; ti < this->numTetrahedra(); ++ti)
   {
-    QTet tet = this->getTet(ti);
+    const auto& tet = this->getTet(ti);
     QSphere circumsphere = tet.circumsphere();
 
     SLIC_DEBUG("Circumsphere for tetrahedron: " << tet << " is " << circumsphere);
@@ -697,13 +687,13 @@ TEST_F(TetrahedronTest, checkAndFixOrientation)
 
   for(int i = 0; i < this->numTetrahedra(); ++i)
   {
-    QTet tet = this->getTet(i);
+    const auto& tet = this->getTet(i);
     const double expVolume = tet.signedVolume();
 
     // Run sign check through all vertex permutations for the tetrahedron
     do
     {
-      QTet tetPermuted = QTet(tet[indices[0]], tet[indices[1]], tet[indices[2]], tet[indices[3]]);
+      QTet tetPermuted(tet[indices[0]], tet[indices[1]], tet[indices[2]], tet[indices[3]]);
       const double preCheckAbsoluteVolume = tetPermuted.volume();
 
       tetPermuted.checkAndFixOrientation();
