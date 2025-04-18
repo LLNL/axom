@@ -18,6 +18,8 @@
 
 // axom headers
 #include "axom/config.hpp"
+#include "axom/core/Array.hpp"
+#include "axom/core/ConduitMemory.hpp"
 #include "axom/core/ItemCollection.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/MapCollection.hpp"
@@ -272,13 +274,13 @@ public:
    */
   bool isRoot() const { return m_parent == this; }
 
-#ifdef AXOM_USE_UMPIRE
   /*!
    * \brief Return the ID of the default umpire::Allocator associated with this
    * Group.
    */
   int getDefaultAllocatorID() const { return m_default_allocator_id; }
 
+#if defined(AXOM_USE_UMPIRE)
   /*!
    * \brief Return the default umpire::Allocator associated with this Group.
    */
@@ -293,35 +295,39 @@ public:
    */
   Group* setDefaultAllocator(umpire::Allocator alloc)
   {
-    m_default_allocator_id = alloc.getId();
-    return this;
-  }
-
-  /*!
-   * \brief Set the default umpire::Allocator associated with this Group.
-   */
-  Group* setDefaultAllocator(int allocId)
-  {
-    m_default_allocator_id = allocId;
-    return this;
-  }
-#else
-  /*!
-   * \brief Return the ID of the default umpire::Allocator associated with this
-   * Group.
-   */
-  int getDefaultAllocatorID() const { return axom::getDefaultAllocatorID(); }
-
-  /*!
-   * \brief Set the default umpire::Allocator associated with this Group.
-   */
-  Group* setDefaultAllocator(int allocId)
-  {
-    AXOM_UNUSED_VAR(allocId);
-    SLIC_ASSERT(allocId == axom::getDefaultAllocatorID());
+    setDefaultAllocator(alloc.getId());
     return this;
   }
 #endif
+
+  /*!
+   * \brief Set the default umpire::Allocator associated with this Group.
+   */
+  Group* setDefaultAllocator(int allocId)
+  {
+#if !defined(AXOM_USE_UMPIRE)
+    SLIC_ASSERT(allocId == axom::MALLOC_ALLOCATOR_ID ||
+                allocId == axom::DYNAMIC_ALLOCATOR_ID);
+#endif
+    m_default_allocator_id = allocId;
+    m_default_allocator_id_conduit =
+      axom::ConduitMemory::instanceForAxomId(m_default_allocator_id).conduitId();
+    return this;
+  }
+
+  /*!
+   * \brief Reallocate data to View-specific allocators.
+   *
+   * \param [i] viewToAllocatorId A function that returns the allocator
+   *   id to reallocate the View's data to.  Where it returns
+   *   the View's current allocator or axom::INVALID_ALLOCATOR_ID,
+   *   the View is unchanged.
+   *
+   * \return pointer to this Group object.
+   *
+   * This does NOT change any Group's default allocator.
+   */
+  Group* reallocateTo(const std::function<int(const View&)>& viewToAllocatorId);
 
   /*!
    * \brief Insert information about data associated with Group subtree with
@@ -451,6 +457,15 @@ public:
    * If no such View exists, nullptr is returned.
    */
   const View* getView(IndexType idx) const;
+
+  /*!
+   * \brief Find hierarchy's views that match some criteria,
+   * and append their addresses to an Array.
+   *
+   * \brief Return number of views found.
+   */
+  axom::IndexType findViews(const std::function<bool(View&)>& criteria,
+                            axom::Array<View*>& found);
 
   //@}
 
@@ -817,12 +832,14 @@ public:
    * \sa View::setScalar()
    */
   template <typename ScalarType>
-  View* createViewScalar(const std::string& path, ScalarType value)
+  View* createViewScalar(const std::string& path,
+                         ScalarType value,
+                         int allocID = INVALID_ALLOCATOR_ID)
   {
     View* view = createView(path);
     if(view != nullptr)
     {
-      view->setScalar(value);
+      view->setScalar(value, allocID);
     }
 
     return view;
@@ -832,7 +849,7 @@ public:
    * \brief Create View object with given name or path in this Group
    * set its data to given string.
    *
-   * This is equivalent to: createView(name)->setString(value);
+   * This is equivalent to: createView(name)->setString(value, allocID);
    *
    * If given data type object is empty, data will not be allocated.
    *
@@ -840,7 +857,9 @@ public:
    *
    * \sa View::setString()
    */
-  View* createViewString(const std::string& path, const std::string& value);
+  View* createViewString(const std::string& path,
+                         const std::string& value,
+                         int allocID = INVALID_ALLOCATOR_ID);
 
   //@}
 
@@ -1152,8 +1171,10 @@ public:
   /*!
    * \brief Create a child Group within this Group with given name or path.
    *
-   * If name is an empty string or Group already has a child Group with
-   * given name or path, method is a no-op.
+   * If name is an empty string, method is a no-op.
+   *
+   * If Group already has a child Group with given name or path
+   * and accept_existing is false, method is a no-op.
    *
    * The optional is_list argument is used to determine if the created
    * child Group will hold items in list format.
@@ -1161,7 +1182,9 @@ public:
    * \return pointer to created Group object or nullptr if new
    * Group is not created.
    */
-  Group* createGroup(const std::string& path, bool is_list = false);
+  Group* createGroup(const std::string& path,
+                     bool is_list = false,
+                     bool accept_existing = false);
 
   /*
    * \brief Create a child Group within this Group with no name.
@@ -1308,6 +1331,29 @@ public:
    */
   Group* deepCopyGroup(const Group* srcGroup, int allocID = INVALID_ALLOCATOR_ID);
 
+  /*!
+   * \brief Create a deep copy of Group hierarchy rooted at given Group
+   *        directly to this group.
+   * \param [in] srcGroup Source for copy
+   *
+   * The difference between this method and deepCopyGroup(Group*) is that
+   * this method copies into itself instead of into a new child Group.
+   *
+   * Note that all Views in the Group hierarchy are deep-copied as well.
+   *
+   * The deep copy of the Group creates a duplicate of the entire Group
+   * hierarchy and performs a deep copy of the data described by the Views
+   * in the hierarchy.
+   *
+   * The Views in the new Group hierarchy will each allocate and use
+   * new Buffers to hold their copied data. Each Buffer will be sized to
+   * receive only the data values seen by the description of the original
+   * View and will have zero offset and a strid of one.
+   *
+   * \return pointer to this.
+   */
+  Group* deepCopyGroupToSelf(const Group* srcGroup);
+
   //@}
 
   //@{
@@ -1335,6 +1381,13 @@ public:
    */
   void printTree(const int nlevels, std::ostream& os = std::cout) const;
 
+  /*!
+    * \brief Print in a way that won't crash for non-host data.
+    *
+    * If data is not host-accessible, print the pointer and a comment.
+    */
+  void hostPrint(const std::string& indent = "", std::ostream& os = std::cout) const;
+
   //@}
 
   /*!
@@ -1357,6 +1410,21 @@ public:
    * false otherwise.
    */
   bool createNativeLayout(Node& n, const Attribute* attr = nullptr) const;
+
+  /*!
+   * \brief Deep-copy Group's native layout to given Conduit node.
+   *
+   * This is similar to createNativeLayout, except for the leaves being
+   * deep-copied.
+   *
+   * The destination's allocator id should be preserved and used for
+   * array allocations.  However, I'm still checking on this.
+   *
+   * \return True if the Group or any of its children were added to the Node,
+   * false otherwise.
+   *
+   */
+  bool deepCopyToConduit(Node& n, const Attribute* attr = nullptr) const;
 
   /*!
    * \brief Copy Group's layout to given Conduit node without data
@@ -1920,7 +1988,17 @@ private:
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
-  int getValidAllocatorID(int allocatorID);
+  int getValidAxomAllocatorID(int allocatorID);
+
+#if 0
+  /*!
+   * \brief Private method. If allocatorID is a valid allocator ID then return
+   *  it. Otherwise return the ID of the default allocator of the owning group.
+   *  In both cases, return the corresponding Conduit allocator id, not the
+   *  Axom id.
+   */
+  int getValidConduitAllocatorID(int allocatorID);
+#endif
 
   /// Name of this Group object.
   std::string m_name;
@@ -1946,9 +2024,8 @@ private:
   /// Collection of child Groups
   GroupCollection* m_group_coll;
 
-#ifdef AXOM_USE_UMPIRE
   int m_default_allocator_id;
-#endif
+  conduit::index_t m_default_allocator_id_conduit;
 };
 
 } /* end namespace sidre */

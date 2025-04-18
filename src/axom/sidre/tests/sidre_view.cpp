@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 #include "axom/core/Types.hpp"
+#include "axom/core/ConduitMemory.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 
@@ -1835,6 +1836,280 @@ TEST(sidre_view, deep_copy_shape)
   }
 
   delete ds;
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view, deep_copy_to_conduit)
+{
+  // Allocator ids to test.
+  std::vector<int> allocIds;
+#ifdef AXOM_USE_UMPIRE
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
+  #ifdef AXOM_USE_GPU
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
+    // Does it make sense to check Pinned and Constant memory spaces?
+  #endif
+#else
+  allocIds.push_back(axom::MALLOC_ALLOCATOR_ID);
+#endif
+
+  DataStore ds;
+
+  constexpr int N = 5;
+  auto dtypeDouble = conduit::DataType::float64(1);
+  auto dtypeIntArray = conduit::DataType::int32(N);
+
+  const double doubleValue = 10.13456;
+  axom::Array<std::int32_t> intArray(N, N);
+  for(int i = 0; i < N; ++i)
+  {
+    intArray[i] = 1001.5 + i;
+  }
+  std::string stringValue = "a string";
+
+  double tmpDoubleValue = doubleValue;
+  axom::Array<std::int32_t> tmpIntArray(N, N);
+  axom::Array<char> tmpCharArray;
+
+  // For each combination of srcAllocId and dstAllocId,
+  // allocate src and copy to dst.
+
+  for(auto srcAllocId : allocIds)
+  {
+    Group* src = ds.getRoot()->createGroup("src");
+    src->setDefaultAllocator(srcAllocId);
+
+    //
+    // Create, initialize and sanity-check src objects to test.
+    //
+
+    View* srcString = src->createViewString("aString", stringValue);
+    const char* srcStringPtr = (char*)srcString->getNode().data_ptr();
+    if(srcAllocId == axom::MALLOC_ALLOCATOR_ID)
+    {
+      // Skip this check if srcAllocId is non-MALLOC_ALLOCATOR_ID,
+      // because a current sidre issue results in always
+      // placing strings on Conduit's default alloc id.
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(srcStringPtr), srcAllocId);
+    }
+
+    View* srcScalar = src->createViewScalar("aDouble", dtypeDouble);
+    double* srcScalarPtr = (double*)srcScalar->getNode().data_ptr();
+    EXPECT_EQ(axom::getAllocatorIDFromPointer(srcScalarPtr), srcAllocId);
+    axom::copy(srcScalarPtr, &doubleValue, sizeof(double));
+
+    View* srcArray = src->createViewAndAllocate("aIntArray", dtypeIntArray);
+    std::int32_t* srcArrayPtr = (std::int32_t*)srcArray->getNode().data_ptr();
+    EXPECT_EQ(axom::getAllocatorIDFromPointer(srcArrayPtr), srcAllocId);
+    axom::copy(srcArrayPtr, intArray.data(), N * sizeof(std::int32_t));
+
+    if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(srcAllocId))
+    {
+      std::cout << "src group:" << std::endl;
+      src->print();
+    }
+
+    //
+    // Copy the source into destinations of different alloc ids
+    //
+
+    for(auto dstAllocId : allocIds)
+    {
+      std::cout << "Testing copying allocator id " << srcAllocId << " to "
+                << dstAllocId << std::endl;
+
+      const auto& idConverter =
+        axom::ConduitMemory::instanceForAxomId(dstAllocId);
+      auto dstAllocIdConduit = idConverter.conduitId();
+
+      conduit::Node dst;
+      dst.set_allocator(dstAllocIdConduit);
+
+      src->deepCopyToConduit(dst);
+
+      //
+      // Check pointers.  Copy data to temporary host buffers and check data.
+      //
+
+      double* dstScalarPtr =
+        (double*)dst.fetch_existing(srcScalar->getName()).data_ptr();
+      EXPECT_NE(dstScalarPtr, nullptr);
+      EXPECT_NE(dstScalarPtr, srcScalarPtr);
+      auto dstScalarAllocId = axom::getAllocatorIDFromPointer(dstScalarPtr);
+      EXPECT_EQ(dstScalarAllocId, dstAllocId);
+      axom::copy(&tmpDoubleValue, dstScalarPtr, sizeof(double));
+      EXPECT_EQ(tmpDoubleValue, doubleValue);
+
+      std::int32_t* dstArrayPtr =
+        (std::int32_t*)dst.fetch_existing(srcArray->getName()).data_ptr();
+      EXPECT_NE(dstArrayPtr, nullptr);
+      EXPECT_NE(dstArrayPtr, srcArrayPtr);
+      auto dstArrayAllocId = axom::getAllocatorIDFromPointer(dstArrayPtr);
+      EXPECT_EQ(dstArrayAllocId, dstAllocId);
+      axom::copy(tmpIntArray.data(), srcArrayPtr, N * sizeof(std::int32_t));
+      for(int i = 0; i < N; ++i)
+      {
+        EXPECT_EQ(tmpIntArray[i], intArray[i]);
+      }
+
+      char* dstStringPtr =
+        (char*)dst.fetch_existing(srcString->getName()).data_ptr();
+      EXPECT_NE(dstStringPtr, nullptr);
+      EXPECT_NE(dstStringPtr, srcStringPtr);
+      auto dstStringAllocId = axom::getAllocatorIDFromPointer(dstStringPtr);
+      EXPECT_EQ(dstStringAllocId, dstAllocId);
+      tmpCharArray.resize(srcString->getNumElements());
+      axom::copy(tmpCharArray.data(), srcStringPtr, srcString->getNumElements());
+      for(int i = 0; i < N; ++i)
+      {
+        EXPECT_EQ(tmpCharArray[i], stringValue[i]);
+      }
+    }
+
+    ds.getRoot()->destroyGroup("src");
+  }
+}
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_view, reallocate_to)
+{
+  // Allocator ids to test.
+  std::vector<int> allocIds;
+#ifdef AXOM_USE_UMPIRE
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Host>());
+  #ifdef AXOM_USE_GPU
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Device>());
+  allocIds.push_back(axom::detail::getAllocatorID<axom::MemorySpace::Unified>());
+    // Does it make sense to check Pinned and Constant memory spaces?
+  #endif
+#else
+  allocIds.push_back(axom::MALLOC_ALLOCATOR_ID);
+#endif
+
+  DataStore ds;
+
+  constexpr int N = 5;
+  auto dtypeDouble = conduit::DataType::float64(1);
+  auto dtypeIntArray = conduit::DataType::int32(N);
+
+  const double doubleValue = 10.13456;
+  axom::Array<std::int32_t> intArray(N, N);
+  for(int i = 0; i < N; ++i)
+  {
+    intArray[i] = 1001.5 + i;
+  }
+  std::string stringValue = "a string";
+
+  double tmpDoubleValue = doubleValue;
+  axom::Array<std::int32_t> tmpIntArray(N, N);
+  axom::Array<char> tmpCharArray;
+
+  // For each combination of origAllocId and newAllocId,
+  // 1. Copy "orig" to a "test" to test without changing orig.
+  // 2. Change the allocator id of test Group to newAllocId.
+
+  for(auto origAllocId : allocIds)
+  {
+    Group* orig = ds.getRoot()->createGroup("orig");
+    orig->setDefaultAllocator(origAllocId);
+
+    //
+    // Create, initialize and sanity-check orig objects to test.
+    //
+
+    View* origString = orig->createViewString("aString", stringValue);
+    const char* origStringPtr = (char*)origString->getNode().data_ptr();
+    if(origAllocId == axom::MALLOC_ALLOCATOR_ID)
+    {
+      // Skip this check if origAllocId is non-MALLOC_ALLOCATOR_ID,
+      // because a current sidre issue results in always
+      // placing strings on Conduit's default alloc id.
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(origStringPtr), origAllocId);
+    }
+
+    View* origScalar = orig->createViewScalar("aDouble", dtypeDouble);
+    double* origScalarPtr = (double*)origScalar->getNode().data_ptr();
+    EXPECT_EQ(axom::getAllocatorIDFromPointer(origScalarPtr), origAllocId);
+    axom::copy(origScalarPtr, &doubleValue, sizeof(double));
+
+    View* origArray = orig->createViewAndAllocate("aIntArray", dtypeIntArray);
+    std::int32_t* origArrayPtr = (std::int32_t*)origArray->getNode().data_ptr();
+    EXPECT_EQ(axom::getAllocatorIDFromPointer(origArrayPtr), origAllocId);
+    axom::copy(origArrayPtr, intArray.data(), N * sizeof(std::int32_t));
+
+    if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(origAllocId))
+    {
+      std::cout << "orig group:" << std::endl;
+      orig->print();
+    }
+
+    //
+    // Copy the source into testGrp then transfer testGrp's data to another allocator.
+    //
+
+    for(auto testAllocId : allocIds)
+    {
+      std::cout << "Testing transfering allocator id " << origAllocId << " to "
+                << testAllocId << std::endl;
+
+      auto viewToAllocatorId = [=](const View&) { return testAllocId; };
+
+      Group* testGrp = ds.getRoot()->createGroup("testGrp");
+      testGrp->deepCopyGroupToSelf(orig);
+      testGrp->reallocateTo(viewToAllocatorId);
+      if(axom::execution_space<axom::SEQ_EXEC>::usesAllocId(testAllocId))
+      {
+        std::cout << "test group:" << std::endl;
+        testGrp->print();
+        std::cout << std::endl;
+      }
+
+      //
+      // Check pointers:  Copy data to temporary host buffers and check data.
+      //
+
+      double* testScalarPtr =
+        (double*)testGrp->getView(origScalar->getName())->getVoidPtr();
+      EXPECT_NE(testScalarPtr, nullptr);
+      EXPECT_NE(testScalarPtr, origScalarPtr);
+      auto testScalarAllocId = axom::getAllocatorIDFromPointer(testScalarPtr);
+      EXPECT_EQ(testScalarAllocId, testAllocId);
+      axom::copy(&tmpDoubleValue, testScalarPtr, sizeof(double));
+      EXPECT_EQ(tmpDoubleValue, doubleValue);
+
+      std::int32_t* testArrayPtr =
+        (std::int32_t*)testGrp->getView(origArray->getName())->getVoidPtr();
+      EXPECT_NE(testArrayPtr, nullptr);
+      EXPECT_NE(testArrayPtr, origArrayPtr);
+      auto testArrayAllocId = axom::getAllocatorIDFromPointer(testArrayPtr);
+      EXPECT_EQ(testArrayAllocId, testAllocId);
+      axom::copy(tmpIntArray.data(), origArrayPtr, N * sizeof(std::int32_t));
+      for(int i = 0; i < N; ++i)
+      {
+        EXPECT_EQ(tmpIntArray[i], intArray[i]);
+      }
+
+      char* testStringPtr =
+        (char*)testGrp->getView(origString->getName())->getVoidPtr();
+      EXPECT_NE(testStringPtr, nullptr);
+      EXPECT_NE(testStringPtr, origStringPtr);
+      auto testStringAllocId = axom::getAllocatorIDFromPointer(testStringPtr);
+      EXPECT_EQ(testStringAllocId, testAllocId);
+      tmpCharArray.resize(origString->getNumElements());
+      axom::copy(tmpCharArray.data(), origStringPtr, origString->getNumElements());
+      for(size_t i = 0; i < stringValue.size(); ++i)
+      {
+        EXPECT_EQ(tmpCharArray[i], stringValue[i]);
+      }
+
+      ds.getRoot()->destroyGroupAndData("testGrp");
+    }
+
+    ds.getRoot()->destroyGroupAndData("orig");
+  }
 }
 
 //------------------------------------------------------------------------------

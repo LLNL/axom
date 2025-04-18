@@ -448,9 +448,16 @@ void printMfemMeshInfo(mfem::Mesh* mesh, const std::string& prefixMessage = "")
 }
 #endif
 
+/************************************************************
+ * Shared variables.
+ ************************************************************/
+
 const std::string topoName = "mesh";
 const std::string coordsetName = "coords";
 int cellCount = -1;
+
+const auto hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+int arrayAllocId = axom::INVALID_ALLOCATOR_ID;
 
 // Computational mesh in different forms, initialized in main
 #if defined(AXOM_USE_MFEM)
@@ -458,6 +465,48 @@ std::shared_ptr<sidre::MFEMSidreDataCollection> shapingDC;
 #endif
 axom::sidre::Group* compMeshGrp = nullptr;
 std::shared_ptr<conduit::Node> compMeshNode;
+
+auto selectScalarAndStringViews =
+  [](const axom::sidre::View& v) { return v.isScalar() || v.isString(); };
+auto selectNonHostViews =
+  [](const axom::sidre::View& v) { return v.getVoidPtr() != nullptr && !v.isHostAccessible(); };
+
+/*
+  Whether View data should live on host or another allocator (like device data).
+  Return the "right" choice based on View type, using a heuristic.
+  as determined by heuristics.
+  Ordered by likeliest to be correct.
+*/
+auto viewToStandardAllocator =
+  [](const axom::sidre::View& v) {
+    if(v.isString() || (v.isExternal() && v.getNumElements() == 1))
+    {
+      // String or likely external string
+      return hostAllocId;
+    }
+    if((v.hasBuffer() || v.isExternal()) &&
+       (v.getName() == "offsets" || v.getName() == "strides") &&
+       (v.getNumElements() <= 3))
+    {
+      // Likely Blueprint specification of array offsets or strides.
+      return hostAllocId;
+    }
+    if(v.hasBuffer() && v.getPath().find("/values/") == std::string::npos)
+    {
+      // Likely Blueprint mesh data or coordinate values.
+      return arrayAllocId;
+    }
+    if(v.isScalar() || (v.isExternal() && v.getNumElements() == 1))
+    {
+      // Scalar or likely external scalar
+      return hostAllocId;
+    }
+    if(v.hasBuffer() && v.getNumElements() <= 3)
+    {
+      return hostAllocId;
+    }
+    return arrayAllocId;
+  };
 
 axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
 {
@@ -504,14 +553,13 @@ axom::sidre::Group* createBoxMesh(axom::sidre::Group* meshGrp)
     break;
   }
 
-#if defined(AXOM_DEBUG)
-  conduit::Node meshNode, info;
-  meshGrp->createNativeLayout(meshNode);
-  SLIC_ASSERT(conduit::blueprint::mesh::verify(meshNode, info));
-#endif
-
   // State group is optional to blueprint, and we don't use it, but mint checks for it.
   meshGrp->createGroup("state");
+
+  auto hostAllocForScalarAndStringViews =
+    [](const axom::sidre::View& v)
+      { return (v.isScalar() || v.isString()) ? hostAllocId : axom::INVALID_ALLOCATOR_ID; };
+  meshGrp->reallocateTo(hostAllocForScalarAndStringViews);
 
   return meshGrp;
 }
@@ -1119,9 +1167,9 @@ axom::sidre::View* getElementVolumes(
       constexpr int NUM_COMPS_PER_VERT = 2;
 
       /*
-          Get vertex coordinates.  We use UnstructuredMesh for this,
-          so get it on host first then transfer to device if needed.
-        */
+        Get vertex coordinates.  We use UnstructuredMesh for this,
+        so get it on host first then transfer to device if needed.
+      */
       auto* connData = meshGrp->getGroup("topologies")
                          ->getGroup(topoName)
                          ->getGroup("elements")
@@ -1182,9 +1230,9 @@ axom::sidre::View* getElementVolumes(
 
       // Allocate and populate cell volumes.
       axom::sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
-      fieldGrp->createViewString("topology", topoName);
-      fieldGrp->createViewString("association", "element");
-      fieldGrp->createViewString("volume_dependent", "true");
+      fieldGrp->createViewString("topology", topoName, hostAllocId);
+      fieldGrp->createViewString("association", "element", hostAllocId);
+      fieldGrp->createViewString("volume_dependent", "true", hostAllocId);
       volSidreView =
         fieldGrp->createViewAndAllocate("values", axom::sidre::detail::SidreTT<double>::id, cellCount);
       axom::IndexType shape2d[] = {cellCount, 1};
@@ -1280,9 +1328,9 @@ axom::sidre::View* getElementVolumes(
 
       // Allocate and populate cell volumes.
       axom::sidre::Group* fieldGrp = meshGrp->createGroup(fieldPath);
-      fieldGrp->createViewString("topology", topoName);
-      fieldGrp->createViewString("association", "element");
-      fieldGrp->createViewString("volume_dependent", "true");
+      fieldGrp->createViewString("topology", topoName, hostAllocId);
+      fieldGrp->createViewString("association", "element", hostAllocId);
+      fieldGrp->createViewString("volume_dependent", "true", hostAllocId);
       volSidreView =
         fieldGrp->createViewAndAllocate("values", axom::sidre::detail::SidreTT<double>::id, cellCount);
       axom::IndexType shape2d[] = {cellCount, 1};
@@ -1549,7 +1597,7 @@ int main(int argc, char** argv)
 
   axom::utilities::raii::AnnotationsWrapper annotations_raii_wrapper(params.annotationMode);
 
-  const int allocatorId = axom::policyToDefaultAllocatorID(params.policy);
+  const int arrayAllocId = axom::policyToDefaultAllocatorID(params.policy);
 
   AXOM_ANNOTATE_BEGIN("quest example for shaping primals");
   AXOM_ANNOTATE_BEGIN("init");
@@ -1679,12 +1727,16 @@ int main(int argc, char** argv)
                 "-DAXOM_ENABLE_MFEM_SIDRE_DATACOLLECTION.");
 #endif
 
+  conduit::Node* topoCoordsetNode = nullptr;
   if(params.useBlueprintSidre() || params.useBlueprintConduit())
   {
     compMeshGrp = ds.getRoot()->createGroup("compMesh");
-    compMeshGrp->setDefaultAllocator(allocatorId);
+    compMeshGrp->setDefaultAllocator(arrayAllocId);
 
     createBoxMesh(compMeshGrp);
+
+    // Move memory to standard allocators.
+    compMeshGrp->reallocateTo(viewToStandardAllocator);
 
     if(params.useBlueprintConduit())
     {
@@ -1692,9 +1744,9 @@ int main(int argc, char** argv)
       auto makeField = [&](const std::string& fieldName, double initValue) {
         auto fieldGrp = compMeshGrp->createGroup("fields/" + fieldName);
         axom::IndexType shape[] = {params.getBoxCellCount(), 1};
-        fieldGrp->createViewString("association", "element");
-        fieldGrp->createViewString("topology", topoName);
-        fieldGrp->createViewString("volume_dependent", "true");
+        fieldGrp->createViewString("association", "element", hostAllocId);
+        fieldGrp->createViewString("topology", topoName, hostAllocId);
+        fieldGrp->createViewString("volume_dependent", "true", hostAllocId);
         axom::sidre::View* valuesView =
           fieldGrp->createViewWithShapeAndAllocate("values",
                                                    axom::sidre::detail::SidreTT<double>::id,
@@ -1723,6 +1775,26 @@ int main(int argc, char** argv)
     cellCount = params.getBoxCellCount();
   }
 
+  {
+    // Check for mesh info needed on host but isn't.
+#if 0
+    axom::sidre::Group* tmpMeshGrp = ds.getRoot()->createGroup("tmpMeshGrp",
+                                                               compMeshGrp->isUsingList(),
+                                                               false);
+    tmpMeshGrp->setDefaultAllocator(hostAllocId);
+    tmpMeshGrp->deepCopyGroupToSelf(compMeshGrp);
+    tmpMeshGrp->print();
+    axom::Array<axom::sidre::View*> foundViews;
+    compMeshGrp->findViews(selectNonHostViews, foundViews);
+    std::cout << "Found " << foundViews.size()
+              << " views with data inaccessible by host:" << std::endl;
+    for(auto* view : foundViews)
+    {
+      std::cout << view->getPath() << '/' << view->getName() << " has data at " << view->getVoidPtr() << std::endl;
+    }
+#endif
+  }
+
   //---------------------------------------------------------------------------
   // Initialize the shaping query object
   //---------------------------------------------------------------------------
@@ -1730,19 +1802,23 @@ int main(int argc, char** argv)
   std::shared_ptr<quest::IntersectionShaper> shaper = nullptr;
   if(params.useBlueprintSidre())
   {
-    shaper =
-      std::make_shared<quest::IntersectionShaper>(params.policy, allocatorId, shapeSet, compMeshGrp);
+    shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         arrayAllocId,
+                                                         shapeSet,
+                                                         compMeshGrp);
   }
   if(params.useBlueprintConduit())
   {
-    shaper =
-      std::make_shared<quest::IntersectionShaper>(params.policy, allocatorId, shapeSet, *compMeshNode);
+    shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
+                                                         arrayAllocId,
+                                                         shapeSet,
+                                                         *compMeshNode);
   }
 #if defined(AXOM_USE_MFEM)
   if(params.useMfem())
   {
     shaper = std::make_shared<quest::IntersectionShaper>(params.policy,
-                                                         allocatorId,
+                                                         arrayAllocId,
                                                          shapeSet,
                                                          shapingDC.get());
   }
@@ -1816,8 +1892,28 @@ int main(int argc, char** argv)
     // Finalize data structures associated with this shape and spatial index
     shaper->finalizeShapeQuery();
     slic::flushStreams();
+
+    if(compMeshGrp)
+    {
+      compMeshGrp->reallocateTo(viewToStandardAllocator);
+    }
   }
   AXOM_ANNOTATE_END("shaping");
+
+  if(params.useBlueprintSidre() || params.useBlueprintConduit())
+  {
+    // The shaper created some blueprint nodes that we need to move to the host.
+    auto hostAllocForScalarAndStringViews =
+      [](const axom::sidre::View& v)
+        { return (v.isScalar() || v.isString()) ? hostAllocId : axom::INVALID_ALLOCATOR_ID; };
+
+    if(compMeshGrp->getDefaultAllocatorID() != hostAllocId)
+    {
+      compMeshGrp->reallocateTo(hostAllocForScalarAndStringViews);
+      compMeshNode = std::make_shared<conduit::Node>();
+      compMeshGrp->createNativeLayout(*compMeshNode);
+    }
+  }
 
   //---------------------------------------------------------------------------
   // After shaping in all shapes, generate/adjust the material volume fractions

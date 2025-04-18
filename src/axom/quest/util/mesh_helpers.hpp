@@ -76,6 +76,10 @@ mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bb
          Memory in \c meshGrp must be compatible with the
          specified policy.
 
+  All data that grows with mesh size will be allocated by the
+  default allocator id.  All other data are allocated with
+  =axom::execution_space<axom::SEQ_EXEC>::allocatorID()=.
+
   \return The meshGrp pointer
 */
 axom::sidre::Group* make_structured_blueprint_box_mesh_3d(
@@ -86,6 +90,13 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_3d(
   const std::string& coordsetName = "coords",
   axom::runtime_policy::Policy runtimePolicy = axom::runtime_policy::Policy::seq);
 
+/*!
+  \brief Make an unstructured blueprint box mesh.
+
+  All data that grows with mesh size will be allocated by the
+  default allocator id.  All other data are allocated with
+  =axom::execution_space<axom::SEQ_EXEC>::allocatorID()=.
+*/
 axom::sidre::Group* make_unstructured_blueprint_box_mesh_3d(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 3>& bbox,
@@ -106,6 +117,10 @@ axom::sidre::Group* make_unstructured_blueprint_box_mesh_3d(
          Memory in \c meshGrp must be compatible with the
          specified policy.
 
+  All data that grows with mesh size will be allocated by the
+  default allocator id.  All other data are allocated with
+  =axom::execution_space<axom::SEQ_EXEC>::allocatorID()=.
+
   \return The meshGrp pointer
 */
 axom::sidre::Group* make_structured_blueprint_box_mesh_2d(
@@ -116,6 +131,11 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_2d(
   const std::string& coordsetName = "coords",
   axom::runtime_policy::Policy runtimePolicy = axom::runtime_policy::Policy::seq);
 
+/*!
+  All data that grows with mesh size will be allocated by the
+  default allocator id.  All other data are allocated with
+  =axom::execution_space<axom::SEQ_EXEC>::allocatorID()=.
+*/
 axom::sidre::Group* make_unstructured_blueprint_box_mesh_2d(
   axom::sidre::Group* meshGrp,
   const primal::BoundingBox<double, 2>& bbox,
