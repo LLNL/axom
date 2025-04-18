@@ -24,6 +24,7 @@
 
 #include <utility>
 #include <string>
+#include <vector>
 
 namespace axom
 {
@@ -137,23 +138,20 @@ struct cpp2conduit<conduit::float64>
 template <typename T>
 inline axom::ArrayView<T> make_array_view(conduit::Node &n)
 {
-  SLIC_ASSERT_MSG(
-    cpp2conduit<T>::id == n.dtype().id(),
-    axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.",
-                      cpp2conduit<T>::name,
-                      n.dtype().name()));
-  return axom::ArrayView<T>(static_cast<T *>(n.data_ptr()),
-                            n.dtype().number_of_elements());
+  SLIC_ASSERT_MSG(cpp2conduit<T>::id == n.dtype().id(),
+                  axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.",
+                                    cpp2conduit<T>::name,
+                                    n.dtype().name()));
+  return axom::ArrayView<T>(static_cast<T *>(n.data_ptr()), n.dtype().number_of_elements());
 }
 
 template <typename T>
 inline axom::ArrayView<T> make_array_view(const conduit::Node &n)
 {
-  SLIC_ASSERT_MSG(
-    cpp2conduit<T>::id == n.dtype().id(),
-    axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.",
-                      cpp2conduit<T>::name,
-                      n.dtype().name()));
+  SLIC_ASSERT_MSG(cpp2conduit<T>::id == n.dtype().id(),
+                  axom::fmt::format("Cannot create ArrayView<{}> for Conduit {} data.",
+                                    cpp2conduit<T>::name,
+                                    n.dtype().name()));
   return axom::ArrayView<T>(static_cast<T *>(const_cast<void *>(n.data_ptr())),
                             n.dtype().number_of_elements());
 }
@@ -182,8 +180,7 @@ public:
     static conduit::index_t conduitAllocatorID = NoAllocator;
     if(conduitAllocatorID == NoAllocator)
     {
-      conduitAllocatorID =
-        conduit::utils::register_allocator(internal_allocate, internal_free);
+      conduitAllocatorID = conduit::utils::register_allocator(internal_allocate, internal_free);
     }
     return conduitAllocatorID;
   }
@@ -200,8 +197,7 @@ private:
   static void *internal_allocate(size_t items, size_t item_size)
   {
     const auto axomAllocatorID = axom::execution_space<ExecSpace>::allocatorID();
-    void *ptr = static_cast<void *>(
-      axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
+    void *ptr = static_cast<void *>(axom::allocate<std::uint8_t>(items * item_size, axomAllocatorID));
     //std::cout << axom::execution_space<ExecSpace>::name()
     //  << ": Allocated for Conduit via axom: items=" << items
     //  << ", item_size=" << item_size << ", ptr=" << ptr << std::endl;
@@ -249,8 +245,7 @@ void copy(conduit::Node &dest, const conduit::Node &src)
       // Allocate the node's memory in the right place.
       dest.reset();
       dest.set_allocator(c2a.getConduitAllocatorID());
-      dest.set(
-        conduit::DataType(src.dtype().id(), src.dtype().number_of_elements()));
+      dest.set(conduit::DataType(src.dtype().id(), src.dtype().number_of_elements()));
 
       // Copy the data to the destination node. Axom uses Umpire to manage that.
       if(src.is_compact())
@@ -283,10 +278,7 @@ void copy(conduit::Node &dest, const conduit::Node &src)
  * \param moveToHost Sometimes data are on device and need to be moved to host first.
  */
 template <typename ArrayType>
-bool fillFromNode(const conduit::Node &n,
-                  const std::string &key,
-                  ArrayType &arr,
-                  bool moveToHost = false)
+bool fillFromNode(const conduit::Node &n, const std::string &key, ArrayType &arr, bool moveToHost = false)
 {
   bool found = false;
   if((found = n.has_path(key)) == true)
@@ -317,6 +309,16 @@ bool fillFromNode(const conduit::Node &n,
 //------------------------------------------------------------------------------
 
 /*!
+ * \brief Return the names of the axes for a coordset.
+ *
+ * \param n_input A Conduit node containing a coordset.
+ *
+ * \return A vector containing the names of the coordset's axes.
+ */
+std::vector<std::string> coordsetAxes(const conduit::Node &n_input);
+
+//------------------------------------------------------------------------------
+/*!
  * \brief Returns the input index (no changes).
  */
 struct DirectIndexing
@@ -327,10 +329,7 @@ struct DirectIndexing
    * \return The input index.
    */
   AXOM_HOST_DEVICE
-  inline axom::IndexType operator[](axom::IndexType index) const
-  {
-    return index;
-  }
+  inline axom::IndexType operator[](axom::IndexType index) const { return index; }
 };
 
 //------------------------------------------------------------------------------
@@ -400,11 +399,9 @@ struct SSVertexFieldIndexing
     // Make the global logical into a local logical in the topo.
     const auto topoLocalLogical = m_topoIndexing.GlobalToLocal(topoGlobalLogical);
     // Make the global logical index in the field.
-    const auto fieldGlobalLogical =
-      m_fieldIndexing.LocalToGlobal(topoLocalLogical);
+    const auto fieldGlobalLogical = m_fieldIndexing.LocalToGlobal(topoLocalLogical);
     // Make the global index in the field.
-    const auto fieldGlobalIndex =
-      m_fieldIndexing.GlobalToGlobal(fieldGlobalLogical);
+    const auto fieldGlobalIndex = m_fieldIndexing.GlobalToGlobal(fieldGlobalLogical);
     return fieldGlobalIndex;
   }
 
@@ -412,6 +409,7 @@ struct SSVertexFieldIndexing
   Indexing m_fieldIndexing {};
 };
 
+//------------------------------------------------------------------------------
 /*!
  * \brief Get the min/max values for the data in a Conduit node or ArrayView.
  *
@@ -433,9 +431,7 @@ struct MinMax
     SLIC_ASSERT(n.dtype().number_of_elements() > 0);
     std::pair<ReturnType, ReturnType> retval;
 
-    axom::mir::views::Node_to_ArrayView(n, [&](auto nview) {
-      retval = execute(nview);
-    });
+    axom::mir::views::Node_to_ArrayView(n, [&](auto nview) { retval = execute(nview); });
     return retval;
   }
 
@@ -449,8 +445,7 @@ struct MinMax
   template <typename T>
   static std::pair<ReturnType, ReturnType> execute(const axom::ArrayView<T> nview)
   {
-    using reduce_policy =
-      typename axom::execution_space<ExecSpace>::reduce_policy;
+    using reduce_policy = typename axom::execution_space<ExecSpace>::reduce_policy;
 
     RAJA::ReduceMin<reduce_policy, T> vmin(axom::numeric_limits<T>::max());
     RAJA::ReduceMax<reduce_policy, T> vmax(axom::numeric_limits<T>::min());
@@ -462,12 +457,46 @@ struct MinMax
         vmax.max(nview[index]);
       });
 
-    return std::pair<ReturnType, ReturnType> {
-      static_cast<ReturnType>(vmin.get()),
-      static_cast<ReturnType>(vmax.get())};
+    return std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()),
+                                              static_cast<ReturnType>(vmax.get())};
   }
 };
 
+//------------------------------------------------------------------------------
+/*!
+ * \brief Base template for computing a shape's area or volume.
+ */
+template <int NDIMS>
+struct ComputeShapeAmount
+{ };
+
+/*!
+ * \brief 2D specialization for shapes to compute area.
+ */
+template <>
+struct ComputeShapeAmount<2>
+{
+  template <typename ShapeType>
+  static inline AXOM_HOST_DEVICE double execute(const ShapeType &shape)
+  {
+    return shape.area();
+  }
+};
+
+/*!
+ * \brief 3D specialization for shapes to compute volume.
+ */
+template <>
+struct ComputeShapeAmount<3>
+{
+  template <typename ShapeType>
+  static inline AXOM_HOST_DEVICE double execute(const ShapeType &shape)
+  {
+    return shape.volume();
+  }
+};
+
+//------------------------------------------------------------------------------
 /*!
  * \brief Save a Blueprint mesh to a legacy ASCII VTK file.
  *

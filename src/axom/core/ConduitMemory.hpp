@@ -139,16 +139,7 @@ private:
       we can use a single allocator, eliminating the need for these
       if-else blocks.
     */
-    if(axomAllocId == DYNAMIC_ALLOCATOR_ID)
-    {
-      m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
-        void* ptr =
-          axom::allocate<char>(itemCount * itemByteSize, DYNAMIC_ALLOCATOR_ID);
-        return ptr;
-      };
-      m_conduitId = register_allocator(m_allocCallback, m_deallocCallback);
-    }
-    else if(axomAllocId == MALLOC_ALLOCATOR_ID)
+    if(axomAllocId == MALLOC_ALLOCATOR_ID)
     {
       m_allocCallback = [](size_t itemCount, size_t itemByteSize) {
         void* ptr =

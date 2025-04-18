@@ -29,14 +29,13 @@ mfem::Mesh* make_cartesian_mfem_mesh_2D(const primal::BoundingBox<double, 2>& bb
   constexpr int DIM = 2;
   const auto range = bbox.range();
 
-  auto* mesh =
-    new mfem::Mesh(mfem::Mesh::MakeCartesian2D(res[0],
-                                               res[1],
-                                               mfem::Element::QUADRILATERAL,
-                                               true,
-                                               range[0],
-                                               range[1],
-                                               reorder_space_filling));
+  auto* mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian2D(res[0],
+                                                          res[1],
+                                                          mfem::Element::QUADRILATERAL,
+                                                          true,
+                                                          range[0],
+                                                          range[1],
+                                                          reorder_space_filling));
 
   // Offset the mesh to lie w/in the bounding box
   const int NV = mesh->GetNV();
@@ -63,15 +62,14 @@ mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bb
   constexpr int DIM = 3;
   const auto range = bbox.range();
 
-  auto* mesh =
-    new mfem::Mesh(mfem::Mesh::MakeCartesian3D(res[0],
-                                               res[1],
-                                               res[2],
-                                               mfem::Element::HEXAHEDRON,
-                                               range[0],
-                                               range[1],
-                                               range[2],
-                                               reorder_space_filling));
+  auto* mesh = new mfem::Mesh(mfem::Mesh::MakeCartesian3D(res[0],
+                                                          res[1],
+                                                          res[2],
+                                                          mfem::Element::HEXAHEDRON,
+                                                          range[0],
+                                                          range[1],
+                                                          range[2],
+                                                          reorder_space_filling));
 
   // Offset the mesh to lie w/in the bounding box
   const int NV = mesh->GetNV();
@@ -94,28 +92,24 @@ mfem::Mesh* make_cartesian_mfem_mesh_3D(const primal::BoundingBox<double, 3>& bb
 
 #if defined(AXOM_USE_SIDRE)
 
-axom::sidre::Group* make_structured_blueprint_box_mesh_3d(
-  axom::sidre::Group* meshGrp,
-  const primal::BoundingBox<double, 3>& bbox,
-  const NumericArray<int, 3>& res,
-  const std::string& topologyName,
-  const std::string& coordsetName,
-  axom::runtime_policy::Policy runtimePolicy)
+axom::sidre::Group* make_structured_blueprint_box_mesh_3d(axom::sidre::Group* meshGrp,
+                                                          const primal::BoundingBox<double, 3>& bbox,
+                                                          const NumericArray<int, 3>& res,
+                                                          const std::string& topologyName,
+                                                          const std::string& coordsetName,
+                                                          axom::runtime_policy::Policy runtimePolicy)
 {
   const int hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   auto* topoGrp = meshGrp->createGroup("topologies")->createGroup(topologyName);
   SLIC_ERROR_IF(topoGrp == nullptr,
-                "Cannot allocate topology '" + topologyName +
-                  "' in blueprint mesh '" + meshGrp->getName() +
-                  "'.  It already exists.");
+                "Cannot allocate topology '" + topologyName + "' in blueprint mesh '" +
+                  meshGrp->getName() + "'.  It already exists.");
 
-  auto* coordsetGrp =
-    meshGrp->createGroup("coordsets")->createGroup(coordsetName);
+  auto* coordsetGrp = meshGrp->createGroup("coordsets")->createGroup(coordsetName);
   SLIC_ERROR_IF(coordsetGrp == nullptr,
-                "Cannot allocate coordset '" + coordsetName +
-                  "' in blueprint mesh '" + meshGrp->getName() +
-                  "'.  It already exists.");
+                "Cannot allocate coordset '" + coordsetName + "' in blueprint mesh '" +
+                  meshGrp->getName() + "'.  It already exists.");
 
   topoGrp->createView("type")->setString("structured", hostAllocId);
   topoGrp->createView("coordset")->setString(coordsetName, hostAllocId);
@@ -128,9 +122,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_3d(
   auto nj = res[1];
   auto nk = res[2];
 
-  const axom::StackArray<axom::IndexType, DIM> vertsShape {res[0] + 1,
-                                                           res[1] + 1,
-                                                           res[2] + 1};
+  const axom::StackArray<axom::IndexType, DIM> vertsShape {res[0] + 1, res[1] + 1, res[2] + 1};
   const auto numVerts = vertsShape[0] * vertsShape[1] * vertsShape[2];
 
   dimsGrp->createViewScalar("i", ni);
@@ -139,38 +131,19 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_3d(
 
   coordsetGrp->createView("type")->setString("explicit", hostAllocId);
   auto* valuesGrp = coordsetGrp->createGroup("values");
-  auto* xVu =
-    valuesGrp->createViewAndAllocate("x",
-                                     axom::sidre::DataTypeId::FLOAT64_ID,
-                                     numVerts);
-  auto* yVu =
-    valuesGrp->createViewAndAllocate("y",
-                                     axom::sidre::DataTypeId::FLOAT64_ID,
-                                     numVerts);
-  auto* zVu =
-    valuesGrp->createViewAndAllocate("z",
-                                     axom::sidre::DataTypeId::FLOAT64_ID,
-                                     numVerts);
+  auto* xVu = valuesGrp->createViewAndAllocate("x", axom::sidre::DataTypeId::FLOAT64_ID, numVerts);
+  auto* yVu = valuesGrp->createViewAndAllocate("y", axom::sidre::DataTypeId::FLOAT64_ID, numVerts);
+  auto* zVu = valuesGrp->createViewAndAllocate("z", axom::sidre::DataTypeId::FLOAT64_ID, numVerts);
   #ifdef AXOM_USE_UMPIRE
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) ==
-              meshGrp->getDefaultAllocatorID());
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) ==
-              meshGrp->getDefaultAllocatorID());
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(zVu->getVoidPtr()) ==
-              meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(zVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
   #endif
 
-  const axom::MDMapping<DIM> vertMapping(vertsShape,
-                                         axom::ArrayStrideOrder::COLUMN);
-  axom::ArrayView<double, DIM> xView(xVu->getData(),
-                                     vertsShape,
-                                     vertMapping.strides());
-  axom::ArrayView<double, DIM> yView(yVu->getData(),
-                                     vertsShape,
-                                     vertMapping.strides());
-  axom::ArrayView<double, DIM> zView(zVu->getData(),
-                                     vertsShape,
-                                     vertMapping.strides());
+  const axom::MDMapping<DIM> vertMapping(vertsShape, axom::ArrayStrideOrder::COLUMN);
+  axom::ArrayView<double, DIM> xView(xVu->getData(), vertsShape, vertMapping.strides());
+  axom::ArrayView<double, DIM> yView(yVu->getData(), vertsShape, vertMapping.strides());
+  axom::ArrayView<double, DIM> zView(zVu->getData(), vertsShape, vertMapping.strides());
 
   fill_cartesian_coords_3d(runtimePolicy, bbox, xView, yView, zView);
 
@@ -185,28 +158,24 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_3d(
   return meshGrp;
 }
 
-axom::sidre::Group* make_structured_blueprint_box_mesh_2d(
-  axom::sidre::Group* meshGrp,
-  const primal::BoundingBox<double, 2>& bbox,
-  const NumericArray<int, 2>& res,
-  const std::string& topologyName,
-  const std::string& coordsetName,
-  axom::runtime_policy::Policy runtimePolicy)
+axom::sidre::Group* make_structured_blueprint_box_mesh_2d(axom::sidre::Group* meshGrp,
+                                                          const primal::BoundingBox<double, 2>& bbox,
+                                                          const NumericArray<int, 2>& res,
+                                                          const std::string& topologyName,
+                                                          const std::string& coordsetName,
+                                                          axom::runtime_policy::Policy runtimePolicy)
 {
   const int hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   auto* topoGrp = meshGrp->createGroup("topologies")->createGroup(topologyName);
   SLIC_ERROR_IF(topoGrp == nullptr,
-                "Cannot allocate topology '" + topologyName +
-                  "' in blueprint mesh '" + meshGrp->getName() +
-                  "'.  It already exists.");
+                "Cannot allocate topology '" + topologyName + "' in blueprint mesh '" +
+                  meshGrp->getName() + "'.  It already exists.");
 
-  auto* coordsetGrp =
-    meshGrp->createGroup("coordsets")->createGroup(coordsetName);
+  auto* coordsetGrp = meshGrp->createGroup("coordsets")->createGroup(coordsetName);
   SLIC_ERROR_IF(coordsetGrp == nullptr,
-                "Cannot allocate coordset '" + coordsetName +
-                  "' in blueprint mesh '" + meshGrp->getName() +
-                  "'.  It already exists.");
+                "Cannot allocate coordset '" + coordsetName + "' in blueprint mesh '" +
+                  meshGrp->getName() + "'.  It already exists.");
 
   topoGrp->createView("type")->setString("structured", hostAllocId);
   topoGrp->createView("coordset")->setString(coordsetName, hostAllocId);
@@ -218,8 +187,7 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_2d(
   auto ni = res[0];
   auto nj = res[1];
 
-  const axom::StackArray<axom::IndexType, DIM> vertsShape {res[0] + 1,
-                                                           res[1] + 1};
+  const axom::StackArray<axom::IndexType, DIM> vertsShape {res[0] + 1, res[1] + 1};
   const auto numVerts = vertsShape[0] * vertsShape[1];
 
   dimsGrp->createViewScalar("i", ni);
@@ -227,29 +195,16 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_2d(
 
   coordsetGrp->createView("type")->setString("explicit", hostAllocId);
   auto* valuesGrp = coordsetGrp->createGroup("values");
-  auto* xVu =
-    valuesGrp->createViewAndAllocate("x",
-                                     axom::sidre::DataTypeId::FLOAT64_ID,
-                                     numVerts);
-  auto* yVu =
-    valuesGrp->createViewAndAllocate("y",
-                                     axom::sidre::DataTypeId::FLOAT64_ID,
-                                     numVerts);
+  auto* xVu = valuesGrp->createViewAndAllocate("x", axom::sidre::DataTypeId::FLOAT64_ID, numVerts);
+  auto* yVu = valuesGrp->createViewAndAllocate("y", axom::sidre::DataTypeId::FLOAT64_ID, numVerts);
   #ifdef AXOM_USE_UMPIRE
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) ==
-              meshGrp->getDefaultAllocatorID());
-  SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) ==
-              meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(xVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
+  SLIC_ASSERT(axom::getAllocatorIDFromPointer(yVu->getVoidPtr()) == meshGrp->getDefaultAllocatorID());
   #endif
 
-  const axom::MDMapping<DIM> vertMapping(vertsShape,
-                                         axom::ArrayStrideOrder::COLUMN);
-  axom::ArrayView<double, DIM> xView(xVu->getData(),
-                                     vertsShape,
-                                     vertMapping.strides());
-  axom::ArrayView<double, DIM> yView(yVu->getData(),
-                                     vertsShape,
-                                     vertMapping.strides());
+  const axom::MDMapping<DIM> vertMapping(vertsShape, axom::ArrayStrideOrder::COLUMN);
+  axom::ArrayView<double, DIM> xView(xVu->getData(), vertsShape, vertMapping.strides());
+  axom::ArrayView<double, DIM> yView(yVu->getData(), vertsShape, vertMapping.strides());
 
   fill_cartesian_coords_2d(runtimePolicy, bbox, xView, yView);
 
@@ -264,122 +219,93 @@ axom::sidre::Group* make_structured_blueprint_box_mesh_2d(
   return meshGrp;
 }
 
-axom::sidre::Group* make_unstructured_blueprint_box_mesh_3d(
-  axom::sidre::Group* meshGrp,
-  const primal::BoundingBox<double, 3>& bbox,
-  const NumericArray<int, 3>& res,
-  const std::string& topologyName,
-  const std::string& coordsetName,
-  axom::runtime_policy::Policy runtimePolicy)
+axom::sidre::Group* make_unstructured_blueprint_box_mesh_3d(axom::sidre::Group* meshGrp,
+                                                            const primal::BoundingBox<double, 3>& bbox,
+                                                            const NumericArray<int, 3>& res,
+                                                            const std::string& topologyName,
+                                                            const std::string& coordsetName,
+                                                            axom::runtime_policy::Policy runtimePolicy)
 {
-  make_structured_blueprint_box_mesh_3d(meshGrp,
-                                        bbox,
-                                        res,
-                                        topologyName,
-                                        coordsetName,
-                                        runtimePolicy);
-  convert_blueprint_structured_explicit_to_unstructured_3d(meshGrp,
-                                                           topologyName,
-                                                           runtimePolicy);
+  make_structured_blueprint_box_mesh_3d(meshGrp, bbox, res, topologyName, coordsetName, runtimePolicy);
+  convert_blueprint_structured_explicit_to_unstructured_3d(meshGrp, topologyName, runtimePolicy);
   return meshGrp;
 }
 
-axom::sidre::Group* make_unstructured_blueprint_box_mesh_2d(
-  axom::sidre::Group* meshGrp,
-  const primal::BoundingBox<double, 2>& bbox,
-  const NumericArray<int, 2>& res,
-  const std::string& topologyName,
-  const std::string& coordsetName,
-  axom::runtime_policy::Policy runtimePolicy)
+axom::sidre::Group* make_unstructured_blueprint_box_mesh_2d(axom::sidre::Group* meshGrp,
+                                                            const primal::BoundingBox<double, 2>& bbox,
+                                                            const NumericArray<int, 2>& res,
+                                                            const std::string& topologyName,
+                                                            const std::string& coordsetName,
+                                                            axom::runtime_policy::Policy runtimePolicy)
 {
-  make_structured_blueprint_box_mesh_2d(meshGrp,
-                                        bbox,
-                                        res,
-                                        topologyName,
-                                        coordsetName,
-                                        runtimePolicy);
-  convert_blueprint_structured_explicit_to_unstructured_2d(meshGrp,
-                                                           topologyName,
-                                                           runtimePolicy);
+  make_structured_blueprint_box_mesh_2d(meshGrp, bbox, res, topologyName, coordsetName, runtimePolicy);
+  convert_blueprint_structured_explicit_to_unstructured_2d(meshGrp, topologyName, runtimePolicy);
   return meshGrp;
 }
 
-void convert_blueprint_structured_explicit_to_unstructured_3d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName,
-  axom::runtime_policy::Policy runtimePolicy)
+void convert_blueprint_structured_explicit_to_unstructured_3d(axom::sidre::Group* meshGrp,
+                                                              const std::string& topoName,
+                                                              axom::runtime_policy::Policy runtimePolicy)
 {
   if(runtimePolicy == axom::runtime_policy::Policy::seq)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_3d<axom::SEQ_EXEC>(
-      meshGrp,
-      topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_3d<axom::SEQ_EXEC>(meshGrp, topoName);
   }
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
   if(runtimePolicy == axom::runtime_policy::Policy::omp)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_3d<axom::OMP_EXEC>(
-      meshGrp,
-      topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_3d<axom::OMP_EXEC>(meshGrp, topoName);
   }
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
   if(runtimePolicy == axom::runtime_policy::Policy::cuda)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_3d<
-      axom::CUDA_EXEC<256>>(meshGrp, topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_3d<axom::CUDA_EXEC<256>>(meshGrp,
+                                                                                        topoName);
   }
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
   if(runtimePolicy == axom::runtime_policy::Policy::hip)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_3d<axom::HIP_EXEC<256>>(
-      meshGrp,
-      topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_3d<axom::HIP_EXEC<256>>(meshGrp,
+                                                                                       topoName);
   }
   #endif
 }
 
-void convert_blueprint_structured_explicit_to_unstructured_2d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName,
-  axom::runtime_policy::Policy runtimePolicy)
+void convert_blueprint_structured_explicit_to_unstructured_2d(axom::sidre::Group* meshGrp,
+                                                              const std::string& topoName,
+                                                              axom::runtime_policy::Policy runtimePolicy)
 {
   if(runtimePolicy == axom::runtime_policy::Policy::seq)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_2d<axom::SEQ_EXEC>(
-      meshGrp,
-      topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_2d<axom::SEQ_EXEC>(meshGrp, topoName);
   }
   #if defined(AXOM_RUNTIME_POLICY_USE_OPENMP)
   if(runtimePolicy == axom::runtime_policy::Policy::omp)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_2d<axom::OMP_EXEC>(
-      meshGrp,
-      topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_2d<axom::OMP_EXEC>(meshGrp, topoName);
   }
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
   if(runtimePolicy == axom::runtime_policy::Policy::cuda)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_2d<
-      axom::CUDA_EXEC<256>>(meshGrp, topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_2d<axom::CUDA_EXEC<256>>(meshGrp,
+                                                                                        topoName);
   }
   #endif
   #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
   if(runtimePolicy == axom::runtime_policy::Policy::hip)
   {
-    convert_blueprint_structured_explicit_to_unstructured_impl_2d<axom::HIP_EXEC<256>>(
-      meshGrp,
-      topoName);
+    convert_blueprint_structured_explicit_to_unstructured_impl_2d<axom::HIP_EXEC<256>>(meshGrp,
+                                                                                       topoName);
   }
   #endif
 }
 
 template <typename ExecSpace>
-void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName)
+void convert_blueprint_structured_explicit_to_unstructured_impl_3d(axom::sidre::Group* meshGrp,
+                                                                   const std::string& topoName)
 {
   AXOM_ANNOTATE_SCOPE("convert_to_unstructured");
   // Note: MSVC required `static` to pass DIM to the axom::for_all w/ C++14
@@ -391,13 +317,10 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
   const std::string& coordsetName =
     meshGrp->getView("topologies/" + topoName + "/coordset")->getString();
 
-  sidre::Group* coordsetGrp =
-    meshGrp->getGroup("coordsets")->getGroup(coordsetName);
-  SLIC_ASSERT(std::string(coordsetGrp->getView("type")->getString()) ==
-              "explicit");
+  sidre::Group* coordsetGrp = meshGrp->getGroup("coordsets")->getGroup(coordsetName);
+  SLIC_ASSERT(std::string(coordsetGrp->getView("type")->getString()) == "explicit");
 
-  axom::sidre::Group* topoGrp =
-    meshGrp->getGroup("topologies")->getGroup(topoName);
+  axom::sidre::Group* topoGrp = meshGrp->getGroup("topologies")->getGroup(topoName);
   axom::sidre::View* topoTypeView = topoGrp->getView("type");
   SLIC_ASSERT(std::string(topoTypeView->getString()) == "structured");
   topoTypeView->setString("unstructured", hostAllocId);
@@ -414,18 +337,16 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
     axom::IndexType(topoDimsGrp->getView("i")->getNode().to_value()),
     axom::IndexType(topoDimsGrp->getView("j")->getNode().to_value()),
     axom::IndexType(topoDimsGrp->getView("k")->getNode().to_value())};
-  const axom::StackArray<axom::IndexType, DIM> vShape {cShape[0] + 1,
-                                                       cShape[1] + 1,
-                                                       cShape[2] + 1};
+  const axom::StackArray<axom::IndexType, DIM> vShape {cShape[0] + 1, cShape[1] + 1, cShape[2] + 1};
 
   const axom::IndexType cCount = cShape[0] * cShape[1] * cShape[2];
 
   const axom::StackArray<axom::IndexType, 2> connShape {cCount, 8};
-  axom::sidre::View* connView = topoGrp->createViewWithShapeAndAllocate(
-    "elements/connectivity",
-    axom::sidre::detail::SidreTT<axom::IndexType>::id,
-    2,
-    connShape.begin());
+  axom::sidre::View* connView =
+    topoGrp->createViewWithShapeAndAllocate("elements/connectivity",
+                                            axom::sidre::detail::SidreTT<axom::IndexType>::id,
+                                            2,
+                                            connShape.begin());
   axom::ArrayView<axom::IndexType, 2> connArrayView(
     static_cast<axom::IndexType*>(connView->getVoidPtr()),
     connShape);
@@ -434,19 +355,11 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
   axom::MDMapping<DIM> vIdMapping(vShape, axom::ArrayStrideOrder::COLUMN);
 
   const axom::StackArray<const axom::StackArray<axom::IndexType, DIM>, 8> cornerOffsets {
-    {{0, 0, 0},
-     {1, 0, 0},
-     {1, 1, 0},
-     {0, 1, 0},
-     {0, 0, 1},
-     {1, 0, 1},
-     {1, 1, 1},
-     {0, 1, 1}}};
+    {{0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}, {0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1}}};
   axom::for_all<ExecSpace>(
     cCount,
     AXOM_LAMBDA(axom::IndexType iCell) {
-      axom::StackArray<axom::IndexType, DIM> cIdx =
-        cIdMapping.toMultiIndex(iCell);
+      axom::StackArray<axom::IndexType, DIM> cIdx = cIdMapping.toMultiIndex(iCell);
       for(int n = 0; n < 8; ++n)
       {
         const auto& cornerOffset = cornerOffsets[n];
@@ -494,8 +407,7 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
     if(curDim == 1)
     {
       SLIC_ASSERT(curShape[0] % NUM_VERTS_PER_HEX == 0);
-      axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX,
-                                      NUM_VERTS_PER_HEX};
+      axom::IndexType connShape[2] = {curShape[0] / NUM_VERTS_PER_HEX, NUM_VERTS_PER_HEX};
       connView->reshapeArray(2, connShape);
     }
 
@@ -519,9 +431,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_3d(
 }
 
 template <typename ExecSpace>
-void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
-  axom::sidre::Group* meshGrp,
-  const std::string& topoName)
+void convert_blueprint_structured_explicit_to_unstructured_impl_2d(axom::sidre::Group* meshGrp,
+                                                                   const std::string& topoName)
 {
   AXOM_ANNOTATE_SCOPE("convert_to_unstructured");
   static constexpr int DIM = 2;
@@ -532,13 +443,10 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
   const std::string& coordsetName =
     meshGrp->getView("topologies/" + topoName + "/coordset")->getString();
 
-  sidre::Group* coordsetGrp =
-    meshGrp->getGroup("coordsets")->getGroup(coordsetName);
-  SLIC_ASSERT(std::string(coordsetGrp->getView("type")->getString()) ==
-              "explicit");
+  sidre::Group* coordsetGrp = meshGrp->getGroup("coordsets")->getGroup(coordsetName);
+  SLIC_ASSERT(std::string(coordsetGrp->getView("type")->getString()) == "explicit");
 
-  axom::sidre::Group* topoGrp =
-    meshGrp->getGroup("topologies")->getGroup(topoName);
+  axom::sidre::Group* topoGrp = meshGrp->getGroup("topologies")->getGroup(topoName);
   axom::sidre::View* topoTypeView = topoGrp->getView("type");
   SLIC_ASSERT(std::string(topoTypeView->getString()) == "structured");
   topoTypeView->setString("unstructured", hostAllocId);
@@ -554,19 +462,17 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
   const axom::StackArray<axom::IndexType, DIM> cShape {
     axom::IndexType(topoDimsGrp->getView("i")->getNode().to_value()),
     axom::IndexType(topoDimsGrp->getView("j")->getNode().to_value())};
-  const axom::StackArray<axom::IndexType, DIM> vShape {cShape[0] + 1,
-                                                       cShape[1] + 1};
+  const axom::StackArray<axom::IndexType, DIM> vShape {cShape[0] + 1, cShape[1] + 1};
 
   const axom::IndexType cCount = cShape[0] * cShape[1];
 
   // 4 vertices per quad cell
-  const axom::StackArray<axom::IndexType, 2> connShape {cCount,
-                                                        NUM_VERTS_PER_QUAD};
-  axom::sidre::View* connView = topoGrp->createViewWithShapeAndAllocate(
-    "elements/connectivity",
-    axom::sidre::detail::SidreTT<axom::IndexType>::id,
-    2,
-    connShape.begin());
+  const axom::StackArray<axom::IndexType, 2> connShape {cCount, NUM_VERTS_PER_QUAD};
+  axom::sidre::View* connView =
+    topoGrp->createViewWithShapeAndAllocate("elements/connectivity",
+                                            axom::sidre::detail::SidreTT<axom::IndexType>::id,
+                                            2,
+                                            connShape.begin());
   axom::ArrayView<axom::IndexType, 2> connArrayView(
     static_cast<axom::IndexType*>(connView->getVoidPtr()),
     connShape);
@@ -574,13 +480,12 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
   axom::MDMapping<DIM> cIdMapping(cShape, axom::ArrayStrideOrder::COLUMN);
   axom::MDMapping<DIM> vIdMapping(vShape, axom::ArrayStrideOrder::COLUMN);
 
-  const axom::StackArray<const axom::StackArray<axom::IndexType, DIM>, NUM_VERTS_PER_QUAD>
-    cornerOffsets {{{0, 0}, {1, 0}, {1, 1}, {0, 1}}};
+  const axom::StackArray<const axom::StackArray<axom::IndexType, DIM>, NUM_VERTS_PER_QUAD> cornerOffsets {
+    {{0, 0}, {1, 0}, {1, 1}, {0, 1}}};
   axom::for_all<ExecSpace>(
     cCount,
     AXOM_LAMBDA(axom::IndexType iCell) {
-      axom::StackArray<axom::IndexType, DIM> cIdx =
-        cIdMapping.toMultiIndex(iCell);
+      axom::StackArray<axom::IndexType, DIM> cIdx = cIdMapping.toMultiIndex(iCell);
       for(int n = 0; n < NUM_VERTS_PER_QUAD; ++n)
       {
         const auto& cornerOffset = cornerOffsets[n];
@@ -642,7 +547,10 @@ bool verifyBlueprintMesh(const axom::sidre::Group* meshGrp, conduit::Node info)
   conduit::Node meshNode;
   meshGrp->createNativeLayout(meshNode);
   bool isValid = conduit::blueprint::mesh::verify(meshNode, info);
-  if(!isValid) info.print();
+  if(!isValid)
+  {
+    info.print();
+  }
   return isValid;
 }
   #endif
@@ -668,19 +576,13 @@ void fill_cartesian_coords_3d(axom::runtime_policy::Policy runtimePolicy,
 #if defined(AXOM_RUNTIME_POLICY_USE_CUDA)
   if(runtimePolicy == axom::runtime_policy::Policy::cuda)
   {
-    fill_cartesian_coords_3d_impl<axom::CUDA_EXEC<256>>(domainBox,
-                                                        xView,
-                                                        yView,
-                                                        zView);
+    fill_cartesian_coords_3d_impl<axom::CUDA_EXEC<256>>(domainBox, xView, yView, zView);
   }
 #endif
 #if defined(AXOM_RUNTIME_POLICY_USE_HIP)
   if(runtimePolicy == axom::runtime_policy::Policy::hip)
   {
-    fill_cartesian_coords_3d_impl<axom::HIP_EXEC<256>>(domainBox,
-                                                       xView,
-                                                       yView,
-                                                       zView);
+    fill_cartesian_coords_3d_impl<axom::HIP_EXEC<256>>(domainBox, xView, yView, zView);
   }
 #endif
 }
@@ -722,14 +624,13 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
 {
 #if defined(AXOM_DEBUG)
   using XS = axom::execution_space<ExecSpace>;
-  SLIC_ASSERT_MSG(XS::usesAllocId(xView.getAllocatorID()) &&
-                    XS::usesAllocId(yView.getAllocatorID()) &&
-                    XS::usesAllocId(zView.getAllocatorID()),
-                  std::string("fill_cartesian_coords_3d_impl: alloc ids ") +
-                    std::to_string(xView.getAllocatorID()) + ", " +
-                    std::to_string(yView.getAllocatorID()) + " and " +
-                    std::to_string(zView.getAllocatorID()) +
-                    " are not all compatible with execution space " + XS::name());
+  SLIC_ASSERT_MSG(
+    XS::usesAllocId(xView.getAllocatorID()) && XS::usesAllocId(yView.getAllocatorID()) &&
+      XS::usesAllocId(zView.getAllocatorID()),
+    std::string("fill_cartesian_coords_3d_impl: alloc ids ") +
+      std::to_string(xView.getAllocatorID()) + ", " + std::to_string(yView.getAllocatorID()) +
+      " and " + std::to_string(zView.getAllocatorID()) +
+      " are not all compatible with execution space " + XS::name());
 #endif
 
   const auto& shape = xView.shape();
@@ -741,9 +642,7 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
   SLIC_ASSERT(mapping == zView.mapping());
 
   // Mesh resolution
-  const axom::NumericArray<axom::IndexType, 3> res {shape[0] - 1,
-                                                    shape[1] - 1,
-                                                    shape[2] - 1};
+  const axom::NumericArray<axom::IndexType, 3> res {shape[0] - 1, shape[1] - 1, shape[2] - 1};
 
   // Mesh spacings.
   double dx = (domainBox.getMax()[0] - domainBox.getMin()[0]) / res[0];
@@ -754,8 +653,7 @@ void fill_cartesian_coords_3d_impl(const primal::BoundingBox<double, 3>& domainB
   RAJA::RangeSegment kRange(0, shape[2]);
   RAJA::RangeSegment jRange(0, shape[1]);
   RAJA::RangeSegment iRange(0, shape[0]);
-  using EXEC_POL =
-    typename axom::internal::nested_for_exec<ExecSpace>::loop3d_policy;
+  using EXEC_POL = typename axom::internal::nested_for_exec<ExecSpace>::loop3d_policy;
   auto order = mapping.getStrideOrder();
   if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
   {
@@ -802,12 +700,11 @@ void fill_cartesian_coords_2d_impl(const primal::BoundingBox<double, 2>& domainB
 {
 #if defined(AXOM_DEBUG)
   using XS = axom::execution_space<ExecSpace>;
-  SLIC_ASSERT_MSG(XS::usesAllocId(xView.getAllocatorID()) &&
-                    XS::usesAllocId(yView.getAllocatorID()),
-                  std::string("fill_cartesian_coords_2d_impl: alloc ids ") +
-                    std::to_string(xView.getAllocatorID()) + " and " +
-                    std::to_string(yView.getAllocatorID()) +
-                    " are not all compatible with execution space " + XS::name());
+  SLIC_ASSERT_MSG(
+    XS::usesAllocId(xView.getAllocatorID()) && XS::usesAllocId(yView.getAllocatorID()),
+    std::string("fill_cartesian_coords_2d_impl: alloc ids ") +
+      std::to_string(xView.getAllocatorID()) + " and " + std::to_string(yView.getAllocatorID()) +
+      " are not all compatible with execution space " + XS::name());
 #endif
 
   const auto& shape = xView.shape();
@@ -826,8 +723,7 @@ void fill_cartesian_coords_2d_impl(const primal::BoundingBox<double, 2>& domainB
 #if defined(AXOM_USE_RAJA)
   RAJA::RangeSegment jRange(0, shape[1]);
   RAJA::RangeSegment iRange(0, shape[0]);
-  using EXEC_POL =
-    typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
+  using EXEC_POL = typename axom::internal::nested_for_exec<ExecSpace>::loop2d_policy;
   auto order = mapping.getStrideOrder();
   if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
   {

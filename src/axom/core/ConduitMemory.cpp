@@ -22,7 +22,7 @@ const ConduitMemory& ConduitMemory::instanceForAxomId(int axomAllocId)
       axom::copy(dst, src, byteCount);
     };
     static auto axomMemset = [](void* ptr, int value, size_t count) {
-      if(axom::getAllocatorIDFromPointer(ptr) == axom::DYNAMIC_ALLOCATOR_ID)
+      if(axom::getAllocatorIDFromPointer(ptr) == axom::MALLOC_ALLOCATOR_ID)
       {
         std::memset(ptr, value, count);
       }

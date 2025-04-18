@@ -557,10 +557,7 @@ public:
    *
    * \return pointer to new View object or nullptr if one is not created.
    */
-  View* createViewWithShape(const std::string& path,
-                            TypeID type,
-                            int ndims,
-                            const IndexType* shape);
+  View* createViewWithShape(const std::string& path, TypeID type, int ndims, const IndexType* shape);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -625,10 +622,7 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView(const std::string& path,
-                   TypeID type,
-                   IndexType num_elems,
-                   Buffer* buff);
+  View* createView(const std::string& path, TypeID type, IndexType num_elems, Buffer* buff);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -715,10 +709,7 @@ public:
    *
    * \sa View::setExternalDataPtr()
    */
-  View* createView(const std::string& path,
-                   TypeID type,
-                   IndexType num_elems,
-                   void* external_ptr);
+  View* createView(const std::string& path, TypeID type, IndexType num_elems, void* external_ptr);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -756,9 +747,7 @@ public:
    *
    * \sa View::attachBuffer()
    */
-  View* createView(const std::string& path,
-                   const DataType& dtype,
-                   void* external_ptr);
+  View* createView(const std::string& path, const DataType& dtype, void* external_ptr);
 
   //@}
 
@@ -1134,9 +1123,7 @@ private:
    *
    * \sa getDataInfo
    */
-  void getDataInfoHelper(Node& n,
-                         std::set<IndexType>& buffer_ids,
-                         bool recursive) const;
+  void getDataInfoHelper(Node& n, std::set<IndexType>& buffer_ids, bool recursive) const;
 
 public:
   //@{
@@ -1789,8 +1776,7 @@ public:
    * \return                   true for success, false if the full conduit
    *                           tree is not succesfully imported.
    */
-  bool importConduitTree(const conduit::Node& node,
-                         bool preserve_contents = false);
+  bool importConduitTree(const conduit::Node& node, bool preserve_contents = false);
 
   /*!
    * \brief Import data from a conduit Node into a Group without copying arrays
@@ -1815,8 +1801,7 @@ public:
    * \return                   true for success, false if the full conduit
    *                           tree is not succesfully imported.
    */
-  bool importConduitTreeExternal(conduit::Node& node,
-                                 bool preserve_contents = false);
+  bool importConduitTreeExternal(conduit::Node& node, bool preserve_contents = false);
 
 private:
   DISABLE_DEFAULT_CTOR(Group);
@@ -1925,9 +1910,7 @@ private:
    * \return True if the group or any of its children have saved Views,
    * false otherwise.
    */
-  bool exportTo(conduit::Node& result,
-                const Attribute* attr,
-                bool export_buffers = true) const;
+  bool exportTo(conduit::Node& result, const Attribute* attr, bool export_buffers = true) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1963,8 +1946,7 @@ private:
    * to remain the same when a tree is restored.
    *
    */
-  void importFrom(conduit::Node& node,
-                  const std::map<IndexType, IndexType>& buffer_id_map);
+  void importFrom(conduit::Node& node, const std::map<IndexType, IndexType>& buffer_id_map);
 
   //@}
 
