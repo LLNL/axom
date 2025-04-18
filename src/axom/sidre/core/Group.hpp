@@ -1349,6 +1349,9 @@ public:
    *        directly to this group.
    * \param [in] srcGroup Source for copy
    *
+   * The difference between this method and deepCopyGroup(Group*) is that
+   * this method copies into itself instead of into a new child Group.
+   *
    * Note that all Views in the Group hierarchy are deep-copied as well.
    *
    * The deep copy of the Group creates a duplicate of the entire Group

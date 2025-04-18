@@ -527,6 +527,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
   static constexpr int DIM = 2;
   static constexpr int NUM_VERTS_PER_QUAD = 4;
 
+  const int hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+
   const std::string& coordsetName =
     meshGrp->getView("topologies/" + topoName + "/coordset")->getString();
 
@@ -539,8 +541,8 @@ void convert_blueprint_structured_explicit_to_unstructured_impl_2d(
     meshGrp->getGroup("topologies")->getGroup(topoName);
   axom::sidre::View* topoTypeView = topoGrp->getView("type");
   SLIC_ASSERT(std::string(topoTypeView->getString()) == "structured");
-  topoTypeView->setString("unstructured");
-  topoGrp->createView("elements/shape")->setString("quad");
+  topoTypeView->setString("unstructured", hostAllocId);
+  topoGrp->createView("elements/shape")->setString("quad", hostAllocId);
 
   axom::sidre::Group* topoElemGrp = topoGrp->getGroup("elements");
   axom::sidre::Group* topoDimsGrp = topoElemGrp->getGroup("dims");

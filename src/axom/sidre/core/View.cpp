@@ -303,9 +303,6 @@ View* View::reallocate(const DataType& dtype)
  *
  * Reallocate data to a different allocator.
  *
- * Data must not be external.
- * If the new allocator is the same as the current, it's a no-op.
- *
  *************************************************************************
  */
 View* View::reallocateTo(int newAllocId)
@@ -314,14 +311,6 @@ View* View::reallocateTo(int newAllocId)
   {
     return this;
   }
-
-  // TODO: Consider not making this an error.
-  // It can make the data internal or
-  // do nothing, depending on a yet-to-show use case.
-  // If making the data internal, what should be the new state?
-  // STRING, SCALAR or BUFFER?
-  // SLIC_ERROR_IF(m_state == EXTERNAL,
-  //               "View::reallocate doesn't work on external data.");
 
   if(m_state == EMPTY)
   {
@@ -366,6 +355,10 @@ View* View::reallocateTo(int newAllocId)
       // delete currentBuffer; // ? ... or ...
       // if(currentBuffer->getNumViews() == 0)
       //   getOwningGroup()->getDataStore()->destroyBuffer(currentBuffer); // ?
+    }
+    else if(m_state == EXTERNAL)
+    {
+      SLIC_ERROR("Unfinished code for reallocating EXTERNAL view data");
     }
   }
 

@@ -2607,6 +2607,7 @@ private:
                                             bool volumeDependent = false)
   {
     axom::ArrayView<double> rval;
+    const int hostAllocId = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
 
   #if defined(AXOM_USE_MFEM)
     if(m_dc != nullptr)
@@ -2675,10 +2676,10 @@ private:
                                           axom::sidre::DataTypeId::FLOAT64_ID,
                                           2,
                                           shape);
-          fieldGrp->createView("association")->setString("element");
-          fieldGrp->createView("topology")->setString(m_bpTopo);
+          fieldGrp->createView("association")->setString("element", hostAllocId);
+          fieldGrp->createView("topology")->setString(m_bpTopo, hostAllocId);
           fieldGrp->createView("volume_dependent")
-            ->setString(std::string(volumeDependent ? "true" : "false"));
+            ->setString(std::string(volumeDependent ? "true" : "false"), hostAllocId);
           valuesView->allocate();
         }
       }

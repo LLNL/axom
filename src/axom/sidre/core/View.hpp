@@ -442,6 +442,7 @@ public:
    * If the state is EMPTY or allocId is the current
    * allocator or is axom::INVALID_ALLOCATOR_ID, this is a no-op.
    * Reallocating an EXTERNAL View means allocating it internally.
+   * (This could be revisited, but it is the behavior for now.)
    * The state will change from EXTERNAL to STRING or SCALAR,
    * determined by a heuristic guess.
    *
