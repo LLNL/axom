@@ -18,6 +18,19 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- Slam: Adds C++20 concepts for sets, relations, maps, and policies.
+
+### Changed
+- Slam: Relations and bivariate sets now support distinct position types for their constituent sets.
+- Slam: The cached range iterators of `Map`, `BivariateMap` and `SubMap` now declare `bidirectional_iterator_tag`
+  rather than `random_access_iterator_tag`, since their subscript operator returns a value rather than a reference.
+- Slam: Bivariate set `ElementType` and `at()` results are now coordinate pairs containing positions
+  in the first and second endpoint sets. Relations similarly distinguish `FromPositionType`,
+  `ToPositionType`, and `FlatPositionType`. `DynamicVariableRelation` no longer derives from
+  the homogeneous legacy `Relation` interface.
+
+
 ## [Version 0.15.0] - Release date 2026-08-28
 
 ### Added
