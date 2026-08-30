@@ -323,6 +323,10 @@ public:
     return static_cast<PositionType>(m_relation->relationData().size());
   }
 
+  /// \brief Checks if there are any elements in the set
+  AXOM_SUPPRESS_HD_WARN
+  [[nodiscard]] AXOM_HOST_DEVICE bool empty() const { return size() == PositionType {}; }
+
 private:
   //range check only
   [[nodiscard]] bool isValidIndex(FirstPositionType s1, SecondPositionType s2) const

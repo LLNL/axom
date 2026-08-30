@@ -41,7 +41,7 @@ template <typename SetType1 = slam::Set<>,
           typename InterfaceType = policies::VirtualInterface,
           typename FlatPosition = detail::default_flat_position_t<typename SetType1::PositionType,
                                                                   typename SetType2::PositionType>>
-  requires SetLike<SetType1> && SetLike<SetType2> &&
+  requires UnivariateSetLike<SetType1> && UnivariateSetLike<SetType2> &&
   detail::PositionCanRepresent<FlatPosition, typename SetType1::PositionType> &&
   detail::PositionCanRepresent<FlatPosition, typename SetType2::PositionType>
 class ProductSet final
@@ -293,6 +293,9 @@ public:
     return static_cast<PositionType>(this->firstSetSize()) *
       static_cast<PositionType>(this->secondSetSize());
   }
+
+  /// \brief Checks if there are any elements in the set
+  [[nodiscard]] AXOM_HOST_DEVICE bool empty() const { return size() == PositionType {}; }
 
   PositionType size(FirstPositionType) const
   {

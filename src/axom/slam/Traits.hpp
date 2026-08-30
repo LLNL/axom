@@ -23,9 +23,19 @@ namespace axom::slam
 template <typename T>
 inline constexpr bool is_bivariate_set_like_v = BivariateSetLike<T>;
 
-/// \brief Compatibility wrapper for SetLike.
+/*!
+ * \brief Compatibility wrapper for SetLike.
+ *
+ * \note SetLike is now the base of the set hierarchy and is satisfied by
+ *  bivariate sets as well. Use \c is_univariate_set_like_v where the former
+ *  (exclusive) meaning is required.
+ */
 template <typename T>
 inline constexpr bool is_set_like_v = SetLike<T>;
+
+/// \brief Compatibility wrapper for UnivariateSetLike.
+template <typename T>
+inline constexpr bool is_univariate_set_like_v = UnivariateSetLike<T>;
 
 /// \brief Compatibility wrapper for OrderedSetLike.
 template <typename T>

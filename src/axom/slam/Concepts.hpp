@@ -172,17 +172,28 @@ concept PositiveStaticStrideForPosition =
 //------------------------------------------------------------------------------
 
 /*!
- * \brief A univariate set with position-based size and element access.
+ * \brief A set: a sized, possibly empty sequence of elements addressed by position.
  *
- * \note SetLike and BivariateSetLike are intentionally disjoint.
+ * This is the base of the set hierarchy. BivariateSetLike refines it, so generic code
+ * that only needs size and positional access can be written once against SetLike.
+ * Use UnivariateSetLike where a bivariate set must be excluded.
  */
 template <typename T>
-concept SetLike = HasSetAssociatedTypes<T> && !HasBivariateSetAssociatedTypes<T> &&
-  PositionLike<typename T::PositionType> && requires(const T& set, typename T::PositionType pos) {
+concept SetLike = HasSetAssociatedTypes<T> && PositionLike<typename T::PositionType> &&
+  requires(const T& set, typename T::PositionType pos) {
     { set.size() } -> std::same_as<typename T::PositionType>;
     { set.empty() } -> std::convertible_to<bool>;
     { set.at(pos) } -> std::convertible_to<typename T::ElementType>;
   };
+
+/*!
+ * \brief A set that is not a bivariate set.
+ *
+ * The input sets to a relation, of a product set and the domain of a univariate Map
+ * are all univariate.
+ */
+template <typename T>
+concept UnivariateSetLike = SetLike<T> && !HasBivariateSetAssociatedTypes<T>;
 
 /*!
  * \brief A SetLike type with const iteration over its elements.
@@ -199,7 +210,7 @@ concept OrderedSetLike = SetLike<T> && requires(const T& set) {
 
 template <int Stride, typename Set>
 concept PositiveStaticStrideFor =
-  SetLike<Set> && PositiveStaticStrideForPosition<Stride, typename Set::PositionType>;
+  UnivariateSetLike<Set> && PositiveStaticStrideForPosition<Stride, typename Set::PositionType>;
 
 /*!
  * \brief A set whose elements are indexed by positions from two component sets.
@@ -210,9 +221,8 @@ concept PositiveStaticStrideFor =
  * another required associated type.
  */
 template <typename T>
-concept BivariateSetLike = HasSetAssociatedTypes<T> && HasBivariateSetAssociatedTypes<T> &&
-  PositionLike<typename T::PositionType> && SetLike<typename T::FirstSetType> &&
-  SetLike<typename T::SecondSetType> &&
+concept BivariateSetLike = SetLike<T> && HasBivariateSetAssociatedTypes<T> &&
+  UnivariateSetLike<typename T::FirstSetType> && UnivariateSetLike<typename T::SecondSetType> &&
   requires(typename T::ElementType coordinate) {
     requires std::same_as<std::remove_cvref_t<decltype(coordinate.first)>,
                           typename T::FirstSetType::PositionType>;
@@ -223,8 +233,6 @@ concept BivariateSetLike = HasSetAssociatedTypes<T> && HasBivariateSetAssociated
            typename T::PositionType flatPosition,
            typename T::FirstSetType::PositionType firstPosition,
            typename T::SecondSetType::PositionType secondPosition) {
-    { set.size() } -> std::same_as<typename T::PositionType>;
-    { set.at(flatPosition) } -> std::convertible_to<typename T::ElementType>;
     { set.getFirstSet() } -> std::same_as<const typename T::FirstSetType*>;
     { set.getSecondSet() } -> std::same_as<const typename T::SecondSetType*>;
     { set.getElements(firstPosition).size() } -> PositionValueLike;
@@ -261,8 +269,8 @@ concept BivariateSetLike = HasSetAssociatedTypes<T> && HasBivariateSetAssociated
  * implementation capability, not a requirement of the relation abstraction.
  */
 template <typename T>
-concept RelationLike = HasRelationAssociatedTypes<T> && SetLike<typename T::FromSetType> &&
-  SetLike<typename T::ToSetType> &&
+concept RelationLike = HasRelationAssociatedTypes<T> &&
+  UnivariateSetLike<typename T::FromSetType> && UnivariateSetLike<typename T::ToSetType> &&
   requires(const T& relation, typename T::FromSetType::PositionType fromPosition) {
     { relation.fromSet() } -> std::same_as<const typename T::FromSetType*>;
     { relation.toSet() } -> std::same_as<const typename T::ToSetType*>;
@@ -320,8 +328,8 @@ concept CommonMapModel =
 
 /// \brief A map whose domain is a univariate SetType.
 template <typename T>
-concept UnivariateMapLike =
-  CommonMapModel<T> && HasUnivariateMapAssociatedTypes<T> && SetLike<typename T::SetType> &&
+concept UnivariateMapLike = CommonMapModel<T> && HasUnivariateMapAssociatedTypes<T> &&
+  UnivariateSetLike<typename T::SetType> &&
   std::same_as<typename T::SetPosition, typename T::SetType::PositionType> &&
   std::same_as<typename T::SetElement, typename T::SetType::ElementType> && requires(const T& map) {
     { map.set() } -> std::same_as<const typename T::SetType*>;
@@ -531,9 +539,15 @@ concept PositionLike = detail::model::PositionLike<detail::model_t<T>>;
 
 /// \brief A univariate set with position-based size and element access.
 /// \tparam T the candidate set type
-/// \note SetLike and BivariateSetLike are intentionally disjoint.
+/// \note SetLike and BivariateSetLike are disjoint.
 template <typename T>
 concept SetLike = detail::model::SetLike<detail::model_t<T>>;
+
+/// \brief A set that is not a bivariate set.
+/// \tparam T the candidate set type
+/// \note This is the one place the univariate/bivariate exclusion is stated.
+template <typename T>
+concept UnivariateSetLike = detail::model::UnivariateSetLike<detail::model_t<T>>;
 
 /// \brief A SetLike type with const iteration over its elements.
 /// \tparam T the candidate set type
@@ -684,18 +698,18 @@ concept PositionCanRepresent =
 
 /// \brief \a Value is a position value convertible to \a Set's position type.
 template <typename Set, typename Value>
-concept SetPositionConvertible = SetLike<Set> && PositionValueLike<Value> &&
+concept SetPositionConvertible = UnivariateSetLike<Set> && PositionValueLike<Value> &&
   std::convertible_to<model_t<Value>, typename model_t<Set>::PositionType>;
 
 /// \brief \a Position is exactly \a Set's position type.
 template <typename Set, typename Position>
 concept SetPositionSame =
-  SetLike<Set> && std::same_as<model_t<Position>, typename model_t<Set>::PositionType>;
+  UnivariateSetLike<Set> && std::same_as<model_t<Position>, typename model_t<Set>::PositionType>;
 
 /// \brief \a Position is \c void (meaning "unspecified") or exactly \a Set's position type.
 template <typename Set, typename Position>
-concept OptionalSetPositionSame =
-  SetLike<Set> && (std::same_as<model_t<Position>, void> || SetPositionSame<Set, Position>);
+concept OptionalSetPositionSame = UnivariateSetLike<Set> &&
+  (std::same_as<model_t<Position>, void> || SetPositionSame<Set, Position>);
 
 /// \brief \a Stride is positive and representable by \a Position.
 template <int Stride, typename Position>

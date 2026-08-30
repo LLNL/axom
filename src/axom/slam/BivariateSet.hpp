@@ -262,6 +262,10 @@ public:
   /// \brief The number of non-zero entries in the BivariateSet.
   [[nodiscard]] AXOM_HOST_DEVICE virtual PositionType size() const = 0;
 
+  /// \brief Checks if there are any elements in the set
+  AXOM_SUPPRESS_HD_WARN
+  [[nodiscard]] AXOM_HOST_DEVICE bool empty() const { return size() == PositionType {}; }
+
   /**
    * \brief Number of elements of the BivariateSet whose first index is \a pos
    *
