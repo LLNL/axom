@@ -33,6 +33,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#include <vector>
 
 namespace slam_concept_test
 {
@@ -560,14 +561,48 @@ struct NonDefaultBufferIndirection
 
   bool hasIndirection() const { return true; }
 
-  static ResultPtr getIndirection(IndirectionBufferType&, Position) { return nullptr; }
-  static ConstResultPtr getConstIndirection(const IndirectionBufferType&, Position)
+  static ResultPtr getIndirection(IndirectionBufferType&, Position = 0) { return nullptr; }
+  static ConstResultPtr getConstIndirection(const IndirectionBufferType&, Position = 0)
   {
     return nullptr;
   }
   static IndirectionBufferType create(Position size, const double&, int)
   {
     return IndirectionBufferType(size);
+  }
+};
+
+// Supplies everything the Map family consumes, but omits Indirection[Const]RefType
+struct LeanMapIndirection
+{
+  using PositionType = Position;
+  using ElementType = double;
+  using IndirectionResult = double&;
+  using ConstIndirectionResult = const double&;
+  using IndirectionBufferType = std::vector<double>;
+  using IndirectionPtrType = IndirectionBufferType*;
+  using ResultPtr = double*;
+  using ConstResultPtr = const double*;
+
+  static constexpr bool DeviceAccessible = false;
+  static constexpr bool IsMutableBuffer = true;
+
+  bool hasIndirection() const { return true; }
+
+  static ResultPtr getIndirection(IndirectionBufferType&, Position = 0) { return nullptr; }
+  static ConstResultPtr getConstIndirection(const IndirectionBufferType&, Position = 0)
+  {
+    return nullptr;
+  }
+};
+
+// Positioned access only. Map::data_ptr() needs the whole-buffer form.
+struct PositionedAccessOnlyIndirection : LeanMapIndirection
+{
+  static ResultPtr getIndirection(IndirectionBufferType&, Position) { return nullptr; }
+  static ConstResultPtr getConstIndirection(const IndirectionBufferType&, Position)
+  {
+    return nullptr;
   }
 };
 
@@ -850,6 +885,30 @@ static_assert(std::default_initializable<OwningMap>);
 static_assert(!std::default_initializable<UnaryMap>);
 static_assert(std::constructible_from<UnaryMap, const ConcreteRange*, typename UnaryMap::OrderedMap>);
 static_assert(!slam::MapIndirectionPolicyFor<WrongDataIndirection, Position, double>);
+
+// The Map indirection contract that Map family reads.
+// Indirection[Const]RefType are StaticRelation's aliases
+static_assert(slam::MapIndirectionPolicyFor<LeanMapIndirection, Position, double>);
+// ... but the whole-buffer accessor behind Map::data_ptr() is required.
+static_assert(!slam::MapIndirectionPolicyFor<PositionedAccessOnlyIndirection, Position, double>);
+static_assert(model::HasStaticBufferAccess<LeanMapIndirection, Position>);
+static_assert(!model::HasStaticBufferAccess<PositionedAccessOnlyIndirection, Position>);
+// Map's data_ptr() (private) is declared in terms of the policy's ResultPtr alias
+static_assert(std::same_as<typename ViewIndirection::ResultPtr, double*>);
+static_assert(std::same_as<typename ViewIndirection::ConstResultPtr, double*>,
+              "ArrayView indirection has shallow constness");
+
+// The atoms behind the two indirection *For concepts.
+static_assert(model::IndirectsExactly<ViewIndirection, double>);
+static_assert(!model::IndirectsExactly<ViewIndirection, const double>);
+static_assert(model::IndirectsExactly<ConstViewIndirection, const double>);
+static_assert(model::YieldsStableReferences<ViewIndirection>);
+static_assert(!model::YieldsStableReferences<PrvalueMapIndirection>);
+static_assert(model::HasResultPointerAliases<ViewIndirection>);
+static_assert(!model::HasResultPointerAliases<MismatchedConstPointerIndirection>);
+static_assert(model::HasSizedBuffer<VectorMapIndirection, Position>);
+static_assert(model::BindableIndirection<ViewIndirection>);
+static_assert(model::ValidatesSetRange<ViewIndirection, Position>);
 static_assert(!slam::IndirectionPolicy<TypedefOnlyIndirection>);
 static_assert(!slam::IndirectionPolicy<int>);
 

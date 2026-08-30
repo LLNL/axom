@@ -99,16 +99,6 @@ concept HasTypedIndirectionAssociatedTypes = requires {
 };
 
 template <typename T>
-concept HasMapIndirectionAssociatedTypes = requires {
-  typename T::IndirectionRefType;
-  typename T::IndirectionConstRefType;
-  typename T::ResultPtr;
-  typename T::ConstResultPtr;
-  T::IsMutableBuffer;
-  std::integral_constant<bool, T::IsMutableBuffer> {};
-};
-
-template <typename T>
 using policy_default_t = std::remove_cv_t<decltype(T::DEFAULT_VALUE)>;
 
 //------------------------------------------------------------------------------
@@ -464,6 +454,8 @@ concept MapStridePolicyFor = StridePolicy<T> && PositionLike<Position> &&
 // Indirection policies
 //------------------------------------------------------------------------------
 
+//---- base capability ---------------------------------------------------------
+
 /*!
  * \brief The common storage/indirection-policy capability.
  *
@@ -486,14 +478,82 @@ concept IndirectionPolicyFor =
     { constPolicy.indirection(pos) } -> std::convertible_to<typename T::ConstIndirectionResult>;
   };
 
+//---- substitutability atoms --------------------------------------------------
+
+/*!
+ * \brief The policy indirects to exactly \a Data.
+ *
+ * Compares cv but not ref: a policy over `const double` 
+ * is a different policy from one over `double`.
+ */
+template <typename T, typename Data>
+concept IndirectsExactly = std::same_as<typename T::ElementType, std::remove_reference_t<Data>> &&
+  MapValueFor<typename T::IndirectionResult, Data> &&
+  MapValueFor<typename T::ConstIndirectionResult, Data>;
+
+/// \brief Both access paths return stable lvalue references, as Map's element access requires.
+template <typename T>
+concept YieldsStableReferences = std::is_lvalue_reference_v<typename T::IndirectionResult> &&
+  std::is_lvalue_reference_v<typename T::ConstIndirectionResult>;
+
+/*!
+ * \brief The policy names the pointer types its static accessors return.
+ *
+ * Both are fixed by the corresponding result type, so this states a consistency
+ * requirement rather than a free choice. Map exposes them through `data_ptr()`.
+ */
+template <typename T>
+concept HasResultPointerAliases = requires {
+  typename T::ResultPtr;
+  typename T::ConstResultPtr;
+} &&
+  std::same_as<typename T::ResultPtr,
+               std::add_pointer_t<std::remove_reference_t<typename T::IndirectionResult>>> &&
+  std::same_as<typename T::ConstResultPtr,
+               std::add_pointer_t<std::remove_reference_t<typename T::ConstIndirectionResult>>>;
+
+/*!
+ * \brief Static, pointer-returning access to the policy's buffer.
+ *
+ * \note Both the positioned and the whole-buffer form are required:
+ *    Map's element access calls the former and `Map::data_ptr()` calls the latter.
+ */
 template <typename T, typename Position>
-concept MapBufferFor =
-  HasMapIndirectionAssociatedTypes<T> && requires(const typename T::IndirectionBufferType& buffer) {
+concept HasStaticBufferAccess = requires(typename T::IndirectionBufferType& buffer,
+                                         const typename T::IndirectionBufferType& constBuffer,
+                                         Position pos) {
+  { T::getIndirection(buffer, pos) } -> std::same_as<typename T::ResultPtr>;
+  { T::getConstIndirection(constBuffer, pos) } -> std::same_as<typename T::ConstResultPtr>;
+  { T::getIndirection(buffer) } -> std::same_as<typename T::ResultPtr>;
+  { T::getConstIndirection(constBuffer) } -> std::same_as<typename T::ConstResultPtr>;
+};
+
+/// \brief The buffer reports its extent, and can be resized when the policy owns it.
+template <typename T, typename Position>
+concept HasSizedBuffer = requires {
+  T::IsMutableBuffer;
+  std::integral_constant<bool, T::IsMutableBuffer> {};
+} &&
+  requires(const typename T::IndirectionBufferType& buffer) {
     { buffer.size() } -> std::convertible_to<Position>;
     { buffer.empty() } -> std::convertible_to<bool>;
   } && (!T::IsMutableBuffer || requires(typename T::IndirectionBufferType& buffer, Position size) {
     buffer.resize(size);
   });
+
+/// \brief Default-constructible, and bindable to an existing buffer, as OrderedSet requires.
+template <typename T>
+concept BindableIndirection =
+  std::default_initializable<T> && std::constructible_from<T, typename T::IndirectionPtrType>;
+
+/// \brief Validates a (size, offset, stride) triple against the buffer it indirects through.
+template <typename T, typename Position>
+concept ValidatesSetRange =
+  requires(const T& policy, Position size, Position offset, Position stride) {
+    { policy.isValid(size, offset, stride, false) } -> std::convertible_to<bool>;
+  };
+
+//---- substitutability into a specific owner ----------------------------------
 
 /*!
  * \brief An indirection policy usable by OrderedSet over Position and Element.
@@ -505,13 +565,7 @@ template <typename T, typename Position, typename Element>
 concept OrderedSetIndirectionPolicyFor =
   IndirectionPolicyFor<T, Position> && PositionLike<Position> &&
   HasTypedIndirectionAssociatedTypes<T> && std::same_as<typename T::PositionType, Position> &&
-  std::same_as<typename T::ElementType, std::remove_reference_t<Element>> &&
-  std::same_as<std::remove_cvref_t<typename T::IndirectionResult>, std::remove_cvref_t<Element>> &&
-  std::same_as<std::remove_cvref_t<typename T::ConstIndirectionResult>, std::remove_cvref_t<Element>> &&
-  std::default_initializable<T> && std::constructible_from<T, typename T::IndirectionPtrType> &&
-  requires(const T& policy, Position size, Position offset, Position stride) {
-    { policy.isValid(size, offset, stride, false) } -> std::convertible_to<bool>;
-  };
+  IndirectsExactly<T, Element> && BindableIndirection<T> && ValidatesSetRange<T, Position>;
 
 /*!
  * \brief An indirection policy providing Map's buffer and static access API.
@@ -523,23 +577,9 @@ concept OrderedSetIndirectionPolicyFor =
  */
 template <typename T, typename Position, typename Data>
 concept MapIndirectionPolicyFor = IndirectionPolicy<T> && PositionLike<Position> &&
-  HasTypedIndirectionAssociatedTypes<T> && HasMapIndirectionAssociatedTypes<T> &&
-  MapBufferFor<T, Position> && std::same_as<typename T::PositionType, Position> &&
-  std::same_as<typename T::ElementType, std::remove_reference_t<Data>> &&
-  std::is_lvalue_reference_v<typename T::IndirectionResult> &&
-  std::is_lvalue_reference_v<typename T::ConstIndirectionResult> &&
-  MapValueFor<typename T::IndirectionResult, Data> &&
-  MapValueFor<typename T::ConstIndirectionResult, Data> &&
-  std::same_as<typename T::ResultPtr,
-               std::add_pointer_t<std::remove_reference_t<typename T::IndirectionResult>>> &&
-  std::same_as<typename T::ConstResultPtr,
-               std::add_pointer_t<std::remove_reference_t<typename T::ConstIndirectionResult>>> &&
-  requires(typename T::IndirectionBufferType& buffer,
-           const typename T::IndirectionBufferType& constBuffer,
-           Position pos) {
-    { T::getIndirection(buffer, pos) } -> std::same_as<typename T::ResultPtr>;
-    { T::getConstIndirection(constBuffer, pos) } -> std::same_as<typename T::ConstResultPtr>;
-  };
+  HasTypedIndirectionAssociatedTypes<T> && std::same_as<typename T::PositionType, Position> &&
+  IndirectsExactly<T, Data> && YieldsStableReferences<T> && HasResultPointerAliases<T> &&
+  HasStaticBufferAccess<T, Position> && HasSizedBuffer<T, Position>;
 
 /// \brief A MapIndirectionPolicyFor that can allocate and initialize its buffer.
 template <typename T, typename Position, typename Data>
