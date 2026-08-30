@@ -43,10 +43,6 @@ public:
   using ToPositionType = typename ToSetType::PositionType;
   using FlatPositionType = PosType;
 
-  // Legacy relation aliases. A row is selected by a from-set position and its
-  // entries are positions in the to-set.
-  using SetPosition = FromPositionType;
-  using SetElement = ToPositionType;
 
   static_assert(std::is_same_v<ElemType, ToPositionType>,
                 "StaticRelation entries must use ToSet::PositionType");
@@ -59,7 +55,7 @@ public:
   using IndicesIndirectionPolicy = RelationIndicesIndirectionPolicy;
 
   using RelationSubset = typename OrderedSet<FlatPositionType,
-                                             SetElement,
+                                             ToPositionType,
                                              BeginsSizePolicy,
                                              policies::RuntimeOffset<FlatPositionType>,
                                              policies::StrideOne<FlatPositionType>,
@@ -68,7 +64,7 @@ public:
   // The stored indices set uses the concrete (non-virtual) interface so that a
   // relation built on a view indirection is trivially copyable / device-capturable.
   using IndicesSet = OrderedSet<FlatPositionType,
-                                SetElement,
+                                ToPositionType,
                                 policies::RuntimeSize<FlatPositionType>,
                                 policies::ZeroOffset<FlatPositionType>,
                                 policies::StrideOne<FlatPositionType>,

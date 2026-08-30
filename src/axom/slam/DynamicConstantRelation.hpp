@@ -69,19 +69,16 @@ public:
   using FromPositionType = typename FromSetType::PositionType;
   using ToPositionType = typename ToSetType::PositionType;
 
-  using SetPosition = FromPositionType;
-  using ToSetPosition = ToPositionType;
-  using SetElement = ToPositionType;
-  using RelationVec = std::vector<SetElement>;
+  using RelationVec = std::vector<ToPositionType>;
 
   using BeginsSizePolicy = typename CardinalityPolicy::RelationalOperatorSizeType;
 
-  using STLIndirection = policies::STLVectorIndirection<SetPosition, SetElement>;
-  using RelationSubset = OrderedSet<SetPosition,
-                                    SetElement,
+  using STLIndirection = policies::STLVectorIndirection<FromPositionType, ToPositionType>;
+  using RelationSubset = OrderedSet<FromPositionType,
+                                    ToPositionType,
                                     BeginsSizePolicy,
-                                    policies::RuntimeOffset<SetPosition>,
-                                    policies::StrideOne<SetPosition>,
+                                    policies::RuntimeOffset<FromPositionType>,
+                                    policies::StrideOne<FromPositionType>,
                                     STLIndirection>;
 
   // types for iterator
@@ -137,7 +134,7 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return A begin iterator to the set of related elements in ToSet
    */
-  RelationIterator begin(SetPosition fromSetInd)
+  RelationIterator begin(FromPositionType fromSetInd)
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
@@ -150,7 +147,7 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return A const begin iterator to the set of related elements in ToSet
    */
-  RelationConstIterator begin(SetPosition fromSetInd) const
+  RelationConstIterator begin(FromPositionType fromSetInd) const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
@@ -163,7 +160,7 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return An end iterator to the set of related elements in ToSet
    */
-  RelationIterator end(SetPosition fromSetInd)
+  RelationIterator end(FromPositionType fromSetInd)
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
@@ -176,7 +173,7 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return A const end iterator to the set of related elements in ToSet
    */
-  RelationConstIterator end(SetPosition fromSetInd) const
+  RelationConstIterator end(FromPositionType fromSetInd) const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
@@ -190,7 +187,7 @@ public:
    * \return An iterator range (begin/end pair) to the set of related
    * elements in ToSet
    */
-  RelationIteratorPair range(SetPosition fromSetInd) { return (*this)[fromSetInd].range(); }
+  RelationIteratorPair range(FromPositionType fromSetInd) { return (*this)[fromSetInd].range(); }
 
   /**
    * \brief Returns a const iterator range to the set of entities in the ToSet
@@ -200,7 +197,7 @@ public:
    * \return A const iterator range (begin/end pair) to the set of related
    * elements in ToSet
    */
-  RelationConstIteratorPair range(SetPosition fromSetInd) const
+  RelationConstIteratorPair range(FromPositionType fromSetInd) const
   {
     return (*this)[fromSetInd].range();
   }
@@ -217,13 +214,13 @@ public:
    * element with index \a fromSetIndex in the FromSet
    * \param fromSetIndex The index of an element in the FromSet
    */
-  RelationSubset const at(SetPosition fromSetIndex) const
+  RelationSubset const at(FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return operator[](fromSetIndex);
   }
 
-  RelationSubset at(SetPosition fromSetIndex)
+  RelationSubset at(FromPositionType fromSetIndex)
   {
     verifyPosition(fromSetIndex);
     return operator[](fromSetIndex);
@@ -236,7 +233,7 @@ public:
    * \note This function does not modify the size of the relation. 
    * Use updateSizes(), insert(), or modify() functions to change sizes
    */
-  RelationSubset const operator[](SetPosition fromSetIndex) const
+  RelationSubset const operator[](FromPositionType fromSetIndex) const
   {
     // NOTE: Need to const_cast the pointer to the vector
     // since SetBuilder, and the IndirectionPolicy don't
@@ -252,7 +249,7 @@ public:
       .data(const_cast<RelationVec*>(&m_relationsVec));
   }
 
-  RelationSubset operator[](SetPosition fromSetIndex)
+  RelationSubset operator[](FromPositionType fromSetIndex)
   {
     verifyPosition(fromSetIndex);
     using SetBuilder = typename RelationSubset::SetBuilder;
@@ -268,7 +265,7 @@ public:
    * related to the element with index \a fromSetIndex in the FromSet
    * \param fromSetIndex The index of an element in the FromSet
    */
-  SetPosition size(SetPosition fromSetIndex) const
+  FromPositionType size(FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return relationCardinality();
@@ -277,7 +274,7 @@ public:
   /// @}
 
   /// \brief Returns the cardinality of the FromSet
-  inline SetPosition size() const { return m_currentFromSize; }
+  inline FromPositionType size() const { return m_currentFromSize; }
 
 public:
   /// \name DynamicConstantRelation validity check functions
@@ -292,11 +289,11 @@ public:
    * its relation set is not marked as invalid.
    * \sa isValidEntry()
    */
-  SetPosition numberOfValidEntries() const
+  FromPositionType numberOfValidEntries() const
   {
-    SetPosition nvalid = 0;
-    const SetPosition N = size();
-    for(SetPosition i = 0; i < N; ++i)
+    FromPositionType nvalid = 0;
+    const FromPositionType N = size();
+    for(FromPositionType i = 0; i < N; ++i)
     {
       nvalid += isValidEntry(i);
     }
@@ -307,7 +304,7 @@ public:
    * \brief return if an entry is valid or not.
    * \details an entry is considered valid if it is valid in the from set and has at least one valid value
    */
-  bool isValidEntry(SetPosition idx) const
+  bool isValidEntry(FromPositionType idx) const
   {
     if(m_fromSet->isValidEntry(idx))
     {
@@ -342,7 +339,7 @@ public:
    * \param toSetIndex The index of the element in the ToSet
    * to associate with \a fromSetIndex
    */
-  void insert(SetPosition fromSetIndex, SetPosition toSetIndex)
+  void insert(FromPositionType fromSetIndex, FromPositionType toSetIndex)
   {
     expandSizeIfNeeded(fromSetIndex + 1);
     verifyPosition(fromSetIndex);
@@ -375,7 +372,7 @@ public:
    * RelationSubset so users can more naturally update the relation.
    * E.g. relation[fromSetIndex][offset] = toSetIndex;
    */
-  void modify(SetPosition fromSetIndex, SetPosition offset, SetPosition toSetIndex)
+  void modify(FromPositionType fromSetIndex, FromPositionType offset, FromPositionType toSetIndex)
   {
     expandSizeIfNeeded(fromSetIndex + 1);
     verifyPosition(fromSetIndex);
@@ -383,7 +380,7 @@ public:
   }
 
   /// \brief Mark all values in entry \a fromSetIndex as invalid.
-  void remove(SetPosition fromSetIndex)
+  void remove(FromPositionType fromSetIndex)
   {
     if(!isValidEntry(fromSetIndex))
     {
@@ -398,7 +395,7 @@ public:
   }
 
   /// \brief Reserves storage for at least \a fromSetSize relation entries.
-  void reserve(SetPosition fromSetSize)
+  void reserve(FromPositionType fromSetSize)
   {
     m_relationsVec.reserve(fromSetSize * relationCardinality());
   }
@@ -419,16 +416,16 @@ public:
   const RelationVec& data() const { return m_relationsVec; }
 
 private:
-  inline constexpr SetPosition relationCardinality() const
+  inline constexpr FromPositionType relationCardinality() const
   {
-    return CardinalityPolicy::size(SetPosition());
+    return CardinalityPolicy::size(FromPositionType());
   }
 
   /**
    * \brief Helper function to expand the relation data storage
    * \param s The requested size
    */
-  void expandSizeIfNeeded(SetPosition s)
+  void expandSizeIfNeeded(FromPositionType s)
   {
     if(s > m_currentFromSize)
     {
@@ -446,7 +443,7 @@ private:
    * \brief Debug check that an index in the FromSet is not out-of-range
    * \param fromSetIndex An (alleged) index in the FromSet
    */
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex)) const
+  inline void verifyPosition(FromPositionType AXOM_DEBUG_PARAM(fromSetIndex)) const
   {
     SLIC_ASSERT_MSG(fromSetIndex >= 0 && fromSetIndex < m_currentFromSize,
                     fmt::format("Index {} out of range [0,{})", fromSetIndex, m_currentFromSize));

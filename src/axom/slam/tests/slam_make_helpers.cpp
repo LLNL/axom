@@ -445,7 +445,7 @@ TEST(slam_make_helpers, make_variable_relation_indices_are_to_set_positions)
 
   auto rel = slam::make_variable_relation(&fromSet, &toSet, begins, indices);
 
-  static_assert(std::is_same_v<typename decltype(rel)::SetElement, Pos>,
+  static_assert(std::is_same_v<typename decltype(rel)::ToPositionType, Pos>,
                 "relation element type defaults to ToSet::PositionType");
 
   auto r0 = rel[0];
@@ -536,7 +536,7 @@ TEST(slam_make_helpers, make_constant_relation_runtime_stride)
   // An ordinary integer stride is canonicalized to the from-set position type.
   auto rel = slam::make_constant_relation(&fromSet, &toSet, 2, indices);
 
-  static_assert(std::same_as<typename decltype(rel)::SetPosition, Pos>);
+  static_assert(std::same_as<typename decltype(rel)::FromPositionType, Pos>);
   static_assert(
     std::same_as<typename decltype(rel)::CardinalityPolicy::BeginsStridePolicy::IndexType, Pos>);
 

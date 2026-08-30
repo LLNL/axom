@@ -736,9 +736,9 @@ static_assert(slam::RelationLike<VariableRelation>);
 static_assert(slam::RelationLike<HeterogeneousVariableRelation>);
 static_assert(slam::RelationLike<DynamicVariableRelation>);
 static_assert(slam::RelationLike<HeterogeneousDynamicVariableRelation>);
-static_assert(std::same_as<typename HeterogeneousDynamicVariableRelation::SetPosition,
+static_assert(std::same_as<typename HeterogeneousDynamicVariableRelation::FromPositionType,
                            typename NarrowRange::PositionType>);
-static_assert(std::same_as<typename HeterogeneousDynamicVariableRelation::SetElement,
+static_assert(std::same_as<typename HeterogeneousDynamicVariableRelation::ToPositionType,
                            typename WideRange::PositionType>);
 static_assert(CanFormRelationSet<VariableRelation>);
 static_assert(CanFormRelationSet<HeterogeneousVariableRelation>);

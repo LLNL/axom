@@ -11,8 +11,7 @@
  *
  * \brief API for a topological relation between two sets in which entities from
  * the first set can be related to an arbitrary number of entities from the
- * second set. This relation is dynamic; the related entities can change
- * at runtime.
+ * second set. This relation is dynamic; the related entities can change at runtime.
  */
 
 #include "axom/config.hpp"
@@ -40,11 +39,8 @@ public:
   using ToPositionType = typename ToSetType::PositionType;
   using FlatPositionType = detail::default_flat_position_t<FromPositionType, ToPositionType>;
 
-  using SetPosition = FromPositionType;
-  using ToSetPosition = ToPositionType;
-  using SetElement = ToPositionType;
 
-  using RelationVec = std::vector<SetElement>;
+  using RelationVec = std::vector<ToPositionType>;
   using RelationVecIterator = typename RelationVec::iterator;
   using RelationVecIteratorPair = std::pair<RelationVecIterator, RelationVecIterator>;
   using RelationVecConstIterator = typename RelationVec::const_iterator;
@@ -70,31 +66,31 @@ public:
 public:
   /// \name DynamicVariableRelation iterator interface
   /// @{
-  RelationVecConstIterator begin(SetPosition fromSetIndex) const
+  RelationVecConstIterator begin(FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return fromSetRelationsVec(fromSetIndex).begin();
   }
 
-  RelationVecConstIterator end(SetPosition fromSetIndex) const
+  RelationVecConstIterator end(FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return fromSetRelationsVec(fromSetIndex).end();
   }
 
-  RelationVecConstIteratorPair range(SetPosition fromSetIndex) const
+  RelationVecConstIteratorPair range(FromPositionType fromSetIndex) const
   {
     return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
   }
   /// @}
 
-  RelationVec const& operator[](SetPosition fromSetIndex) const
+  RelationVec const& operator[](FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return m_relationsVec[fromSetIndex];
   }
 
-  FlatPositionType size(SetPosition fromSetIndex) const
+  FlatPositionType size(FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return static_cast<FlatPositionType>(fromSetRelationsVec(fromSetIndex).size());
@@ -128,13 +124,13 @@ public:
   bool isValid(bool verboseOutput = false) const;
 
 public:  // Modifying functions
-  void insert(SetPosition fromSetIndex, SetElement toSetIndex)
+  void insert(FromPositionType fromSetIndex, ToPositionType toSetIndex)
   {
     verifyPosition(fromSetIndex);
     m_relationsVec[fromSetIndex].push_back(toSetIndex);
   }
 
-  RelationVec& operator[](SetPosition fromSetIndex)
+  RelationVec& operator[](FromPositionType fromSetIndex)
   {
     verifyPosition(fromSetIndex);
     return m_relationsVec[fromSetIndex];
@@ -159,7 +155,7 @@ public:
    * \param fromSetPos The position within the 'fromSet'
    * whose relation data (in the 'toSet') we are requesting
    */
-  RelationVec& data(SetPosition fromSetPos)
+  RelationVec& data(FromPositionType fromSetPos)
   {
     verifyPosition(fromSetPos);
     return m_relationsVec[fromSetPos];
@@ -172,7 +168,7 @@ public:
    * \param fromSetPos The position within the 'fromSet'
    * whose relation data (in the 'toSet') we are requesting
    */
-  const RelationVec& data(SetPosition fromSetPos) const
+  const RelationVec& data(FromPositionType fromSetPos) const
   {
     verifyPosition(fromSetPos);
     return m_relationsVec[fromSetPos];
@@ -181,17 +177,17 @@ public:
   /// \}
 
 private:
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(fromSetIndex)) const
+  inline void verifyPosition(FromPositionType AXOM_DEBUG_PARAM(fromSetIndex)) const
   {
-    SLIC_ASSERT_MSG(fromSetIndex >= 0 && fromSetIndex < static_cast<SetPosition>(m_fromSet->size()),
+    SLIC_ASSERT_MSG(fromSetIndex >= 0 && fromSetIndex < static_cast<FromPositionType>(m_fromSet->size()),
                     "Index " << fromSetIndex << " out of range [0," << m_fromSet->size() << ")");
   }
 
-  inline RelationVec& fromSetRelationsVec(SetPosition fromSetIndex)
+  inline RelationVec& fromSetRelationsVec(FromPositionType fromSetIndex)
   {
     return m_relationsVec[fromSetIndex];
   }
-  inline RelationVec const& fromSetRelationsVec(SetPosition fromSetIndex) const
+  inline RelationVec const& fromSetRelationsVec(FromPositionType fromSetIndex) const
   {
     return m_relationsVec[fromSetIndex];
   }
@@ -233,7 +229,7 @@ bool DynamicVariableRelation<FirstSetType, SecondSetType>::isValid(bool verboseO
 
     // Check that the the relations vector has the right size
     // (should be same as fromSet's size() )
-    if(static_cast<SetPosition>(m_relationsVec.size()) != m_fromSet->size())
+    if(static_cast<FromPositionType>(m_relationsVec.size()) != m_fromSet->size())
     {
       if(verboseOutput)
       {
@@ -247,9 +243,9 @@ bool DynamicVariableRelation<FirstSetType, SecondSetType>::isValid(bool verboseO
 
     // Check that all elements of the relations vector point to
     // valid  set elements in the toSet
-    for(SetPosition fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
+    for(FromPositionType fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
     {
-      SetPosition idx = fromIdx;
+      FromPositionType idx = fromIdx;
       for(RelationVecConstIterator rIt = begin(idx), rEnd = end(idx); rIt < rEnd; ++rIt)
       {
         if(*rIt >= m_toSet->size())
@@ -298,11 +294,11 @@ bool DynamicVariableRelation<FirstSetType, SecondSetType>::isValid(bool verboseO
       FlatPositionType overallCount = 0;
       sstr2 << "\n** relations vec elements:";
 
-      for(SetPosition fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
+      for(FromPositionType fromIdx = 0; fromIdx < m_fromSet->size(); ++fromIdx)
       {
-        SetPosition idx = fromIdx;
+        FromPositionType idx = fromIdx;
         sstr2 << "\n\t" << m_fromSet->at(fromIdx) << " (" << size(idx) << "):\t";
-        std::copy(begin(idx), end(idx), std::ostream_iterator<SetElement>(sstr2, " "));
+        std::copy(begin(idx), end(idx), std::ostream_iterator<ToPositionType>(sstr2, " "));
         overallCount += size(idx);
       }
       sstr2 << "\n\n\tOverall size of relation" << overallCount << std::endl;

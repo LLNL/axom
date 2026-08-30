@@ -29,6 +29,10 @@ namespace
 {
 namespace slam = axom::slam;
 
+/// Detects the legacy homogeneous alias that relations no longer declare.
+template <typename T>
+concept HasLegacySetElement = requires { typename T::SetElement; };
+
 using RangeSetType = slam::RangeSet<>;
 using PositionType = RangeSetType::PositionType;
 using ElementType = RangeSetType::ElementType;
@@ -47,7 +51,7 @@ void printVector(StrType const& msg, VecType const& vec)
 template <typename DynamicRelationType>
 void generateIncrementingRelations(DynamicRelationType* rel)
 {
-  using PositionType = typename DynamicRelationType::SetPosition;
+  using PositionType = typename DynamicRelationType::FromPositionType;
 
   PositionType curIdx = PositionType();
 
@@ -211,8 +215,10 @@ TEST(slam_relation_dynamic_variable, heterogeneous_endpoint_position_types)
   using ToSet = slam::RangeSet<std::int64_t, std::int64_t>;
   using Relation = slam::DynamicVariableRelation<FromSet, ToSet>;
 
-  static_assert(std::is_same_v<typename Relation::SetPosition, typename FromSet::PositionType>);
-  static_assert(std::is_same_v<typename Relation::SetElement, typename ToSet::PositionType>);
+  static_assert(std::is_same_v<typename Relation::FromPositionType, typename FromSet::PositionType>);
+  static_assert(std::is_same_v<typename Relation::ToPositionType, typename ToSet::PositionType>);
+  // A relation row holds positions in the to-set rather than elements.
+  static_assert(!HasLegacySetElement<Relation>);
   static_assert(
     std::is_same_v<typename Relation::RelationVec::value_type, typename ToSet::PositionType>);
 
