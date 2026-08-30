@@ -382,16 +382,27 @@ public:
     , m_bset(bset)
   { }
 
-  value_type operator*() const
-  {
-    // Going from flat index to second index is always free for a StaticRelation.
-    return {firstIndex(), secondIndex()};
-  }
+  /*!
+   * \brief Returns the (first, second) coordinate at this iterator's flat index.
+   *
+   * \note secondIndex() is O(1) for every bivariate set,
+   *  but firstIndex() inverts the flat index back to a row,
+   *  which costs whatever the underlying set charges
+   *   -- O(1) for a ProductSet or a relation with MappedVariableCardinality,
+   *      O(log(fromSetSize)) for a relation with plain VariableCardinality.
+   *  A full traversal therefore pays that per element.
+   *  Callers that already know the row (for example, iterating one row of a BivariateMap)
+   *  should use secondIndex() rather than dereferencing.
+   */
+  value_type operator*() const { return {firstIndex(), secondIndex()}; }
 
-  /// \brief Return the first set index pointed to by this iterator.
+  /*!
+   * \brief Return the first set index pointed to by this iterator.
+   * \note Inverts the flat index; see the complexity note on operator*().
+   */
   FirstPositionType firstIndex() const { return m_bset->flatToFirstIndex(flatIndex()); }
 
-  /// \brief Return the second set index pointed to by this iterator.
+  /// \brief Return the second set index pointed to by this iterator. O(1).
   SecondPositionType secondIndex() const { return m_bset->flatToSecondIndex(flatIndex()); }
 
   /// \brief Return the flat iteration index of this iterator.

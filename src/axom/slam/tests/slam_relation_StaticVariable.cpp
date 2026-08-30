@@ -335,6 +335,47 @@ TEST(slam_static_variable_relation, initialized_rel_out_of_bounds)
 
 //----------------------------------------------------------------------
 
+TEST(slam_static_variable_relation, first_index_inverts_flat_index)
+{
+  // firstIndex() inverts a flat index back to its owning from-set row.
+  // Exercises the boundaries a binary search has to get right: the first and
+  // last entry of every row, empty rows, a nonzero leading offset, and
+  // out-of-range queries on both sides.
+  RangeSetType fromSet(6), toSet(10);
+  IndexVec begins {2, 2, 5, 5, 6, 9, 9};  // rows 0, 2 and 5 are empty
+  IndexVec indices(9, 0);
+
+  StaticVariableRelationType rel(&fromSet, &toSet);
+  rel.bindBeginOffsets(fromSet.size(), &begins);
+  rel.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+
+  for(SetPosition row = 0; row < fromSet.size(); ++row)
+  {
+    for(SetPosition f = rel.offset(row); f < rel.offset(row + 1); ++f)
+    {
+      EXPECT_EQ(row, rel.firstIndex(f)) << "flat index " << f << " belongs to row " << row;
+    }
+  }
+
+  // positions at or past the end of the last row have no owning row
+  EXPECT_EQ(-1, rel.firstIndex(begins.back()));
+  EXPECT_EQ(-1, rel.firstIndex(begins.back() + 1));
+
+  // A relation whose rows are all empty owns nothing at or past its offset.
+  IndexVec flatBegins(7, 4);
+  StaticVariableRelationType degenerate(&fromSet, &toSet);
+  degenerate.bindBeginOffsets(fromSet.size(), &flatBegins);
+  degenerate.bindIndices(0, &indices);
+  EXPECT_EQ(-1, degenerate.firstIndex(4));
+
+  // Preserves longstanding quirk: firstIndex() returns "the first
+  // row whose end offset exceeds the query", so a query below the leading offset
+  // reports row 0 rather than -1.
+  EXPECT_EQ(0, degenerate.firstIndex(0));
+  EXPECT_EQ(0, rel.firstIndex(0));
+  EXPECT_EQ(0, rel.firstIndex(1));  // rel's leading offset is 2
+}
+
 int main(int argc, char* argv[])
 {
   int result = 0;

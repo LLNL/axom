@@ -269,6 +269,15 @@ public:
   SubsetType getElements(FirstPositionType s1) const { return (*m_relation)[s1]; }
 
   AXOM_SUPPRESS_HD_WARN
+  /*!
+   * \brief Returns the (first, second) coordinate at flat index \a pos.
+   *
+   * \note Costs whatever the relation's cardinality policy charges to invert a
+   *  flat index back to a row: O(1) for MappedVariableCardinality, which stores
+   *  the inverse, and O(log(fromSetSize)) for plain VariableCardinality,
+   *  which binary-searches the begins array. flatToSecondIndex() alone is O(1),
+   *  so prefer it when the row is already known.
+   */
   [[nodiscard]] AXOM_HOST_DEVICE ElementType at(PositionType pos) const
   {
 #ifndef AXOM_DEVICE_CODE

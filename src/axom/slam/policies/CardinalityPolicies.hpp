@@ -192,16 +192,41 @@ struct VariableCardinality
 
   AXOM_HOST_DEVICE ElementType offset(ElementType fromPos) const { return m_begins[fromPos]; }
 
+  /*!
+   * \brief Returns the from-set position owning \a relationOffset, or -1 if none does.
+   *
+   * \note O(log(fromSetSize)). The begins array is non-decreasing,
+   *  so `offset(i+1) > relationOffset` is monotone in i and the first i satisfying it
+   *  can be found by binary search.
+   *
+   * \note O(1) is available, but only by storing it: MappedVariableCardinality
+   *  keeps an auxiliary flat-to-first-index array of length totalSize().
+   *  Sequential traversal is achievable by advancing a row cursor rather than by
+   *  calling this per element.
+   */
   AXOM_HOST_DEVICE ElementType firstIndex(ElementType relationOffset) const
   {
-    for(ElementType firstIdx = 0; firstIdx < m_begins.size() - 1; firstIdx++)
+    const ElementType numRows = m_begins.size() - 1;
+    if(numRows <= ElementType {} || offset(numRows) <= relationOffset)
     {
-      if(offset(firstIdx + 1) > relationOffset)
+      return ElementType(-1);
+    }
+
+    ElementType lo = ElementType {};
+    ElementType hi = numRows - 1;
+    while(lo < hi)
+    {
+      const ElementType mid = lo + (hi - lo) / 2;
+      if(offset(mid + 1) > relationOffset)
       {
-        return firstIdx;
+        hi = mid;
+      }
+      else
+      {
+        lo = mid + 1;
       }
     }
-    return -1;
+    return lo;
   }
 
   IndirectionPtrType offsetData() { return m_begins.data(); }
