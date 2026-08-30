@@ -45,6 +45,7 @@ using Element = slam::DefaultElementType;
 using Range = slam::RangeSet<Position, Element>;
 using ConcreteRange = typename Range::ConcreteSet;
 using Product = typename slam::ProductSet<ConcreteRange, ConcreteRange>::ConcreteSet;
+using ArrayIndirection = policies::ArrayIndirection<Position, double>;
 using ViewIndirection = policies::ArrayViewIndirection<Position, double>;
 using ConstViewIndirection = policies::ArrayViewIndirection<Position, const double>;
 using UnaryMap = slam::Map<double, ConcreteRange, ViewIndirection>;
@@ -822,6 +823,30 @@ static_assert(slam::FlatRangeOver<typename BinarySubMap::IndexSetType,
 using NestedSubMap = slam::SubMap<BinarySubMap, typename BinarySubMap::IndexSetType>;
 static_assert(slam::MapLike<NestedSubMap>);
 static_assert(slam::SubMappable<NestedSubMap>, "and it composes to any depth");
+
+// MapLike is agnostic about whether const access is deep or shallow.
+// and SLAM has both use-cases.
+using DeepMap = slam::Map<double, ConcreteRange, ArrayIndirection>;
+using ShallowMap = slam::Map<double, ConcreteRange, ViewIndirection>;
+static_assert(slam::MapLike<DeepMap> && slam::MapLike<ShallowMap> && slam::MapLike<BinarySubMap>);
+static_assert(std::is_same_v<typename DeepMap::ConstValueType, const double&>,
+              "an owning indirection is deep-const");
+static_assert(std::is_same_v<typename ShallowMap::ConstValueType, double&>,
+              "the same Map over a view indirection is already shallow-const");
+static_assert(std::is_same_v<typename BinarySubMap::ValueType,
+                             typename BinarySubMap::ConstValueType>,
+              "a SubMap is a view: constness rides on SuperMapType, not on the object");
+// The two axes are independent. The yielded reference is decided by whether SuperMapType is const,
+// while the super-map's indirection policy determines how deep that const goes.
+using DeepBinaryMap = slam::BivariateMap<double, Product, ArrayIndirection>;
+static_assert(std::is_same_v<
+                typename std::remove_const_t<typename DeepBinaryMap::ConstSubMapType>::ConstValueType,
+                const double&>,
+              "over a deep-const super-map, a SubMap does yield const references");
+static_assert(std::is_same_v<
+                typename std::remove_const_t<typename BinaryMap::ConstSubMapType>::ConstValueType,
+                double&>,
+              "over a view-backed super-map it stays shallow, as that policy dictates");
 
 // FlatRangeOver is the index set a SubMap is built over, and the row range reported by a bivariate set.
 // Subscript lives here rather than in OrderedSetLike because a bivariate set is OrderedSetLike

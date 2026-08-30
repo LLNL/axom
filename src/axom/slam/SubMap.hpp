@@ -80,6 +80,12 @@ public:
   using const_range_iterator = RangeIterator;
   using range_iterator = RangeIterator;
 
+  /*!
+   * \brief The reference type for a value access
+   *
+   * A SubMap is a view, so the constness comes from \a SuperMapType
+   * rather than that of the SubMap object.
+   */
   using DataRefType = std::conditional_t<std::is_const<SuperMapType>::value,
                                          typename IndirectionPolicy::ConstIndirectionResult,
                                          typename IndirectionPolicy::IndirectionResult>;

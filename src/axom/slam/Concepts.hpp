@@ -336,7 +336,12 @@ concept FlatRelationLike = RelationLike<T> && Validatable<T> &&
 template <typename Value, typename Data>
 concept MapValueFor = std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Data>>;
 
-/// \brief The size and element-access surface shared by univariate and bivariate maps.
+/*!
+ * \brief The shared size and element-access model shared by univariate and bivariate maps.
+ *
+ * \note This is agnostic about whether const access is deep or shallow.
+ *       It requires only that ConstValueType yields what a const access actually returns.
+ */
 template <typename T>
 concept CommonMapModel =
   HasMapAssociatedTypes<T> && MapValueFor<typename T::ValueType, typename T::DataType> &&
