@@ -795,6 +795,18 @@ static_assert(!std::is_same_v<NarrowStride::IndexType, WidePosition>,
 static_assert(slam::MapStridePolicyFor<NarrowStride, WidePosition>);
 static_assert(!slam::OrderedSetStridePolicyFor<NarrowStride, WidePosition>);
 #endif
+// The substitutability checks behind the *For concepts, asserted directly so a
+// failure names the clause rather than an unnamed conjunction.
+namespace model = slam::detail::model;
+static_assert(model::PolicyDefaultedOver<RuntimeSize, int>);
+static_assert(!model::PolicyDefaultedOver<WrongRuntimeSize, int>);
+static_assert(model::ScalarValuePolicyOver<ScalarStride, int>);
+static_assert(!model::ScalarValuePolicyOver<EmptySize, int>, "a size policy carries no IntType");
+static_assert(model::ScalarStridePolicyOver<ScalarStride, int>);
+static_assert(!model::ScalarStridePolicyOver<MatrixStride, int>, "multi-dim stride is not scalar");
+static_assert(!model::ExposesPerDimensionStrides<ScalarStride>);
+static_assert(model::ExposesPerDimensionStrides<MatrixStride>);
+
 static_assert(slam::OffsetPolicy<Offset>);
 static_assert(slam::OrderedSetOffsetPolicyFor<RuntimeOffset, int>);
 static_assert(slam::OrderedSetOffsetPolicyFor<Offset, int>);

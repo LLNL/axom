@@ -358,6 +358,8 @@ concept MapOver = (UnivariateMapLike<M> && std::same_as<typename M::SetType, S>)
 // Scalar value policies
 //------------------------------------------------------------------------------
 
+//---- base capabilities -------------------------------------------------------
+
 /// \brief A scalar runtime or compile-time value policy.
 template <typename T>
 concept ValuePolicy = requires(const T& policy) {
@@ -376,10 +378,12 @@ concept SizePolicy = requires(const T& policy) {
   { policy.isValid(false) } -> std::convertible_to<bool>;
 };
 
-/// \brief A SizePolicy usable by a set whose position type is Position.
-template <typename T, typename Position>
-concept SetSizePolicyFor = SizePolicy<T> && PositionLike<Position> &&
-  std::same_as<policy_default_t<T>, Position> && std::constructible_from<T, Position>;
+/// \brief A scalar value policy that reports an offset.
+template <typename T>
+concept OffsetPolicy = ValuePolicy<T> && requires(const T& policy) {
+  T::DEFAULT_VALUE;
+  { policy.offset() } -> std::same_as<typename T::IntType>;
+};
 
 /*!
  * \brief The common capability shared by scalar and multi-dimensional stride policies.
@@ -397,42 +401,64 @@ concept StridePolicy = requires(const T& policy) {
   { policy.shape() } -> std::same_as<typename T::ShapeType>;
 };
 
+//---- substitutability --------------------------------------------------
+//
+// The four '*PolicyFor' concepts below check whether the policy can be substituted
+// into an owner indexed by Position. These name the individual clauses,
+// so a failed constraint identifies the problem.
+
+/// \brief The policy's default value is exactly \a Position, and it is constructible from one.
+template <typename T, typename Position>
+concept PolicyDefaultedOver = PositionLike<Position> && requires { T::DEFAULT_VALUE; } &&
+  std::same_as<policy_default_t<T>, Position> && std::constructible_from<T, Position>;
+
+/// \brief A ValuePolicy whose scalar value type is exactly \a Position.
+template <typename T, typename Position>
+concept ScalarValuePolicyOver =
+  ValuePolicy<T> && PolicyDefaultedOver<T, Position> && std::same_as<typename T::IntType, Position>;
+
+/// \brief A StridePolicy carrying a single scalar stride measured in \a Position.
+template <typename T, typename Position>
+concept ScalarStridePolicyOver = StridePolicy<T> && PositionLike<Position> && (T::NumDims == 1) &&
+  std::same_as<typename T::IndexType, Position> && std::same_as<typename T::ShapeType, Position>;
+
+/// \brief A stride policy that reports one stride per dimension.
+template <typename T>
+concept ExposesPerDimensionStrides = requires(const T& policy) {
+  { policy.strides() } -> std::same_as<typename T::ShapeType>;
+};
+
+//---- substitutability into a specific owner ----------------------------------
+
+/// \brief A SizePolicy usable by a set whose position type is \a Position.
+template <typename T, typename Position>
+concept SetSizePolicyFor = SizePolicy<T> && PolicyDefaultedOver<T, Position>;
+
+/// \brief An OffsetPolicy usable by an OrderedSet whose position type is \a Position.
+template <typename T, typename Position>
+concept OrderedSetOffsetPolicyFor = OffsetPolicy<T> && ScalarValuePolicyOver<T, Position>;
+
 /*!
- * \brief A scalar stride policy usable by OrderedSet with Position.
+ * \brief A scalar stride policy usable by OrderedSet with \a Position.
  *
  * OrderedSet constructs its stride from a position and validates it as a scalar value policy.
  * Multi-dimensional map strides do not satisfy this refinement.
  */
 template <typename T, typename Position>
-concept OrderedSetStridePolicyFor = StridePolicy<T> && ValuePolicy<T> && PositionLike<Position> &&
-  std::same_as<typename T::IndexType, Position> && std::same_as<typename T::IntType, Position> &&
-  std::same_as<typename T::ShapeType, Position> && (T::NumDims == 1) &&
-  std::constructible_from<T, Position> && requires {
-    T::DEFAULT_VALUE;
-    requires std::same_as<policy_default_t<T>, Position>;
-  };
+concept OrderedSetStridePolicyFor =
+  ScalarValuePolicyOver<T, Position> && ScalarStridePolicyOver<T, Position>;
 
-/// \brief A scalar or multi-dimensional stride policy usable by Map with Position.
+/*!
+ * \brief A scalar or multi-dimensional stride policy usable by Map with \a Position.
+ *
+ * A map is more permissive than an ordered set: its stride index type only has
+ * to convert to the map's position type, and it may have more than one dimension.
+ */
 template <typename T, typename Position>
 concept MapStridePolicyFor = StridePolicy<T> && PositionLike<Position> &&
   PositionLike<typename T::IndexType> && std::convertible_to<typename T::IndexType, Position> &&
   (T::NumDims > 0) && std::constructible_from<T, typename T::ShapeType> &&
-  ((T::NumDims == 1) || requires(const T& policy) {
-                               { policy.strides() } -> std::same_as<typename T::ShapeType>;
-                             });
-
-/// \brief A scalar value policy that reports an offset.
-template <typename T>
-concept OffsetPolicy = ValuePolicy<T> && requires(const T& policy) {
-  T::DEFAULT_VALUE;
-  { policy.offset() } -> std::same_as<typename T::IntType>;
-};
-
-/// \brief An OffsetPolicy usable by an OrderedSet whose position type is Position.
-template <typename T, typename Position>
-concept OrderedSetOffsetPolicyFor =
-  OffsetPolicy<T> && PositionLike<Position> && std::same_as<typename T::IntType, Position> &&
-  std::same_as<policy_default_t<T>, Position> && std::constructible_from<T, Position>;
+  ((T::NumDims == 1) || ExposesPerDimensionStrides<T>);
 
 //------------------------------------------------------------------------------
 // Indirection policies
@@ -539,7 +565,7 @@ concept PositionLike = detail::model::PositionLike<detail::model_t<T>>;
 
 /// \brief A univariate set with position-based size and element access.
 /// \tparam T the candidate set type
-/// \note SetLike and BivariateSetLike are disjoint.
+/// \note BivariateSetLike refines this. Use UnivariateSetLike to exclude bivariate sets.
 template <typename T>
 concept SetLike = detail::model::SetLike<detail::model_t<T>>;
 
