@@ -87,8 +87,7 @@ concept CanFormProductSetWithFlatPosition = requires {
 
 template <typename RelationType>
 concept CanFormRelationSet = slam::FlatRelationLike<RelationType> && requires {
-  typename std::type_identity_t<
-    slam::RelationSet<RelationType, typename RelationType::FromSetType, typename RelationType::ToSetType>>;
+  sizeof(slam::RelationSet<RelationType>);
 };
 
 struct StrongPosition
@@ -660,8 +659,10 @@ static_assert(slam::SetLike<slam::Set<>>);
 static_assert(slam::SetLike<Range>);
 static_assert(slam::SetLike<const Range&>);
 static_assert(slam::OrderedSetLike<Range>);
+static_assert(slam::OrderedSetLike<const Range&>);
 static_assert(!slam::BivariateSetLike<Range>);
 static_assert(slam::BivariateSetLike<Product>);
+static_assert(slam::BivariateSetLike<const Product&>);
 static_assert(std::same_as<typename Product::ElementType, std::pair<Position, Position>>);
 static_assert(slam::BivariateSetLike<DistinctHandleProduct>);
 static_assert(
@@ -733,6 +734,7 @@ static_assert(!slam::SetLike<int>);
 
 // Relations
 static_assert(slam::RelationLike<VariableRelation>);
+static_assert(slam::RelationLike<const VariableRelation&>);
 static_assert(slam::RelationLike<HeterogeneousVariableRelation>);
 static_assert(slam::RelationLike<DynamicVariableRelation>);
 static_assert(slam::RelationLike<HeterogeneousDynamicVariableRelation>);
@@ -742,7 +744,14 @@ static_assert(std::same_as<typename HeterogeneousDynamicVariableRelation::ToPosi
                            typename WideRange::PositionType>);
 static_assert(CanFormRelationSet<VariableRelation>);
 static_assert(CanFormRelationSet<HeterogeneousVariableRelation>);
+static_assert(std::constructible_from<slam::RelationSet<VariableRelation>, VariableRelation*>,
+              "an accepted flat relation must instantiate its RelationSet consumer");
+static_assert(
+  std::constructible_from<slam::RelationSet<HeterogeneousVariableRelation>,
+                          HeterogeneousVariableRelation*>,
+  "heterogeneous endpoint positions must instantiate their RelationSet consumer");
 static_assert(slam::FlatRelationLike<VariableRelation>);
+static_assert(slam::FlatRelationLike<const VariableRelation&>);
 static_assert(slam::FlatRelationLike<ProxyRowRelation>);
 static_assert(slam::FlatRelationLike<ExplicitFirstIndexRelation>);
 static_assert(slam::RelationLike<DynamicConstantRelation>);
@@ -785,6 +794,7 @@ static_assert(slam::MapLike<DynamicMap>);
 static_assert(slam::MapLike<const DynamicMap&>);
 static_assert(slam::MapOver<UnaryMap, ConcreteRange>);
 static_assert(slam::MapOver<BinaryMap, Product>);
+static_assert(slam::MapOver<const BinaryMap&, const Product&>);
 static_assert(slam::MapOver<DynamicMap, DynamicSet>);
 static_assert(!slam::MapOver<BinaryMap, typename BinaryMap::SetType>);
 static_assert(!slam::MapLike<TypedefOnlyMap>);
