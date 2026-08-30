@@ -31,7 +31,7 @@ public:
   using SetType = SetT;
   using DataType = DataT;
 
-  using SetPosition = typename SetType::PositionType;
+  using PositionType = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;
   using ValueType = DataType&;
   using ConstValueType = const DataType&;
@@ -79,15 +79,15 @@ public:
   ~DynamicMap() { }
 
 public:
-  /** \brief Returns a pointer to the map's underlying set */
+  /// \brief Returns a pointer to the map's underlying set
   const SetType* set() const { return m_set; }
 
   /// \name DynamicMap individual access functions
   /// @{
   ///
 
-  /** \brief Return the value at set index \a setIndex   */
-  const DataType& operator[](SetPosition setIndex) const
+  /// \brief Return the value at set index \a setIndex
+  const DataType& operator[](PositionType setIndex) const
   {
     verifyPosition(setIndex);
     return m_data[setIndex];
@@ -102,20 +102,20 @@ public:
   const OrderedMap& data() const { return m_data; }
 
   /// \brief Reserves storage for at least \a s entries.
-  void reserve(SetPosition s) { m_data.reserve(s); }
+  void reserve(PositionType s) { m_data.reserve(s); }
 
   /// \name DynamicMap cardinality functions
   /// @{
 
   /** \brief Returns the size of map's set */
-  SetPosition size() const { return static_cast<SetPosition>(m_data.size()); }
+  PositionType size() const { return static_cast<PositionType>(m_data.size()); }
 
   /**
    * \brief Return the number of valid entries
    *
    * An entry at a given index is considered valid if corresponding set element is valid.
    */
-  SetPosition numberOfValidEntries() const
+  PositionType numberOfValidEntries() const
   {
     return (m_set != nullptr) ? m_set->numberOfValidEntries() : 0;
   }
@@ -125,19 +125,19 @@ public:
   /// \name DynamicMap validity check functions
   /// @{
 
-  bool isValidEntry(SetPosition pos) const
+  bool isValidEntry(PositionType pos) const
   {
     return (m_set != nullptr) ? m_set->isValidEntry(pos) : false;
   }
 
-  /** \brief Predicate to check if this DynamicMap instance is valid */
+  /// \brief Predicate to check if this DynamicMap instance is valid
   [[nodiscard]] bool isValid(bool verboseOutput = false) const;
 
   /// @}
 
 private:
-  /** \brief Debug check that the index is not out of range    */
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIndex)) const
+  /// \brief Debug check that the index is not out of range
+  inline void verifyPosition(PositionType AXOM_DEBUG_PARAM(setIndex)) const
   {
     SLIC_ASSERT_MSG(
       setIndex >= 0 && setIndex < (int)m_data.size(),
@@ -155,7 +155,7 @@ public:
    *
    * \note Increases the map size if position is out of range
    */
-  DataType& operator[](SetPosition position)
+  DataType& operator[](PositionType position)
   {
     if(size() < position + 1)
     {
@@ -170,14 +170,14 @@ public:
    *
    * \note Increases the map size if position is out of range
    */
-  void insert(SetPosition position, DataType value) { operator[](position) = value; }
+  void insert(PositionType position, DataType value) { operator[](position) = value; }
 
   /**
    * \brief Resizes the map to have at least \a s positions
    * \param s The minimum necessary capacity for resizing
    * \pre s >= 0
    */
-  void resize(SetPosition s)
+  void resize(PositionType s)
   {
     // Note (KW): For this to be a valid DynamicMap operation,
     // we would need to also increase the size of the map's set!
@@ -220,7 +220,7 @@ bool DynamicMap<SetT, DataT>::isValid(bool verboseOutput) const
   else
   {
     // Check the data array and set data have equal size
-    if(static_cast<SetPosition>(m_data.size()) != m_set->size())
+    if(static_cast<PositionType>(m_data.size()) != m_set->size())
     {
       if(verboseOutput)
       {

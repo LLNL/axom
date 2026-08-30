@@ -427,7 +427,7 @@ struct TypedefOnlyMap
 {
   using DataType = double;
   using SetType = ConcreteRange;
-  using SetPosition = Position;
+  using PositionType = Position;
   using SetElement = Element;
   using ValueType = double&;
   using ConstValueType = const double&;
@@ -437,14 +437,14 @@ struct MinimalBivariateMap
 {
   using DataType = double;
   using BivariateSetType = MinimalBivariateSet;
-  using SetPosition = BivariateSetType::PositionType;
+  using PositionType = BivariateSetType::PositionType;
   using SetElement = BivariateSetType::ElementType;
   using ValueType = double&;
   using ConstValueType = const double&;
 
-  SetPosition size() const;
-  ValueType operator[](SetPosition);
-  ConstValueType operator[](SetPosition) const;
+  PositionType size() const;
+  ValueType operator[](PositionType);
+  ConstValueType operator[](PositionType) const;
   const BivariateSetType* set() const;
 };
 
@@ -452,13 +452,13 @@ struct WrongDomainMap
 {
   using DataType = double;
   using SetType = ConcreteRange;
-  using SetPosition = Position;
+  using PositionType = Position;
   using SetElement = Element;
   using ValueType = double&;
   using ConstValueType = const double&;
 
-  SetPosition size() const;
-  ConstValueType operator[](SetPosition) const;
+  PositionType size() const;
+  ConstValueType operator[](PositionType) const;
   const TypedefOnlySet* set() const;
 };
 
@@ -466,13 +466,13 @@ struct WrongPositionMap
 {
   using DataType = double;
   using SetType = ConcreteRange;
-  using SetPosition = short;
+  using PositionType = short;
   using SetElement = Element;
   using ValueType = double&;
   using ConstValueType = const double&;
 
-  SetPosition size() const;
-  ConstValueType operator[](SetPosition) const;
+  PositionType size() const;
+  ConstValueType operator[](PositionType) const;
   const SetType* set() const;
 };
 
@@ -480,14 +480,14 @@ struct WrongValueTypeMap
 {
   using DataType = double;
   using SetType = ConcreteRange;
-  using SetPosition = Position;
+  using PositionType = Position;
   using SetElement = Element;
   using ValueType = int&;
   using ConstValueType = const int&;
 
-  SetPosition size() const;
-  ValueType operator[](SetPosition);
-  ConstValueType operator[](SetPosition) const;
+  PositionType size() const;
+  ValueType operator[](PositionType);
+  ConstValueType operator[](PositionType) const;
   const SetType* set() const;
 };
 
@@ -495,14 +495,14 @@ struct WrongMutableAccessMap
 {
   using DataType = double;
   using SetType = ConcreteRange;
-  using SetPosition = Position;
+  using PositionType = Position;
   using SetElement = Element;
   using ValueType = double&;
   using ConstValueType = const double&;
 
-  SetPosition size() const;
-  ConstValueType operator[](SetPosition);
-  ConstValueType operator[](SetPosition) const;
+  PositionType size() const;
+  ConstValueType operator[](PositionType);
+  ConstValueType operator[](PositionType) const;
   const SetType* set() const;
 };
 
@@ -819,7 +819,7 @@ static_assert(!slam::SubMappable<int>);
 static_assert(slam::MapLike<BinarySubMap>);
 static_assert(slam::SubMappable<BinarySubMap>);
 static_assert(slam::FlatRangeOver<typename BinarySubMap::IndexSetType,
-                                  typename BinarySubMap::SetPosition>);
+                                  typename BinarySubMap::PositionType>);
 using NestedSubMap = slam::SubMap<BinarySubMap, typename BinarySubMap::IndexSetType>;
 static_assert(slam::MapLike<NestedSubMap>);
 static_assert(slam::SubMappable<NestedSubMap>, "and it composes to any depth");
@@ -851,7 +851,7 @@ static_assert(std::is_same_v<
 // FlatRangeOver is the index set a SubMap is built over, and the row range reported by a bivariate set.
 // Subscript lives here rather than in OrderedSetLike because a bivariate set is OrderedSetLike
 // and has no operator[].
-static_assert(slam::FlatRangeOver<typename BinaryMap::SetType, typename BinaryMap::SetPosition>);
+static_assert(slam::FlatRangeOver<typename BinaryMap::SetType, typename BinaryMap::PositionType>);
 static_assert(slam::OrderedSetLike<Product>);
 static_assert(!slam::FlatRangeOver<Product, typename Product::PositionType>,
               "a bivariate set is ordered but not subscriptable");

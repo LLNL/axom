@@ -752,7 +752,7 @@ TEST(slam_make_helpers, make_map_runtime_stride_array_view)
   auto m = slam::make_map(&set, 3, data.view());
 
   using MapType = decltype(m);
-  static_assert(std::same_as<typename MapType::SetPosition, Pos>);
+  static_assert(std::same_as<typename MapType::PositionType, Pos>);
   static_assert(std::same_as<typename MapType::StridePolicyType::IndexType, Pos>);
   static_assert(std::same_as<typename MapType::IndirectionPolicy::PositionType, Pos>);
 

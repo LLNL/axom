@@ -27,7 +27,7 @@ public:
   using ProductSetType = MultiMat::ProductSetType;
   using RelationSetType = MultiMat::RelationSetType;
 
-  using SetPosition = typename BiVarMapType::SetPosition;
+  using PositionType = typename BiVarMapType::PositionType;
 
   using Field2DType = MMField2D<DataType, BiVarSetType>;
   using SubFieldType = MMSubField2D<Field2DType>;
@@ -69,20 +69,20 @@ public:
   using BiVarMapType::operator();  //why is this needed?
 
   //subfield (instead of SubMap)
-  SubFieldType getSubfield(SetPosition firstIdx) { return operator()(firstIdx); }
-  AXOM_HOST_DEVICE SubFieldType operator()(SetPosition firstIdx)
+  SubFieldType getSubfield(PositionType firstIdx) { return operator()(firstIdx); }
+  AXOM_HOST_DEVICE SubFieldType operator()(PositionType firstIdx)
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
     return SubFieldType(this, static_cast<int>(firstIdx), hasInd);
   }
-  AXOM_HOST_DEVICE const ConstSubFieldType operator()(SetPosition firstIdx) const
+  AXOM_HOST_DEVICE const ConstSubFieldType operator()(PositionType firstIdx) const
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
     return ConstSubFieldType(this, static_cast<int>(firstIdx), hasInd);
   }
 
   //Mimic BivariateMap operator(i) and return slam submap
-  SubMapType getSlamSubMap(SetPosition firstIdx) { return BiVarMapType::operator()(firstIdx); }
+  SubMapType getSlamSubMap(PositionType firstIdx) { return BiVarMapType::operator()(firstIdx); }
 
   std::string getName() { return m_mm->getFieldName(m_fieldIdx); };
 

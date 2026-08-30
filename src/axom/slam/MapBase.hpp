@@ -34,7 +34,7 @@ template <typename SetPositionType = slam::DefaultPositionType>
 class MapBase
 {
 public:
-  using SetPosition = SetPositionType;
+  using PositionType = SetPositionType;
 
 public:
   AXOM_HOST_DEVICE
@@ -44,7 +44,7 @@ public:
    * \brief Get the number of entities in the set used by this map
    * \return The number of entities in the set used in the map.
    */
-  [[nodiscard]] AXOM_HOST_DEVICE virtual SetPosition size() const = 0;
+  [[nodiscard]] AXOM_HOST_DEVICE virtual PositionType size() const = 0;
 
   /**
    * \brief Checks whether the Map is valid.
@@ -54,9 +54,9 @@ public:
 
 private:
   /**
-   * \brief Verifies that the provided SetPosition is in a valid range.
+   * \brief Verifies that the provided PositionType is in a valid range.
    */
-  virtual void verifyPosition(SetPosition) const = 0;
+  virtual void verifyPosition(PositionType) const = 0;
 };
 
 }  // end namespace axom::slam

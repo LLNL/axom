@@ -82,9 +82,9 @@ public:
 
   using OrderedMap = typename IndirectionPolicy::IndirectionBufferType;
 
-  using SetPosition = typename SetType::PositionType;
+  using PositionType = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;
-  static const NullSet<SetPosition, SetElement> s_nullSet;
+  static const NullSet<PositionType, SetElement> s_nullSet;
 
   using ElementShape = typename StridePolicyType::ShapeType;
 
@@ -92,9 +92,9 @@ public:
   using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
 
   static_assert(UnivariateSetLike<SetType>, "Map requires a univariate SetLike domain");
-  static_assert(MapStridePolicyFor<StridePolicyType, SetPosition>,
+  static_assert(MapStridePolicyFor<StridePolicyType, PositionType>,
                 "Map requires a scalar or multi-dimensional stride over its position type");
-  static_assert(MapIndirectionPolicyFor<IndirectionPolicy, SetPosition, DataType>,
+  static_assert(MapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>,
                 "Map requires map indirection over its position and data types");
 
   class MapBuilder;
@@ -170,7 +170,7 @@ public:
       DataType defaultValue = DataType(),
       ElementShape shape = StridePolicyType::DefaultSize(),
       int allocatorID = axom::getDefaultAllocatorID())
-    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, SetPosition, DataType>
+    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>
     : StridePolicyType(shape)
     , m_set(theSet)
     , m_data(IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID))
@@ -201,7 +201,7 @@ public:
   ///       Use the pointer overload for polymorphic sets.
   template <typename USet>
     requires(!std::is_abstract_v<SetType> && std::same_as<SetType, USet> &&
-             AllocatingMapIndirectionPolicyFor<IndirectionPolicy, SetPosition, DataType>)
+             AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>)
   Map(const USet& theSet,
       DataType defaultValue = DataType(),
       ElementShape shape = StridePolicyType::DefaultSize(),
@@ -234,13 +234,13 @@ public:
 
   /// \brief Constructor for Map using a MapBuilder
   Map(const MapBuilder& builder)
-    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, SetPosition, DataType>
+    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>
     : Map(builder.m_set, builder.m_defaultValue, builder.m_stride.stride())
   {
     //copy the data if exists
     if(builder.m_data_ptr)
     {
-      for(SetPosition idx = SetPosition(); idx < builder.m_set->size(); ++idx)
+      for(PositionType idx = PositionType(); idx < builder.m_set->size(); ++idx)
       {
         m_data[idx] = builder.m_data_ptr[idx];
       }
@@ -262,7 +262,7 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  AXOM_HOST_DEVICE ConstValueType operator[](SetPosition setIndex) const
+  AXOM_HOST_DEVICE ConstValueType operator[](PositionType setIndex) const
   {
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIndex);
@@ -270,7 +270,7 @@ public:
     return *IndirectionPolicy::getConstIndirection(m_data, setIndex);
   }
 
-  AXOM_HOST_DEVICE ValueType operator[](SetPosition setIndex)
+  AXOM_HOST_DEVICE ValueType operator[](PositionType setIndex)
   {
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIndex);
@@ -278,17 +278,15 @@ public:
     return *IndirectionPolicy::getIndirection(m_data, setIndex);
   }
 
-  /**
-   * \brief Access the value associated with the given position in the set.
-   */
-  AXOM_HOST_DEVICE ConstValueType operator()(SetPosition setIdx) const
+  /// \brief Access the value associated with the given position in the set.
+  AXOM_HOST_DEVICE ConstValueType operator()(PositionType setIdx) const
   {
     // TODO: validate that runtime stride is 1-D with value 1?
     return value(setIdx, 0);
   }
 
   /// \overload
-  AXOM_HOST_DEVICE ValueType operator()(SetPosition setIdx) { return value(setIdx, 0); }
+  AXOM_HOST_DEVICE ValueType operator()(PositionType setIdx) { return value(setIdx, 0); }
 
   /**
    * \brief Access the value associated with the given position in the set and
@@ -299,21 +297,21 @@ public:
    * \pre `0 <= compIdx[idim] < shape()[idim]`
    */
   template <typename... ComponentPos>
-  AXOM_HOST_DEVICE ConstValueType operator()(SetPosition setIdx, ComponentPos... compIdx) const
+  AXOM_HOST_DEVICE ConstValueType operator()(PositionType setIdx, ComponentPos... compIdx) const
   {
     return value(setIdx, compIdx...);
   }
 
   /// \overload
   template <typename... ComponentPos>
-  AXOM_HOST_DEVICE ValueType operator()(SetPosition setIdx, ComponentPos... compIdx)
+  AXOM_HOST_DEVICE ValueType operator()(PositionType setIdx, ComponentPos... compIdx)
   {
     return value(setIdx, compIdx...);
   }
 
-  AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx) const { return value(setIdx, 0); }
+  AXOM_HOST_DEVICE ConstValueType value(PositionType setIdx) const { return value(setIdx, 0); }
 
-  AXOM_HOST_DEVICE ValueType value(SetPosition setIdx) { return value(setIdx, 0); }
+  AXOM_HOST_DEVICE ValueType value(PositionType setIdx) { return value(setIdx, 0); }
 
   /**
    * \brief Access the value associated with the given position in the set and
@@ -324,7 +322,7 @@ public:
    * \pre `0 <= compIdx[idim] < shape()[idim]`
    */
   template <typename... ComponentPos>
-  AXOM_HOST_DEVICE ConstValueType value(SetPosition setIdx, ComponentPos... compIdx) const
+  AXOM_HOST_DEVICE ConstValueType value(PositionType setIdx, ComponentPos... compIdx) const
   {
     static_assert(sizeof...(ComponentPos) == StridePolicyType::NumDims,
                   "Invalid number of components provided for given Map's StridePolicy");
@@ -333,14 +331,14 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, compIdx...);
 #endif
-    SetPosition elemIndex = setIdx * StridePolicyType::stride();
+    PositionType elemIndex = setIdx * StridePolicyType::stride();
     elemIndex += componentOffset(compIdx...);
     return *IndirectionPolicy::getConstIndirection(m_data, elemIndex);
   }
 
   /// \overload
   template <typename... ComponentPos>
-  AXOM_HOST_DEVICE ValueType value(SetPosition setIdx, ComponentPos... compIdx)
+  AXOM_HOST_DEVICE ValueType value(PositionType setIdx, ComponentPos... compIdx)
   {
     static_assert(sizeof...(ComponentPos) == StridePolicyType::NumDims,
                   "Invalid number of components provided for given Map's StridePolicy");
@@ -349,7 +347,7 @@ public:
 #ifndef AXOM_DEVICE_CODE
     verifyPositionImpl(setIdx, compIdx...);
 #endif
-    SetPosition elemIndex = setIdx * StridePolicyType::stride();
+    PositionType elemIndex = setIdx * StridePolicyType::stride();
     elemIndex += componentOffset(compIdx...);
     return *IndirectionPolicy::getIndirection(m_data, elemIndex);
   }
@@ -367,18 +365,18 @@ public:
    * The total storage size for the map's values is `size() * numComp()`
    */
   AXOM_SUPPRESS_HD_WARN
-  [[nodiscard]] AXOM_HOST_DEVICE SetPosition size() const
+  [[nodiscard]] AXOM_HOST_DEVICE PositionType size() const
   {
     return !policies::EmptySetTraits<SetType>::isEmpty(m_set.get())
-      ? static_cast<SetPosition>(m_set.get()->size())
-      : SetPosition(0);
+      ? static_cast<PositionType>(m_set.get()->size())
+      : PositionType(0);
   }
 
   /*
    * \brief  Gets the number of component values associated with each element.
    *         Equivalent to stride().
    */
-  [[nodiscard]] SetPosition numComp() const { return StridePolicyType::stride(); }
+  [[nodiscard]] PositionType numComp() const { return StridePolicyType::stride(); }
 
   /**
    * \brief Returns the shape of the component values associated with each element.
@@ -399,9 +397,9 @@ public:
   /** Set each entry in the map to the given value  */
   void fill(DataType val = DataType())
   {
-    const SetPosition sz = static_cast<SetPosition>(m_data.size());
+    const PositionType sz = static_cast<PositionType>(m_data.size());
 
-    for(SetPosition idx = SetPosition(); idx < sz; ++idx)
+    for(PositionType idx = PositionType(); idx < sz; ++idx)
     {
       m_data[idx] = val;
     }
@@ -413,8 +411,8 @@ public:
     SLIC_ASSERT(other.size() == size());
     SLIC_ASSERT(other.stride() == StridePolicyType::stride());
 
-    const SetPosition sz = size() * StridePolicyType::stride();
-    for(SetPosition idx = SetPosition(); idx < sz; ++idx)
+    const PositionType sz = size() * StridePolicyType::stride();
+    for(PositionType idx = PositionType(); idx < sz; ++idx)
     {
       m_data[idx] = other[idx];
     }
@@ -448,7 +446,7 @@ public:
     }
 
     /// \brief Set the stride of the Map using StridePolicy
-    MapBuilder& stride(SetPosition str)
+    MapBuilder& stride(PositionType str)
     {
       m_stride = StridePolicyType(str);
       return *this;
@@ -475,7 +473,7 @@ public:
    *        iterator to the element at the next flat index.
    */
   template <bool Const>
-  class MapIterator : public IteratorBase<MapIterator<Const>, SetPosition>
+  class MapIterator : public IteratorBase<MapIterator<Const>, PositionType>
   {
   public:
     using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
@@ -486,13 +484,12 @@ public:
     using value_type = std::remove_cv_t<DataType>;
     using reference = DataRefType;
     using pointer = std::add_pointer_t<std::remove_reference_t<reference>>;
-    using difference_type = SetPosition;
+    using difference_type = PositionType;
 
-    using IterBase = IteratorBase<MapIterator, SetPosition>;
+    using IterBase = IteratorBase<MapIterator, PositionType>;
     using MapConstPtr = std::conditional_t<Const, const Map*, Map*>;
     using iter = MapIterator;
-    using PositionType = SetPosition;
-    using IterBase::m_pos;
+      using IterBase::m_pos;
 
   public:
     MapIterator() = default;
@@ -514,7 +511,7 @@ public:
     PositionType compIndex() const { return m_pos % m_map->numComp(); }
 
     /// \brief Returns the flat index pointed to by this iterator.
-    SetPosition flatIndex() const { return this->m_pos; }
+    PositionType flatIndex() const { return this->m_pos; }
 
   protected:
     /// Implementation of advance() as required by IteratorBase
@@ -538,17 +535,16 @@ public:
    *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
   template <bool Const>
-  class MapRangeIterator : public IteratorBase<MapRangeIterator<Const>, SetPosition>
+  class MapRangeIterator : public IteratorBase<MapRangeIterator<Const>, PositionType>
   {
   public:
-    using IterBase = IteratorBase<MapRangeIterator, SetPosition>;
+    using IterBase = IteratorBase<MapRangeIterator, PositionType>;
     using MapConstPtr = std::conditional_t<Const, const Map*, Map*>;
 
     using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
     using DataType = std::remove_reference_t<DataRefType>;
 
-    using PositionType = SetPosition;
-    constexpr static int Dims = StridePolicyType::NumDims;
+      constexpr static int Dims = StridePolicyType::NumDims;
 
     // Dereference returns a reference to a cached ArrayView, while subscript
     // returns a value to avoid dangling from a temporary iterator.
@@ -565,7 +561,7 @@ public:
     using value_type = axom::ArrayView<DataType, Dims>;
     using reference = const value_type&;
     using pointer = const value_type*;
-    using difference_type = SetPosition;
+    using difference_type = PositionType;
 
   private:
     AXOM_HOST_DEVICE static value_type makeRange(MapConstPtr map, PositionType pos)
@@ -642,7 +638,7 @@ public:
     SetElement index() const { return m_map->index(this->m_pos); }
 
     /// \brief Returns the flat index pointed to by this iterator.
-    AXOM_HOST_DEVICE SetPosition flatIndex() const { return this->m_pos; }
+    AXOM_HOST_DEVICE PositionType flatIndex() const { return this->m_pos; }
 
     /// \brief Returns the number of components per element in the Map.
     PositionType numComp() const { return m_map->stride(); }
@@ -694,22 +690,22 @@ public:
   const OrderedMap& data() const { return m_data; }
 
 private:
-  inline void verifyPosition(SetPosition idx) const { verifyPositionImpl(idx); }
+  inline void verifyPosition(PositionType idx) const { verifyPositionImpl(idx); }
 
-  inline void verifyPosition(SetPosition setIdx, SetPosition compIdx) const
+  inline void verifyPosition(PositionType setIdx, PositionType compIdx) const
   {
     verifyPositionImpl(setIdx, compIdx);
   }
 
-  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx)) const
+  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(idx)) const
   {
     SLIC_ASSERT_MSG(
-      idx >= 0 && idx < SetPosition(m_data.size()),
+      idx >= 0 && idx < PositionType(m_data.size()),
       "Attempted to access element " << idx << " but map's data has size " << m_data.size());
   }
 
   template <typename ComponentIndex>
-  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
+  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(setIdx),
                                  ComponentIndex AXOM_DEBUG_PARAM(compIdx)) const
   {
     SLIC_ASSERT_MSG(setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
@@ -719,7 +715,7 @@ private:
   }
 
   template <typename... ComponentIndex>
-  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
+  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(setIdx),
                                  ComponentIndex... AXOM_DEBUG_PARAM(compIdx)) const
   {
 #ifdef AXOM_DEBUG
@@ -742,17 +738,17 @@ private:
   }
 
   template <typename ComponentIndex>
-  AXOM_HOST_DEVICE inline SetPosition componentOffset(ComponentIndex componentIndex) const
+  AXOM_HOST_DEVICE inline PositionType componentOffset(ComponentIndex componentIndex) const
   {
     return componentIndex;
   }
 
   template <typename... ComponentIndex>
-  AXOM_HOST_DEVICE inline SetPosition componentOffset(ComponentIndex... componentIndex) const
+  AXOM_HOST_DEVICE inline PositionType componentOffset(ComponentIndex... componentIndex) const
   {
     ElementShape indexArray {{componentIndex...}};
     ElementShape strides = StridePolicyType::strides();
-    SetPosition offset = 0;
+    PositionType offset = 0;
     for(int dim = 0; dim < StridePolicyType::NumDims; dim++)
     {
       offset += indexArray[dim] * strides[dim];
@@ -762,7 +758,7 @@ private:
 
   // setStride function should not be called after constructor is called.
   // This (should) override the StridePolicy setStride(s) function.
-  void setStride(SetPosition AXOM_UNUSED_PARAM(str))
+  void setStride(PositionType AXOM_UNUSED_PARAM(str))
   {
     SLIC_ASSERT_MSG(false, "Stride should not be changed after construction of map.");
   }
@@ -822,7 +818,7 @@ bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
   }
   else
   {
-    if(static_cast<SetPosition>(m_data.size()) != m_set.get()->size() * StridePolicyType::stride())
+    if(static_cast<PositionType>(m_data.size()) != m_set.get()->size() * StridePolicyType::stride())
     {
       if(verboseOutput)
       {
@@ -864,9 +860,9 @@ void Map<T, S, IndPol, StrPol, IfacePol>::print() const
       sstr << "\n** the stride of the map is " << StridePolicyType::stride() << ": ";
 
       sstr << "\n** Mapped data:";
-      for(SetPosition idx = 0; idx < this->size(); ++idx)
+      for(PositionType idx = 0; idx < this->size(); ++idx)
       {
-        for(SetPosition idx2 = 0; idx2 < StridePolicyType::stride(); ++idx2)
+        for(PositionType idx2 = 0; idx2 < StridePolicyType::stride(); ++idx2)
         {
           sstr << "\n\telt[" << idx << "," << idx2 << "]:\t"
                << (*this)[idx * StridePolicyType::stride() + idx2];

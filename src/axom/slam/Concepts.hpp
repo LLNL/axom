@@ -72,7 +72,7 @@ concept HasRelationAssociatedTypes = requires {
 template <typename T>
 concept HasMapAssociatedTypes = requires {
   typename T::DataType;
-  typename T::SetPosition;
+  typename T::PositionType;
   typename T::SetElement;
   typename T::ValueType;
   typename T::ConstValueType;
@@ -346,8 +346,8 @@ template <typename T>
 concept CommonMapModel =
   HasMapAssociatedTypes<T> && MapValueFor<typename T::ValueType, typename T::DataType> &&
   MapValueFor<typename T::ConstValueType, typename T::DataType> &&
-  requires(T& map, const T& constMap, typename T::SetPosition pos) {
-    { constMap.size() } -> std::same_as<typename T::SetPosition>;
+  requires(T& map, const T& constMap, typename T::PositionType pos) {
+    { constMap.size() } -> std::same_as<typename T::PositionType>;
     { map[pos] } -> std::same_as<typename T::ValueType>;
     { constMap[pos] } -> std::same_as<typename T::ConstValueType>;
   };
@@ -356,7 +356,7 @@ concept CommonMapModel =
 template <typename T>
 concept UnivariateMapLike = CommonMapModel<T> && HasUnivariateMapAssociatedTypes<T> &&
   UnivariateSetLike<typename T::SetType> &&
-  std::same_as<typename T::SetPosition, typename T::SetType::PositionType> &&
+  std::same_as<typename T::PositionType, typename T::SetType::PositionType> &&
   std::same_as<typename T::SetElement, typename T::SetType::ElementType> && requires(const T& map) {
     { map.set() } -> std::same_as<const typename T::SetType*>;
   };
@@ -365,7 +365,7 @@ concept UnivariateMapLike = CommonMapModel<T> && HasUnivariateMapAssociatedTypes
 template <typename T>
 concept BivariateMapLike = CommonMapModel<T> && HasBivariateMapAssociatedTypes<T> &&
   BivariateSetLike<typename T::BivariateSetType> &&
-  std::same_as<typename T::SetPosition, typename T::BivariateSetType::PositionType> &&
+  std::same_as<typename T::PositionType, typename T::BivariateSetType::PositionType> &&
   std::same_as<typename T::SetElement, typename T::BivariateSetType::ElementType> &&
   requires(const T& map) {
     { map.set() } -> std::same_as<const typename T::BivariateSetType*>;
@@ -641,8 +641,8 @@ concept SubMappable = MapLike<T> && requires {
   typename T::IndirectionPolicy;
   typename T::range_iterator;
   typename T::const_range_iterator;
-} && MapStridePolicyFor<typename T::StridePolicyType, typename T::SetPosition> &&
-  MapIndirectionPolicyFor<typename T::IndirectionPolicy, typename T::SetPosition, typename T::DataType> &&
+} && MapStridePolicyFor<typename T::StridePolicyType, typename T::PositionType> &&
+  MapIndirectionPolicyFor<typename T::IndirectionPolicy, typename T::PositionType, typename T::DataType> &&
   requires(const T& map) {
     { map.shape() } -> std::same_as<typename T::StridePolicyType::ShapeType>;
   };

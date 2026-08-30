@@ -46,7 +46,7 @@ namespace axom::slam
  */
 
 template <typename SuperMapType,
-          typename SubsetType,  //= slam::RangeSet<SetPosition, SetElement>
+          typename SubsetType,  //= slam::RangeSet<PositionType, SetElement>
           typename InterfacePolicy = policies::ConcreteInterface>
 class SubMap : public policies::MapInterface<InterfacePolicy, typename SubsetType::PositionType>,
                public SuperMapType::StridePolicyType
@@ -60,7 +60,7 @@ public:
   using IndexSetType = SubsetType;
   /// The SubMap domain; retained as SetType for MapLike compatibility.
   using SetType = IndexSetType;
-  using SetPosition = typename SubsetType::PositionType;
+  using PositionType = typename SubsetType::PositionType;
   using SetElement = typename SubsetType::ElementType;
   /// The element obtained after projecting a subset index through the super-map's set.
   using ProjectedElement = typename SuperMapType::SetElement;
@@ -119,7 +119,7 @@ public:
     // constraint on SuperMapType would then depend on itself.
     static_assert(SubMappable<SuperMapType>,
                   "SubMap requires a super-map whose stride and indirection policies it can re-use");
-    static_assert(FlatRangeOver<SubsetType, typename SuperMapType::SetPosition>,
+    static_assert(FlatRangeOver<SubsetType, typename SuperMapType::PositionType>,
                   "SubMap requires an index set of flat positions into its super-map");
   }
 
@@ -199,7 +199,7 @@ public:
   AXOM_HOST_DEVICE const SetType* set() const { return &m_subsetIdx; }
 
   /// \brief returns the size of the SubMap
-  AXOM_HOST_DEVICE SetPosition size() const { return m_subsetIdx.size(); }
+  AXOM_HOST_DEVICE PositionType size() const { return m_subsetIdx.size(); }
 
   /// \brief returns the number of components (aka. stride) of the SubMap
   AXOM_HOST_DEVICE IndexType numComp() const { return StridePolicyType::stride(); }
@@ -231,13 +231,13 @@ private:  //helper functions
   }
 
   /// Checks the ComponentFlatIndex is valid
-  void verifyPosition(SetPosition idx) const { verifyPositionImpl(idx); }
+  void verifyPosition(PositionType idx) const { verifyPositionImpl(idx); }
 
   /// Checks the ElementFlatIndex and the component index is valid
-  void verifyPosition(SetPosition idx, SetPosition comp) const { verifyPositionImpl(idx, comp); }
+  void verifyPosition(PositionType idx, PositionType comp) const { verifyPositionImpl(idx, comp); }
 
   /// Checks the ComponentFlatIndex is valid
-  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx)) const
+  void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(idx)) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() * numComp(),
                     "Attempted to access element " << idx << " but Submap's data has size "
@@ -246,7 +246,7 @@ private:  //helper functions
 
   /// Checks the ElementFlatIndex and the component index is valid
   template <typename ComponentIndex>
-  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx), ComponentIndex AXOM_DEBUG_PARAM(comp)) const
+  void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(idx), ComponentIndex AXOM_DEBUG_PARAM(comp)) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() && comp >= 0 && comp < numComp(),
                     "Attempted to access element "
@@ -256,7 +256,7 @@ private:  //helper functions
 
   /// Checks the ElementFlatIndex and the component index is valid
   template <typename... ComponentIndex>
-  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx),
+  void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(idx),
                           ComponentIndex... AXOM_DEBUG_PARAM(comp)) const
   {
 #ifdef AXOM_DEBUG
@@ -279,19 +279,19 @@ private:  //helper functions
   }
 
   /// \brief Computes the flat indexing offset for a given component.
-  AXOM_HOST_DEVICE inline SetPosition componentOffset() const { return SetPosition {}; }
+  AXOM_HOST_DEVICE inline PositionType componentOffset() const { return PositionType {}; }
   template <typename ComponentIndex>
-  AXOM_HOST_DEVICE inline SetPosition componentOffset(ComponentIndex componentIndex) const
+  AXOM_HOST_DEVICE inline PositionType componentOffset(ComponentIndex componentIndex) const
   {
     return componentIndex;
   }
 
   template <typename... ComponentIndex>
-  AXOM_HOST_DEVICE inline SetPosition componentOffset(ComponentIndex... componentIndex) const
+  AXOM_HOST_DEVICE inline PositionType componentOffset(ComponentIndex... componentIndex) const
   {
     ElementShape indexArray {{componentIndex...}};
     ElementShape strides = StridePolicyType::strides();
-    SetPosition offset = 0;
+    PositionType offset = 0;
     for(int dim = 0; dim < StridePolicyType::NumDims; dim++)
     {
       offset += indexArray[dim] * strides[dim];
@@ -338,7 +338,7 @@ bool SubMap<SuperMapType, SetType, InterfacePolicy>::isValid(bool verboseOutput)
     //Check all indices is inside the SuperMap range
     for(int i = 0; i < m_subsetIdx.size(); i++)
     {
-      SetPosition pos = m_subsetIdx[i];
+      PositionType pos = m_subsetIdx[i];
       if(pos < 0 || pos >= map_size)
       {
         isValid = false;
@@ -369,7 +369,7 @@ bool SubMap<SuperMapType, SetType, InterfacePolicy>::isValid(bool verboseOutput)
  */
 template <typename SuperMapType, typename SubsetType, typename InterfacePolicy>
 class SubMap<SuperMapType, SubsetType, InterfacePolicy>::Iterator
-  : public IteratorBase<Iterator, SetPosition>
+  : public IteratorBase<Iterator, PositionType>
 {
 public:
   using iterator_concept = std::random_access_iterator_tag;
@@ -377,12 +377,11 @@ public:
   using value_type = DataType;
   using reference = DataRefType;
   using pointer = std::add_pointer_t<std::remove_reference_t<reference>>;
-  using difference_type = SetPosition;
+  using difference_type = PositionType;
 
-  using IterBase = IteratorBase<Iterator, SetPosition>;
+  using IterBase = IteratorBase<Iterator, PositionType>;
   using IterBase::m_pos;
   using iter = Iterator;
-  using PositionType = SetPosition;
 
   Iterator() = default;
 
@@ -405,7 +404,7 @@ public:
   PositionType compIndex() const { return m_pos % m_submap.numComp(); }
 
   /// \brief Returns the flat index pointed to by this iterator.
-  SetPosition flatIndex() const { return this->m_pos; }
+  PositionType flatIndex() const { return this->m_pos; }
 
   /// \brief Returns the number of component per element in the SubMap.
   PositionType numComp() const { return m_submap.numComp(); }
@@ -426,14 +425,13 @@ private:
  */
 template <typename SuperMapType, typename SubsetType, typename InterfacePolicy>
 class SubMap<SuperMapType, SubsetType, InterfacePolicy>::RangeIterator
-  : public IteratorBase<RangeIterator, SetPosition>
+  : public IteratorBase<RangeIterator, PositionType>
 {
 private:
 public:
-  using IterBase = IteratorBase<RangeIterator, SetPosition>;
+  using IterBase = IteratorBase<RangeIterator, PositionType>;
   using IterBase::m_pos;
   using iter = Iterator;
-  using PositionType = SetPosition;
 
 private:
   using MapRangeIterator = std::conditional_t<std::is_const<SuperMapType>::value,
@@ -450,7 +448,7 @@ public:
   using value_type = typename MapRangeIterator::value_type;
   using reference = typename MapRangeIterator::reference;
   using pointer = typename MapRangeIterator::pointer;
-  using difference_type = SetPosition;
+  using difference_type = PositionType;
 
   RangeIterator() = default;
 
@@ -496,10 +494,10 @@ public:
   ProjectedElement index() const { return m_submap.index(this->m_pos); }
 
   /// \brief Returns the flat index in the original map pointed to by thisiterator.
-  SetPosition flatIndex() const { return m_mapIter.flatIndex(); }
+  PositionType flatIndex() const { return m_mapIter.flatIndex(); }
 
   /// \brief Returns the index into the submap pointed to by this iterator.
-  SetPosition submapIndex() const { return this->m_pos; }
+  PositionType submapIndex() const { return this->m_pos; }
 
   /// \brief Returns the number of components per element in the Map.
   PositionType numComp() const { return m_mapIter.numComp(); }

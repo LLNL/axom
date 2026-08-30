@@ -98,14 +98,14 @@ public:
 
   using FirstPositionType = typename BSet::FirstSetType::PositionType;
   using SecondPositionType = typename BSet::SecondSetType::PositionType;
-  using SetPosition = typename BSet::PositionType;
+  using PositionType = typename BSet::PositionType;
   using SetElement = typename BSet::ElementType;
 
   using ElementShape = typename StridePolicyType::ShapeType;
 
   // The internal map is indexed by flat bivariate positions.
   // Its backing set is independent of the endpoint-coordinate ElementType.
-  using SetType = typename slam::RangeSet<SetPosition, SetPosition>::ConcreteSet;
+  using SetType = typename slam::RangeSet<PositionType, PositionType>::ConcreteSet;
   using MapType = Map<DataType, SetType, IndPol, StrPol, IfacePol>;
   using OrderedSetType = typename BSet::SubsetType;
 
@@ -115,9 +115,9 @@ public:
   static_assert(BivariateMapDomain<BivariateSetType>,
                 "BivariateMap requires a bivariate set it can bind field data over");
   static_assert(
-    MapStridePolicyFor<StridePolicyType, SetPosition>,
+    MapStridePolicyFor<StridePolicyType, PositionType>,
     "BivariateMap requires a scalar or multi-dimensional stride over its position type");
-  static_assert(MapIndirectionPolicyFor<IndirectionPolicy, SetPosition, DataType>,
+  static_assert(MapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>,
                 "BivariateMap requires map indirection over its position and data types");
   using PointerType = std::remove_reference_t<ValueType>*;
   using ConstPointerType = std::remove_reference_t<ConstValueType>*;
@@ -202,7 +202,7 @@ public:
                DataType defaultValue = DataType(),
                ElementShape shape = StridePolicyType::DefaultSize(),
                int allocatorID = axom::getDefaultAllocatorID())
-    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, SetPosition, DataType>
+    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>
     : StridePolicyType(shape)
     , m_bset(bSet)
     , m_map(SetType(bSet->size()), defaultValue, shape, allocatorID)
@@ -213,7 +213,7 @@ public:
   ///       Use the pointer overload for polymorphic sets.
   template <typename UBSet>
     requires(!std::is_abstract_v<BivariateSetType> && std::same_as<BivariateSetType, UBSet> &&
-             AllocatingMapIndirectionPolicyFor<IndirectionPolicy, SetPosition, DataType>)
+             AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>)
   BivariateMap(const UBSet& bSet,
                DataType defaultValue = DataType(),
                ElementShape shape = StridePolicyType::DefaultSize(),
@@ -300,8 +300,8 @@ public:
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  AXOM_HOST_DEVICE ConstValueType operator[](SetPosition setIndex) const { return m_map[setIndex]; }
-  AXOM_HOST_DEVICE ValueType operator[](SetPosition setIndex) { return m_map[setIndex]; }
+  AXOM_HOST_DEVICE ConstValueType operator[](PositionType setIndex) const { return m_map[setIndex]; }
+  AXOM_HOST_DEVICE ValueType operator[](PositionType setIndex) { return m_map[setIndex]; }
 
 public:
   /**
@@ -363,13 +363,13 @@ public:
    * \pre `0 <= comp < numComp()`
    */
   template <typename... ComponentIndex>
-  AXOM_HOST_DEVICE ConstValueType flatValue(SetPosition flatIndex, ComponentIndex... comp) const
+  AXOM_HOST_DEVICE ConstValueType flatValue(PositionType flatIndex, ComponentIndex... comp) const
   {
     return m_map(flatIndex, comp...);
   }
 
   template <typename... ComponentIndex>
-  AXOM_HOST_DEVICE ValueType flatValue(SetPosition flatIndex, ComponentIndex... comp)
+  AXOM_HOST_DEVICE ValueType flatValue(PositionType flatIndex, ComponentIndex... comp)
   {
     return m_map(flatIndex, comp...);
   }
@@ -392,7 +392,7 @@ public:
                                               SecondPositionType s2,
                                               ComponentIndex... comp) const
   {
-    SetPosition i = set()->findElementFlatIndex(s1, s2);
+    PositionType i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -406,7 +406,7 @@ public:
                                          SecondPositionType s2,
                                          ComponentIndex... comp)
   {
-    SetPosition i = set()->findElementFlatIndex(s1, s2);
+    PositionType i = set()->findElementFlatIndex(s1, s2);
     if(i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -441,7 +441,7 @@ public:
   OrderedSetType indexSet(FirstPositionType s1) const { return set()->getElements(s1); }
 
   /// \brief Search for the FlatIndex of an element given its DenseIndex in the BivariateSet.
-  AXOM_HOST_DEVICE inline SetPosition flatIndex(FirstPositionType s1, SecondPositionType s2) const
+  AXOM_HOST_DEVICE inline PositionType flatIndex(FirstPositionType s1, SecondPositionType s2) const
   {
     return set()->findElementFlatIndex(s1, s2);
   }
@@ -532,10 +532,10 @@ public:
   ///
 
   /// \brief Returns the BivariateSet size.
-  AXOM_HOST_DEVICE SetPosition size() const { return set()->size(); }
+  AXOM_HOST_DEVICE PositionType size() const { return set()->size(); }
 
   /// \brief Returns the BivariateSet size.
-  AXOM_HOST_DEVICE SetPosition totalSize() const { return set()->size(); }
+  AXOM_HOST_DEVICE PositionType totalSize() const { return set()->size(); }
 
   FirstPositionType firstSetSize() const { return set()->firstSetSize(); }
 
@@ -545,7 +545,7 @@ public:
   auto size(FirstPositionType s) const { return set()->size(s); }
 
   /// \brief Return the number of components of the map
-  AXOM_HOST_DEVICE SetPosition numComp() const { return StrPol::stride(); }
+  AXOM_HOST_DEVICE PositionType numComp() const { return StrPol::stride(); }
 
   /// @}
 
@@ -568,9 +568,9 @@ public:
 
 private:
   /// \brief Check the given ElementFlatIndex is valid.
-  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const
   {
-    SLIC_ASSERT_MSG(pos >= 0 && pos < SetPosition(m_map.size()),
+    SLIC_ASSERT_MSG(pos >= 0 && pos < PositionType(m_map.size()),
                     "Attempted to access element " << pos << " but BivariateMap's data has size "
                                                    << m_map.size());
   }
@@ -600,10 +600,10 @@ typename BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::NullBivariateSetType c
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
 template <bool Const>
 class BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::FlatIterator
-  : public IteratorBase<FlatIterator<Const>, SetPosition>
+  : public IteratorBase<FlatIterator<Const>, PositionType>
 {
 private:
-  using IterBase = IteratorBase<FlatIterator<Const>, SetPosition>;
+  using IterBase = IteratorBase<FlatIterator<Const>, PositionType>;
   using iter = FlatIterator;
 
 public:
@@ -615,9 +615,8 @@ public:
   using value_type = DataType;
   using reference = DataRefType;
   using pointer = std::add_pointer_t<std::remove_reference_t<reference>>;
-  using difference_type = SetPosition;
+  using difference_type = PositionType;
 
-  using PositionType = SetPosition;
   static constexpr PositionType INVALID_POS = -2;
 
 public:
@@ -682,10 +681,10 @@ private:
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
 template <bool Const>
 class BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::RangeIterator
-  : public IteratorBase<RangeIterator<Const>, SetPosition>
+  : public IteratorBase<RangeIterator<Const>, PositionType>
 {
 public:
-  using IterBase = IteratorBase<RangeIterator<Const>, SetPosition>;
+  using IterBase = IteratorBase<RangeIterator<Const>, PositionType>;
 
   using MapIterator = typename MapType::template MapRangeIterator<Const>;
 
@@ -698,13 +697,12 @@ public:
   using value_type = typename MapIterator::value_type;
   using reference = typename MapIterator::reference;
   using pointer = typename MapIterator::pointer;
-  using difference_type = SetPosition;
+  using difference_type = PositionType;
 
 public:
   using DataRefType = typename MapIterator::DataRefType;
   using BivariateMapPtr = std::conditional_t<Const, const BivariateMap*, BivariateMap*>;
 
-  using PositionType = SetPosition;
   static constexpr PositionType INVALID_POS = -2;
 
 public:
