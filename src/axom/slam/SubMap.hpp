@@ -112,7 +112,15 @@ public:
     : StridePolicyType(*supermap)
     , m_superMap(supermap)
     , m_subsetIdx(subset_idxset)
-  { }
+  {
+    // Checked here instead of in the class body since BivariateMap has a
+    // `SubMapType::iterator` member aliases, and a class-body
+    // constraint on SuperMapType would then depend on itself.
+    static_assert(SubMappable<SuperMapType>,
+                  "SubMap requires a super-map whose stride and indirection policies it can re-use");
+    static_assert(FlatRangeOver<SubsetType, typename SuperMapType::SetPosition>,
+                  "SubMap requires an index set of flat positions into its super-map");
+  }
 
   /// \name SubMap individual access functions
   /// @{

@@ -804,6 +804,27 @@ static_assert(slam::MapOver<ConstUnarySubMap, ConcreteRange>);
 static_assert(slam::MapLike<BinarySubMap>);
 static_assert(slam::MapLike<ConstBinarySubMap>);
 static_assert(slam::MapOver<BinarySubMap, typename BinaryMap::SetType>);
+
+// SubMappable is the contract a SubMap re-uses from its super-map:
+// A map whose stride and indirection policies it can adopt.
+static_assert(slam::SubMappable<UnaryMap>);
+static_assert(slam::SubMappable<BinaryMap>);
+static_assert(slam::SubMappable<const UnaryMap>, "a SubMap may view a const super-map");
+static_assert(!slam::SubMappable<ConcreteRange>, "a set is not a super-map");
+static_assert(!slam::SubMappable<int>);
+// Documents a real limitation rather than asserting an aspiration:
+// SubMap names its own alias IndirectionPolicyType, not IndirectionPolicy,
+// so a SubMap is not itself sub-mappable. Taking a SubMap of a SubMap is unsupported.
+static_assert(slam::MapLike<BinarySubMap>);
+static_assert(!slam::SubMappable<BinarySubMap>);
+
+// FlatRangeOver is the index set a SubMap is built over, and the row range reported by a bivariate set.
+// Subscript lives here rather than in OrderedSetLike because a bivariate set is OrderedSetLike
+// and has no operator[].
+static_assert(slam::FlatRangeOver<typename BinaryMap::SetType, typename BinaryMap::SetPosition>);
+static_assert(slam::OrderedSetLike<Product>);
+static_assert(!slam::FlatRangeOver<Product, typename Product::PositionType>,
+              "a bivariate set is ordered but not subscriptable");
 static_assert(slam::MapOver<ConstBinarySubMap, typename BinaryMap::SetType>);
 static_assert(std::same_as<typename BinarySubMap::IndexSetType, typename BinaryMap::SetType>);
 static_assert(std::same_as<typename BinarySubMap::ProjectedElement, typename Product::ElementType>);

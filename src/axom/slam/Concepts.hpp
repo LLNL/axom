@@ -254,10 +254,14 @@ concept BivariateSetLike = SetLike<T> && HasBivariateSetAssociatedTypes<T> &&
     { set.size(firstPosition) } -> std::same_as<typename T::PositionType>;
   };
 
-/// \brief An ordered set of flat positions: the shape elementRangeSet() returns.
+/// \brief An ordered set of flat positions (the shape returned by elementRangeSet())
 template <typename R, typename Position>
 concept FlatRangeOver = OrderedSetLike<std::remove_cvref_t<R>> &&
-  std::same_as<typename std::remove_cvref_t<R>::ElementType, Position>;
+  std::same_as<typename std::remove_cvref_t<R>::ElementType, Position> &&
+  requires(const std::remove_cvref_t<R>& range,
+           typename std::remove_cvref_t<R>::PositionType pos) {
+    { range[pos] } -> std::convertible_to<Position>;
+  };
 
 /*!
  * \brief A BivariateSetLike type that a BivariateMap can bind field data over.
@@ -615,6 +619,29 @@ concept AllocatingMapIndirectionPolicyFor = MapIndirectionPolicyFor<T, Position,
     { T::create(size, value, allocatorId) } -> std::same_as<typename T::IndirectionBufferType>;
   };
 
+/*!
+ * \brief A MapLike type that support SubMap
+ *
+ * MapLike states the abstraction: a sized domain you can index.
+ * A SubMap needs more than that, because it re-uses its storage policies.
+ * It inherits the super-map's stride policy, derives its own reference type
+ * from the super-map's indirection policy, and forwards range iteration.
+ *
+ * It relates to MapLike like FlatRelationLike relates to RelationLike, 
+ * and like BivariateMapDomain relates to BivariateSetLike.
+ */
+template <typename T>
+concept SubMappable = MapLike<T> && requires {
+  typename T::StridePolicyType;
+  typename T::IndirectionPolicy;
+  typename T::range_iterator;
+  typename T::const_range_iterator;
+} && MapStridePolicyFor<typename T::StridePolicyType, typename T::SetPosition> &&
+  MapIndirectionPolicyFor<typename T::IndirectionPolicy, typename T::SetPosition, typename T::DataType> &&
+  requires(const T& map) {
+    { map.shape() } -> std::same_as<typename T::StridePolicyType::ShapeType>;
+  };
+
 }  // namespace detail::model
 
 //------------------------------------------------------------------------------
@@ -686,6 +713,17 @@ concept BivariateMapLike = detail::model::BivariateMapLike<detail::model_t<T>>;
 /// \tparam T the candidate map type
 template <typename T>
 concept MapLike = detail::model::MapLike<detail::model_t<T>>;
+
+/// \brief A subscriptable ordered set whose elements are flat positions in a larger space.
+/// \tparam R the candidate range type
+/// \tparam Position the flat position type its elements index
+template <typename R, typename Position>
+concept FlatRangeOver = detail::model::FlatRangeOver<R, detail::model_t<Position>>;
+
+/// \brief A MapLike type that a SubMap can be taken of.
+/// \tparam T the candidate super-map type
+template <typename T>
+concept SubMappable = detail::model::SubMappable<detail::model_t<T>>;
 
 /// \brief A map whose semantic domain is exactly \a S.
 /// \tparam M the candidate map type
