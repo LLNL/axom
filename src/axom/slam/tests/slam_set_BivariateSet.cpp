@@ -748,6 +748,7 @@ TEST(slam_bivariate_set, relation_set_projects_distinct_typed_handles)
   using ConnectivitySet = typename slam::RelationSet<Relation>::ConcreteSet;
   ConnectivitySet connectivity(&relation);
   static_assert(slam::BivariateSetLike<ConnectivitySet>);
+  static_assert(slam::BivariateMapDomain<ConnectivitySet>);
   static_assert(
     std::is_same_v<typename ConnectivitySet::ElementType, std::pair<ZonePosition, NodePosition>>);
 

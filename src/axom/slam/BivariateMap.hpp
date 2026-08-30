@@ -112,8 +112,8 @@ public:
   using ValueType = typename IndirectionPolicy::IndirectionResult;
   using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
 
-  static_assert(BivariateSetLike<BivariateSetType>,
-                "BivariateMap requires a BivariateSetLike domain");
+  static_assert(BivariateMapDomain<BivariateSetType>,
+                "BivariateMap requires a bivariate set it can bind field data over");
   static_assert(
     MapStridePolicyFor<StridePolicyType, SetPosition>,
     "BivariateMap requires a scalar or multi-dimensional stride over its position type");
@@ -567,12 +567,6 @@ public:
   void clear() { m_map.clear(); }
 
 private:
-  /// \brief Check the indices (DenseIndex) are valid
-  void verifyPosition(FirstPositionType s1, SecondPositionType s2) const
-  {
-    set()->verifyPosition(s1, s2);
-  }
-
   /// \brief Check the given ElementFlatIndex is valid.
   void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos)) const
   {

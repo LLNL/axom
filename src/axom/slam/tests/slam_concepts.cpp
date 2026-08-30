@@ -150,6 +150,9 @@ struct ExplicitPositionBivariateSet
   using ElementType = std::pair<ExplicitFirstPosition, ExplicitSecondPosition>;
 
   PositionType size() const;
+  typename FirstSetType::PositionType firstSetSize() const;
+  typename SecondSetType::PositionType secondSetSize() const;
+  PositionType size(typename FirstSetType::PositionType) const;
   bool empty() const;
   ElementType at(PositionType) const;
   const FirstSetType* getFirstSet() const;
@@ -222,6 +225,9 @@ struct MinimalBivariateSet
   using ElementType = MinimalCoordinate;
 
   PositionType size() const;
+  typename FirstSetType::PositionType firstSetSize() const;
+  typename SecondSetType::PositionType secondSetSize() const;
+  PositionType size(typename FirstSetType::PositionType) const;
   bool empty() const;
   ElementType at(PositionType) const;
   const FirstSetType* getFirstSet() const;
@@ -243,6 +249,9 @@ struct BivariateSetLikeIsASet
   using ElementType = MinimalCoordinate;
 
   PositionType size() const;
+  typename FirstSetType::PositionType firstSetSize() const;
+  typename SecondSetType::PositionType secondSetSize() const;
+  PositionType size(typename FirstSetType::PositionType) const;
   bool empty() const;
   ElementType at(PositionType) const;
   const FirstSetType* getFirstSet() const;
@@ -263,6 +272,9 @@ struct BivariateSetMissingEmpty
   using ElementType = MinimalCoordinate;
 
   PositionType size() const;
+  typename FirstSetType::PositionType firstSetSize() const;
+  typename SecondSetType::PositionType secondSetSize() const;
+  PositionType size(typename FirstSetType::PositionType) const;
   ElementType at(PositionType) const;
   const FirstSetType* getFirstSet() const;
   const SecondSetType* getSecondSet() const;
@@ -281,6 +293,9 @@ struct HeterogeneousPositionBivariateSet
   using SecondSetType = WideRange;
 
   PositionType size() const;
+  typename FirstSetType::PositionType firstSetSize() const;
+  typename SecondSetType::PositionType secondSetSize() const;
+  PositionType size(typename FirstSetType::PositionType) const;
   bool empty() const;
   ElementType at(PositionType) const;
   const FirstSetType* getFirstSet() const;
@@ -676,6 +691,18 @@ static_assert(slam::SetLike<MinimalBivariateSet>);
 static_assert(!slam::UnivariateSetLike<MinimalBivariateSet>);
 static_assert(!slam::BivariateSetLike<BivariateSetMissingEmpty>);
 static_assert(!slam::SetLike<BivariateSetMissingEmpty>);
+
+// BivariateMapDomain is the contract BivariateMap relies on.
+static_assert(slam::BivariateMapDomain<Product>);
+static_assert(slam::BivariateMapDomain<HeterogeneousProduct>);
+static_assert(slam::BivariateSetLike<MinimalBivariateSet>);
+static_assert(!slam::BivariateMapDomain<MinimalBivariateSet>,
+              "coordinate structure alone is not enough to bind a BivariateMap");
+static_assert(slam::Validatable<Product>);
+static_assert(!slam::Validatable<MinimalBivariateSet>);
+
+// FlatRelationLike gained isValid(), which RelationSet::isValid() forwards to.
+static_assert(slam::Validatable<VariableRelation>);
 
 template <typename S>
   requires slam::SetLike<S>

@@ -176,6 +176,12 @@ concept SetLike = HasSetAssociatedTypes<T> && PositionLike<typename T::PositionT
     { set.at(pos) } -> std::convertible_to<typename T::ElementType>;
   };
 
+/// \brief A container that can check its own internal consistency.
+template <typename T>
+concept Validatable = requires(const T& container) {
+  { container.isValid(false) } -> std::convertible_to<bool>;
+};
+
 /*!
  * \brief A set that is not a bivariate set.
  *
@@ -243,6 +249,27 @@ concept BivariateSetLike = SetLike<T> && HasBivariateSetAssociatedTypes<T> &&
     {
       set.flatToSecondIndex(flatPosition)
     } -> std::same_as<typename T::SecondSetType::PositionType>;
+    { set.firstSetSize() } -> std::same_as<typename T::FirstSetType::PositionType>;
+    { set.secondSetSize() } -> std::same_as<typename T::SecondSetType::PositionType>;
+    { set.size(firstPosition) } -> std::same_as<typename T::PositionType>;
+  };
+
+/// \brief An ordered set of flat positions: the shape elementRangeSet() returns.
+template <typename R, typename Position>
+concept FlatRangeOver = OrderedSetLike<std::remove_cvref_t<R>> &&
+  std::same_as<typename std::remove_cvref_t<R>::ElementType, Position>;
+
+/*!
+ * \brief A BivariateSetLike type that a BivariateMap can bind field data over.
+ *
+ * BivariateSetLike models only the coordinate structure.
+ * This adds what would be needed to bind a map.
+ */
+template <typename T>
+concept BivariateMapDomain = BivariateSetLike<T> && OrderedSetLike<T> && Validatable<T> &&
+  requires(const T& set, typename T::FirstSetType::PositionType firstPosition) {
+    { T::INVALID_POS } -> std::convertible_to<typename T::PositionType>;
+    { set.elementRangeSet(firstPosition) } -> FlatRangeOver<typename T::PositionType>;
   };
 
 //------------------------------------------------------------------------------
@@ -277,7 +304,7 @@ concept RelationLike = HasRelationAssociatedTypes<T> &&
  * operations required to adapt a relation into a bivariate RelationSet.
  */
 template <typename T>
-concept FlatRelationLike = RelationLike<T> &&
+concept FlatRelationLike = RelationLike<T> && Validatable<T> &&
   requires {
     typename T::FlatPositionType;
     typename T::RelationSubset;
@@ -624,6 +651,16 @@ concept OrderedSetLike = detail::model::OrderedSetLike<detail::model_t<T>>;
 /// \tparam T the candidate bivariate set type
 template <typename T>
 concept BivariateSetLike = detail::model::BivariateSetLike<detail::model_t<T>>;
+
+/// \brief A container that can check its own internal consistency.
+/// \tparam T the candidate container type
+template <typename T>
+concept Validatable = detail::model::Validatable<detail::model_t<T>>;
+
+/// \brief A BivariateSetLike type that a BivariateMap can bind field data over.
+/// \tparam T the candidate bivariate set type
+template <typename T>
+concept BivariateMapDomain = detail::model::BivariateMapDomain<detail::model_t<T>>;
 
 /// \brief A relation exposing its two sets and a const iterable row per from-set position.
 /// \tparam T the candidate relation type

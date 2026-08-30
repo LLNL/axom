@@ -51,10 +51,18 @@ public:
 private:
   using BaseType =
     policies::BivariateSetInterface<InterfaceType, SetType1, SetType2, typename Relation::FlatPositionType>;
-  using RangeSetType = typename BaseType::RangeSetType;
   using BaseSubsetType = typename BaseType::SubsetType;
 
 public:
+  /*!
+   * \brief The type returned by elementRangeSet(): an ordered set of flat positions.
+   *
+   * \note Public, matching ProductSet and the BivariateSet interface policies.
+   *  A private alias here would shadow the inherited one and leave callers
+   *  unable to name the return type of a public method.
+   */
+  using RangeSetType = typename BaseType::RangeSetType;
+
   using FirstPositionType = typename BaseType::FirstPositionType;
   using SecondPositionType = typename BaseType::SecondPositionType;
   using PositionType = typename BaseType::PositionType;
