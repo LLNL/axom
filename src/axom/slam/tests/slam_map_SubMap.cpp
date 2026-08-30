@@ -18,6 +18,8 @@
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/SubMap.hpp"
+#include "axom/slam/ProductSet.hpp"
+#include "axom/slam/BivariateMap.hpp"
 
 #include <type_traits>
 
@@ -222,6 +224,84 @@ bool constructBySubMap()
   SLIC_INFO("Checking elements");
 
   return true;
+}
+
+TEST(slam_map, submap_of_submap)
+{
+  // A SubMap is itself a map, so we can take a SubMap from it
+  using ProductSetType = typename slam::ProductSet<RangeSetType, RangeSetType>::ConcreteSet;
+  using BMapType = slam::BivariateMap<double, ProductSetType>;
+  using RowSubMap = typename BMapType::SubMapType;
+  using NestedSubMap = slam::SubMap<RowSubMap, typename RowSubMap::IndexSetType>;
+
+  static_assert(slam::SubMappable<BMapType>);
+  static_assert(slam::SubMappable<RowSubMap>, "a SubMap can serve as a super-map");
+  static_assert(slam::SubMappable<NestedSubMap>, "and composition does not bottom out");
+
+  constexpr PositionType NROWS = 4, NCOLS = 5;
+  RangeSetType rows(NROWS), cols(NCOLS);
+  ProductSetType prod(&rows, &cols);
+  BMapType bmap(prod, 0.0);
+
+  // each value encodes its own coordinate, so a misindex cannot alias
+  for(PositionType i = 0; i < NROWS; ++i)
+  {
+    for(PositionType j = 0; j < NCOLS; ++j)
+    {
+      bmap(i, j) = 100.0 * i + j;
+    }
+  }
+
+  RowSubMap row2 = bmap(2);
+  ASSERT_EQ(NCOLS, row2.size());
+
+  // columns 1..3 of row 2
+  constexpr PositionType FIRST = 1, COUNT = 3;
+  auto inner = typename RowSubMap::IndexSetType::SetBuilder().size(COUNT).offset(FIRST);
+  NestedSubMap mid(&row2, inner);
+
+  ASSERT_EQ(COUNT, mid.size());
+  for(PositionType k = 0; k < mid.size(); ++k)
+  {
+    EXPECT_EQ(200.0 + (k + FIRST), mid[k]);
+  }
+
+  // element iteration
+  double sum = 0.0;
+  PositionType visited = 0;
+  for(auto it = mid.begin(); it != mid.end(); ++it, ++visited)
+  {
+    sum += *it;
+  }
+  EXPECT_EQ(COUNT, visited);
+  EXPECT_EQ(201.0 + 202.0 + 203.0, sum);
+
+  // Range iteration. This is a regression test for an index-space bug in
+  // SubMap::RangeIterator::advance(): stepping the parent iterator by a
+  // difference computed from the parent's flatIndex() only works when the
+  // parent is a Map or BivariateMap.
+  double rangeSum = 0.0;
+  PositionType rangeVisited = 0;
+  for(auto it = mid.set_begin(); it != mid.set_end(); ++it, ++rangeVisited)
+  {
+    rangeSum += (*it)[0];
+  }
+  EXPECT_EQ(COUNT, rangeVisited);
+  EXPECT_EQ(201.0 + 202.0 + 203.0, rangeSum);
+
+  // index() projects exactly one level: a nested subset index becomes a
+  // position in the parent SubMap's index set, not a bivariate coordinate.
+  for(PositionType k = 0; k < mid.size(); ++k)
+  {
+    EXPECT_EQ(row2.set()->at(k + FIRST), mid.index(k));
+  }
+  // ... and projecting once more recovers the coordinate the value encodes
+  for(PositionType k = 0; k < mid.size(); ++k)
+  {
+    const auto coordinate = row2.index(k + FIRST);
+    EXPECT_EQ(2, coordinate.first);
+    EXPECT_EQ(k + FIRST, coordinate.second);
+  }
 }
 
 TEST(slam_map, construct_with_int_submap) { EXPECT_TRUE(constructBySubMap<int>()); }

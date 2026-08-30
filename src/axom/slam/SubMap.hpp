@@ -64,16 +64,11 @@ public:
   using SetElement = typename SubsetType::ElementType;
   /// The element obtained after projecting a subset index through the super-map's set.
   using ProjectedElement = typename SuperMapType::SetElement;
-  using SuperSetElement = typename SuperMapType::SetElement;
 
   using StridePolicyType = typename SuperMapType::StridePolicyType;
-  using IndirectionPolicyType = typename SuperMapType::IndirectionPolicy;
+  using IndirectionPolicy = typename SuperMapType::IndirectionPolicy;
 
   using ElementShape = typename StridePolicyType::ShapeType;
-
-  using MapType = Map<DataType, SubsetType, IndirectionPolicyType, StridePolicyType>;
-
-  using SubsetBuilder = typename SubsetType::SetBuilder;
 
   //iterator type aliases
   class Iterator;
@@ -86,8 +81,8 @@ public:
   using range_iterator = RangeIterator;
 
   using DataRefType = std::conditional_t<std::is_const<SuperMapType>::value,
-                                         typename IndirectionPolicyType::ConstIndirectionResult,
-                                         typename IndirectionPolicyType::IndirectionResult>;
+                                         typename IndirectionPolicy::ConstIndirectionResult,
+                                         typename IndirectionPolicy::IndirectionResult>;
   using ValueType = DataRefType;
   using ConstValueType = DataRefType;
 
@@ -299,12 +294,12 @@ private:  //helper functions
   }
 
 public:  // Functions related to iteration
-  AXOM_HOST_DEVICE iterator begin() const { return iterator(0, *this); }
-  AXOM_HOST_DEVICE iterator end() const { return iterator(m_subsetIdx.size() * numComp(), *this); }
-  AXOM_HOST_DEVICE range_iterator set_begin() const { return range_iterator(0, *this); }
+  AXOM_HOST_DEVICE iterator begin() const { return iterator(this, 0); }
+  AXOM_HOST_DEVICE iterator end() const { return iterator(this, m_subsetIdx.size() * numComp()); }
+  AXOM_HOST_DEVICE range_iterator set_begin() const { return range_iterator(this, 0); }
   AXOM_HOST_DEVICE range_iterator set_end() const
   {
-    return range_iterator(m_subsetIdx.size(), *this);
+    return range_iterator(this, m_subsetIdx.size());
   }
 
 protected:  //Member variables
@@ -385,9 +380,9 @@ public:
 
   Iterator() = default;
 
-  AXOM_HOST_DEVICE Iterator(PositionType pos, const SubMap& sMap)
+  AXOM_HOST_DEVICE Iterator(const SubMap* sMap, PositionType pos)
     : IterBase(pos)
-    , m_submap(sMap) { }
+    , m_submap(*sMap) { }
 
   /// \brief Returns the current iterator value.
   AXOM_HOST_DEVICE DataRefType operator*() const { return m_submap[m_pos]; }
@@ -398,7 +393,7 @@ public:
   DataRefType operator[](PositionType n) const { return *(*this + n); }
 
   /// \brief Returns the Set element at the iterator's position
-  SuperSetElement index() const { return m_submap.index(m_pos / m_submap.numComp()); }
+  ProjectedElement index() const { return m_submap.index(m_pos / m_submap.numComp()); }
 
   /// \brief Returns the component index pointed to by this iterator.
   PositionType compIndex() const { return m_pos % m_submap.numComp(); }
@@ -466,9 +461,9 @@ public:
   }
 
 public:
-  AXOM_HOST_DEVICE RangeIterator(PositionType pos, const SubMap& sMap)
+  AXOM_HOST_DEVICE RangeIterator(const SubMap* sMap, PositionType pos)
     : IterBase(pos)
-    , m_submap(sMap)
+    , m_submap(*sMap)
     , m_mapIter(m_submap.m_superMap, getParentPosition(pos))
   { }
 
@@ -492,7 +487,7 @@ public:
   AXOM_HOST_DEVICE value_type operator[](PositionType n) const { return *(*this + n); }
 
   /// \brief Returns the set element mapped by this iterator.
-  SuperSetElement index() const { return m_submap.index(this->m_pos); }
+  ProjectedElement index() const { return m_submap.index(this->m_pos); }
 
   /// \brief Returns the flat index in the original map pointed to by thisiterator.
   SetPosition flatIndex() const { return m_mapIter.flatIndex(); }
@@ -504,12 +499,21 @@ public:
   PositionType numComp() const { return m_mapIter.numComp(); }
 
 protected:
-  /// Implementation of advance() as required by IteratorBase
+  /*!
+   * \brief Implementation of advance() as required by IteratorBase
+   *
+   * Class invariant: m_mapIter sits at getParentPosition(m_pos) in the super-map's index space,
+   * so the step is the difference between the parent positions of the old and new subset positions.
+   *
+   * \note Does not ask m_mapIter where it is since flatIndex() reports a position
+   *  in the original map, which coincides with the super-map's index space only
+   *  when the super-map is a Map or BivariateMap. When the super-map is itself a SubMap,
+   *  flatIndex() skips a level and the difference would be taken across two different index spaces.
+   */
   AXOM_HOST_DEVICE void advance(PositionType n)
   {
-    PositionType currIndex = m_mapIter.flatIndex();
-    PositionType nextIndex = getParentPosition(this->m_pos + n);
-    // Move original iterator.
+    const PositionType currIndex = getParentPosition(this->m_pos);
+    const PositionType nextIndex = getParentPosition(this->m_pos + n);
     m_mapIter += (nextIndex - currIndex);
 
     this->m_pos += n;

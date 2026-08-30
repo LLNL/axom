@@ -497,7 +497,7 @@ public:
   public:
     MapIterator() = default;
 
-    MapIterator(PositionType pos, MapConstPtr oMap) : IterBase(pos), m_map(oMap) { }
+    MapIterator(MapConstPtr oMap, PositionType pos) : IterBase(pos), m_map(oMap) { }
 
     /// \brief Returns the current iterator value.
     AXOM_HOST_DEVICE reference operator*() const { return (*m_map)[m_pos]; }
@@ -661,10 +661,10 @@ public:
   };
 
 public:  // Functions related to iteration
-  iterator begin() { return iterator(0, this); }
-  iterator end() { return iterator(size() * StridePolicyType::stride(), this); }
-  const_iterator begin() const { return const_iterator(0, this); }
-  const_iterator end() const { return const_iterator(size() * StridePolicyType::stride(), this); }
+  iterator begin() { return iterator(this, 0); }
+  iterator end() { return iterator(this, size() * StridePolicyType::stride()); }
+  const_iterator begin() const { return const_iterator(this, 0); }
+  const_iterator end() const { return const_iterator(this, size() * StridePolicyType::stride()); }
 
   RangeAdapter<iterator> range() { return RangeAdapter<iterator> {begin(), end()}; }
   RangeAdapter<const_iterator> range() const

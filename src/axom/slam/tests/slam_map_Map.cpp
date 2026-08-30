@@ -303,7 +303,7 @@ TEST(slam_map, iterate)
   }
 
   SLIC_INFO("Checking the elements by iterator.");
-  EXPECT_EQ(RealMap::iterator(0, &m), m.begin());
+  EXPECT_EQ(RealMap::iterator(&m, 0), m.begin());
 
   //iter++ access
   {

@@ -812,11 +812,16 @@ static_assert(slam::SubMappable<BinaryMap>);
 static_assert(slam::SubMappable<const UnaryMap>, "a SubMap may view a const super-map");
 static_assert(!slam::SubMappable<ConcreteRange>, "a set is not a super-map");
 static_assert(!slam::SubMappable<int>);
-// Documents a real limitation rather than asserting an aspiration:
-// SubMap names its own alias IndirectionPolicyType, not IndirectionPolicy,
-// so a SubMap is not itself sub-mappable. Taking a SubMap of a SubMap is unsupported.
+// A SubMap is itself a map and is itself sub-mappable:
+// Its indirection-policy alias and iterator construction match Map and BivariateMap,
+// so it can serve as another SubMap's super-map.
 static_assert(slam::MapLike<BinarySubMap>);
-static_assert(!slam::SubMappable<BinarySubMap>);
+static_assert(slam::SubMappable<BinarySubMap>);
+static_assert(slam::FlatRangeOver<typename BinarySubMap::IndexSetType,
+                                  typename BinarySubMap::SetPosition>);
+using NestedSubMap = slam::SubMap<BinarySubMap, typename BinarySubMap::IndexSetType>;
+static_assert(slam::MapLike<NestedSubMap>);
+static_assert(slam::SubMappable<NestedSubMap>, "and it composes to any depth");
 
 // FlatRangeOver is the index set a SubMap is built over, and the row range reported by a bivariate set.
 // Subscript lives here rather than in OrderedSetLike because a bivariate set is OrderedSetLike
