@@ -25,6 +25,7 @@
 #include "axom/slam/Relation.hpp"
 
 #include "axom/slam/policies/IndirectionPolicies.hpp"
+#include "axom/slam/RelationSet.hpp"
 #include "axom/slam/StaticRelation.hpp"
 
 namespace
@@ -49,6 +50,15 @@ using VariableCardinality = policies::VariableCardinality<SetPosition, STLIndire
 
 using StaticVariableRelationType =
   slam::StaticRelation<SetPosition, SetElement, VariableCardinality, STLIndirection, RangeSetType, RangeSetType>;
+
+using MappedVariableCardinality = policies::MappedVariableCardinality<SetPosition, STLIndirection>;
+
+using StaticMappedVariableRelationType = slam::StaticRelation<SetPosition,
+                                                               SetElement,
+                                                               MappedVariableCardinality,
+                                                               STLIndirection,
+                                                               RangeSetType,
+                                                               RangeSetType>;
 
 // Use a slam::ModularInt type for more interesting test data
 using CTSize = policies::CompileTimeSize<int, TOSET_SIZE>;
@@ -324,8 +334,8 @@ TEST(slam_static_variable_relation, initialized_rel_out_of_bounds)
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
-  // in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode,
+  // so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED(incrementingRel[FROMSET_SIZE], "");
 #else
@@ -335,45 +345,146 @@ TEST(slam_static_variable_relation, initialized_rel_out_of_bounds)
 
 //----------------------------------------------------------------------
 
-TEST(slam_static_variable_relation, first_index_inverts_flat_index)
+template <typename Relation>
+void expectConsistentRelationIndexing(Relation& relation,
+                                     const IndexVec& begins,
+                                     const IndexVec& indices)
 {
-  // firstIndex() inverts a flat index back to its owning from-set row.
-  // Exercises the boundaries a binary search has to get right: the first and
-  // last entry of every row, empty rows, a nonzero leading offset, and
-  // out-of-range queries on both sides.
-  RangeSetType fromSet(6), toSet(10);
-  IndexVec begins {2, 2, 5, 5, 6, 9, 9};  // rows 0, 2 and 5 are empty
-  IndexVec indices(9, 0);
+  ASSERT_TRUE(relation.isValid(true));
+  slam::RelationSet<Relation> relationSet(&relation);
+  ASSERT_TRUE(relationSet.isValid(true));
 
-  StaticVariableRelationType rel(&fromSet, &toSet);
-  rel.bindBeginOffsets(fromSet.size(), &begins);
-  rel.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
-
-  for(SetPosition row = 0; row < fromSet.size(); ++row)
+  for(SetPosition row = 0; row < relation.fromSetSize(); ++row)
   {
-    for(SetPosition f = rel.offset(row); f < rel.offset(row + 1); ++f)
+    ASSERT_EQ(relation.size(row), begins[row + 1] - begins[row]);
+    for(SetPosition flat = begins[row]; flat < begins[row + 1]; ++flat)
     {
-      EXPECT_EQ(row, rel.firstIndex(f)) << "flat index " << f << " belongs to row " << row;
+      const auto coordinate = relationSet.at(flat);
+      EXPECT_EQ(relation.firstIndex(flat), row);
+      EXPECT_EQ(coordinate.first, row);
+      EXPECT_EQ(coordinate.second, indices[flat]);
+      EXPECT_EQ(relation[row][flat - begins[row]], indices[flat]);
     }
   }
 
-  // positions at or past the end of the last row have no owning row
-  EXPECT_EQ(-1, rel.firstIndex(begins.back()));
-  EXPECT_EQ(-1, rel.firstIndex(begins.back() + 1));
+  EXPECT_EQ(relation.firstIndex(SetPosition {-1}), SetPosition {-1});
+  EXPECT_EQ(relation.firstIndex(static_cast<SetPosition>(indices.size())), SetPosition {-1});
+}
 
-  // A relation whose rows are all empty owns nothing at or past its offset.
-  IndexVec flatBegins(7, 4);
-  StaticVariableRelationType degenerate(&fromSet, &toSet);
-  degenerate.bindBeginOffsets(fromSet.size(), &flatBegins);
-  degenerate.bindIndices(0, &indices);
-  EXPECT_EQ(-1, degenerate.firstIndex(4));
+TEST(slam_static_variable_relation, consistent_indexing_plain_and_mapped)
+{
+  RangeSetType fromSet(6), toSet(10);
+  IndexVec begins {0, 0, 3, 3, 4, 7, 7};  // rows 0, 2 and 5 are empty
+  IndexVec indices {2, 4, 6, 1, 3, 5, 7};
 
-  // Preserves longstanding quirk: firstIndex() returns "the first
-  // row whose end offset exceeds the query", so a query below the leading offset
-  // reports row 0 rather than -1.
-  EXPECT_EQ(0, degenerate.firstIndex(0));
-  EXPECT_EQ(0, rel.firstIndex(0));
-  EXPECT_EQ(0, rel.firstIndex(1));  // rel's leading offset is 2
+  StaticVariableRelationType plain(&fromSet, &toSet);
+  plain.bindBeginOffsets(fromSet.size(), &begins);
+  plain.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+  expectConsistentRelationIndexing(plain, begins, indices);
+
+  IndexVec firstIndices(indices.size(), SetPosition {-1});
+  StaticMappedVariableRelationType mapped(&fromSet, &toSet);
+  mapped.bindBeginOffsets(fromSet.size(), &begins);
+  mapped.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+  mapped.bindFirstIndices(static_cast<SetPosition>(firstIndices.size()), &firstIndices);
+  expectConsistentRelationIndexing(mapped, begins, indices);
+}
+
+TEST(slam_static_variable_relation, empty_and_single_row_relations)
+{
+  RangeSetType emptyFromSet(0), toSet(4);
+  IndexVec zeroRowsBegins {0};
+  IndexVec emptyIndices;
+
+  StaticVariableRelationType zeroRows(&emptyFromSet, &toSet);
+  zeroRows.bindBeginOffsets(emptyFromSet.size(), &zeroRowsBegins);
+  zeroRows.bindIndices(0, &emptyIndices);
+  expectConsistentRelationIndexing(zeroRows, zeroRowsBegins, emptyIndices);
+
+  IndexVec emptyFirstIndices;
+  StaticMappedVariableRelationType mappedZeroRows(&emptyFromSet, &toSet);
+  mappedZeroRows.bindBeginOffsets(emptyFromSet.size(), &zeroRowsBegins);
+  mappedZeroRows.bindIndices(0, &emptyIndices);
+  mappedZeroRows.bindFirstIndices(0, &emptyFirstIndices);
+  expectConsistentRelationIndexing(mappedZeroRows, zeroRowsBegins, emptyIndices);
+
+  RangeSetType threeRowsSet(3);
+  IndexVec allEmptyBegins {0, 0, 0, 0};
+  StaticVariableRelationType allEmpty(&threeRowsSet, &toSet);
+  allEmpty.bindBeginOffsets(threeRowsSet.size(), &allEmptyBegins);
+  allEmpty.bindIndices(0, &emptyIndices);
+  expectConsistentRelationIndexing(allEmpty, allEmptyBegins, emptyIndices);
+
+  StaticMappedVariableRelationType mappedAllEmpty(&threeRowsSet, &toSet);
+  mappedAllEmpty.bindBeginOffsets(threeRowsSet.size(), &allEmptyBegins);
+  mappedAllEmpty.bindIndices(0, &emptyIndices);
+  mappedAllEmpty.bindFirstIndices(0, &emptyFirstIndices);
+  expectConsistentRelationIndexing(mappedAllEmpty, allEmptyBegins, emptyIndices);
+
+  RangeSetType oneRowSet(1);
+  IndexVec oneRowBegins {0, 2};
+  IndexVec oneRowIndices {1, 3};
+  StaticVariableRelationType oneRow(&oneRowSet, &toSet);
+  oneRow.bindBeginOffsets(oneRowSet.size(), &oneRowBegins);
+  oneRow.bindIndices(static_cast<SetPosition>(oneRowIndices.size()), &oneRowIndices);
+  expectConsistentRelationIndexing(oneRow, oneRowBegins, oneRowIndices);
+}
+
+TEST(slam_static_variable_relation, rejects_malformed_begin_offsets)
+{
+  RangeSetType fromSet(3), toSet(8);
+  IndexVec indices {0, 1, 2};
+
+  const std::vector<IndexVec> malformedBegins {
+    {1, 1, 2, 3},   // leading gap
+    {0, -1, 1, 3},  // negative offset
+    {0, 2, 1, 3},   // decreasing offsets
+    {0, 1, 2, 2},   // terminal does not equal the index count
+  };
+
+  for(auto begins : malformedBegins)
+  {
+    StaticVariableRelationType relation(&fromSet, &toSet);
+    relation.bindBeginOffsets(fromSet.size(), &begins);
+    relation.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+    EXPECT_FALSE(relation.isValid()) << "accepted malformed begins array";
+  }
+
+  IndexVec nonzeroTerminal {0, 0, 0, 1};
+  IndexVec noIndices;
+  StaticVariableRelationType emptyData(&fromSet, &toSet);
+  emptyData.bindBeginOffsets(fromSet.size(), &nonzeroTerminal);
+  emptyData.bindIndices(0, &noIndices);
+  EXPECT_FALSE(emptyData.isValid());
+
+  IndexVec leadingGap {2, 2, 2, 3};
+  StaticVariableRelationType gapped(&fromSet, &toSet);
+  gapped.bindBeginOffsets(fromSet.size(), &leadingGap);
+  gapped.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+  EXPECT_EQ(gapped.firstIndex(0), SetPosition {-1});
+  EXPECT_EQ(gapped.firstIndex(1), SetPosition {-1});
+}
+
+TEST(slam_static_variable_relation, mapped_inverse_must_agree_with_rows)
+{
+  RangeSetType fromSet(3), toSet(8);
+  IndexVec begins {0, 1, 1, 3};
+  IndexVec indices {2, 4, 6};
+  IndexVec wrongFirstIndices {0, 0, 0};
+
+  StaticMappedVariableRelationType relation(&fromSet, &toSet);
+  relation.bindBeginOffsets(fromSet.size(), &begins);
+  relation.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+  relation.bindFirstIndices(static_cast<SetPosition>(wrongFirstIndices.size()),
+                            &wrongFirstIndices,
+                            false);
+  EXPECT_FALSE(relation.isValid());
+
+  IndexVec shortFirstIndices(2, 0);
+  relation.bindFirstIndices(static_cast<SetPosition>(shortFirstIndices.size()),
+                            &shortFirstIndices,
+                            false);
+  EXPECT_FALSE(relation.isValid());
 }
 
 int main(int argc, char* argv[])

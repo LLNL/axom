@@ -16,29 +16,29 @@
  * of a FromSet to which each element of a ToSet maps.
  *
  * This file implements two concrete cardinality policies:
- * * ConstantCardinality, in which every member of the FromSet maps to a fixed
+ * - ConstantCardinality, in which every member of the FromSet maps to a fixed
  *   number of entries in the ToSet
- * * VariableCardinality, in which members of the FromSet map to an arbitrary
+ * - VariableCardinality, in which members of the FromSet map to an arbitrary
  *   number of entries in the ToSet
  *
  * A valid cardinality policy must support the following interface:
- *  * RelationalOperatorSizeType
+ *  - RelationalOperatorSizeType
  *    -- A public type that indicates the SizePolicy for the each entry in
  *        the Cardinality relation \see SizePolicies.hpp
- *  * size(ElementType idx) : const ElementType
+ *  - size(ElementType idx) : const ElementType
  *    -- returns the cardinality of the relation for element with index
  *        idx of the FromSet
- *  * offset(ElementType idx) : const ElementType
+ *  - offset(ElementType idx) : const ElementType
  *     -- returns the offset to the first element of the ToSet for element
  *        with index idx of the FromSet
- *  * firstIndex(ElementType offset) : const ElementType
+ *  - firstIndex(ElementType offset) : const ElementType
  *     -- returns the element index in the FromSet given an offset into the
  *        relation
- *  * totalSize(): int
+ *  - totalSize(): int
  *     -- returns the total number of elements in this relation.
  *        That is, the sum of size(idx) for each element (with index idx)
  *        of the from set.
- *  * isValid(): bool
+ *  - isValid(): bool
  *     -- indicates whether the CardinalityPolicy instance is valid
  *
  */
@@ -52,11 +52,66 @@
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/PolicyTraits.hpp"
 
-#include "axom/slam/OrderedSet.hpp"  // Note: Not a circular dependency since
-// CardinalityPolicies are for relations
+// Note: Not a circular dependency since CardinalityPolicies are for relations
+#include "axom/slam/OrderedSet.hpp"
+
+#include <limits>
+#include <utility>
 
 namespace axom::slam::policies
 {
+namespace detail
+{
+/// \brief Begin offsets must start at zero and be nonnegative and nondecreasing.
+template <typename BeginsSet>
+bool hasValidBeginOffsetValues(const BeginsSet& begins)
+{
+  using PositionType = typename BeginsSet::PositionType;
+
+  if(begins.empty() || begins[PositionType {}] != PositionType {})
+  {
+    return false;
+  }
+
+  PositionType previous = begins[PositionType {}];
+  for(PositionType pos = PositionType {1}; pos < begins.size(); ++pos)
+  {
+    const PositionType current = begins[pos];
+    if(current < PositionType {} || current < previous)
+    {
+      return false;
+    }
+    previous = current;
+  }
+
+  return true;
+}
+
+/// \brief Check begin-offset storage and values against the from-set size.
+template <typename BeginsSet, typename FromSet>
+bool hasValidBeginOffsets(const BeginsSet& begins, const FromSet* fromSet, bool verboseOutput)
+{
+  using PositionType = typename BeginsSet::PositionType;
+
+  if(fromSet == nullptr)
+  {
+    return false;
+  }
+
+  const auto fromSize = fromSet->size();
+  if(fromSize < decltype(fromSize) {} || !std::in_range<PositionType>(fromSize))
+  {
+    return false;
+  }
+
+  const PositionType flatFromSize = static_cast<PositionType>(fromSize);
+  return flatFromSize != std::numeric_limits<PositionType>::max() &&
+    begins.size() == flatFromSize + PositionType {1} &&
+    begins.isValid(verboseOutput) &&
+    hasValidBeginOffsetValues(begins);
+}
+}  // namespace detail
+
 /*!
  * \class ConstantCardinality
  * \brief Represents a mapping between two sets, where each element in the
@@ -126,9 +181,17 @@ struct ConstantCardinality
   ElementType totalSize() const { return m_begins.stride() * m_begins.size(); }
 
   template <typename FromSetType>
-  bool isValid(const FromSetType* fromSet, bool AXOM_UNUSED_PARAM(verboseOutput) = false) const
+  bool isValid(const FromSetType* fromSet, bool verboseOutput = false) const
   {
-    return m_begins.size() == fromSet->size();
+    if(fromSet == nullptr || m_begins.size() != fromSet->size() ||
+       !m_begins.isValid(verboseOutput) || m_begins.stride() <= ElementType {})
+    {
+      return false;
+    }
+
+    const ElementType size = m_begins.size();
+    const ElementType stride = m_begins.stride();
+    return size == ElementType {} || stride <= std::numeric_limits<ElementType>::max() / size;
   }
 
   BeginsSet m_begins;
@@ -195,6 +258,10 @@ struct VariableCardinality
   /*!
    * \brief Returns the from-set position owning \a relationOffset, or -1 if none does.
    *
+   * \pre Begin offsets start at zero and are nondecreasing, with one offset per
+   *      from-set element followed by the total number of relation indices.
+   * \note Negative positions and positions at or beyond totalSize() return -1.
+   *
    * \note O(log(fromSetSize)). The begins array is non-decreasing,
    *  so `offset(i+1) > relationOffset` is monotone in i and the first i satisfying it
    *  can be found by binary search.
@@ -207,7 +274,8 @@ struct VariableCardinality
   AXOM_HOST_DEVICE ElementType firstIndex(ElementType relationOffset) const
   {
     const ElementType numRows = m_begins.size() - 1;
-    if(numRows <= ElementType {} || offset(numRows) <= relationOffset)
+    if(numRows <= ElementType {} || relationOffset < ElementType {} ||
+       relationOffset < offset(ElementType {}) || offset(numRows) <= relationOffset)
     {
       return ElementType(-1);
     }
@@ -241,11 +309,7 @@ struct VariableCardinality
   template <typename FromSetType>
   bool isValid(const FromSetType* fromSet, bool verboseOutput = false) const
   {
-    return m_begins.size() == (fromSet->size() + 1) &&
-      static_cast<IndirectionPolicy>(m_begins).isValid(m_begins.size(),
-                                                       m_begins.offset(),
-                                                       m_begins.stride(),
-                                                       verboseOutput);
+    return detail::hasValidBeginOffsets(m_begins, fromSet, verboseOutput);
   }
 
   BeginsSet m_begins;
@@ -304,14 +368,14 @@ struct MappedVariableCardinality
 
   void bindFirstIndices(ElementType relationSize, IndirectionPtrType data, bool fillIndices = true)
   {
-    m_firstIndexes = typename IndexSet::SetBuilder().size(relationSize + 1).data(data);
+    m_firstIndexes = typename IndexSet::SetBuilder().size(relationSize).data(data);
     if(fillIndices)
     {
       // Construct the flat-to-first mapping.
-      for(int fromIdx = 0; fromIdx < m_begins.size() - 1; fromIdx++)
+      for(ElementType fromIdx = ElementType {}; fromIdx < m_begins.size() - 1; ++fromIdx)
       {
-        int beginIdx = offset(fromIdx);
-        for(int slotIdx = 0; slotIdx < size(fromIdx); slotIdx++)
+        const ElementType beginIdx = offset(fromIdx);
+        for(ElementType slotIdx = ElementType {}; slotIdx < size(fromIdx); ++slotIdx)
         {
           m_firstIndexes[slotIdx + beginIdx] = fromIdx;
         }
@@ -326,9 +390,14 @@ struct MappedVariableCardinality
 
   AXOM_HOST_DEVICE ElementType offset(ElementType fromPos) const { return m_begins[fromPos]; }
 
-  AXOM_HOST_DEVICE ElementType firstIndex(ElementType offset) const
+  AXOM_HOST_DEVICE ElementType firstIndex(ElementType relationOffset) const
   {
-    return m_firstIndexes[offset];
+    if(relationOffset < ElementType {} || relationOffset >= totalSize() ||
+       relationOffset >= m_firstIndexes.size())
+    {
+      return ElementType(-1);
+    }
+    return m_firstIndexes[relationOffset];
   }
 
   IndirectionPtrType offsetData() { return m_begins.data(); }
@@ -343,11 +412,25 @@ struct MappedVariableCardinality
   template <typename FromSetType>
   bool isValid(const FromSetType* fromSet, bool verboseOutput = false) const
   {
-    return m_begins.size() == (fromSet->size() + 1) &&
-      static_cast<IndirectionPolicy>(m_begins).isValid(m_begins.size(),
-                                                       m_begins.offset(),
-                                                       m_begins.stride(),
-                                                       verboseOutput);
+    if(!detail::hasValidBeginOffsets(m_begins, fromSet, verboseOutput) ||
+       m_firstIndexes.size() != totalSize() ||
+       !m_firstIndexes.isValid(verboseOutput))
+    {
+      return false;
+    }
+
+    for(ElementType fromIdx = ElementType {}; fromIdx < fromSet->size(); ++fromIdx)
+    {
+      for(ElementType flatIdx = offset(fromIdx); flatIdx < offset(fromIdx + 1); ++flatIdx)
+      {
+        if(m_firstIndexes[flatIdx] != fromIdx)
+        {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   IndexSet m_firstIndexes;

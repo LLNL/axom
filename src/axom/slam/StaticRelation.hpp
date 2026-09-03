@@ -15,6 +15,7 @@
 
 #include "axom/config.hpp"
 
+#include "axom/slam/Concepts.hpp"
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/policies/OffsetPolicies.hpp"
@@ -27,6 +28,16 @@
 
 namespace axom::slam
 {
+namespace detail
+{
+/// \brief Whether a from-set or to-set is missing, rather than simply empty.
+template <typename SetType>
+AXOM_HOST_DEVICE bool isMissingRelationSet(const SetType* set)
+{
+  return set == nullptr || set == policies::EmptySetTraits<SetType>::emptySet();
+}
+}  // namespace detail
+
 template <typename PosType,   // = slam::DefaultPositionType,
           typename ElemType,  // = slam::DefaultElementType,
           typename RelationCardinalityPolicy,
@@ -46,7 +57,7 @@ public:
 
   static_assert(std::is_same_v<ElemType, ToPositionType>,
                 "StaticRelation entries must use ToSet::PositionType");
-  static_assert(std::is_constructible_v<FlatPositionType, FromPositionType>,
+  static_assert(detail::PositionCanRepresent<FlatPositionType, FromPositionType>,
                 "StaticRelation flat positions must represent FromSet positions");
 
   using CardinalityPolicy = RelationCardinalityPolicy;
@@ -93,7 +104,7 @@ public:
   { }
 
   StaticRelation(FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy(policies::EmptySetTraits<FromSetType>::isEmpty(fromSet) ? 0 : fromSet->size())
+    : CardinalityPolicy(detail::isMissingRelationSet(fromSet) ? 0 : fromSet->size())
     , m_fromSet(fromSet)
     , m_toSet(toSet)
   { }
@@ -120,7 +131,7 @@ public:
     RelationBuilder& fromSet(FromSetType* pFromSet)
     {
       m_fromSet = pFromSet;
-      if(m_cardPolicy.totalSize() == 0 && !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
+      if(m_cardPolicy.totalSize() == 0 && !detail::isMissingRelationSet(m_fromSet))
       {
         m_cardPolicy = CardinalityPolicy(m_fromSet->size());
       }
@@ -135,7 +146,7 @@ public:
 
     RelationBuilder& begins(BeginsSetBuilder& beginsBuilder)
     {
-      SLIC_ASSERT_MSG(!policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet),
+      SLIC_ASSERT_MSG(!detail::isMissingRelationSet(m_fromSet),
                       "Must set the 'fromSet' pointer before setting the begins set");
 
       m_cardPolicy = CardinalityPolicy(m_fromSet->size(), beginsBuilder);
@@ -201,11 +212,11 @@ public:
     return (*this)[fromSetInd].range();
   }
 
-  bool hasFromSet() const { return !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet); }
+  bool hasFromSet() const { return !detail::isMissingRelationSet(m_fromSet); }
   FromSetType* fromSet() { return m_fromSet; }
   const FromSetType* fromSet() const { return m_fromSet; }
 
-  bool hasToSet() const { return !policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet); }
+  bool hasToSet() const { return !detail::isMissingRelationSet(m_toSet); }
   ToSetType* toSet() { return m_toSet; }
   const ToSetType* toSet() const { return m_toSet; }
 
@@ -235,14 +246,13 @@ private:
  * \brief Checks whether the relation is valid
  *
  * A relation is valid when:
- * * Its fromSet and toSet are not null
- * * The CardinalityPolicy is valid.
+ * - Its fromSet and toSet are not null
+ * - The CardinalityPolicy is valid.
  *   This implies that for each element, pos, of the fromSet,
  *   it is valid to call rel.size(pos), rel.offset()
  *   It is also valid to call rel.totalSize()
  *
- *
- * @return True if the relation is valid, false otherwise
+ * \return True if the relation is valid, false otherwise
  */
 template <typename PosType,
           typename ElemType,
@@ -264,8 +274,8 @@ bool StaticRelation<PosType,
   bool relationdataIsValid = true;
 
   // Step 1: Check if the sets are valid
-  bool isFromSetNull = policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
-  bool isToSetNull = policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
+  bool isFromSetNull = detail::isMissingRelationSet(m_fromSet);
+  bool isToSetNull = detail::isMissingRelationSet(m_toSet);
 
   if(isFromSetNull || isToSetNull)
   {
@@ -297,6 +307,15 @@ bool StaticRelation<PosType,
   // Step 3: Check if the relation data is valid
   if(setsAreValid && cardinalityIsValid)
   {
+    if(!m_relationIndices.isValid(verboseOutput))
+    {
+      if(verboseOutput)
+      {
+        errSstr << "\n\t* relation indices storage is invalid.";
+      }
+      relationdataIsValid = false;
+    }
+
     if(m_relationIndices.size() != this->totalSize())
     {
       if(verboseOutput)
@@ -309,7 +328,7 @@ bool StaticRelation<PosType,
       relationdataIsValid = false;
     }
 
-    if(!m_relationIndices.empty())
+    if(relationdataIsValid && !m_relationIndices.empty())
     {
       // Check that all begins offsets are in the right range
       // Specifically, they must be in the index space of m_relationIndices
@@ -331,8 +350,8 @@ bool StaticRelation<PosType,
     }
 
     // Check that all relation indices are in range for m_toSet
-    auto toSetSize = m_toSet->size();
-    for(FlatPositionType pos = 0; pos < m_relationIndices.size(); ++pos)
+    const auto toSetSize = m_toSet->size();
+    for(FlatPositionType pos = 0; relationdataIsValid && pos < m_relationIndices.size(); ++pos)
     {
       auto el = m_relationIndices[pos];
       if(el < 0 || el >= toSetSize)

@@ -333,7 +333,9 @@ TEST(slam_make_helpers, make_variable_relation)
   auto fromSet = slam::make_range_set(3);
   auto toSet = slam::make_range_set(5);
 
-  // CSR layout: element 0 -> {1,2}, element 1 -> {3}, element 2 -> {0,4}
+  // Related to-set positions: element 0 -> {1,2}, 
+  //                           element 1 -> {3}, 
+  //                           element 2 -> {0,4}
   std::vector<Pos> begins {0, 2, 3, 5};  // size == fromSet.size() + 1
   std::vector<Pos> indices {1, 2, 3, 0, 4};
 
@@ -384,25 +386,17 @@ TEST(slam_make_helpers, make_variable_relation_carray_rejects_short_begins_size)
   auto fromSet = slam::make_range_set(3);
   auto toSet = slam::make_range_set(5);
 
-  // begins claims 3 offsets for a size-3 from-set, but needs 4
-  // make_variable_relation asserts this invariant at construction in debug builds
-  // in release the check compiles out and the malformed relation is instead caught by isValid().
+  // begins claims 3 offsets for a size-3 from-set, but needs 4.
   Pos begins[4] = {0, 2, 3, 3};
   Pos indices[3] = {1, 2, 3};
 
-#ifdef AXOM_DEBUG
   EXPECT_DEATH_IF_SUPPORTED(
     slam::make_variable_relation(&fromSet, &toSet, begins, Pos {3}, indices, Pos {3}),
     "");
-#else
-  auto rel = slam::make_variable_relation(&fromSet, &toSet, begins, Pos {3}, indices, Pos {3});
-  EXPECT_FALSE(rel.isValid());
-#endif
 }
 
 TEST(slam_make_helpers, make_constant_relation_rejects_undersized_indices)
 {
-#ifdef AXOM_DEBUG
   auto fromSet = slam::make_range_set(3);
   auto toSet = slam::make_range_set(5);
 
@@ -411,9 +405,75 @@ TEST(slam_make_helpers, make_constant_relation_rejects_undersized_indices)
 
   EXPECT_DEATH_IF_SUPPORTED(slam::make_constant_relation(&fromSet, &toSet, Pos {2}, indices, Pos {4}),
                             "");
-#else
-  SLIC_INFO("Skipped constant-relation size assertion check in release mode.");
-#endif
+}
+
+TEST(slam_make_helpers, relation_sizes_and_runtime_strides_are_checked)
+{
+  auto fromSet = slam::make_range_set(1);
+  auto toSet = slam::make_range_set(1);
+  Pos indices[1] = {0};
+  Pos begins[2] = {0, 1};
+
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_constant_relation(&fromSet, &toSet, Pos {0}, indices, Pos {1}),
+    "");
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_constant_relation(&fromSet, &toSet, Pos {-1}, indices, Pos {1}),
+    "");
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_constant_relation(&fromSet, &toSet, Pos {1}, indices, Pos {-1}),
+    "");
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_variable_relation(&fromSet, &toSet, begins, Pos {-2}, indices, Pos {1}),
+    "");
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_variable_relation(&fromSet, &toSet, begins, Pos {2}, indices, Pos {-1}),
+    "");
+}
+
+TEST(slam_make_helpers, relation_size_arithmetic_checks_boundaries)
+{
+  constexpr Pos maxPosition = std::numeric_limits<Pos>::max();
+  auto oneElementFromSet = slam::make_range_set(1);
+  auto maximumFromSet = slam::make_range_set(maxPosition);
+  auto toSet = slam::make_range_set(1);
+
+  auto maximumRelation =
+    slam::make_constant_relation(&maximumFromSet,
+                                 &toSet,
+                                 Pos {1},
+                                 static_cast<Pos*>(nullptr),
+                                 maxPosition);
+  EXPECT_EQ(maximumRelation.totalSize(), maxPosition);
+
+  auto overflowingFromSet = slam::make_range_set(maxPosition / 2 + 1);
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_constant_relation(&overflowingFromSet,
+                                 &toSet,
+                                 Pos {2},
+                                 static_cast<Pos*>(nullptr),
+                                 Pos {0}),
+    "");
+
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_variable_relation(&maximumFromSet,
+                                 &toSet,
+                                 static_cast<Pos*>(nullptr),
+                                 maxPosition,
+                                 static_cast<Pos*>(nullptr),
+                                 Pos {0}),
+    "");
+
+  using UnsignedPosition = std::make_unsigned_t<Pos>;
+  constexpr UnsignedPosition unrepresentableSize =
+    static_cast<UnsignedPosition>(maxPosition) + UnsignedPosition {1};
+  EXPECT_DEATH_IF_SUPPORTED(
+    slam::make_constant_relation(&oneElementFromSet,
+                                 &toSet,
+                                 Pos {1},
+                                 static_cast<Pos*>(nullptr),
+                                 unrepresentableSize),
+    "");
 }
 
 TEST(slam_make_helpers, make_variable_relation_axom_array_buffers)
@@ -454,7 +514,7 @@ TEST(slam_make_helpers, make_variable_relation_indices_are_to_set_positions)
   EXPECT_DOUBLE_EQ(toSet[r0[1]], 30.0);
 }
 
-TEST(slam_make_helpers, make_variable_relation_separates_endpoint_and_flat_positions)
+TEST(slam_make_helpers, make_variable_relation_preserves_from_to_and_flat_positions)
 {
   NarrowSet fromSet(2);
   WideSet toSet(4);
@@ -843,7 +903,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
   axom::slic::SimpleLogger logger;
 
-  // Construction-precondition tests below use death tests in debug builds.
+  // Construction-precondition tests use a fatal SLIC handler in their child process.
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   result = RUN_ALL_TESTS();

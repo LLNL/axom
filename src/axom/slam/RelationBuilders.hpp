@@ -10,7 +10,7 @@
  * \brief Free-function "make" helpers that construct SLAM relations while
  *  deducing the from/to set types and the policy stack.
  *
- * A static, variable-cardinality (CSR-style) relation is configured by
+ * A static, variable-cardinality relation is configured by
  * a cardinality policy, an indirection policy, and the from/to set types,
  * then built through a chained RelationBuilder over begins/indices SetBuilders:
  *
@@ -44,6 +44,9 @@
 #include "axom/core/ArrayView.hpp"
 #include "axom/slic.hpp"
 
+#include <limits>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace axom::slam
@@ -86,78 +89,128 @@ template <typename FromSet, typename ToSet, typename PosType, typename ElemType>
 concept VariableRelationBufferTypes = RelationIndexBufferTypes<FromSet, ToSet, ElemType> &&
   RelationFlatPositionFor<FromSet, ToSet, PosType>;
 
-/// Number of from-set elements (null-safe). Reads only the set's size scalar.
-template <typename FromSet>
-inline axom::IndexType relation_from_size(const FromSet* fromSet)
+template <typename PosType, typename Value>
+inline PosType checked_relation_position(Value value, const char* description)
 {
-  return fromSet ? static_cast<axom::IndexType>(fromSet->size()) : axom::IndexType {0};
+  using ValueType = std::remove_cvref_t<Value>;
+  if constexpr(std::integral<PosType> && std::integral<ValueType>)
+  {
+    if constexpr(std::signed_integral<ValueType>)
+    {
+      SLIC_ERROR_IF(value < ValueType {},
+                    "SLAM relation " << description << " must be nonnegative; received " << value
+                                     << ".");
+    }
+    SLIC_ERROR_IF(!std::in_range<PosType>(value),
+                  "SLAM relation " << description << " (" << value
+                                   << ") is not representable by the relation position type.");
+  }
+  return static_cast<PosType>(value);
+}
+
+template <typename PosType, typename Value>
+inline PosType checked_relation_stride(Value value)
+{
+  using ValueType = std::remove_cvref_t<Value>;
+  if constexpr(std::integral<ValueType>)
+  {
+    SLIC_ERROR_IF(value <= ValueType {},
+                  "slam::make_constant_relation -- runtime stride must be positive; received "
+                    << value << ".");
+  }
+
+  const PosType stride = checked_relation_position<PosType>(value, "runtime stride");
+  SLIC_ERROR_IF(stride <= PosType {},
+                "slam::make_constant_relation -- runtime stride must be positive.");
+  return stride;
 }
 
 /*!
- * \brief Debug-only check that the begins array backing a variable-cardinality relation is correctly sized.
+ * \brief Return the number of from-set elements in the relation position type.
+ *
+ * A null set has size zero. Non-null sizes must be nonnegative and representable.
+ */
+template <typename PosType, typename FromSet>
+inline PosType relation_from_size(const FromSet* fromSet)
+{
+  return fromSet ? checked_relation_position<PosType>(fromSet->size(), "from-set size")
+                 : PosType {};
+}
+
+/*!
+ * \brief Check that the begins array backing a variable-cardinality relation is correctly sized.
  *
  * A variable relation stores one begin offset per from-set element plus a terminal,
- * so \a begins must contain exactly `fromSet->size() + 1` entries. 
+ * so \a begins must contain exactly `fromSet->size() + 1` entries.
  * A shorter begins array leads to out-of-bounds row traversal.
  * This check inspects only sizes, so it is safe for relations built over device-resident storage.
- * Deeper validity (e.g. monotonicity of begins and the terminal offset relative to the index count)
- * is left to StaticRelation::isValid(), which reads the buffers on the appropriate memory space.
- * Asserts in debug builds; a no-op in release builds.
+ *
+ * Deeper validation checks (e.g. monotonicity of begins and offsets relative to the index count)
+ * are performed by StaticRelation::isValid().
  */
-template <typename FromSet>
-inline void check_variable_relation_size(const FromSet* fromSet,
-                                         axom::IndexType AXOM_DEBUG_PARAM(beginsSize))
+template <typename PosType, typename FromSet, typename SizeType>
+inline PosType check_variable_relation_size(const FromSet* fromSet, SizeType beginsSize)
 {
-#ifdef AXOM_DEBUG
-  const axom::IndexType expected = relation_from_size(fromSet) + 1;
-  SLIC_ASSERT_MSG(beginsSize == expected,
-                  "slam::make_variable_relation -- begins has "
-                    << beginsSize << " entries, but the from-set (size "
-                    << relation_from_size(fromSet) << ") requires exactly " << expected
-                    << " (one begin offset per element plus a terminal).");
-#else
-  AXOM_UNUSED_VAR(fromSet);
-#endif
+  const PosType fromSize = relation_from_size<PosType>(fromSet);
+  const PosType canonicalBeginsSize =
+    checked_relation_position<PosType>(beginsSize, "begins-buffer size");
+  SLIC_ERROR_IF(fromSize == std::numeric_limits<PosType>::max(),
+                "slam::make_variable_relation -- the from-set size cannot be represented together "
+                  "with the required terminal begin offset.");
+
+  const PosType expected = fromSize + PosType {1};
+  SLIC_ERROR_IF(canonicalBeginsSize != expected,
+                "slam::make_variable_relation -- begins has "
+                  << canonicalBeginsSize << " entries, but the from-set (size " << fromSize
+                  << ") requires exactly " << expected
+                  << " (one begin offset per element plus a terminal).");
+  return canonicalBeginsSize;
 }
 
 /*!
- * \brief Debug-only check that the indices array backing a constant-cardinality
+ * \brief Check that the indices array backing a constant-cardinality
  * relation (with stride \a stride) is correctly sized.
  *
  * A constant-cardinality relation indexes through `pos * stride`, so \a indices must
  * contain exactly `fromSet->size() * stride` entries.
  * This check inspects only sizes, so it is safe for device-resident storage.
- * Asserts in debug builds; a no-op in release builds.
  */
 template <typename FromSet, typename PosType>
 inline void check_constant_relation_size(const FromSet* fromSet,
-                                         PosType AXOM_DEBUG_PARAM(stride),
-                                         axom::IndexType AXOM_DEBUG_PARAM(indicesSize))
+                                         PosType stride,
+                                         PosType indicesSize)
 {
-#ifdef AXOM_DEBUG
-  const axom::IndexType expected = relation_from_size(fromSet) * static_cast<axom::IndexType>(stride);
-  SLIC_ASSERT_MSG(indicesSize == expected,
-                  "slam::make_constant_relation -- indices has "
-                    << indicesSize << " entries, but the from-set (size "
-                    << relation_from_size(fromSet) << ") with stride " << stride
-                    << " requires exactly " << expected << ".");
-#else
-  AXOM_UNUSED_VAR(fromSet);
-#endif
+  SLIC_ERROR_IF(stride <= PosType {},
+                "slam::make_constant_relation -- runtime stride must be positive; received "
+                  << stride << ".");
+
+  const PosType fromSize = relation_from_size<PosType>(fromSet);
+  SLIC_ERROR_IF(fromSize != PosType {} &&
+                  stride > std::numeric_limits<PosType>::max() / fromSize,
+                "slam::make_constant_relation -- from-set size "
+                  << fromSize << " and stride " << stride
+                  << " overflow the relation position type when multiplied.");
+
+  const PosType expected = fromSize * stride;
+  SLIC_ERROR_IF(indicesSize != expected,
+                "slam::make_constant_relation -- indices has "
+                  << indicesSize << " entries, but the from-set (size " << fromSize
+                  << ") with stride " << stride << " requires exactly " << expected << ".");
 }
 }  // namespace detail
 
 /// \name Relation construction helpers
 /// \brief Construct relations whose entries use the to-set position type.
 /// Variable relations use their begins-buffer element type for flattened storage.
-/// Constant relations use the common endpoint position type unless an explicit flat type is supplied.
+/// Constant relations use the common position type of the from-set and to-set,
+/// unless an explicit flat type is supplied.
 /// Runtime sizes and strides must be non-Boolean integral or opted-in position values
 /// and be convertible to the flattened position type.
 /// Compile-time strides must be positive.
 /// \{
 
 /*!
- * \brief Make a static, variable-cardinality (CSR) relation 
+ * \brief Make a static, variable-cardinality relation
  *  from \a fromSet to \a toSet, backed by std::vector storage for its begins and indices.
  *
  * The from/to set types are deduced from the pointers.
@@ -187,15 +240,16 @@ auto make_variable_relation(FromSet* fromSet,
     StaticRelation<PosType, ElemType, Cardinality, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  detail::check_variable_relation_size(fromSet, static_cast<axom::IndexType>(begins.size()));
+  const PosType beginsSize = detail::check_variable_relation_size<PosType>(fromSet, begins.size());
+  const PosType indicesSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   return RelationType(
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
       .begins(
-        typename Builder::BeginsSetBuilder().size(static_cast<PosType>(begins.size())).data(&begins))
-      .indices(
-        typename Builder::IndicesSetBuilder().size(static_cast<PosType>(indices.size())).data(&indices)));
+        typename Builder::BeginsSetBuilder().size(beginsSize).data(&begins))
+      .indices(typename Builder::IndicesSetBuilder().size(indicesSize).data(&indices)));
 }
 
 /// \brief Reference overload for make_variable_relation (std::vector-backed).
@@ -210,7 +264,7 @@ auto make_variable_relation(FromSet& fromSet,
 }
 
 /*!
- * \brief Make a static, variable-cardinality (CSR) relation backed by C array storage.
+ * \brief Make a static, variable-cardinality relation backed by C array storage.
  *
  * \param fromSet pointer to the from-set (must outlive the relation)
  * \param toSet   pointer to the to-set (must outlive the relation)
@@ -235,13 +289,20 @@ auto make_variable_relation(FromSet* fromSet,
     StaticRelation<PosType, ElemType, Cardinality, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  detail::check_variable_relation_size(fromSet, static_cast<axom::IndexType>(beginsSize));
+  const PosType canonicalBeginsSize =
+    detail::check_variable_relation_size<PosType>(fromSet, beginsSize);
+  const PosType canonicalIndicesSize =
+    detail::checked_relation_position<PosType>(indicesSize, "indices-buffer size");
   return RelationType(
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
-      .begins(typename Builder::BeginsSetBuilder().size(beginsSize).data(begins, beginsSize))
-      .indices(typename Builder::IndicesSetBuilder().size(indicesSize).data(indices, indicesSize)));
+      .begins(typename Builder::BeginsSetBuilder()
+                .size(canonicalBeginsSize)
+                .data(begins, canonicalBeginsSize))
+      .indices(typename Builder::IndicesSetBuilder()
+                 .size(canonicalIndicesSize)
+                 .data(indices, canonicalIndicesSize)));
 }
 
 /// \brief Reference overload for make_variable_relation (C-array-backed).
@@ -258,7 +319,7 @@ auto make_variable_relation(FromSet& fromSet,
 }
 
 /*!
- * \brief Make a static, variable-cardinality (CSR) relation backed by ArrayView storage.
+ * \brief Make a static, variable-cardinality relation backed by ArrayView storage.
  *
  * \param fromSet pointer to the from-set (must outlive the relation)
  * \param toSet   pointer to the to-set (must outlive the relation)
@@ -279,15 +340,16 @@ auto make_variable_relation(FromSet* fromSet,
     StaticRelation<PosType, ElemType, Cardinality, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  detail::check_variable_relation_size(fromSet, static_cast<axom::IndexType>(begins.size()));
+  const PosType beginsSize = detail::check_variable_relation_size<PosType>(fromSet, begins.size());
+  const PosType indicesSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   return RelationType(
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
       .begins(
-        typename Builder::BeginsSetBuilder().size(static_cast<PosType>(begins.size())).data(begins))
-      .indices(
-        typename Builder::IndicesSetBuilder().size(static_cast<PosType>(indices.size())).data(indices)));
+        typename Builder::BeginsSetBuilder().size(beginsSize).data(begins))
+      .indices(typename Builder::IndicesSetBuilder().size(indicesSize).data(indices)));
 }
 
 /// \brief Reference overload for make_variable_relation (ArrayView-backed).
@@ -302,7 +364,7 @@ auto make_variable_relation(FromSet& fromSet,
 }
 
 /*!
- * \brief Make a static, variable-cardinality (CSR) relation backed by axom::Array storage.
+ * \brief Make a static, variable-cardinality relation backed by axom::Array storage.
  *
  * \param fromSet pointer to the from-set (must outlive the relation)
  * \param toSet   pointer to the to-set (must outlive the relation)
@@ -323,15 +385,16 @@ auto make_variable_relation(FromSet* fromSet,
     StaticRelation<PosType, ElemType, Cardinality, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  detail::check_variable_relation_size(fromSet, static_cast<axom::IndexType>(begins.size()));
+  const PosType beginsSize = detail::check_variable_relation_size<PosType>(fromSet, begins.size());
+  const PosType indicesSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   return RelationType(
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
       .begins(
-        typename Builder::BeginsSetBuilder().size(static_cast<PosType>(begins.size())).data(&begins))
-      .indices(
-        typename Builder::IndicesSetBuilder().size(static_cast<PosType>(indices.size())).data(&indices)));
+        typename Builder::BeginsSetBuilder().size(beginsSize).data(&begins))
+      .indices(typename Builder::IndicesSetBuilder().size(indicesSize).data(&indices)));
 }
 
 /// \brief Reference overload for make_variable_relation (axom::Array-backed).
@@ -367,17 +430,17 @@ auto make_constant_relation(FromSet* fromSet,
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  const auto canonicalStride = static_cast<PosType>(stride);
+  const PosType canonicalStride = detail::checked_relation_stride<PosType>(stride);
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   auto begins_builder = typename Builder::BeginsSetBuilder().stride(canonicalStride);
-  detail::check_constant_relation_size(fromSet,
-                                       canonicalStride,
-                                       static_cast<axom::IndexType>(indices.size()));
+  detail::check_constant_relation_size(fromSet, canonicalStride, canonicalSize);
   return RelationType(Builder()
                         .fromSet(fromSet)
                         .toSet(toSet)
                         .begins(begins_builder)
                         .indices(typename Builder::IndicesSetBuilder()
-                                   .size(static_cast<PosType>(indices.size()))
+                                   .size(canonicalSize)
                                    .data(&indices)));
 }
 
@@ -410,12 +473,11 @@ auto make_constant_relation(FromSet* fromSet,
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  const auto canonicalStride = static_cast<PosType>(stride);
-  const auto canonicalSize = static_cast<PosType>(indicesSize);
+  const PosType canonicalStride = detail::checked_relation_stride<PosType>(stride);
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indicesSize, "indices-buffer size");
   auto begins_builder = typename Builder::BeginsSetBuilder().stride(canonicalStride);
-  detail::check_constant_relation_size(fromSet,
-                                       canonicalStride,
-                                       static_cast<axom::IndexType>(canonicalSize));
+  detail::check_constant_relation_size(fromSet, canonicalStride, canonicalSize);
   return RelationType(
     Builder()
       .fromSet(fromSet)
@@ -454,18 +516,18 @@ auto make_constant_relation(FromSet* fromSet,
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  const auto canonicalStride = static_cast<PosType>(stride);
+  const PosType canonicalStride = detail::checked_relation_stride<PosType>(stride);
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   auto begins_builder = typename Builder::BeginsSetBuilder().stride(canonicalStride);
-  detail::check_constant_relation_size(fromSet,
-                                       canonicalStride,
-                                       static_cast<axom::IndexType>(indices.size()));
+  detail::check_constant_relation_size(fromSet, canonicalStride, canonicalSize);
   return RelationType(
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
       .begins(begins_builder)
       .indices(
-        typename Builder::IndicesSetBuilder().size(static_cast<PosType>(indices.size())).data(indices)));
+        typename Builder::IndicesSetBuilder().size(canonicalSize).data(indices)));
 }
 
 /// \brief Reference overload for make_constant_relation (ArrayView-backed).
@@ -495,17 +557,17 @@ auto make_constant_relation(FromSet* fromSet,
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  const auto canonicalStride = static_cast<PosType>(stride);
+  const PosType canonicalStride = detail::checked_relation_stride<PosType>(stride);
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   auto begins_builder = typename Builder::BeginsSetBuilder().stride(canonicalStride);
-  detail::check_constant_relation_size(fromSet,
-                                       canonicalStride,
-                                       static_cast<axom::IndexType>(indices.size()));
+  detail::check_constant_relation_size(fromSet, canonicalStride, canonicalSize);
   return RelationType(Builder()
                         .fromSet(fromSet)
                         .toSet(toSet)
                         .begins(begins_builder)
                         .indices(typename Builder::IndicesSetBuilder()
-                                   .size(static_cast<PosType>(indices.size()))
+                                   .size(canonicalSize)
                                    .data(&indices)));
 }
 
@@ -542,10 +604,9 @@ auto make_constant_relation_ct(FromSet* fromSet, ToSet* toSet, ElemType* indices
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  const auto canonicalSize = static_cast<PosType>(indicesSize);
-  detail::check_constant_relation_size(fromSet,
-                                       static_cast<PosType>(STRIDE),
-                                       static_cast<axom::IndexType>(canonicalSize));
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indicesSize, "indices-buffer size");
+  detail::check_constant_relation_size(fromSet, static_cast<PosType>(STRIDE), canonicalSize);
   return RelationType(Builder().fromSet(fromSet).toSet(toSet).indices(
     typename Builder::IndicesSetBuilder().size(canonicalSize).data(indices, canonicalSize)));
 }
@@ -582,11 +643,11 @@ auto make_constant_relation_ct(FromSet* fromSet, ToSet* toSet, std::vector<ElemT
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  detail::check_constant_relation_size(fromSet,
-                                       static_cast<PosType>(STRIDE),
-                                       static_cast<axom::IndexType>(indices.size()));
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
+  detail::check_constant_relation_size(fromSet, static_cast<PosType>(STRIDE), canonicalSize);
   return RelationType(Builder().fromSet(fromSet).toSet(toSet).indices(
-    typename Builder::IndicesSetBuilder().size(static_cast<PosType>(indices.size())).data(&indices)));
+    typename Builder::IndicesSetBuilder().size(canonicalSize).data(&indices)));
 }
 
 /// \brief Reference overload for make_constant_relation_ct (std::vector-backed).
@@ -617,11 +678,11 @@ auto make_constant_relation_ct(FromSet* fromSet, ToSet* toSet, axom::ArrayView<E
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  detail::check_constant_relation_size(fromSet,
-                                       static_cast<PosType>(STRIDE),
-                                       static_cast<axom::IndexType>(indices.size()));
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
+  detail::check_constant_relation_size(fromSet, static_cast<PosType>(STRIDE), canonicalSize);
   return RelationType(Builder().fromSet(fromSet).toSet(toSet).indices(
-    typename Builder::IndicesSetBuilder().size(static_cast<PosType>(indices.size())).data(indices)));
+    typename Builder::IndicesSetBuilder().size(canonicalSize).data(indices)));
 }
 
 /// \brief Reference overload for make_constant_relation_ct (ArrayView-backed).
@@ -652,11 +713,11 @@ auto make_constant_relation_ct(FromSet* fromSet, ToSet* toSet, axom::Array<ElemT
   using RelationType = StaticRelation<PosType, ElemType, CTy, IndicesIndirection, FromSet, ToSet>;
   using Builder = typename RelationType::RelationBuilder;
 
-  detail::check_constant_relation_size(fromSet,
-                                       static_cast<PosType>(STRIDE),
-                                       static_cast<axom::IndexType>(indices.size()));
+  const PosType canonicalSize =
+    detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
+  detail::check_constant_relation_size(fromSet, static_cast<PosType>(STRIDE), canonicalSize);
   return RelationType(Builder().fromSet(fromSet).toSet(toSet).indices(
-    typename Builder::IndicesSetBuilder().size(static_cast<PosType>(indices.size())).data(&indices)));
+    typename Builder::IndicesSetBuilder().size(canonicalSize).data(&indices)));
 }
 
 /// \brief Reference overload for make_constant_relation_ct (axom::Array-backed).

@@ -10,10 +10,9 @@
  * \brief Unit tests for Slam's StaticRelation class
  * configured with constant per-element cardinality
  *
- * Exercises several different variants of the class.
- * Namely:
- * * with a runtime or compile time striding of offsets per element
- * * where the underlying indirection array uses STL vectors or arrays
+ * Exercises several different variants of the class. Namely:
+ * - with a runtime or compile time striding of offsets per element
+ * - where the underlying indirection array uses STL vectors or arrays
  *
  */
 
@@ -80,10 +79,7 @@ void printVector(StrType const& msg, VecType const& vec)
 
 SetPosition elementCardinality(SetPosition AXOM_UNUSED_PARAM(fromPos)) { return ELEM_STRIDE; }
 
-/**
- * \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using
- *  slam::ModularInt
- */
+/// \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using slam::ModularInt
 SetPosition relationData(SetPosition fromPos, SetPosition toPos)
 {
   return FixedModularInt(fromPos + toPos);
@@ -106,12 +102,10 @@ void generateIncrementingRelations(SetPosition stride, VecType* offsets)
 }
 
 /**
- * \brief Traverses the relation's entities using the double subscript access
- *  API
+ * \brief Traverses the relation's entities using the double subscript access API
  *
  * \note Expects cardinality and relation data for each element to match the
- *  results of the elementCardinality() and relationData() functions above,
- *  respectively.
+ *  results of the elementCardinality() and relationData() functions above, respectively.
  */
 template <typename RelationType>
 void traverseRelation_doubleSubscript(RelationType& rel)
@@ -137,8 +131,7 @@ void traverseRelation_doubleSubscript(RelationType& rel)
  * mapped to the given element of the relation's FromSet
  *
  * \note Expects cardinality and relation data for each element to match the
- *  results of the elementCardinality() and relationData() functions above,
- *  respectively.
+ *  results of the elementCardinality() and relationData() functions above, respectively.
  */
 template <typename RelationType>
 void traverseRelation_delayedSubscript(RelationType& rel)
@@ -163,8 +156,7 @@ void traverseRelation_delayedSubscript(RelationType& rel)
  *
  * \note The iterator API depends on C++11
  * \note Expects cardinality and relation data for each element to match the
- *  results of the elementCardinality() and relationData() functions above,
- *  respectively.
+ *  results of the elementCardinality() and relationData() functions above, respectively.
  */
 template <typename RelationType>
 void iterateRelation_begin_end(RelationType& rel)
@@ -196,8 +188,7 @@ void iterateRelation_begin_end(RelationType& rel)
  *
  * \note The iterator API depends on C++11
  * \note Expects cardinality and relation data for each element to match the
- *  results of the elementCardinality() and relationData() functions above,
- *  respectively.
+ *  results of the elementCardinality() and relationData() functions above, respectively.
  */
 template <typename RelationType>
 void iterateRelation_range(RelationType& rel)
@@ -372,6 +363,17 @@ TEST(slam_relation_static_constant, runtime_stride_STLIndirection)
 
   StaticConstantRelation_RT_STL uninitRel(&fromSet, &toSet);
   EXPECT_FALSE(uninitRel.isValid(true));
+
+  IndexVec noIndices;
+  StaticConstantRelation_RT_STL zeroStride(&fromSet, &toSet);
+  zeroStride.bindBeginOffsets(fromSet.size(), SetPosition {0});
+  zeroStride.bindIndices(0, &noIndices);
+  EXPECT_FALSE(zeroStride.isValid(true));
+
+  StaticConstantRelation_RT_STL negativeStride(&fromSet, &toSet);
+  negativeStride.bindBeginOffsets(fromSet.size(), SetPosition {-1});
+  negativeStride.bindIndices(0, &noIndices);
+  EXPECT_FALSE(negativeStride.isValid(true));
 
   // -- Simple relation construction
   StaticConstantRelation_RT_STL relation(&fromSet, &toSet);
