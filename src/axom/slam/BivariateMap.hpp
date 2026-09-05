@@ -136,10 +136,10 @@ public:
 
   using SubMapType = SubMap<BivariateMapType, SetType, IfacePol>;
   using ConstSubMapType = const SubMap<const BivariateMapType, SetType, IfacePol>;
-  using SubMapIterator = typename SubMapType::iterator;
-  using ConstSubMapIterator = typename ConstSubMapType::iterator;
-  using SubMapRangeIterator = typename SubMapType::range_iterator;
-  using ConstSubMapRangeIterator = typename ConstSubMapType::range_iterator;
+  using SubMapIterator = detail::SubMapIterator<SubMapType>;
+  using ConstSubMapIterator = detail::SubMapIterator<std::remove_const_t<ConstSubMapType>>;
+  using SubMapRangeIterator = detail::SubMapRangeIterator<SubMapType>;
+  using ConstSubMapRangeIterator = detail::SubMapRangeIterator<std::remove_const_t<ConstSubMapType>>;
 
   using NullBivariateSetType =
     NullBivariateSet<typename BSet::FirstSetType, typename BSet::SecondSetType, typename BSet::PositionType>;
@@ -420,6 +420,16 @@ public:
   /// \name BivariateMap index access functions
   /// @{
   ///
+
+  /**
+   * \brief Return the coordinate pair at the given ElementFlatIndex.
+   *
+   * Like Map::index(), this returns the set element at a flat position.
+   * The pair contains positions in the first and second sets.
+   * \pre 0 <= pos < size()
+   */
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE SetElement index(PositionType pos) const { return set()->at(pos); }
 
   /**
    * \brief Returns the SparseIndex of the element given the DenseIndex

@@ -33,6 +33,10 @@ namespace detail
 /// \brief The bare value type a concept is checked against.
 template <typename T>
 using model_t = std::remove_cvref_t<T>;
+
+/// \brief Marks views that retain host objects rather than self-contained device state.
+struct HostObjectView
+{ };
 }  // namespace detail
 
 /*!
@@ -624,29 +628,6 @@ concept AllocatingMapIndirectionPolicyFor = MapIndirectionPolicyFor<T, Position,
     { T::create(size, value, allocatorId) } -> std::same_as<typename T::IndirectionBufferType>;
   };
 
-/*!
- * \brief A MapLike type that support SubMap
- *
- * MapLike states the abstraction: a sized domain you can index.
- * A SubMap needs more than that, because it re-uses its storage policies.
- * It inherits the super-map's stride policy, derives its own reference type
- * from the super-map's indirection policy, and forwards range iteration.
- *
- * It relates to MapLike like FlatRelationLike relates to RelationLike, 
- * and like BivariateMapDomain relates to BivariateSetLike.
- */
-template <typename T>
-concept SubMappable = MapLike<T> && requires {
-  typename T::StridePolicyType;
-  typename T::IndirectionPolicy;
-  typename T::range_iterator;
-  typename T::const_range_iterator;
-} && MapStridePolicyFor<typename T::StridePolicyType, typename T::PositionType> &&
-  MapIndirectionPolicyFor<typename T::IndirectionPolicy, typename T::PositionType, typename T::DataType> &&
-  requires(const T& map) {
-    { map.shape() } -> std::same_as<typename T::StridePolicyType::ShapeType>;
-  };
-
 }  // namespace detail::model
 
 //------------------------------------------------------------------------------
@@ -724,11 +705,6 @@ concept MapLike = detail::model::MapLike<detail::model_t<T>>;
 /// \tparam Position the flat position type its elements index
 template <typename R, typename Position>
 concept FlatRangeOver = detail::model::FlatRangeOver<R, detail::model_t<Position>>;
-
-/// \brief A MapLike type that a SubMap can be taken of.
-/// \tparam T the candidate super-map type
-template <typename T>
-concept SubMappable = detail::model::SubMappable<detail::model_t<T>>;
 
 /// \brief A map whose semantic domain is exactly \a S.
 /// \tparam M the candidate map type
@@ -824,7 +800,8 @@ concept AllocatingMapIndirectionPolicyFor =
 /// \tparam T the candidate type
 template <typename T>
 concept DeviceCapturable =
-  !std::is_reference_v<T> && std::is_trivially_copyable_v<std::remove_cv_t<T>>;
+  !std::is_reference_v<T> && std::is_trivially_copyable_v<std::remove_cv_t<T>> &&
+  !std::is_base_of_v<detail::HostObjectView, std::remove_cv_t<T>>;
 
 namespace detail
 {

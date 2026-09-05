@@ -77,3 +77,67 @@ with the same choice of storage.
 See :ref:`aliases-label` for how the map storage default interacts with
 those of other Slam containers, and for the relation aliases.
 
+Set positions and elements
+--------------------------
+
+The set whose elements receive values is the map's mathematical *domain*.
+For ``Map``, this is the set returned by ``set()``. For ``BivariateMap``, it is
+the bivariate set, whose elements are pairs of positions in its first and
+second sets.
+
+Map access uses positions. If a set contains elements ``{10, 20, 30, 40}``,
+``map(1)`` accesses the value associated with element ``20``. ``map.index(1)``
+returns that element. With several components per element, ``map(1, c)``
+accesses component ``c`` of the same entry. ``map[1 * map.numComp() + c]``
+accesses that component by its flat storage position.
+
+``BivariateMap::index(flatPosition)`` returns the coordinate pair stored at
+that flat position in the bivariate set. Its existing two-argument overload,
+``index(firstPosition, secondPosition)``, searches for the position within
+the selected row.
+
+Submaps
+-------
+
+A ``SubMap`` selects entries from a parent map and accesses their values in
+the parent. It stores the parent pointer and a set of selected parent positions.
+Its component count and shape come from the parent.
+
+``submap.set()`` returns those selected positions. ``submap.index(i)`` follows
+the selection to the set element associated with the value. Suppose the parent
+set contains ``{10, 20, 30, 40}`` and the submap selects positions ``{3, 1}``:
+
+.. list-table:: Positions and elements in a submap
+   :header-rows: 1
+
+   * - Submap position ``i``
+     - Parent position ``submap.set()->at(i)``
+     - Selected element ``submap.index(i)``
+   * - 0
+     - 3
+     - 40
+   * - 1
+     - 1
+     - 20
+
+A nested submap selecting position ``1`` of this submap therefore accesses
+the parent's value for element ``20``. Each level uses the same rule:
+
+.. code-block:: cpp
+
+   submap.index(i) == parent.index(submap.set()->at(i))
+
+For a submap of a bivariate map, the result is a coordinate pair. This rule
+holds at every nesting depth.
+
+A const submap preserves the parent's value access. A submap of a mutable
+owning map permits writes even through a const submap wrapper. A submap of a
+const owning map returns const references. View-backed parents retain their
+own const behavior.
+
+The parent map and any buffers referenced by the selected-position set must
+outlive the submap and its iterators. SubMap copies the selected-position set
+itself, so a temporary range of positions is safe. If the parent is reassigned,
+the selected positions must still be valid. Recreate iterators after changing
+the parent's storage or component shape.
+

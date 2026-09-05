@@ -816,23 +816,23 @@ static_assert(slam::MapLike<BinarySubMap>);
 static_assert(slam::MapLike<ConstBinarySubMap>);
 static_assert(slam::MapOver<BinarySubMap, typename BinaryMap::SetType>);
 
-// SubMappable is the contract a SubMap re-uses from its super-map:
-// A map whose stride and indirection policies it can adopt.
-static_assert(slam::SubMappable<UnaryMap>);
-static_assert(slam::SubMappable<BinaryMap>);
-static_assert(slam::SubMappable<const UnaryMap>, "a SubMap may view a const super-map");
-static_assert(!slam::SubMappable<ConcreteRange>, "a set is not a super-map");
-static_assert(!slam::SubMappable<int>);
-// A SubMap is itself a map and is itself sub-mappable:
-// Its indirection-policy alias and iterator construction match Map and BivariateMap,
-// so it can serve as another SubMap's super-map.
+// SubMap consumes parent operations, not parent storage policies.
+static_assert(slam::detail::SubMapSource<UnaryMap>);
+static_assert(slam::detail::SubMapSource<BinaryMap>);
+static_assert(slam::detail::SubMapSource<const UnaryMap>);
+static_assert(!slam::detail::SubMapSource<ConcreteRange>);
+static_assert(!slam::detail::SubMapSource<int>);
+// A SubMap can itself serve as another SubMap's parent.
 static_assert(slam::MapLike<BinarySubMap>);
-static_assert(slam::SubMappable<BinarySubMap>);
+static_assert(slam::detail::SubMapSource<BinarySubMap>);
 static_assert(slam::FlatRangeOver<typename BinarySubMap::IndexSetType,
                                   typename BinarySubMap::PositionType>);
 using NestedSubMap = slam::SubMap<BinarySubMap, typename BinarySubMap::IndexSetType>;
 static_assert(slam::MapLike<NestedSubMap>);
-static_assert(slam::SubMappable<NestedSubMap>, "and it composes to any depth");
+static_assert(slam::detail::SubMapSource<NestedSubMap>, "and it composes to any depth");
+static_assert(std::same_as<typename NestedSubMap::ProjectedElement, Product::ElementType>);
+static_assert(
+  std::same_as<decltype(std::declval<const BinaryMap&>().index(Position {})), Product::ElementType>);
 
 // MapLike is agnostic about whether const access is deep or shallow.
 // and SLAM has both use-cases.
@@ -1009,6 +1009,16 @@ static_assert(slam::PositionLike<StrongPosition>);
 static_assert(slam::DeviceCapturable<TrivialCapture>);
 static_assert(!slam::DeviceCapturable<NonTrivialCapture>);
 static_assert(!slam::DeviceCapturable<TrivialCapture&>);
+// Copyability alone does not make a retained host map pointer safe to capture.
+struct DerivedSubMap : UnarySubMap
+{ };
+static_assert(std::is_trivially_copyable_v<UnarySubMap>);
+static_assert(std::is_trivially_copyable_v<DerivedSubMap>);
+static_assert(std::is_trivially_copyable_v<NestedSubMap>);
+static_assert(!slam::DeviceCapturable<UnarySubMap>);
+static_assert(!slam::DeviceCapturable<const UnarySubMap>);
+static_assert(!slam::DeviceCapturable<DerivedSubMap>);
+static_assert(!slam::DeviceCapturable<NestedSubMap>);
 
 // Compatibility trait spellings remain exact Boolean wrappers around the concepts.
 static_assert(slam::is_set_like_v<Range> == slam::SetLike<Range>);

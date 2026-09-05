@@ -248,7 +248,7 @@ public:
   }
 
   /// \brief Returns a pointer to the map's underlying set
-  const SetType* set() const { return m_set.get(); }
+  AXOM_HOST_DEVICE const SetType* set() const { return m_set.get(); }
 
   /// \name Map individual access functions
   /// @{
@@ -352,7 +352,23 @@ public:
     return *IndirectionPolicy::getIndirection(m_data, elemIndex);
   }
 
-  SetElement index(IndexType idx) const { return set()->at(idx); }
+  /// \brief Return the set element at the given position, without a component offset.
+  AXOM_SUPPRESS_HD_WARN
+  AXOM_HOST_DEVICE SetElement index(IndexType idx) const { return set()->at(idx); }
+
+  /// \brief Access components by set position. Equivalent to value(setIdx, compIdx...).
+  template <typename... ComponentPos>
+  AXOM_HOST_DEVICE ConstValueType flatValue(PositionType setIdx, ComponentPos... compIdx) const
+  {
+    return value(setIdx, compIdx...);
+  }
+
+  /// \overload
+  template <typename... ComponentPos>
+  AXOM_HOST_DEVICE ValueType flatValue(PositionType setIdx, ComponentPos... compIdx)
+  {
+    return value(setIdx, compIdx...);
+  }
 
   /// @}
 
@@ -376,7 +392,7 @@ public:
    * \brief  Gets the number of component values associated with each element.
    *         Equivalent to stride().
    */
-  [[nodiscard]] PositionType numComp() const { return StridePolicyType::stride(); }
+  [[nodiscard]] AXOM_HOST_DEVICE PositionType numComp() const { return StridePolicyType::stride(); }
 
   /**
    * \brief Returns the shape of the component values associated with each element.
@@ -566,7 +582,8 @@ public:
   private:
     AXOM_HOST_DEVICE static value_type makeRange(MapConstPtr map, PositionType pos)
     {
-      auto* data = map->data_ptr();
+      // An empty owning buffer has no element zero from which to obtain a pointer.
+      auto* data = map->size() == 0 ? nullptr : map->data_ptr();
       if(data != nullptr)
       {
         data += pos * map->stride();
