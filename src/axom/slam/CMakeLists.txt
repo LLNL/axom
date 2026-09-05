@@ -32,6 +32,7 @@ set(slam_headers
     Ranges.hpp
     Traits.hpp
     Utilities.hpp
+    detail/SizeChecks.hpp
 
     #SRM policies
     policies/CardinalityPolicies.hpp

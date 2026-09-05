@@ -22,7 +22,9 @@
  *   [optional]
  *    - operator(): IntType -- alternate accessor for the stride value
  *
- * \note All non-zero stride values are valid.
+ * \note Scalar stride policies accept all non-zero values, including negative strides.
+ *       Map owners require positive component counts.
+ *       MultiDimStride represents a positive component shape.
  *
  * \note The single-stride Runtime/CompileTime storage, constructors and validity checking
  *  are provided by the unified RuntimeValue/CompileTimeValue core in ValuePolicies.hpp.
@@ -34,6 +36,7 @@
 #include "axom/core/Macros.hpp"
 #include "axom/core/StackArray.hpp"
 #include "axom/slam/policies/ValuePolicies.hpp"
+#include "axom/slam/detail/SizeChecks.hpp"
 
 namespace axom::slam::policies
 {
@@ -117,10 +120,11 @@ public:
 template <typename IntType>
 using StrideOne = CompileTimeStride<IntType, 1>;
 
-/// \brief A policy class for a set with multi-dimensional stride. Assumed layout is row-major.
+/// \brief A row-major multidimensional component shape for maps.
 template <typename IntType, int Dims>
 struct MultiDimStride
 {
+  static_assert(Dims > 0, "MultiDimStride requires at least one dimension");
   using IndexType = IntType;
   using ShapeType = StackArray<IntType, Dims>;
   constexpr static int NumDims = Dims;
@@ -137,10 +141,23 @@ struct MultiDimStride
 
   AXOM_HOST_DEVICE MultiDimStride(StackArray<IntType, Dims> shape) : m_shape(shape)
   {
-    m_strides[Dims - 1] = 1;
-    for(int i = Dims - 2; i >= 0; i--)
+    IntType product = 1;
+    for(int i = Dims - 1; i >= 0; --i)
     {
-      m_strides[i] = m_strides[i + 1] * m_shape[i + 1];
+      if(m_shape[i] <= 0 || !::axom::slam::detail::nonnegativeProductFits(product, m_shape[i]))
+      {
+#ifndef AXOM_DEVICE_CODE
+        SLIC_ERROR(
+          "MultiDimStride requires positive dimensions and a representable component count.");
+#else
+        SLIC_ASSERT_MSG(false, "Invalid MultiDimStride shape.");
+#endif
+        // Avoid invalid arithmetic even when error logging is configured not to abort.
+        m_strides = {};
+        return;
+      }
+      m_strides[i] = product;
+      product *= m_shape[i];
     }
   }
 
@@ -148,7 +165,22 @@ struct MultiDimStride
   AXOM_HOST_DEVICE inline IntType stride() const { return m_shape[0] * m_strides[0]; }
 
   inline IntType operator()() const { return stride(); }
-  inline IntType& operator()() { return stride(); }
+  inline IntType operator()() { return stride(); }
+
+  AXOM_HOST_DEVICE bool isValid(bool = false) const
+  {
+    IntType product = 1;
+    for(int i = Dims - 1; i >= 0; --i)
+    {
+      if(m_shape[i] <= 0 || !::axom::slam::detail::nonnegativeProductFits(product, m_shape[i]) ||
+         m_strides[i] != product)
+      {
+        return false;
+      }
+      product *= m_shape[i];
+    }
+    return true;
+  }
 
   /// \brief Returns the strides for each indexing dimension.
   AXOM_HOST_DEVICE inline ShapeType strides() const { return m_strides; }

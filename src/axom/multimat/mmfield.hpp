@@ -9,6 +9,8 @@
 #include "axom/multimat/multimat.hpp"
 #include "axom/multimat/mmsubfield.hpp"
 
+#include <utility>
+
 namespace axom
 {
 namespace multimat
@@ -28,6 +30,7 @@ public:
   using RelationSetType = MultiMat::RelationSetType;
 
   using PositionType = typename BiVarMapType::PositionType;
+  using FirstPositionType = typename BiVarMapType::FirstPositionType;
 
   using Field2DType = MMField2D<DataType, BiVarSetType>;
   using SubFieldType = MMSubField2D<Field2DType>;
@@ -69,26 +72,30 @@ public:
   using BiVarMapType::operator();  //why is this needed?
 
   //subfield (instead of SubMap)
-  SubFieldType getSubfield(PositionType firstIdx) { return operator()(firstIdx); }
-  AXOM_HOST_DEVICE SubFieldType operator()(PositionType firstIdx)
+  SubFieldType getSubfield(FirstPositionType firstIdx) { return operator()(firstIdx); }
+  AXOM_HOST_DEVICE SubFieldType operator()(FirstPositionType firstIdx)
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
-    return SubFieldType(this, static_cast<int>(firstIdx), hasInd);
+    return SubFieldType(this, firstIdx, hasInd);
   }
-  AXOM_HOST_DEVICE const ConstSubFieldType operator()(PositionType firstIdx) const
+  AXOM_HOST_DEVICE const ConstSubFieldType operator()(FirstPositionType firstIdx) const
   {
     const bool hasInd = this->submapIndicesHaveIndirection();
-    return ConstSubFieldType(this, static_cast<int>(firstIdx), hasInd);
+    return ConstSubFieldType(this, firstIdx, hasInd);
   }
 
   //Mimic BivariateMap operator(i) and return slam submap
-  SubMapType getSlamSubMap(PositionType firstIdx) { return BiVarMapType::operator()(firstIdx); }
+  SubMapType getSlamSubMap(FirstPositionType firstIdx)
+  {
+    return BiVarMapType::operator()(firstIdx);
+  }
 
   std::string getName() { return m_mm->getFieldName(m_fieldIdx); };
 
-  MultiMat::IndexSet getSubfieldIndexingSet(int idx)
+  MultiMat::IndexSet getSubfieldIndexingSet(FirstPositionType idx)
   {
-    return m_mm->getSubfieldIndexingSet(idx, m_data_layout, m_sparsity_layout);
+    SLIC_ERROR_IF(!std::in_range<int>(idx), "MultiMat row identifier does not fit int.");
+    return m_mm->getSubfieldIndexingSet(static_cast<int>(idx), m_data_layout, m_sparsity_layout);
   }
 
   bool isDense() const { return m_sparsity_layout == SparsityLayout::DENSE; }

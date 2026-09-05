@@ -28,42 +28,16 @@ namespace detail
 template <typename SetType, typename PosType>
 axom::IndexType map_storage_size(const SetType* set, PosType stride)
 {
-  const axom::IndexType sz = set ? static_cast<axom::IndexType>(set->size()) : axom::IndexType {0};
-  return sz * static_cast<axom::IndexType>(stride);
-}
-
-/*!
- * \brief Debug-only check that an ArrayView backing a map is correctly sized.
- *
- * An ArrayView-backed map indexes through `pos * stride + offset`, so the backing
- * storage must contain exactly `set->size() * stride` elements. Unlike the raw-pointer
- * make_map overloads (which size the view themselves), the ArrayView overloads trust the
- * caller's view length; an undersized view would index out of bounds. This asserts the
- * invariant in debug builds and is a no-op in release builds.
- */
-template <typename SetType, typename T, typename PosType>
-inline void check_map_view_size(const SetType* set,
-                                PosType stride,
-                                const axom::ArrayView<T>& AXOM_DEBUG_PARAM(data))
-{
-#ifdef AXOM_DEBUG
-  const axom::IndexType expected = map_storage_size(set, stride);
-  SLIC_ASSERT_MSG(static_cast<axom::IndexType>(data.size()) == expected,
-                  "slam::make_map -- ArrayView backing storage has "
-                    << data.size() << " elements, but the set (size "
-                    << (set ? static_cast<axom::IndexType>(set->size()) : axom::IndexType {0})
-                    << ") with stride " << stride << " requires exactly " << expected << ".");
-#else
-  AXOM_UNUSED_VAR(set);
-  AXOM_UNUSED_VAR(stride);
-#endif
+  using Position = typename SetType::PositionType;
+  return detail::checkedMapStorageSize(set ? set->size() : Position {}, stride);
 }
 }  // namespace detail
 
 /// \name Map construction helpers
 /// \brief Construct a SLAM map while deducing its policy stack from the set and backing buffer.
-/// Runtime strides must be non-Boolean integral or opted-in position values
-/// and be convertible to the set's position type. The returned map always uses that position type.
+/// Runtime strides must be non-Boolean integral values
+/// and be positive and representable in the set's position type.
+/// The returned map always uses that position type.
 /// Compile-time strides must be positive.
 /// \{
 
@@ -74,27 +48,26 @@ inline void check_map_view_size(const SetType* set,
  * \param stride runtime stride (#values per set element)
  * \param data  backing storage as an ArrayView (must outlive the map)
  *
- * \pre `data.size() == set->size() * stride`. The view must be sized to back every
- *  element of the set at the given stride; this is checked in debug builds.
+ * \pre `data.size() == set->size() * stride`. The view must be sized 
+ *  to back every element of the set at the given stride.
  */
 template <typename SetType, typename T, typename StrideType>
-  requires detail::SetPositionConvertible<SetType, StrideType>
+  requires std::integral<StrideType> && detail::SetPositionConvertible<SetType, StrideType>
 auto make_map(const SetType* set, StrideType stride, axom::ArrayView<T> data)
 {
   using PosType = typename SetType::PositionType;
   using Indirection = policies::ArrayViewIndirection<PosType, T>;
   using Stride = policies::RuntimeStride<PosType>;
   using MapType = Map<T, SetType, Indirection, Stride>;
-  const auto canonicalStride = static_cast<PosType>(stride);
-  detail::check_map_view_size(set, canonicalStride, data);
+  const auto canonicalStride = detail::checkedMapStride<PosType>(stride);
   return MapType(set, data, canonicalStride);
 }
 
 /*!
  * \brief Make a stride-one SLAM map backed by ArrayView storage.
  *
- * \pre `data.size() == set->size()`. The view must be sized to back every element of the
- *  set; this is checked in debug builds.
+ * \pre `data.size() == set->size()`. The view must be sized 
+ *  to back every element of the set.
  */
 template <typename SetType, typename T, typename ExplicitPosType = void>
   requires detail::OptionalSetPositionSame<SetType, ExplicitPosType>
@@ -104,7 +77,6 @@ auto make_map(const SetType* set, axom::ArrayView<T> data)
   using Indirection = policies::ArrayViewIndirection<PosType, T>;
   using Stride = policies::StrideOne<PosType>;
   using MapType = Map<T, SetType, Indirection, Stride>;
-  detail::check_map_view_size(set, PosType {1}, data);
   return MapType(set, data);
 }
 
@@ -113,13 +85,14 @@ auto make_map(const SetType* set, axom::ArrayView<T> data)
  *
  * This overload wraps the buffer as an ArrayView with length `set->size() * stride`
  * and returns an ArrayView-backed map.
+ * The caller must provide a buffer with at least that many elements.
  */
 template <typename SetType, typename T, typename StrideType>
-  requires detail::SetPositionConvertible<SetType, StrideType>
+  requires std::integral<StrideType> && detail::SetPositionConvertible<SetType, StrideType>
 auto make_map(const SetType* set, StrideType stride, T* data)
 {
   using PosType = typename SetType::PositionType;
-  const auto canonicalStride = static_cast<PosType>(stride);
+  const auto canonicalStride = detail::checkedMapStride<PosType>(stride);
   const auto n = detail::map_storage_size(set, canonicalStride);
   return make_map(set, canonicalStride, axom::ArrayView<T>(data, n));
 }
@@ -141,8 +114,8 @@ auto make_map(const SetType* set, T* data)
  *
  * \tparam STRIDE number of values per set element
  *
- * \pre `data.size() == set->size() * STRIDE`. The view must be sized to back every element
- *  of the set at the compile-time stride; this is checked in debug builds.
+ * \pre `data.size() == set->size() * STRIDE`. The view must be sized
+ *  to back every element of the set at the compile-time stride.
  */
 template <int STRIDE, typename SetType, typename T, typename ExplicitPosType = void>
   requires detail::PositiveStaticStrideFor<STRIDE, SetType> &&
@@ -153,7 +126,6 @@ auto make_map_ct(const SetType* set, axom::ArrayView<T> data)
   using Indirection = policies::ArrayViewIndirection<PosType, T>;
   using Stride = policies::CompileTimeStride<PosType, static_cast<PosType>(STRIDE)>;
   using MapType = Map<T, SetType, Indirection, Stride>;
-  detail::check_map_view_size(set, static_cast<PosType>(STRIDE), data);
   return MapType(set, data);
 }
 

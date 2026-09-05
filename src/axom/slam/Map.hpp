@@ -24,6 +24,7 @@
 #include "axom/slam/Concepts.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/NullSet.hpp"
+#include "axom/slam/detail/SizeChecks.hpp"
 
 #include "axom/core/IteratorBase.hpp"
 #include "axom/core/RangeAdapter.hpp"
@@ -65,6 +66,10 @@ namespace axom::slam
  *       This replaced the earlier \c policies::STLVectorIndirection default.
  *       To refer to a buffer managed elsewhere, use \c policies::ArrayViewIndirection.
  *       For \c std::vector backing, specify \c policies::STLVectorIndirection explicitly.
+ * \note Component counts must be positive and the storage size must fit both
+ *       PositionType and axom::IndexType. Constructors check these conditions.
+ *       Referenced sets must retain a size consistent with the value buffer.
+ *       Changing the component shape after construction is not supported.
  */
 
 template <typename T,
@@ -173,7 +178,7 @@ public:
     requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>
     : StridePolicyType(shape)
     , m_set(theSet)
-    , m_data(IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID))
+    , m_data(IndirectionPolicy::create(requiredStorageSize(), defaultValue, allocatorID))
   { }
 
   /**
@@ -208,7 +213,7 @@ public:
       int allocatorID = axom::getDefaultAllocatorID())
     : StridePolicyType(shape)
     , m_set(theSet)
-    , m_data(IndirectionPolicy::create(size() * numComp(), defaultValue, allocatorID))
+    , m_data(IndirectionPolicy::create(requiredStorageSize(), defaultValue, allocatorID))
   { }
 
   /**
@@ -780,11 +785,19 @@ private:
     SLIC_ASSERT_MSG(false, "Stride should not be changed after construction of map.");
   }
 
+  PositionType requiredStorageSize() const
+  {
+    return detail::checkedMapStorageSize(size(), StridePolicyType::stride());
+  }
+
   // If we can resize the underlying buffer, do so if the buffer is not large
   // enough to correspond to the size of the set.
   void checkBackingSize(std::true_type)
   {
-    const IndexType neededSize = size() * numComp();
+    const PositionType neededSize = requiredStorageSize();
+    SLIC_ERROR_IF(
+      !std::in_range<PositionType>(m_data.size()) || !std::in_range<axom::IndexType>(m_data.size()),
+      "SLAM map backing buffer size is not representable.");
     if(m_data.size() < neededSize)
     {
       m_data.resize(neededSize);
@@ -793,8 +806,9 @@ private:
 
   void checkBackingSize(std::false_type)
   {
-    SLIC_ASSERT_MSG(m_data.size() == size() * numComp(),
-                    "Not enough elements in buffer passed to Map constructor.");
+    const PositionType neededSize = requiredStorageSize();
+    SLIC_ERROR_IF(!std::cmp_equal(m_data.size(), neededSize),
+                  "SLAM map backing view must contain exactly " << neededSize << " elements.");
   }
 
   AXOM_HOST_DEVICE typename IndirectionPolicy::ConstResultPtr data_ptr() const
@@ -815,6 +829,13 @@ private:
 template <typename T, typename S, typename IndPol, typename StrPol, typename IfacePol>
 bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
 {
+  PositionType expected {};
+  if(!detail::mapStorageSize(size(), StridePolicyType::stride(), expected))
+  {
+    SLIC_INFO_IF(verboseOutput,
+                 "Map has an invalid component count or unrepresentable storage size.");
+    return false;
+  }
   bool bValid = true;
 
   std::stringstream errStr;
@@ -835,7 +856,7 @@ bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
   }
   else
   {
-    if(static_cast<PositionType>(m_data.size()) != m_set.get()->size() * StridePolicyType::stride())
+    if(!std::cmp_equal(m_data.size(), expected))
     {
       if(verboseOutput)
       {

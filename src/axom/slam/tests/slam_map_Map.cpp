@@ -52,6 +52,85 @@ TEST(slam_map, construct_empty_map)
   EXPECT_TRUE(m.isValid(true));
 }
 
+TEST(slam_map, construction_checks_sizes_in_all_builds)
+{
+  using Set = slam::RangeSet<std::int32_t>::ConcreteSet;
+  using Map =
+    slam::Map<int, Set, policies::ArrayIndirection<std::int32_t, int>, policies::RuntimeStride<std::int32_t>>;
+  using View =
+    slam::Map<int, Set, policies::ArrayViewIndirection<std::int32_t, int>, policies::RuntimeStride<std::int32_t>>;
+  Set set(2), empty(0), negative(-1), large(50'000);
+  int data[4] {};
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&set, -1, data), "component count");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&empty, 0, data), "component count");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&set, (std::uint64_t {1} << 32) + 1, data),
+                            "representable");
+  EXPECT_DEATH_IF_SUPPORTED(Map(&set, 0, -1), "positive component count");
+  EXPECT_DEATH_IF_SUPPORTED(Map(&empty, 0, 0), "positive component count");
+  EXPECT_DEATH_IF_SUPPORTED((void)Map(&negative), "nonnegative size");
+  EXPECT_DEATH_IF_SUPPORTED(Map(&large, 0, 50'000), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&large, 50'000, data), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map_ct<50'000>(&large, data), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(View(&set, axom::ArrayView<int>(data, 3), 2), "exactly");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&set, 2, axom::ArrayView<int>(data, 3)), "exactly");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map_ct<2>(&set, axom::ArrayView<int>(data, 3)), "exactly");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&set, axom::ArrayView<int>(data, 4)), "exactly");
+  EXPECT_TRUE(Map(&empty).isValid());
+  EXPECT_TRUE(slam::make_map(&empty, axom::ArrayView<int> {}).isValid());
+
+  // Check the policy's count before Map::numComp() narrows it.
+  using WideStrideMap =
+    slam::Map<int, Set, policies::ArrayIndirection<std::int32_t, int>, policies::RuntimeStride<std::int64_t>>;
+  EXPECT_DEATH_IF_SUPPORTED(WideStrideMap(&set, 0, (std::int64_t {1} << 32) + 1), "representable");
+}
+
+TEST(slam_map, checked_sizes_preserve_limits_and_resize_behavior)
+{
+  using Position = std::int16_t;
+  using Set = slam::RangeSet<Position, Position>::ConcreteSet;
+  using Map = slam::Map<int, Set>;
+  constexpr Position limit = std::numeric_limits<Position>::max();
+  Set set(limit);
+  Map map(&set, 17);
+  EXPECT_TRUE(map.isValid());
+  EXPECT_EQ(map[limit - 1], 17);
+  EXPECT_FALSE(slam::detail::nonnegativeProductFits(limit, Position {2}));
+  EXPECT_TRUE(slam::detail::nonnegativeProductFits(limit, Position {1}));
+
+  Set small(3);
+  axom::Array<int> buffer(1);
+  Map resized(&small, std::move(buffer));
+  EXPECT_EQ(resized.data().size(), 3);
+  EXPECT_TRUE(resized.isValid());
+
+  using Strided =
+    slam::Map<int, Set, policies::ArrayIndirection<Position, int>, policies::RuntimeStride<Position>>;
+  Strided strided(&small, 0, 2);
+  strided.stride() = -1;
+  EXPECT_FALSE(strided.isValid());
+  strided.stride() = limit;
+  EXPECT_FALSE(strided.isValid());
+}
+
+TEST(slam_map, multidimensional_shapes_are_checked_before_products)
+{
+  using Stride = policies::MultiDimStride<int, 3>;
+  using Shape = Stride::ShapeType;
+  using Set = slam::RangeSet<int>::ConcreteSet;
+  using Map = slam::Map<int, Set, policies::ArrayIndirection<int, int>, Stride>;
+  Set set(2);
+  EXPECT_DEATH_IF_SUPPORTED(Map(&set, 0, Shape {{2, 0, 3}}), "positive dimensions");
+  EXPECT_DEATH_IF_SUPPORTED(Map(&set, 0, Shape {{1, -2, -3}}), "positive dimensions");
+  EXPECT_DEATH_IF_SUPPORTED(Map(&set, 0, Shape {{1, 50'000, 50'000}}), "representable");
+  EXPECT_DEATH_IF_SUPPORTED(Map(&set, 0, Shape {{50'000, 50'000, 1}}), "representable");
+  Map map(&set, 0, Shape {{2, 3, 4}});
+  map(1, 1, 2, 3) = 42;
+  EXPECT_EQ(map[47], 42);
+  Stride stride(Shape {{2, 3, 4}});
+  EXPECT_TRUE(stride.isValid());
+  EXPECT_EQ(stride(), 24);
+}
+
 template <typename T>
 bool constructAndTestMap()
 {
@@ -848,6 +927,9 @@ int main(int argc, char* argv[])
 #endif
 
   axom::slic::SimpleLogger logger(axom::slic::message::Info);
+  // Death tests match the contract diagnostic on stderr.
+  axom::slic::addStreamToMsgLevel(new axom::slic::GenericOutputStream(&std::cerr),
+                                  axom::slic::message::Error);
 
   int result = RUN_ALL_TESTS();
 

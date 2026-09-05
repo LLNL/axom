@@ -617,12 +617,12 @@ private:
   using iter = FlatIterator;
 
 public:
-  using DataRefType = std::conditional_t<Const, const DataType&, DataType&>;
+  using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
   using BivariateMapPtr = std::conditional_t<Const, const BivariateMap*, BivariateMap*>;
 
   using iterator_concept = std::random_access_iterator_tag;
   using iterator_category = std::random_access_iterator_tag;
-  using value_type = DataType;
+  using value_type = std::remove_cvref_t<DataRefType>;
   using reference = DataRefType;
   using pointer = std::add_pointer_t<std::remove_reference_t<reference>>;
   using difference_type = PositionType;

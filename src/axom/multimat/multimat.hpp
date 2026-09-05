@@ -99,11 +99,16 @@ private:
 
   // A field over a bivariate set, viewing an externally-managed buffer, with runtime stride.
   template <typename T, typename BSet = BivariateSetType>
-  using BivariateMapType = slam::BivariateMap<T, BSet, IndViewPolicy<T>, MapStrideType>;
+  using BivariateMapType =
+    slam::BivariateMap<T,
+                       BSet,
+                       slam::policies::ArrayViewIndirection<typename BSet::PositionType, T>,
+                       slam::policies::RuntimeStride<typename BSet::PositionType>>;
 
   // As above, but with compile-time stride 1 (Slam's default stride policy).
   template <typename T, typename BSet = BivariateSetType>
-  using BivariateMapTypeStrideOne = slam::BivariateMap<T, BSet, IndViewPolicy<T>>;
+  using BivariateMapTypeStrideOne =
+    slam::BivariateMap<T, BSet, slam::policies::ArrayViewIndirection<typename BSet::PositionType, T>>;
 
 public:
   using SparseRelationType = StaticVariableRelationType;

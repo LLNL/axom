@@ -1178,6 +1178,55 @@ AXOM_TYPED_TEST(slam_bivariate_map_templated, constructAndTestRelationSet3D)
 }
 
 }  // namespace testing
+namespace
+{
+template <typename Map>
+void checkBivariateReferenceAccess(Map& map)
+{
+  using Reference = decltype(map[0]);
+  static_assert(std::same_as<decltype(*map.begin()), Reference>);
+  static_assert(std::same_as<decltype(map.set_begin().value(0)), Reference>);
+  static_assert(std::same_as<decltype((*map.set_begin())[0]), Reference>);
+  auto row = map(0);
+  using Indices = typename decltype(row)::IndexSetType;
+  slam::SubMap<decltype(row), Indices> nested(&row, Indices(0, 1));
+  static_assert(std::same_as<decltype(nested[0]), Reference>);
+  EXPECT_EQ(&*map.begin(), &map[0]);
+  EXPECT_EQ(&map.set_begin().value(0), &map[0]);
+  EXPECT_EQ(&nested[0], &map[0]);
+  if constexpr(!std::is_const_v<std::remove_reference_t<Reference>>)
+  {
+    *map.begin() = 31;
+    EXPECT_EQ(map[0], 31);
+    map.set_begin().value(0) = 42;
+    EXPECT_EQ(nested[0], 42);
+  }
+}
+}  // namespace
+
+TEST(slam_bivariate_map, direct_and_iterator_access_preserve_parent_constness)
+{
+  using Set = slam::RangeSet<int>::ConcreteSet;
+  using Product = slam::ProductSet<Set, Set, policies::ConcreteInterface>;
+  Set first(2), second(3);
+  Product product(&first, &second);
+  slam::BivariateMap<int, Product> owning(&product, 7);
+  checkBivariateReferenceAccess(owning);
+  checkBivariateReferenceAccess(std::as_const(owning));
+
+  int values[] {1, 2, 3, 4, 5, 6};
+  using View = slam::BivariateMap<int, Product, policies::ArrayViewIndirection<int, int>>;
+  View view(&product, axom::ArrayView<int>(values, 6));
+  checkBivariateReferenceAccess(view);
+  checkBivariateReferenceAccess(std::as_const(view));
+
+  using ReadOnly =
+    slam::BivariateMap<const int, Product, policies::ArrayViewIndirection<int, const int>>;
+  ReadOnly readOnly(&product, axom::ArrayView<const int>(values, 6));
+  checkBivariateReferenceAccess(readOnly);
+  checkBivariateReferenceAccess(std::as_const(readOnly));
+}
+
 //----------------------------------------------------------------------
 
 int main(int argc, char* argv[])

@@ -16,6 +16,7 @@
 #include "axom/slam/BivariateSet.hpp"
 #include "axom/slam/Concepts.hpp"
 #include "axom/slam/RangeSet.hpp"
+#include "axom/slam/detail/SizeChecks.hpp"
 
 #include "axom/slam/policies/BivariateSetInterfacePolicies.hpp"
 
@@ -34,6 +35,11 @@ namespace axom::slam
  *        Users should refer to the BivariateSet documentation for descriptions
  *        of the different indexing names (SparseIndex, DenseIndex, FlatIndex).
  *
+ *        The set sizes must be nonnegative and their product must fit PositionType.
+ *        Constructors check these conditions before allocating row storage.
+ *        Referenced sets must outlive the product and retain their sizes while
+ *        the product is used for indexing or iteration.
+ *
  * \see   BivariateSet
  */
 template <typename SetType1 = slam::Set<>,
@@ -41,7 +47,8 @@ template <typename SetType1 = slam::Set<>,
           typename InterfaceType = policies::VirtualInterface,
           typename FlatPosition = detail::default_flat_position_t<typename SetType1::PositionType,
                                                                   typename SetType2::PositionType>>
-  requires UnivariateSetLike<SetType1> && UnivariateSetLike<SetType2> &&
+  requires std::signed_integral<FlatPosition> && UnivariateSetLike<SetType1> &&
+  UnivariateSetLike<SetType2> &&
   detail::PositionCanRepresent<FlatPosition, typename SetType1::PositionType> &&
   detail::PositionCanRepresent<FlatPosition, typename SetType2::PositionType>
 class ProductSet final
@@ -75,7 +82,7 @@ private:
       // HACK -- this should actually be returning a PositionSet since it always
       //         goes from 0 to secondSetSize()
       // This requires a change to the return type of BivariateSet::getElements()
-      std::iota(m_data.begin(), m_data.end(), 0);
+      std::iota(m_data.begin(), m_data.end(), SecondPositionType {0});
       m_set = typename SetType::SetBuilder()
                 .size(static_cast<PositionType>(secondSetSize))
                 .offset(0)
@@ -113,7 +120,7 @@ public:
 
   ProductSet(const OtherSet& other)
     : BaseType(other.getFirstSet(), other.getSecondSet())
-    , m_rowSet(this->secondSetSize())
+    , m_rowSet(checkedSecondSetSize())
   { }
 
 public:
@@ -131,7 +138,7 @@ public:
 
   ProductSet(const FirstSetType* set1, const SecondSetType* set2)
     : BaseType(set1, set2)
-    , m_rowSet(this->secondSetSize())
+    , m_rowSet(checkedSecondSetSize())
   { }
 
   /**
@@ -328,25 +335,42 @@ public:
       return false;
     }
 
-    if constexpr(std::integral<PositionType>)
-    {
-      const PositionType firstSize = static_cast<PositionType>(this->firstSetSize());
-      const PositionType secondSize = static_cast<PositionType>(this->secondSetSize());
-      const bool productIsRepresentable =
-        firstSize == 0 || secondSize <= std::numeric_limits<PositionType>::max() / firstSize;
-
-      SLIC_INFO_IF(!productIsRepresentable && verboseOutput,
-                   "ProductSet is not valid: the product of endpoint sizes "
-                     << firstSize << " and " << secondSize
-                     << " is not representable by its flat position type.");
-
-      return productIsRepresentable;
-    }
-
-    return true;
+    const bool valid = sizesAreValid();
+    SLIC_INFO_IF(!valid && verboseOutput,
+                 "ProductSet sizes, product, or row-storage size are not representable.");
+    return valid;
   }
 
 private:
+  bool sizesAreValid() const
+  {
+    if(this->getFirstSet() == nullptr || this->getSecondSet() == nullptr)
+    {
+      return false;
+    }
+    const auto first = this->firstSetSize();
+    const auto second = this->secondSetSize();
+    if(!std::in_range<PositionType>(first) || !std::in_range<PositionType>(second) ||
+       !detail::nonnegativeProductFits(static_cast<PositionType>(first),
+                                       static_cast<PositionType>(second)))
+    {
+      return false;
+    }
+    // Only the virtual interface materializes a row buffer.
+    if constexpr(!std::is_void_v<typename BaseType::SubsetType>)
+    {
+      return std::in_range<axom::IndexType>(second);
+    }
+    return true;
+  }
+
+  SecondPositionType checkedSecondSetSize() const
+  {
+    const bool valid = sizesAreValid();
+    SLIC_ERROR_IF(!valid, "ProductSet requires nonnegative, representable sizes and product.");
+    return valid ? this->secondSetSize() : SecondPositionType {};
+  }
+
   /// \brief verify the FlatIndex \a pos is within the valid range.
   void verifyPosition(PositionType pos) const
   {  //from RangeSet, overloading to avoid warning in compiler

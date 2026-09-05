@@ -32,8 +32,13 @@ and index efficiently.
 Use ``RangeSet`` for contiguous ranges. Use ``ArraySet`` or ``ArrayViewSet``
 when set elements are stored in Axom buffers.
 
-.. Future
-   Discuss different indexing schemes for ProductSets
+``ProductSet`` represents every pair of positions in its first and second sets.
+Its flat position type must be signed integral and able to represent both sets'
+position types. Construction checks that their sizes are nonnegative and that
+their product fits the flat position type. Either set may be empty. The virtual
+interface also checks that its materialized row fits an ``axom::Array`` size;
+the concrete interface represents rows implicitly. Referenced sets must outlive
+the product and retain their sizes while it is used for indexing or iteration.
 
 
 .. _relation-concept-label:
@@ -54,7 +59,7 @@ Slam classifies relations along a few independent axes:
 
 Use ``ConstantRelation`` / ``ConstantRelationView`` for static fixed-cardinality
 relations and ``VariableRelation`` / ``VariableRelationView`` for static
-CSR-shaped relations. Use ``DynamicConstantRelation`` or
+variable-cardinality relations. Use ``DynamicConstantRelation`` or
 ``DynamicVariableRelation`` when the connectivity needs to be edited.
 
 
@@ -76,6 +81,31 @@ with the same choice of storage.
 
 See :ref:`aliases-label` for how the map storage default interacts with
 those of other Slam containers, and for the relation aliases.
+
+Sizes and component shapes
+--------------------------
+
+A bound map has a positive number of components per set element, even when
+the set is empty. Every dimension of a tensor component shape must be positive.
+Constructors and ``make_map`` helpers check component counts, shape products,
+and storage sizes before allocating or resizing storage. The scalar count must
+fit both the map's position type and ``axom::IndexType``. A supplied
+``ArrayView`` must have exactly that many entries; these checks are active in
+Debug and Release builds. For raw-pointer helpers, the caller remains responsible
+for providing sufficient storage.
+
+These are map requirements, not restrictions on every stride policy. Ordered
+sets may use a negative stride to traverse a range in reverse.
+
+The referenced set's size must remain consistent with the map's value buffer.
+Do not mutate an inherited stride policy or component shape after construction;
+construct or assign a map with the desired shape instead. ``isValid()`` safely
+rejects invalid component counts or storage sizes, but it does not repair them.
+
+Value constness follows the backing storage. A const owning map returns const
+references. A const map backed by ``ArrayView<T>`` still returns ``T&``; one
+backed by ``ArrayView<const T>`` returns ``const T&``. Direct access, scalar
+iterator access, and submaps preserve these same reference types.
 
 Set positions and elements
 --------------------------

@@ -11,7 +11,11 @@
  */
 
 #include "gtest/gtest.h"
+#include <cstdint>
+#include <limits>
 #include <map>
+#include <type_traits>
+#include <utility>
 
 #include "axom/multimat/multimat.hpp"
 
@@ -24,6 +28,80 @@ TEST(multimat, construct_empty_multimat_obj)
   MultiMat mm;
 
   EXPECT_TRUE(mm.isValid(true));
+}
+
+template <typename First, typename Second>
+void checkSubfieldPositionTypes()
+{
+  namespace slam = axom::slam;
+  using FirstSet = typename slam::RangeSet<First, First>::ConcreteSet;
+  using SecondSet = typename slam::RangeSet<Second, Second>::ConcreteSet;
+  using Product = slam::ProductSet<FirstSet, SecondSet, slam::policies::ConcreteInterface>;
+  using Flat = typename Product::PositionType;
+  using Field = MMField2D<double, Product>;
+  using Subfield = typename Field::SubFieldType;
+  static_assert(std::same_as<typename Field::PositionType, Flat>);
+  static_assert(std::same_as<decltype(&Field::getSubfield), Subfield (Field::*)(First)>);
+  static_assert(std::same_as<typename Subfield::SubSetType::ElementType, Flat>);
+  using ConstSubfield = std::remove_const_t<typename Field::ConstSubFieldType>;
+  static_assert(std::is_const_v<typename ConstSubfield::SuperMapType>);
+
+  for(auto layout : {DataLayout::CELL_DOM, DataLayout::MAT_DOM})
+  {
+    MultiMat mm(layout, SparsityLayout::DENSE);
+    mm.setNumberOfCells(2);
+    mm.setNumberOfMaterials(3);
+    mm.setCellMatRel(std::vector<bool>(6, true), layout);
+    double values[] {10, 11, 12, 20, 21, 22};
+    axom::ArrayView<double> data(values, 6);
+    const int fieldId =
+      mm.addField("typed", FieldMapping::PER_CELL_MAT, layout, SparsityLayout::DENSE, data);
+    FirstSet first(layout == DataLayout::CELL_DOM ? 2 : 3);
+    SecondSet second(layout == DataLayout::CELL_DOM ? 3 : 2);
+    Product product(&first, &second);
+    Field field(mm, &product, fieldId, data);
+    auto row = field.getSubfield(First {1});
+    EXPECT_EQ(row.getOuterIndex(), 1);
+    EXPECT_EQ(row.index(1), std::make_pair(First {1}, Second {1}));
+    EXPECT_EQ(&row[1], &values[second.size() + 1]);
+    EXPECT_EQ(&field.getSlamSubMap(First {1})[1], &row[1]);
+    auto constRow = std::as_const(field)(First {1});
+    // The parent is view-backed, so const object access is intentionally shallow.
+    static_assert(std::same_as<decltype(constRow[0]), double&>);
+    constRow[0] = 99;
+    EXPECT_EQ(values[second.size()], 99);
+    EXPECT_EQ(&constRow.set_begin().value(0), &values[second.size()]);
+
+    MMSubField2DWrap<Field, DataLayout::CELL_DOM> cells(&field, First {1});
+    MMSubField2DWrap<Field, DataLayout::MAT_DOM> materials(&field, First {1});
+    static_assert(std::same_as<decltype(cells.matId(0)), Second>);
+    static_assert(std::same_as<decltype(materials.cellId(0)), Second>);
+    EXPECT_EQ(cells.cellId(), 1);
+    EXPECT_EQ(cells.matId(1), 1);
+    EXPECT_EQ(materials.matId(), 1);
+    EXPECT_EQ(materials.cellId(1), 1);
+
+    if constexpr(std::numeric_limits<First>::max() > std::numeric_limits<int>::max())
+    {
+      // An empty product exercises a large row position without a large buffer.
+      const First largeIndex = static_cast<First>(std::numeric_limits<int>::max()) + 1;
+      FirstSet largeFirst(largeIndex + 1);
+      SecondSet emptySecond(0);
+      Product emptyProduct(&largeFirst, &emptySecond);
+      Field emptyField(mm, &emptyProduct, fieldId, {});
+      auto emptyRow = emptyField.getSubfield(largeIndex);
+      EXPECT_EQ(emptyRow.size(), 0);
+      EXPECT_EQ(emptyRow.getOuterIndex(), largeIndex);
+      EXPECT_DEATH_IF_SUPPORTED(emptyField.getSubfieldIndexingSet(largeIndex), "does not fit int");
+    }
+  }
+}
+
+TEST(multimat, subfields_preserve_row_and_flat_position_types)
+{
+  checkSubfieldPositionTypes<std::int16_t, std::int32_t>();
+  checkSubfieldPositionTypes<std::int32_t, std::int64_t>();
+  checkSubfieldPositionTypes<std::int64_t, std::int32_t>();
 }
 
 /* A structure to create test data for the MultiMat class. */
@@ -931,6 +1009,8 @@ int main(int argc, char* argv[])
 #endif
 
   axom::slic::SimpleLogger logger;  // create & initialize test logger,
+  axom::slic::addStreamToMsgLevel(new axom::slic::GenericOutputStream(&std::cerr),
+                                  axom::slic::message::Error);
   axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();

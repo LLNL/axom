@@ -516,6 +516,10 @@ concept IndirectionPolicyFor =
   IndirectionPolicy<T> && requires(T& policy, const T& constPolicy, Position pos) {
     { policy.indirection(pos) } -> std::convertible_to<typename T::IndirectionResult>;
     { constPolicy.indirection(pos) } -> std::convertible_to<typename T::ConstIndirectionResult>;
+    requires(!std::is_reference_v<typename T::IndirectionResult> ||
+             std::same_as<decltype(policy.indirection(pos)), typename T::IndirectionResult>);
+    requires(!std::is_reference_v<typename T::ConstIndirectionResult> ||
+             std::same_as<decltype(constPolicy.indirection(pos)), typename T::ConstIndirectionResult>);
   };
 
 //---- substitutability atoms --------------------------------------------------
@@ -528,8 +532,12 @@ concept IndirectionPolicyFor =
  */
 template <typename T, typename Data>
 concept IndirectsExactly = std::same_as<typename T::ElementType, std::remove_reference_t<Data>> &&
-  MapValueFor<typename T::IndirectionResult, Data> &&
-  MapValueFor<typename T::ConstIndirectionResult, Data>;
+  (std::same_as<std::remove_reference_t<typename T::IndirectionResult>, std::remove_reference_t<Data>> ||
+   std::same_as<std::remove_reference_t<typename T::IndirectionResult>,
+                const std::remove_reference_t<Data>>) &&
+  (std::same_as<std::remove_reference_t<typename T::ConstIndirectionResult>, std::remove_reference_t<Data>> ||
+   std::same_as<std::remove_reference_t<typename T::ConstIndirectionResult>,
+                const std::remove_reference_t<Data>>);
 
 /// \brief Both access paths return stable lvalue references, as Map's element access requires.
 template <typename T>

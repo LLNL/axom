@@ -546,6 +546,18 @@ struct MismatchedConstPointerIndirection : ViewIndirection
   using ConstResultPtr = const double*;
 };
 
+// Access still returns mutable data despite the declared const element type.
+struct DropsReferentConst : ViewIndirection
+{
+  using ElementType = const double;
+};
+
+struct AccessDropsReferentConst : ConstViewIndirection
+{
+  double& indirection(Position);
+  double& indirection(Position) const;
+};
+
 struct NonDefaultBuffer
 {
   NonDefaultBuffer() = delete;
@@ -729,6 +741,7 @@ static_assert(CanFormProductSet<NarrowRange, NarrowRange>);
 static_assert(CanFormProductSet<NarrowRange, WideRange>);
 static_assert(CanFormProductSetWithFlatPosition<NarrowRange, WideRange, std::int64_t>);
 static_assert(!CanFormProductSetWithFlatPosition<NarrowRange, WideRange, std::int32_t>);
+static_assert(!CanFormProductSetWithFlatPosition<NarrowRange, NarrowRange, std::uint64_t>);
 static_assert(!CanFormProductSet<TypedefOnlySet, NarrowRange>);
 static_assert(!slam::SetLike<int>);
 
@@ -954,6 +967,9 @@ static_assert(slam::MapIndirectionPolicyFor<ViewIndirection, Position, double>);
 static_assert(slam::MapIndirectionPolicyFor<ConstViewIndirection, Position, const double>);
 static_assert(!slam::MapIndirectionPolicyFor<ViewIndirection, Position, const double>);
 static_assert(!slam::MapIndirectionPolicyFor<ConstViewIndirection, Position, double>);
+static_assert(!slam::MapIndirectionPolicyFor<DropsReferentConst, Position, const double>);
+static_assert(!slam::OrderedSetIndirectionPolicyFor<DropsReferentConst, Position, const double>);
+static_assert(!slam::OrderedSetIndirectionPolicyFor<AccessDropsReferentConst, Position, const double>);
 static_assert(!slam::AllocatingMapIndirectionPolicyFor<ViewIndirection, Position, double>);
 static_assert(!slam::MapIndirectionPolicyFor<RawPointerMapIndirection, Position, double>);
 static_assert(!slam::MapIndirectionPolicyFor<PrvalueMapIndirection, Position, double>);

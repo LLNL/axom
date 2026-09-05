@@ -682,9 +682,26 @@ TEST(slam_bivariate_set, product_set_rejects_unrepresentable_cardinality)
 
   Set firstSet(endpointSize);
   Set secondSet(endpointSize);
+  EXPECT_DEATH_IF_SUPPORTED(Product(&firstSet, &secondSet), "representable");
+  firstSet = Set(1);
   Product product(&firstSet, &secondSet);
-
+  firstSet = Set(endpointSize);
   EXPECT_FALSE(product.isValid(true));
+}
+
+TEST(slam_bivariate_set, product_size_limits_and_empty_products)
+{
+  using Position = std::int32_t;
+  using Set = slam::RangeSet<Position, Position>;
+  using Product = typename slam::ProductSet<Set, Set>::ConcreteSet;
+  Set first(1), second(std::numeric_limits<Position>::max()), empty(0), negative(-1);
+  Product product(&first, &second);
+  EXPECT_TRUE(product.isValid());
+  EXPECT_EQ(product.size(), std::numeric_limits<Position>::max());
+  EXPECT_EQ(product.at(product.size() - 1), std::make_pair(Position {0}, second.size() - 1));
+  EXPECT_EQ(Product(&empty, &second).size(), 0);
+  EXPECT_EQ(Product(&second, &empty).size(), 0);
+  EXPECT_DEATH_IF_SUPPORTED(Product(&negative, &first), "nonnegative");
 }
 
 TEST(slam_bivariate_set, heterogeneous_coordinates_preserve_indices_above_int32)
@@ -705,6 +722,15 @@ TEST(slam_bivariate_set, heterogeneous_coordinates_preserve_indices_above_int32)
   Product product(&firstSet, &secondSet);
   EXPECT_EQ(product.flatToSecondIndex(largeSecondPosition), largeSecondPosition);
   EXPECT_EQ(product.at(largeSecondPosition), std::make_pair(FirstPosition {0}, largeSecondPosition));
+
+#ifndef AXOM_USE_64BIT_INDEXTYPE
+  {
+    // The concrete product is implicit; the virtual one needs an Array-backed row.
+    using VirtualProduct = typename Product::VirtualSet;
+    EXPECT_DEATH_IF_SUPPORTED(VirtualProduct(&firstSet, &secondSet), "representable");
+    EXPECT_DEATH_IF_SUPPORTED((void)VirtualProduct(product), "representable");
+  }
+#endif
 
   std::vector<SecondPosition> begins {0, 1};
   std::vector<SecondPosition> indices {largeSecondPosition};
@@ -813,6 +839,8 @@ int main(int argc, char* argv[])
 
   // create & initialize test logger. finalized when exiting main scope
   axom::slic::SimpleLogger logger;
+  axom::slic::addStreamToMsgLevel(new axom::slic::GenericOutputStream(&std::cerr),
+                                  axom::slic::message::Error);
 
   int result = RUN_ALL_TESTS();
 

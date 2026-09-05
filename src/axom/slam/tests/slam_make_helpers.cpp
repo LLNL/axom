@@ -28,6 +28,14 @@
 #include <type_traits>
 #include <vector>
 
+struct OptedInMapCount
+{
+  operator std::int32_t() const;
+};
+
+template <>
+inline constexpr bool axom::slam::enable_position_like<OptedInMapCount> = true;
+
 namespace
 {
 namespace slam = axom::slam;
@@ -82,6 +90,10 @@ template <typename Set, typename Stride, typename T>
 concept CanMakeRuntimeMap = requires(const Set* set, Stride stride, axom::ArrayView<T> data) {
   slam::make_map(set, stride, data);
 };
+
+template <typename Set, typename Stride, typename T>
+concept CanMakeRuntimeRawMap =
+  requires(const Set* set, Stride stride, T* data) { slam::make_map(set, stride, data); };
 
 template <int Stride, typename Set, typename T>
 concept CanMakeStaticMap =
@@ -146,6 +158,8 @@ static_assert(!CanMakeExplicitUnitMap<WideSet, double, std::int32_t>);
 static_assert(CanMakeRuntimeMap<WideSet, int, double>);
 static_assert(!CanMakeRuntimeMap<WideSet, double, double>);
 static_assert(!CanMakeRuntimeMap<WideSet, NotPositionConvertible, double>);
+static_assert(!CanMakeRuntimeMap<NarrowSet, OptedInMapCount, double>);
+static_assert(!CanMakeRuntimeRawMap<NarrowSet, OptedInMapCount, double>);
 static_assert(CanMakeStaticMap<2, WideSet, double>);
 static_assert(!CanMakeStaticMap<0, WideSet, double>);
 static_assert(!CanMakeStaticMap<-1, WideSet, double>);
@@ -878,20 +892,15 @@ TEST(slam_make_helpers, make_map_raw_pointer_overloads_size_the_view)
 TEST(slam_make_helpers, make_map_undersized_view_is_a_precondition_violation)
 {
   // The ArrayView-taking make_map overloads require data.size() == set->size() * stride.
-  // An undersized view is checked in debug builds (no-op in release).
+  // An undersized view is rejected in every build configuration.
   auto set = slam::make_range_set(4);
 
-#ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so these checks are skipped there.
   axom::Array<double> tooSmall {1., 2., 3.};  // need 4 for stride one
   EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&set, tooSmall.view()), "");
 
   axom::Array<double> tooSmallStrided {1., 2., 3., 4., 5.};  // need 8 for stride two
   EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&set, Pos {2}, tooSmallStrided.view()), "");
   EXPECT_DEATH_IF_SUPPORTED(slam::make_map_ct<2>(&set, tooSmallStrided.view()), "");
-#else
-  SLIC_INFO("Skipped assertion failure check in release mode.");
-#endif
 }
 
 //----------------------------------------------------------------------
