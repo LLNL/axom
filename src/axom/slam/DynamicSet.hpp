@@ -59,7 +59,7 @@ public:
   using SetVectorType = std::vector<ElementType>;
   using SizePolicyType = SizePolicy;
 
-  static_assert(SetSizePolicyFor<SizePolicyType, PositionType>,
+  static_assert(detail::SetSizePolicyFor<SizePolicyType, PositionType>,
                 "DynamicSet requires a size policy over its position type");
 
   /// value to mark indices of deleted elements

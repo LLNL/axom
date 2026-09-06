@@ -151,7 +151,7 @@ static_assert(Mod5(2) != Mod5(3), "2 and 3 differ mod 5");
 
 // Value policies satisfy their policy concept, and are distinguished from each
 // other and from sets (a set has size() but no value()).
-static_assert(slam::is_value_policy_v<Size5>, "a size policy is a value policy");
+static_assert(slam::detail::ValuePolicy<Size5>, "a size policy is a value policy");
 static_assert(slam::is_size_policy_v<Size5>, "CompileTimeSize is a size policy");
 static_assert(slam::is_stride_policy_v<Stride4>, "CompileTimeStride is a stride policy");
 static_assert(slam::is_offset_policy_v<Off3>, "CompileTimeOffset is an offset policy");
@@ -161,7 +161,7 @@ static_assert(!slam::is_set_like_v<Size5>, "a policy is not a set");
 
 // RangeSet models the (ordered) set concept and nothing else.
 static_assert(slam::is_set_like_v<slam::RangeSet<>>, "RangeSet is set-like");
-static_assert(slam::is_ordered_set_like_v<slam::RangeSet<>>, "RangeSet is an ordered set");
+static_assert(slam::IterableSetLike<slam::RangeSet<>>, "RangeSet is an ordered set");
 static_assert(!slam::is_relation_like_v<slam::RangeSet<>>, "RangeSet is not a relation");
 static_assert(!slam::is_map_like_v<slam::RangeSet<>>, "RangeSet is not a map");
 static_assert(!slam::is_bivariate_set_like_v<slam::RangeSet<>>, "RangeSet is not bivariate");
@@ -172,19 +172,18 @@ static_assert(slam::is_position_like_v<axom::slam::DefaultPositionType>,
               "slam's default position type is a position");
 static_assert(!slam::is_position_like_v<double>, "double is not a position");
 
-// An element handle must be trivially copyable so it survives capture-by-value into a device kernel
+// Representation checks do not certify device access or referenced-object lifetime.
 struct TrivialHandle
 {
   int id;
 };
-static_assert(slam::is_handle_like_v<TrivialHandle>, "a trivially-copyable struct is handle-like");
+static_assert(slam::TriviallyCopyableRepresentation<TrivialHandle>);
 
 struct UserCopyHandle
 {
   UserCopyHandle(const UserCopyHandle&) { }
 };
-static_assert(!slam::is_handle_like_v<UserCopyHandle>,
-              "a user-declared copy ctor breaks the handle contract");
+static_assert(!slam::TriviallyCopyableRepresentation<UserCopyHandle>);
 
 //------------------------------------------------------------------------------
 // Device-capture contract: a slam container survives capture-by-value into a
@@ -550,8 +549,8 @@ static_assert(
 static_assert(slam::is_set_like_v<AliasArraySet>, "ArraySet is set-like");
 static_assert(std::is_same_v<AliasCustomArraySet, slam::ArrayIndirectionSet<SetPos, double>>,
               "ArraySet preserves the normal <Position, Element> set template order");
-static_assert(slam::is_ordered_set_like_v<AliasArraySet>, "ArraySet is an ordered set");
-static_assert(slam::is_ordered_set_like_v<AliasArrayViewSet>, "ArrayViewSet is an ordered set");
+static_assert(slam::IterableSetLike<AliasArraySet>, "ArraySet is an ordered set");
+static_assert(slam::IterableSetLike<AliasArrayViewSet>, "ArrayViewSet is an ordered set");
 static_assert(slam::is_relation_like_v<AliasVarRelation>, "VariableRelation is relation-like");
 static_assert(slam::is_relation_like_v<AliasVarRelationView>,
               "VariableRelationView is relation-like");

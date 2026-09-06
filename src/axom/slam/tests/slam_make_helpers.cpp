@@ -28,13 +28,11 @@
 #include <type_traits>
 #include <vector>
 
-struct OptedInMapCount
+struct ConvertibleMapCount
 {
   operator std::int32_t() const;
 };
 
-template <>
-inline constexpr bool axom::slam::enable_position_like<OptedInMapCount> = true;
 
 namespace
 {
@@ -158,8 +156,8 @@ static_assert(!CanMakeExplicitUnitMap<WideSet, double, std::int32_t>);
 static_assert(CanMakeRuntimeMap<WideSet, int, double>);
 static_assert(!CanMakeRuntimeMap<WideSet, double, double>);
 static_assert(!CanMakeRuntimeMap<WideSet, NotPositionConvertible, double>);
-static_assert(!CanMakeRuntimeMap<NarrowSet, OptedInMapCount, double>);
-static_assert(!CanMakeRuntimeRawMap<NarrowSet, OptedInMapCount, double>);
+static_assert(!CanMakeRuntimeMap<NarrowSet, ConvertibleMapCount, double>);
+static_assert(!CanMakeRuntimeRawMap<NarrowSet, ConvertibleMapCount, double>);
 static_assert(CanMakeStaticMap<2, WideSet, double>);
 static_assert(!CanMakeStaticMap<0, WideSet, double>);
 static_assert(!CanMakeStaticMap<-1, WideSet, double>);

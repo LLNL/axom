@@ -89,6 +89,8 @@ public:
 
   using PositionType = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;
+  /// The complete set bound by set(), as distinct from an indexing helper.
+  using MappedSetType = SetType;
   static const NullSet<PositionType, SetElement> s_nullSet;
 
   using ElementShape = typename StridePolicyType::ShapeType;
@@ -96,8 +98,8 @@ public:
   using ValueType = typename IndirectionPolicy::IndirectionResult;
   using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
 
-  static_assert(UnivariateSetLike<SetType>, "Map requires a univariate SetLike domain");
-  static_assert(MapStridePolicyFor<StridePolicyType, PositionType>,
+  static_assert(SetLike<SetType>, "Map requires a SetLike mapped set");
+  static_assert(detail::MapStridePolicyFor<StridePolicyType, PositionType>,
                 "Map requires a scalar or multi-dimensional stride over its position type");
   static_assert(MapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>,
                 "Map requires map indirection over its position and data types");
@@ -298,8 +300,8 @@ public:
    *        the component index.
    *
    * \pre `0 <= setIdx < size()`
-   * \pre `sizeof(compIdx) == StridePolicy::NumDims`
-   * \pre `0 <= compIdx[idim] < shape()[idim]`
+   * A single component index is in [0, numComp()). Otherwise supply one index
+   * per shape dimension, with each index in [0, shape()[idim]).
    */
   template <typename... ComponentPos>
   AXOM_HOST_DEVICE ConstValueType operator()(PositionType setIdx, ComponentPos... compIdx) const
@@ -323,13 +325,13 @@ public:
    *        the component index.
    *
    * \pre `0 <= setIdx < size()`
-   * \pre `sizeof(compIdx) == StridePolicy::NumDims`
-   * \pre `0 <= compIdx[idim] < shape()[idim]`
+   * A single component index is in [0, numComp()). Otherwise supply one index
+   * per shape dimension, with each index in [0, shape()[idim]).
    */
   template <typename... ComponentPos>
   AXOM_HOST_DEVICE ConstValueType value(PositionType setIdx, ComponentPos... compIdx) const
   {
-    static_assert(sizeof...(ComponentPos) == StridePolicyType::NumDims,
+    static_assert(sizeof...(ComponentPos) == 1 || sizeof...(ComponentPos) == StridePolicyType::NumDims,
                   "Invalid number of components provided for given Map's StridePolicy");
     static_assert(axom::detail::all_types_are_integral<ComponentPos...>::value,
                   "Map::value(...): index parameter pack must all be integral types.");
@@ -345,7 +347,7 @@ public:
   template <typename... ComponentPos>
   AXOM_HOST_DEVICE ValueType value(PositionType setIdx, ComponentPos... compIdx)
   {
-    static_assert(sizeof...(ComponentPos) == StridePolicyType::NumDims,
+    static_assert(sizeof...(ComponentPos) == 1 || sizeof...(ComponentPos) == StridePolicyType::NumDims,
                   "Invalid number of components provided for given Map's StridePolicy");
     static_assert(axom::detail::all_types_are_integral<ComponentPos...>::value,
                   "Map::value(...): index parameter pack must all be integral types.");

@@ -64,10 +64,11 @@ public:
 
   // This translation unit is compiled by each enabled backend.
   // Keep these representative concept instantiations beside the device-captured types.
+  // Copyability alone does not check the accessibility of the referenced sets.
   static_assert(slam::SetLike<ConcreteSetType>);
   static_assert(slam::BivariateSetLike<ProductSetType>);
-  static_assert(slam::DeviceCapturable<ConcreteSetType>);
-  static_assert(slam::DeviceCapturable<ProductSetType>);
+  static_assert(slam::TriviallyCopyableRepresentation<ConcreteSetType>);
+  static_assert(slam::TriviallyCopyableRepresentation<ProductSetType>);
 };
 
 using MyTypes = ::testing::Types<

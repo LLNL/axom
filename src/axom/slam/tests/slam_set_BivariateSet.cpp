@@ -774,12 +774,12 @@ TEST(slam_bivariate_set, relation_set_projects_distinct_typed_handles)
   using ConnectivitySet = typename slam::RelationSet<Relation>::ConcreteSet;
   ConnectivitySet connectivity(&relation);
   static_assert(slam::BivariateSetLike<ConnectivitySet>);
-  static_assert(slam::BivariateMapDomain<ConnectivitySet>);
+  static_assert(slam::detail::BivariateMapSet<ConnectivitySet>);
   static_assert(
     std::is_same_v<typename ConnectivitySet::ElementType, std::pair<ZonePosition, NodePosition>>);
 
   using WeightMap = slam::BivariateMap<double, ConnectivitySet>;
-  static_assert(slam::BivariateMapLike<WeightMap>);
+  static_assert(slam::MapLike<WeightMap>);
   static_assert(slam::MapOver<WeightMap, ConnectivitySet>);
   WeightMap weights(connectivity, 0.0);
 

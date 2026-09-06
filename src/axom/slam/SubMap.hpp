@@ -80,8 +80,7 @@ concept SubMapSource = requires(T& map, const T& constMap, typename T::PositionT
 template <typename SuperMapType,
           typename SubsetType,  //= slam::RangeSet<PositionType, SetElement>
           typename InterfacePolicy = policies::ConcreteInterface>
-class SubMap : public policies::MapInterface<InterfacePolicy, typename SubsetType::PositionType>,
-               private detail::HostObjectView
+class SubMap : public policies::MapInterface<InterfacePolicy, typename SubsetType::PositionType>
 {
 public:
   static_assert(!std::is_abstract<SubsetType>::value, "SetType for slam::SubMap cannot be abstract");
@@ -145,7 +144,7 @@ public:
     // Check the parent operations at construction, once the parent type is complete.
     static_assert(detail::SubMapSource<SuperMapType>,
                   "SubMap requires parent size, component, index, value, and range access");
-    static_assert(FlatRangeOver<SubsetType, typename SuperMapType::PositionType>,
+    static_assert(detail::FlatRangeOver<SubsetType, typename SuperMapType::PositionType>,
                   "SubMap requires an index set of flat positions into its super-map");
   }
 

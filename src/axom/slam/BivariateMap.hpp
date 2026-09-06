@@ -93,6 +93,8 @@ class BivariateMap : public policies::MapInterface<IfacePol, typename BSet::Posi
 public:
   using DataType = T;
   using BivariateSetType = BSet;
+  /// The complete set bound by set(), not the internal flat-position set.
+  using MappedSetType = BivariateSetType;
   using IndirectionPolicy = IndPol;
   using StridePolicyType = StrPol;
 
@@ -112,10 +114,10 @@ public:
   using ValueType = typename IndirectionPolicy::IndirectionResult;
   using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
 
-  static_assert(BivariateMapDomain<BivariateSetType>,
+  static_assert(detail::BivariateMapSet<BivariateSetType>,
                 "BivariateMap requires a bivariate set it can bind field data over");
   static_assert(
-    MapStridePolicyFor<StridePolicyType, PositionType>,
+    detail::MapStridePolicyFor<StridePolicyType, PositionType>,
     "BivariateMap requires a scalar or multi-dimensional stride over its position type");
   static_assert(MapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>,
                 "BivariateMap requires map indirection over its position and data types");

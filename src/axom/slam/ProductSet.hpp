@@ -47,8 +47,7 @@ template <typename SetType1 = slam::Set<>,
           typename InterfaceType = policies::VirtualInterface,
           typename FlatPosition = detail::default_flat_position_t<typename SetType1::PositionType,
                                                                   typename SetType2::PositionType>>
-  requires std::signed_integral<FlatPosition> && UnivariateSetLike<SetType1> &&
-  UnivariateSetLike<SetType2> &&
+  requires std::signed_integral<FlatPosition> && SetLike<SetType1> && SetLike<SetType2> &&
   detail::PositionCanRepresent<FlatPosition, typename SetType1::PositionType> &&
   detail::PositionCanRepresent<FlatPosition, typename SetType2::PositionType>
 class ProductSet final

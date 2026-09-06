@@ -107,7 +107,7 @@ template <typename P = slam::DefaultPositionType, typename E = slam::DefaultElem
 using RangeSet = GenericRangeSet<P, E>;
 
 // Check that RangeSet and PositionSet are set-like
-static_assert(is_ordered_set_like_v<RangeSet<>>, "RangeSet models the ordered-set contract");
+static_assert(IterableSetLike<RangeSet<>>, "RangeSet supports positional access and iteration");
 static_assert(is_set_like_v<PositionSet<>>, "PositionSet models the set contract");
 
 }  // end namespace axom::slam

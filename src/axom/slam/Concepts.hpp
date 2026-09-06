@@ -6,17 +6,11 @@
 
 /*!
  * \file Concepts.hpp
+ * \brief Semantic concepts for SLAM sets, relations, and maps.
  *
- * \brief C++20 concepts for SLAM containers, policies, and index properties.
- *
- * The concepts in this header describe public operations and relationships between associated types.
- * They do not require concrete SLAM implementations or include the standard ranges library.
- *
- * \note We normalize most types (by removing cvref) at the public boundary, 
- *   so `SetLike<const MySet&>` and `SetLike<MySet>` agree.
- *   We do not normalize a container's \a Element and a map's \a Data 
- *   since their cv-qualification is part of the contract, 
- *   e.g. an indirection policy over `const double` is different than one over `double`.
+ * Public object concepts ignore top-level cv/ref qualification,
+ * which are normalized internally in the detail namespace.
+ * Standard range integration is provided separately by Ranges.hpp.
  */
 
 #pragma once
@@ -30,63 +24,229 @@ namespace axom::slam
 {
 namespace detail
 {
-/// \brief The bare value type a concept is checked against.
 template <typename T>
 using model_t = std::remove_cvref_t<T>;
 
-/// \brief Marks views that retain host objects rather than self-contained device state.
-struct HostObjectView
-{ };
+template <typename T>
+using position_t = typename model_t<T>::PositionType;
+
+template <typename T>
+using element_t = typename model_t<T>::ElementType;
+
+/// Integer arguments may be unsigned, but cannot be Boolean.
+template <typename T>
+concept PositionValueLike = std::integral<model_t<T>> && !std::same_as<model_t<T>, bool>;
+
+/// The operations needed to traverse values, without prescribing iterator aliases.
+template <typename Iterator, typename Sentinel, typename Value>
+concept IteratesAs = requires(Iterator it, Sentinel end) {
+  { *it } -> std::convertible_to<Value>;
+  ++it;
+  { it != end } -> std::convertible_to<bool>;
+};
+
+template <typename R, typename Value>
+concept IterableValues = requires(const model_t<R>& range) {
+  requires IteratesAs<decltype(range.begin()), decltype(range.end()), Value>;
+};
+
+template <typename R, typename Value>
+concept SizedValues = IterableValues<R, Value> && requires(const model_t<R>& range) {
+  { range.size() } -> PositionValueLike;
+};
+
+/// Scalar references may add constness, but cannot discard element qualification.
+template <typename Reference, typename Data>
+concept MapReferenceFor = std::is_lvalue_reference_v<Reference> &&
+  (std::same_as<std::remove_reference_t<Reference>, Data> ||
+   std::same_as<std::remove_reference_t<Reference>, const Data>);
 }  // namespace detail
 
-/*!
- * \brief Opt-in customization for a non-integral SLAM position type.
- *
- * A specialized type is still responsible for providing the arithmetic
- * and ordering required by the SLAM APIs in which it is used.
- */
+/// \brief A signed integral position type supported by the current SLAM arithmetic.
+/// Tagged positions need a separate point/difference/size design, not an opt-in here.
 template <typename T>
-inline constexpr bool enable_position_like = false;
+concept PositionLike = std::signed_integral<detail::model_t<T>>;
 
-namespace detail::model
+/// \brief A sized collection with positional access to its elements.
+/// size() is nonnegative; empty() agrees with size() == 0. Access requires a valid position.
+template <typename T>
+concept SetLike = PositionLike<detail::position_t<T>> &&
+  requires(const detail::model_t<T>& set, detail::position_t<T> pos) {
+    typename detail::element_t<T>;
+    { set.size() } -> std::same_as<detail::position_t<T>>;
+    { set.empty() } -> std::convertible_to<bool>;
+    { set.at(pos) } -> std::convertible_to<detail::element_t<T>>;
+  };
+
+/// \brief A SetLike type whose const traversal visits the elements in positional order.
+template <typename T>
+concept IterableSetLike = SetLike<T> && detail::IterableValues<T, detail::element_t<T>>;
+
+/// \brief A container that can check its own internal consistency.
+/// Validation is a separate capability, not a requirement of every set or relation.
+template <typename T>
+concept Validatable = requires(const detail::model_t<T>& container) {
+  { container.isValid(false) } -> std::convertible_to<bool>;
+};
+
+/// \brief A set of coordinate pairs with a row of second-set positions per first-set position.
+/// Concatenating rows in first-set order agrees with at(flat). The flat size
+/// equals the sum of the row sizes. Search and flat projections are conveniences.
+template <typename T>
+concept BivariateSetLike = SetLike<T> && SetLike<typename detail::model_t<T>::FirstSetType> &&
+  SetLike<typename detail::model_t<T>::SecondSetType> &&
+  requires(detail::element_t<T> coordinate) {
+    requires std::same_as<std::remove_cvref_t<decltype(coordinate.first)>,
+                          typename detail::model_t<T>::FirstSetType::PositionType>;
+    requires std::same_as<std::remove_cvref_t<decltype(coordinate.second)>,
+                          typename detail::model_t<T>::SecondSetType::PositionType>;
+  } &&
+  requires(const detail::model_t<T>& set,
+           typename detail::model_t<T>::FirstSetType::PositionType first) {
+    { set.getFirstSet() } -> std::same_as<const typename detail::model_t<T>::FirstSetType*>;
+    { set.getSecondSet() } -> std::same_as<const typename detail::model_t<T>::SecondSetType*>;
+    requires detail::SizedValues<decltype(set.getElements(first)),
+                                 typename detail::model_t<T>::SecondSetType::PositionType>;
+  };
+
+/// \brief A relation with a row of to-set positions for each from-set position.
+/// Row entries must identify valid to-set positions. The sets may themselves
+/// contain coordinates. No flat storage, validation method, or row alias is required.
+template <typename T>
+concept RelationLike = SetLike<typename detail::model_t<T>::FromSetType> &&
+  SetLike<typename detail::model_t<T>::ToSetType> &&
+  requires(const detail::model_t<T>& relation,
+           typename detail::model_t<T>::FromSetType::PositionType from) {
+    { relation.fromSet() } -> std::same_as<const typename detail::model_t<T>::FromSetType*>;
+    { relation.toSet() } -> std::same_as<const typename detail::model_t<T>::ToSetType*>;
+    requires detail::SizedValues<decltype(relation[from]),
+                                 typename detail::model_t<T>::ToSetType::PositionType>;
+  };
+
+/// \brief Values associated with entries, addressed by entry position and local component.
+/// index(pos) identifies the associated set element. flatValue(pos, component)
+/// accesses one scalar component, including for tensor-valued maps. "flat" here
+/// selects an entry of a bivariate set, not a global component-storage position.
+/// Bound maps have positive numComp(); a default unbound SubMap may be empty with zero components.
+template <typename T>
+concept MapLike = PositionLike<detail::position_t<T>> &&
+  requires(detail::model_t<T>& map,
+           const detail::model_t<T>& constMap,
+           detail::position_t<T> pos,
+           detail::position_t<T> component) {
+    typename detail::model_t<T>::DataType;
+    { constMap.size() } -> std::same_as<detail::position_t<T>>;
+    { constMap.numComp() } -> std::same_as<detail::position_t<T>>;
+    constMap.index(pos);
+    requires std::is_object_v<std::remove_cvref_t<decltype(constMap.index(pos))>>;
+    {
+      map.flatValue(pos, component)
+    } -> detail::MapReferenceFor<typename detail::model_t<T>::DataType>;
+    {
+      constMap.flatValue(pos, component)
+    } -> detail::MapReferenceFor<typename detail::model_t<T>::DataType>;
+  };
+
+/// \brief A MapLike type explicitly bound to all positions of exactly S.
+/// MappedSetType names that binding and set() returns it. size() agrees with
+/// set()->size(), and index(pos) agrees with set()->at(pos). SubMap has no such
+/// binding: its set() selects parent positions, and index() projects their elements.
+template <typename M, typename S>
+concept MapOver = MapLike<M> && SetLike<S> &&
+  std::same_as<typename detail::model_t<M>::MappedSetType, detail::model_t<S>> &&
+  std::same_as<detail::position_t<M>, detail::position_t<S>> &&
+  requires(const detail::model_t<M>& map, detail::position_t<M> pos) {
+    { map.set() } -> std::same_as<const detail::model_t<S>*>;
+    { map.index(pos) } -> std::convertible_to<detail::element_t<S>>;
+  };
+
+/// \brief A non-reference type with a trivially copyable C++ representation.
+/// This does not certify device-callable operations or the accessibility/lifetime
+/// of referenced objects. Device capture is a separate view-conversion contract.
+template <typename T>
+concept TriviallyCopyableRepresentation =
+  !std::is_reference_v<T> && std::is_trivially_copyable_v<std::remove_cv_t<T>>;
+
+namespace detail
 {
-//------------------------------------------------------------------------------
-// Associated-type detectors. Each names the member typedefs that distinguish
-// one SLAM concept from another; the semantic requirements are layered on top.
-//------------------------------------------------------------------------------
+/// Type-level representability of nonnegative positions and sizes.
+template <typename Position, typename RepresentedPosition>
+concept PositionCanRepresent = PositionLike<Position> && PositionLike<RepresentedPosition> &&
+  (std::numeric_limits<model_t<Position>>::digits >=
+   std::numeric_limits<model_t<RepresentedPosition>>::digits);
 
-template <typename T>
-concept HasSetAssociatedTypes = requires {
-  typename T::PositionType;
-  typename T::ElementType;
-};
+template <int Stride, typename Position>
+concept PositiveStaticStrideForPosition = PositionLike<Position> && (Stride > 0) &&
+  (Stride <= std::numeric_limits<model_t<Position>>::max());
 
-template <typename T>
-concept HasBivariateSetAssociatedTypes = requires {
-  typename T::FirstSetType;
-  typename T::SecondSetType;
-};
+template <int Stride, typename Set>
+concept PositiveStaticStrideFor =
+  SetLike<Set> && PositiveStaticStrideForPosition<Stride, position_t<Set>>;
 
-template <typename T>
-concept HasRelationAssociatedTypes = requires {
-  typename T::FromSetType;
-  typename T::ToSetType;
-};
+template <typename Set, typename Value>
+concept SetPositionConvertible =
+  SetLike<Set> && PositionValueLike<Value> && std::convertible_to<model_t<Value>, position_t<Set>>;
 
-template <typename T>
-concept HasMapAssociatedTypes = requires {
-  typename T::DataType;
-  typename T::PositionType;
-  typename T::SetElement;
-  typename T::ValueType;
-  typename T::ConstValueType;
-};
+template <typename Set, typename Position>
+concept SetPositionSame = SetLike<Set> && std::same_as<model_t<Position>, position_t<Set>>;
 
-template <typename T>
-concept HasUnivariateMapAssociatedTypes = requires { typename T::SetType; };
+template <typename Set, typename Position>
+concept OptionalSetPositionSame =
+  SetLike<Set> && (std::same_as<model_t<Position>, void> || SetPositionSame<Set, Position>);
 
+/// Selected positions used by SubMap and the current BivariateMap adapter.
+template <typename R, typename Position>
+concept FlatRangeOver = IterableSetLike<R> && std::same_as<element_t<R>, model_t<Position>> &&
+  requires(const model_t<R>& range, position_t<R> pos) {
+    { range[pos] } -> std::convertible_to<model_t<Position>>;
+  };
+
+/// Operations consumed by the current BivariateMap implementation, not the set abstraction.
 template <typename T>
-concept HasBivariateMapAssociatedTypes = requires { typename T::BivariateSetType; };
+concept BivariateMapSet = BivariateSetLike<T> && IterableSetLike<T> && Validatable<T> &&
+  requires(const model_t<T>& set,
+           position_t<T> flat,
+           typename model_t<T>::FirstSetType::PositionType first,
+           typename model_t<T>::SecondSetType::PositionType second) {
+    typename model_t<T>::SubsetType;
+    { model_t<T>::INVALID_POS } -> std::convertible_to<position_t<T>>;
+    { set.elementRangeSet(first) } -> FlatRangeOver<position_t<T>>;
+    {
+      set.findElementIndex(first, second)
+    } -> std::same_as<decltype(set.getElements(first).size())>;
+    { set.findElementFlatIndex(first, second) } -> std::same_as<position_t<T>>;
+    { set.flatToFirstIndex(flat) } -> std::same_as<typename model_t<T>::FirstSetType::PositionType>;
+    {
+      set.flatToSecondIndex(flat)
+    } -> std::same_as<typename model_t<T>::SecondSetType::PositionType>;
+    { set.firstSetSize() } -> std::same_as<typename model_t<T>::FirstSetType::PositionType>;
+    { set.secondSetSize() } -> std::same_as<typename model_t<T>::SecondSetType::PositionType>;
+    { set.size(first) } -> std::same_as<position_t<T>>;
+  };
+
+/// Flat storage consumed by RelationSet, not a public relation requirement.
+template <typename T>
+concept RelationSetSource = RelationLike<model_t<T>> && Validatable<model_t<T>> &&
+  requires {
+    typename model_t<T>::FlatPositionType;
+    typename model_t<T>::RelationSubset;
+  } && PositionLike<typename model_t<T>::FlatPositionType> &&
+  requires(const model_t<T>& relation,
+           typename model_t<T>::FromSetType::PositionType fromPosition,
+           typename model_t<T>::FlatPositionType flatPosition) {
+    { relation[fromPosition] } -> std::convertible_to<typename model_t<T>::RelationSubset>;
+    { relation.size(fromPosition) } -> PositionValueLike;
+    { relation.offset(fromPosition) } -> std::convertible_to<typename model_t<T>::FlatPositionType>;
+    {
+      static_cast<typename model_t<T>::FromSetType::PositionType>(relation.firstIndex(flatPosition))
+    } -> std::same_as<typename model_t<T>::FromSetType::PositionType>;
+    {
+      relation.relationData().size()
+    } -> std::convertible_to<typename model_t<T>::FlatPositionType>;
+    {
+      relation.relationData()[flatPosition]
+    } -> std::convertible_to<typename model_t<T>::ToSetType::PositionType>;
+  };
 
 template <typename T>
 concept HasIndirectionAssociatedTypes = requires {
@@ -104,291 +264,6 @@ concept HasTypedIndirectionAssociatedTypes = requires {
 
 template <typename T>
 using policy_default_t = std::remove_cv_t<decltype(T::DEFAULT_VALUE)>;
-
-//------------------------------------------------------------------------------
-// Index properties
-//------------------------------------------------------------------------------
-
-/// \brief A built-in signed integral or explicitly opted-in SLAM position type.
-template <typename T>
-concept PositionLike = std::signed_integral<T> || (!std::integral<T> && enable_position_like<T>);
-
-/*!
- * \brief A non-Boolean integral or an opted-in value convertible to a position.
- *
- * \note Unlike the other concepts here, this one normalizes its own argument.
- *       It is applied to deduced expression types in return-type-constraint position,
- *       where the value category of the expression is incidental.
- */
-template <typename T>
-concept PositionValueLike =
-  (std::integral<std::remove_cvref_t<T>> && !std::same_as<std::remove_cvref_t<T>, bool>) ||
-  enable_position_like<std::remove_cvref_t<T>>;
-
-template <typename Position, typename RepresentedPosition>
-consteval bool positionTypeCanRepresent()
-{
-  if constexpr(std::integral<Position> && std::integral<RepresentedPosition>)
-  {
-    // Positions and sizes are nonnegative, so compare the number of value bits.
-    return std::numeric_limits<Position>::digits >= std::numeric_limits<RepresentedPosition>::digits;
-  }
-  else
-  {
-    return std::constructible_from<Position, RepresentedPosition>;
-  }
-}
-
-template <typename Position, typename RepresentedPosition>
-concept PositionCanRepresent = PositionLike<Position> && PositionLike<RepresentedPosition> &&
-  positionTypeCanRepresent<Position, RepresentedPosition>();
-
-template <int Stride, typename Position>
-consteval bool positiveStaticStrideRepresentable()
-{
-  if constexpr(std::integral<Position>)
-  {
-    return std::in_range<Position>(Stride);
-  }
-  else
-  {
-    // Opted-in position types state their own construction contract.
-    return std::constructible_from<Position, int>;
-  }
-}
-
-template <int Stride, typename Position>
-concept PositiveStaticStrideForPosition =
-  PositionLike<Position> && (Stride > 0) && positiveStaticStrideRepresentable<Stride, Position>();
-
-//------------------------------------------------------------------------------
-// Sets
-//------------------------------------------------------------------------------
-
-/*!
- * \brief A set: a sized, possibly empty sequence of elements addressed by position.
- *
- * This is the base of the set hierarchy. BivariateSetLike refines it, so generic code
- * that only needs size and positional access can be written once against SetLike.
- * Use UnivariateSetLike where a bivariate set must be excluded.
- */
-template <typename T>
-concept SetLike = HasSetAssociatedTypes<T> && PositionLike<typename T::PositionType> &&
-  requires(const T& set, typename T::PositionType pos) {
-    { set.size() } -> std::same_as<typename T::PositionType>;
-    { set.empty() } -> std::convertible_to<bool>;
-    { set.at(pos) } -> std::convertible_to<typename T::ElementType>;
-  };
-
-/// \brief A container that can check its own internal consistency.
-template <typename T>
-concept Validatable = requires(const T& container) {
-  { container.isValid(false) } -> std::convertible_to<bool>;
-};
-
-/*!
- * \brief A set that is not a bivariate set.
- *
- * The input sets to a relation, of a product set and the domain of a univariate Map
- * are all univariate.
- */
-template <typename T>
-concept UnivariateSetLike = SetLike<T> && !HasBivariateSetAssociatedTypes<T>;
-
-/*!
- * \brief A SetLike type with const iteration over its elements.
- *
- * This concept states SLAM's ordered-set surface without importing the standard ranges taxonomy.
- * Standard iterator and range categories are tested separately.
- */
-template <typename T>
-concept OrderedSetLike = SetLike<T> && requires(const T& set) {
-  set.begin();
-  { set.end() } -> std::same_as<decltype(set.begin())>;
-  { *set.begin() } -> std::convertible_to<typename T::ElementType>;
-};
-
-template <int Stride, typename Set>
-concept PositiveStaticStrideFor =
-  UnivariateSetLike<Set> && PositiveStaticStrideForPosition<Stride, typename Set::PositionType>;
-
-/*!
- * \brief A set whose elements are indexed by positions from two component sets.
- *
- * PositionType indexes the flattened sequence. ElementType is a coordinate
- * whose `first` and `second` members have the exact endpoint position types.
- * Row-local positions are inferred from row operations rather than imposed as
- * another required associated type.
- */
-template <typename T>
-concept BivariateSetLike = SetLike<T> && HasBivariateSetAssociatedTypes<T> &&
-  UnivariateSetLike<typename T::FirstSetType> && UnivariateSetLike<typename T::SecondSetType> &&
-  requires(typename T::ElementType coordinate) {
-    requires std::same_as<std::remove_cvref_t<decltype(coordinate.first)>,
-                          typename T::FirstSetType::PositionType>;
-    requires std::same_as<std::remove_cvref_t<decltype(coordinate.second)>,
-                          typename T::SecondSetType::PositionType>;
-  } &&
-  requires(const T& set,
-           typename T::PositionType flatPosition,
-           typename T::FirstSetType::PositionType firstPosition,
-           typename T::SecondSetType::PositionType secondPosition) {
-    { set.getFirstSet() } -> std::same_as<const typename T::FirstSetType*>;
-    { set.getSecondSet() } -> std::same_as<const typename T::SecondSetType*>;
-    { set.getElements(firstPosition).size() } -> PositionValueLike;
-    set.getElements(firstPosition).begin();
-    {
-      set.getElements(firstPosition).end()
-    } -> std::same_as<decltype(set.getElements(firstPosition).begin())>;
-    {
-      *set.getElements(firstPosition).begin()
-    } -> std::convertible_to<typename T::SecondSetType::PositionType>;
-    {
-      set.findElementIndex(firstPosition, secondPosition)
-    } -> std::same_as<decltype(set.getElements(firstPosition).size())>;
-    {
-      set.findElementFlatIndex(firstPosition, secondPosition)
-    } -> std::same_as<typename T::PositionType>;
-    { set.flatToFirstIndex(flatPosition) } -> std::same_as<typename T::FirstSetType::PositionType>;
-    {
-      set.flatToSecondIndex(flatPosition)
-    } -> std::same_as<typename T::SecondSetType::PositionType>;
-    { set.firstSetSize() } -> std::same_as<typename T::FirstSetType::PositionType>;
-    { set.secondSetSize() } -> std::same_as<typename T::SecondSetType::PositionType>;
-    { set.size(firstPosition) } -> std::same_as<typename T::PositionType>;
-  };
-
-/// \brief An ordered set of flat positions (the shape returned by elementRangeSet())
-template <typename R, typename Position>
-concept FlatRangeOver = OrderedSetLike<std::remove_cvref_t<R>> &&
-  std::same_as<typename std::remove_cvref_t<R>::ElementType, Position> &&
-  requires(const std::remove_cvref_t<R>& range,
-           typename std::remove_cvref_t<R>::PositionType pos) {
-    { range[pos] } -> std::convertible_to<Position>;
-  };
-
-/*!
- * \brief A BivariateSetLike type that a BivariateMap can bind field data over.
- *
- * BivariateSetLike models only the coordinate structure.
- * This adds what would be needed to bind a map.
- */
-template <typename T>
-concept BivariateMapDomain = BivariateSetLike<T> && OrderedSetLike<T> && Validatable<T> &&
-  requires(const T& set, typename T::FirstSetType::PositionType firstPosition) {
-    { T::INVALID_POS } -> std::convertible_to<typename T::PositionType>;
-    { set.elementRangeSet(firstPosition) } -> FlatRangeOver<typename T::PositionType>;
-  };
-
-//------------------------------------------------------------------------------
-// Relations
-//------------------------------------------------------------------------------
-
-/*!
- * \brief A relation that exposes its two sets and a const iterable row for a
- * position in the from-set.
- *
- * A relation row is selected by the FromSetType's PositionType and contains
- * positions in the ToSetType. Endpoint elements are obtained by projecting
- * those positions through the endpoint sets. A flattened representation is an
- * implementation capability, not a requirement of the relation abstraction.
- */
-template <typename T>
-concept RelationLike = HasRelationAssociatedTypes<T> &&
-  UnivariateSetLike<typename T::FromSetType> && UnivariateSetLike<typename T::ToSetType> &&
-  requires(const T& relation, typename T::FromSetType::PositionType fromPosition) {
-    { relation.fromSet() } -> std::same_as<const typename T::FromSetType*>;
-    { relation.toSet() } -> std::same_as<const typename T::ToSetType*>;
-    { relation[fromPosition].size() } -> PositionValueLike;
-    relation[fromPosition].begin();
-    { relation[fromPosition].end() } -> std::same_as<decltype(relation[fromPosition].begin())>;
-    { *relation[fromPosition].begin() } -> std::convertible_to<typename T::ToSetType::PositionType>;
-  };
-
-/*!
- * \brief A RelationLike type exposing the flattened storage used by RelationSet.
- *
- * RelationLike models row access. This refinement adds an additional static-storage
- * operations required to adapt a relation into a bivariate RelationSet.
- */
-template <typename T>
-concept FlatRelationLike = RelationLike<T> && Validatable<T> &&
-  requires {
-    typename T::FlatPositionType;
-    typename T::RelationSubset;
-  } && PositionLike<typename T::FlatPositionType> &&
-  requires(const T& relation,
-           typename T::FromSetType::PositionType fromPosition,
-           typename T::FlatPositionType flatPosition) {
-    { relation[fromPosition] } -> std::convertible_to<typename T::RelationSubset>;
-    { relation.size(fromPosition) } -> PositionValueLike;
-    { relation.offset(fromPosition) } -> std::convertible_to<typename T::FlatPositionType>;
-    {
-      static_cast<typename T::FromSetType::PositionType>(relation.firstIndex(flatPosition))
-    } -> std::same_as<typename T::FromSetType::PositionType>;
-    { relation.relationData().size() } -> std::convertible_to<typename T::FlatPositionType>;
-    {
-      relation.relationData()[flatPosition]
-    } -> std::convertible_to<typename T::ToSetType::PositionType>;
-  };
-
-//------------------------------------------------------------------------------
-// Maps
-//------------------------------------------------------------------------------
-
-/// \brief \a Value names the same underlying data type as \a Data, ignoring qualifiers.
-template <typename Value, typename Data>
-concept MapValueFor = std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Data>>;
-
-/*!
- * \brief The shared size and element-access model shared by univariate and bivariate maps.
- *
- * \note This is agnostic about whether const access is deep or shallow.
- *       It requires only that ConstValueType yields what a const access actually returns.
- */
-template <typename T>
-concept CommonMapModel =
-  HasMapAssociatedTypes<T> && MapValueFor<typename T::ValueType, typename T::DataType> &&
-  MapValueFor<typename T::ConstValueType, typename T::DataType> &&
-  requires(T& map, const T& constMap, typename T::PositionType pos) {
-    { constMap.size() } -> std::same_as<typename T::PositionType>;
-    { map[pos] } -> std::same_as<typename T::ValueType>;
-    { constMap[pos] } -> std::same_as<typename T::ConstValueType>;
-  };
-
-/// \brief A map whose domain is a univariate SetType.
-template <typename T>
-concept UnivariateMapLike = CommonMapModel<T> && HasUnivariateMapAssociatedTypes<T> &&
-  UnivariateSetLike<typename T::SetType> &&
-  std::same_as<typename T::PositionType, typename T::SetType::PositionType> &&
-  std::same_as<typename T::SetElement, typename T::SetType::ElementType> && requires(const T& map) {
-    { map.set() } -> std::same_as<const typename T::SetType*>;
-  };
-
-/// \brief A map whose domain is a BivariateSetType.
-template <typename T>
-concept BivariateMapLike = CommonMapModel<T> && HasBivariateMapAssociatedTypes<T> &&
-  BivariateSetLike<typename T::BivariateSetType> &&
-  std::same_as<typename T::PositionType, typename T::BivariateSetType::PositionType> &&
-  std::same_as<typename T::SetElement, typename T::BivariateSetType::ElementType> &&
-  requires(const T& map) {
-    { map.set() } -> std::same_as<const typename T::BivariateSetType*>;
-  };
-
-/// \brief A univariate or bivariate SLAM map.
-template <typename T>
-concept MapLike = UnivariateMapLike<T> || BivariateMapLike<T>;
-
-/// \brief A map whose semantic domain is exactly S.
-template <typename M, typename S>
-concept MapOver = (UnivariateMapLike<M> && std::same_as<typename M::SetType, S>) ||
-  (BivariateMapLike<M> && std::same_as<typename M::BivariateSetType, S>);
-
-//------------------------------------------------------------------------------
-// Scalar value policies
-//------------------------------------------------------------------------------
-
-//---- base capabilities -------------------------------------------------------
 
 /// \brief A scalar runtime or compile-time value policy.
 template <typename T>
@@ -551,10 +426,11 @@ concept YieldsStableReferences = std::is_lvalue_reference_v<typename T::Indirect
  * requirement rather than a free choice. Map exposes them through `data_ptr()`.
  */
 template <typename T>
-concept HasResultPointerAliases = requires {
-  typename T::ResultPtr;
-  typename T::ConstResultPtr;
-} &&
+concept HasResultPointerAliases =
+  requires {
+    typename T::ResultPtr;
+    typename T::ConstResultPtr;
+  } &&
   std::same_as<typename T::ResultPtr,
                std::add_pointer_t<std::remove_reference_t<typename T::IndirectionResult>>> &&
   std::same_as<typename T::ConstResultPtr,
@@ -581,13 +457,12 @@ template <typename T, typename Position>
 concept HasSizedBuffer = requires {
   T::IsMutableBuffer;
   std::integral_constant<bool, T::IsMutableBuffer> {};
-} &&
-  requires(const typename T::IndirectionBufferType& buffer) {
-    { buffer.size() } -> std::convertible_to<Position>;
-    { buffer.empty() } -> std::convertible_to<bool>;
-  } && (!T::IsMutableBuffer || requires(typename T::IndirectionBufferType& buffer, Position size) {
-    buffer.resize(size);
-  });
+} && requires(const typename T::IndirectionBufferType& buffer) {
+  { buffer.size() } -> std::convertible_to<Position>;
+  { buffer.empty() } -> std::convertible_to<bool>;
+} && (!T::IsMutableBuffer || requires(typename T::IndirectionBufferType& buffer, Position size) {
+                           buffer.resize(size);
+                         });
 
 /// \brief Default-constructible, and bindable to an existing buffer, as OrderedSet requires.
 template <typename T>
@@ -636,220 +511,36 @@ concept AllocatingMapIndirectionPolicyFor = MapIndirectionPolicyFor<T, Position,
     { T::create(size, value, allocatorId) } -> std::same_as<typename T::IndirectionBufferType>;
   };
 
-}  // namespace detail::model
+}  // namespace detail
 
-//------------------------------------------------------------------------------
-// Public concepts.
-//
-// Each alias normalizes the types that name a model (the container, policy,
-// or position being checked) and forwards Element/Data unchanged,
-// since their cv-qualification is part of the contract.
-//------------------------------------------------------------------------------
+// Public policy extension protocols.
+// The owner compositions and diagnostic clauses above remain implementation details.
 
-/// \brief A built-in signed integral or explicitly opted-in SLAM position type.
-/// \tparam T the candidate position type
+/// Reports size, emptiness, and validity, with a default size value.
 template <typename T>
-concept PositionLike = detail::model::PositionLike<detail::model_t<T>>;
+concept SizePolicy = detail::SizePolicy<detail::model_t<T>>;
 
-/// \brief A univariate set with position-based size and element access.
-/// \tparam T the candidate set type
-/// \note BivariateSetLike refines this. Use UnivariateSetLike to exclude bivariate sets.
+/// Reports scalar component count and shape for scalar or multidimensional strides.
 template <typename T>
-concept SetLike = detail::model::SetLike<detail::model_t<T>>;
+concept StridePolicy = detail::StridePolicy<detail::model_t<T>>;
 
-/// \brief A set that is not a bivariate set.
-/// \tparam T the candidate set type
-/// \note This is the one place the univariate/bivariate exclusion is stated.
+/// Reports a scalar offset, its default value, and validity.
 template <typename T>
-concept UnivariateSetLike = detail::model::UnivariateSetLike<detail::model_t<T>>;
+concept OffsetPolicy = detail::OffsetPolicy<detail::model_t<T>>;
 
-/// \brief A SetLike type with const iteration over its elements.
-/// \tparam T the candidate set type
-template <typename T>
-concept OrderedSetLike = detail::model::OrderedSetLike<detail::model_t<T>>;
-
-/// \brief A set whose elements are coordinate pairs of positions from two component sets.
-/// \tparam T the candidate bivariate set type
-template <typename T>
-concept BivariateSetLike = detail::model::BivariateSetLike<detail::model_t<T>>;
-
-/// \brief A container that can check its own internal consistency.
-/// \tparam T the candidate container type
-template <typename T>
-concept Validatable = detail::model::Validatable<detail::model_t<T>>;
-
-/// \brief A BivariateSetLike type that a BivariateMap can bind field data over.
-/// \tparam T the candidate bivariate set type
-template <typename T>
-concept BivariateMapDomain = detail::model::BivariateMapDomain<detail::model_t<T>>;
-
-/// \brief A relation exposing its two sets and a const iterable row per from-set position.
-/// \tparam T the candidate relation type
-template <typename T>
-concept RelationLike = detail::model::RelationLike<detail::model_t<T>>;
-
-/// \brief A RelationLike type exposing the flattened storage used by RelationSet.
-/// \tparam T the candidate relation type
-template <typename T>
-concept FlatRelationLike = detail::model::FlatRelationLike<detail::model_t<T>>;
-
-/// \brief A map whose domain is a univariate SetType.
-/// \tparam T the candidate map type
-template <typename T>
-concept UnivariateMapLike = detail::model::UnivariateMapLike<detail::model_t<T>>;
-
-/// \brief A map whose domain is a BivariateSetType.
-/// \tparam T the candidate map type
-template <typename T>
-concept BivariateMapLike = detail::model::BivariateMapLike<detail::model_t<T>>;
-
-/// \brief A univariate or bivariate SLAM map.
-/// \tparam T the candidate map type
-template <typename T>
-concept MapLike = detail::model::MapLike<detail::model_t<T>>;
-
-/// \brief A subscriptable ordered set whose elements are flat positions in a larger space.
-/// \tparam R the candidate range type
-/// \tparam Position the flat position type its elements index
-template <typename R, typename Position>
-concept FlatRangeOver = detail::model::FlatRangeOver<R, detail::model_t<Position>>;
-
-/// \brief A map whose semantic domain is exactly \a S.
-/// \tparam M the candidate map type
-/// \tparam S the expected domain: a SetLike for univariate maps, a BivariateSetLike otherwise
-template <typename M, typename S>
-concept MapOver = detail::model::MapOver<detail::model_t<M>, detail::model_t<S>>;
-
-/// \brief A scalar runtime or compile-time value policy.
-/// \tparam T the candidate policy type
-template <typename T>
-concept ValuePolicy = detail::model::ValuePolicy<detail::model_t<T>>;
-
-/// \brief A policy that reports a size and whether that size is empty.
-/// \tparam T the candidate policy type
-template <typename T>
-concept SizePolicy = detail::model::SizePolicy<detail::model_t<T>>;
-
-/// \brief A SizePolicy usable by a set whose position type is \a Position.
-/// \tparam T the candidate policy type
-/// \tparam Position the owning set's position type
-template <typename T, typename Position>
-concept SetSizePolicyFor =
-  detail::model::SetSizePolicyFor<detail::model_t<T>, detail::model_t<Position>>;
-
-/// \brief The capability shared by scalar and multi-dimensional stride policies.
-/// \tparam T the candidate policy type
-template <typename T>
-concept StridePolicy = detail::model::StridePolicy<detail::model_t<T>>;
-
-/// \brief A scalar stride policy usable by OrderedSet with \a Position.
-/// \tparam T the candidate policy type
-/// \tparam Position the owning set's position type
-template <typename T, typename Position>
-concept OrderedSetStridePolicyFor =
-  detail::model::OrderedSetStridePolicyFor<detail::model_t<T>, detail::model_t<Position>>;
-
-/// \brief A scalar or multi-dimensional stride policy usable by Map with \a Position.
-/// \tparam T the candidate policy type
-/// \tparam Position the owning map's position type
-template <typename T, typename Position>
-concept MapStridePolicyFor =
-  detail::model::MapStridePolicyFor<detail::model_t<T>, detail::model_t<Position>>;
-
-/// \brief A scalar value policy that reports an offset.
-/// \tparam T the candidate policy type
-template <typename T>
-concept OffsetPolicy = detail::model::OffsetPolicy<detail::model_t<T>>;
-
-/// \brief An OffsetPolicy usable by an OrderedSet whose position type is \a Position.
-/// \tparam T the candidate policy type
-/// \tparam Position the owning set's position type
-template <typename T, typename Position>
-concept OrderedSetOffsetPolicyFor =
-  detail::model::OrderedSetOffsetPolicyFor<detail::model_t<T>, detail::model_t<Position>>;
-
-/// \brief The common storage/indirection-policy capability.
-/// \tparam T the candidate policy type
-template <typename T>
-concept IndirectionPolicy = detail::model::IndirectionPolicy<detail::model_t<T>>;
-
-/// \brief An IndirectionPolicy callable with \a Position.
-/// \tparam T the candidate policy type
-/// \tparam Position the position type the indirection is invoked with
-template <typename T, typename Position>
-concept IndirectionPolicyFor =
-  detail::model::IndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>>;
-
-/// \brief An indirection policy usable by OrderedSet over \a Position and \a Element.
-/// \tparam T the candidate policy type
-/// \tparam Position the owning set's position type
-/// \tparam Element the owning set's element type; its cv-qualification is significant
+/// Callable, bindable indirection for an OrderedSet.
 template <typename T, typename Position, typename Element>
 concept OrderedSetIndirectionPolicyFor =
-  detail::model::OrderedSetIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Element>;
+  detail::OrderedSetIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Element>;
 
-/// \brief An indirection policy providing Map's buffer and static access API.
-/// \tparam T the candidate policy type
-/// \tparam Position the owning map's position type
-/// \tparam Data the owning map's data type; its cv-qualification is significant
+/// Sized-buffer and stable-reference access for a Map.
 template <typename T, typename Position, typename Data>
 concept MapIndirectionPolicyFor =
-  detail::model::MapIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Data>;
+  detail::MapIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Data>;
 
-/// \brief A MapIndirectionPolicyFor that can allocate and initialize its buffer.
-/// \tparam T the candidate policy type
-/// \tparam Position the owning map's position type
-/// \tparam Data the owning map's data type; its cv-qualification is significant
+/// Map storage that can also allocate and initialize its buffer.
 template <typename T, typename Position, typename Data>
 concept AllocatingMapIndirectionPolicyFor =
-  detail::model::AllocatingMapIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Data>;
-
-/// \brief A non-reference type that can be copied byte-for-byte into device code.
-/// \tparam T the candidate type
-template <typename T>
-concept DeviceCapturable =
-  !std::is_reference_v<T> && std::is_trivially_copyable_v<std::remove_cv_t<T>> &&
-  !std::is_base_of_v<detail::HostObjectView, std::remove_cv_t<T>>;
-
-namespace detail
-{
-//------------------------------------------------------------------------------
-// Glue used by the construction helpers in SetBuilders, MapBuilders and
-// RelationBuilders. These normalize like the public concepts above.
-//------------------------------------------------------------------------------
-
-/// \brief A non-Boolean integral or an opted-in value convertible to a position.
-template <typename T>
-concept PositionValueLike = model::PositionValueLike<T>;
-
-/// \brief \a Position has at least as many value bits as \a RepresentedPosition.
-template <typename Position, typename RepresentedPosition>
-concept PositionCanRepresent =
-  model::PositionCanRepresent<model_t<Position>, model_t<RepresentedPosition>>;
-
-/// \brief \a Value is a position value convertible to \a Set's position type.
-template <typename Set, typename Value>
-concept SetPositionConvertible = UnivariateSetLike<Set> && PositionValueLike<Value> &&
-  std::convertible_to<model_t<Value>, typename model_t<Set>::PositionType>;
-
-/// \brief \a Position is exactly \a Set's position type.
-template <typename Set, typename Position>
-concept SetPositionSame =
-  UnivariateSetLike<Set> && std::same_as<model_t<Position>, typename model_t<Set>::PositionType>;
-
-/// \brief \a Position is \c void (meaning "unspecified") or exactly \a Set's position type.
-template <typename Set, typename Position>
-concept OptionalSetPositionSame = UnivariateSetLike<Set> &&
-  (std::same_as<model_t<Position>, void> || SetPositionSame<Set, Position>);
-
-/// \brief \a Stride is positive and representable by \a Position.
-template <int Stride, typename Position>
-concept PositiveStaticStrideForPosition =
-  model::PositiveStaticStrideForPosition<Stride, model_t<Position>>;
-
-/// \brief \a Stride is positive and representable by \a Set's position type.
-template <int Stride, typename Set>
-concept PositiveStaticStrideFor = model::PositiveStaticStrideFor<Stride, model_t<Set>>;
-}  // namespace detail
+  detail::AllocatingMapIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Data>;
 
 }  // namespace axom::slam

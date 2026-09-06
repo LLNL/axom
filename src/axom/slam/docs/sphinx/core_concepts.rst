@@ -171,3 +171,112 @@ itself, so a temporary range of positions is safe. If the parent is reassigned,
 the selected positions must still be valid. Recreate iterators after changing
 the parent's storage or component shape.
 
+C++ concept contracts
+=====================
+
+``Concepts.hpp`` defines the operations generic code can use.
+The public concepts do not require SLAM policy classes, storage aliases,
+or concrete iterator types. Object classification ignores top-level const
+and reference qualification. Element and mapped-value constness still matters.
+
+.. list-table:: Public object contracts
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Concept
+     - Required operations and meaning
+   * - ``SetLike<S>``
+     - Signed integral ``PositionType``, ``ElementType``, and const ``size()``,
+       ``empty()``, and ``at(position)``. A set element may be a coordinate pair.
+   * - ``IterableSetLike<S>``
+     - ``SetLike`` plus const ``begin()`` and ``end()``. Traversal supports
+       dereference, increment, and comparison with the end, and visits elements
+       in positional order. Iterator aliases and standard-range conformance
+       are not required.
+   * - ``BivariateSetLike<S>``
+     - ``SetLike`` with first and second sets that also model ``SetLike``.
+       Coordinate members have their respective sets' position types.
+       ``getFirstSet()`` and ``getSecondSet()`` return those sets, and
+       ``getElements(first)`` returns a sized, iterable row of second-set
+       positions.
+   * - ``RelationLike<R>``
+     - From and to sets that model ``SetLike``, returned by ``fromSet()`` and
+       ``toSet()``. ``relation[from]`` returns a sized, iterable row of to-set
+       positions. Neither set is restricted to scalar elements.
+   * - ``MapLike<M>``
+     - Signed integral ``PositionType``, scalar ``DataType``, ``size()``,
+       ``numComp()``, ``index(position)``, and mutable and const
+       ``flatValue(position, component)``. Value access returns lvalue
+       references to ``DataType``, possibly adding constness.
+   * - ``MapOver<M, S>``
+     - ``MapLike`` with an explicit whole-set binding to exactly ``S``.
+       ``MappedSetType`` names ``S``, ``set()`` returns a pointer to const ``S``,
+       and the map and set use the same position type.
+   * - ``Validatable<T>``
+     - Const ``isValid(false)`` returns a Boolean result. This is an optional
+       capability, independent of the object concepts above.
+
+A concept checks expressions and types, rather than runtime consistency. 
+A set's ``size()`` must be nonnegative and agree with ``empty()``.
+Access requires valid positions. Dynamic containers can retain invalid entries
+within their extent and their validity API determines which positions may be accessed.
+
+Bivariate coordinates must identify valid positions in both component sets.
+Concatenating the rows in first-set order must agree with ``at(flatPosition)``;
+the flat cardinality equals the sum of the row sizes. Relation rows must contain
+valid to-set positions. A row's reported size must agree with its traversal.
+Search methods and flat-position projections are optional conveniences,
+not requirements of these public concepts.
+
+Map access and set binding
+--------------------------
+
+``flatValue(entry, component)`` uses a local scalar-component offset in ``[0, numComp())``,
+even for tensor maps. For a shape ``{2, 3}``, ``flatValue(entry, 5)`` and
+``value(entry, 1, 2)`` access the same scalar.
+Here, "flat" describes the entry position in a bivariate map rather than
+the global component-storage position used by ``operator[]``.
+
+``MapLike`` requires no materialized domain object. ``index(entry)`` identifies
+the element receiving the values, and the component count is positive for a
+bound map. A default, unbound SubMap may be empty with zero components.
+Writable access is a separate requirement for algorithms that modify values.
+A const owning map is read-only, while a const view can retain mutable access
+to its backing storage.
+
+``Map``, ``DynamicMap``, and ``BivariateMap`` expose ``MappedSetType`` beside
+their existing aliases. It names the set returned by ``set()``. This type-only
+alias distinguishes BivariateMap's mapped bivariate set from its internal flat
+``SetType`` without changing either object representation or set access.
+For a valid bound ``MapOver<M, S>``, ``size() == set()->size()`` and
+``index(i)`` identifies the same element as ``set()->at(i)``.
+
+SubMap models ``MapLike`` but not ``MapOver``. Its ``set()`` selects positions
+in its parent; those positions are not the mapped elements returned by
+``index()``. There is no projected-set adapter or second parent binding.
+Generic algorithms that only read or write mapped values should require ``MapLike``.
+Require ``MapOver`` when the algorithm needs the whole-set binding.
+
+Implementation and deployment requirements
+------------------------------------------
+
+Existing owners and adapters may consume more operations than the public
+semantic contracts. For example, BivariateMap currently uses search, flat
+projections, and row-range construction. RelationSet consumes a relation's flat
+storage. Their checks live in ``detail`` and are not additional requirements
+on every bivariate set or relation.
+
+Size, stride, offset, ordered-set indirection, and map-storage policy protocols
+remain separate extension contracts. Their owner-specific combinations do not
+enter the public object concepts.
+
+``PositionLike`` currently means a signed integral type. Tagged positions need
+a design that distinguishes positions, extents, and differences before they
+can support SLAM's arithmetic. There is no opt-in that bypasses that requirement.
+
+``TriviallyCopyableRepresentation`` checks only the C++ representation.
+It does not certify device-callable operations, device-accessible allocations,
+or the lifetime of referenced objects. In particular, a trivially copyable
+SubMap can retain a pointer to a host-only parent. Device view conversion must
+establish its own contract.
+

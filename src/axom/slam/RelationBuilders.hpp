@@ -55,7 +55,7 @@ namespace detail
 {
 template <typename FromSet, typename ToSet, typename ElemType>
 concept RelationIndexBufferTypes =
-  UnivariateSetLike<FromSet> && UnivariateSetLike<ToSet> && SetPositionSame<ToSet, ElemType>;
+  SetLike<FromSet> && SetLike<ToSet> && SetPositionSame<ToSet, ElemType>;
 
 template <typename FromSet, typename ToSet>
 using RelationFlatPosition =
@@ -68,16 +68,16 @@ using SelectedRelationFlatPosition =
                      model_t<ExplicitPosition>>;
 
 template <typename FromSet, typename ToSet, typename Position>
-concept RelationFlatPositionFor = UnivariateSetLike<FromSet> && UnivariateSetLike<ToSet> &&
+concept RelationFlatPositionFor = SetLike<FromSet> && SetLike<ToSet> &&
   PositionCanRepresent<Position, typename model_t<FromSet>::PositionType>;
 
 template <typename FromSet, typename ToSet, typename ExplicitPosition>
-concept OptionalRelationFlatPositionFor = UnivariateSetLike<FromSet> && UnivariateSetLike<ToSet> &&
+concept OptionalRelationFlatPositionFor = SetLike<FromSet> && SetLike<ToSet> &&
   RelationFlatPositionFor<FromSet, ToSet, SelectedRelationFlatPosition<FromSet, ToSet, ExplicitPosition>>;
 
 template <typename FromSet, typename ToSet, typename Value>
 concept RelationFlatPositionConstructible =
-  UnivariateSetLike<FromSet> && UnivariateSetLike<ToSet> && PositionValueLike<Value> &&
+  SetLike<FromSet> && SetLike<ToSet> && PositionValueLike<Value> &&
   std::constructible_from<RelationFlatPosition<FromSet, ToSet>, model_t<Value>>;
 
 template <typename FromSet, typename ToSet, typename ExplicitPosition, typename Value>

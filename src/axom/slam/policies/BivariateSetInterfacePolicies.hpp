@@ -78,7 +78,21 @@ struct ConcreteBivariateSet
       }
       return false;
     }
-    return getFirstSet()->isValid(verboseOutput) && getSecondSet()->isValid(verboseOutput);
+    if constexpr(Validatable<FirstSetType>)
+    {
+      if(!getFirstSet()->isValid(verboseOutput))
+      {
+        return false;
+      }
+    }
+    if constexpr(Validatable<SecondSetType>)
+    {
+      if(!getSecondSet()->isValid(verboseOutput))
+      {
+        return false;
+      }
+    }
+    return true;
   }
 
 private:

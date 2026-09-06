@@ -104,9 +104,9 @@ public:
 
   // The following asserts validate that our types model the concepts
   static_assert(slam::SetLike<ZoneSet>);
-  static_assert(slam::OrderedSetLike<ZoneSet>);
+  static_assert(slam::IterableSetLike<ZoneSet>);
   static_assert(slam::SetLike<NodeSet>);
-  static_assert(slam::OrderedSetLike<NodeSet>);
+  static_assert(slam::IterableSetLike<NodeSet>);
   static_assert(std::is_trivially_copyable_v<ZoneHandle>);
   static_assert(std::is_trivially_copyable_v<NodeHandle>);
   static_assert(!std::is_same_v<ZoneHandle, NodeHandle>);
@@ -126,7 +126,7 @@ public:
 
   static_assert(slam::MapOver<NodeTemperatureMap, NodeSet>);
   static_assert(slam::MapOver<ZoneTemperatureMap, ZoneSet>);
-  static_assert(slam::BivariateMapLike<ConnectivityWeightMap>);
+  static_assert(slam::MapLike<ConnectivityWeightMap>);
   static_assert(slam::MapOver<ConnectivityWeightMap, ConnectivitySet>);
   static_assert(std::is_same_v<typename ConnectivityWeightMap::BivariateSetType::FirstSetType::ElementType,
                                ZoneHandle>);

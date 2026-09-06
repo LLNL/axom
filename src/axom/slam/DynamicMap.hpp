@@ -29,6 +29,8 @@ class DynamicMap
 {
 public:
   using SetType = SetT;
+  /// The complete set bound by set().
+  using MappedSetType = SetType;
   using DataType = DataT;
 
   using PositionType = typename SetType::PositionType;
@@ -93,6 +95,32 @@ public:
     return m_data[setIndex];
   }
 
+  /// \brief Access the scalar component of an existing, valid entry.
+  /// \pre component == 0. Unlike mutable operator[], this does not grow the map.
+  DataType& flatValue(PositionType pos, PositionType AXOM_DEBUG_PARAM(component) = 0)
+  {
+    SLIC_ASSERT(component == 0);
+    verifyPosition(pos);
+    return m_data[pos];
+  }
+
+  /// \overload
+  const DataType& flatValue(PositionType pos, PositionType AXOM_DEBUG_PARAM(component) = 0) const
+  {
+    SLIC_ASSERT(component == 0);
+    return (*this)[pos];
+  }
+
+  /// \brief Return the set element associated with a valid entry.
+  SetElement index(PositionType pos) const
+  {
+    verifyPosition(pos);
+    return set()->at(pos);
+  }
+
+  /// \brief DynamicMap has one scalar component per entry.
+  PositionType numComp() const { return 1; }
+
   /// @}
 
   /// \brief Access to underlying data
@@ -140,7 +168,7 @@ private:
   inline void verifyPosition(PositionType AXOM_DEBUG_PARAM(setIndex)) const
   {
     SLIC_ASSERT_MSG(
-      setIndex >= 0 && setIndex < (int)m_data.size(),
+      setIndex >= 0 && setIndex < size(),
       "Attempted to access entry " << setIndex << " but map's set has size " << m_data.size());
 
     SLIC_ASSERT_MSG(isValidEntry(setIndex), "Attempted to access invalid set entry " << setIndex);

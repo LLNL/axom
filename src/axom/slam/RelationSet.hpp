@@ -40,7 +40,7 @@ class RelationSet final
   : public policies::BivariateSetInterface<InterfaceType, SetType1, SetType2, typename Relation::FlatPositionType>
 {
 public:
-  static_assert(FlatRelationLike<Relation>,
+  static_assert(detail::RelationSetSource<Relation>,
                 "RelationSet requires a relation with contiguous flat storage");
 
   using FirstSetType = SetType1;

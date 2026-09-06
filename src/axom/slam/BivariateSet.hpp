@@ -351,7 +351,21 @@ bool BivariateSet<Set1, Set2, Position>::isValid(bool verboseOutput) const
     }
     return false;
   }
-  return m_set1->isValid(verboseOutput) && m_set2->isValid(verboseOutput);
+  if constexpr(Validatable<Set1>)
+  {
+    if(!m_set1->isValid(verboseOutput))
+    {
+      return false;
+    }
+  }
+  if constexpr(Validatable<Set2>)
+  {
+    if(!m_set2->isValid(verboseOutput))
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
