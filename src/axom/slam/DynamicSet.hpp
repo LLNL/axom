@@ -51,6 +51,7 @@ namespace axom::slam
 template <typename PosType = slam::DefaultPositionType,
           typename ElemType = slam::DefaultElementType,
           typename SizePolicy = policies::DynamicRuntimeSize<PosType>>
+  requires detail::DynamicSetSizePolicyFor<SizePolicy, PosType>
 class DynamicSet : public Set<PosType, ElemType>, SizePolicy
 {
 public:
@@ -58,9 +59,6 @@ public:
   using ElementType = ElemType;
   using SetVectorType = std::vector<ElementType>;
   using SizePolicyType = SizePolicy;
-
-  static_assert(detail::SetSizePolicyFor<SizePolicyType, PositionType>,
-                "DynamicSet requires a size policy over its position type");
 
   /// value to mark indices of deleted elements
   static constexpr ElementType INVALID_ENTRY = ~0;
@@ -453,6 +451,7 @@ private:
 };
 
 template <typename P, typename E, typename S>
+  requires detail::DynamicSetSizePolicyFor<S, P>
 constexpr typename DynamicSet<P, E, S>::ElementType DynamicSet<P, E, S>::INVALID_ENTRY;
 
 }  // end namespace axom::slam

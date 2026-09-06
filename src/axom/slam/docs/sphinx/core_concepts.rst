@@ -87,8 +87,9 @@ Sizes and component shapes
 
 A bound map has a positive number of components per set element, even when
 the set is empty. Every dimension of a tensor component shape must be positive.
-Constructors and ``make_map`` helpers check component counts, shape products,
-and storage sizes before allocating or resizing storage. The scalar count must
+Built-in stride constructors and ``make_map`` helpers check component counts
+and shape products. Maps check storage sizes before allocating or resizing
+storage. Custom stride policies must obey the same contract. The scalar count must
 fit both the map's position type and ``axom::IndexType``. A supplied
 ``ArrayView`` must have exactly that many entries; these checks are active in
 Debug and Release builds. For raw-pointer helpers, the caller remains responsible
@@ -101,6 +102,12 @@ The referenced set's size must remain consistent with the map's value buffer.
 Do not mutate an inherited stride policy or component shape after construction;
 construct or assign a map with the desired shape instead. ``isValid()`` safely
 rejects invalid component counts or storage sizes, but it does not repair them.
+
+BivariateMap reads component count and shape from its inner Map, including after
+assignment through ``getMap()``. Its outer stride-policy base remains for source
+and layout compatibility. Changing that base does not configure the map.
+``isValid()`` also checks that the inner Map's entry count agrees with the
+bivariate set. Iterators are invalidated after replacing storage or changing shape.
 
 Value constness follows the backing storage. A const owning map returns const
 references. A const map backed by ``ArrayView<T>`` still returns ``T&``; one
@@ -261,14 +268,34 @@ Implementation and deployment requirements
 ------------------------------------------
 
 Existing owners and adapters may consume more operations than the public
-semantic contracts. For example, BivariateMap currently uses search, flat
-projections, and row-range construction. RelationSet consumes a relation's flat
-storage. Their checks live in ``detail`` and are not additional requirements
-on every bivariate set or relation.
+semantic contracts. BivariateMap uses search and conversion of flat row positions
+to its concrete RangeSet. It derives the row type from ``getElements()`` and
+iterator coordinates from ``at()``. It does not require a set iterator or
+``SubsetType`` alias. RelationSet consumes a relation's flat storage. Their
+checks live in ``detail`` and are not additional requirements on every
+bivariate set or relation.
 
-Size, stride, offset, ordered-set indirection, and map-storage policy protocols
+RelationSet derives rows from const ``relation[from]``. It searches the row's
+flat storage using ``offset(from)`` and the row's size, and projects flat
+positions through ``firstIndex(flat)`` and ``relationData()[flat]``. These
+operations must agree with row traversal. No row subscript, row offset, or
+``RelationSubset`` alias is required. A concrete RelationSet returns the source
+row directly. A virtual RelationSet requires conversion to the fixed row type
+of BivariateSet. If that conversion is unavailable, the concrete adapter's
+``VirtualSet`` and ``OtherSet`` aliases are ``void``.
+
+SubMap construction requires scalar access, size, component count, shape, and
+element lookup from its parent. Range traversal adds a separate check for a
+parent iterator that can be constructed at a selected position, dereferenced,
+copied, and queried for its original flat position. A parent ``set_end()`` is
+not required. The copied index set supplies positional access; it does not
+need its own iteration or subscript API. Shaped component access is checked
+only when requested.
+
+Size, stride, offset, subset, ordered-set indirection, and map-storage policy protocols
 remain separate extension contracts. Their owner-specific combinations do not
-enter the public object concepts.
+enter the public object concepts. See :ref:`policy-contracts-label` for the
+operations each owner uses.
 
 ``PositionLike`` currently means a signed integral type. Tagged positions need
 a design that distinguishes positions, extents, and differences before they

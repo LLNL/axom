@@ -56,6 +56,7 @@ template <typename PosType = slam::DefaultPositionType,
           typename IndirectionPolicy = policies::NoIndirection<PosType, ElemType>,
           typename SubsettingPolicy = policies::NoSubset,
           typename InterfacePolicy = policies::VirtualInterface>
+  requires(detail::OrderedSetPoliciesFor<PosType, ElemType, SizePolicy, OffsetPolicy, StridePolicy, IndirectionPolicy, SubsettingPolicy>)
 struct OrderedSet : public policies::SetInterface<InterfacePolicy, PosType, ElemType>,
                     SizePolicy,
                     OffsetPolicy,
@@ -72,15 +73,6 @@ public:
   using StridePolicyType = StridePolicy;
   using IndirectionPolicyType = IndirectionPolicy;
   using SubsettingPolicyType = SubsettingPolicy;
-
-  static_assert(detail::SetSizePolicyFor<SizePolicyType, PositionType>,
-                "OrderedSet requires a size policy over its position type");
-  static_assert(detail::OrderedSetOffsetPolicyFor<OffsetPolicyType, PositionType>,
-                "OrderedSet requires an offset policy over its position type");
-  static_assert(detail::OrderedSetStridePolicyFor<StridePolicyType, PositionType>,
-                "OrderedSet requires a scalar stride policy over its position type");
-  static_assert(OrderedSetIndirectionPolicyFor<IndirectionPolicyType, PositionType, ElementType>,
-                "OrderedSet requires set indirection over its position and element types");
 
   using ModularIntType = ModularInt<SizePolicy>;
 
@@ -128,6 +120,13 @@ private:
             typename OtherIndirectionPolicy,
             typename OtherSubsettingPolicy,
             typename OtherInterfacePolicy>
+    requires(detail::OrderedSetPoliciesFor<OtherPosType,
+                                           OtherElemType,
+                                           OtherSizePolicy,
+                                           OtherOffsetPolicy,
+                                           OtherStridePolicy,
+                                           OtherIndirectionPolicy,
+                                           OtherSubsettingPolicy>)
   friend struct OrderedSet;
 
   /// \brief Helper tag class to call OrderedSet conversion constructor
@@ -234,9 +233,8 @@ public:
     }
 
     AXOM_HOST_DEVICE SetBuilder& data(DataType bufPtr, PositionType bufferSize)
+      requires std::constructible_from<IndirectionPolicyType, DataType, PositionType>
     {
-      static_assert(std::is_constructible<IndirectionPolicyType, DataType, PositionType>::value,
-                    "This indirection policy does not support sized data binding.");
       m_data = IndirectionPolicyType(bufPtr, bufferSize);
       return *this;
     }
@@ -496,9 +494,13 @@ template <typename PosType,
           typename IndirectionPolicy,
           typename SubsettingPolicy,
           typename InterfacePolicy>
+  requires(
+    detail::OrderedSetPoliciesFor<PosType, ElemType, SizePolicy, OffsetPolicy, StridePolicy, IndirectionPolicy, SubsettingPolicy>)
 bool OrderedSet<PosType, ElemType, SizePolicy, OffsetPolicy, StridePolicy, IndirectionPolicy, SubsettingPolicy, InterfacePolicy>::
   isValid(bool verboseOutput) const
 {
+  static_assert(detail::ValidatesSubset<SubsettingPolicyType, const_iterator>,
+                "OrderedSet subset validation must accept the set's const iterators");
   bool bValid = SizePolicyType::isValid(verboseOutput) &&
     OffsetPolicyType::isValid(verboseOutput) && StridePolicyType::isValid(verboseOutput) &&
     IndirectionPolicyType::isValid(size(),

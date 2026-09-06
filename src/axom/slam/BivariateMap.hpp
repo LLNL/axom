@@ -26,6 +26,27 @@
 
 namespace axom::slam
 {
+namespace detail
+{
+/// The extra operations BivariateMap consumes beyond the bivariate set contract.
+template <typename T>
+concept BivariateMapSet = BivariateSetLike<T> &&
+  requires(const T& set,
+           typename T::FirstSetType::PositionType first,
+           typename T::SecondSetType::PositionType second) {
+    { T::INVALID_POS } -> std::convertible_to<typename T::PositionType>;
+    { set.findElementIndex(first, second) } -> PositionValueLike;
+    { set.findElementFlatIndex(first, second) } -> std::convertible_to<typename T::PositionType>;
+    {
+      set.elementRangeSet(first)
+    } -> std::convertible_to<typename RangeSet<typename T::PositionType, typename T::PositionType>::ConcreteSet>;
+  };
+template <typename Data, typename Set, typename Indirection, typename Stride>
+concept BivariateMapParameters =
+  BivariateMapSet<Set> && MapStridePolicyFor<Stride, typename Set::PositionType> &&
+  MapIndirectionPolicyFor<Indirection, typename Set::PositionType, Data>;
+}  // namespace detail
+
 /**
  * \class BivariateMap
  * \brief A Map for BivariateSet. It associates a constant number of values to
@@ -87,6 +108,7 @@ template <typename T,
           typename IndPol = policies::ArrayIndirection<typename BSet::PositionType, T>,
           typename StrPol = policies::StrideOne<typename BSet::PositionType>,
           typename IfacePol = policies::ConcreteInterface>
+  requires detail::BivariateMapParameters<T, BSet, IndPol, StrPol>
 class BivariateMap : public policies::MapInterface<IfacePol, typename BSet::PositionType>,
                      public StrPol
 {
@@ -106,21 +128,15 @@ public:
   using ElementShape = typename StridePolicyType::ShapeType;
 
   // The internal map is indexed by flat bivariate positions.
-  // Its backing set is independent of the endpoint-coordinate ElementType.
+  // Its backing set is independent of the coordinate ElementType.
   using SetType = typename slam::RangeSet<PositionType, PositionType>::ConcreteSet;
   using MapType = Map<DataType, SetType, IndPol, StrPol, IfacePol>;
-  using OrderedSetType = typename BSet::SubsetType;
+  using OrderedSetType = std::remove_cvref_t<decltype(std::declval<const BSet&>().getElements(
+    std::declval<FirstPositionType>()))>;
 
   using ValueType = typename IndirectionPolicy::IndirectionResult;
   using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
 
-  static_assert(detail::BivariateMapSet<BivariateSetType>,
-                "BivariateMap requires a bivariate set it can bind field data over");
-  static_assert(
-    detail::MapStridePolicyFor<StridePolicyType, PositionType>,
-    "BivariateMap requires a scalar or multi-dimensional stride over its position type");
-  static_assert(MapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>,
-                "BivariateMap requires map indirection over its position and data types");
   using PointerType = std::remove_reference_t<ValueType>*;
   using ConstPointerType = std::remove_reference_t<ConstValueType>*;
 
@@ -316,8 +332,7 @@ public:
     verifyFirstSetIndex(firstIdx);
 #endif
     auto s = set()->elementRangeSet(firstIdx);
-    const bool hasInd = submapIndicesHaveIndirection();
-    return ConstSubMapType(this, s, hasInd);
+    return ConstSubMapType(this, s);
   }
 
   AXOM_SUPPRESS_HD_WARN
@@ -327,8 +342,7 @@ public:
     verifyFirstSetIndex(firstIdx);
 #endif
     auto s = set()->elementRangeSet(firstIdx);
-    const bool hasInd = submapIndicesHaveIndirection();
-    return SubMapType(this, s, hasInd);
+    return SubMapType(this, s);
   }
 
   /**
@@ -448,7 +462,7 @@ public:
    * \brief Return a set of DenseIndex associated to the given first set index
    *
    * \param s1 the first set index
-   * \return OrderedSet containing the elements
+   * \return The row of second-set positions
    */
   OrderedSetType indexSet(FirstPositionType s1) const { return set()->getElements(s1); }
 
@@ -459,20 +473,6 @@ public:
   }
 
   /// @}
-
-protected:
-  /**
-   * \brief Utility function to determine if submaps should use indirection
-   * when finding the set indices of their elements.
-   *
-   * This test distinguishes between ProductSet whose second set do not use
-   * indirection and other BivariateSet types
-   */
-  AXOM_HOST_DEVICE constexpr bool submapIndicesHaveIndirection() const
-  {
-    return traits::indices_use_indirection<BivariateSetType>::value;
-    //      || (set()->getSecondSet()->at(0) != 0);
-  }
 
 public:
   /// BivariateMap iterator functions
@@ -536,7 +536,15 @@ public:
 
   [[nodiscard]] bool isValid(bool verboseOutput = false) const
   {
-    return set()->isValid(verboseOutput) && m_map.isValid(verboseOutput);
+    if(set() == nullptr || m_map.size() != set()->size() || !m_map.isValid(verboseOutput))
+    {
+      return false;
+    }
+    if constexpr(Validatable<BivariateSetType>)
+    {
+      return set()->isValid(verboseOutput);
+    }
+    return true;
   }
 
   /// \name BivariateMap cardinality functions
@@ -549,15 +557,30 @@ public:
   /// \brief Returns the BivariateSet size.
   AXOM_HOST_DEVICE PositionType totalSize() const { return set()->size(); }
 
-  FirstPositionType firstSetSize() const { return set()->firstSetSize(); }
+  FirstPositionType firstSetSize() const { return set()->getFirstSet()->size(); }
 
-  AXOM_HOST_DEVICE SecondPositionType secondSetSize() const { return set()->secondSetSize(); }
+  AXOM_HOST_DEVICE SecondPositionType secondSetSize() const
+  {
+    return set()->getSecondSet()->size();
+  }
 
   /// \brief Returns the number of the BivariateSet ordered pairs with the given first set index.
-  auto size(FirstPositionType s) const { return set()->size(s); }
+  auto size(FirstPositionType s) const { return set()->getElements(s).size(); }
 
   /// \brief Return the number of components of the map
-  AXOM_HOST_DEVICE PositionType numComp() const { return StrPol::stride(); }
+  AXOM_HOST_DEVICE PositionType numComp() const { return m_map.numComp(); }
+
+  /// Component queries use the inner map's state. The inherited policy base is
+  /// retained for compatibility and must not be used to configure this map.
+  AXOM_HOST_DEVICE auto stride() const { return m_map.stride(); }
+  AXOM_HOST_DEVICE ElementShape shape() const { return m_map.shape(); }
+  AXOM_HOST_DEVICE ElementShape strides() const
+    requires requires(const MapType& map) {
+      { map.strides() } -> std::same_as<ElementShape>;
+    }
+  {
+    return m_map.strides();
+  }
 
   /// @}
 
@@ -568,15 +591,20 @@ public:
    * \param data_arr The array of DataType that contains the data to be copied.
    */
   void copy(const DataType* data_arr)
+    requires std::assignable_from<ValueType, const DataType&>
   {
-    for(int i = 0; i < m_map.size() * StrPol::stride(); i++)
+    for(PositionType i = 0; i < m_map.size() * numComp(); i++)
     {
       m_map[i] = data_arr[i];
     }
   }
 
   /// \brief replace all elements in the Map with the default DataType
-  void clear() { m_map.clear(); }
+  void clear()
+    requires requires(MapType& map) { map.clear(); }
+  {
+    m_map.clear();
+  }
 
 private:
   /// \brief Check the given ElementFlatIndex is valid.
@@ -600,6 +628,7 @@ private:
 };  //end BivariateMap
 
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
+  requires detail::BivariateMapParameters<T, BSet, IndPol, StrPol>
 typename BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::NullBivariateSetType const
   BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::s_nullBiSet;
 
@@ -610,6 +639,7 @@ typename BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::NullBivariateSetType c
  *  This iterator class iterates over all elements in the associated map.
  */
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
+  requires detail::BivariateMapParameters<T, BSet, IndPol, StrPol>
 template <bool Const>
 class BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::FlatIterator
   : public IteratorBase<FlatIterator<Const>, PositionType>
@@ -635,17 +665,14 @@ public:
   FlatIterator() = default;
 
   /// \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
-  AXOM_HOST_DEVICE FlatIterator(BivariateMapPtr sMap, PositionType pos)
-    : IterBase(pos)
-    , m_map(sMap)
-    , m_bsetIterator(m_map->set(), pos / m_map->numComp())
+  AXOM_HOST_DEVICE FlatIterator(BivariateMapPtr sMap, PositionType pos) : IterBase(pos), m_map(sMap)
   { }
 
   /// \brief Returns the current map element pointed to by the iterator.
   AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE DataRefType operator*() const
   {
-    return m_map->flatValue(m_bsetIterator.flatIndex(), compIndex());
+    return m_map->flatValue(this->m_pos / numComp(), compIndex());
   }
 
   AXOM_HOST_DEVICE pointer operator->() const { return &this->operator*(); }
@@ -654,10 +681,10 @@ public:
   AXOM_HOST_DEVICE reference operator[](PositionType n) const { return *(*this + n); }
 
   /// \brief return the current iterator's first index into the BivariateSet
-  FirstPositionType firstIndex() const { return m_bsetIterator.firstIndex(); }
+  FirstPositionType firstIndex() const { return m_map->index(this->m_pos / numComp()).first; }
 
   /// \brief return the current iterator's second index (DenseIndex) into the BivariateSet
-  SecondPositionType secondIndex() const { return m_bsetIterator.secondIndex(); }
+  SecondPositionType secondIndex() const { return m_map->index(this->m_pos / numComp()).second; }
 
   /// \brief return the current iterator's component index
   PositionType compIndex() const { return this->m_pos % numComp(); }
@@ -668,18 +695,10 @@ public:
 
 protected:
   AXOM_SUPPRESS_HD_WARN
-  AXOM_HOST_DEVICE void advance(IndexType n)
-  {
-    this->m_pos += n;
-    // Advance associated bset iterator.
-    auto oldBsetIndex = m_bsetIterator.flatIndex();
-    auto newBsetIndex = this->m_pos / numComp();
-    m_bsetIterator += (newBsetIndex - oldBsetIndex);
-  }
+  AXOM_HOST_DEVICE void advance(IndexType n) { this->m_pos += n; }
 
 private:
   BivariateMapPtr m_map {nullptr};
-  typename BivariateSetType::IteratorType m_bsetIterator;
 };
 
 /**
@@ -691,6 +710,7 @@ private:
  *  RangeIterator may point to a range of elements in the case of non-unit stride.
  */
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
+  requires detail::BivariateMapParameters<T, BSet, IndPol, StrPol>
 template <bool Const>
 class BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::RangeIterator
   : public IteratorBase<RangeIterator<Const>, PositionType>
@@ -725,7 +745,6 @@ public:
     : IterBase(pos)
     , m_map(sMap)
     , m_mapIterator(m_map->getMap()->set_begin() + pos)
-    , m_bsetIterator(m_map->set(), pos)
   { }
 
   /// \brief Returns the range of elements pointed to by this iterator.
@@ -757,10 +776,10 @@ public:
   }
 
   /// \brief return the current iterator's first index into the BivariateSet
-  FirstPositionType firstIndex() const { return m_bsetIterator.firstIndex(); }
+  FirstPositionType firstIndex() const { return m_map->index(this->m_pos).first; }
 
   /// \brief return the current iterator's second index (DenseIndex) into the BivariateSet
-  SecondPositionType secondIndex() const { return m_bsetIterator.secondIndex(); }
+  SecondPositionType secondIndex() const { return m_map->index(this->m_pos).second; }
 
   /// \brief Return the current iterator's flat bivariate index.
   AXOM_HOST_DEVICE PositionType flatIndex() const { return m_mapIterator.flatIndex(); }
@@ -773,15 +792,12 @@ protected:
   AXOM_HOST_DEVICE void advance(IndexType n)
   {
     this->m_pos += n;
-    // Advance associated bset iterator.
-    m_bsetIterator += n;
     m_mapIterator += n;
   }
 
 private:
   BivariateMapPtr m_map {nullptr};
   typename MapType::template MapRangeIterator<Const> m_mapIterator;
-  typename BivariateSetType::IteratorType m_bsetIterator;
 };
 
 }  // end namespace axom::slam

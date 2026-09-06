@@ -194,48 +194,19 @@ template <typename Set, typename Position>
 concept OptionalSetPositionSame =
   SetLike<Set> && (std::same_as<model_t<Position>, void> || SetPositionSame<Set, Position>);
 
-/// Selected positions used by SubMap and the current BivariateMap adapter.
-template <typename R, typename Position>
-concept FlatRangeOver = IterableSetLike<R> && std::same_as<element_t<R>, model_t<Position>> &&
-  requires(const model_t<R>& range, position_t<R> pos) {
-    { range[pos] } -> std::convertible_to<model_t<Position>>;
-  };
-
-/// Operations consumed by the current BivariateMap implementation, not the set abstraction.
-template <typename T>
-concept BivariateMapSet = BivariateSetLike<T> && IterableSetLike<T> && Validatable<T> &&
-  requires(const model_t<T>& set,
-           position_t<T> flat,
-           typename model_t<T>::FirstSetType::PositionType first,
-           typename model_t<T>::SecondSetType::PositionType second) {
-    typename model_t<T>::SubsetType;
-    { model_t<T>::INVALID_POS } -> std::convertible_to<position_t<T>>;
-    { set.elementRangeSet(first) } -> FlatRangeOver<position_t<T>>;
-    {
-      set.findElementIndex(first, second)
-    } -> std::same_as<decltype(set.getElements(first).size())>;
-    { set.findElementFlatIndex(first, second) } -> std::same_as<position_t<T>>;
-    { set.flatToFirstIndex(flat) } -> std::same_as<typename model_t<T>::FirstSetType::PositionType>;
-    {
-      set.flatToSecondIndex(flat)
-    } -> std::same_as<typename model_t<T>::SecondSetType::PositionType>;
-    { set.firstSetSize() } -> std::same_as<typename model_t<T>::FirstSetType::PositionType>;
-    { set.secondSetSize() } -> std::same_as<typename model_t<T>::SecondSetType::PositionType>;
-    { set.size(first) } -> std::same_as<position_t<T>>;
-  };
-
 /// Flat storage consumed by RelationSet, not a public relation requirement.
 template <typename T>
+using relation_row_t =
+  std::remove_cvref_t<decltype(std::declval<const model_t<T>&>()
+                                 [std::declval<typename model_t<T>::FromSetType::PositionType>()])>;
+
+template <typename T>
 concept RelationSetSource = RelationLike<model_t<T>> && Validatable<model_t<T>> &&
-  requires {
-    typename model_t<T>::FlatPositionType;
-    typename model_t<T>::RelationSubset;
-  } && PositionLike<typename model_t<T>::FlatPositionType> &&
+  requires { typename model_t<T>::FlatPositionType; } &&
+  PositionLike<typename model_t<T>::FlatPositionType> &&
   requires(const model_t<T>& relation,
            typename model_t<T>::FromSetType::PositionType fromPosition,
            typename model_t<T>::FlatPositionType flatPosition) {
-    { relation[fromPosition] } -> std::convertible_to<typename model_t<T>::RelationSubset>;
-    { relation.size(fromPosition) } -> PositionValueLike;
     { relation.offset(fromPosition) } -> std::convertible_to<typename model_t<T>::FlatPositionType>;
     {
       static_cast<typename model_t<T>::FromSetType::PositionType>(relation.firstIndex(flatPosition))
@@ -243,304 +214,184 @@ concept RelationSetSource = RelationLike<model_t<T>> && Validatable<model_t<T>> 
     {
       relation.relationData().size()
     } -> std::convertible_to<typename model_t<T>::FlatPositionType>;
+    requires PositionValueLike<decltype(relation.relationData().size())>;
     {
       relation.relationData()[flatPosition]
     } -> std::convertible_to<typename model_t<T>::ToSetType::PositionType>;
   };
 
+/// Exact policy arguments used as base classes must be ordinary inheritable types.
 template <typename T>
-concept HasIndirectionAssociatedTypes = requires {
-  typename T::IndirectionResult;
-  typename T::ConstIndirectionResult;
-  typename T::IndirectionBufferType;
-  typename T::IndirectionPtrType;
-};
-
-template <typename T>
-concept HasTypedIndirectionAssociatedTypes = requires {
-  typename T::PositionType;
-  typename T::ElementType;
-};
+concept InheritablePolicy = std::is_class_v<T> && std::same_as<T, std::remove_cvref_t<T>> &&
+  !std::is_final_v<T> && !std::is_abstract_v<T>;
 
 template <typename T>
 using policy_default_t = std::remove_cv_t<decltype(T::DEFAULT_VALUE)>;
 
-/// \brief A scalar runtime or compile-time value policy.
-template <typename T>
-concept ValuePolicy = requires(const T& policy) {
-  typename T::TagType;
-  typename T::IntType;
-  { policy.value() } -> std::same_as<typename T::IntType>;
-  { policy.isValid(false) } -> std::convertible_to<bool>;
-};
+/// An indirection result may add constness, but cannot discard element qualification.
+template <typename Result, typename Element>
+concept IndirectionResultFor = std::same_as<std::remove_reference_t<Result>, Element> ||
+  std::same_as<std::remove_reference_t<Result>, const Element>;
 
-/// \brief A policy that reports a size and whether that size is empty.
+}  // namespace detail
+
+/// Reports size, emptiness, and validity, with a default size value.
 template <typename T>
-concept SizePolicy = requires(const T& policy) {
-  T::DEFAULT_VALUE;
-  { policy.size() } -> std::same_as<policy_default_t<T>>;
+concept SizePolicy = requires(const detail::model_t<T>& policy) {
+  detail::model_t<T>::DEFAULT_VALUE;
+  { policy.size() } -> std::same_as<detail::policy_default_t<detail::model_t<T>>>;
   { policy.empty() } -> std::convertible_to<bool>;
   { policy.isValid(false) } -> std::convertible_to<bool>;
 };
 
-/// \brief A scalar value policy that reports an offset.
+/// Reports the signed stride. Shape is an additional requirement of map owners.
 template <typename T>
-concept OffsetPolicy = ValuePolicy<T> && requires(const T& policy) {
-  T::DEFAULT_VALUE;
-  { policy.offset() } -> std::same_as<typename T::IntType>;
+concept StridePolicy = requires(const detail::model_t<T>& policy) {
+  { policy.stride() } -> PositionLike;
 };
 
-/*!
- * \brief The common capability shared by scalar and multi-dimensional stride policies.
- *
- * Use OrderedSetStridePolicyFor or MapStridePolicyFor when checking whether a stride
- * can actually be substituted into one of those owners.
- */
+/// Reports a scalar offset, its default value, and validity.
 template <typename T>
-concept StridePolicy = requires(const T& policy) {
-  typename T::IndexType;
-  typename T::ShapeType;
-  T::NumDims;
-  { T::DefaultSize() } -> std::same_as<typename T::ShapeType>;
-  { policy.stride() } -> std::same_as<typename T::IndexType>;
-  { policy.shape() } -> std::same_as<typename T::ShapeType>;
+concept OffsetPolicy = requires(const detail::model_t<T>& policy) {
+  detail::model_t<T>::DEFAULT_VALUE;
+  { policy.offset() } -> std::same_as<detail::policy_default_t<detail::model_t<T>>>;
+  { policy.isValid(false) } -> std::convertible_to<bool>;
 };
 
-//---- substitutability --------------------------------------------------
-//
-// The four '*PolicyFor' concepts below check whether the policy can be substituted
-// into an owner indexed by Position. These name the individual clauses,
-// so a failed constraint identifies the problem.
-
-/// \brief The policy's default value is exactly \a Position, and it is constructible from one.
-template <typename T, typename Position>
-concept PolicyDefaultedOver = PositionLike<Position> && requires { T::DEFAULT_VALUE; } &&
-  std::same_as<policy_default_t<T>, Position> && std::constructible_from<T, Position>;
-
-/// \brief A ValuePolicy whose scalar value type is exactly \a Position.
-template <typename T, typename Position>
-concept ScalarValuePolicyOver =
-  ValuePolicy<T> && PolicyDefaultedOver<T, Position> && std::same_as<typename T::IntType, Position>;
-
-/// \brief A StridePolicy carrying a single scalar stride measured in \a Position.
-template <typename T, typename Position>
-concept ScalarStridePolicyOver = StridePolicy<T> && PositionLike<Position> && (T::NumDims == 1) &&
-  std::same_as<typename T::IndexType, Position> && std::same_as<typename T::ShapeType, Position>;
-
-/// \brief A stride policy that reports one stride per dimension.
+/// Reports whether a set has a parent and provides its pointer.
+/// OrderedSet additionally checks construction and validation with its actual iterators.
 template <typename T>
-concept ExposesPerDimensionStrides = requires(const T& policy) {
-  { policy.strides() } -> std::same_as<typename T::ShapeType>;
+concept SubsetPolicy = requires(const detail::model_t<T>& policy) {
+  typename detail::model_t<T>::ParentSetType;
+  { policy.isSubset() } -> std::convertible_to<bool>;
+  { policy.parentSet() } -> std::convertible_to<const typename detail::model_t<T>::ParentSetType*>;
 };
 
-//---- substitutability into a specific owner ----------------------------------
-
-/// \brief A SizePolicy usable by a set whose position type is \a Position.
-template <typename T, typename Position>
-concept SetSizePolicyFor = SizePolicy<T> && PolicyDefaultedOver<T, Position>;
-
-/// \brief An OffsetPolicy usable by an OrderedSet whose position type is \a Position.
-template <typename T, typename Position>
-concept OrderedSetOffsetPolicyFor = OffsetPolicy<T> && ScalarValuePolicyOver<T, Position>;
-
-/*!
- * \brief A scalar stride policy usable by OrderedSet with \a Position.
- *
- * OrderedSet constructs its stride from a position and validates it as a scalar value policy.
- * Multi-dimensional map strides do not satisfy this refinement.
- */
-template <typename T, typename Position>
-concept OrderedSetStridePolicyFor =
-  ScalarValuePolicyOver<T, Position> && ScalarStridePolicyOver<T, Position>;
-
-/*!
- * \brief A scalar or multi-dimensional stride policy usable by Map with \a Position.
- *
- * A map is more permissive than an ordered set: its stride index type only has
- * to convert to the map's position type, and it may have more than one dimension.
- */
-template <typename T, typename Position>
-concept MapStridePolicyFor = StridePolicy<T> && PositionLike<Position> &&
-  PositionLike<typename T::IndexType> && std::convertible_to<typename T::IndexType, Position> &&
-  (T::NumDims > 0) && std::constructible_from<T, typename T::ShapeType> &&
-  ((T::NumDims == 1) || ExposesPerDimensionStrides<T>);
-
-//------------------------------------------------------------------------------
-// Indirection policies
-//------------------------------------------------------------------------------
-
-//---- base capability ---------------------------------------------------------
-
-/*!
- * \brief The common storage/indirection-policy capability.
- *
- * Use IndirectionPolicyFor when the calling position type is available and the
- * indirection operation itself should also be checked.
- * Use OrderedSetIndirectionPolicyFor or MapIndirectionPolicyFor
- * when checking substitutability into those owners.
- */
-template <typename T>
-concept IndirectionPolicy = HasIndirectionAssociatedTypes<T> && requires(const T& policy) {
-  T::DeviceAccessible;
-  { policy.hasIndirection() } -> std::convertible_to<bool>;
-};
-
-/// \brief An IndirectionPolicy callable with Position.
-template <typename T, typename Position>
-concept IndirectionPolicyFor =
-  IndirectionPolicy<T> && requires(T& policy, const T& constPolicy, Position pos) {
+/// Exact, copyable, bindable indirection for an OrderedSet.
+/// No buffer-container aliases, map accessors, or device flags are required.
+template <typename T, typename Position, typename Element>
+concept OrderedSetIndirectionPolicyFor = detail::InheritablePolicy<T> && PositionLike<Position> &&
+  std::default_initializable<T> && std::copyable<T> &&
+  requires {
+    typename T::IndirectionPtrType;
+    typename T::IndirectionResult;
+    typename T::ConstIndirectionResult;
+  } && std::constructible_from<T, typename T::IndirectionPtrType> &&
+  detail::IndirectionResultFor<typename T::IndirectionResult, Element> &&
+  detail::IndirectionResultFor<typename T::ConstIndirectionResult, Element> &&
+  requires(T& policy, const T& constPolicy, Position pos) {
     { policy.indirection(pos) } -> std::convertible_to<typename T::IndirectionResult>;
     { constPolicy.indirection(pos) } -> std::convertible_to<typename T::ConstIndirectionResult>;
     requires(!std::is_reference_v<typename T::IndirectionResult> ||
              std::same_as<decltype(policy.indirection(pos)), typename T::IndirectionResult>);
     requires(!std::is_reference_v<typename T::ConstIndirectionResult> ||
              std::same_as<decltype(constPolicy.indirection(pos)), typename T::ConstIndirectionResult>);
+    { constPolicy.isValid(pos, pos, pos, false) } -> std::convertible_to<bool>;
   };
 
-//---- substitutability atoms --------------------------------------------------
-
-/*!
- * \brief The policy indirects to exactly \a Data.
- *
- * Compares cv but not ref: a policy over `const double` 
- * is a different policy from one over `double`.
- */
-template <typename T, typename Data>
-concept IndirectsExactly = std::same_as<typename T::ElementType, std::remove_reference_t<Data>> &&
-  (std::same_as<std::remove_reference_t<typename T::IndirectionResult>, std::remove_reference_t<Data>> ||
-   std::same_as<std::remove_reference_t<typename T::IndirectionResult>,
-                const std::remove_reference_t<Data>>) &&
-  (std::same_as<std::remove_reference_t<typename T::ConstIndirectionResult>, std::remove_reference_t<Data>> ||
-   std::same_as<std::remove_reference_t<typename T::ConstIndirectionResult>,
-                const std::remove_reference_t<Data>>);
-
-/// \brief Both access paths return stable lvalue references, as Map's element access requires.
-template <typename T>
-concept YieldsStableReferences = std::is_lvalue_reference_v<typename T::IndirectionResult> &&
-  std::is_lvalue_reference_v<typename T::ConstIndirectionResult>;
-
-/*!
- * \brief The policy names the pointer types its static accessors return.
- *
- * Both are fixed by the corresponding result type, so this states a consistency
- * requirement rather than a free choice. Map exposes them through `data_ptr()`.
- */
-template <typename T>
-concept HasResultPointerAliases =
+/// Exact static storage/access descriptor for Map, not an inherited policy object.
+/// Both access paths return stable scalar references. Buffer ownership and
+/// referenced allocation accessibility are separate from this type check.
+template <typename T, typename Position, typename Data>
+concept MapIndirectionPolicyFor =
+  std::is_class_v<T> && std::same_as<T, std::remove_cvref_t<T>> && PositionLike<Position> &&
   requires {
+    typename T::IndirectionBufferType;
+    typename T::IndirectionResult;
+    typename T::ConstIndirectionResult;
     typename T::ResultPtr;
     typename T::ConstResultPtr;
-  } &&
+    std::integral_constant<bool, T::IsMutableBuffer> {};
+  } && detail::MapReferenceFor<typename T::IndirectionResult, Data> &&
+  detail::MapReferenceFor<typename T::ConstIndirectionResult, Data> &&
   std::same_as<typename T::ResultPtr,
                std::add_pointer_t<std::remove_reference_t<typename T::IndirectionResult>>> &&
   std::same_as<typename T::ConstResultPtr,
-               std::add_pointer_t<std::remove_reference_t<typename T::ConstIndirectionResult>>>;
+               std::add_pointer_t<std::remove_reference_t<typename T::ConstIndirectionResult>>> &&
+  requires(typename T::IndirectionBufferType& buffer,
+           const typename T::IndirectionBufferType& constBuffer,
+           Position pos) {
+    { constBuffer.size() } -> detail::PositionValueLike;
+    { constBuffer.empty() } -> std::convertible_to<bool>;
+    { T::getIndirection(buffer, pos) } -> std::same_as<typename T::ResultPtr>;
+    { T::getConstIndirection(constBuffer, pos) } -> std::same_as<typename T::ConstResultPtr>;
+    { T::getIndirection(buffer) } -> std::same_as<typename T::ResultPtr>;
+    { T::getConstIndirection(constBuffer) } -> std::same_as<typename T::ConstResultPtr>;
+  } &&
+  (!T::IsMutableBuffer ||
+   requires(typename T::IndirectionBufferType& buffer, Position size) { buffer.resize(size); });
 
-/*!
- * \brief Static, pointer-returning access to the policy's buffer.
- *
- * \note Both the positioned and the whole-buffer form are required:
- *    Map's element access calls the former and `Map::data_ptr()` calls the latter.
- */
-template <typename T, typename Position>
-concept HasStaticBufferAccess = requires(typename T::IndirectionBufferType& buffer,
-                                         const typename T::IndirectionBufferType& constBuffer,
-                                         Position pos) {
-  { T::getIndirection(buffer, pos) } -> std::same_as<typename T::ResultPtr>;
-  { T::getConstIndirection(constBuffer, pos) } -> std::same_as<typename T::ConstResultPtr>;
-  { T::getIndirection(buffer) } -> std::same_as<typename T::ResultPtr>;
-  { T::getConstIndirection(constBuffer) } -> std::same_as<typename T::ConstResultPtr>;
-};
-
-/// \brief The buffer reports its extent, and can be resized when the policy owns it.
-template <typename T, typename Position>
-concept HasSizedBuffer = requires {
-  T::IsMutableBuffer;
-  std::integral_constant<bool, T::IsMutableBuffer> {};
-} && requires(const typename T::IndirectionBufferType& buffer) {
-  { buffer.size() } -> std::convertible_to<Position>;
-  { buffer.empty() } -> std::convertible_to<bool>;
-} && (!T::IsMutableBuffer || requires(typename T::IndirectionBufferType& buffer, Position size) {
-                           buffer.resize(size);
-                         });
-
-/// \brief Default-constructible, and bindable to an existing buffer, as OrderedSet requires.
-template <typename T>
-concept BindableIndirection =
-  std::default_initializable<T> && std::constructible_from<T, typename T::IndirectionPtrType>;
-
-/// \brief Validates a (size, offset, stride) triple against the buffer it indirects through.
-template <typename T, typename Position>
-concept ValidatesSetRange =
-  requires(const T& policy, Position size, Position offset, Position stride) {
-    { policy.isValid(size, offset, stride, false) } -> std::convertible_to<bool>;
-  };
-
-//---- substitutability into a specific owner ----------------------------------
-
-/*!
- * \brief An indirection policy usable by OrderedSet over Position and Element.
- *
- * \note \a Element keeps its cv-qualification: a policy over `const double` is a
- *       different policy from one over `double`.
- */
-template <typename T, typename Position, typename Element>
-concept OrderedSetIndirectionPolicyFor =
-  IndirectionPolicyFor<T, Position> && PositionLike<Position> &&
-  HasTypedIndirectionAssociatedTypes<T> && std::same_as<typename T::PositionType, Position> &&
-  IndirectsExactly<T, Element> && BindableIndirection<T> && ValidatesSetRange<T, Position>;
-
-/*!
- * \brief An indirection policy providing Map's buffer and static access API.
- *
- * Both access paths must return stable lvalue references, and their pointer aliases must point
- * to the same cv-qualified value types. Const access may retain shallow view semantics.
- *
- * \note \a Data keeps its cv-qualification, as for OrderedSetIndirectionPolicyFor.
- */
-template <typename T, typename Position, typename Data>
-concept MapIndirectionPolicyFor = IndirectionPolicy<T> && PositionLike<Position> &&
-  HasTypedIndirectionAssociatedTypes<T> && std::same_as<typename T::PositionType, Position> &&
-  IndirectsExactly<T, Data> && YieldsStableReferences<T> && HasResultPointerAliases<T> &&
-  HasStaticBufferAccess<T, Position> && HasSizedBuffer<T, Position>;
-
-/// \brief A MapIndirectionPolicyFor that can allocate and initialize its buffer.
+/// Map storage that can allocate and initialize its buffer.
 template <typename T, typename Position, typename Data>
 concept AllocatingMapIndirectionPolicyFor = MapIndirectionPolicyFor<T, Position, Data> &&
   requires(Position size, const std::remove_cvref_t<Data>& value, int allocatorId) {
     { T::create(size, value, allocatorId) } -> std::same_as<typename T::IndirectionBufferType>;
   };
 
+namespace detail
+{
+/// Scalar policies are copied into builders, assigned there, and inherited by sets.
+template <typename T, typename Position>
+concept PolicyDefaultedOver = InheritablePolicy<T> && PositionLike<Position> &&
+  std::default_initializable<T> && std::copyable<T> && requires { T::DEFAULT_VALUE; } &&
+  std::same_as<policy_default_t<T>, Position> && std::constructible_from<T, Position>;
+
+template <typename T, typename Position>
+concept SetSizePolicyFor = SizePolicy<T> && PolicyDefaultedOver<T, Position>;
+
+template <typename T, typename Position>
+concept DynamicSetSizePolicyFor = SetSizePolicyFor<T, Position> && requires(T& policy) {
+  { policy.size() } -> std::same_as<Position&>;
+};
+
+template <typename T, typename Position>
+concept OrderedSetOffsetPolicyFor = OffsetPolicy<T> && PolicyDefaultedOver<T, Position>;
+
+template <typename T, typename Position>
+concept OrderedSetStridePolicyFor =
+  StridePolicy<T> && PolicyDefaultedOver<T, Position> && requires(const T& policy) {
+    { policy.stride() } -> std::same_as<Position>;
+    { policy.isValid(false) } -> std::convertible_to<bool>;
+  };
+
+/// Map constructs this base from a shape; it need not be default-constructible.
+template <typename T, typename Position>
+concept MapStridePolicyFor = InheritablePolicy<T> && PositionLike<Position> && StridePolicy<T> &&
+  requires(const T& policy) {
+    typename T::IndexType;
+    typename T::ShapeType;
+    std::integral_constant<int, T::NumDims> {};
+    requires(T::NumDims > 0);
+    requires PositionLike<typename T::IndexType>;
+    requires std::constructible_from<T, typename T::ShapeType>;
+    { T::DefaultSize() } -> std::same_as<typename T::ShapeType>;
+    { policy.stride() } -> std::same_as<typename T::IndexType>;
+    { policy.shape() } -> std::same_as<typename T::ShapeType>;
+  } &&
+  ((T::NumDims == 1 && std::convertible_to<typename T::ShapeType, typename T::IndexType>) ||
+   (T::NumDims > 1 && requires(const T& policy, const typename T::ShapeType& shape, int dim) {
+     { policy.strides() } -> std::same_as<typename T::ShapeType>;
+     { shape[dim] } -> std::convertible_to<typename T::IndexType>;
+   }));
+
+template <typename T>
+concept OrderedSetSubsetPolicy =
+  InheritablePolicy<T> && SubsetPolicy<T> && std::default_initializable<T> && std::copyable<T> &&
+  std::constructible_from<T, typename T::ParentSetType*>;
+
+template <typename T, typename Iterator>
+concept ValidatesSubset = requires(const T& policy, Iterator begin, Iterator end) {
+  { policy.isValid(begin, end, false) } -> std::convertible_to<bool>;
+};
+
+template <typename Position, typename Element, typename Size, typename Offset, typename Stride, typename Indirection, typename Subset>
+concept OrderedSetPoliciesFor = SetSizePolicyFor<Size, Position> &&
+  OrderedSetOffsetPolicyFor<Offset, Position> && OrderedSetStridePolicyFor<Stride, Position> &&
+  OrderedSetIndirectionPolicyFor<Indirection, Position, Element> && OrderedSetSubsetPolicy<Subset>;
+
+template <typename Data, typename Set, typename Indirection, typename Stride>
+concept MapParameters = SetLike<Set> && MapStridePolicyFor<Stride, typename Set::PositionType> &&
+  MapIndirectionPolicyFor<Indirection, typename Set::PositionType, Data>;
 }  // namespace detail
-
-// Public policy extension protocols.
-// The owner compositions and diagnostic clauses above remain implementation details.
-
-/// Reports size, emptiness, and validity, with a default size value.
-template <typename T>
-concept SizePolicy = detail::SizePolicy<detail::model_t<T>>;
-
-/// Reports scalar component count and shape for scalar or multidimensional strides.
-template <typename T>
-concept StridePolicy = detail::StridePolicy<detail::model_t<T>>;
-
-/// Reports a scalar offset, its default value, and validity.
-template <typename T>
-concept OffsetPolicy = detail::OffsetPolicy<detail::model_t<T>>;
-
-/// Callable, bindable indirection for an OrderedSet.
-template <typename T, typename Position, typename Element>
-concept OrderedSetIndirectionPolicyFor =
-  detail::OrderedSetIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Element>;
-
-/// Sized-buffer and stable-reference access for a Map.
-template <typename T, typename Position, typename Data>
-concept MapIndirectionPolicyFor =
-  detail::MapIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Data>;
-
-/// Map storage that can also allocate and initialize its buffer.
-template <typename T, typename Position, typename Data>
-concept AllocatingMapIndirectionPolicyFor =
-  detail::AllocatingMapIndirectionPolicyFor<detail::model_t<T>, detail::model_t<Position>, Data>;
 
 }  // namespace axom::slam

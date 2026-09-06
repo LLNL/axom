@@ -151,7 +151,6 @@ static_assert(Mod5(2) != Mod5(3), "2 and 3 differ mod 5");
 
 // Value policies satisfy their policy concept, and are distinguished from each
 // other and from sets (a set has size() but no value()).
-static_assert(slam::detail::ValuePolicy<Size5>, "a size policy is a value policy");
 static_assert(slam::is_size_policy_v<Size5>, "CompileTimeSize is a size policy");
 static_assert(slam::is_stride_policy_v<Stride4>, "CompileTimeStride is a stride policy");
 static_assert(slam::is_offset_policy_v<Off3>, "CompileTimeOffset is an offset policy");

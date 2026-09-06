@@ -408,26 +408,34 @@ struct ConvertibleRelationRow
 {
   using RelationSubset = typename VariableRelation::RelationSubset;
 
-  VariableRelation::FlatPositionType size() const;
-  typename RelationSubset::const_iterator begin() const;
-  typename RelationSubset::const_iterator end() const;
-  operator RelationSubset() const;
+  VariableRelation::FlatPositionType size() const { return row.size(); }
+  typename RelationSubset::const_iterator begin() const { return row.begin(); }
+  typename RelationSubset::const_iterator end() const { return row.end(); }
+  operator RelationSubset() const { return row; }
+  RelationSubset row;
 };
 
 struct ProxyRowRelation : VariableRelation
 {
-  ConvertibleRelationRow operator[](FromSetType::PositionType) const;
+  ConvertibleRelationRow operator[](FromSetType::PositionType pos) const
+  {
+    return {VariableRelation::operator[](pos)};
+  }
 };
 
 struct ExplicitFirstIndexResult
 {
   using FromPositionType = typename VariableRelation::FromPositionType;
-  explicit operator FromPositionType() const;
+  explicit operator FromPositionType() const { return value; }
+  FromPositionType value;
 };
 
 struct ExplicitFirstIndexRelation : VariableRelation
 {
-  ExplicitFirstIndexResult firstIndex(FlatPositionType) const;
+  ExplicitFirstIndexResult firstIndex(FlatPositionType pos) const
+  {
+    return {VariableRelation::firstIndex(pos)};
+  }
 };
 
 struct TypedefOnlyMap
@@ -513,21 +521,6 @@ struct ExtraAliasesMap : MinimalBivariateMap
   using ValueType = int;
 };
 
-struct TypedefOnlyValuePolicy
-{
-  struct TagType;
-  using IntType = int;
-};
-
-struct WrongValuePolicy
-{
-  struct TagType;
-  using IntType = int;
-
-  double value() const;
-  bool isValid(bool) const;
-};
-
 struct TypedefOnlyIndirection
 {
   using IndirectionResult = double&;
@@ -566,68 +559,24 @@ struct AccessDropsReferentConst : ConstViewIndirection
   double& indirection(Position) const;
 };
 
-struct NonDefaultBuffer
-{
-  NonDefaultBuffer() = delete;
-  explicit NonDefaultBuffer(Position size) : m_size(size) { }
-
-  Position size() const { return m_size; }
-  bool empty() const { return m_size == 0; }
-  void resize(Position size) { m_size = size; }
-
-  Position m_size;
-};
-
-struct NonDefaultBufferIndirection
-{
-  using PositionType = Position;
-  using ElementType = double;
-  using IndirectionResult = double&;
-  using ConstIndirectionResult = const double&;
-  using IndirectionBufferType = NonDefaultBuffer;
-  using IndirectionPtrType = IndirectionBufferType*;
-  using IndirectionRefType = IndirectionBufferType&;
-  using IndirectionConstRefType = const IndirectionBufferType&;
-  using ResultPtr = double*;
-  using ConstResultPtr = const double*;
-
-  static constexpr bool DeviceAccessible = false;
-  static constexpr bool IsMutableBuffer = true;
-
-  bool hasIndirection() const { return true; }
-
-  static ResultPtr getIndirection(IndirectionBufferType&, Position = 0) { return nullptr; }
-  static ConstResultPtr getConstIndirection(const IndirectionBufferType&, Position = 0)
-  {
-    return nullptr;
-  }
-  static IndirectionBufferType create(Position size, const double&, int)
-  {
-    return IndirectionBufferType(size);
-  }
-};
-
-// Supplies everything the Map family consumes, but omits Indirection[Const]RefType
+// A supplied-buffer descriptor does not need allocation or set-binding operations.
 struct LeanMapIndirection
 {
-  using PositionType = Position;
-  using ElementType = double;
   using IndirectionResult = double&;
   using ConstIndirectionResult = const double&;
   using IndirectionBufferType = std::vector<double>;
-  using IndirectionPtrType = IndirectionBufferType*;
   using ResultPtr = double*;
   using ConstResultPtr = const double*;
 
-  static constexpr bool DeviceAccessible = false;
   static constexpr bool IsMutableBuffer = true;
 
-  bool hasIndirection() const { return true; }
-
-  static ResultPtr getIndirection(IndirectionBufferType&, Position = 0) { return nullptr; }
-  static ConstResultPtr getConstIndirection(const IndirectionBufferType&, Position = 0)
+  static ResultPtr getIndirection(IndirectionBufferType& buffer, Position pos = 0)
   {
-    return nullptr;
+    return buffer.data() + pos;
+  }
+  static ConstResultPtr getConstIndirection(const IndirectionBufferType& buffer, Position pos = 0)
+  {
+    return buffer.data() + pos;
   }
 };
 
@@ -825,7 +774,7 @@ static_assert(!slam::detail::SubMapSource<int>);
 // A SubMap can itself serve as another SubMap's parent.
 static_assert(slam::detail::SubMapSource<BinarySubMap>);
 static_assert(
-  slam::detail::FlatRangeOver<typename BinarySubMap::IndexSetType, typename BinarySubMap::PositionType>);
+  slam::detail::SubMapIndices<typename BinarySubMap::IndexSetType, typename BinarySubMap::PositionType>);
 using NestedSubMap = slam::SubMap<BinarySubMap, typename BinarySubMap::IndexSetType>;
 static_assert(slam::MapLike<NestedSubMap>);
 static_assert(slam::detail::SubMapSource<NestedSubMap>, "and it composes to any depth");
@@ -857,13 +806,13 @@ static_assert(std::is_same_v<
                 double&>,
               "over a view-backed super-map it stays shallow, as that policy dictates");
 
-// detail::FlatRangeOver is the index set a SubMap is built over, and the row range reported by a bivariate set.
+// SubMap's index set selects parent positions, not coordinate pairs.
 // Subscript lives here rather than in IterableSetLike because a bivariate set is IterableSetLike
 // and has no operator[].
 static_assert(
-  slam::detail::FlatRangeOver<typename BinaryMap::SetType, typename BinaryMap::PositionType>);
+  slam::detail::SubMapIndices<typename BinaryMap::SetType, typename BinaryMap::PositionType>);
 static_assert(slam::IterableSetLike<Product>);
-static_assert(!slam::detail::FlatRangeOver<Product, typename Product::PositionType>,
+static_assert(!slam::detail::SubMapIndices<Product, typename Product::PositionType>,
               "a bivariate set is ordered but not subscriptable");
 static_assert(!slam::MapOver<ConstBinarySubMap, typename BinaryMap::SetType>);
 static_assert(std::same_as<typename BinarySubMap::IndexSetType, typename BinaryMap::SetType>);
@@ -890,10 +839,8 @@ using NoIndirection = policies::NoIndirection<Position, Element>;
 using OwningIndirection = policies::ArrayIndirection<Position, double>;
 using OwningMap = slam::Map<double, ConcreteRange, OwningIndirection>;
 
-static_assert(slam::detail::ValuePolicy<Size>);
 static_assert(slam::SizePolicy<Size>);
 static_assert(slam::SizePolicy<EmptySize>);
-static_assert(!slam::detail::ValuePolicy<EmptySize>);
 static_assert(slam::detail::SetSizePolicyFor<RuntimeSize, int>);
 static_assert(slam::detail::SetSizePolicyFor<Size, int>);
 static_assert(slam::detail::SetSizePolicyFor<EmptySize, int>);
@@ -918,17 +865,6 @@ static_assert(!std::is_same_v<NarrowStride::IndexType, WidePosition>,
 static_assert(slam::detail::MapStridePolicyFor<NarrowStride, WidePosition>);
 static_assert(!slam::detail::OrderedSetStridePolicyFor<NarrowStride, WidePosition>);
 #endif
-// The substitutability checks behind the *For concepts, asserted directly so a
-// failure names the clause rather than an unnamed conjunction.
-namespace model = slam::detail;
-static_assert(model::PolicyDefaultedOver<RuntimeSize, int>);
-static_assert(!model::PolicyDefaultedOver<WrongRuntimeSize, int>);
-static_assert(model::ScalarValuePolicyOver<ScalarStride, int>);
-static_assert(!model::ScalarValuePolicyOver<EmptySize, int>, "a size policy carries no IntType");
-static_assert(model::ScalarStridePolicyOver<ScalarStride, int>);
-static_assert(!model::ScalarStridePolicyOver<MatrixStride, int>, "multi-dim stride is not scalar");
-static_assert(!model::ExposesPerDimensionStrides<ScalarStride>);
-static_assert(model::ExposesPerDimensionStrides<MatrixStride>);
 
 static_assert(slam::OffsetPolicy<Offset>);
 static_assert(slam::detail::OrderedSetOffsetPolicyFor<RuntimeOffset, int>);
@@ -937,23 +873,20 @@ static_assert(slam::detail::OrderedSetOffsetPolicyFor<EmptyOffset, int>);
 static_assert(!slam::detail::OrderedSetOffsetPolicyFor<WrongRuntimeOffset, int>);
 static_assert(!slam::detail::OrderedSetOffsetPolicyFor<WrongCompileTimeOffset, int>);
 static_assert(!slam::detail::OrderedSetOffsetPolicyFor<WrongEmptyOffset, int>);
-static_assert(!slam::detail::ValuePolicy<TypedefOnlyValuePolicy>);
-static_assert(!slam::detail::ValuePolicy<WrongValuePolicy>);
 static_assert(!slam::SizePolicy<int>);
 static_assert(!slam::StridePolicy<int>);
 static_assert(!slam::OffsetPolicy<int>);
-static_assert(slam::detail::IndirectionPolicy<ViewIndirection>);
-static_assert(slam::detail::IndirectionPolicyFor<ViewIndirection, Position>);
+static_assert(!slam::OrderedSetIndirectionPolicyFor<TypedefOnlyIndirection, Position, double>);
+static_assert(!slam::MapIndirectionPolicyFor<TypedefOnlyIndirection, Position, double>);
 static_assert(slam::OrderedSetIndirectionPolicyFor<ViewIndirection, Position, double>);
-// The set and map indirection concepts agree on cv-qualification:
-// the policy's ElementType must match the container's element/data type exactly.
+// Access may add constness to the requested element type, but cannot remove it.
 static_assert(slam::OrderedSetIndirectionPolicyFor<ConstViewIndirection, Position, const double>);
 static_assert(!slam::OrderedSetIndirectionPolicyFor<ViewIndirection, Position, const double>);
-static_assert(!slam::OrderedSetIndirectionPolicyFor<ConstViewIndirection, Position, double>);
+static_assert(slam::OrderedSetIndirectionPolicyFor<ConstViewIndirection, Position, double>);
 static_assert(slam::MapIndirectionPolicyFor<ViewIndirection, Position, double>);
 static_assert(slam::MapIndirectionPolicyFor<ConstViewIndirection, Position, const double>);
 static_assert(!slam::MapIndirectionPolicyFor<ViewIndirection, Position, const double>);
-static_assert(!slam::MapIndirectionPolicyFor<ConstViewIndirection, Position, double>);
+static_assert(slam::MapIndirectionPolicyFor<ConstViewIndirection, Position, double>);
 static_assert(!slam::MapIndirectionPolicyFor<DropsReferentConst, Position, const double>);
 static_assert(!slam::OrderedSetIndirectionPolicyFor<DropsReferentConst, Position, const double>);
 static_assert(!slam::OrderedSetIndirectionPolicyFor<AccessDropsReferentConst, Position, const double>);
@@ -963,15 +896,10 @@ static_assert(!slam::MapIndirectionPolicyFor<PrvalueMapIndirection, Position, do
 static_assert(!slam::MapIndirectionPolicyFor<MismatchedConstPointerIndirection, Position, double>);
 static_assert(slam::MapIndirectionPolicyFor<VectorMapIndirection, Position, double>);
 static_assert(slam::AllocatingMapIndirectionPolicyFor<VectorMapIndirection, Position, double>);
-static_assert(slam::detail::IndirectionPolicy<NoIndirection>);
-static_assert(slam::detail::IndirectionPolicyFor<NoIndirection, Position>);
 static_assert(slam::OrderedSetIndirectionPolicyFor<NoIndirection, Position, Element>);
 static_assert(!slam::MapIndirectionPolicyFor<NoIndirection, Position, Element>);
 static_assert(slam::MapIndirectionPolicyFor<OwningIndirection, Position, double>);
 static_assert(slam::AllocatingMapIndirectionPolicyFor<OwningIndirection, Position, double>);
-static_assert(slam::AllocatingMapIndirectionPolicyFor<NonDefaultBufferIndirection, Position, double>);
-using NonDefaultBufferMap = slam::Map<double, ConcreteRange, NonDefaultBufferIndirection>;
-static_assert(std::constructible_from<NonDefaultBufferMap, const ConcreteRange*>);
 static_assert(std::default_initializable<OwningMap>);
 static_assert(!std::default_initializable<UnaryMap>);
 static_assert(std::constructible_from<UnaryMap, const ConcreteRange*, typename UnaryMap::OrderedMap>);
@@ -982,26 +910,10 @@ static_assert(!slam::MapIndirectionPolicyFor<WrongDataIndirection, Position, dou
 static_assert(slam::MapIndirectionPolicyFor<LeanMapIndirection, Position, double>);
 // ... but the whole-buffer accessor behind Map::data_ptr() is required.
 static_assert(!slam::MapIndirectionPolicyFor<PositionedAccessOnlyIndirection, Position, double>);
-static_assert(model::HasStaticBufferAccess<LeanMapIndirection, Position>);
-static_assert(!model::HasStaticBufferAccess<PositionedAccessOnlyIndirection, Position>);
 // Map's data_ptr() (private) is declared in terms of the policy's ResultPtr alias
 static_assert(std::same_as<typename ViewIndirection::ResultPtr, double*>);
 static_assert(std::same_as<typename ViewIndirection::ConstResultPtr, double*>,
               "ArrayView indirection has shallow constness");
-
-// The atoms behind the two indirection *For concepts.
-static_assert(model::IndirectsExactly<ViewIndirection, double>);
-static_assert(!model::IndirectsExactly<ViewIndirection, const double>);
-static_assert(model::IndirectsExactly<ConstViewIndirection, const double>);
-static_assert(model::YieldsStableReferences<ViewIndirection>);
-static_assert(!model::YieldsStableReferences<PrvalueMapIndirection>);
-static_assert(model::HasResultPointerAliases<ViewIndirection>);
-static_assert(!model::HasResultPointerAliases<MismatchedConstPointerIndirection>);
-static_assert(model::HasSizedBuffer<VectorMapIndirection, Position>);
-static_assert(model::BindableIndirection<ViewIndirection>);
-static_assert(model::ValidatesSetRange<ViewIndirection, Position>);
-static_assert(!slam::detail::IndirectionPolicy<TypedefOnlyIndirection>);
-static_assert(!slam::detail::IndirectionPolicy<int>);
 
 // Position types and representation properties
 static_assert(slam::PositionLike<int>);
@@ -1280,6 +1192,11 @@ TEST(slam_concepts, scalar_dynamic_and_view_maps)
   EXPECT_EQ(&dynamic[1], &const_dynamic.flatValue(1, 0));
 
   ConcreteRange range(2);
+  slam::Map<double, ConcreteRange, LeanMapIndirection> supplied(&range, std::vector<double>(2));
+  fillComponents(supplied);
+  EXPECT_TRUE(supplied.isValid());
+  EXPECT_DOUBLE_EQ(100., supplied.flatValue(1, 0));
+  EXPECT_DOUBLE_EQ(100., (supplied.set_begin() + 1).value(0));
   double data[2] {};
   UnaryMap view(&range, axom::ArrayView<double>(data, 2));
   const auto& const_view = view;
@@ -1290,5 +1207,168 @@ TEST(slam_concepts, scalar_dynamic_and_view_maps)
   static_assert(slam::MapLike<ReadOnlyMap>);
   static_assert(std::same_as<decltype(readonly.flatValue(0, 0)), const double&>);
   EXPECT_EQ(&data[1], &readonly.flatValue(1, 0));
+}
+
+// Only the search and flat-row selection operations are added to the public model.
+struct AdapterBivariateSet : MinimalBivariateSet
+{
+  static constexpr PositionType INVALID_POS = -1;
+  using FlatRange = typename slam::RangeSet<PositionType, PositionType>::ConcreteSet;
+  PositionType findElementIndex(FirstSetType::PositionType firstPos,
+                                SecondSetType::PositionType secondPos) const
+  {
+    auto row = getElements(firstPos);
+    for(PositionType i = 0; i < row.size(); ++i)
+    {
+      if(row.at(i) == secondPos)
+      {
+        return i;
+      }
+    }
+    return INVALID_POS;
+  }
+  PositionType findElementFlatIndex(FirstSetType::PositionType firstPos,
+                                    SecondSetType::PositionType secondPos) const
+  {
+    auto local = findElementIndex(firstPos, secondPos);
+    return local == INVALID_POS ? local : (firstPos == 0 ? 0 : 1) + local;
+  }
+  FlatRange elementRangeSet(FirstSetType::PositionType pos) const
+  {
+    return pos == 0 ? FlatRange(0, 1) : FlatRange(1, 3);
+  }
+};
+
+struct UnconvertibleRowRange : AdapterBivariateSet
+{
+  // Correct position values alone cannot convert to the adapter's concrete range.
+  struct Selection
+  {
+    using PositionType = std::int64_t;
+    using ElementType = std::int64_t;
+    PositionType size() const;
+    bool empty() const;
+    ElementType at(PositionType) const;
+    ElementType operator[](PositionType) const;
+    const ElementType* begin() const;
+    const ElementType* end() const;
+  };
+  Selection elementRangeSet(FirstSetType::PositionType) const;
+};
+
+struct FlatRelation : MinimalRelation
+{
+  using FlatPositionType = std::int64_t;
+  FlatPositionType offset(FromSetType::PositionType pos) const { return pos == 0 ? 0 : 1; }
+  FromSetType::PositionType firstIndex(FlatPositionType flat) const { return flat == 0 ? 0 : 1; }
+  axom::ArrayView<const ToSetType::PositionType> relationData() const { return {indices, 3}; }
+  bool isValid(bool) const { return true; }
+};
+
+TEST(slam_concepts, adapters_accept_external_rows_without_concrete_set_metadata)
+{
+  AdapterBivariateSet set;
+  using Map = slam::BivariateMap<double, AdapterBivariateSet>;
+  static_assert(slam::detail::BivariateMapSet<AdapterBivariateSet>);
+  static_assert(!slam::IterableSetLike<AdapterBivariateSet>);
+  static_assert(slam::detail::SubMapIndices<UnconvertibleRowRange::Selection, std::int64_t>);
+  static_assert(!slam::detail::BivariateMapSet<UnconvertibleRowRange>);
+  Map map(&set);
+  fillComponents(map);
+  EXPECT_TRUE(map.isValid());
+  EXPECT_EQ(2, map.firstSetSize());
+  EXPECT_EQ(3, map.secondSetSize());
+  EXPECT_EQ(2, map.size(1));
+  EXPECT_EQ(2, map.indexSet(1).at(1));
+  EXPECT_EQ(&map.flatValue(2, 0), &map(1).flatValue(1, 0));
+  EXPECT_EQ(&map.flatValue(2, 0), map.findValue(1, 2));
+  EXPECT_EQ(nullptr, map.findValue(0, 2));
+  auto scalar = map.begin();
+  auto ranges = map.set_begin();
+  for(Position pos = 0; pos < map.size(); ++pos, ++scalar, ++ranges)
+  {
+    EXPECT_EQ(set.at(pos).first, scalar.firstIndex());
+    EXPECT_EQ(set.at(pos).second, scalar.secondIndex());
+    EXPECT_EQ(set.at(pos).first, ranges.firstIndex());
+    EXPECT_EQ(set.at(pos).second, ranges.secondIndex());
+    EXPECT_EQ(&map.flatValue(pos, 0), &ranges.value(0));
+  }
+  EXPECT_EQ(map.end(), scalar);
+  EXPECT_EQ(map.set_end(), ranges);
+
+  FlatRelation relation;
+  using ConcreteAdapter =
+    slam::RelationSet<FlatRelation, FlatRelation::FromSetType, FlatRelation::ToSetType, policies::ConcreteInterface>;
+  static_assert(slam::detail::RelationSetSource<FlatRelation>);
+  static_assert(std::constructible_from<ConcreteAdapter, FlatRelation*>);
+  static_assert(!CanFormRelationSet<FlatRelation>);
+  static_assert(std::same_as<ConcreteAdapter::VirtualSet, void>);
+  ConcreteAdapter adapted(&relation);
+  EXPECT_TRUE(adapted.isValid());
+  checkRowCoordinates(adapted);
+  EXPECT_EQ(1, adapted.findElementIndex(1, 1));
+  EXPECT_EQ(2, adapted.findElementFlatIndex(1, 1));
+  EXPECT_EQ(1, adapted.findElementFlatIndex(1));
+  EXPECT_EQ(1, adapted.elementRangeSet(1).at(0));
+  EXPECT_EQ(adapted.INVALID_POS, adapted.findElementIndex(0, 0));
+  slam::BivariateMap<double, ConcreteAdapter> relationMap(&adapted);
+  fillComponents(relationMap);
+  EXPECT_EQ(&relationMap.flatValue(2, 0), relationMap.findValue(1, 1));
+}
+
+TEST(slam_concepts, relation_adapter_uses_declared_conversions)
+{
+  ConcreteRange from(3), to(3);
+  std::vector<Position> begins {0, 1, 1, 3};
+  std::vector<Position> indices {2, 0, 1};
+  auto source =
+    slam::make_variable_relation(&from,
+                                 &to,
+                                 axom::ArrayView<Position>(begins.data(), begins.size()),
+                                 axom::ArrayView<Position>(indices.data(), indices.size()));
+  ProxyRowRelation proxy {source};
+  using ProxyAdapter =
+    slam::RelationSet<ProxyRowRelation, ConcreteRange, ConcreteRange, policies::ConcreteInterface>;
+  static_assert(!CanFormRelationSet<ProxyRowRelation>);
+  ProxyAdapter adapted(&proxy);
+  EXPECT_TRUE(adapted.isValid());
+  checkRowCoordinates(adapted);
+  EXPECT_EQ(1, adapted.findElementIndex(2, 1));
+  EXPECT_EQ(adapted.INVALID_POS, adapted.findElementFlatIndex(1));
+  EXPECT_TRUE(adapted.elementRangeSet(1).empty());
+
+  ExplicitFirstIndexRelation explicitInverse {source};
+  slam::RelationSet<ExplicitFirstIndexRelation> explicitAdapter(&explicitInverse);
+  EXPECT_TRUE(explicitAdapter.isValid());
+  EXPECT_EQ(2, explicitAdapter.flatToFirstIndex(2));
+  checkRowCoordinates(explicitAdapter);
+}
+
+TEST(slam_concepts, bivariate_component_queries_use_inner_map_state)
+{
+  ConcreteRange range(2);
+  Product product(&range, &range);
+  using Stride = policies::RuntimeStride<Position>;
+  using Map = slam::BivariateMap<double, Product, ArrayIndirection, Stride>;
+  Map map(&product, 0., 2);
+  EXPECT_EQ(2, map.numComp());
+  *map.getMap() = typename Map::MapType(typename Map::SetType(4), 7., 3);
+  // The inherited compatibility base is not the component configuration.
+  static_cast<Stride&>(map) = Stride(5);
+  EXPECT_EQ(3, map.numComp());
+  EXPECT_EQ(3, map.stride());
+  EXPECT_EQ(3, map.shape());
+  EXPECT_EQ(12, map.end() - map.begin());
+  EXPECT_EQ(3, map(1).numComp());
+  EXPECT_EQ(3, map(1).shape());
+  EXPECT_DOUBLE_EQ(7., map.flatValue(3, 2));
+  EXPECT_TRUE(map.isValid());
+  double values[12] {};
+  values[11] = 9.;
+  map.copy(values);
+  EXPECT_DOUBLE_EQ(9., (map.end() - 1).operator*());
+  EXPECT_DOUBLE_EQ(9., (map.set_end() - 1).value(2));
+  *map.getMap() = typename Map::MapType(typename Map::SetType(3), 0., 3);
+  EXPECT_FALSE(map.isValid());
 }
 }  // namespace slam_concept_test

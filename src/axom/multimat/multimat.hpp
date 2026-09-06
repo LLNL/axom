@@ -115,7 +115,6 @@ public:
 
   // Slam RelationSet for the set of non-zero cell to mat variables
   using RelationSetType = slam::RelationSet<StaticVariableRelationType>;  //, RangeSetType
-  using RelationSetDynType = slam::RelationSet<DynamicVariableRelationType>;
 
 public:
   //1D Field

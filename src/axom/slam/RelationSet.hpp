@@ -15,6 +15,20 @@
 
 namespace axom::slam
 {
+namespace detail
+{
+/// Concrete adapters return the source row. Virtual adapters must convert it to
+/// the row type required by the BivariateSet interface.
+template <typename R, typename Interface>
+concept RelationSetSourceFor = RelationSetSource<R> &&
+  (std::same_as<Interface, policies::ConcreteInterface> ||
+   (std::same_as<Interface, policies::VirtualInterface> &&
+    std::convertible_to<relation_row_t<R>,
+                        typename BivariateSet<typename R::FromSetType,
+                                              typename R::ToSetType,
+                                              typename R::FlatPositionType>::SubsetType>));
+}  // namespace detail
+
 /**
  * \class RelationSet
  *
@@ -34,17 +48,15 @@ template <typename Relation,
           typename SetType1 = typename Relation::FromSetType,
           typename SetType2 = typename Relation::ToSetType,
           typename InterfaceType = policies::VirtualInterface>
-  requires(std::is_same_v<typename Relation::FromSetType, SetType1> &&
+  requires(detail::RelationSetSourceFor<Relation, InterfaceType> &&
+           std::is_same_v<typename Relation::FromSetType, SetType1> &&
            std::is_same_v<typename Relation::ToSetType, SetType2>)
 class RelationSet final
   : public policies::BivariateSetInterface<InterfaceType, SetType1, SetType2, typename Relation::FlatPositionType>
 {
 public:
-  static_assert(detail::RelationSetSource<Relation>,
-                "RelationSet requires a relation with contiguous flat storage");
-
-  using FirstSetType = SetType1;
-  using SecondSetType = SetType2;
+  using FirstSetType = typename Relation::FromSetType;
+  using SecondSetType = typename Relation::ToSetType;
 
   using RelationType = Relation;
 
@@ -68,7 +80,7 @@ public:
   using PositionType = typename BaseType::PositionType;
   using ElementType = typename BaseType::ElementType;
 
-  using RelationSubset = typename RelationType::RelationSubset;
+  using RelationSubset = detail::relation_row_t<RelationType>;
   using SubsetType =
     std::conditional_t<std::is_same<void, BaseSubsetType>::value, RelationSubset, BaseSubsetType>;
 
@@ -76,14 +88,34 @@ public:
 
   using IteratorType = BivariateSetIterator<RelationSet>;
 
+private:
+  // A concrete external row need not support the fixed virtual row interface.
+  static auto otherInterfaceType()
+  {
+    using OtherInterface = std::conditional_t<std::same_as<InterfaceType, policies::VirtualInterface>,
+                                              policies::ConcreteInterface,
+                                              policies::VirtualInterface>;
+    if constexpr(detail::RelationSetSourceFor<Relation, OtherInterface>)
+    {
+      return std::type_identity<RelationSet<Relation, SetType1, SetType2, OtherInterface>> {};
+    }
+    else
+    {
+      return std::type_identity<void> {};
+    }
+  }
+
 public:
-  using ConcreteSet = RelationSet<Relation, SetType1, SetType2, policies::ConcreteInterface>;
-  using VirtualSet = RelationSet<Relation, SetType1, SetType2, policies::VirtualInterface>;
+  /// The opposite interface type, or void when the source cannot provide its row type.
+  using OtherSet = typename decltype(otherInterfaceType())::type;
+  using ConcreteSet =
+    std::conditional_t<std::same_as<InterfaceType, policies::ConcreteInterface>, RelationSet, OtherSet>;
+  using VirtualSet =
+    std::conditional_t<std::same_as<InterfaceType, policies::VirtualInterface>, RelationSet, OtherSet>;
 
-  using OtherSet =
-    std::conditional_t<std::is_same<InterfaceType, policies::VirtualInterface>::value, ConcreteSet, VirtualSet>;
-
-  RelationSet(const OtherSet& other)
+  template <typename Other>
+    requires std::same_as<Other, OtherSet>
+  RelationSet(const Other& other)
     : BaseType(other.getFirstSet(), other.getSecondSet())
     , m_relation(other.getRelation())
   { }
@@ -121,12 +153,13 @@ public:
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
 
-  PositionType findElementIndex(FirstPositionType pos1, SecondPositionType pos2) const
+  AXOM_HOST_DEVICE PositionType findElementIndex(FirstPositionType pos1, SecondPositionType pos2) const
   {
-    RelationSubset ls = (*m_relation)[pos1];
-    for(PositionType i = 0; i < ls.size(); i++)
+    const PositionType begin = readRelation().offset(pos1);
+    const PositionType count = size(pos1);
+    for(PositionType i = 0; i < count; ++i)
     {
-      if(ls[i] == pos2)
+      if(static_cast<SecondPositionType>(readRelation().relationData()[begin + i]) == pos2)
       {
         return i;
       }
@@ -159,15 +192,10 @@ public:
    */
   AXOM_HOST_DEVICE PositionType findElementFlatIndex(FirstPositionType s1, SecondPositionType s2) const
   {
-    RelationSubset ls = (*m_relation)[s1];
-    for(PositionType i = 0; i < ls.size(); i++)
-    {
-      if(ls[i] == s2)
-      {
-        return ls.offset() + i;
-      }
-    }
-    return BaseType::INVALID_POS;
+    const PositionType index = findElementIndex(s1, s2);
+    return index == BaseType::INVALID_POS
+      ? index
+      : static_cast<PositionType>(readRelation().offset(s1)) + index;
   }
 
   /**
@@ -196,14 +224,8 @@ public:
    */
   PositionType findElementFlatIndex(FirstPositionType pos1) const
   {
-    RelationSubset ls = (*m_relation)[pos1];
-
-    if(ls.size() > 0)
-    {
-      return ls.offset();
-    }
-
-    return BaseType::INVALID_POS;
+    return size(pos1) == 0 ? BaseType::INVALID_POS
+                           : static_cast<PositionType>(readRelation().offset(pos1));
   }
 
   /**
@@ -233,7 +255,7 @@ public:
                     "SLAM::RelationSet -- requested out-of-range flat index "
                       << flatIndex << "; set has " << size() << " elements.");
 #endif
-    return m_relation->relationData()[flatIndex];
+    return readRelation().relationData()[flatIndex];
   }
 
   /**
@@ -250,23 +272,22 @@ public:
                     "SLAM::RelationSet -- requested out-of-range flat index "
                       << flatIndex << "; set has " << size() << " elements.");
 #endif
-    return static_cast<FirstPositionType>(m_relation->firstIndex(flatIndex));
+    return static_cast<FirstPositionType>(readRelation().firstIndex(flatIndex));
   }
 
   AXOM_HOST_DEVICE RangeSetType elementRangeSet(FirstPositionType pos1) const
   {
-    return
-      typename RangeSetType::SetBuilder().size(m_relation->size(pos1)).offset(m_relation->offset(pos1));
+    return typename RangeSetType::SetBuilder().size(size(pos1)).offset(readRelation().offset(pos1));
   }
 
   /**
    * \brief A set of elements with the given first set index.
    *
    * \param s1  The first set index.
-   * \return  An OrderedSet containing the elements in the row.
+   * \return  The row of to-set positions associated with s1.
    * \pre  0 <= pos1 <= set1.size()
    */
-  SubsetType getElements(FirstPositionType s1) const { return (*m_relation)[s1]; }
+  SubsetType getElements(FirstPositionType s1) const { return readRelation()[s1]; }
 
   AXOM_SUPPRESS_HD_WARN
   /*!
@@ -294,7 +315,7 @@ public:
   /// \brief Return the size of the relation
   PositionType totalSize() const
   {
-    return static_cast<PositionType>(m_relation->relationData().size());
+    return static_cast<PositionType>(readRelation().relationData().size());
   }
 
   /**
@@ -303,9 +324,9 @@ public:
    *
    * \param pos The from-set position.
    */
-  PositionType size(FirstPositionType pos) const
+  AXOM_HOST_DEVICE PositionType size(FirstPositionType pos) const
   {
-    return static_cast<PositionType>(m_relation->size(pos));
+    return static_cast<PositionType>(readRelation()[pos].size());
   }
 
   /// \brief Return an iterator to the first pair of set elements in the relation.
@@ -326,7 +347,7 @@ public:
       }
       return false;
     }
-    return m_relation->isValid(verboseOutput);
+    return readRelation().isValid(verboseOutput);
   }
 
 public:
@@ -337,7 +358,7 @@ public:
   AXOM_SUPPRESS_HD_WARN
   [[nodiscard]] AXOM_HOST_DEVICE PositionType size() const
   {
-    return static_cast<PositionType>(m_relation->relationData().size());
+    return static_cast<PositionType>(readRelation().relationData().size());
   }
 
   /// \brief Checks if there are any elements in the set
@@ -345,6 +366,8 @@ public:
   [[nodiscard]] AXOM_HOST_DEVICE bool empty() const { return size() == PositionType {}; }
 
 private:
+  AXOM_HOST_DEVICE const RelationType& readRelation() const { return *m_relation; }
+
   //range check only
   [[nodiscard]] bool isValidIndex(FirstPositionType s1, SecondPositionType s2) const
   {
@@ -369,7 +392,7 @@ private:
   }
 
 private:
-  RelationType* m_relation;  //the relation that this set is based off of
+  RelationType* m_relation {nullptr};  //the relation that this set is based off of
 };
 
 }  // end namespace axom::slam

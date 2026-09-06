@@ -32,17 +32,38 @@ class SubMapIterator;
 template <typename SubMapType>
 class SubMapRangeIterator;
 
+/// A copied set selecting positions in the immediate parent map.
+template <typename S, typename Position>
+concept SubMapIndices =
+  SetLike<S> && std::same_as<typename S::ElementType, Position> && std::copy_constructible<S>;
+
 /// \brief The parent operations used by a SubMap, independent of storage policies.
 template <typename T>
-concept SubMapSource = requires(T& map, const T& constMap, typename T::PositionType pos) {
-  { constMap.size() } -> std::same_as<typename T::PositionType>;
-  { constMap.numComp() } -> std::convertible_to<typename T::PositionType>;
-  constMap.shape();
-  constMap.index(pos);
-  map[pos];
-  requires std::is_lvalue_reference_v<decltype(map[pos])>;
-  map.set_begin();
-  { map.set_end() } -> std::same_as<decltype(map.set_begin())>;
+concept SubMapSource = PositionLike<typename T::PositionType> &&
+  requires(T& map, const T& constMap, typename T::PositionType pos) {
+    { constMap.size() } -> std::same_as<typename T::PositionType>;
+    { constMap.numComp() } -> std::convertible_to<typename T::PositionType>;
+    constMap.shape();
+    requires std::default_initializable<std::remove_cvref_t<decltype(constMap.shape())>>;
+    constMap.index(pos);
+    requires std::is_object_v<std::remove_cvref_t<decltype(constMap.index(pos))>>;
+    map[pos];
+    requires std::is_lvalue_reference_v<decltype(map[pos])>;
+  };
+
+template <typename T>
+using parent_range_iterator_t = decltype(std::declval<T&>().set_begin());
+
+/// Range traversal additionally needs a parent iterator that can select a position.
+template <typename T>
+concept SubMapRangeSource = SubMapSource<T> && requires {
+  typename parent_range_iterator_t<T>;
+  requires std::default_initializable<parent_range_iterator_t<T>>;
+  requires std::copyable<parent_range_iterator_t<T>>;
+  requires std::constructible_from<parent_range_iterator_t<T>, T*, typename T::PositionType>;
+} && requires(const parent_range_iterator_t<T>& it) {
+  requires std::is_lvalue_reference_v<decltype(*it)>;
+  { it.flatIndex() } -> PositionValueLike;
 };
 
 }  // namespace detail
@@ -138,15 +159,11 @@ public:
   AXOM_HOST_DEVICE SubMap(SuperMapType* supermap,
                           SubsetType subset_idxset,
                           bool AXOM_UNUSED_PARAM(indicesHaveIndirection) = true)
+    requires detail::SubMapSource<SuperMapType> &&
+               detail::SubMapIndices<SubsetType, typename SuperMapType::PositionType>
     : m_superMap(supermap)
     , m_subsetIdx(subset_idxset)
-  {
-    // Check the parent operations at construction, once the parent type is complete.
-    static_assert(detail::SubMapSource<SuperMapType>,
-                  "SubMap requires parent size, component, index, value, and range access");
-    static_assert(detail::FlatRangeOver<SubsetType, typename SuperMapType::PositionType>,
-                  "SubMap requires an index set of flat positions into its super-map");
-  }
+  { }
 
   /// \name SubMap individual access functions
   /// @{
@@ -177,6 +194,7 @@ public:
    */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType operator()(IndexType idx, ComponentIndex... comp) const
+    requires requires(const SubMap& map) { map.flatValue(idx, comp...); }
   {
     return flatValue(idx, comp...);
   }
@@ -189,6 +207,7 @@ public:
    */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType value(IndexType idx, ComponentIndex... comp) const
+    requires requires(const SubMap& map) { map.flatValue(idx, comp...); }
   {
     return flatValue(idx, comp...);
   }
@@ -196,9 +215,13 @@ public:
   /// \brief Access components of the entry at the given subset position.
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE reference flatValue(PositionType idx, ComponentIndex... comp) const
+    requires(std::integral<ComponentIndex> && ...) &&
+    (sizeof...(ComponentIndex) <= 1 ||
+     requires(SuperMapType& parent) {
+       { parent.flatValue(SuperPositionType {}, comp...) } -> std::convertible_to<reference>;
+       requires std::is_lvalue_reference_v<decltype(parent.flatValue(SuperPositionType {}, comp...))>;
+     })
   {
-    static_assert((std::integral<ComponentIndex> && ...),
-                  "SubMap component indices must be integral types");
     SLIC_ASSERT_MSG(m_superMap != nullptr, "SubMap's super-map was null.");
     SLIC_ASSERT_MSG(idx >= 0 && idx < size(), "SubMap position is outside the subset.");
     const SuperPositionType parentPos = getMapElemFlatIndex(idx);
@@ -321,8 +344,16 @@ private:  //helper functions
 public:  // Functions related to iteration
   AXOM_HOST_DEVICE iterator begin() const { return iterator(this, 0); }
   AXOM_HOST_DEVICE iterator end() const { return iterator(this, size() * numComp()); }
-  AXOM_HOST_DEVICE range_iterator set_begin() const { return range_iterator(this, 0); }
-  AXOM_HOST_DEVICE range_iterator set_end() const { return range_iterator(this, size()); }
+  AXOM_HOST_DEVICE range_iterator set_begin() const
+    requires detail::SubMapRangeSource<SuperMapType>
+  {
+    return range_iterator(this, 0);
+  }
+  AXOM_HOST_DEVICE range_iterator set_end() const
+    requires detail::SubMapRangeSource<SuperMapType>
+  {
+    return range_iterator(this, size());
+  }
 
 protected:  //Member variables
   SuperMapType* m_superMap {nullptr};
@@ -404,11 +435,9 @@ public:
   using iter = SubMapRangeIterator;
 
 private:
-  using MapRangeIterator = decltype(std::declval<SuperMapType&>().set_begin());
-  static_assert(
-    std::default_initializable<MapRangeIterator> &&
-      std::constructible_from<MapRangeIterator, SuperMapType*, SuperPositionType>,
-    "SubMap range iteration requires a parent iterator constructible at a flat position");
+  static_assert(SubMapRangeSource<SuperMapType>,
+                "SubMap range traversal needs a position-selectable parent iterator");
+  using MapRangeIterator = parent_range_iterator_t<SuperMapType>;
 
 public:
   // Dereference returns a reference to a cached ArrayView,
@@ -449,18 +478,20 @@ public:
   /// \brief Returns the current iterator value.
   AXOM_HOST_DEVICE reference operator*() const { return (*m_mapIter); }
 
-  AXOM_HOST_DEVICE pointer operator->() const { return m_mapIter.operator->(); }
+  AXOM_HOST_DEVICE pointer operator->() const { return &this->operator*(); }
 
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType operator()(ComponentIndex... comp_idx) const
+    requires requires(const SubMapType& map) { map.flatValue(PositionType {}, comp_idx...); }
   {
-    return m_mapIter(comp_idx...);
+    return m_submap.flatValue(this->m_pos, comp_idx...);
   }
 
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType value(ComponentIndex... comp_idx) const
+    requires requires(const SubMapType& map) { map.flatValue(PositionType {}, comp_idx...); }
   {
-    return m_mapIter.value(comp_idx...);
+    return m_submap.flatValue(this->m_pos, comp_idx...);
   }
 
   AXOM_HOST_DEVICE value_type operator[](PositionType n) const { return *(*this + n); }
@@ -475,7 +506,7 @@ public:
   PositionType submapIndex() const { return this->m_pos; }
 
   /// \brief Returns the number of components per element in the Map.
-  PositionType numComp() const { return m_mapIter.numComp(); }
+  PositionType numComp() const { return m_submap.numComp(); }
 
 protected:
   /// \brief Select the new parent position directly, also for nested or reordered subsets.

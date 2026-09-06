@@ -75,13 +75,11 @@ public:
   SubFieldType getSubfield(FirstPositionType firstIdx) { return operator()(firstIdx); }
   AXOM_HOST_DEVICE SubFieldType operator()(FirstPositionType firstIdx)
   {
-    const bool hasInd = this->submapIndicesHaveIndirection();
-    return SubFieldType(this, firstIdx, hasInd);
+    return SubFieldType(this, firstIdx);
   }
   AXOM_HOST_DEVICE const ConstSubFieldType operator()(FirstPositionType firstIdx) const
   {
-    const bool hasInd = this->submapIndicesHaveIndirection();
-    return ConstSubFieldType(this, firstIdx, hasInd);
+    return ConstSubFieldType(this, firstIdx);
   }
 
   //Mimic BivariateMap operator(i) and return slam submap

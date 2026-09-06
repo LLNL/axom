@@ -77,6 +77,7 @@ template <typename T,
           typename IndPol = policies::ArrayIndirection<typename S::PositionType, T>,
           typename StrPol = policies::StrideOne<typename S::PositionType>,
           typename IfacePol = policies::ConcreteInterface>
+  requires detail::MapParameters<T, S, IndPol, StrPol>
 class Map : public StrPol, public policies::MapInterface<IfacePol, typename S::PositionType>
 {
 public:
@@ -97,12 +98,6 @@ public:
 
   using ValueType = typename IndirectionPolicy::IndirectionResult;
   using ConstValueType = typename IndirectionPolicy::ConstIndirectionResult;
-
-  static_assert(SetLike<SetType>, "Map requires a SetLike mapped set");
-  static_assert(detail::MapStridePolicyFor<StridePolicyType, PositionType>,
-                "Map requires a scalar or multi-dimensional stride over its position type");
-  static_assert(MapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>,
-                "Map requires map indirection over its position and data types");
 
   class MapBuilder;
 
@@ -241,15 +236,16 @@ public:
 
   /// \brief Constructor for Map using a MapBuilder
   Map(const MapBuilder& builder)
-    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType>
-    : Map(builder.m_set, builder.m_defaultValue, builder.m_stride.stride())
+    requires AllocatingMapIndirectionPolicyFor<IndirectionPolicy, PositionType, DataType> &&
+    std::assignable_from<ValueType, DataType&>
+    : Map(builder.m_set, builder.m_defaultValue, builder.m_stride.shape())
   {
     //copy the data if exists
     if(builder.m_data_ptr)
     {
-      for(PositionType idx = PositionType(); idx < builder.m_set->size(); ++idx)
+      for(PositionType idx = PositionType(); idx < size() * numComp(); ++idx)
       {
-        m_data[idx] = builder.m_data_ptr[idx];
+        (*this)[idx] = builder.m_data_ptr[idx];
       }
     }
   }
@@ -415,21 +411,27 @@ public:
   /// @{
 
   /** \brief replace all elements in the Map with the default DataType */
-  void clear() { fill(); }
+  void clear()
+    requires std::assignable_from<ValueType, DataType>
+  {
+    fill();
+  }
 
   /** Set each entry in the map to the given value  */
   void fill(DataType val = DataType())
+    requires std::assignable_from<ValueType, DataType>
   {
     const PositionType sz = static_cast<PositionType>(m_data.size());
 
     for(PositionType idx = PositionType(); idx < sz; ++idx)
     {
-      m_data[idx] = val;
+      (*this)[idx] = val;
     }
   }
 
   /** \brief Element-wise copy of data from another map */
   void copy(const Map& other)
+    requires std::assignable_from<ValueType, ConstValueType>
   {
     SLIC_ASSERT(other.size() == size());
     SLIC_ASSERT(other.stride() == StridePolicyType::stride());
@@ -437,7 +439,7 @@ public:
     const PositionType sz = size() * StridePolicyType::stride();
     for(PositionType idx = PositionType(); idx < sz; ++idx)
     {
-      m_data[idx] = other[idx];
+      (*this)[idx] = other[idx];
     }
   }
 
@@ -470,12 +472,15 @@ public:
 
     /// \brief Set the stride of the Map using StridePolicy
     MapBuilder& stride(PositionType str)
+      requires std::constructible_from<StridePolicyType, PositionType> &&
+      std::assignable_from<StridePolicyType&, StridePolicyType>
     {
       m_stride = StridePolicyType(str);
       return *this;
     }
 
     /// \brief Set the pointer to the array of data the Map will contain
+    /// The array must contain size() * numComp() values for the configured map.
     MapBuilder& data(DataType* bufPtr)
     {
       m_data_ptr = bufPtr;
@@ -484,7 +489,7 @@ public:
 
   private:
     const SetType* m_set;
-    StridePolicyType m_stride;
+    StridePolicyType m_stride {StridePolicyType::DefaultSize()};
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();
   };
@@ -743,10 +748,12 @@ private:
                                  ComponentIndex... AXOM_DEBUG_PARAM(compIdx)) const
   {
 #ifdef AXOM_DEBUG
-    ElementShape indexArray {{compIdx...}};
+    const PositionType indexArray[] {static_cast<PositionType>(compIdx)...};
+    PositionType shapeArray[StridePolicyType::NumDims];
     bool validIndexes = true;
     for(int dim = 0; dim < StridePolicyType::NumDims; dim++)
     {
+      shapeArray[dim] = this->shape()[dim];
       validIndexes = validIndexes && (indexArray[dim] >= 0);
       validIndexes = validIndexes && (indexArray[dim] < this->shape()[dim]);
     }
@@ -756,7 +763,7 @@ private:
       setIdx,
       fmt::join(indexArray, ", "),
       size(),
-      fmt::join(this->shape(), ", "));
+      fmt::join(shapeArray, ", "));
     SLIC_ASSERT_MSG(setIdx >= 0 && setIdx < size() && validIndexes, invalid_message);
 #endif
   }
@@ -770,7 +777,7 @@ private:
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE inline PositionType componentOffset(ComponentIndex... componentIndex) const
   {
-    ElementShape indexArray {{componentIndex...}};
+    const PositionType indexArray[] {static_cast<PositionType>(componentIndex)...};
     ElementShape strides = StridePolicyType::strides();
     PositionType offset = 0;
     for(int dim = 0; dim < StridePolicyType::NumDims; dim++)
@@ -800,7 +807,7 @@ private:
     SLIC_ERROR_IF(
       !std::in_range<PositionType>(m_data.size()) || !std::in_range<axom::IndexType>(m_data.size()),
       "SLAM map backing buffer size is not representable.");
-    if(m_data.size() < neededSize)
+    if(std::cmp_less(m_data.size(), neededSize))
     {
       m_data.resize(neededSize);
     }
@@ -829,6 +836,7 @@ private:
 };
 
 template <typename T, typename S, typename IndPol, typename StrPol, typename IfacePol>
+  requires detail::MapParameters<T, S, IndPol, StrPol>
 bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
 {
   PositionType expected {};
@@ -883,6 +891,7 @@ bool Map<T, S, IndPol, StrPol, IfacePol>::isValid(bool verboseOutput) const
 }
 
 template <typename T, typename S, typename IndPol, typename StrPol, typename IfacePol>
+  requires detail::MapParameters<T, S, IndPol, StrPol>
 void Map<T, S, IndPol, StrPol, IfacePol>::print() const
 {
   bool valid = isValid(true);
