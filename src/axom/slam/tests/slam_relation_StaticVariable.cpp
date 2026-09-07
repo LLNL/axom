@@ -390,6 +390,43 @@ TEST(slam_static_variable_relation, consistent_indexing_plain_and_mapped)
   expectConsistentRelationIndexing(mapped, begins, indices);
 }
 
+TEST(slam_static_variable_relation, inverse_lookup_for_all_small_row_patterns)
+{
+  RangeSetType fromSet(4), toSet(3);
+
+  // Four rows with lengths in [0, 3] cover all placements of empty rows,
+  // including repeated begin offsets at either end and between nonempty rows.
+  for(int pattern = 0; pattern < 256; ++pattern)
+  {
+    SCOPED_TRACE(pattern);
+    IndexVec begins {0};
+    IndexVec indices;
+    int lengths = pattern;
+    for(SetPosition row = 0; row < fromSet.size(); ++row)
+    {
+      const SetPosition length = lengths % 4;
+      lengths /= 4;
+      for(SetPosition entry = 0; entry < length; ++entry)
+      {
+        indices.push_back((row + entry) % toSet.size());
+      }
+      begins.push_back(static_cast<SetPosition>(indices.size()));
+    }
+
+    StaticVariableRelationType plain(&fromSet, &toSet);
+    plain.bindBeginOffsets(fromSet.size(), &begins);
+    plain.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+    expectConsistentRelationIndexing(plain, begins, indices);
+
+    IndexVec firstIndices(indices.size(), SetPosition {-1});
+    StaticMappedVariableRelationType mapped(&fromSet, &toSet);
+    mapped.bindBeginOffsets(fromSet.size(), &begins);
+    mapped.bindIndices(static_cast<SetPosition>(indices.size()), &indices);
+    mapped.bindFirstIndices(static_cast<SetPosition>(firstIndices.size()), &firstIndices);
+    expectConsistentRelationIndexing(mapped, begins, indices);
+  }
+}
+
 TEST(slam_static_variable_relation, empty_and_single_row_relations)
 {
   RangeSetType emptyFromSet(0), toSet(4);

@@ -84,6 +84,32 @@ TEST(slam_map, construction_checks_sizes_in_all_builds)
   EXPECT_DEATH_IF_SUPPORTED(WideStrideMap(&set, 0, (std::int64_t {1} << 32) + 1), "representable");
 }
 
+#ifndef AXOM_USE_64BIT_INDEXTYPE
+TEST(slam_map, array_storage_limits_are_checked_for_wide_positions)
+{
+  using Position = std::int64_t;
+  using Set = slam::RangeSet<Position, Position>::ConcreteSet;
+  using Map =
+    slam::Map<int, Set, policies::ArrayIndirection<Position, int>, policies::RuntimeStride<Position>>;
+
+  // Both counts fit the map's position type but exceed its Array storage limit.
+  // The strided set's size fits axom::IndexType; only its storage product is too large.
+  constexpr Position size = (Position {1} << 32) + 1;
+  constexpr Position stridedSize = (Position {1} << 30) + 1;
+  static_assert(size > std::numeric_limits<axom::IndexType>::max());
+  static_assert(stridedSize <= std::numeric_limits<axom::IndexType>::max());
+  Set set(size), stridedSet(stridedSize);
+  int data[4] {};
+  EXPECT_DEATH_IF_SUPPORTED(Map(&set, 0, 1), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(Map(&stridedSet, 0, 4), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&set, data), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&stridedSet, 4, data), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map_ct<4>(&stridedSet, data), "representable storage size");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_map(&stridedSet, 4, axom::ArrayView<int>(data, 4)),
+                            "representable storage size");
+}
+#endif
+
 TEST(slam_map, checked_sizes_preserve_limits_and_resize_behavior)
 {
   using Position = std::int16_t;

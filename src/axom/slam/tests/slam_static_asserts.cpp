@@ -445,6 +445,11 @@ static_assert(!std::random_access_iterator<typename ViewSubMap::range_iterator>)
 static_assert(!std::random_access_iterator<typename ViewConstSubMap::range_iterator>);
 static_assert(std::ranges::random_access_range<ViewSubMap>);
 static_assert(std::ranges::random_access_range<ViewConstSubMap>);
+static_assert(!std::ranges::borrowed_range<ViewSubMap>);
+static_assert(!std::ranges::borrowed_range<ViewConstSubMap>);
+using NestedViewSubMap = slam::SubMap<ViewSubMap, ConcreteRangeSet>;
+static_assert(!std::ranges::borrowed_range<NestedViewSubMap>);
+static_assert(!std::ranges::borrowed_range<const NestedViewSubMap>);
 
 using ProductSetIterator = ConcreteProductSet::IteratorType;
 using RelationRow = ViewVariableRelation::RelationSubset;
