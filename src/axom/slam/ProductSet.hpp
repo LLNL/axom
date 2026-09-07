@@ -12,6 +12,7 @@
  * \brief Basic API for a SLAM Cartesian product set
  */
 
+#include "axom/core/Array.hpp"
 #include "axom/core/IteratorBase.hpp"
 #include "axom/slam/BivariateSet.hpp"
 #include "axom/slam/Concepts.hpp"
@@ -22,6 +23,7 @@
 
 #include <cassert>
 #include <limits>
+#include <numeric>
 #include <optional>
 
 namespace axom::slam
@@ -71,45 +73,11 @@ public:
   using IteratorType = BivariateSetIterator<ProductSet>;
 
 private:
-  template <typename Dummy, typename SetType>
-  struct RowSet
-  {
-    using Type = SetType;
-    RowSet(SecondPositionType secondSetSize) : m_data(static_cast<axom::IndexType>(secondSetSize))
-    {
-      // Every first-set position uses the same subset of second-set positions.
-      //
-      // HACK -- this should actually be returning a PositionSet since it always
-      //         goes from 0 to secondSetSize()
-      // This requires a change to the return type of BivariateSet::getElements()
-      std::iota(m_data.begin(), m_data.end(), SecondPositionType {0});
-      m_set = typename SetType::SetBuilder()
-                .size(static_cast<PositionType>(secondSetSize))
-                .offset(0)
-                .data(m_data.view());
-    }
-
-    Type get(SecondPositionType) const { return m_set; }
-
-    axom::Array<SecondPositionType> m_data;
-    SetType m_set;
-  };
-
-  // This dummy parameter works around a C++ bug where partial specializations,
-  // but not explicit instantiations, are allowed in class scope.
-  // This is fixed in C++17: https://wg21.cmeerw.net/cwg/issue727
-  template <typename Dummy>
-  struct RowSet<Dummy, void>
-  {
-    using Type = PositionSet<PositionType, SecondPositionType>;
-
-    RowSet(SecondPositionType) { }
-
-    Type get(SecondPositionType secondSetSize) const
-    {
-      return Type(static_cast<PositionType>(secondSetSize));
-    }
-  };
+  static constexpr bool USES_IMPLICIT_SUBSET = std::is_void_v<typename BaseType::SubsetType>;
+  struct EmptySubsetStorage
+  { };
+  using SubsetStorage =
+    std::conditional_t<USES_IMPLICIT_SUBSET, EmptySubsetStorage, axom::Array<SecondPositionType>>;
 
 public:
   using ConcreteSet = ProductSet<SetType1, SetType2, policies::ConcreteInterface, FlatPosition>;
@@ -120,14 +88,16 @@ public:
 
   ProductSet(const OtherSet& other)
     : BaseType(other.getFirstSet(), other.getSecondSet())
-    , m_rowSet(checkedSecondSetSize())
+    , m_subsetStorage(makeSubsetStorage())
   { }
 
 public:
-  using SubsetType = typename RowSet<void, typename BaseType::SubsetType>::Type;
+  using SubsetType = std::conditional_t<USES_IMPLICIT_SUBSET,
+                                        PositionSet<PositionType, SecondPositionType>,
+                                        typename BaseType::SubsetType>;
 
   /// \brief Default constructor
-  ProductSet() : m_rowSet(0) { }
+  ProductSet() = default;
 
   /**
    * \brief Constructor taking in pointers of two Sets.
@@ -138,7 +108,7 @@ public:
 
   ProductSet(const FirstSetType* set1, const SecondSetType* set2)
     : BaseType(set1, set2)
-    , m_rowSet(checkedSecondSetSize())
+    , m_subsetStorage(makeSubsetStorage())
   { }
 
   /**
@@ -217,7 +187,8 @@ public:
   {
     SLIC_ASSERT_MSG(pos1 >= 0 && pos1 < this->firstSetSize(),
                     "SLAM::ProductSet -- requested out-of-range first-set position "
-                      << pos1 << ", but set only has " << this->firstSetSize() << " rows.");
+                      << pos1 << ", but the first set only has " << this->firstSetSize()
+                      << " positions.");
 
     if(this->secondSetSize() == 0)
     {
@@ -281,12 +252,24 @@ public:
    * \param pos1 Position in the first set.
    *
    * \return An OrderedSet containing [0, secondSetSize()).
+   * \note With the virtual interface, the subset borrows this product's position buffer.
+   *       Keep that buffer valid while the subset or its iterators are used.
    */
   SubsetType getElements(FirstPositionType AXOM_DEBUG_PARAM(pos1)) const
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < this->firstSetSize());
 
-    return m_rowSet.get(this->secondSetSize());
+    if constexpr(USES_IMPLICIT_SUBSET)
+    {
+      return SubsetType(static_cast<PositionType>(this->secondSetSize()));
+    }
+    else
+    {
+      // Build the view on demand so copies refer to their own position buffer.
+      return typename SubsetType::SetBuilder()
+        .size(static_cast<PositionType>(this->secondSetSize()))
+        .data(m_subsetStorage.view());
+    }
   }
 
   [[nodiscard]] AXOM_HOST_DEVICE ElementType at(PositionType pos) const
@@ -336,11 +319,27 @@ public:
 
     const bool valid = sizesAreValid();
     SLIC_INFO_IF(!valid && verboseOutput,
-                 "ProductSet sizes, product, or row-storage size are not representable.");
+                 "ProductSet sizes, product, or subset storage size are not representable.");
     return valid;
   }
 
 private:
+  SubsetStorage makeSubsetStorage() const
+  {
+    const auto second_size = checkedSecondSetSize();
+    if constexpr(USES_IMPLICIT_SUBSET)
+    {
+      return {};
+    }
+    else
+    {
+      // The virtual interface requires an array-backed subset for getElements().
+      SubsetStorage data(static_cast<axom::IndexType>(second_size));
+      std::iota(data.begin(), data.end(), SecondPositionType {0});
+      return data;
+    }
+  }
+
   bool sizesAreValid() const
   {
     if(this->getFirstSet() == nullptr || this->getSecondSet() == nullptr)
@@ -356,7 +355,7 @@ private:
       return false;
     }
     // Only the virtual interface allocates a buffer of second-set positions.
-    if constexpr(!std::is_void_v<typename BaseType::SubsetType>)
+    if constexpr(!USES_IMPLICIT_SUBSET)
     {
       return std::in_range<axom::IndexType>(second);
     }
@@ -401,7 +400,8 @@ private:
   }
 
 private:
-  RowSet<void, typename BaseType::SubsetType> m_rowSet;
+  // BivariateSet's subset type permits mutable access even through a const set.
+  mutable SubsetStorage m_subsetStorage {};
 };
 
 }  // end namespace axom::slam

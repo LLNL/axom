@@ -19,10 +19,12 @@
 
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <type_traits>
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <utility>
 
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
@@ -626,6 +628,103 @@ TEST(slam_bivariate_set, product_set_empty_second_set_has_no_first_flat_index)
   const slam::BivariateSet<SetType, SetType>* baseSet = &productSet;
   EXPECT_EQ(baseSet->findElementFlatIndex(0), ProductSetType::INVALID_POS);
   EXPECT_FALSE(baseSet->findElementFlatIndexOptional(0).has_value());
+}
+
+TEST(slam_bivariate_set, product_set_copies_own_their_subset_storage)
+{
+  using FirstSet = slam::PositionSet<std::int32_t>;
+  using SecondSet = slam::PositionSet<std::int64_t>;
+  using Product = slam::ProductSet<FirstSet, SecondSet>;
+  using Base = slam::BivariateSet<FirstSet, SecondSet>;
+
+  FirstSet first(2);
+  SecondSet second(3);
+  std::optional<Product> copied;
+  Product assigned;
+  {
+    const Product original(&first, &second);
+    copied.emplace(original);
+    assigned = original;
+
+    // Each copy must refer to its own buffer before the original is destroyed.
+    const auto original_subset = original.getElements(0);
+    const auto copied_subset = copied->getElements(0);
+    const auto assigned_subset = assigned.getElements(0);
+    ASSERT_NE(&original_subset[0], &copied_subset[0]);
+    ASSERT_NE(&original_subset[0], &assigned_subset[0]);
+    EXPECT_NE(&copied_subset[0], &assigned_subset[0]);
+  }
+
+  for(const Base* product : {static_cast<const Base*>(&*copied), static_cast<const Base*>(&assigned)})
+  {
+    ASSERT_TRUE(product->isValid());
+    EXPECT_EQ(product->size(), 6);
+    for(std::int32_t i = 0; i < first.size(); ++i)
+    {
+      const auto subset = product->getElements(i);
+      ASSERT_EQ(subset.size(), second.size());
+      for(std::int64_t j = 0; j < second.size(); ++j)
+      {
+        EXPECT_EQ(subset[j], j);
+      }
+    }
+  }
+}
+
+TEST(slam_bivariate_set, product_set_moves_preserve_subset_storage)
+{
+  using Set = slam::PositionSet<>;
+  using Product = slam::ProductSet<Set, Set>;
+
+  Set first(2), second(3);
+  std::optional<Product> moved;
+  Product assigned;
+  {
+    Product original(&first, &second);
+    const auto subset = original.getElements(0);
+    moved.emplace(std::move(original));
+    EXPECT_EQ(&subset[0], &moved->getElements(0)[0]);
+
+    Product another(&first, &second);
+    const auto another_subset = another.getElements(0);
+    assigned = std::move(another);
+    EXPECT_EQ(&another_subset[0], &assigned.getElements(0)[0]);
+  }
+
+  for(Set::PositionType j = 0; j < second.size(); ++j)
+  {
+    EXPECT_EQ(moved->getElements(1)[j], j);
+    EXPECT_EQ(assigned.getElements(1)[j], j);
+  }
+}
+
+TEST(slam_bivariate_set, product_set_subset_access_across_interfaces)
+{
+  using Set = slam::PositionSet<>;
+  using VirtualProduct = slam::ProductSet<Set, Set>;
+  using ConcreteProduct = VirtualProduct::ConcreteSet;
+  static_assert(std::is_trivially_copyable_v<ConcreteProduct>);
+  static_assert(std::is_same_v<ConcreteProduct::SubsetType, Set>);
+
+  Set first(2), second(3), empty;
+  for(const Set* second_set : {&second, &empty})
+  {
+    const VirtualProduct virtual_product(&first, second_set);
+    const ConcreteProduct concrete_product(virtual_product);
+    const VirtualProduct converted_product(concrete_product);
+    for(Set::PositionType i = 0; i < first.size(); ++i)
+    {
+      const auto implicit_subset = concrete_product.getElements(i);
+      const auto stored_subset = converted_product.getElements(i);
+      ASSERT_EQ(implicit_subset.size(), second_set->size());
+      ASSERT_EQ(stored_subset.size(), second_set->size());
+      for(Set::PositionType j = 0; j < second_set->size(); ++j)
+      {
+        EXPECT_EQ(implicit_subset[j], j);
+        EXPECT_EQ(stored_subset[j], j);
+      }
+    }
+  }
 }
 
 TEST(slam_bivariate_set, product_set_elements_are_coordinate_pairs)
