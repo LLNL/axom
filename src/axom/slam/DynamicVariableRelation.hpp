@@ -9,9 +9,7 @@
 /**
  * \file DynamicVariableRelation.hpp
  *
- * \brief API for a topological relation between two sets in which entities from
- * the first set can be related to an arbitrary number of entities from the
- * second set. This relation is dynamic; the related entities can change at runtime.
+ * \brief Editable connectivity with a variable number of entries per from-set position.
  */
 
 #include "axom/config.hpp"
@@ -28,6 +26,18 @@
 
 namespace axom::slam
 {
+/**
+ * \class DynamicVariableRelation
+ * \brief Store and edit a collection of to-set positions for each from-set position.
+ *
+ * For a vertex-to-cell relation, each vertex can have a different number of
+ * incident cells. insert(from, to) appends a to-set position. operator[] and
+ * data() provide direct access to the corresponding std::vector.
+ *
+ * The relation owns its vectors and borrows both sets. The from-set size must
+ * remain equal to its size at construction. Referenced sets must outlive the
+ * relation. Changes to a vector can invalidate its iterators and references.
+ */
 template <typename FirstSetType = slam::Set<>, typename SecondSetType = slam::Set<>>
 class DynamicVariableRelation
 {
@@ -38,7 +48,6 @@ public:
   using FromPositionType = typename FromSetType::PositionType;
   using ToPositionType = typename ToSetType::PositionType;
   using FlatPositionType = detail::default_flat_position_t<FromPositionType, ToPositionType>;
-
 
   using RelationVec = std::vector<ToPositionType>;
   using RelationVecIterator = typename RelationVec::iterator;
@@ -84,18 +93,22 @@ public:
   }
   /// @}
 
+  /// \brief Return the to-set positions associated with fromSetIndex.
+  /// \pre 0 <= fromSetIndex < fromSetSize()
   RelationVec const& operator[](FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return m_relationsVec[fromSetIndex];
   }
 
+  /// \brief Return the number of entries associated with fromSetIndex.
   FlatPositionType size(FromPositionType fromSetIndex) const
   {
     verifyPosition(fromSetIndex);
     return static_cast<FlatPositionType>(fromSetRelationsVec(fromSetIndex).size());
   }
 
+  /// \brief Sum the per-element cardinalities to obtain the total number of entries.
   FlatPositionType totalSize() const
   {
     FlatPositionType sz = 0;
@@ -124,6 +137,8 @@ public:
   bool isValid(bool verboseOutput = false) const;
 
 public:  // Modifying functions
+  /// \brief Append a to-set position to the entries associated with fromSetIndex.
+  /// \pre Both positions identify elements in their respective sets.
   void insert(FromPositionType fromSetIndex, ToPositionType toSetIndex)
   {
     verifyPosition(fromSetIndex);
@@ -138,22 +153,17 @@ public:  // Modifying functions
 
 public:
   /**
-   * \name DirectDataAccess
-   * \brief Accessor functions to get the underlying relation data for each
-   *  element
-
-   * \note We will have to figure out a good way
-   * to limit this access to situations where it makes sense.
+   * \name Direct data access
+   * \brief Access the vector of to-set positions for a from-set position.
+   * \note Writes must preserve valid to-set positions.
    */
 
   /// \{
 
   /**
-   * \brief Access the set of positions in the 'toSet'
-   * associated with the given position in 'fromSet'
+   * \brief Access the to-set positions associated with fromSetPos.
    *
-   * \param fromSetPos The position within the 'fromSet'
-   * whose relation data (in the 'toSet') we are requesting
+   * \param fromSetPos Position in the from-set.
    */
   RelationVec& data(FromPositionType fromSetPos)
   {
@@ -162,11 +172,9 @@ public:
   }
 
   /**
-   * \brief Access the set of positions in the 'toSet'
-   * associated with the given position in 'fromSet'
+   * \brief Access the to-set positions associated with fromSetPos.
    *
-   * \param fromSetPos The position within the 'fromSet'
-   * whose relation data (in the 'toSet') we are requesting
+   * \param fromSetPos Position in the from-set.
    */
   const RelationVec& data(FromPositionType fromSetPos) const
   {
@@ -179,8 +187,9 @@ public:
 private:
   inline void verifyPosition(FromPositionType AXOM_DEBUG_PARAM(fromSetIndex)) const
   {
-    SLIC_ASSERT_MSG(fromSetIndex >= 0 && fromSetIndex < static_cast<FromPositionType>(m_fromSet->size()),
-                    "Index " << fromSetIndex << " out of range [0," << m_fromSet->size() << ")");
+    SLIC_ASSERT_MSG(
+      fromSetIndex >= 0 && fromSetIndex < static_cast<FromPositionType>(m_fromSet->size()),
+      "Index " << fromSetIndex << " out of range [0," << m_fromSet->size() << ")");
   }
 
   inline RelationVec& fromSetRelationsVec(FromPositionType fromSetIndex)

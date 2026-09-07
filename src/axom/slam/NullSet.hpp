@@ -21,7 +21,7 @@ namespace axom::slam
 /**
  * \class NullSet
  *
- * \brief An indexed set (a tuple) of entities in a simulation
+ * \brief An empty set with no valid element positions.
  */
 template <typename PosType = slam::DefaultPositionType, typename ElemType = slam::DefaultElementType>
 class NullSet : public Set<PosType, ElemType>
@@ -70,7 +70,7 @@ private:
 #if 0
 /**
  * \brief NullSets are always equal
- * \note Two sets of different types are (currently) considered to be unequal
+ * \note Sets of different types compare unequal.
  */
 inline bool operator==(NullSet const&, NullSet const&)
 {
@@ -78,7 +78,7 @@ inline bool operator==(NullSet const&, NullSet const&)
 }
 /**
  * \brief NullSets are always equal
- * \note Two sets of different types are (currently) considered to be unequal
+ * \note Sets of different types compare unequal.
  */
 inline bool operator!=(NullSet const&, NullSet const&)
 {

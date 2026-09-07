@@ -27,44 +27,14 @@ namespace axom::slam
  *
  * \brief Abstract base class for a Set of entities in a simulation
  *
- * This class defines the minimal required API for a slam Set,
- * a container class for a set of entities in a simulation.
- * Each entity has an index.
+ * Sets can represent mesh vertices, cells, materials or refinement levels.
+ * A subset might select boundary vertices or ghost cells. Each position gives
+ * access to an element, which need not equal that position. Range-based sets
+ * compute their elements, while indirection-backed sets read stored values.
  *
- * Examples of sets include:
- * <ol>
- *  <li> Mesh elements: vertices, edges, faces, cells
- *  <li> Subzonal elements: sides, corners, finite element degrees of freedom
- *  <li> Boundary elements: external surfaces and springs
- *  <li> Elements of a space partition: e.g. Domains in a block structured mesh,
- *       leaf nodes of an octree/kd-tree
- *  <li> AMR bricks / tiles
- *  <li> Thread ids, MPI ranks, warps, thread groups, etc...
- *  <li> particles
- *  <li> boundary conditions
- *  <li> ...
- * </ol>
- *
- * Examples of subsets include:
- * <ol>
- *  <li> Regions
- *  <li> Ghost cells -- send, receive
- *  <li> Boundary cells -- external surface
- * </ol>
- *
- * Note: Elements of a set do not necessarily need explicit indices.
- * E.g. if we have a contiguous range of elements (or slices of contiguous
- * ranges),
- * they can be implicitly encoded.
- *
- * Thus, we can have
- * <ol>
- *  <li> Implicit indexes -- all we need here is a size operator
- *  <li> Sliced indices -- here we need the dimension and the striding
- *  <li> Explicit indices -- for a subset, we need the indices with respect to some other indexing scheme
- * </ol>
- *
- * The interface is for constant access to the elements.
+ * This virtual interface provides const positional access and validation.
+ * Generic code can instead use SetLike from Concepts.hpp, which does not
+ * require inheritance, subsetting or validation methods.
  */
 template <typename PosType = slam::DefaultPositionType, typename ElemType = slam::DefaultElementType>
 class Set
@@ -79,13 +49,8 @@ public:
 
   /**
    * \brief Random access to the entities of the set
-   * \param The index of the desired element
    * \return The value of the element at the given position
-   * \pre The position must be less than the number of elements in the set ( size() )
-   * \note Concrete realizations of Set also support subscript operator operator[].
-   * \note How are we planning to handle indexes that are out or range (accidentally)?
-   *       Are we planning to handle indexes that are intentionally out of range
-   *       (e.g. to indicate a problem, or a missing element etc..)?
+   * \pre The position identifies a valid entry in [0, size()).
    */
   [[nodiscard]] virtual ElementType at(PositionType) const = 0;
 
@@ -108,7 +73,7 @@ public:
   [[nodiscard]] virtual bool isValid(bool verboseOutput = false) const = 0;
 
   /**
-   * \brief Checks if there are any elements in the set -- equivalent to: set.size() == 0
+   * \brief Return whether size() is zero.
    */
   [[nodiscard]] AXOM_HOST_DEVICE virtual bool empty() const = 0;
 

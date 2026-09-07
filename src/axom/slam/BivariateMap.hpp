@@ -39,7 +39,8 @@ concept BivariateMapSet = BivariateSetLike<T> &&
     { set.findElementFlatIndex(first, second) } -> std::convertible_to<typename T::PositionType>;
     {
       set.elementRangeSet(first)
-    } -> std::convertible_to<typename RangeSet<typename T::PositionType, typename T::PositionType>::ConcreteSet>;
+    }
+    -> std::convertible_to<typename RangeSet<typename T::PositionType, typename T::PositionType>::ConcreteSet>;
   };
 template <typename Data, typename Set, typename Indirection, typename Stride>
 concept BivariateMapParameters =
@@ -49,57 +50,33 @@ concept BivariateMapParameters =
 
 /**
  * \class BivariateMap
- * \brief A Map for BivariateSet. It associates a constant number of values to
- *        every element in a BivariateSet (as determined by StridePolicy).
+ * \brief Associate component values with each pair in a bivariate set.
  *
- * \detail Like BivariateSet, every value in BivariateMap is indexed by two
- *         indices. BivariateMap's `operator(i)` returns a SubMap of all entries
- *         whose first index is `i` in the BivariateSet.
+ * A cell-material map can store a volume fraction for each material present in
+ * each cell. `map(i, j, c)` accesses component c for first-set position i and
+ * second-set position j. `map(i)` returns a SubMap of all entries associated with i.
+ * See BivariateSet for the DenseIndex, SparseIndex and FlatIndex conventions.
  *
- * The different indexing systems (DenseIndex, SparseIndex, FlatIndex) are
- * explained in BivariateSet. Because BivariateMap can have more than one
- * component, FlatIndex is further divided into ComponentFlatIndex, where each
- * component in each element is indexed separately, and ElementFlatIndex,
- * an index that disregards the individual components. Hence, to access
- * each component, one would need to provide a component index as well.
+ * ElementFlatIndex selects a coordinate pair in the bivariate set.
+ * ComponentFlatIndex selects one component in the value buffer. With three
+ * components per entry, `flatValue(1, 2)` and `map[5]` access the same value.
+ * `index(1)` returns the pair of set positions associated with that entry.
  *
  * \note When \a IndPol is not specified, \c BivariateMap stores its values in an
  *       \c axom::Array via \c policies::ArrayIndirection, and manages that buffer itself.
- *       This replaced the earlier \c policies::STLVectorIndirection default.
  *       To refer to a buffer managed elsewhere, use \c policies::ArrayViewIndirection.
  *       For \c std::vector backing, specify \c policies::STLVectorIndirection explicitly.
  *
- * Example:
- * For a 2 x 2 sparse matrix with 3 components below:
- *     \code
- *         0    1
- *     0  abc
- *     1       def
- *     \endcode
+ * \note Pointer-bound sets are borrowed. Value-bound sets are copied, but their
+ *       referenced sets and buffers remain borrowed. Keep these bindings valid
+ *       while the map is used. Component shape and value constness follow the
+ *       inner Map. A const map over ArrayView<T> can still return T&.
  *
- *   Access the elements using ElementFlatIndex `(e)` would be...\n
- *   `(e = 0) = abc`\n
- *   `(e = 1) = def`\n
- *   To access each component, provide a component index (c)
- *   `(e = 0, c = 0) = a`\n
- *   `(e = 0, c = 1) = b`\n
- *   `(e = 0, c = 2) = c`\n
- *   `(e = 1, c = 0) = d`\n
- *   `(e = 1, c = 1) = e`\n
- *   `(e = 1, c = 2) = f`\n
- *
- *   To access using ComponentFlatIndex `(idx)`...\n
- *   `(idx = 0) = a`\n
- *   `(idx = 1) = b`\n
- *   `(idx = 2) = c`\n
- *   `(idx = 3) = d`\n
- *   `(idx = 4) = e`\n
- *   `(idx = 5) = f`\n
- *
- * \tparam DataType the data type of each value
- * \tparam StridePolicy A policy class for configuring the number of components
- *         associate with each element. There is a fixed \a stride between
- *         the data associated with each element of the set.
+ * \tparam T The type of each component value.
+ * \tparam BSet The bivariate set type.
+ * \tparam IndPol The value-buffer policy.
+ * \tparam StrPol The component-count or shape policy.
+ * \tparam IfacePol The concrete or virtual map interface.
  * \see BivariateSet, SubMap
  */
 
@@ -206,15 +183,13 @@ public:
 
 public:
   /**
-   * \brief Constructor for a BivariateMap
+   * \brief Allocate values for a pointer-bound bivariate set.
    *
-   * \param bSet          (Optional) Pointer to the BivariateSet.
-   * \param defaultValue  (Optional) The default value used to initialize the
-   *                      entries of the map.
-   * \param shape         (Optional) The number of components in the map.
-   *
-   * \note  When using a compile time StridePolicy, \a stride must be equal to
-   *        \a StridePolicy::stride(), when provided.
+   * \param bSet The bivariate set, which must outlive the map.
+   * \param defaultValue Initial value of every component.
+   * \param shape Component count or multidimensional shape.
+   * \param allocatorID Allocator used by the value-buffer policy.
+   * \pre bSet is non-null and the shape agrees with any compile-time stride.
    */
   BivariateMap(const BivariateSetType* bSet = &s_nullBiSet,
                DataType defaultValue = DataType(),
@@ -242,16 +217,12 @@ public:
   { }
 
   /**
-   * \brief Constructor for BivariateMap using a BivariateSet passed by-value
-   *        and data passed in by-value.
+   * \brief Bind a bivariate set by pointer and store the supplied value buffer.
    *
-   * \param bSet    A reference to the map's associated bivariate set
-   * \param data    The data buffer to set the map's data to.
-   * \param shape   (Optional) The number of DataType that each element in the
-   *                set will be mapped to.
-   *                When using a \a RuntimeStridePolicy, the default is 1.
-   * \note  When using a compile time StridePolicy, \a stride must be equal to
-   *        \a stride(), when provided.
+   * \param bSet The bivariate set, which must outlive the map.
+   * \param data Value buffer passed by value. A view still borrows its allocation.
+   * \param shape Component count or multidimensional shape.
+   * \pre bSet is non-null. A non-resizable buffer has exactly size() * numComp() entries.
    */
   BivariateMap(const BivariateSetType* bSet,
                typename MapType::OrderedMap data,
@@ -262,15 +233,12 @@ public:
   { }
 
   /**
-   * \brief Constructor for BivariateMap using a BivariateSet passed by-value
-   *        and data passed in by-value.
+   * \brief Copy a bivariate set and store the supplied value buffer.
    *
-   * \param bSet    A reference to the map's associated bivariate set
-   * \param data    The data buffer to set the map's data to.
-   * \param shape   (Optional) The number of DataType that each element in the
-   *                set will be mapped to. When using a \a RuntimeStridePolicy, the default is 1.
-   * \note  When using a compile time StridePolicy, \a stride must be equal to
-   *        \a stride(), when provided.
+   * \param bSet The set to copy. Its referenced sets and buffers remain borrowed.
+   * \param data Value buffer passed by value. A view still borrows its allocation.
+   * \param shape Component count or multidimensional shape.
+   * \pre A non-resizable buffer has exactly size() * numComp() entries.
    * \note This value-storing overload accepts only the exact, non-abstract BivariateSetType.
    *       Use the pointer overload for polymorphic sets.
    */
@@ -312,19 +280,22 @@ public:
   ///
 
   /**
-   * \brief  Access the value in the map using a FlatIndex in the range of 0 to size()*numComp()`
+   * \brief Access a value by ComponentFlatIndex.
    *
    * \return The value for the j<sup>th</sup> component of the i<sup>th</sup>
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  AXOM_HOST_DEVICE ConstValueType operator[](PositionType setIndex) const { return m_map[setIndex]; }
+  AXOM_HOST_DEVICE ConstValueType operator[](PositionType setIndex) const
+  {
+    return m_map[setIndex];
+  }
   AXOM_HOST_DEVICE ValueType operator[](PositionType setIndex) { return m_map[setIndex]; }
 
 public:
   /**
-   * \brief Returns a SubMap containing the subset of the BivariateMap given the first set index
-   * \pre 0 <= firstIdx < size(firstIdx)
+   * \brief Return the mapped subset associated with a first-set position.
+   * \pre 0 <= firstIdx < firstSetSize()
    */
   AXOM_HOST_DEVICE ConstSubMapType operator()(FirstPositionType firstIdx) const
   {
@@ -351,7 +322,9 @@ public:
    *
    * \pre `0 <= s1 < firstSetSize()`
    * \pre `0 <= s2 < secondSetSize()`
-   * \pre `0 <= comp < numComp()`
+   * \pre The pair (s1, s2) exists in the bivariate set.
+   * \pre A single component index is in [0, numComp()). Shaped access takes one
+   *      index per dimension, each in [0, shape()[dimension]).
    */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE ConstValueType operator()(FirstPositionType s1,
@@ -376,7 +349,8 @@ public:
    *        BivariateSet and the component index.
    *
    * \pre `0 <= flatIndex < size()`
-   * \pre `0 <= comp < numComp()`
+   * \pre A single component index is in [0, numComp()). Shaped access takes one
+   *      index per dimension, each in [0, shape()[dimension]).
    */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE ConstValueType flatValue(PositionType flatIndex, ComponentIndex... comp) const
@@ -396,12 +370,12 @@ public:
    *
    * \pre `0 <= s1 < firstSetSize()`
    * \pre `0 <= s2 < secondSetSize()`
-   * \pre `0 <= comp < numComp()`
+   * \pre A single component index is in [0, numComp()). Shaped access takes one
+   *      index per dimension, each in [0, shape()[dimension]).
    *
    * \return a DataType pointer to the value associated with the given index,
    *         or nullptr if there is no value for the given index.
-   * \warning For sparse BivariateSet type, this function may have to do a
-   *          linear search and can be slow.
+   * \note A RelationSet searches the entries associated with s1.
    */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE ConstPointerType findValue(FirstPositionType s1,
@@ -459,10 +433,10 @@ public:
   }
 
   /**
-   * \brief Return a set of DenseIndex associated to the given first set index
+   * \brief Return the second-set positions associated with s1.
    *
    * \param s1 the first set index
-   * \return The row of second-set positions
+   * \return The subset supplied by the bivariate set.
    */
   OrderedSetType indexSet(FirstPositionType s1) const { return set()->getElements(s1); }
 
@@ -633,10 +607,8 @@ typename BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::NullBivariateSetType c
   BivariateMap<T, BSet, IndPol, StrPol, IfacePol>::s_nullBiSet;
 
 /**
- * \class BivariateMapIterator
- * \brief An iterator type for a BivariateMap, iterating via its ElementFlatIndex.
- *
- *  This iterator class iterates over all elements in the associated map.
+ * \class BivariateMap::FlatIterator
+ * \brief Traverse individual component values by ComponentFlatIndex.
  */
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
   requires detail::BivariateMapParameters<T, BSet, IndPol, StrPol>
@@ -664,7 +636,7 @@ public:
 public:
   FlatIterator() = default;
 
-  /// \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
+  /// \brief Construct an iterator at a ComponentFlatIndex.
   AXOM_HOST_DEVICE FlatIterator(BivariateMapPtr sMap, PositionType pos) : IterBase(pos), m_map(sMap)
   { }
 
@@ -704,10 +676,11 @@ private:
 /**
  * \class BivariateMap::RangeIterator
  *
- * \brief An iterator type for a BivariateMap, iterating over elements in an associated BivariateSet.
+ * \brief Traverse the component views of successive bivariate-set entries.
  *
- *  Unlike the FlatIterator, which iterates over all map elements, the
- *  RangeIterator may point to a range of elements in the case of non-unit stride.
+ * Dereferencing returns a reference to the iterator's cached component view.
+ * Copy the view to keep it after the iterator advances or is destroyed.
+ * The map's value storage must remain valid while the view is used.
  */
 template <typename T, typename BSet, typename IndPol, typename StrPol, typename IfacePol>
   requires detail::BivariateMapParameters<T, BSet, IndPol, StrPol>
@@ -722,8 +695,7 @@ public:
 
   // The underlying MapRangeIterator returns its cached view
   // by-reference from dereference and by-value from subscript.
-  // \warning Inherits MapRangeIterator's multipass and dangling caveats;
-  //  see the warning on Map::MapRangeIterator.
+  // Copies of the view retain access to values, but do not own their storage.
   using iterator_concept = std::bidirectional_iterator_tag;
   using iterator_category = std::bidirectional_iterator_tag;
   using value_type = typename MapIterator::value_type;
@@ -755,8 +727,8 @@ public:
   /**
    * \brief Returns the iterator's value at the given component index.
    *
-   * \pre `sizeof(compIdx) == StridePolicy::NumDims`
-   * \pre `0 <= compIdx[idim] < shape()[idim]`
+   * \pre Supply one index in comp_idx per component-shape dimension.
+   * \pre Each index is in [0, shape()[dimension]).
    */
   AXOM_SUPPRESS_HD_WARN
   template <typename... ComponentIndex>

@@ -29,14 +29,16 @@ namespace axom::slam
 /**
  * \class ProductSet
  *
- * \brief Models a set whose element is the Cartesian product of two sets. 
- *        The number of elements in this set is the product of the sizes of the two input sets.
+ * \brief A bivariate set containing every pair of first- and second-set positions.
+ *        Its size is the product of the sizes of the two input sets.
  *
  *        Users should refer to the BivariateSet documentation for descriptions
- *        of the different indexing names (SparseIndex, DenseIndex, FlatIndex).
+ *        of SparseIndex, DenseIndex and FlatIndex.
  *
  *        The set sizes must be nonnegative and their product must fit PositionType.
- *        Constructors check these conditions before allocating row storage.
+ *        Constructors check these conditions. The virtual interface stores the
+ *        second-set positions in an axom::Array, whose size must also be representable.
+ *        The concrete interface computes those positions without a buffer.
  *        Referenced sets must outlive the product and retain their sizes while
  *        the product is used for indexing or iteration.
  *
@@ -75,8 +77,7 @@ private:
     using Type = SetType;
     RowSet(SecondPositionType secondSetSize) : m_data(static_cast<axom::IndexType>(secondSetSize))
     {
-      //fill in the row data now for getElements(i) function,
-      //since every row is the same, a call to getElements() returns the same set.
+      // Every first-set position uses the same subset of second-set positions.
       //
       // HACK -- this should actually be returning a PositionSet since it always
       //         goes from 0 to secondSetSize()
@@ -207,10 +208,10 @@ public:
   }
 
   /**
-   * \brief Returns the FlatIndex of the first element in the specified row.
-   *        This is equal to `pos1*secondSetSize()`.
+   * \brief Return the first flat position associated with pos1.
+   *        This equals pos1 * secondSetSize(), or INVALID_POS if the second set is empty.
    *
-   * \param pos1  The first set position that specifies the row.
+   * \param pos1 Position in the first set.
    */
   PositionType findElementFlatIndex(FirstPositionType pos1) const
   {
@@ -239,11 +240,11 @@ public:
   }
 
   /**
-   * \brief Given the flat index, return the associated to-set index in the relation pair.
+   * \brief Return the second-set position at the given flat position.
    *
-   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   * \param flatIndex Position in the product set.
    *
-   * \return pos2  The to-set index.
+   * \pre 0 <= flatIndex < size()
    */
   AXOM_HOST_DEVICE SecondPositionType flatToSecondIndex(PositionType flatIndex) const
   {
@@ -257,11 +258,11 @@ public:
   }
 
   /**
-   * \brief Given the flat index, return the associated from-set index in the relation pair.
+   * \brief Return the first-set position at the given flat position.
    *
-   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   * \param flatIndex Position in the product set.
    *
-   * \return pos1  The from-set index.
+   * \pre 0 <= flatIndex < size()
    */
   AXOM_HOST_DEVICE FirstPositionType flatToFirstIndex(PositionType flatIndex) const
   {
@@ -275,12 +276,11 @@ public:
   }
 
   /**
-   * \brief Return all elements from the second set associated with position
-   *        \a pos1 in the first set.
+   * \brief Return all second-set positions for a given first-set position.
    *
-   * \param pos1   The first set position that specifies the row.
+   * \param pos1 Position in the first set.
    *
-   * \return  An OrderedSet of the elements in the row.
+   * \return An OrderedSet containing [0, secondSetSize()).
    */
   SubsetType getElements(FirstPositionType AXOM_DEBUG_PARAM(pos1)) const
   {
@@ -355,7 +355,7 @@ private:
     {
       return false;
     }
-    // Only the virtual interface materializes a row buffer.
+    // Only the virtual interface allocates a buffer of second-set positions.
     if constexpr(!std::is_void_v<typename BaseType::SubsetType>)
     {
       return std::in_range<axom::IndexType>(second);

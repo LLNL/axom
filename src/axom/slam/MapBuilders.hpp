@@ -7,8 +7,7 @@
 /*!
  * \file MapBuilders.hpp
  *
- * \brief Construction helpers for SLAM maps that deduce a full policy stack
- *        from a set, stride, and backing buffer.
+ * \brief Construct maps with policies deduced from a set, stride and buffer.
  */
 
 #pragma once
@@ -34,7 +33,8 @@ axom::IndexType map_storage_size(const SetType* set, PosType stride)
 }  // namespace detail
 
 /// \name Map construction helpers
-/// \brief Construct a SLAM map while deducing its policy stack from the set and backing buffer.
+/// \brief Construct maps that borrow their sets and value buffers.
+/// The set and backing allocation must outlive the map. ArrayView objects are copied.
 /// Runtime strides must be non-Boolean integral values
 /// and be positive and representable in the set's position type.
 /// The returned map always uses that position type.
@@ -44,12 +44,11 @@ axom::IndexType map_storage_size(const SetType* set, PosType stride)
 /*!
  * \brief Make a strided SLAM map backed by ArrayView storage.
  *
- * \param set   pointer to the map's set (must outlive the map)
- * \param stride runtime stride (#values per set element)
- * \param data  backing storage as an ArrayView (must outlive the map)
+ * \param set pointer to the map's set
+ * \param stride number of components per set element
+ * \param data view of the value buffer
  *
- * \pre `data.size() == set->size() * stride`. The view must be sized 
- *  to back every element of the set at the given stride.
+ * \pre `data.size() == set->size() * stride`, or zero for a null set.
  */
 template <typename SetType, typename T, typename StrideType>
   requires std::integral<StrideType> && detail::SetPositionConvertible<SetType, StrideType>
@@ -66,8 +65,7 @@ auto make_map(const SetType* set, StrideType stride, axom::ArrayView<T> data)
 /*!
  * \brief Make a stride-one SLAM map backed by ArrayView storage.
  *
- * \pre `data.size() == set->size()`. The view must be sized 
- *  to back every element of the set.
+ * \pre `data.size() == set->size()`, or zero for a null set.
  */
 template <typename SetType, typename T, typename ExplicitPosType = void>
   requires detail::OptionalSetPositionSame<SetType, ExplicitPosType>
@@ -84,7 +82,7 @@ auto make_map(const SetType* set, axom::ArrayView<T> data)
  * \brief Make a strided SLAM map backed by a raw pointer buffer.
  *
  * This overload wraps the buffer as an ArrayView with length `set->size() * stride`
- * and returns an ArrayView-backed map.
+ * and returns an ArrayView-backed map. A null set gives a zero-length view.
  * The caller must provide a buffer with at least that many elements.
  */
 template <typename SetType, typename T, typename StrideType>
@@ -99,6 +97,8 @@ auto make_map(const SetType* set, StrideType stride, T* data)
 
 /*!
  * \brief Make a stride-one SLAM map backed by a raw pointer buffer.
+ *
+ * \pre The buffer holds at least `set->size()` values, or zero for a null set.
  */
 template <typename SetType, typename T, typename ExplicitPosType = void>
   requires detail::OptionalSetPositionSame<SetType, ExplicitPosType>
@@ -114,8 +114,7 @@ auto make_map(const SetType* set, T* data)
  *
  * \tparam STRIDE number of values per set element
  *
- * \pre `data.size() == set->size() * STRIDE`. The view must be sized
- *  to back every element of the set at the compile-time stride.
+ * \pre `data.size() == set->size() * STRIDE`, or zero for a null set.
  */
 template <int STRIDE, typename SetType, typename T, typename ExplicitPosType = void>
   requires detail::PositiveStaticStrideFor<STRIDE, SetType> &&
@@ -133,7 +132,8 @@ auto make_map_ct(const SetType* set, axom::ArrayView<T> data)
  * \brief Make a compile-time strided SLAM map backed by a raw pointer buffer.
  *
  * This overload wraps the buffer as an ArrayView with length `set->size() * STRIDE`
- * and returns an ArrayView-backed map.
+ * and returns an ArrayView-backed map. A null set gives a zero-length view.
+ * The caller must provide a buffer with at least that many elements.
  */
 template <int STRIDE, typename SetType, typename T, typename ExplicitPosType = void>
   requires detail::PositiveStaticStrideFor<STRIDE, SetType> &&

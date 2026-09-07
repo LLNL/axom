@@ -4,6 +4,11 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*!
+ * \file BivariateSetInterfacePolicies.hpp
+ * \brief Select virtual or concrete interfaces for bivariate sets.
+ */
+
 #pragma once
 
 #include "axom/slam/BivariateSet.hpp"
@@ -18,7 +23,8 @@ namespace detail
 /*!
  * \brief The base class of concrete-interface bivariate sets.
  *
- *  This is effectively slam::BivariateSet without the virtual functions.
+ * Stores the first and second set pointers and defines their position types.
+ * Derived sets supply the pair access and traversal operations.
  */
 template <typename Set1 = slam::Set<>,
           typename Set2 = slam::Set<>,
@@ -40,8 +46,7 @@ struct ConcreteBivariateSet
   static constexpr PositionType INVALID_POS = PositionType(-1);
 
   /*!
-   * \brief Constructor taking pointers to the two sets that defines the range
-   *        of the indices of the BivariateSet.
+   * \brief Bind the first and second sets, which must outlive this object.
    *
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
@@ -118,11 +123,8 @@ protected:
 };
 
 /*!
- * \brief Templated helper class to select the correct base class to inherit
- *  for instances of RelationSets or ProductSets.
+ * \brief Select the base class for RelationSet and ProductSet.
  *
- *  This class helps select a virtual or non-virtual interface depending on
- *  the interface type:
  *  - In the ConcreteInterface case, the base class ConcreteBivariateSet
  *    is used to avoid virtual function calls in the derived instance.
  *  - In the VirtualInterface case, the base class is BivariateSet, which

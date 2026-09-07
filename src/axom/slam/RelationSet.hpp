@@ -6,6 +6,11 @@
 
 #pragma once
 
+/**
+ * \file RelationSet.hpp
+ * \brief Present a relation as a set of from-set and to-set position pairs.
+ */
+
 #include "axom/slam/Concepts.hpp"
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/BivariateSet.hpp"
@@ -17,8 +22,8 @@ namespace axom::slam
 {
 namespace detail
 {
-/// Concrete adapters return the source row. Virtual adapters must convert it to
-/// the row type required by the BivariateSet interface.
+/// Concrete adapters return the relation's subset directly. Virtual adapters
+/// require conversion to the subset type used by the BivariateSet interface.
 template <typename R, typename Interface>
 concept RelationSetSourceFor = RelationSetSource<R> &&
   (std::same_as<Interface, policies::ConcreteInterface> ||
@@ -32,12 +37,12 @@ concept RelationSetSourceFor = RelationSetSource<R> &&
 /**
  * \class RelationSet
  *
- * \brief Models a Set whose elements are derived from a relation, one element
- *        per fromSet and toSet pair in the relation.
+ * \brief A bivariate set with one coordinate pair per relation entry.
  *
- *  RelationSet models a subset of the Cartesian product of two sets. Users
- *  should refer to the BivariateSet documentation for descriptions of the
- *  different indexing names (SparseIndex, DenseIndex, FlatIndex).
+ * Each pair contains a from-set position and a to-set position. getElements(i)
+ * returns the to-set positions related to from-set position i. The relation,
+ * its sets and its buffers must remain valid while this adapter is used.
+ * See BivariateSet for DenseIndex, SparseIndex and FlatIndex conventions.
  *
  * \tparam  Relation  The Relation type that this set uses.
  *
@@ -66,13 +71,7 @@ private:
   using BaseSubsetType = typename BaseType::SubsetType;
 
 public:
-  /*!
-   * \brief The type returned by elementRangeSet(): an ordered set of flat positions.
-   *
-   * \note Public, matching ProductSet and the BivariateSet interface policies.
-   *  A private alias here would shadow the inherited one and leave callers
-   *  unable to name the return type of a public method.
-   */
+  /// \brief The ordered set of flat positions returned by elementRangeSet().
   using RangeSetType = typename BaseType::RangeSetType;
 
   using FirstPositionType = typename BaseType::FirstPositionType;
@@ -89,7 +88,7 @@ public:
   using IteratorType = BivariateSetIterator<RelationSet>;
 
 private:
-  // A concrete external row need not support the fixed virtual row interface.
+  // A concrete relation subset need not convert to the virtual interface's subset type.
   static auto otherInterfaceType()
   {
     using OtherInterface = std::conditional_t<std::same_as<InterfaceType, policies::VirtualInterface>,
@@ -106,7 +105,7 @@ private:
   }
 
 public:
-  /// The opposite interface type, or void when the source cannot provide its row type.
+  /// The opposite interface type, or void when the source cannot provide its subset type.
   using OtherSet = typename decltype(otherInterfaceType())::type;
   using ConcreteSet =
     std::conditional_t<std::same_as<InterfaceType, policies::ConcreteInterface>, RelationSet, OtherSet>;
@@ -136,21 +135,13 @@ public:
   }
 
   /**
-   * \brief Searches for the SparseIndex of the element given its DenseIndex.
-   * \detail If the element (i,j) is the k<sup>th</sup> non-zero in the row,
-   *         then `findElementIndex(i,j)` returns `k`. If `element(i,j)` does
-   *         not exist (such as the case of a zero in a sparse matrix), then
-   *         `INVALID_POS` is returned.
+   * \brief Find the local position of s2 among the entries associated with s1.
    *
-   * \warning This function can be slow, since a linear search is performed on
-   *          the row each time.
-   *
-   * \param pos1  The first set position.
-   * \param pos2  The second set position.
-   *
-   * \return  The DenseIndex of the given element, or INVALID_POS if such
-   *          element is missing from the set.
-   * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
+   * \param s1 Position in the from-set.
+   * \param s2 Position in the to-set.
+   * \return The SparseIndex, or INVALID_POS if the pair is absent.
+   * \pre 0 <= s1 < firstSetSize() && 0 <= s2 < secondSetSize()
+   * \note Performs a linear search through size(s1) entries.
    */
 
   AXOM_HOST_DEVICE PositionType findElementIndex(FirstPositionType pos1, SecondPositionType pos2) const
@@ -182,13 +173,13 @@ public:
 
   /**
    * \brief Search for the FlatIndex of the element given its DenseIndex.
-   * \warning This function can be slow, since a linear search is performed on the row each time.
+   * \note Performs a linear search through size(s1) entries.
    *
-   * \param pos1  The first set position.
-   * \param pos2  The second set position.
+   * \param s1 Position in the from-set.
+   * \param s2 Position in the to-set.
    *
-   * \return  The element's FlatIndex
-   * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
+   * \return The FlatIndex, or INVALID_POS if the pair is absent.
+   * \pre 0 <= s1 < firstSetSize() && 0 <= s2 < secondSetSize()
    */
   AXOM_HOST_DEVICE PositionType findElementFlatIndex(FirstPositionType s1, SecondPositionType s2) const
   {
@@ -213,14 +204,11 @@ public:
   }
 
   /**
-   * \brief Given the from-set index pos1, return the FlatIndex of the first
-   *        existing to-set element in the relation pair, or `INVALID_POS` if
-   *        this row contains no elements.
+   * \brief Return the first flat position associated with pos1, or INVALID_POS if none exists.
    *
    * \param pos1  Index into the from-set.
-   * \param pos2  Index into the to-set.
    *
-   * \return  The FlatIndex of the first existing to-set element.
+   * \pre 0 <= pos1 < firstSetSize()
    */
   PositionType findElementFlatIndex(FirstPositionType pos1) const
   {
@@ -231,7 +219,7 @@ public:
   /**
    * \brief Optional-returning wrapper for `findElementFlatIndex(pos1)`.
    *
-   * \return An engaged `std::optional` with the FlatIndex if the row contains any elements, else empty.
+   * \return The first FlatIndex, or an empty optional if no entries are associated with pos1.
    */
   [[nodiscard]] std::optional<PositionType> findElementFlatIndexOptional(FirstPositionType pos1) const
   {
@@ -281,11 +269,11 @@ public:
   }
 
   /**
-   * \brief A set of elements with the given first set index.
+   * \brief Return the to-set positions associated with s1.
    *
    * \param s1  The first set index.
-   * \return  The row of to-set positions associated with s1.
-   * \pre  0 <= pos1 <= set1.size()
+   * \return The relation's subset, converted to the interface's subset type when required.
+   * \pre 0 <= s1 < firstSetSize()
    */
   SubsetType getElements(FirstPositionType s1) const { return readRelation()[s1]; }
 
@@ -293,11 +281,9 @@ public:
   /*!
    * \brief Returns the (first, second) coordinate at flat index \a pos.
    *
-   * \note Costs whatever the relation's cardinality policy charges to invert a
-   *  flat index back to a row: O(1) for MappedVariableCardinality, which stores
-   *  the inverse, and O(log(fromSetSize)) for plain VariableCardinality,
-   *  which binary-searches the begins array. flatToSecondIndex() alone is O(1),
-   *  so prefer it when the row is already known.
+   * \note Looking up the from-set position takes O(1) with MappedVariableCardinality
+   *  and O(log(fromSetSize)) with VariableCardinality, which searches the begin offsets.
+   *  Use flatToSecondIndex() for O(1) access when the from-set position is already known.
    */
   [[nodiscard]] AXOM_HOST_DEVICE ElementType at(PositionType pos) const
   {
@@ -319,8 +305,7 @@ public:
   }
 
   /**
-   * \brief Return the size of a row, which is the number of to-set
-   *        elements associated with the given from-set index.
+   * \brief Return the number of to-set positions associated with pos.
    *
    * \param pos The from-set position.
    */
@@ -351,10 +336,7 @@ public:
   }
 
 public:
-  //hiding size() from the Set base class, replaced with totalSize().
-  //but still implemented due to the function being virtual
-  //(and can be called from base ptr)
-  // KW -- made this public to use from BivariateMap
+  /// \brief Return the total number of coordinate pairs. Equivalent to totalSize().
   AXOM_SUPPRESS_HD_WARN
   [[nodiscard]] AXOM_HOST_DEVICE PositionType size() const
   {

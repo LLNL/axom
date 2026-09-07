@@ -33,53 +33,22 @@ struct BivariateSetIterator;
 /**
  * \class BivariateSet
  *
- * \brief Abstract class that models a set whose elements are indexed by two indices.
- *        Each element in a BivariateSet is equivalent to an ordered pair
- *        containing a row and column index, similar to indexing in a matrix.
+ * \brief Abstract interface for a set of pairs of first- and second-set positions.
  *
- * \details BivariateSet models a subset of the Cartesian product of its two sets.
- *          Elements of a BivariateSet can be represented as an ordered pair of indices
- *          into the two sets.
+ * A BivariateSet represents some or all pairs in the Cartesian product of two
+ * sets. For example, a zone-node set contains a pair for each node of each zone.
+ * getElements(i) returns the second-set positions associated with first-set position i.
  *
- *  For BivariateSets that do not model the entire Cartesian product, indices
- *  can be relative to the element positions in the original sets (in which
- *  case, we refer to them as a "DenseIndex"), or relative to the number of
- *  encoded indices, in which case we refer to them as a "SparseIndex".
- *  If we consider all the elements of a BivariateSet, we refer to this index
- *  space as the "FlatIndex". \n
+ * The API distinguishes three ways to identify an entry:
+ * - DenseIndex uses positions in the two original sets, written as (i, j).
+ * - SparseIndex uses i and the local position k within getElements(i).
+ * - FlatIndex counts entries across all first-set positions in order.
  *
- *  For example, a 2 x 4 sparse matrix below:
- *     \code
- *         0  1  2  3
- *         _  _  _  _
- *     0 | a     b
- *     1 |    c     d
- *     \endcode
- *
- *   Access the elements using DenseIndex `(i,j)` would be...\n
- *   `(i = 0, j = 0) = a`\n
- *   `(i = 0, j = 2) = b`\n
- *   `(i = 1, j = 1) = c`\n
- *   `(i = 1, j = 3) = d`\n
- *
- *   Using SparseIndex `(i,k)`...\n
- *   `(i = 0, k = 0) = a`\n
- *   `(i = 0, k = 1) = b`\n
- *   `(i = 1, k = 0) = c`\n
- *   `(i = 1, k = 1) = d`\n
- *
- *   Using FlatIndex `[idx]`...\n
- *   `[idx = 0] = a`\n
- *   `[idx = 1] = b`\n
- *   `[idx = 2] = c`\n
- *   `[idx = 3] = d`\n
- *
- * \note Positions and elements live in different spaces here:
- *       \a PositionType indexes the flattened bivariate set
- *       while \a ElementType is the ordered pair of positions in the two sets.
- *       So `at(flatIndex)` returns a `std::pair(firstPosition, secondPosition)`,
- *       rather than a value from either of the sets.
- *       To recover an element, project each half through its set: `firstSet[coord.first]`.
+ * Suppose getElements(0) contains {0, 2} and getElements(1) contains {1, 3}.
+ * The final entry has DenseIndex (1, 3), SparseIndex (1, 1), and FlatIndex 3.
+ * at(3) returns the coordinate pair (1, 3), not an element stored in either
+ * original set. Use getFirstSet()->at(1) and getSecondSet()->at(3) to access
+ * those elements.
  *
  * \note The three position types are independent.
  *       \a FirstPositionType and \a SecondPositionType come from each of the sets,
@@ -102,12 +71,12 @@ public:
   using SecondPositionType = typename SecondSetType::PositionType;
 
   // PositionType indexes the flattened bivariate set.
-  // Its elements are the corresponding pair of positions in the endpoint sets.
+  // Its elements are pairs of positions in the first and second sets.
   using PositionType = Position;
   using ElementType = std::pair<FirstPositionType, SecondPositionType>;
   using NullSetType = NullSet<PositionType, ElementType>;
 
-  // A row is indexed by a row-local position and stores positions in the second endpoint set.
+  // A subset uses local positions to access positions in the second set.
   using SubsetType = OrderedSet<PositionType,
                                 SecondPositionType,
                                 policies::RuntimeSize<PositionType>,
@@ -115,7 +84,7 @@ public:
                                 policies::StrideOne<PositionType>,
                                 policies::ArrayViewIndirection<PositionType, SecondPositionType>>;
 
-  // elementRangeSet() describes flat storage positions, not endpoint values.
+  // elementRangeSet() describes flat positions, not values in either constituent set.
   using RangeSetType = RangeSet<PositionType, PositionType>;
   using IteratorType = BivariateSetIterator<BivariateSet>;
 
@@ -146,16 +115,13 @@ public:
 
   /**
    * \brief Searches for the SparseIndex of the element given its DenseIndex.
-   * \detail If the element (i,j) is the k<sup>th</sup> non-zero in the row,
-   *         then `findElementIndex(i,j)` returns `k`. If `element (i,j)` does
-   *         not exist (such as the case of a zero in a sparse matrix), then
-   *         `INVALID_POS` is returned.
+   * If getElements(i) contains j at local position k, findElementIndex(i, j)
+   * returns k. It returns INVALID_POS when that pair is absent.
    *
    * \param pos1  The first set position.
    * \param pos2  The second set position.
-   * \return  The DenseIndex of the given element, or INVALID_POS if such
-   *          element is missing from the set.
-   * \pre   0 <= pos1 < set1.size() && 0 <= pos2 < set2.size()
+   * \return The local position in getElements(pos1), or INVALID_POS if absent.
+   * \pre 0 <= pos1 < firstSetSize() && 0 <= pos2 < secondSetSize()
    */
   virtual PositionType findElementIndex(FirstPositionType pos1, SecondPositionType pos2) const = 0;
 
@@ -181,8 +147,8 @@ public:
    * \param pos1  The first set position.
    * \param pos2  The second set position.
    *
-   * \return  The element's FlatIndex
-   * \pre   0 <= pos1 < set1.size() && 0 <= pos2 < set2.size()
+   * \return The element's FlatIndex, or INVALID_POS if the pair is absent.
+   * \pre 0 <= pos1 < firstSetSize() && 0 <= pos2 < secondSetSize()
    */
   AXOM_HOST_DEVICE virtual PositionType findElementFlatIndex(FirstPositionType pos1,
                                                              SecondPositionType pos2) const = 0;
@@ -205,21 +171,19 @@ public:
   }
 
   /**
-   * \brief Searches for the first existing element given the row index (first
-   *        set position).
+   * \brief Find the first flat position associated with a first-set position.
    *
    * \param pos1  The first set position.
    *
-   * \return  The found element's FlatIndex.
-   * \pre   0 <= pos1 < set1.size()
+   * \return The first FlatIndex, or INVALID_POS if the associated subset is empty.
+   * \pre 0 <= pos1 < firstSetSize()
    */
   virtual PositionType findElementFlatIndex(FirstPositionType pos1) const = 0;
 
   /*!
-   * \brief Finds the FlatIndex of the first existing element in a row.
+   * \brief Find the first flat position associated with pos1, if one exists.
    *
-   * \return An engaged `std::optional` containing the FlatIndex if the row contains any elements,
-   *         or an empty `std::optional` if the row is empty.
+   * \return The first FlatIndex, or an empty optional if the subset is empty.
    *
    * \note This is a convenience wrapper around `findElementFlatIndex(pos1)` that avoids
    *       sentinel checks against `INVALID_POS`.
@@ -231,35 +195,31 @@ public:
   }
 
   /**
-   * \brief Given the flat index, return the associated from-set index in the
-   *        relation pair.
+   * \brief Return the first-set position at the given flat position.
    *
-   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   * \param flatIndex Position in the bivariate set.
    *
-   * \return pos1  The from-set index.
+   * \pre 0 <= flatIndex < size()
    */
   AXOM_HOST_DEVICE virtual FirstPositionType flatToFirstIndex(PositionType flatIndex) const = 0;
 
   /**
-   * \brief Given the flat index, return the associated to-set index in the
-   *        relation pair.
+   * \brief Return the second-set position at the given flat position.
    *
-   * \param flatIndex The FlatIndex of the from-set/to-set pair.
+   * \param flatIndex Position in the bivariate set.
    *
-   * \return pos2  The to-set index.
+   * \pre 0 <= flatIndex < size()
    */
   AXOM_HOST_DEVICE virtual SecondPositionType flatToSecondIndex(PositionType flatIndex) const = 0;
 
   /**
-   * \brief Finds the range of indices of valid elements in the second set,
-   *        given the index of an element in the first set.
-   * \param Position of the element in the first set
-   *
-   * \return A range set of the positions in the second set
+   * \brief Return the flat positions associated with a first-set position.
+   * \param pos1 Position in the first set.
+   * \return A RangeSet of flat positions, not second-set positions.
    */
   AXOM_HOST_DEVICE virtual RangeSetType elementRangeSet(FirstPositionType pos1) const = 0;
 
-  /// \brief The number of non-zero entries in the BivariateSet.
+  /// \brief The number of coordinate pairs in the bivariate set.
   [[nodiscard]] AXOM_HOST_DEVICE virtual PositionType size() const = 0;
 
   /// \brief Checks if there are any elements in the set
@@ -267,11 +227,11 @@ public:
   [[nodiscard]] AXOM_HOST_DEVICE bool empty() const { return size() == PositionType {}; }
 
   /**
-   * \brief Number of elements of the BivariateSet whose first index is \a pos
+   * \brief Number of coordinate pairs whose first-set position is \a pos1.
    *
-   * \pre  0 <= pos1 < set1.size()
+   * \pre 0 <= pos1 < firstSetSize()
    */
-  virtual PositionType size(FirstPositionType pos1) const = 0;  //size of a row
+  virtual PositionType size(FirstPositionType pos1) const = 0;
 
   /// \brief Size of the first set.
   [[nodiscard]] AXOM_HOST_DEVICE inline FirstPositionType firstSetSize() const
@@ -296,18 +256,18 @@ public:
   [[nodiscard]] AXOM_HOST_DEVICE virtual ElementType at(PositionType pos) const = 0;
 
   /**
-   * \brief A set of elements with the given first set index.
+   * \brief Return the second-set positions associated with s1.
    *
    * \param s1  The first set index.
-   * \return  An OrderedSet containing the elements
-   * \pre  0 <= pos1 < set1.size()
+   * \return An OrderedSet of second-set positions.
+   * \pre 0 <= s1 < firstSetSize()
    */
   virtual SubsetType getElements(FirstPositionType s1) const = 0;
 
-  /// \brief Return an iterator to the first pair of set elements in the relation.
+  /// \brief Return an iterator to the first pair of set positions.
   IteratorType begin() const { return IteratorType(this, 0); }
 
-  /// \brief Return an iterator to one past the last pair of set elements in the relation.
+  /// \brief Return an iterator past the last pair of set positions.
   IteratorType end() const { return IteratorType(this, size()); }
 
   [[nodiscard]] virtual bool isValid(bool verboseOutput = false) const;
@@ -399,24 +359,21 @@ public:
   /*!
    * \brief Returns the (first, second) coordinate at this iterator's flat index.
    *
-   * \note secondIndex() is O(1) for every bivariate set,
-   *  but firstIndex() inverts the flat index back to a row,
-   *  which costs whatever the underlying set charges
-   *   -- O(1) for a ProductSet or a relation with MappedVariableCardinality,
-   *      O(log(fromSetSize)) for a relation with plain VariableCardinality.
-   *  A full traversal therefore pays that per element.
-   *  Callers that already know the row (for example, iterating one row of a BivariateMap)
-   *  should use secondIndex() rather than dereferencing.
+   * \note For ProductSet and RelationSet, secondIndex() takes O(1) time.
+   *  firstIndex() also takes O(1) for ProductSet and MappedVariableCardinality.
+   *  VariableCardinality uses a binary search that takes O(log(fromSetSize)).
+   *  Dereferencing performs both lookups at each position. When the first-set
+   *  position is already known, use secondIndex() to avoid looking it up again.
    */
   value_type operator*() const { return {firstIndex(), secondIndex()}; }
 
   /*!
    * \brief Return the first set index pointed to by this iterator.
-   * \note Inverts the flat index; see the complexity note on operator*().
+   * \note See operator*() for the flat-index lookup cost.
    */
   FirstPositionType firstIndex() const { return m_bset->flatToFirstIndex(flatIndex()); }
 
-  /// \brief Return the second set index pointed to by this iterator. O(1).
+  /// \brief Return the second-set position. O(1) for ProductSet and RelationSet.
   SecondPositionType secondIndex() const { return m_bset->flatToSecondIndex(flatIndex()); }
 
   /// \brief Return the flat iteration index of this iterator.

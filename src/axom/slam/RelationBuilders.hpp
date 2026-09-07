@@ -7,31 +7,17 @@
 /**
  * \file RelationBuilders.hpp
  *
- * \brief Free-function "make" helpers that construct SLAM relations while
- *  deducing the from/to set types and the policy stack.
+ * \brief Construct static relations, deducing set types and policies from their buffers.
  *
- * A static, variable-cardinality relation is configured by
- * a cardinality policy, an indirection policy, and the from/to set types,
- * then built through a chained RelationBuilder over begins/indices SetBuilders:
- *
- * \code
- *   using Rel = slam::StaticRelation<P, E,
- *                 policies::VariableCardinality<P, STLIndirection>,
- *                 STLIndirection, FromSet, ToSet>;
- *   Rel r(Rel::RelationBuilder()
- *           .fromSet(&from).toSet(&to)
- *           .begins (Rel::RelationBuilder::BeginsSetBuilder ().size(off.size()).data(&off))
- *           .indices(Rel::RelationBuilder::IndicesSetBuilder().size(idx.size()).data(&idx)));
- * \endcode
- *
- * make_variable_relation collapses that to one call, deducing FromSet and ToSet from the set pointers:
+ * For example, bind existing begin offsets and to-set positions with:
  *
  * \code
  *   auto r = slam::make_variable_relation(&from, &to, offsets, indices);
  * \endcode
  *
- * \note See SetBuilders.hpp for why these are free functions rather than class-template-argument
- *  deduction guides (the builder argument is a non-deduced nested-name context).
+ * The helpers borrow the sets and connectivity storage. They check buffer sizes
+ * without reading connectivity values. Use StaticRelation::isValid() on accessible
+ * storage to check the begin offsets and to-set positions.
  */
 
 #pragma once
@@ -97,9 +83,9 @@ inline PosType checked_relation_position(Value value, const char* description)
   {
     if constexpr(std::signed_integral<ValueType>)
     {
-      SLIC_ERROR_IF(value < ValueType {},
-                    "SLAM relation " << description << " must be nonnegative; received " << value
-                                     << ".");
+      SLIC_ERROR_IF(
+        value < ValueType {},
+        "SLAM relation " << description << " must be nonnegative; received " << value << ".");
     }
     SLIC_ERROR_IF(!std::in_range<PosType>(value),
                   "SLAM relation " << description << " (" << value
@@ -114,9 +100,9 @@ inline PosType checked_relation_stride(Value value)
   using ValueType = std::remove_cvref_t<Value>;
   if constexpr(std::integral<ValueType>)
   {
-    SLIC_ERROR_IF(value <= ValueType {},
-                  "slam::make_constant_relation -- runtime stride must be positive; received "
-                    << value << ".");
+    SLIC_ERROR_IF(
+      value <= ValueType {},
+      "slam::make_constant_relation -- runtime stride must be positive; received " << value << ".");
   }
 
   const PosType stride = checked_relation_position<PosType>(value, "runtime stride");
@@ -133,20 +119,16 @@ inline PosType checked_relation_stride(Value value)
 template <typename PosType, typename FromSet>
 inline PosType relation_from_size(const FromSet* fromSet)
 {
-  return fromSet ? checked_relation_position<PosType>(fromSet->size(), "from-set size")
-                 : PosType {};
+  return fromSet ? checked_relation_position<PosType>(fromSet->size(), "from-set size") : PosType {};
 }
 
 /*!
  * \brief Check that the begins array backing a variable-cardinality relation is correctly sized.
  *
- * A variable relation stores one begin offset per from-set element plus a terminal,
- * so \a begins must contain exactly `fromSet->size() + 1` entries.
- * A shorter begins array leads to out-of-bounds row traversal.
- * This check inspects only sizes, so it is safe for relations built over device-resident storage.
- *
- * Deeper validation checks (e.g. monotonicity of begins and offsets relative to the index count)
- * are performed by StaticRelation::isValid().
+ * A variable relation needs one begin offset per from-set element plus a final
+ * offset. The buffer must contain exactly `fromSet->size() + 1` entries.
+ * This check reads no buffer values, so the connectivity may reside on a device.
+ * StaticRelation::isValid() checks the offset values against the index count.
  */
 template <typename PosType, typename FromSet, typename SizeType>
 inline PosType check_variable_relation_size(const FromSet* fromSet, SizeType beginsSize)
@@ -156,7 +138,7 @@ inline PosType check_variable_relation_size(const FromSet* fromSet, SizeType beg
     checked_relation_position<PosType>(beginsSize, "begins-buffer size");
   SLIC_ERROR_IF(fromSize == std::numeric_limits<PosType>::max(),
                 "slam::make_variable_relation -- the from-set size cannot be represented together "
-                  "with the required terminal begin offset.");
+                "with the required terminal begin offset.");
 
   const PosType expected = fromSize + PosType {1};
   SLIC_ERROR_IF(canonicalBeginsSize != expected,
@@ -176,17 +158,14 @@ inline PosType check_variable_relation_size(const FromSet* fromSet, SizeType beg
  * This check inspects only sizes, so it is safe for device-resident storage.
  */
 template <typename FromSet, typename PosType>
-inline void check_constant_relation_size(const FromSet* fromSet,
-                                         PosType stride,
-                                         PosType indicesSize)
+inline void check_constant_relation_size(const FromSet* fromSet, PosType stride, PosType indicesSize)
 {
-  SLIC_ERROR_IF(stride <= PosType {},
-                "slam::make_constant_relation -- runtime stride must be positive; received "
-                  << stride << ".");
+  SLIC_ERROR_IF(
+    stride <= PosType {},
+    "slam::make_constant_relation -- runtime stride must be positive; received " << stride << ".");
 
   const PosType fromSize = relation_from_size<PosType>(fromSet);
-  SLIC_ERROR_IF(fromSize != PosType {} &&
-                  stride > std::numeric_limits<PosType>::max() / fromSize,
+  SLIC_ERROR_IF(fromSize != PosType {} && stride > std::numeric_limits<PosType>::max() / fromSize,
                 "slam::make_constant_relation -- from-set size "
                   << fromSize << " and stride " << stride
                   << " overflow the relation position type when multiplied.");
@@ -204,9 +183,11 @@ inline void check_constant_relation_size(const FromSet* fromSet,
 /// Variable relations use their begins-buffer element type for flattened storage.
 /// Constant relations use the common position type of the from-set and to-set,
 /// unless an explicit flat type is supplied.
-/// Runtime sizes and strides must be non-Boolean integral or opted-in position values
-/// and be convertible to the flattened position type.
+/// Runtime sizes and strides must be non-Boolean integral values representable
+/// by the flat position type. Sizes are nonnegative and strides are positive.
 /// Compile-time strides must be positive.
+/// The sets and storage must outlive the relation. Array and vector objects are
+/// borrowed by pointer. ArrayView objects are copied and borrow their allocations.
 /// \{
 
 /*!
@@ -214,14 +195,14 @@ inline void check_constant_relation_size(const FromSet* fromSet,
  *  from \a fromSet to \a toSet, backed by std::vector storage for its begins and indices.
  *
  * The from/to set types are deduced from the pointers.
- * The begins offsets are expressed in the relation's flattened position type;
- * the entries in \a indices are positions in the to-set. Both buffers must
+ * The begin offsets are expressed in the relation's flat position type.
+ * The entries in \a indices are positions in the to-set. Both buffers must
  * outlive the relation. The relation uses STL-vector indirection.
  *
- * \param fromSet pointer to the from-set (must outlive the relation)
- * \param toSet   pointer to the to-set (must outlive the relation)
- * \param begins  the per-from-element begin offsets (size == fromSet->size()+1)
- * \param indices the flat to-set indices
+ * \param fromSet pointer to the from-set
+ * \param toSet pointer to the to-set
+ * \param begins begin offsets for the from-set positions, followed by a final offset
+ * \param indices to-set positions in flat storage
  * \return a StaticRelation with VariableCardinality and STLVector indirection
  *
  * \pre begins.size() == fromSet->size() + 1
@@ -247,8 +228,7 @@ auto make_variable_relation(FromSet* fromSet,
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
-      .begins(
-        typename Builder::BeginsSetBuilder().size(beginsSize).data(&begins))
+      .begins(typename Builder::BeginsSetBuilder().size(beginsSize).data(&begins))
       .indices(typename Builder::IndicesSetBuilder().size(indicesSize).data(&indices)));
 }
 
@@ -266,12 +246,13 @@ auto make_variable_relation(FromSet& fromSet,
 /*!
  * \brief Make a static, variable-cardinality relation backed by C array storage.
  *
- * \param fromSet pointer to the from-set (must outlive the relation)
- * \param toSet   pointer to the to-set (must outlive the relation)
- * \param begins  pointer to begin offsets (size == fromSet->size()+1; must outlive the relation)
+ * \param fromSet pointer to the from-set
+ * \param toSet pointer to the to-set
+ * \param begins pointer to begin offsets
  * \param beginsSize number of begin offsets
- * \param indices pointer to flat indices (must outlive the relation)
+ * \param indices pointer to to-set positions in flat storage
  * \param indicesSize number of indices
+ * \pre beginsSize == fromSet->size() + 1, or one for a null from-set.
  */
 template <typename FromSet, typename ToSet, typename PosType, typename ElemType>
   requires detail::VariableRelationBufferTypes<FromSet, ToSet, PosType, ElemType>
@@ -297,9 +278,8 @@ auto make_variable_relation(FromSet* fromSet,
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
-      .begins(typename Builder::BeginsSetBuilder()
-                .size(canonicalBeginsSize)
-                .data(begins, canonicalBeginsSize))
+      .begins(
+        typename Builder::BeginsSetBuilder().size(canonicalBeginsSize).data(begins, canonicalBeginsSize))
       .indices(typename Builder::IndicesSetBuilder()
                  .size(canonicalIndicesSize)
                  .data(indices, canonicalIndicesSize)));
@@ -321,10 +301,11 @@ auto make_variable_relation(FromSet& fromSet,
 /*!
  * \brief Make a static, variable-cardinality relation backed by ArrayView storage.
  *
- * \param fromSet pointer to the from-set (must outlive the relation)
- * \param toSet   pointer to the to-set (must outlive the relation)
- * \param begins  array view of begin offsets (size == fromSet->size()+1)
- * \param indices array view of flat indices
+ * \param fromSet pointer to the from-set
+ * \param toSet pointer to the to-set
+ * \param begins view of begin offsets
+ * \param indices view of to-set positions in flat storage
+ * \pre begins.size() == fromSet->size() + 1, or one for a null from-set.
  */
 template <typename FromSet, typename ToSet, typename PosType, typename ElemType>
   requires detail::VariableRelationBufferTypes<FromSet, ToSet, PosType, ElemType>
@@ -347,8 +328,7 @@ auto make_variable_relation(FromSet* fromSet,
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
-      .begins(
-        typename Builder::BeginsSetBuilder().size(beginsSize).data(begins))
+      .begins(typename Builder::BeginsSetBuilder().size(beginsSize).data(begins))
       .indices(typename Builder::IndicesSetBuilder().size(indicesSize).data(indices)));
 }
 
@@ -366,10 +346,11 @@ auto make_variable_relation(FromSet& fromSet,
 /*!
  * \brief Make a static, variable-cardinality relation backed by axom::Array storage.
  *
- * \param fromSet pointer to the from-set (must outlive the relation)
- * \param toSet   pointer to the to-set (must outlive the relation)
- * \param begins  array of begin offsets (size == fromSet->size()+1; must outlive the relation)
- * \param indices array of flat indices (to-set positions; must outlive the relation)
+ * \param fromSet pointer to the from-set
+ * \param toSet pointer to the to-set
+ * \param begins array of begin offsets
+ * \param indices array of to-set positions in flat storage
+ * \pre begins.size() == fromSet->size() + 1, or one for a null from-set.
  */
 template <typename FromSet, typename ToSet, typename PosType, typename ElemType>
   requires detail::VariableRelationBufferTypes<FromSet, ToSet, PosType, ElemType>
@@ -392,8 +373,7 @@ auto make_variable_relation(FromSet* fromSet,
     Builder()
       .fromSet(fromSet)
       .toSet(toSet)
-      .begins(
-        typename Builder::BeginsSetBuilder().size(beginsSize).data(&begins))
+      .begins(typename Builder::BeginsSetBuilder().size(beginsSize).data(&begins))
       .indices(typename Builder::IndicesSetBuilder().size(indicesSize).data(&indices)));
 }
 
@@ -411,10 +391,11 @@ auto make_variable_relation(FromSet& fromSet,
 /*!
  * \brief Make a static, constant-cardinality relation with a runtime stride, backed by std::vector indices.
  *
- * \param fromSet pointer to the from-set (must outlive the relation)
- * \param toSet   pointer to the to-set (must outlive the relation)
+ * \param fromSet pointer to the from-set
+ * \param toSet pointer to the to-set
  * \param stride  number of to-set elements per from-set element
- * \param indices flat indices (size == fromSet->size() * stride; must outlive the relation)
+ * \param indices to-set positions in flat storage
+ * \pre indices.size() == fromSet->size() * stride, or zero for a null from-set.
  */
 template <typename FromSet, typename ToSet, typename StrideType, typename ElemType>
   requires detail::RelationIndexBufferTypes<FromSet, ToSet, ElemType> &&
@@ -435,13 +416,12 @@ auto make_constant_relation(FromSet* fromSet,
     detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   auto begins_builder = typename Builder::BeginsSetBuilder().stride(canonicalStride);
   detail::check_constant_relation_size(fromSet, canonicalStride, canonicalSize);
-  return RelationType(Builder()
-                        .fromSet(fromSet)
-                        .toSet(toSet)
-                        .begins(begins_builder)
-                        .indices(typename Builder::IndicesSetBuilder()
-                                   .size(canonicalSize)
-                                   .data(&indices)));
+  return RelationType(
+    Builder()
+      .fromSet(fromSet)
+      .toSet(toSet)
+      .begins(begins_builder)
+      .indices(typename Builder::IndicesSetBuilder().size(canonicalSize).data(&indices)));
 }
 
 /// \brief Reference overload for make_constant_relation (std::vector-backed).
@@ -526,8 +506,7 @@ auto make_constant_relation(FromSet* fromSet,
       .fromSet(fromSet)
       .toSet(toSet)
       .begins(begins_builder)
-      .indices(
-        typename Builder::IndicesSetBuilder().size(canonicalSize).data(indices)));
+      .indices(typename Builder::IndicesSetBuilder().size(canonicalSize).data(indices)));
 }
 
 /// \brief Reference overload for make_constant_relation (ArrayView-backed).
@@ -562,13 +541,12 @@ auto make_constant_relation(FromSet* fromSet,
     detail::checked_relation_position<PosType>(indices.size(), "indices-buffer size");
   auto begins_builder = typename Builder::BeginsSetBuilder().stride(canonicalStride);
   detail::check_constant_relation_size(fromSet, canonicalStride, canonicalSize);
-  return RelationType(Builder()
-                        .fromSet(fromSet)
-                        .toSet(toSet)
-                        .begins(begins_builder)
-                        .indices(typename Builder::IndicesSetBuilder()
-                                   .size(canonicalSize)
-                                   .data(&indices)));
+  return RelationType(
+    Builder()
+      .fromSet(fromSet)
+      .toSet(toSet)
+      .begins(begins_builder)
+      .indices(typename Builder::IndicesSetBuilder().size(canonicalSize).data(&indices)));
 }
 
 /// \brief Reference overload for make_constant_relation (axom::Array-backed).

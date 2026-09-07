@@ -78,7 +78,7 @@ std::ostream& operator<<(std::ostream& os, const Handle<EntityTag, IndexType>& h
 class HandleMesh
 {
 public:
-  // Positions address entries in the sets; handles are the elements returned
+  // Positions address entries in the sets. Handles are the elements returned
   // when those positions are dereferenced.
   struct ZoneTag;
   using ZonePosition = std::int32_t;
@@ -90,13 +90,13 @@ public:
   using NodeHandle = Handle<NodeTag, NodePosition>;
   using NodeSet = slam::ArrayViewIndirectionSet<NodePosition, NodeHandle>;
 
-  // A relation row is selected by ZonePosition and contains NodePosition
-  // entries. Its flat storage uses a type wide enough for both sets' positions.
+  // Each ZonePosition is related to a subset of NodePosition entries.
+  // Flat storage uses a type wide enough for both sets' positions.
   using FlatPosition = std::common_type_t<ZonePosition, NodePosition>;
   using ZoneToNodeRelation = slam::VariableRelation<ZoneSet, NodeSet, FlatPosition>;
   using ConnectivitySet = typename slam::RelationSet<ZoneToNodeRelation>::ConcreteSet;
 
-  // Univariate maps attach values to entities; the bivariate map attaches a
+  // Univariate maps attach values to entities. The bivariate map attaches a
   // value to each zone/node incidence in the connectivity relation.
   using NodeTemperatureMap = slam::Map<double, NodeSet>;
   using ZoneTemperatureMap = slam::Map<double, ZoneSet>;
@@ -168,10 +168,10 @@ public:
   }
 
   /**
-   * \brief Set the zone-to-node connectivity from CSR begins and node positions.
+   * \brief Set the zone-to-node connectivity from begin offsets and node positions.
    *
-   * The relation stores NodePosition values rather than NodeHandles; projecting
-   * a relation entry through nodes() produces the corresponding NodeHandle.
+   * The relation stores NodePosition values rather than NodeHandles.
+   * Looking up a relation entry in nodes() produces the corresponding NodeHandle.
    *
    * \pre The zone and node sets have already been populated.
    * \pre relationBegins.size() == zones.size() + 1.
@@ -222,11 +222,11 @@ int main(int, char**)
                  NodeHandle::make_handle(30),
                  NodeHandle::make_handle(40),
                  NodeHandle::make_handle(50)});
-  // Zone position 0 uses node positions {0,1,2}; zone position 1 uses
-  // {1,3,4,2}. The CSR begins array therefore contains {0,3,7}.
+  // Zone position 0 uses node positions {0,1,2}, and zone position 1 uses
+  // {1,3,4,2}. The begin-offset array therefore contains {0,3,7}.
   mesh.setConnectivity({0, 3, 7}, {0, 1, 2, 1, 3, 4, 2});
 
-  // RelationSet presents the relation as a flat bivariate domain, allowing a
+  // RelationSet presents the relation as a bivariate set, allowing a
   // BivariateMap to store one value for every connected zone/node pair.
   HandleMesh::ConnectivitySet connectivity(&mesh.zoneToNode());
 
@@ -248,9 +248,8 @@ int main(int, char**)
   HandleMesh::ConnectivityWeightMap interpolationWeight(connectivity, 0.0);
 
   // Gather nodal temperatures to zone-centered values. The explicit outer
-  // iterator provides both ZonePosition (for indexing) and ZoneHandle (for
-  // application-facing output). A relation row can use range-for because its
-  // elements are already NodePosition values.
+  // iterator provides ZonePosition for indexing and ZoneHandle for output.
+  // Each related subset can use range-for because it contains NodePosition values.
   for(auto zoneIt = zones.begin(); zoneIt != zones.end(); ++zoneIt)
   {
     const ZonePosition zonePos = zoneIt.index();
@@ -274,8 +273,8 @@ int main(int, char**)
     SLIC_INFO("  resulting zone temperature: " << zoneTemperature[zonePos]);
   }
 
-  // Bivariate-set iteration yields endpoint positions. Projecting each endpoint
-  // through its set recovers the strongly typed handles for presentation.
+  // Bivariate-set iteration yields pairs of zone and node positions.
+  // Look up each position in its set to obtain the strongly typed handles for output.
   for(const auto coordinate : connectivity)
   {
     const ZoneHandle zone = zones[coordinate.first];

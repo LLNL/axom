@@ -23,10 +23,8 @@
  * must be accessible to the code using the relation.
  *
  * Set aliases live in RangeSet.hpp and IndirectionSet.hpp.
- * We do not provide map aliases here since Map and BivariateMap already default
- * to Array storage and stride one, and more complex configurations using
- * STLVectorIndirection, CArrayIndirection, or MappedVariableCardinality
- * are just as easy to represent directly.
+ * Map and BivariateMap use their own names with Array storage and one component
+ * by default. Use policies directly for other storage or cardinality choices.
  */
 
 #pragma once
@@ -40,7 +38,7 @@
 namespace axom::slam
 {
 /*!
- * \brief A static relation from \a FromSet to \a ToSet with per-element (variable) cardinality,
+ * \brief A static relation from \a FromSet to \a ToSet with variable cardinality,
  *  reading offsets and indices from \c axom::Array buffers managed elsewhere.
  *
  * Matches \c make_variable_relation when the begins buffer uses \a FlatPosType.
@@ -58,8 +56,8 @@ using VariableRelation = StaticRelation<
   ToSet>;
 
 /*!
- * \brief A static relation view from \a FromSet to \a ToSet with per-element
- *  (variable) cardinality, binding offsets and indices through \c axom::ArrayView.
+ * \brief A static relation view with variable cardinality,
+ *  binding offsets and to-set positions through \c axom::ArrayView.
  */
 template <typename FromSet,
           typename ToSet,
@@ -75,7 +73,8 @@ using VariableRelationView = StaticRelation<
 
 /*!
  * \brief A static relation from \a FromSet to \a ToSet with fixed cardinality \a N
- *  (each from-element maps to exactly N to-elements), reading indices from an \c axom::Array buffer managed elsewhere.
+ *  reading to-set positions from an \c axom::Array buffer managed elsewhere.
+ *  Each from-set element has exactly N entries, with N positive.
  */
 template <typename FromSet,
           typename ToSet,

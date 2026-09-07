@@ -9,37 +9,24 @@
 /**
  * \file CardinalityPolicies.hpp
  *
- * \brief Cardinality policies for Slam
+ * \brief Cardinality and begin-offset policies for Slam relations.
  *
- * Cardinality policies are meant to represent the cardinality of a relation
- * with respect to an element of a an OrderedSet, i.e., the number of elements
- * of a FromSet to which each element of a ToSet maps.
+ * A cardinality policy records how many to-set positions are associated with
+ * each from-set position and where those entries begin in the relation's storage.
+ * ConstantCardinality computes these offsets from a fixed stride.
+ * VariableCardinality reads begin offsets from a buffer. MappedVariableCardinality
+ * also binds a buffer for constant-time lookup of the from-set position.
  *
- * This file implements two concrete cardinality policies:
- * - ConstantCardinality, in which every member of the FromSet maps to a fixed
- *   number of entries in the ToSet
- * - VariableCardinality, in which members of the FromSet map to an arbitrary
- *   number of entries in the ToSet
+ * The policies provide:
+ * - RelationalOperatorSizeType, the size policy for each related subset.
+ * - size(from), the number of entries associated with a from-set position.
+ * - offset(from), the begin offset in the relation's flat storage.
+ * - firstIndex(flat), the from-set position associated with a flat position.
+ * - totalSize(), the sum of the per-element cardinalities.
+ * - isValid(fromSet, verbose), a check of the policy's stored state.
  *
- * A valid cardinality policy must support the following interface:
- *  - RelationalOperatorSizeType
- *    -- A public type that indicates the SizePolicy for the each entry in
- *        the Cardinality relation \see SizePolicies.hpp
- *  - size(ElementType idx) : const ElementType
- *    -- returns the cardinality of the relation for element with index
- *        idx of the FromSet
- *  - offset(ElementType idx) : const ElementType
- *     -- returns the offset to the first element of the ToSet for element
- *        with index idx of the FromSet
- *  - firstIndex(ElementType offset) : const ElementType
- *     -- returns the element index in the FromSet given an offset into the
- *        relation
- *  - totalSize(): int
- *     -- returns the total number of elements in this relation.
- *        That is, the sum of size(idx) for each element (with index idx)
- *        of the from set.
- *  - isValid(): bool
- *     -- indicates whether the CardinalityPolicy instance is valid
+ * Begin offsets use the relation's flat position type. The connectivity buffer
+ * separately stores to-set positions, which may have a different type.
  *
  */
 
@@ -106,8 +93,7 @@ bool hasValidBeginOffsets(const BeginsSet& begins, const FromSet* fromSet, bool 
 
   const PositionType flatFromSize = static_cast<PositionType>(fromSize);
   return flatFromSize != std::numeric_limits<PositionType>::max() &&
-    begins.size() == flatFromSize + PositionType {1} &&
-    begins.isValid(verboseOutput) &&
+    begins.size() == flatFromSize + PositionType {1} && begins.isValid(verboseOutput) &&
     hasValidBeginOffsetValues(begins);
 }
 }  // namespace detail
@@ -117,7 +103,7 @@ bool hasValidBeginOffsets(const BeginsSet& begins, const FromSet* fromSet, bool 
  * \brief Represents a mapping between two sets, where each element in the
  *  first set maps to a fixed number of elements in the second set
  *
- * \tparam ElementType the index data type
+ * \tparam ElementType The flat position type used for counts and offsets.
  * \tparam StridePolicy policy for number of elements being mapped
  */
 template <typename ElementType = int, typename StridePolicy = RuntimeStride<ElementType>>
@@ -129,7 +115,7 @@ struct ConstantCardinality
   using BeginsIndirectionPolicy = NoIndirection<ElementType, ElementType>;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset.
-  // Uses the concrete interface to stay trivially copyable / device-capturable.
+  // The concrete interface avoids virtual dispatch for begin-offset access.
   using BeginsSet = OrderedSet<ElementType,
                                ElementType,
                                BeginsSizePolicy,
@@ -202,12 +188,14 @@ struct ConstantCardinality
  * \brief Represents a mapping between two sets, where each element in the
  *  first set maps to an arbitrary number of elements in the second set.
  *
- * \tparam ElementType the index data type
- * \tparam IndirectionPolicy the policy to use for storing offsets and indices.
- *  Defaults to \c ArrayIndirection (backed by an \c axom::Array), matching the
- *  default indirection of \c slam::Map and \c MappedVariableCardinality.
- *  Use \c ArrayViewIndirection for a buffer managed elsewhere (device-capturable),
- *  or \c STLVectorIndirection for interoperation with existing \c std::vector storage.
+ * The begin-offset buffer has one entry per from-set element plus a final offset
+ * equal to the total relation size. Offsets start at zero and are non-decreasing.
+ * Equal adjacent offsets describe an element with no related to-set positions.
+ *
+ * \tparam ElementType The flat position type used for counts and offsets.
+ * \tparam IndirectionPolicy How begin offsets are accessed. ArrayIndirection
+ *  borrows an axom::Array object, ArrayViewIndirection stores a borrowed view,
+ *  and STLVectorIndirection borrows a host-side std::vector.
  */
 template <typename ElementType = int, typename IndirectionPolicy = ArrayIndirection<ElementType, ElementType>>
 struct VariableCardinality
@@ -218,7 +206,7 @@ struct VariableCardinality
   using BeginsIndirectionPolicy = IndirectionPolicy;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset.
-  // Uses the concrete interface to stay trivially copyable / device-capturable.
+  // The concrete interface avoids virtual dispatch for begin-offset access.
   using BeginsSet = OrderedSet<ElementType,
                                ElementType,
                                BeginsSizePolicy,
@@ -262,14 +250,10 @@ struct VariableCardinality
    *      from-set element followed by the total number of relation indices.
    * \note Negative positions and positions at or beyond totalSize() return -1.
    *
-   * \note O(log(fromSetSize)). The begins array is non-decreasing,
-   *  so `offset(i+1) > relationOffset` is monotone in i and the first i satisfying it
-   *  can be found by binary search.
-   *
-   * \note O(1) is available, but only by storing it: MappedVariableCardinality
-   *  keeps an auxiliary flat-to-first-index array of length totalSize().
-   *  Sequential traversal is achievable by advancing a row cursor rather than by
-   *  calling this per element.
+   * \note Binary search takes O(log(fromSetSize)) time. It finds the first
+   *  from-set position i for which offset(i+1) > relationOffset.
+   *  MappedVariableCardinality provides O(1) lookup using an additional buffer
+   *  of totalSize() from-set positions.
    */
   AXOM_HOST_DEVICE ElementType firstIndex(ElementType relationOffset) const
   {
@@ -320,11 +304,12 @@ struct VariableCardinality
  * \brief Represents a mapping between two sets, where each element in the
  *  first set maps to an arbitrary number of elements in the second set.
  *
- *  MappedVariableCardinality extends VariableCardinality to map "flat" indices
- *  in the associated RelationSet to first set indices.
+ * Uses the same begin-offset contract as VariableCardinality and an additional
+ * buffer of totalSize() from-set positions. firstIndex() reads that buffer in O(1).
+ * The caller supplies both buffers and keeps them valid while the policy is used.
  *
- * \tparam ElementType the index data type
- * \tparam IndirectionPolicy the policy to use for storing offsets and indices
+ * \tparam ElementType The flat position type used for counts, offsets and stored from-set positions.
+ * \tparam IndirectionPolicy How begin offsets and from-set positions are accessed.
  */
 template <typename ElementType = int, typename IndirectionPolicy = ArrayIndirection<ElementType, ElementType>>
 struct MappedVariableCardinality
@@ -335,7 +320,7 @@ struct MappedVariableCardinality
   using BeginsIndirectionPolicy = IndirectionPolicy;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset.
-  // Use concrete interface to remain trivially copyable.
+  // The concrete interface avoids virtual dispatch for index access.
   using IndexSet = OrderedSet<ElementType,
                               ElementType,
                               BeginsSizePolicy,
@@ -366,6 +351,8 @@ struct MappedVariableCardinality
     m_begins = typename BeginsSet::SetBuilder().size(fromSetSize + 1).data(data);
   }
 
+  /// \brief Bind the flat-to-from-set lookup buffer, optionally filling it from the begin offsets.
+  /// \pre relationSize == totalSize(). Filling requires host-accessible buffers.
   void bindFirstIndices(ElementType relationSize, IndirectionPtrType data, bool fillIndices = true)
   {
     m_firstIndexes = typename IndexSet::SetBuilder().size(relationSize).data(data);
@@ -413,8 +400,7 @@ struct MappedVariableCardinality
   bool isValid(const FromSetType* fromSet, bool verboseOutput = false) const
   {
     if(!detail::hasValidBeginOffsets(m_begins, fromSet, verboseOutput) ||
-       m_firstIndexes.size() != totalSize() ||
-       !m_firstIndexes.isValid(verboseOutput))
+       m_firstIndexes.size() != totalSize() || !m_firstIndexes.isValid(verboseOutput))
     {
       return false;
     }

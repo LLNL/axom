@@ -9,8 +9,7 @@
 /**
  * \file DynamicSet.hpp
  *
- * \brief Contains a DynamicSet class, whose size can change dynamically
- * at runtime
+ * \brief Sets that support insertion and mark removed entries as invalid.
  */
 
 #include "axom/config.hpp"
@@ -24,27 +23,25 @@ namespace axom::slam
 {
 /**
  * \class DynamicSet
- * \brief A Set class that supports dynamically adding and removing set items
+ * \brief Store set elements with insertion and logical removal.
  *
- * \detail An entry in the set is valid if it is not equal to INVALID_ENTRY.
+ * Removing an element writes INVALID_ENTRY without shifting other positions.
+ * size() includes these removed entries. Use isValidEntry() when traversing
+ * active elements, or numberOfValidEntries() to count them.
  *
- * An example to traverse the elements
+ * For example, skip a removed vertex during positional traversal:
  * \code
- * DynamicSet<> some_set;
- * ... // initialize some_set
- *
- * const IndexType N = some_set.size()
- * for(IndexType i=0; i< N; ++i)
+ * using VertexSet = axom::slam::DynamicSet<>;
+ * VertexSet vertices(4);
+ * vertices.remove(1);
+ * for(VertexSet::PositionType i = 0; i < vertices.size(); ++i)
  * {
- *   if( some_set.isValidEntry(i) )
+ *   if(vertices.isValidEntry(i))
  *   {
- *     ElementType el = some_set[i];
- *
- *     ... // do something with el
- *
- *   } // END if the entry is valid
- * } //END for all set entries
- *
+ *     auto vertex = vertices[i];
+ *     // Process this vertex.
+ *   }
+ * }
  * \endcode
  */
 
@@ -122,9 +119,8 @@ public:
 
   /**
    * \class DynamicSetIterator
-   * \brief An stl-compliant random iterator type for a DynamicSet
+   * \brief A random-access iterator over all stored positions, including removed entries.
    *
-   * Uses the set's policies for efficient iteration
    * \tparam T The result type of the iteration
    * \tparam Const Boolean to indicate if this is a const iterator
    *
@@ -217,14 +213,14 @@ public:
   /**
    * \brief Access the element at position \a pos
    *
-   * \pre pos must be between 0 and size()
+   * \pre 0 <= pos < size()
    */
   [[nodiscard]] ElementType at(PositionType pos) const { return operator[](pos); };
 
   /**
    * \brief Access the element at position \a pos
    *
-   * \pre pos must be between 0 and size()
+   * \pre 0 <= pos < size()
    */
   const ElementType& operator[](IndexType pos) const
   {
@@ -235,7 +231,7 @@ public:
   /**
    * \brief Access the element at position \a pos
    *
-   * \pre pos must be between 0 and size()
+   * \pre 0 <= pos < size()
    */
   ElementType& operator[](IndexType pos)
   {
@@ -363,8 +359,8 @@ public:
   /**
    * \brief Returns true if the DynamicSet instance is valid
    *
-   * A DynamicSet is valid if each of its policies claim it to be valid.
-   * This includes its \a SizePolicy, \a OffsetPolicy and \a StridePolicy
+   * Delegates to the size policy's validity check. Use isValidEntry() to check
+   * whether an individual position has been removed.
    */
   [[nodiscard]] bool isValid(bool verboseOutput = false) const
   {
@@ -378,7 +374,7 @@ public:
   /// \name Functions that modify the set cardinality
   /// @{
 
-  /// \brief Insert an entry at the end of the set with value = ( size()-1 )
+  /// \brief Append an element whose value equals its new position.
   IndexType insert() { return insert(size()); }
 
   /// \brief Reserves storage for at least \a sz entries.

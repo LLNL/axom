@@ -33,7 +33,6 @@ struct ConvertibleMapCount
   operator std::int32_t() const;
 };
 
-
 namespace
 {
 namespace slam = axom::slam;
@@ -345,8 +344,8 @@ TEST(slam_make_helpers, make_variable_relation)
   auto fromSet = slam::make_range_set(3);
   auto toSet = slam::make_range_set(5);
 
-  // Related to-set positions: element 0 -> {1,2}, 
-  //                           element 1 -> {3}, 
+  // Related to-set positions: element 0 -> {1,2},
+  //                           element 1 -> {3},
   //                           element 2 -> {0,4}
   std::vector<Pos> begins {0, 2, 3, 5};  // size == fromSet.size() + 1
   std::vector<Pos> indices {1, 2, 3, 0, 4};
@@ -426,9 +425,8 @@ TEST(slam_make_helpers, relation_sizes_and_runtime_strides_are_checked)
   Pos indices[1] = {0};
   Pos begins[2] = {0, 1};
 
-  EXPECT_DEATH_IF_SUPPORTED(
-    slam::make_constant_relation(&fromSet, &toSet, Pos {0}, indices, Pos {1}),
-    "");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_constant_relation(&fromSet, &toSet, Pos {0}, indices, Pos {1}),
+                            "");
   EXPECT_DEATH_IF_SUPPORTED(
     slam::make_constant_relation(&fromSet, &toSet, Pos {-1}, indices, Pos {1}),
     "");
@@ -450,42 +448,38 @@ TEST(slam_make_helpers, relation_size_arithmetic_checks_boundaries)
   auto maximumFromSet = slam::make_range_set(maxPosition);
   auto toSet = slam::make_range_set(1);
 
-  auto maximumRelation =
-    slam::make_constant_relation(&maximumFromSet,
-                                 &toSet,
-                                 Pos {1},
-                                 static_cast<Pos*>(nullptr),
-                                 maxPosition);
+  auto maximumRelation = slam::make_constant_relation(&maximumFromSet,
+                                                      &toSet,
+                                                      Pos {1},
+                                                      static_cast<Pos*>(nullptr),
+                                                      maxPosition);
   EXPECT_EQ(maximumRelation.totalSize(), maxPosition);
 
   auto overflowingFromSet = slam::make_range_set(maxPosition / 2 + 1);
-  EXPECT_DEATH_IF_SUPPORTED(
-    slam::make_constant_relation(&overflowingFromSet,
-                                 &toSet,
-                                 Pos {2},
-                                 static_cast<Pos*>(nullptr),
-                                 Pos {0}),
-    "");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_constant_relation(&overflowingFromSet,
+                                                         &toSet,
+                                                         Pos {2},
+                                                         static_cast<Pos*>(nullptr),
+                                                         Pos {0}),
+                            "");
 
-  EXPECT_DEATH_IF_SUPPORTED(
-    slam::make_variable_relation(&maximumFromSet,
-                                 &toSet,
-                                 static_cast<Pos*>(nullptr),
-                                 maxPosition,
-                                 static_cast<Pos*>(nullptr),
-                                 Pos {0}),
-    "");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_variable_relation(&maximumFromSet,
+                                                         &toSet,
+                                                         static_cast<Pos*>(nullptr),
+                                                         maxPosition,
+                                                         static_cast<Pos*>(nullptr),
+                                                         Pos {0}),
+                            "");
 
   using UnsignedPosition = std::make_unsigned_t<Pos>;
   constexpr UnsignedPosition unrepresentableSize =
     static_cast<UnsignedPosition>(maxPosition) + UnsignedPosition {1};
-  EXPECT_DEATH_IF_SUPPORTED(
-    slam::make_constant_relation(&oneElementFromSet,
-                                 &toSet,
-                                 Pos {1},
-                                 static_cast<Pos*>(nullptr),
-                                 unrepresentableSize),
-    "");
+  EXPECT_DEATH_IF_SUPPORTED(slam::make_constant_relation(&oneElementFromSet,
+                                                         &toSet,
+                                                         Pos {1},
+                                                         static_cast<Pos*>(nullptr),
+                                                         unrepresentableSize),
+                            "");
 }
 
 TEST(slam_make_helpers, make_variable_relation_axom_array_buffers)

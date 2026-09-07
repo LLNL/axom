@@ -9,7 +9,7 @@
 /**
  * \file RangeSet.hpp
  *
- * \brief Basic API for an ordered set of entities in a simulation
+ * \brief Range-based sets with configurable offsets and indexing policies.
  */
 
 #include "axom/slam/OrderedSet.hpp"
@@ -18,15 +18,13 @@ namespace axom::slam
 {
 /**
  * \class GenericRangeSet
- * \brief Models a set whose elements belong to a contiguous range
- *  \f$ \in [lowerIndex,upperIndex) \f$
+ * \brief An ordered set with runtime size and configurable indexing policies.
  *
- * \note The \a ElementType here needs to be computable as offsets
- *  (of \a PositionType) from the lowerIndex.
- *  Examples include: signed and unsigned integral types.
- *  This version of a range set still allows you to have
- *  different policies on striding, indirection and subsetting
- *  \sa OrderedSet, PositionSet, RangeSet
+ * The default policies compute consecutive element values from an offset.
+ * Custom policies can change the stride, add indirection or bind a parent set.
+ * With NoIndirection, ElementType must be constructible from the computed position.
+ * Use RangeSet or PositionSet for the common contiguous configurations.
+ * \sa OrderedSet, PositionSet, RangeSet
  */
 template <typename P = slam::DefaultPositionType,
           typename E = slam::DefaultElementType,
@@ -98,9 +96,8 @@ using PositionSet = GenericRangeSet<P, E, policies::ZeroOffset<P>>;
  * \tparam E The ElementType
  *  \sa GenericRangeSet, OrderedSet, PositionSet
  *
- * \note The \a ElementType needs to be computable as offsets (of
- * \a PositionType) from the lowerIndex.
- * Examples include: signed and unsigned integral types
+ * \note ElementType must be constructible from lowerIndex plus a position offset.
+ * Signed and unsigned integers are common choices.
  */
 template <typename P = slam::DefaultPositionType, typename E = slam::DefaultElementType>
 using RangeSet = GenericRangeSet<P, E>;

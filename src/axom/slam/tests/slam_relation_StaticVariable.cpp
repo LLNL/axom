@@ -53,12 +53,8 @@ using StaticVariableRelationType =
 
 using MappedVariableCardinality = policies::MappedVariableCardinality<SetPosition, STLIndirection>;
 
-using StaticMappedVariableRelationType = slam::StaticRelation<SetPosition,
-                                                               SetElement,
-                                                               MappedVariableCardinality,
-                                                               STLIndirection,
-                                                               RangeSetType,
-                                                               RangeSetType>;
+using StaticMappedVariableRelationType =
+  slam::StaticRelation<SetPosition, SetElement, MappedVariableCardinality, STLIndirection, RangeSetType, RangeSetType>;
 
 // Use a slam::ModularInt type for more interesting test data
 using CTSize = policies::CompileTimeSize<int, TOSET_SIZE>;
@@ -347,8 +343,8 @@ TEST(slam_static_variable_relation, initialized_rel_out_of_bounds)
 
 template <typename Relation>
 void expectConsistentRelationIndexing(Relation& relation,
-                                     const IndexVec& begins,
-                                     const IndexVec& indices)
+                                      const IndexVec& begins,
+                                      const IndexVec& indices)
 {
   ASSERT_TRUE(relation.isValid(true));
   slam::RelationSet<Relation> relationSet(&relation);

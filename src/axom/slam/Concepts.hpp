@@ -8,9 +8,11 @@
  * \file Concepts.hpp
  * \brief Semantic concepts for SLAM sets, relations, and maps.
  *
- * Public object concepts ignore top-level cv/ref qualification,
- * which are normalized internally in the detail namespace.
- * Standard range integration is provided separately by Ranges.hpp.
+ * Object concepts describe positional access, related elements and mapped values.
+ * They ignore top-level const and reference qualification, but preserve the
+ * constness of elements and values. Runtime consistency is part of each contract,
+ * not something a requires expression can prove. Ranges.hpp provides host-only
+ * integration with the standard ranges library.
  */
 
 #pragma once
@@ -62,13 +64,12 @@ concept MapReferenceFor = std::is_lvalue_reference_v<Reference> &&
    std::same_as<std::remove_reference_t<Reference>, const Data>);
 }  // namespace detail
 
-/// \brief A signed integral position type supported by the current SLAM arithmetic.
-/// Tagged positions need a separate point/difference/size design, not an opt-in here.
+/// \brief A signed integral type for Slam positions and indexing arithmetic.
 template <typename T>
 concept PositionLike = std::signed_integral<detail::model_t<T>>;
 
 /// \brief A sized collection with positional access to its elements.
-/// size() is nonnegative; empty() agrees with size() == 0. Access requires a valid position.
+/// size() is nonnegative, and empty() agrees with size() == 0. Access requires a valid position.
 template <typename T>
 concept SetLike = PositionLike<detail::position_t<T>> &&
   requires(const detail::model_t<T>& set, detail::position_t<T> pos) {
@@ -89,9 +90,10 @@ concept Validatable = requires(const detail::model_t<T>& container) {
   { container.isValid(false) } -> std::convertible_to<bool>;
 };
 
-/// \brief A set of coordinate pairs with a row of second-set positions per first-set position.
-/// Concatenating rows in first-set order agrees with at(flat). The flat size
-/// equals the sum of the row sizes. Search and flat projections are conveniences.
+/// \brief A set of coordinate pairs with access to the subset for each first-set position.
+/// getElements(first) provides a sized, iterable collection of second-set positions.
+/// Visiting these subsets in first-set order agrees with at(flat), and their sizes
+/// sum to size(). Search and flat-index conversion are not required.
 template <typename T>
 concept BivariateSetLike = SetLike<T> && SetLike<typename detail::model_t<T>::FirstSetType> &&
   SetLike<typename detail::model_t<T>::SecondSetType> &&
@@ -109,9 +111,10 @@ concept BivariateSetLike = SetLike<T> && SetLike<typename detail::model_t<T>::Fi
                                  typename detail::model_t<T>::SecondSetType::PositionType>;
   };
 
-/// \brief A relation with a row of to-set positions for each from-set position.
-/// Row entries must identify valid to-set positions. The sets may themselves
-/// contain coordinates. No flat storage, validation method, or row alias is required.
+/// \brief A relation that provides to-set positions for each from-set position.
+/// relation[from] returns a sized, iterable collection of valid to-set positions.
+/// The sets may contain coordinates or other element types. Flat storage,
+/// validation methods and a named subset type are not required.
 template <typename T>
 concept RelationLike = SetLike<typename detail::model_t<T>::FromSetType> &&
   SetLike<typename detail::model_t<T>::ToSetType> &&
@@ -127,7 +130,7 @@ concept RelationLike = SetLike<typename detail::model_t<T>::FromSetType> &&
 /// index(pos) identifies the associated set element. flatValue(pos, component)
 /// accesses one scalar component, including for tensor-valued maps. "flat" here
 /// selects an entry of a bivariate set, not a global component-storage position.
-/// Bound maps have positive numComp(); a default unbound SubMap may be empty with zero components.
+/// Bound maps have positive numComp(). A default unbound SubMap may be empty with zero components.
 template <typename T>
 concept MapLike = PositionLike<detail::position_t<T>> &&
   requires(detail::model_t<T>& map,
@@ -150,7 +153,7 @@ concept MapLike = PositionLike<detail::position_t<T>> &&
 /// \brief A MapLike type explicitly bound to all positions of exactly S.
 /// MappedSetType names that binding and set() returns it. size() agrees with
 /// set()->size(), and index(pos) agrees with set()->at(pos). SubMap has no such
-/// binding: its set() selects parent positions, and index() projects their elements.
+/// binding. Its set() selects parent positions, and index() returns their associated elements.
 template <typename M, typename S>
 concept MapOver = MapLike<M> && SetLike<S> &&
   std::same_as<typename detail::model_t<M>::MappedSetType, detail::model_t<S>> &&
@@ -162,7 +165,7 @@ concept MapOver = MapLike<M> && SetLike<S> &&
 
 /// \brief A non-reference type with a trivially copyable C++ representation.
 /// This does not certify device-callable operations or the accessibility/lifetime
-/// of referenced objects. Device capture is a separate view-conversion contract.
+/// of referenced objects. Check those requirements separately before device use.
 template <typename T>
 concept TriviallyCopyableRepresentation =
   !std::is_reference_v<T> && std::is_trivially_copyable_v<std::remove_cv_t<T>>;
@@ -267,7 +270,7 @@ concept SubsetPolicy = requires(const detail::model_t<T>& policy) {
   { policy.parentSet() } -> std::convertible_to<const typename detail::model_t<T>::ParentSetType*>;
 };
 
-/// Exact, copyable, bindable indirection for an OrderedSet.
+/// Indirection that an OrderedSet can construct, copy, bind and use to access elements.
 /// No buffer-container aliases, map accessors, or device flags are required.
 template <typename T, typename Position, typename Element>
 concept OrderedSetIndirectionPolicyFor = detail::InheritablePolicy<T> && PositionLike<Position> &&
@@ -289,7 +292,7 @@ concept OrderedSetIndirectionPolicyFor = detail::InheritablePolicy<T> && Positio
     { constPolicy.isValid(pos, pos, pos, false) } -> std::convertible_to<bool>;
   };
 
-/// Exact static storage/access descriptor for Map, not an inherited policy object.
+/// Static buffer access for Map, which does not inherit the descriptor.
 /// Both access paths return stable scalar references. Buffer ownership and
 /// referenced allocation accessibility are separate from this type check.
 template <typename T, typename Position, typename Data>
@@ -354,7 +357,7 @@ concept OrderedSetStridePolicyFor =
     { policy.isValid(false) } -> std::convertible_to<bool>;
   };
 
-/// Map constructs this base from a shape; it need not be default-constructible.
+/// Map constructs this base from a shape. It need not be default-constructible.
 template <typename T, typename Position>
 concept MapStridePolicyFor = InheritablePolicy<T> && PositionLike<Position> && StridePolicy<T> &&
   requires(const T& policy) {

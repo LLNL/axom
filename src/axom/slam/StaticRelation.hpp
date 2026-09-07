@@ -9,8 +9,7 @@
 /**
  * \file StaticRelation.hpp
  *
- * \brief API for a topological relation between two sets where the
- *        relation does not change after it is initialized.
+ * \brief Relations that bind existing connectivity between two sets.
  */
 
 #include "axom/config.hpp"
@@ -30,7 +29,7 @@ namespace axom::slam
 {
 namespace detail
 {
-/// \brief Whether a from-set or to-set is missing, rather than simply empty.
+/// \brief Whether a set pointer is null or uses the unbound sentinel.
 template <typename SetType>
 AXOM_HOST_DEVICE bool isMissingRelationSet(const SetType* set)
 {
@@ -38,6 +37,26 @@ AXOM_HOST_DEVICE bool isMissingRelationSet(const SetType* set)
 }
 }  // namespace detail
 
+/**
+ * \class StaticRelation
+ * \brief Access connectivity stored in external buffers.
+ *
+ * relation[from] returns the to-set positions associated with a from-set position.
+ * The cardinality policy supplies the count and begin offset for each subset.
+ * A constant-cardinality relation computes offsets from its stride. A variable
+ * relation reads begin offsets from a buffer.
+ *
+ * The relation borrows its sets and connectivity storage. Keep these valid and
+ * consistent while the relation or any of its subsets and iterators are used.
+ * Both sets must be bound, but either may be empty when the connectivity allows it.
+ *
+ * \tparam PosType The flat position type for counts and offsets. It must represent from-set positions.
+ * \tparam ElemType The to-set position type, not the to-set element type.
+ * \tparam RelationCardinalityPolicy The per-element count and begin-offset policy.
+ * \tparam RelationIndicesIndirectionPolicy The policy used to access to-set positions.
+ * \tparam TheFromSet The from-set type.
+ * \tparam TheToSet The to-set type.
+ */
 template <typename PosType,   // = slam::DefaultPositionType,
           typename ElemType,  // = slam::DefaultElementType,
           typename RelationCardinalityPolicy,
@@ -53,7 +72,6 @@ public:
   using FromPositionType = typename FromSetType::PositionType;
   using ToPositionType = typename ToSetType::PositionType;
   using FlatPositionType = PosType;
-
 
   static_assert(std::is_same_v<ElemType, ToPositionType>,
                 "StaticRelation entries must use ToSet::PositionType");
@@ -72,8 +90,8 @@ public:
                                              policies::StrideOne<FlatPositionType>,
                                              IndicesIndirectionPolicy>::ConcreteSet;
 
-  // The stored indices set uses the concrete (non-virtual) interface so that a
-  // relation built on a view indirection is trivially copyable / device-capturable.
+  // The concrete interface avoids virtual dispatch for connectivity access.
+  // Device use still requires callable operations and accessible sets and buffers.
   using IndicesSet = OrderedSet<FlatPositionType,
                                 ToPositionType,
                                 policies::RuntimeSize<FlatPositionType>,
@@ -116,6 +134,7 @@ public:
     , m_relationIndices(builder.m_indBuilder)
   { }
 
+  /// \brief Configure set bindings, cardinality and connectivity without copying buffer values.
   struct RelationBuilder
   {
     friend class StaticRelation;
@@ -166,6 +185,8 @@ public:
   };
 
 public:
+  /// \brief Return the to-set positions associated with fromSetInd.
+  /// \pre 0 <= fromSetInd < fromSetSize()
   AXOM_HOST_DEVICE const RelationSubset operator[](FromPositionType fromSetInd) const
   {
 #ifndef AXOM_HOST_DEVICE
@@ -224,6 +245,8 @@ public:
 
   ToPositionType toSetSize() const { return m_toSet->size(); }
 
+  /// \brief Bind the buffer of to-set positions without copying its values.
+  /// \pre size == totalSize(). The buffer must remain valid while the relation is used.
   void bindIndices(FlatPositionType size, IndirectionPtrType data)
   {
     m_relationIndices = typename IndicesSet::SetBuilder().size(size).data(data);
@@ -245,12 +268,10 @@ private:
 /**
  * \brief Checks whether the relation is valid
  *
- * A relation is valid when:
- * - Its fromSet and toSet are not null
- * - The CardinalityPolicy is valid.
- *   This implies that for each element, pos, of the fromSet,
- *   it is valid to call rel.size(pos), rel.offset()
- *   It is also valid to call rel.totalSize()
+ * Checks set bindings, cardinality state, connectivity buffer size and to-set
+ * position bounds. Variable begin offsets must start at zero, never decrease,
+ * and end at the total number of stored indices.
+ * This host-side check reads the buffers, so their contents must be host-accessible.
  *
  * \return True if the relation is valid, false otherwise
  */

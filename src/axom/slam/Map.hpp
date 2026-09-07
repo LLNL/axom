@@ -9,7 +9,7 @@
 /**
  * \file Map.hpp
  *
- * \brief Basic API for a map from each element of a set to some domain
+ * \brief Values associated with set elements, with a fixed component count.
  */
 
 #include <concepts>
@@ -43,8 +43,7 @@ namespace axom::slam
 /**
  * \class   Map
  *
- * \brief   A Map class that associates a constant number of values to every
- *          element in a set.
+ * \brief Associates a fixed number of component values with each set element.
  *
  * \tparam  T The data type of each value
  * \tparam  S The map's set type
@@ -52,24 +51,26 @@ namespace axom::slam
  * \tparam  StrPol A policy class that determines how many values to
  *          associate with each element. There is a fixed \a stride between
  *          the data associated with each element of the set.
- * \details The map class associates a fixed number of values, also referred
- *          to as \a components, with each element in its underlying \a Set
- *          instance. Depending on the \a StridePolicy, this can be fixed at
- *          compile time or at runtime.\n
- *          Access to the j<sup>th</sup> component of the i<sup>th</sup>
- *          element, can be obtained via the parenthesis operator
- *          ( `map(i,j)` ), or via the square bracket operator
- *          (i.e. `map[k]`, where `k = i * stride() + j` ).
+ * \tparam IfacePol Selects a virtual or concrete map interface.
+ * \details A temperature map can store one value per cell, while a velocity map
+ * stores several components. The stride policy sets the component count or shape
+ * at compile time or runtime. Access uses set positions, not set element values.
+ * `map(i, j)` and `map[i * numComp() + j]` access component j at set position i.
+ * `index(i)` returns the associated set element.
  *
  * \note When \a IndPol is not specified, \c Map stores its values in an \c axom::Array
  *       via \c policies::ArrayIndirection, and manages that buffer itself.
- *       This replaced the earlier \c policies::STLVectorIndirection default.
  *       To refer to a buffer managed elsewhere, use \c policies::ArrayViewIndirection.
  *       For \c std::vector backing, specify \c policies::STLVectorIndirection explicitly.
  * \note Component counts must be positive and the storage size must fit both
  *       PositionType and axom::IndexType. Constructors check these conditions.
  *       Referenced sets must retain a size consistent with the value buffer.
- *       Changing the component shape after construction is not supported.
+ *       Construct or assign a map with the desired shape rather than changing
+ *       its inherited stride policy.
+ * \note A pointer-bound set must outlive the map. Value-bound sets are copied,
+ *       but any storage they reference must remain valid. A const owning map
+ *       returns const value references. ArrayView-backed maps preserve the
+ *       view's constness, so a const map over ArrayView<T> can still return T&.
  */
 
 template <typename T,
@@ -156,16 +157,13 @@ private:
 
 public:
   /**
-   * \brief Constructor for Map using a Set pointer
+   * \brief Allocate values for a pointer-bound set.
    *
-   * \param theSet         (Optional) A pointer to the map's set
-   * \param defaultValue   (Optional) If given, every entry in the map will be
-   *                       initialized using defaultValue
-   * \param shape   (Optional) The number of DataType that each element in the
-   *                set will be mapped to.
-   *                When using a \a RuntimeStridePolicy, the default is 1.
-   * \note  When using a compile time StridePolicy, \a stride must be equal to
-   *        \a stride(), when provided.
+   * \param theSet The set, which must outlive the map.
+   * \param defaultValue Initial value of every component.
+   * \param shape Component count or multidimensional shape, as specified by StrPol.
+   * \param allocatorID Allocator used by the buffer policy.
+   * \pre The shape has positive dimensions and agrees with any compile-time stride.
    */
 
   Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
@@ -181,14 +179,13 @@ public:
   /**
    * \brief Constructor for Map from a Set pointer and an existing buffer.
    *
-   * Primarily for indirection policies that refer to a buffer managed elsewhere,
-   * such as `policies::ArrayViewIndirection`, It also accepts a buffer to move in
-   * for policies that hold their buffer by value.
+   * The buffer argument is moved into the map. An owning buffer retains ownership,
+   * while a view continues to borrow its allocation.
    *
-   * \param theSet pointer to the map's set (must outlive the map)
-   * \param data the map's value buffer -- viewed (and thus required to outlive the
-   *  map) for a view indirection, or moved in for an owning indirection
-   * \param shape (Optional) number of values mapped per set element (stride)
+   * \param theSet The set, which must outlive the map.
+   * \param data Value buffer. Any borrowed allocation must outlive the map's use of it.
+   * \param shape Component count or multidimensional shape.
+   * \pre A non-resizable buffer has exactly size() * numComp() entries.
    */
   Map(const SetType* theSet, OrderedMap data, ElementShape shape = StridePolicyType::DefaultSize())
     : StridePolicyType(shape)
@@ -214,13 +211,12 @@ public:
   { }
 
   /**
-   * \brief Constructor for Map using a Set passed by-value and data passed in by-value.
+   * \brief Copy the set and store the supplied value buffer.
    *
-   * \param theSet  A reference to the map's set
-   * \param data    Pointer to the externally-owned data
-   * \param shape   (Optional) The number of DataType that each element in the set
-   *                will be mapped to. When using a \a RuntimeStridePolicy, the default is 1.
-   * \note  When using a compile time StridePolicy, \a stride must be equal to \a stride(), when provided.
+   * \param theSet The set to copy. Any storage it references remains borrowed.
+   * \param data Value buffer, moved into the map. A view still borrows its allocation.
+   * \param shape Component count or multidimensional shape.
+   * \pre A non-resizable buffer has exactly size() * numComp() entries.
    * \note This value-storing overload accepts only the exact, non-abstract SetType.
    *       Use the pointer overload for polymorphic sets.
    */
@@ -391,7 +387,7 @@ public:
       : PositionType(0);
   }
 
-  /*
+  /**
    * \brief  Gets the number of component values associated with each element.
    *         Equivalent to stride().
    */
@@ -400,7 +396,7 @@ public:
   /**
    * \brief Returns the shape of the component values associated with each element.
    *
-   *  For one-dimensional strides, equivalent to stride(); otherwise, returns
+   *  For one-dimensional strides, equivalent to stride(). Otherwise, returns
    *  an N-dimensional array with the number of values in each sub-component index.
    */
   AXOM_HOST_DEVICE ElementShape shape() const { return StridePolicyType::shape(); }
@@ -517,7 +513,7 @@ public:
     using IterBase = IteratorBase<MapIterator, PositionType>;
     using MapConstPtr = std::conditional_t<Const, const Map*, Map*>;
     using iter = MapIterator;
-      using IterBase::m_pos;
+    using IterBase::m_pos;
 
   public:
     MapIterator() = default;
@@ -554,13 +550,14 @@ public:
    * \brief   An iterator type for a map.
    *          Each increment operation advances the iterator to the next set element.
    *          To access the j<sup>th</sup> component values of the iterator's current element, use `iter(j)`.
-   * \warning Note the difference between the subscript operator ( `iter[off]` )
-   *          and the parenthesis operator ( `iter(j)` ).
-   *          `iter[off]` returns the value of the first component of the
-   *          element at offset \a `off` from the currently pointed to element.
-   *          And `iter(j)` returns the value of the j<sup>th</sup> component of
-   *          the currently pointed to element (where 0 <= j < numComp()).
-   *          For example: `iter[off]` is the same as `(iter+off)(0)`
+   * `iter[off]` returns the component view at an offset of off set positions,
+   * equivalent to `*(iter + off)`. `iter(j)` accesses component j of the current
+   * set element for a one-dimensional shape. Multidimensional access takes one
+   * index per dimension.
+   *
+   * Dereferencing returns a reference to the iterator's cached view. Copy the
+   * view to keep it after the iterator advances or is destroyed. The map's
+   * value storage must remain valid while either view is used.
    */
   template <bool Const>
   class MapRangeIterator : public IteratorBase<MapRangeIterator<Const>, PositionType>
@@ -572,7 +569,7 @@ public:
     using DataRefType = std::conditional_t<Const, ConstValueType, ValueType>;
     using DataType = std::remove_reference_t<DataRefType>;
 
-      constexpr static int Dims = StridePolicyType::NumDims;
+    constexpr static int Dims = StridePolicyType::NumDims;
 
     // Dereference returns a reference to a cached ArrayView, while subscript
     // returns a value to avoid dangling from a temporary iterator.
@@ -631,8 +628,7 @@ public:
 
     /**
      * \brief Returns the iterator's value at the specified component.
-     *        Returns the first component if comp_idx is not specified.
-     * \param comp_idx  Zero-based index of the component.
+     * \param comp_idx Zero-based indices, one per component-shape dimension.
      */
     template <typename... ComponentIndex>
     AXOM_HOST_DEVICE DataRefType operator()(ComponentIndex... comp_idx) const

@@ -9,7 +9,7 @@
 /**
  * \file MapBase.hpp
  *
- * \brief Contains an Abstract class MapBase
+ * \brief The virtual size and validation interface for maps.
  *
  */
 
@@ -23,9 +23,10 @@ namespace axom::slam
 /**
  * \class   MapBase
  *
- * \brief   A base class specifying methods that support operations of a Map,
- *          associating value(s) to each element in a Set. MapBase can be used
- *          as a base class pointer to a templated Map object.
+ * \brief Query map size and validity through a common base pointer.
+ *
+ * Value access belongs to the concrete map type. MapLike in Concepts.hpp
+ * describes the operations used by generic algorithms without requiring this base.
  * \see     Map
  *
  */

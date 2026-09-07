@@ -14,7 +14,7 @@
  * the second set. For example, in a triangle mesh, each triangle is
  * incident to three vertices.
  *
- * This relation is dynamic; the related entities can change at runtime.
+ * Connectivity can change at runtime.
  */
 
 #include "axom/config.hpp"
@@ -44,14 +44,12 @@ namespace axom::slam
  * For example, each triangle in the triangle set of a triangle mesh
  * has three incident vertices from set of vertices.
  *
- * The relation from an element of the FromSet to an element
- * of the ToSet is considered to be valid if its entry in the FromSet
- * is valid and at least one of its relation entities in the ToSet is valid
- * (i.e. not equal to INVALID_INDEX).
+ * Connectivity stores to-set positions, not to-set element values. An unused
+ * entry contains INVALID_INDEX. isValidEntry(from) checks that the from-set
+ * entry is valid and at least one associated position differs from INVALID_INDEX.
  *
- * \note The current implementation fixes the value of INVALID_INDEX.
- * A future update will allow users to set the value of INVALID_INDEX to a
- * more convenient value, when necessary.
+ * The relation owns its connectivity vector and borrows its sets. Those sets
+ * must outlive the relation. Use updateSizes() after growing the from-set.
  */
 template <typename PosType,   //= slam::DefaultPositionType,
           typename ElemType,  // = slam::DefaultElementType,
@@ -128,11 +126,8 @@ public:
   /// @{
 
   /**
-   * \brief Returns a begin iterator to the set of entities in the ToSet
-   * that are related to the element with index \a fromSetInd in the FromSet
-   *
-   * \param fromSetInd The index of the element in the FromSet
-   * \return A begin iterator to the set of related elements in ToSet
+   * \brief Begin iterating over the to-set positions related to fromSetInd.
+   * \pre 0 <= fromSetInd < fromSet()->size()
    */
   RelationIterator begin(FromPositionType fromSetInd)
   {
@@ -141,11 +136,8 @@ public:
   }
 
   /**
-   * \brief Returns a begin const iterator to the set of entities in the ToSet
-   * that are related to the element with index \a fromSetInd in the FromSet
-   *
-   * \param fromSetInd The index of the element in the FromSet
-   * \return A const begin iterator to the set of related elements in ToSet
+   * \brief Begin const iteration over the to-set positions related to fromSetInd.
+   * \pre 0 <= fromSetInd < fromSet()->size()
    */
   RelationConstIterator begin(FromPositionType fromSetInd) const
   {
@@ -154,11 +146,8 @@ public:
   }
 
   /**
-   * \brief Returns an end iterator to the set of entities in the ToSet
-   * that are related to the element with index \a fromSetInd in the FromSet
-   *
-   * \param fromSetInd The index of the element in the FromSet
-   * \return An end iterator to the set of related elements in ToSet
+   * \brief Return an iterator past the to-set positions related to fromSetInd.
+   * \pre 0 <= fromSetInd < fromSet()->size()
    */
   RelationIterator end(FromPositionType fromSetInd)
   {
@@ -167,11 +156,8 @@ public:
   }
 
   /**
-   * \brief Returns a end const iterator to the set of entities in the ToSet
-   * that are related to the element with index \a fromSetInd in the FromSet
-   *
-   * \param fromSetInd The index of the element in the FromSet
-   * \return A const end iterator to the set of related elements in ToSet
+   * \brief Return a const iterator past the to-set positions related to fromSetInd.
+   * \pre 0 <= fromSetInd < fromSet()->size()
    */
   RelationConstIterator end(FromPositionType fromSetInd) const
   {
@@ -180,22 +166,14 @@ public:
   }
 
   /**
-   * \brief Returns an iterator range to the set of entities in the ToSet
-   * that are related to the element with index \a fromSetInd in the FromSet
-   *
-   * \param fromSetInd The index of the element in the FromSet
-   * \return An iterator range (begin/end pair) to the set of related
-   * elements in ToSet
+   * \brief Return begin and end iterators over the to-set positions related to fromSetInd.
+   * \pre 0 <= fromSetInd < fromSet()->size()
    */
   RelationIteratorPair range(FromPositionType fromSetInd) { return (*this)[fromSetInd].range(); }
 
   /**
-   * \brief Returns a const iterator range to the set of entities in the ToSet
-   * that are related to the element with index \a fromSetInd in the FromSet
-   *
-   * \param fromSetInd The index of the element in the FromSet
-   * \return A const iterator range (begin/end pair) to the set of related
-   * elements in ToSet
+   * \brief Return const begin and end iterators over the to-set positions related to fromSetInd.
+   * \pre 0 <= fromSetInd < fromSet()->size()
    */
   RelationConstIteratorPair range(FromPositionType fromSetInd) const
   {
@@ -210,8 +188,7 @@ public:
   ///
 
   /**
-   * \brief Returns the const set of entities in the ToSet related to the
-   * element with index \a fromSetIndex in the FromSet
+   * \brief Return the to-set positions associated with fromSetIndex.
    * \param fromSetIndex The index of an element in the FromSet
    */
   RelationSubset const at(FromPositionType fromSetIndex) const
@@ -227,11 +204,10 @@ public:
   }
 
   /**
-   * \brief Returns the const set of entities in the ToSet related to the
-   * element with index \a fromSetIndex in the FromSet
+   * \brief Return the to-set positions associated with fromSetIndex.
    * \param fromSetIndex The index of an element in the FromSet
-   * \note This function does not modify the size of the relation. 
-   * Use updateSizes(), insert(), or modify() functions to change sizes
+   * \note This function does not grow the relation. Use updateSizes() after
+   *       growing the from-set. insert() and modify() can also expand storage.
    */
   RelationSubset const operator[](FromPositionType fromSetIndex) const
   {
@@ -301,8 +277,9 @@ public:
   }
 
   /**
-   * \brief return if an entry is valid or not.
-   * \details an entry is considered valid if it is valid in the from set and has at least one valid value
+   * \brief Check whether idx is valid in the from-set and has any assigned connectivity.
+   * \details At least one associated value must differ from INVALID_INDEX.
+   *          This does not check the bounds of those to-set positions.
    */
   bool isValidEntry(FromPositionType idx) const
   {
@@ -362,15 +339,14 @@ public:
   }
 
   /**
-   * \brief Function to modify the value at offset \a offset of the
-   * FromSet index \fromSetIndex to the value \a toSetIndex
+   * \brief Assign a to-set position at a local offset for fromSetIndex.
    *
-   * \note This is a temporary function until operator[]
-   *  allows us to modify values.
-   *
-   * This should be replaced with operator[] which returns a non-const
-   * RelationSubset so users can more naturally update the relation.
-   * E.g. relation[fromSetIndex][offset] = toSetIndex;
+   * \param fromSetIndex Position in the from-set.
+   * \param offset Position within the related subset.
+   * \param toSetIndex Position in the to-set.
+   * \pre 0 <= offset < relationCardinality()
+   * \note Expands storage if needed. For existing entries, the assignment is
+   *       equivalent to relation[fromSetIndex][offset] = toSetIndex.
    */
   void modify(FromPositionType fromSetIndex, FromPositionType offset, FromPositionType toSetIndex)
   {

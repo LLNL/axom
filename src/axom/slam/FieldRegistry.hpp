@@ -6,6 +6,11 @@
 
 #pragma once
 
+/**
+ * \file FieldRegistry.hpp
+ * \brief Host-side lookup of named Slam fields, buffers and scalar values.
+ */
+
 #include "axom/slic.hpp"
 #include "axom/fmt.hpp"
 
@@ -25,28 +30,22 @@
 namespace axom::slam
 {
 /**
- * \brief Simple container for fields of type DataType w/ minimal error checking
+ * \class FieldRegistry
+ * \brief Look up fields, buffers and scalars by name on the host.
  *
- * \note We are using concrete instances for int and double in the code below.
- *       This should eventually be replaced with the sidre datastore.
+ * Fields share one set of names, whether they own an axom::Array or borrow an
+ * allocation through axom::ArrayView. Use addField() for an owning field and
+ * addFieldView() for borrowed values. Every field borrows its set.
+ * Buffers and scalars have separate lookup tables.
  *
- * \note FieldRegistry is a host-only facility: it stores std::map tables
- *       keyed by std::string and its find APIs return std::optional. The
- *       lookup tables use transparent comparison (std::less<>) so callers may
- *       query with a std::string_view without constructing a temporary std::string.
+ * Names can be queried with std::string_view without constructing a temporary
+ * std::string. The find functions return an optional result and do not insert
+ * missing entries. The get functions require an existing entry of the requested type.
  *
- * \note FieldRegistry supports two field storage modes under a single set of field keys:
- *       - fields that manage their own buffer, stored as a `slam::Map` with the
- *         default `axom::Array` indirection
- *       - fields that refer to an externally-managed buffer, stored as a `slam::Map`
- *         with an `axom::ArrayView` indirection
- *         (useful when generating Slam objects from externally-managed arrays)
- *
- * \note The registry-managed fields and buffers (the first mode above, and \ref FieldRegistry::BufferType)
- *       now hold an `axom::Array` rather than a `std::vector`.
- *       Prefer `auto`, `FieldRegistry::BufferType`, and `FieldRegistry::MapType` at registry boundaries.
- *       When an `axom::ArrayView` is the right interface, call `buffer.view()`;
- *       to register a buffer managed elsewhere, use `addFieldView()` or `addBufferView()`.
+ * Registry-managed buffers use BufferType, an axom::Array. Use buffer.view()
+ * for an array view or addBufferView() to register an existing allocation.
+ * Borrowed sets and allocations must remain valid while registered fields or
+ * views use them. The registry does not extend their lifetimes.
  */
 template <typename SetType, typename TheDataType>
 class FieldRegistry
@@ -69,7 +68,7 @@ public:
    */
   using MapType = slam::Map<DataType, SetType>;
 
-  /// \brief Buffer type backing `MapType` (uses the default Map buffer type: `axom::Array<DataType>`)
+  /// \brief The axom::Array buffer owned by MapType.
   using BufferType = typename MapType::OrderedMap;
 
   /*!
@@ -541,7 +540,7 @@ public:
   /*!
    * \brief Finds a view-backed buffer by name without inserting or asserting.
    *
-   * \return An optional referencing the buffer if present, else empty.
+   * \return A copy of the stored view, or an empty optional if the name is absent.
    */
   [[nodiscard]] std::optional<ViewBufferType> findBufferView(std::string_view key)
   {
@@ -552,7 +551,7 @@ public:
   /*!
    * \brief Finds a view-backed buffer by name (const overload).
    *
-   * \return An optional referencing the buffer if present, else empty.
+   * \return A copy of the stored view, or an empty optional if the name is absent.
    */
   [[nodiscard]] std::optional<ViewBufferType> findBufferView(std::string_view key) const
   {

@@ -70,11 +70,11 @@ concept SubMapRangeSource = SubMapSource<T> && requires {
 
 /**
  * \class SubMap
- * \brief The SubMap class provides an API to easily traverse a subset of a Map.
+ * \brief Access and traverse selected entries of a parent map.
  *
  * A SubMap stores a pointer to its parent map and a set of positions selecting
  * entries in that map. It accesses the parent's values and component shape.
- * BivariateMap uses SubMap to return the values associated with one row.
+ * BivariateMap uses SubMap to select entries with a common first-set position.
  *
  * set()->at(i) is a position in the immediate parent. index(i) identifies the
  * selected set element, following index() through every parent SubMap.
@@ -83,8 +83,8 @@ concept SubMapRangeSource = SubMapSource<T> && requires {
  * selecting position 1 identifies element 20. A bivariate parent returns a pair
  * of positions in its first and second sets instead of a scalar set element.
  *
- * \tparam SuperMapType the type of SuperMap
- * \tparam SubsetType defines the indices in the super map. It cannot be abstract.
+ * \tparam SuperMapType The parent map type.
+ * \tparam SubsetType The concrete set type that selects positions in the parent map.
  *
  * \note Value access preserves the reference type returned by the super-map.
  *       A const SubMap wrapper does not add constness to the mapped values.
@@ -150,11 +150,10 @@ public:
    *
    * \param supermap The map that this SubMap is a subset of.
    * \param subset_idxset a Set of ElementFlatIndex into the SuperMap
-   * \param indicesHaveIndirection Unused; retained for source compatibility.
+   * \param indicesHaveIndirection Unused, retained for source compatibility.
    *
-   * \note \a indicesHaveIndirection no longer selects between projecting a
-   *       subset index through the SuperMap's set and returning it unchanged.
-   *       index() now always projects. \see index()
+   * \note index() always returns the selected set element, regardless of
+   *       \a indicesHaveIndirection. \see index()
    */
   AXOM_HOST_DEVICE SubMap(SuperMapType* supermap,
                           SubsetType subset_idxset,
@@ -174,7 +173,7 @@ public:
    *
    * \param idx the ComponentFlatIndex into the subset
    * \return The value for the j<sup>th</sup> component of the i<sup>th</sup>
-   *         element, where `setIndex = i * numComp() + j`.
+   *         element, where `idx = i * numComp() + j`.
    * \pre    0 <= idx < size() * numComp()
    */
   AXOM_HOST_DEVICE DataRefType operator[](IndexType idx) const
@@ -190,7 +189,8 @@ public:
    * \brief Access the value associated with the given position in the subset and the component index.
    *
    * \pre `0 <= idx < size()`
-   * \pre `0 <= comp < numComp()`
+   * \pre A single component index is in [0, numComp()). For shaped access,
+   *      supply one index per dimension, each in [0, shape()[dimension]).
    */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType operator()(IndexType idx, ComponentIndex... comp) const
@@ -203,7 +203,8 @@ public:
    * \brief Access the value associated with the given position in the subset and the component index.
    *
    * \pre `0 <= idx < size()`
-   * \pre `0 <= comp < numComp()`
+   * \pre A single component index is in [0, numComp()). For shaped access,
+   *      supply one index per dimension, each in [0, shape()[dimension]).
    */
   template <typename... ComponentIndex>
   AXOM_HOST_DEVICE DataRefType value(IndexType idx, ComponentIndex... comp) const
@@ -265,13 +266,13 @@ public:
   /// \brief returns the size of the SubMap
   AXOM_HOST_DEVICE PositionType size() const { return m_subsetIdx.size(); }
 
-  /// \brief returns the number of components (aka. stride) of the SubMap
+  /// \brief Returns the parent's component count, or zero for an unbound SubMap.
   AXOM_HOST_DEVICE SuperPositionType numComp() const
   {
     return m_superMap == nullptr ? SuperPositionType {} : m_superMap->numComp();
   }
 
-  /// \brief Return the parent's component count without exposing mutable policy state.
+  /// \brief Return the component count. Equivalent to numComp().
   AXOM_HOST_DEVICE SuperPositionType stride() const { return numComp(); }
 
   /// \brief Return the parent's component shape.

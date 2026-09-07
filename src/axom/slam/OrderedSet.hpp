@@ -11,8 +11,7 @@
  *
  * \brief Basic API for an ordered set of entities in a simulation
  * 
- * \note We are actually storing (ordered) multisets, since elements can be
- *  repeated an arbitrary number of times (e.g. for indirection sets)
+ * \note Element values need not be unique. Indirection-backed sets can contain duplicates.
  */
 
 #include "axom/config.hpp"
@@ -45,8 +44,11 @@ namespace axom::slam
  * \brief Models a set whose elements can be defined as strided offsets
  * of the position, possibly with a level of indirection.
  *
- * In an OrderedSet, the element at position pos can be defined as:
- *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
+ * The element at position pos is obtained through
+ * `indirection(pos * stride() + offset())`. NoIndirection computes the value
+ * without a buffer. Other policies read from borrowed element storage.
+ * Reference and constness behavior follow the indirection policy.
+ * Referenced buffers and parent sets must remain valid while the set is used.
  */
 template <typename PosType = slam::DefaultPositionType,
           typename ElemType = slam::DefaultElementType,
@@ -187,7 +189,7 @@ public:
    * \class SetBuilder
    * \brief Helper class for constructing an ordered set.
    *
-   *  Uses named parameter idiom to enable function chaining and for better code self-documentation
+   * Name the size, offset, stride and buffer binding through chained setters.
    */
   struct SetBuilder
   {
@@ -298,9 +300,8 @@ public:
 
   /**
    * \class OrderedSetIterator
-   * \brief An stl-compliant random iterator type for an ordered set
+   * \brief A random-access iterator using the set's indexing and indirection policies.
    *
-   * Uses the set's policies for efficient iteration
    * \tparam T The result type of the iteration
    * \tparam Const Boolean to indicate if this is a const iterator
    *
@@ -352,7 +353,7 @@ public:
     /// Element mutability is carried by the \a reference and \a pointer types
     /// \a m_orderedSet is \c mutable so the non-const iterator can return
     /// a mutable reference from a const-qualified operator, and the
-    /// iterator is const-dereferenceable (as the standard iterator concepts require).
+    /// iterator can be dereferenced through a const iterator object.
     /// \{
 
     /// Dereference operator

@@ -11,26 +11,16 @@
  *
  * \brief Stride policies for SLAM
  *
- * Stride policies are meant to represent the fixed distance between consecutive
- * elements of an OrderedSet
- * A valid stride policy must support the following interface:
- *   [required]
- *    - DEFAULT_VALUE is a public static const IntType
- *    - IS_COMPILE_TIME is a public static const bool
- *    - stride() : IntType  -- returns the stride
- *    - isValid() : bool -- indicates whether the Stride policy of the set is valid
- *   [optional]
- *    - operator(): IntType -- alternate accessor for the stride value
+ * In an OrderedSet, stride() is the distance between consecutive indices before
+ * indirection. Scalar policies accept any nonzero stride, including a negative
+ * stride for reverse traversal.
  *
- * \note Scalar stride policies accept all non-zero values, including negative strides.
- *       Map owners require positive component counts.
- *       MultiDimStride represents a positive component shape.
+ * In a Map, stride() is the number of components per set element and must be
+ * positive. MultiDimStride describes a multidimensional component shape with
+ * positive dimensions and a product representable by its index type.
  *
- * \note The single-stride Runtime/CompileTime storage, constructors and validity checking
- *  are provided by the unified RuntimeValue/CompileTimeValue core in ValuePolicies.hpp.
- *  The scalar policies below add only the stride-specific surface (named `stride()`/`shape()` accessors, 
- *  the dimensional typedefs, DEFAULT_VALUE/IS_COMPILE_TIME).
- *  MultiDimStride is a separate, inherently multi-dimensional policy and is unaffected.
+ * RuntimeStride and CompileTimeStride use the storage and validity checks in
+ * ValuePolicies.hpp. Concepts.hpp defines the operations required by each owner.
  */
 
 #include "axom/core/Macros.hpp"
@@ -116,7 +106,7 @@ public:
   }
 };
 
-/// \brief A policy class for a set with stride one (i.e. the default stride)
+/// \brief A policy with stride one.
 template <typename IntType>
 using StrideOne = CompileTimeStride<IntType, 1>;
 
@@ -161,7 +151,7 @@ struct MultiDimStride
     }
   }
 
-  /// \brief Returns the "flat" stride of all the subcomponents.
+  /// \brief Returns the total number of components, the product of the shape dimensions.
   AXOM_HOST_DEVICE inline IntType stride() const { return m_shape[0] * m_strides[0]; }
 
   inline IntType operator()() const { return stride(); }

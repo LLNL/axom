@@ -7,36 +7,20 @@
 /**
  * \file SetBuilders.hpp
  *
- * \brief Free-function "make" helpers that construct SLAM sets from a buffer or
- *  a range while deducing the full policy stack.
- *
- * SLAM's sets are configured by a long list of orthogonal policy template
- * parameters. Spelling the full stack at every construction site is verbose:
+ * \brief Construct SLAM sets from ranges or buffers, deducing the set policies.
  *
  * \code
- *   using Set = slam::ArrayViewIndirectionSet<int, double>;
- *   Set s(Set::SetBuilder().size(v.size()).data(v));
+ *   auto s = slam::make_indirection_set(view);
  * \endcode
  *
- * The helpers here collapse that to a single call that deduces the element type
- * from the buffer:
+ * Buffer overloads borrow existing storage. The axom::ArrayView and axom::Array
+ * overloads return an ArrayViewIndirectionSet that stores a view by value.
+ * To bind the array object by pointer instead, construct ArrayIndirectionSet
+ * directly. Neither form owns the elements.
  *
- * \code
- *   auto s = slam::make_indirection_set(view);  // -> ArrayViewIndirectionSet<.., double>
- * \endcode
- *
- * These helpers return sets that view a buffer managed elsewhere: 
- * overloads that receive an \c axom::ArrayView or \c axom::Array return an
- * \c ArrayViewIndirectionSet (holding an \c axom::ArrayView by value). 
- * To make a set that manages its own \c axom::Array, construct \c ArrayIndirectionSet directly.
- *
- * \note On CTAD vs. helpers. A class-template-argument deduction guide cannot
- *  recover a set's policy stack from a SetBuilder argument: a guide parameter of
- *  the form `typename OrderedSet<P,...>::SetBuilder` is a non-deduced context
- *  (the template arguments appear only as a nested-name-specifier),
- *  so `OrderedSet s(builder)` can never deduce. Deduction only works from a
- *  directly-named argument type such as `axom::ArrayView<T>`.
- *  These free functions are the portable way to get stack-deducing construction.
+ * A nested type such as `OrderedSet<P,...>::SetBuilder` is a non-deduced
+ * context for class template argument deduction. These helpers deduce types
+ * from the range bounds or buffer instead.
  */
 
 #pragma once
@@ -58,8 +42,8 @@ namespace axom::slam
 /// \brief Construct a SLAM set while deducing its policy stack from the buffer or range.
 ///  \a PosType defaults to slam's default position type and may be supplied explicitly
 ///  as the leading template argument. Position types must model PositionLike.
-///  Size and bound arguments must be non-Boolean integral or opted-in position values.
-///  Compatible values are converted to the selected \a PosType before constructing the set.
+///  Size and bound arguments must be non-Boolean integral values.
+///  The caller must supply values and range sizes representable by \a PosType.
 /// \{
 
 /*!
@@ -134,15 +118,13 @@ VectorIndirectionSet<PosType, T> make_indirection_set(std::vector<T>& vec)
  * \brief Make an indirection set whose elements indirect through an axom::Array's flat storage.
  *
  * The element type is deduced from \a arr.
- * The returned set holds an \c axom::ArrayView over the array's flat storage
- * (so \a arr must outlive the set). The set's size matches the array.
+ * The returned set holds an \c axom::ArrayView over the array's flat storage.
+ * That storage must remain valid while the set is used. The set's size matches the array.
  *
  * The set exposes the array in `flatIndex` order: element \c i resolves to
  * `arr.data()[i * arr.minStride()]`, matching axom::Array's own flat-index contract
- * (see axom::ArrayBase::flatIndex). The flat ArrayView is therefore valid for any layout
- * axom::Array produces, including multidimensional row-major arrays. For the common 1D case
- * (`axom::Array<T>` / `DIM == 1`) the storage is always contiguous with unit stride, so the
- * set indexes the buffer directly.
+ * as described by axom::ArrayBase::flatIndex. This also applies to multidimensional arrays.
+ * For a one-dimensional axom::Array, the storage is contiguous with unit stride.
  *
  * \param arr the backing array (its storage must outlive the set and not be reallocated)
  * \return an ArrayViewIndirectionSet<PosType, T>

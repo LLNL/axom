@@ -22,13 +22,11 @@
 namespace std::ranges
 {
 /**
- * A RangeSet iterator stores the complete concrete range state by value,
- * so it remains valid when the RangeSet object that produced it is destroyed.
+ * \brief Range iterators can outlive sets with no indirection or parent binding.
  *
- * This holds for any offset or striding policy, since those value policies in the set,
- * but the RangeSet requires NoIndirection and NoSubset since an indirection-backed set's iterator
- * dereferences through a buffer it does not own, and a subsetted set refers to a parent.
- * Covers both RangeSet (RuntimeOffset) and PositionSet (ZeroOffset).
+ * The iterator stores the range's offset, stride and size by value. This covers
+ * both RangeSet and PositionSet. Indirection-backed sets and parent-bound subsets
+ * have additional lifetime requirements and are not marked as borrowed here.
  */
 template <typename PositionType, typename ElementType, typename OffsetPolicy, typename StridingPolicy, typename InterfacePolicy>
 inline constexpr bool enable_borrowed_range<

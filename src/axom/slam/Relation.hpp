@@ -29,7 +29,7 @@ public:
   using SetPosition = typename Set<PosType, ElemType>::PositionType;
   using SetElement = typename Set<PosType, ElemType>::ElementType;
 
-  // A relation row is indexed by a position in the from-set and stores positions in the to-set
+  // Each from-set position selects a collection of to-set positions.
   using RelationVec = std::vector<SetPosition>;
   using RelationVecIterator = typename RelationVec::iterator;
   using RelationVecIteratorPair = std::pair<RelationVecIterator, RelationVecIterator>;
@@ -75,8 +75,7 @@ public:
 };
 
 /**
- * \brief Definition of static instance of nullSet for all relations
- * \note Should this be a singleton or a global object?  Should the scope be public?
+ * \brief The null-set instance shared by this Relation specialization.
  */
 template <typename PosType, typename ElemType>
 NullSet<PosType, ElemType> Relation<PosType, ElemType>::s_nullSet;

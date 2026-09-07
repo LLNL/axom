@@ -790,20 +790,19 @@ static_assert(std::is_same_v<typename DeepMap::ConstValueType, const double&>,
               "an owning indirection is deep-const");
 static_assert(std::is_same_v<typename ShallowMap::ConstValueType, double&>,
               "the same Map over a view indirection is already shallow-const");
-static_assert(std::is_same_v<typename BinarySubMap::ValueType,
-                             typename BinarySubMap::ConstValueType>,
+static_assert(std::is_same_v<typename BinarySubMap::ValueType, typename BinarySubMap::ConstValueType>,
               "a SubMap is a view: constness rides on SuperMapType, not on the object");
 // The two axes are independent. The yielded reference is decided by whether SuperMapType is const,
 // while the super-map's indirection policy determines how deep that const goes.
 using DeepBinaryMap = slam::BivariateMap<double, Product, ArrayIndirection>;
-static_assert(std::is_same_v<
-                typename std::remove_const_t<typename DeepBinaryMap::ConstSubMapType>::ConstValueType,
-                const double&>,
-              "over a deep-const super-map, a SubMap does yield const references");
-static_assert(std::is_same_v<
-                typename std::remove_const_t<typename BinaryMap::ConstSubMapType>::ConstValueType,
-                double&>,
-              "over a view-backed super-map it stays shallow, as that policy dictates");
+static_assert(
+  std::is_same_v<typename std::remove_const_t<typename DeepBinaryMap::ConstSubMapType>::ConstValueType,
+                 const double&>,
+  "over a deep-const super-map, a SubMap does yield const references");
+static_assert(
+  std::is_same_v<typename std::remove_const_t<typename BinaryMap::ConstSubMapType>::ConstValueType,
+                 double&>,
+  "over a view-backed super-map it stays shallow, as that policy dictates");
 
 // SubMap's index set selects parent positions, not coordinate pairs.
 // Subscript lives here rather than in IterableSetLike because a bivariate set is IterableSetLike

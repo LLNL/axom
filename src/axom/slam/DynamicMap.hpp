@@ -6,6 +6,11 @@
 
 #pragma once
 
+/**
+ * \file DynamicMap.hpp
+ * \brief Map values that can grow with a dynamic set.
+ */
+
 #include <vector>
 #include <sstream>
 
@@ -20,9 +25,12 @@ namespace axom::slam
 {
 /**
  * \class DynamicMap
- * \brief A slam map class that supports adding and removing entries.
+ * \brief Store one value per set position, with storage that can grow.
  *
- * \detail An entry in the map is considered valid if its corresponding set's entry is valid
+ * An entry is valid when the corresponding set entry is valid. The map owns its
+ * std::vector of values and borrows the set. Mutable operator[] can grow the
+ * value buffer, while flatValue() requires an existing valid entry. Neither
+ * operation adds elements to the set, which must outlive the map.
  */
 template <typename SetT, typename DataT>
 class DynamicMap
@@ -47,10 +55,9 @@ public:
   /**
    * \brief Constructor from a set pointer
    *
-   * \param theSet A pointer to the map's set
-
-   * The map will be allocated with theSet->size() entries.
-   * There is no guarantee that the values will be initialized
+   * \param theSet The set, which must outlive the map.
+   *
+   * Allocates theSet->size() value-initialized entries for a non-null set.
    */
   DynamicMap(SetType* theSet) : m_set(theSet)
   {
@@ -63,9 +70,8 @@ public:
   /**
    * \brief Constructor from a set pointer
    *
-   * \param theSet A pointer to the map's set
-   * \param defaultValue The value that each entry in the map will
-   * be initialized
+   * \param theSet The set, which must outlive the map.
+   * \param defaultValue Initial value of every entry.
    *
    * The map will be allocated with \a theSet->size() entries.
    * Each entry will have value \a defaultValue
