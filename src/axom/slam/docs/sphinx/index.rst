@@ -4,90 +4,51 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Slam User Guide
+Slam user guide
 ===============
 
-Axom's Set-theoretic Lightweight API for Meshes (SLAM) component provides high performance
-building blocks for distributed-memory mesh data structures in HPC simulation codes.
+Slam is Axom's Set-theoretic Lightweight API for Meshes. It provides building
+blocks for developers who implement mesh data structures in simulation codes.
+Applications choose the mesh topology, storage and parallel decomposition.
+Slam supplies the types used to describe and access their entities (sets),
+connectivity (relations) and fields (maps).
 
-
-API Documentation
+Start with a mesh
 -----------------
 
-Doxygen generated API documentation can be found here: `API documentation <../../../../doxygen/html/slamtop.html>`_
+The :doc:`introductory example <first_example>` builds a quadrilateral mesh, traverses its connectivity
+and computes fields. It uses three kinds of objects:
 
+* A **set** identifies mesh entities, such as vertices or cells.
+* A **relation** records connections between two sets, such as the vertices of each cell.
+* A **map** attaches values to set elements, such as a temperature at each vertex.
 
-Introduction
-------------
+The :doc:`core_concepts` page explains their indexing rules.
 
-Simulation codes have a broad range of requirements for their mesh data structures,
-spanning the complexity gamut from structured Cartesian grids to fully unstructured
-polyhedral meshes. Codes also need to support features like dynamic topology changes,
-adaptive mesh refinement (AMR), submesh elements and ghost/halo layers, in
-addition to other custom features.
+Choose a representation
+-----------------------
 
-Slam targets the low level implementation of these distributed mesh data structures and is
-aimed at developers who implement mesh data structures within HPC applications.
+A quadrilateral has four vertices, so the cell-to-vertex incidence relation
+for a quad mesh can use a compile-time cardinality. The reverse relation
+usually needs a different number of cells at each vertex.
+Slam's policies express these choices, along with storage, offsets and strides.
 
+Slam provides several common :doc:`type aliases <aliases>` and construction helpers.
+For custom storage or a less common configuration, you can customize
+type configurations via policies as described in :doc:`implementation_details`. 
+Ownership of the underlying storage depends on the containing type:
+a default map owns its value buffer, while a static relation borrows its
+connectivity buffers and sets.
 
-Set-theoretic abstraction
--------------------------
+Details about using Slam on GPUs and other execution spaces 
+is described in :doc:`portability`.
 
-Slam's design is motivated by the observation that despite vast differences in the high
-level features of such mesh data structures, many of the core concepts are shared at a
-lower level, where we need to define and process mesh entities and their associated data
-and relationships.
+API documentation
+-----------------
 
-Slam provides a simple, intuitive, API centered around a set-theoretic abstraction for
-meshes and associated data. Specifically, it models three core set-theoretic concepts:
-
-* **Sets** of entities (e.g. vertices, cells, domains)
-* **Relations** among a pair of sets (e.g. incidence, adjacency and containment relations)
-* **Maps** defining fields and attributes on the elements of a given set.
-
-The goal is for users to program against Slam's interface without having to be aware of
-different design choices, such as the memory layout and underlying data containers. The
-exposed API is intended to feel natural to end users (e.g. application developers and
-domain scientists) who operate on the meshes that are built up from Slam's abstractions.
-
-See :ref:`srm-label` for more details.
-
-
-Policy-based design
--------------------
-
-There is considerable variability in how these abstractions can be implemented and user
-codes make many different design choices.  For example, we often need different data
-structures to support dynamic meshes than we do for static meshes. Similarly, codes
-might choose different container types for their arrays (e.g. STL vectors vs. raw C-arrays
-vs. custom array types).
-
-Performance considerations can also come in to play. For example, in some cases, a code
-has knowledge of some fixed parameters (e.g. the stride between elements in a relation).
-Specifying this information at compile-time allows the compiler to better optimize the
-generated code than specifying it at runtime.
-
-.. Recognizing that iteration over the mesh entities is often a performance critical
-   operation in mesh processing algorithms, Slam attempts to balance the tension between
-   generality to allow sharing mesh data and performance.
-
-Slam uses a Policy-based design to orthogonally decompose the feature space without
-sacrificing performance. This makes it easier to customize the behavior of Slam's sets,
-relations and maps and to extend support for custom features extend the basic interface.
-
-See :ref:`policy-label` for more details.
-
-
-Current limitations
--------------------
-
-* Slam is under active development with many features planned.
-* Slam's policy-based design yields highly configurable types that are named
-  through type aliases. ``axom/slam/Aliases.hpp`` provides shorthands for the
-  most common static-relation configurations (see :ref:`aliases-label`); we are
-  also investigating *Generator* classes, where enumerated strings could define
-  the related types within a mesh configuration.
-
+The `Doxygen API documentation <../../../../doxygen/html/slamtop.html>`_
+contains class and function reference material. :doc:`examples` points to
+larger mesh examples in the source tree.
 
 .. toctree::
    :caption: Contents
@@ -98,3 +59,5 @@ Current limitations
    aliases
    implementation_details
    portability
+   examples
+   more

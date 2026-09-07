@@ -8,53 +8,45 @@
 An introductory example
 =======================
 
-This file contains an introductory example to define and traverse a simple quadrilateral mesh.
-The code for this example can be found in ``axom/src/axom/slam/examples/UserDocs.cpp``.
+This example builds a quadrilateral mesh, follows its cell-to-vertex
+connections and computes fields on its vertices and cells. The complete
+source is ``src/axom/slam/examples/UserDocs.cpp``.
 
 .. figure:: figs/quad_mesh.png
    :figwidth: 400px
    :alt: A quad mesh with five elements
    :align: center
 
-   An unstructured mesh with eleven vertices (red circles) 
-   and five elements (quadrilaterals bounded by black lines)
+   An unstructured mesh with eleven vertices, shown as red circles,
+   and five quadrilateral elements bounded by black lines.
 
-We first import the unified Slam header, which includes all necessary files for working with Slam:
-
-.. literalinclude:: ../../examples/UserDocs.cpp
-   :start-after: _quadmesh_example_import_header_start
-   :end-before:  _quadmesh_example_import_header_end
-   :language: C++
-
-
-.. note:: All code in slam is in the ``axom::slam`` namespace.
-   For convenience, we add the following namespace declaration to our example to allow us
-   to directly use the ``slam`` namespace:
+.. note:: Slam's types are in the ``axom::slam`` namespace.
+   This namespace alias shortens their names in the example:
 
    .. literalinclude:: ../../examples/UserDocs.cpp
      :start-after: _quadmesh_example_slam_namespace_start
      :end-before:  _quadmesh_example_slam_namespace_end
      :language: C++
 
+   Our examples include all of Slam's header files using the unified header:
+
+   .. literalinclude:: ../../examples/UserDocs.cpp
+      :start-after: _quadmesh_example_import_header_start
+      :end-before:  _quadmesh_example_import_header_end
+      :language: C++
+
 
 
 Type aliases and variables
 ==========================
 
+Since Slam is highly configurable, we typically start by defining aliases 
+for the mesh's set, relation and map types in the mesh class or a configuration header.
+We use the common :ref:`aliases <aliases-label>` to choose cardinality and
+storage policies, then give those types names that describe their mesh roles.
 
-We begin by defining some type aliases for the Sets, Relations and Maps in our mesh.
-These type aliases would typically be found in a configuration file or in class header files.
-
-Each Slam type is assembled from policies that describe how it behaves, for example the
-cardinality and stride of a relation, or the storage backing a map. 
-
-This follows Slam's central design philosophy: the policies name the design choices for the data structure. Spelling out every policy is always available when you need fine control, but the common
-configurations have named shorthands in ``axom/slam/Aliases.hpp`` (:ref:`aliases-label`),
-and we use those aliases throughout this example.
-
-We use the following buffer type for the mesh connectivity data.
-Slam objects index into their data through a buffer; ``axom::Array`` is Slam's canonical
-choice, and it is the default storage for the aliases and helpers used below:
+The connectivity buffers hold positions in the vertex and element sets.
+This example stores them in ``axom::Array``:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_common_typedefs_start
@@ -64,9 +56,9 @@ choice, and it is the default storage for the aliases and helpers used below:
 Sets
 ----
 
-Our mesh is defined in terms of two sets: Vertices and Elements, whose entities are
-referenced by integer-valued indices. Since both sets use a contiguous range of indices
-starting from 0, we use ``slam::PositionSet`` to represent them.
+Our example mesh has two sets, vertices and elements. Both use a contiguous range of
+integer identifiers starting at zero, so ``slam::PositionSet`` represents
+them without an element buffer.
 
 We define the following type aliases:
 
@@ -75,7 +67,7 @@ We define the following type aliases:
    :end-before:  _quadmesh_example_set_typedefs_end
    :language: C++
 
-and declare them as:
+The mesh stores an instance of each set:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after:  _quadmesh_example_set_variables_start
@@ -87,62 +79,58 @@ For other available set types, see :ref:`set-concept-label`.
 Relations
 ---------
 
-We also have relations describing the incidences between the mesh vertices and elements.
+Two relations describe the connections between vertices and elements.
 
-The element-to-vertex *boundary* relation encodes the indices of the vertices in the
-boundary of each element. Since this is a quad mesh and there are always four vertices in
-the boundary of a quadrilateral, its cardinality is a compile-time constant. We use the
-``slam::ConstantRelation`` alias, which names the common configuration of a ``StaticRelation``
-with a ``ConstantCardinality`` policy, a ``CompileTimeStride`` (here, 4), and ``axom::Array`` storage:
+The element-to-vertex *boundary* relation records the vertices associated with
+each element. Every quadrilateral has four vertices, so its cardinality is
+a compile-time constant. ``slam::ConstantRelation`` selects a ``StaticRelation``
+with that cardinality and a binding to an external ``axom::Array``:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_bdry_relation_typedefs_start
    :end-before:  _quadmesh_example_bdry_relation_typedefs_end
    :language: C++
 
-The vertex-to-element *coboundary* relation encodes the indices of all elements incident
-in each of the vertices. Since the cardinality of this relation changes for different
-vertices, we use the ``slam::VariableRelation`` alias, which names a ``StaticRelation`` with
-a ``VariableCardinality`` policy and ``axom::Array`` storage:
+The vertex-to-element *coboundary* relation records the collection of elements
+incident in each vertex. Some vertices touch one element, others two, and the
+center vertex touches all five. ``slam::VariableRelation`` allows these
+cardinalities to differ and binds the connectivity through external ``axom::Array`` buffers:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_cobdry_relation_typedefs_start
    :end-before:  _quadmesh_example_cobdry_relation_typedefs_end
    :language: C++
 
-.. note:: Each alias has a ``*View`` counterpart (``ConstantRelationView``, ``VariableRelationView``)
-   that stores ``axom::ArrayView`` values rather than pointers to external
+.. note:: ``ConstantRelationView`` and ``VariableRelationView``
+   store ``axom::ArrayView`` values rather than pointers to external
    ``axom::Array`` objects. Both forms borrow their buffers and their sets.
-   When a configuration is not covered by an alias, use the  ``StaticRelation`` policies directly.
+   When a configuration is not covered by an alias, use the ``StaticRelation`` policies directly.
    See :ref:`aliases-label`.
 
-We declare them as:
+The mesh stores both relations:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_relation_variables_start
    :end-before:  _quadmesh_example_relation_variables_end
    :language: C++
 
-For other available set types, see :ref:`relation-concept-label`.
+For other relation types, see :ref:`relation-concept-label`.
 
 Maps
 ----
 
-Finally, we have some maps that attach data to our sets.
-
-The following defines a type alias for the positions of the mesh vertices.
-It is templated on a point type (``Point2``) that handles simple operations on 2D points.
+The vertex coordinates form a map on the vertex set. Each entry holds a
+``Point2``, the example's two-dimensional point type.
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_maps_typedefs_start
    :end-before:  _quadmesh_example_maps_typedefs_end
    :language: C++
 
-The map's values are stored in an ``axom::Array`` that the map allocates and frees itself.
-To instead point a map at a buffer whose lifetime is managed elsewhere (for instance, to view data owned by an application or
-to pass a map into a device kernel), give it an ``axom::ArrayView`` indirection via ``policies::ArrayViewIndirection``.
+The map allocates and frees its own ``axom::Array`` of values. To borrow a
+buffer managed elsewhere, use ``policies::ArrayViewIndirection``.
 
-It is declared as:
+The mesh stores the coordinate map:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_map_variables_start
@@ -153,7 +141,8 @@ It is declared as:
 Constructing the mesh
 =====================
 
-This example uses a very simple fixed mesh, which is assumed to not change after it has been initialized.
+The topology is fixed after initialization. Construct the sets first, then
+bind the relations and maps to them.
 
 Sets
 ----
@@ -165,34 +154,38 @@ The sets are created using a constructor that takes the number of elements.
    :end-before:  _quadmesh_example_construct_sets_end
    :language: C++
 
-The values of the vertex indices range from ``0`` to ``verts.size()-1`` (and similarly for ``elems``).
+Vertex identifiers range from ``0`` to ``verts.size()-1``. Element identifiers
+follow the same rule. For these ``PositionSet`` types, an identifier equals
+its position in the set.
 
-.. note:: All sets, relations and maps in Slam have internal validity checks using
-   the ``isValid()`` function:
+.. note:: The built-in types used here provide ``isValid()`` checks:
 
    .. literalinclude:: ../../examples/UserDocs.cpp
       :start-after: _quadmesh_example_set_isvalid_start
       :end-before:  _quadmesh_example_set_isvalid_end
       :language: C++
 
+   Validation is a separate capability in Slam's C++ concepts. A custom type
+   can model a set, relation or map without providing ``isValid()``.
 
 Relations
 ---------
 
-The relations are constructed by binding their associated sets and buffers of connectivity data.
-We use the ``slam::make_*_relation`` helper functions, which deduce the relation type from their arguments (including the ``axom::Array`` buffers) and return a ready-to-use relation.
+Construct the relations by binding their sets and connectivity buffers.
+The ``slam::make_*_relation`` helpers deduce the relation type from these arguments.
 
-We construct the boundary relation from its two sets 
-(``elems`` as its ``fromSet`` and ``verts`` as its ``toSet``)
-and the array of vertex indices:
+For the boundary relation, ``elems`` is the "from-set" and ``verts`` is the "to-set".
+The connectivity array contains vertex positions:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_construct_bdry_relation_start
    :end-before:  _quadmesh_example_construct_bdry_relation_end
    :language: C++
 
-The coboundary relation requires an additional array of offsets (``begins``)
-to indicate the starting index in the relation for each vertex:
+The coboundary relation also needs a begin-offset buffer. It contains one
+offset per vertex plus a final offset equal to the total number of entries.
+The offsets start at zero and never decrease. Adjacent offsets delimit one
+vertex's related entries, so equal offsets mean that vertex has no related entries:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_construct_cobdry_relation_start
@@ -200,21 +193,23 @@ to indicate the starting index in the relation for each vertex:
    :language: C++
 
 
-Since these are static relations, they refer to data that was constructed elsewhere
-(the ``axom::Array`` buffers, which must outlive the relations).
-The relations are lightweight views over that data, and no data is copied. To iteratively
-build relations instead, we would use the ``DynamicConstantRelation`` and
-``DynamicVariableRelation`` classes.
+The example's begin offsets are ``{0, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20}``.
+The first vertex has five related entries, and the final offset records twenty
+connections in total.
 
-The ``make_*`` helpers wrap Slam's lower-level ``Builder`` classes; see :ref:`setup-label`
-for more details about constructing sets, relations and maps directly.
+These static relations borrow their sets and array objects. Both must outlive
+the relations, and construction does not copy the connectivity data. To build
+connectivity incrementally, use ``DynamicConstantRelation`` or
+``DynamicVariableRelation``.
+
+See :ref:`setup-label` for construction helpers and builders.
 
 Maps
 ----
 
-We define the positions of the mesh vertices as a ``Map`` on the ``verts`` set.
-For this example, we set the first vertex to lie at the origin,
-and the remaining vertices line within an annulus around the unit circle.
+Next. we construct the coordinate map on ``verts``. 
+We start by placing the first vertex at the origin and the remaining vertices
+in an annulus around the unit circle.
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_vert_positions_start
@@ -225,42 +220,42 @@ and the remaining vertices line within an annulus around the unit circle.
 Traversing the mesh
 ===================
 
-Now that we've constructed the mesh, we can start traversing the mesh connectivity and attaching more fields.
+With the connectivity and coordinates in place, we can compute fields from them.
 
 Computing a derived field
 -------------------------
 
-Our first traversal loops through the vertices and computes a derived field on the position map.
-For each vertex, we compute its distance to the origin.
+The first traversal computes each vertex's distance from the origin and
+stores it in a new map:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_vert_distances_start
    :end-before:  _quadmesh_example_vert_distances_end
    :language: C++
 
-Computing element centroids
----------------------------
+Computing element centers
+-------------------------
 
-Our next example uses element-to-vertex boundary relation to compute the
-*centroids* of each element as the average of its vertex positions.
+Next, follow the element-to-vertex relation and average each element's vertex
+coordinates. The example names this map ``centroid``. Its values are vertex
+averages, not area-weighted geometric centroids of general quadrilaterals.
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_elem_centroids_start
    :end-before:  _quadmesh_example_elem_centroids_end
    :language: C++
 
-Perhaps the most interesting line here is when we call the relation's subscript operator (``bdry[eID]``).
-This function takes an element index (``eID``) and returns the *set* of vertices that are incident in this element.
-As such, we can use all functions in the Set API on this return type, e.g. ``size()`` and the subscript operator.
+``bdry[eID]`` returns the subset of vertex positions for element ``eID``.
+This subset supports ``size()``, subscripting and iteration. Each vertex position
+then indexes the coordinate map. The traversal needs no knowledge of how the
+relation stores its connectivity.
 
-Outputting mesh to disk
------------------------
+Writing the mesh to disk
+------------------------
 
-As a final example, we highlight several different ways to iterate through the mesh's Sets, Relations and Maps
-as we output the mesh to disk (in the ``vtk`` format).
-
-This is a longer example, but the callouts (left-aligned comments 
-of the form  ``// <-- message`` ) point to different iteration patterns.
+Finally, write the mesh to a VTK file. 
+The following snippet uses Slam's iterator API to traverse
+the sets, subsets and maps, calling these out using  ``// <--`` comments:
 
 .. literalinclude:: ../../examples/UserDocs.cpp
    :start-after: _quadmesh_example_output_vtk_start

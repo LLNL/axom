@@ -6,39 +6,25 @@
 
 .. _portability-label:
 
-Host/device portability tiers
-==============================
+Host and device use
+===================
 
-Slam's types are designed to run both on the host and inside GPU kernels. 
+Slam supports host construction and device access for selected configurations.
+Check the complete type and the operations a kernel calls, not just its
+indirection policy. A map backed by ``ArrayView`` still refers to a set, and a
+submap still refers to its parent map.
 
-Not every C++ facility is safe in device code across all of Slam's backends
-(sequential, OpenMP, CUDA, HIP), so Slam categorizes the constructs it uses into
-three portability tiers. Compile-time features generate no device code 
-and are therefore unconditionally kernel-safe.
+Before using an object in a kernel, check that:
 
-.. list-table:: Slam's portability tiers
-   :widths: 8 62 30
-   :header-rows: 1
+* Every operation on the kernel's call path is device-callable with the chosen
+  compiler and standard library.
+* Referenced sets, parent objects and buffers reside in memory the device can access.
+* Those objects and allocations remain valid until the kernel finishes,
+  including asynchronous execution.
 
-   * - Tier
-     - Contents
-     - Allowed where
-   * - A
-     - All compile-time language features (concepts, ``if constexpr``,
-       class template argument deduction (CTAD), non-type template parameters,
-       fold expressions, type traits, ``constexpr`` evaluation)
-       as well as Axom host-device types (``StackArray``, ``ArrayView``, 
-       ``NumericLimits``, ``utilities::*``). 
-     - everywhere, including kernels
-   * - B
-     - ``std::string_view``, ``std::variant``,
-       ``std::ranges`` views/algorithms, ``std::vector``, ``std::map``,
-       exceptions, and iostreams.
-     - host only: builders, registries, ``isValid(verbose)``, and I/O
-   * - C
-     - Virtual functions on host-device types; standard containers held inside
-       view types; throwing accessors on host-device paths.
-     - nowhere (existing instances are migration targets)
+``TriviallyCopyableRepresentation<T>`` checks only the C++ object
+representation. The virtual interfaces are not a portable cross-device dispatch
+mechanism.
 
 C++20 ranges integration
 ------------------------
@@ -50,18 +36,25 @@ host-only header explicitly:
 
    #include "axom/slam/Ranges.hpp"
 
-This header marks the standard ``RangeSet`` policy configuration as a borrowed
-range because its iterators own the complete range state. It is installed with
-Slam but excluded from the unified ``axom/slam.hpp`` header so device-facing
-translation units do not acquire a dependency on ``<ranges>``.
+This header marks ``GenericRangeSet`` configurations with ``NoIndirection``
+and ``NoSubset`` as borrowed ranges. This includes ``RangeSet`` and
+``PositionSet``. Their iterators store the range state by value and can outlive
+the range object. This does not make arbitrary indirection sets, maps or
+submaps borrowed ranges. Their iterators can depend on other objects or buffers.
 
-Device ``std::optional``
-------------------------
+``Ranges.hpp`` is installed with Slam but excluded from the unified
+``axom/slam.hpp`` header. Device-facing translation units therefore do not
+acquire a dependency on ``<ranges>`` through that header. Slam's standard-ranges
+integration is for host code.
 
-Slam uses ``std::optional`` for optional-returning APIs.
-The CUDA host-configs enable ``--expt-relaxed-constexpr``,
-and HIP's compiler accepts these standard library calls from host-device paths in the supported builds.
+Optional results in kernels
+---------------------------
 
-The device-side contract is to check ``has_value()`` before dereferencing with ``operator*``,
-or to use ``value_or``. Avoid ``value()`` in kernels because standard library implementations
-can route the disengaged case through a throwing host-only helper.
+Some Slam APIs return ``std::optional``. Device use depends on the compiler,
+standard library and build flags, so compile and exercise the actual accessor
+path in the target configuration.
+
+On a supported device path, check ``has_value()`` before dereferencing with
+``operator*``, or use ``value_or`` with a device-compatible value type. Avoid
+``value()`` in kernels because an empty optional can invoke a throwing,
+host-only helper.

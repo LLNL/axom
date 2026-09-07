@@ -1,5 +1,3 @@
-:orphan:
-
 .. ## Copyright (c) Lawrence Livermore National Security, LLC and other
 .. ## Axom Project Contributors. See top-level LICENSE and COPYRIGHT
 .. ## files for dates and other details.
@@ -11,23 +9,40 @@
 Detailed examples
 =================
 
-Example 1
-=========
+The examples in ``src/axom/slam/examples`` show how sets, relations and maps
+fit into mesh code. Start with ``UserDocs.cpp``, the quadrilateral mesh in
+the :doc:`introductory example <first_example>`, 
+then choose an example that matches your application.
 
-Setting up and iterating a relation between two sets
-Demonstrates looping through elements using single and double subscript operators as well as iterators.
+Positions and application handles
+=================================
 
+``HandleMesh.cpp`` separates container positions from application-level
+identifiers. Its node and zone sets use different integer position types and
+return distinct handle types. The relation stores node positions, while maps
+attach temperatures to entities and interpolation weights to individual
+zone-node connections. This is a useful example when an entity identifier
+cannot serve as an array index.
 
-Example 2
-=========
+Unstructured hexahedral mesh
+============================
 
-Define a simple hexahedral mesh using Nodes and Zones, relations from nodes to zones and from zones to nodes.
-Show how we iterate on the nodes of a zone and on the zones of a node.
+``UnstructMeshField.cpp`` loads a hexahedral mesh from a VTK file and constructs
+both zone-to-node and node-to-zone relations. The former has eight nodes per
+zone. The latter has variable cardinality. The example traverses the mesh and
+computes fields using both relations.
 
-This illustrates how different relation types ( static with const and variable cardinality, respectively ) can be
-iterated.
+The executable is ``slam_unstructMesh_ex``. Its test uses mesh files from the
+``slam`` directory of ``AXOM_DATA_DIR``.
 
+Hydrodynamics examples
+======================
 
-More examples can be found in slam's ``examples`` subdirectory.
-* A slam version of Lulesh (todo: add link)
-* A slam version of tiny hydro (todo: add link)
+``tinyHydro/`` uses Slam for a two-dimensional polygonal mesh and its fields.
+``PolygonMeshXY.hpp`` defines the mesh accessors, and ``TinyHydroTypes.hpp``
+collects the set, relation and field types. The accompanying tests exercise
+the mesh and hydrodynamics routines.
+
+``lulesh2.0.3/`` contains a Slam version of the LULESH proxy application.
+``lulesh2.0.3_orig/`` contains the original version for comparison. These
+examples are disabled in Windows builds because they use Unix APIs.
