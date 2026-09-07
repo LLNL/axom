@@ -91,9 +91,9 @@ public:
   using NodeSet = slam::ArrayViewIndirectionSet<NodePosition, NodeHandle>;
 
   // A relation row is selected by ZonePosition and contains NodePosition
-  // entries. Its flattened CSR storage uses a type wide enough for both.
+  // entries. Its flat storage uses a type wide enough for both sets' positions.
   using FlatPosition = std::common_type_t<ZonePosition, NodePosition>;
-  using ZoneToNodeRelation = slam::VariableRelation<ZoneSet, NodeSet, FlatPosition, NodePosition>;
+  using ZoneToNodeRelation = slam::VariableRelation<ZoneSet, NodeSet, FlatPosition>;
   using ConnectivitySet = typename slam::RelationSet<ZoneToNodeRelation>::ConcreteSet;
 
   // Univariate maps attach values to entities; the bivariate map attaches a

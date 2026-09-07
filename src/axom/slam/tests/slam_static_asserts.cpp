@@ -10,14 +10,14 @@
  * \brief Compile-time and focused runtime checks for Slam's C++20 contracts
  *
  * The compile-time checks cover policies, sets, construction helpers, iterator
- * and range conformance, and compatibility aliases. Focused runtime checks
+ * and range conformance, and relation aliases. Focused runtime checks
  * exercise standard ranges algorithms and temporary RangeSet iterator lifetime.
  */
 
 #include "gtest/gtest.h"
 
 #include "axom/slam/ModularInt.hpp"
-#include "axom/slam/Traits.hpp"
+#include "axom/slam/Concepts.hpp"
 #include "axom/slam/DynamicSet.hpp"
 #include "axom/slam/Ranges.hpp"
 #include "axom/slam/ProductSet.hpp"
@@ -39,9 +39,12 @@
 #include <algorithm>
 #include <array>
 #include <concepts>
+#include <cstdint>
 #include <iterator>
+#include <limits>
 #include <optional>
 #include <ranges>
+#include <type_traits>
 #include <utility>
 
 namespace
@@ -144,32 +147,6 @@ static_assert(incTwice(4) == 1, "++ twice from 4 mod 5 == 1");
 // equality across the modulus
 static_assert(Mod5(2) == Mod5(7), "2 and 7 are equal mod 5");
 static_assert(Mod5(2) != Mod5(3), "2 and 3 differ mod 5");
-
-//------------------------------------------------------------------------------
-// Check trait predicates for policies and sets
-//------------------------------------------------------------------------------
-
-// Value policies satisfy their policy concept, and are distinguished from each
-// other and from sets (a set has size() but no value()).
-static_assert(slam::is_size_policy_v<Size5>, "CompileTimeSize is a size policy");
-static_assert(slam::is_stride_policy_v<Stride4>, "CompileTimeStride is a stride policy");
-static_assert(slam::is_offset_policy_v<Off3>, "CompileTimeOffset is an offset policy");
-static_assert(!slam::is_stride_policy_v<Size5>, "a size policy is not a stride policy");
-static_assert(!slam::is_size_policy_v<Stride4>, "a stride policy is not a size policy");
-static_assert(!slam::is_set_like_v<Size5>, "a policy is not a set");
-
-// RangeSet models the (ordered) set concept and nothing else.
-static_assert(slam::is_set_like_v<slam::RangeSet<>>, "RangeSet is set-like");
-static_assert(slam::IterableSetLike<slam::RangeSet<>>, "RangeSet is an ordered set");
-static_assert(!slam::is_relation_like_v<slam::RangeSet<>>, "RangeSet is not a relation");
-static_assert(!slam::is_map_like_v<slam::RangeSet<>>, "RangeSet is not a map");
-static_assert(!slam::is_bivariate_set_like_v<slam::RangeSet<>>, "RangeSet is not bivariate");
-
-// Index-space concepts: raw integrals are positions
-static_assert(slam::is_position_like_v<int>, "int is a position");
-static_assert(slam::is_position_like_v<axom::slam::DefaultPositionType>,
-              "slam's default position type is a position");
-static_assert(!slam::is_position_like_v<double>, "double is not a position");
 
 // Representation checks do not certify device access or referenced-object lifetime.
 struct TrivialHandle
@@ -490,11 +467,11 @@ static_assert(std::same_as<TemporaryRangeFindResult, RangeIter>,
 
 //------------------------------------------------------------------------------
 // Checks alias layer (Aliases.hpp): each alias instantiates with Slam's
-// canonical Array/ArrayView indirection and satisfies the matching predicate.
+// canonical Array/ArrayView indirection and satisfies the matching concept.
 //------------------------------------------------------------------------------
-using AliasArraySet = slam::ArraySet<>;
-using AliasCustomArraySet = slam::ArraySet<SetPos, double>;
-using AliasArrayViewSet = slam::ArrayViewSet<>;
+using ArrayBoundSet = slam::ArrayIndirectionSet<>;
+using CustomArrayBoundSet = slam::ArrayIndirectionSet<SetPos, double>;
+using ViewBoundSet = slam::ArrayViewIndirectionSet<>;
 
 using AliasVarRelation = slam::VariableRelation<slam::RangeSet<>, slam::RangeSet<>>;
 using AliasVarRelationView = slam::VariableRelationView<slam::RangeSet<>, slam::RangeSet<>>;
@@ -523,9 +500,9 @@ using BMapArrayViewCT =
                      policies::CompileTimeStride<typename ConcreteProductSet::PositionType, 2>>;
 
 // Force full instantiation (also exercises axom::Array's element requirements).
-static_assert(sizeof(AliasArraySet) > 0, "ArraySet instantiates");
-static_assert(sizeof(AliasCustomArraySet) > 0, "custom-position ArraySet instantiates");
-static_assert(sizeof(AliasArrayViewSet) > 0, "ArrayViewSet instantiates");
+static_assert(sizeof(ArrayBoundSet) > 0, "ArrayIndirectionSet instantiates");
+static_assert(sizeof(CustomArrayBoundSet) > 0, "custom-position ArrayIndirectionSet instantiates");
+static_assert(sizeof(ViewBoundSet) > 0, "ArrayViewIndirectionSet instantiates");
 static_assert(sizeof(AliasVarRelation) > 0, "VariableRelation instantiates");
 static_assert(sizeof(AliasVarRelationView) > 0, "VariableRelationView instantiates");
 static_assert(sizeof(AliasConstRelation) > 0, "ConstantRelation instantiates");
@@ -545,33 +522,29 @@ static_assert(
   "BivariateMap's default indirection uses an axom::Array");
 
 // Check that the aliases match the expected concepts
-static_assert(slam::is_set_like_v<AliasArraySet>, "ArraySet is set-like");
-static_assert(std::is_same_v<AliasCustomArraySet, slam::ArrayIndirectionSet<SetPos, double>>,
-              "ArraySet preserves the normal <Position, Element> set template order");
-static_assert(slam::IterableSetLike<AliasArraySet>, "ArraySet is an ordered set");
-static_assert(slam::IterableSetLike<AliasArrayViewSet>, "ArrayViewSet is an ordered set");
-static_assert(slam::is_relation_like_v<AliasVarRelation>, "VariableRelation is relation-like");
-static_assert(slam::is_relation_like_v<AliasVarRelationView>,
-              "VariableRelationView is relation-like");
-static_assert(slam::is_relation_like_v<AliasConstRelation>, "ConstantRelation is relation-like");
-static_assert(slam::is_relation_like_v<AliasConstRelationView>,
-              "ConstantRelationView is relation-like");
-static_assert(slam::is_relation_like_v<AliasRuntimeConstRelation>,
+static_assert(slam::SetLike<ArrayBoundSet>, "ArrayIndirectionSet is set-like");
+static_assert(std::same_as<typename CustomArrayBoundSet::ElementType, double>);
+static_assert(std::same_as<typename CustomArrayBoundSet::PositionType, SetPos>);
+static_assert(slam::IterableSetLike<ArrayBoundSet>, "ArrayIndirectionSet is an ordered set");
+static_assert(slam::IterableSetLike<ViewBoundSet>, "ArrayViewIndirectionSet is an ordered set");
+static_assert(slam::RelationLike<AliasVarRelation>, "VariableRelation is relation-like");
+static_assert(slam::RelationLike<AliasVarRelationView>, "VariableRelationView is relation-like");
+static_assert(slam::RelationLike<AliasConstRelation>, "ConstantRelation is relation-like");
+static_assert(slam::RelationLike<AliasConstRelationView>, "ConstantRelationView is relation-like");
+static_assert(slam::RelationLike<AliasRuntimeConstRelation>,
               "RuntimeConstantRelation is relation-like");
-static_assert(slam::is_relation_like_v<AliasRuntimeConstRelationView>,
+static_assert(slam::RelationLike<AliasRuntimeConstRelationView>,
               "RuntimeConstantRelationView is relation-like");
-static_assert(slam::is_bivariate_set_like_v<ConcreteProductSet>,
-              "a ProductSet is bivariate-set-like");
-static_assert(slam::is_map_like_v<MapArrayCT>, "Array-backed Map is map-like");
-static_assert(slam::is_map_like_v<MapArrayViewCT>, "ArrayView Map is map-like");
-static_assert(slam::is_map_like_v<MapArrayViewRT>, "runtime-stride ArrayView Map is map-like");
-static_assert(slam::is_map_over_v<MapArrayCT, slam::RangeSet<>>,
-              "Array-backed Map is a map over its set");
-static_assert(slam::is_map_over_v<MapArrayViewCT, slam::RangeSet<>>,
+static_assert(slam::BivariateSetLike<ConcreteProductSet>, "a ProductSet is bivariate-set-like");
+static_assert(slam::MapLike<MapArrayCT>, "Array-backed Map is map-like");
+static_assert(slam::MapLike<MapArrayViewCT>, "ArrayView Map is map-like");
+static_assert(slam::MapLike<MapArrayViewRT>, "runtime-stride ArrayView Map is map-like");
+static_assert(slam::MapOver<MapArrayCT, slam::RangeSet<>>, "Array-backed Map is a map over its set");
+static_assert(slam::MapOver<MapArrayViewCT, slam::RangeSet<>>,
               "ArrayView Map is a map over its set");
-static_assert(slam::is_map_over_v<MapArrayViewRT, slam::RangeSet<>>,
+static_assert(slam::MapOver<MapArrayViewRT, slam::RangeSet<>>,
               "runtime-stride ArrayView Map is a map over its set");
-static_assert(slam::is_map_like_v<BMapArrayViewCT>, "ArrayView BivariateMap is map-like");
+static_assert(slam::MapLike<BMapArrayViewCT>, "ArrayView BivariateMap is map-like");
 
 // Check that the aliases match the Array/ArrayView make_* helpers.
 using RSPos = slam::RangeSet<>::PositionType;
@@ -616,9 +589,9 @@ static_assert(
                                                        std::declval<axom::ArrayView<RSPos>>()))>,
   "RuntimeConstantRelationView matches make_constant_relation's ArrayView overload");
 static_assert(
-  std::is_same_v<AliasArrayViewSet,
+  std::is_same_v<ViewBoundSet,
                  decltype(slam::make_indirection_set(std::declval<axom::ArrayView<RSPos>>()))>,
-  "ArrayViewSet matches make_indirection_set's ArrayView overload");
+  "ArrayViewIndirectionSet matches make_indirection_set's ArrayView overload");
 static_assert(std::is_same_v<MapArrayViewCT,
                              decltype(slam::make_map_ct<3>(std::declval<const slam::RangeSet<>*>(),
                                                            std::declval<axom::ArrayView<double>>()))>,
@@ -654,4 +627,119 @@ TEST(slam_static_asserts, cxx20_range_algorithm_and_borrowed_lifetime)
   // because RangeSet iterators own the complete concrete range state.
   auto found = std::ranges::find(RangeSetType(3, 8), SetElem {6});
   EXPECT_EQ(*found, 6);
+}
+
+TEST(slam_static_asserts, relation_aliases_bind_external_buffers)
+{
+  using From = slam::RangeSet<std::int64_t, double>;
+  using To = slam::RangeSet<std::int32_t, double>;
+  From from(2);
+  To to(4);
+  axom::Array<std::int64_t> begins {0, 2, 4};
+  axom::Array<std::int32_t> indices {0, 1, 2, 3};
+
+  auto check = [&](auto& relation) {
+    using Relation = std::remove_cvref_t<decltype(relation)>;
+    static_assert(slam::RelationLike<Relation>);
+    static_assert(std::same_as<typename Relation::FlatPositionType, std::int64_t>);
+    static_assert(std::same_as<typename Relation::RelationSubset::ElementType, To::PositionType>);
+    ASSERT_TRUE(relation.isValid());
+    EXPECT_EQ(relation.fromSet(), &from);
+    EXPECT_EQ(relation.toSet(), &to);
+    EXPECT_EQ(relation.relationData().data(), indices.data());
+    EXPECT_EQ(relation[1][1], 3);
+    EXPECT_EQ(&relation[0][0], indices.data());
+  };
+
+  {
+    auto variable = slam::make_variable_relation(from, to, begins, indices);
+    auto variableView = slam::make_variable_relation(from, to, begins.view(), indices.view());
+    auto constant = slam::make_constant_relation_ct<2>(from, to, indices);
+    auto constantView = slam::make_constant_relation_ct<2>(from, to, indices.view());
+    auto runtime = slam::make_constant_relation(from, to, 2, indices);
+    auto runtimeView = slam::make_constant_relation(from, to, 2, indices.view());
+    static_assert(std::same_as<decltype(variable), slam::VariableRelation<From, To>>);
+    static_assert(std::same_as<decltype(variableView), slam::VariableRelationView<From, To>>);
+    static_assert(std::same_as<decltype(constant), slam::ConstantRelation<From, To, 2>>);
+    static_assert(std::same_as<decltype(constantView), slam::ConstantRelationView<From, To, 2>>);
+    static_assert(std::same_as<decltype(runtime), slam::RuntimeConstantRelation<From, To>>);
+    static_assert(std::same_as<decltype(runtimeView), slam::RuntimeConstantRelationView<From, To>>);
+    check(variable);
+    check(variableView);
+    check(constant);
+    check(constantView);
+    check(runtime);
+    check(runtimeView);
+
+    begins[1] = 1;
+    EXPECT_EQ(variable.size(0), 1);
+    EXPECT_EQ(variableView.size(1), 3);
+
+    // All six bindings see the same externally modified entry.
+    indices[0] = 3;
+    EXPECT_EQ(variable[0][0], 3);
+    EXPECT_EQ(variableView[0][0], 3);
+    EXPECT_EQ(constant[0][0], 3);
+    EXPECT_EQ(constantView[0][0], 3);
+    EXPECT_EQ(runtime[0][0], 3);
+    EXPECT_EQ(runtimeView[0][0], 3);
+  }
+
+  // Destroying the relations leaves the caller's arrays intact.
+  EXPECT_EQ(begins.size(), 3);
+  EXPECT_EQ(indices.size(), 4);
+  EXPECT_EQ(indices[0], 3);
+}
+
+TEST(slam_static_asserts, relation_aliases_allow_independent_flat_positions)
+{
+  using From = slam::RangeSet<std::int32_t, double>;
+  using To = slam::RangeSet<std::int64_t, double>;
+  using Flat = std::int32_t;
+  using Variable = slam::VariableRelation<From, To, Flat>;
+  using VariableView = slam::VariableRelationView<From, To, Flat>;
+  using Constant = slam::ConstantRelation<From, To, 1, Flat>;
+  using ConstantView = slam::ConstantRelationView<From, To, 1, Flat>;
+  using Runtime = slam::RuntimeConstantRelation<From, To, Flat>;
+  using RuntimeView = slam::RuntimeConstantRelationView<From, To, Flat>;
+
+  auto check = []<typename R>() {
+    static_assert(slam::RelationLike<R>);
+    static_assert(std::same_as<typename R::FlatPositionType, Flat>);
+    static_assert(std::same_as<typename R::RelationSubset::ElementType, To::PositionType>);
+  };
+  check.template operator()<Variable>();
+  check.template operator()<VariableView>();
+  check.template operator()<Constant>();
+  check.template operator()<ConstantView>();
+  check.template operator()<Runtime>();
+  check.template operator()<RuntimeView>();
+
+  From from(1);
+  const auto toPosition = static_cast<To::PositionType>(std::numeric_limits<Flat>::max()) + 7;
+  To to(toPosition + 1);
+  axom::Array<Flat> begins {0, 1};
+  axom::Array<To::PositionType> indices {toPosition};
+  auto relation = slam::make_variable_relation(from, to, begins, indices);
+  static_assert(std::same_as<decltype(relation), Variable>);
+  ASSERT_TRUE(relation.isValid());
+  EXPECT_EQ(relation[0][0], toPosition);
+}
+
+TEST(slam_static_asserts, indirection_set_aliases_borrow_storage)
+{
+  axom::Array<double> elements {2.5, 7.5};
+  {
+    using ArraySetType = slam::ArrayIndirectionSet<int, double>;
+    using ViewSetType = slam::ArrayViewIndirectionSet<int, double>;
+    ArraySetType arraySet(ArraySetType::SetBuilder().size(2).data(&elements));
+    ViewSetType viewSet(ViewSetType::SetBuilder().size(2).data(elements.view()));
+    EXPECT_EQ(&arraySet[0], elements.data());
+    EXPECT_EQ(&viewSet[0], elements.data());
+    elements[0] = 4.5;
+    EXPECT_EQ(arraySet.at(0), 4.5);
+    EXPECT_EQ(viewSet.at(0), 4.5);
+  }
+  EXPECT_EQ(elements.size(), 2);
+  EXPECT_EQ(elements[0], 4.5);
 }

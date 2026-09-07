@@ -43,8 +43,8 @@ using NodeSet = slam::PositionSet<PositionType, ElementType>;
 using FaceSet = slam::PositionSet<PositionType, ElementType>;
 using CornerSet = slam::PositionSet<PositionType, ElementType>;
 
-using ZoneSubset = slam::ArraySet<PositionType, ElementType>;
-using NodeSubset = slam::ArraySet<PositionType, ElementType>;
+using ZoneSubset = slam::ArrayIndirectionSet<PositionType, ElementType>;
+using NodeSubset = slam::ArrayIndirectionSet<PositionType, ElementType>;
 
 enum
 {

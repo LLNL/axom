@@ -29,16 +29,17 @@ Sets model mesh entities such as vertices, zones, materials or refinement levels
 Ordered sets associate each entity with a position so Slam code can iterate
 and index efficiently.
 
-Use ``RangeSet`` for contiguous ranges. Use ``ArraySet`` or ``ArrayViewSet``
-when set elements are stored in Axom buffers.
+Use ``RangeSet`` for contiguous ranges and ``ArrayIndirectionSet`` or
+``ArrayViewIndirectionSet`` to bind element storage managed outside the set.
 
 ``ProductSet`` represents every pair of positions in its first and second sets.
-Its flat position type must be signed integral and able to represent both sets'
-position types. Construction checks that their sizes are nonnegative and that
-their product fits the flat position type. Either set may be empty. The virtual
-interface also checks that its materialized row fits an ``axom::Array`` size;
-the concrete interface represents rows implicitly. Referenced sets must outlive
-the product and retain their sizes while it is used for indexing or iteration.
+Its flat position type must be signed integral and able to represent the position
+type of both sets. Construction checks that their sizes are nonnegative and that
+their product fits the flat position type. Either set may be empty.
+The virtual interface also checks that its materialized row 
+fits an ``axom::Array`` size. The concrete interface represents rows implicitly.
+Referenced sets must outlive the product and retain their sizes 
+while it is used for indexing or iteration.
 
 
 .. _relation-concept-label:
@@ -88,20 +89,18 @@ Sizes and component shapes
 A bound map has a positive number of components per set element, even when
 the set is empty. Every dimension of a tensor component shape must be positive.
 Built-in stride constructors and ``make_map`` helpers check component counts
-and shape products. Maps check storage sizes before allocating or resizing
-storage. Custom stride policies must obey the same contract. The scalar count must
-fit both the map's position type and ``axom::IndexType``. A supplied
-``ArrayView`` must have exactly that many entries; these checks are active in
-Debug and Release builds. For raw-pointer helpers, the caller remains responsible
-for providing sufficient storage.
+and shape products. Maps check storage sizes before allocating or resizing storage.
+Custom stride policies must obey the same contract. The scalar count must fit
+both the map's position type and ``axom::IndexType``. A supplied ``ArrayView``
+must have exactly that many entries. For raw-pointer helpers,
+the caller remains responsible for providing sufficient storage.
 
-These are map requirements, not restrictions on every stride policy. Ordered
-sets may use a negative stride to traverse a range in reverse.
+Note that these are restrictions for map and do not generally apply to all stride policies.
+For example, ordered sets may use a negative stride to traverse a range in reverse.
 
 The referenced set's size must remain consistent with the map's value buffer.
-Do not mutate an inherited stride policy or component shape after construction;
-construct or assign a map with the desired shape instead. ``isValid()`` safely
-rejects invalid component counts or storage sizes, but it does not repair them.
+As such, construct or assign a map with the desired shape rather than 
+mutating an inherited stride policy or component shape. 
 
 BivariateMap reads component count and shape from its inner Map, including after
 assignment through ``getMap()``. Its outer stride-policy base remains for source
@@ -109,18 +108,17 @@ and layout compatibility. Changing that base does not configure the map.
 ``isValid()`` also checks that the inner Map's entry count agrees with the
 bivariate set. Iterators are invalidated after replacing storage or changing shape.
 
-Value constness follows the backing storage. A const owning map returns const
-references. A const map backed by ``ArrayView<T>`` still returns ``T&``; one
+Value constness follows the backing storage. A const owning map returns const references.
+A const map backed by ``ArrayView<T>`` returns ``T&``, while one
 backed by ``ArrayView<const T>`` returns ``const T&``. Direct access, scalar
-iterator access, and submaps preserve these same reference types.
+iterator access, and submaps preserve these reference types.
 
 Set positions and elements
 --------------------------
 
 The set whose elements receive values is the map's mathematical *domain*.
 For ``Map``, this is the set returned by ``set()``. For ``BivariateMap``, it is
-the bivariate set, whose elements are pairs of positions in its first and
-second sets.
+the bivariate set, whose elements are pairs of positions in its first and second sets.
 
 Map access uses positions. If a set contains elements ``{10, 20, 30, 40}``,
 ``map(1)`` accesses the value associated with element ``20``. ``map.index(1)``
@@ -130,14 +128,13 @@ accesses that component by its flat storage position.
 
 ``BivariateMap::index(flatPosition)`` returns the coordinate pair stored at
 that flat position in the bivariate set. Its existing two-argument overload,
-``index(firstPosition, secondPosition)``, searches for the position within
-the selected row.
+``index(firstPosition, secondPosition)``, searches for the position within the selected row.
 
 Submaps
 -------
 
-A ``SubMap`` selects entries from a parent map and accesses their values in
-the parent. It stores the parent pointer and a set of selected parent positions.
+A ``SubMap`` selects entries from a parent map and accesses their values in the parent.
+It stores the parent pointer and a set of selected parent positions.
 Its component count and shape come from the parent.
 
 ``submap.set()`` returns those selected positions. ``submap.index(i)`` follows
@@ -222,6 +219,9 @@ and reference qualification. Element and mapped-value constness still matters.
    * - ``Validatable<T>``
      - Const ``isValid(false)`` returns a Boolean result. This is an optional
        capability, independent of the object concepts above.
+
+Concept semantics
+-----------------
 
 A concept checks expressions and types, rather than runtime consistency. 
 A set's ``size()`` must be nonnegative and agree with ``empty()``.

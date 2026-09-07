@@ -20,7 +20,7 @@
 #include "axom/slic.hpp"
 
 #include "axom/slam/Set.hpp"
-#include "axom/slam/Traits.hpp"
+#include "axom/slam/Concepts.hpp"
 
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/OffsetPolicies.hpp"

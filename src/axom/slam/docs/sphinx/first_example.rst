@@ -111,9 +111,10 @@ a ``VariableCardinality`` policy and ``axom::Array`` storage:
    :language: C++
 
 .. note:: Each alias has a ``*View`` counterpart (``ConstantRelationView``, ``VariableRelationView``)
-   that refers to buffers managed elsewhere through an ``axom::ArrayView``,
-   rather than ``axom::Array`` buffers it manages. When a configuration is not covered by an alias,
-   spell out the ``StaticRelation`` policies directly. See :ref:`aliases-label`.
+   that stores ``axom::ArrayView`` values rather than pointers to external
+   ``axom::Array`` objects. Both forms borrow their buffers and their sets.
+   When a configuration is not covered by an alias, use the  ``StaticRelation`` policies directly.
+   See :ref:`aliases-label`.
 
 We declare them as:
 

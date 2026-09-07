@@ -14,6 +14,7 @@
 #include "axom/spin.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
+#include "axom/slam/IndirectionSet.hpp"
 
 #include "axom/fmt.hpp"
 
@@ -271,7 +272,8 @@ private:
   using MortonIndexType = std::uint64_t;
 
   using VertexSet = typename DelaunayTriangulation::IAMeshType::VertexSet;
-  using VertexIndirectionSet = slam::ArraySet<typename VertexSet::PositionType, axom::IndexType>;
+  using VertexIndirectionSet =
+    slam::ArrayIndirectionSet<typename VertexSet::PositionType, axom::IndexType>;
 
 private:
   /**

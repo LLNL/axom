@@ -13,7 +13,6 @@
  */
 
 #include "axom/slam/OrderedSet.hpp"
-#include "axom/slam/Traits.hpp"
 
 namespace axom::slam
 {
@@ -105,9 +104,5 @@ using PositionSet = GenericRangeSet<P, E, policies::ZeroOffset<P>>;
  */
 template <typename P = slam::DefaultPositionType, typename E = slam::DefaultElementType>
 using RangeSet = GenericRangeSet<P, E>;
-
-// Check that RangeSet and PositionSet are set-like
-static_assert(IterableSetLike<RangeSet<>>, "RangeSet supports positional access and iteration");
-static_assert(is_set_like_v<PositionSet<>>, "PositionSet models the set contract");
 
 }  // end namespace axom::slam

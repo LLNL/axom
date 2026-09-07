@@ -11,7 +11,6 @@
 
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/Set.hpp"
-#include "axom/slam/Aliases.hpp"
 #include "axom/slam/Map.hpp"
 #include "axom/slam/MapBuilders.hpp"
 

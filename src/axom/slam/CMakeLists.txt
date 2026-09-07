@@ -30,7 +30,6 @@ set(slam_headers
     FieldRegistry.hpp
     ModularInt.hpp
     Ranges.hpp
-    Traits.hpp
     Utilities.hpp
     detail/SizeChecks.hpp
 

@@ -18,47 +18,42 @@ This page explains the choices that come up most often, and a small set of
 aliases in ``axom/slam/Aliases.hpp`` that name the most common relation configurations.
 
 The aliases are a convenience for these common types and are preferred when applicable.
-Use the policies directly when needed, e.g. for compile-time strides, indirection buffers
+Use the policies directly for configurations not covered by an alias, such as indirection buffers
 backed by ``std::vector`` or C-arrays, or specialized cardinalities.
 
-Where data lives: managed buffers and views
-===========================================
+Buffer binding and ownership
+============================
 
-The most common choice is the indirection policy, which selects the
-buffer that a set, relation or map indexes through. Slam's default is
-``policies::ArrayIndirection``, backed by an ``axom::Array``:
+An indirection policy selects how values are accessed. The containing Slam
+type determines whether the buffer is owned or borrowed.
+
+``policies::ArrayIndirection``
+  An ordered set or static relation stores a pointer to an external
+  ``axom::Array``. That array object must outlive the binding.
+  A ``Map`` instead stores the policy's buffer type by value, so a map using
+  this policy owns its array. ``BivariateMap`` uses such a map internally.
+
+``policies::ArrayViewIndirection``
+  Sets, static relations, and maps store an ``axom::ArrayView`` by value.
+  They do not own its allocation. The allocation must remain valid while
+  the view is used, including during asynchronous execution.
+
+For example, this map owns its values but borrows its set:
 
 .. code-block:: C++
 
    using Cells = slam::RangeSet<>;
    Cells cells(numCells);
+   slam::Map<double, Cells> density(&cells);
 
-   slam::Map<double, Cells> density(&cells);   // axom::Array indirection (the default)
+An ``ArrayView`` binding does not make the entire object device-usable.
+The interface and operations must support device execution, and every
+referenced set and buffer must be accessible there.
 
-The two most common indirection policies differ in who manages the buffer's lifetime:
-
-``policies::ArrayIndirection`` (``axom::Array``)
-  The Slam object allocates the buffer and frees it when the object is destroyed.
-  Lifetime is tied to the Slam object.
-
-``policies::ArrayViewIndirection`` (``axom::ArrayView``)
-  The Slam object refers to a buffer that something else (e.g an application array,
-  a registry, another Slam object) allocated and will free.
-  That buffer must outlive the Slam object. An ``ArrayView`` is small and trivially
-  copyable, so it can be handed to a generic algorithm and can be captured in a device kernel.
-
-.. note:: "Manages the buffer" vs. "views a buffer" is a statement about
-   lifetime, not about which piece of code logically owns the data.
-   A map with an ``axom::Array`` indirection frees its buffer as part of its destruction.
-   A map with an ``axom::ArrayView`` indirection leaves that to whoever created the buffer.
-   When a Slam object merely wraps an ``axom::Array`` that lives elsewhere,
-   an ``ArrayView`` indirection is the accurate description 
-   even though the underlying ``axom::Array`` owns its memory.
-
-Two other indirections are supplied for interoperability and to test the interface:
-``policies::STLVectorIndirection`` indexes an ``std::vector``, 
-and ``policies::CArrayIndirection`` indexes a raw pointer.
-Use them when adapting existing storage of that kind.
+``policies::STLVectorIndirection`` and ``policies::CArrayIndirection`` remain
+available for adapting ``std::vector`` and raw-pointer storage. The vector
+policy is host-only. As with ``ArrayIndirection``, sets and static relations
+borrow the vector object; a vector-backed map holds its vector by value.
 
 
 Fixing parameters at compile time
@@ -86,8 +81,9 @@ The set and relation aliases
 A handful of relation configurations recur across mesh code and require spelling out all
 six ``StaticRelation`` policy parameters, so a named shorthand can be helpful.
 The aliases below cover them, together with the two indirection set types.
-Each has a ``*View`` form that uses an ``axom::ArrayView`` (a buffer managed elsewhere) 
-in place of the ``axom::Array`` (a buffer the object manages).
+Each relation alias has a ``*View`` form that stores an ``axom::ArrayView``
+instead of a pointer to an external ``axom::Array``. Both forms borrow storage
+and their from/to sets. The suffix names the binding type rather than a conversion operation.
 
 Sets:
 
@@ -95,9 +91,10 @@ Sets:
   A contiguous range of positions, with no separate storage. Use it for dense
   ranges of mesh entities such as cells, nodes, materials or levels.
 
-``ArraySet<P,E>`` / ``ArrayViewSet<P,E>``
-  A set whose element ids are read from an ``axom::Array`` it manages (``ArraySet``) 
-  or from an ``axom::ArrayView`` of a buffer managed elsewhere (``ArrayViewSet``).
+``ArrayIndirectionSet<P,E>`` / ``ArrayViewIndirectionSet<P,E>``
+  Sets defined in ``axom/slam/IndirectionSet.hpp``. The first binds an external
+  ``axom::Array`` by pointer while the second stores an ``axom::ArrayView`` by value.
+  Neither owns its elements.
 
 Relations:
 
@@ -109,8 +106,21 @@ Relations:
   As above, but with the (constant) cardinality supplied at runtime.
 
 ``VariableRelation<FromSet, ToSet>``
-  A static, CSR-shaped relation whose cardinality varies per from-set entity;
-  it holds begin offsets and relation indices.
+  A static relation whose cardinality varies per from-set entity.
+  It binds begin offsets and to-set positions in external buffers.
+
+Every relation alias fixes its entry type to ``ToSet::PositionType``.
+Entries identify positions in the to-set, not its element values.
+The final optional template argument, ``FlatPosType``, controls flat-storage positions
+and begin offsets. It defaults to a signed type that can represent both sets' positions.
+It must represent from-set positions and the total number of stored entries;
+it need not represent to-set positions, which have their own type.
+
+For example, ``VariableRelation<FromSet, ToSet, std::int64_t>`` uses 64-bit flat positions
+regardless of the to-set's position type. The compile-time constant form uses the same choice as
+``ConstantRelation<FromSet, ToSet, N, std::int64_t>``.
+Use ``make_variable_relation`` or the constant-relation helpers when the
+buffers already exist and deduction is more convenient than naming the type.
 
 The dynamic relation classes, ``DynamicConstantRelation`` and
 ``DynamicVariableRelation``, keep their own names because their connectivity can

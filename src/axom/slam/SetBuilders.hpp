@@ -96,8 +96,10 @@ RangeSet<PosType, ElemType> make_range_set(LowerType lower, UpperType upper)
 /*!
  * \brief Make an indirection set whose elements indirect through an axom::ArrayView.
  *
- * The element type is deduced from \a view; the set is device-capable
- * (ArrayView indirection is host-device). The set's size matches the view.
+ * The element type is deduced from \a view. The set borrows its allocation
+ * and has the same size. 
+ * \pre Device use also requires a concrete interface and
+ * accessible storage.
  *
  * \param view the backing array view
  * \return an ArrayViewIndirectionSet<PosType, T>

@@ -326,7 +326,7 @@ private:
  * \brief A policy class for sets with C-style array-based indirection
  *
  * \note Indexes a raw pointer, for interoperation with C-style array storage.
- *  For an \c axom::Array buffer the object manages, use \c ArrayIndirection;
+ *  For an external \c axom::Array buffer, use \c ArrayIndirection;
  *  for an \c axom::ArrayView of a buffer managed elsewhere, use \c ArrayViewIndirection.
  */
 template <typename PositionType, typename ElementType>
@@ -379,7 +379,7 @@ private:
  * \brief A policy class for sets with std::vector-based indirection
  *
  * \note Indexes a (host-only) \c std::vector, for interoperation with existing \c std::vector storage.
- *  For an \c axom::Array buffer the object manages, use \c ArrayIndirection; 
+ *  For an external \c axom::Array buffer, use \c ArrayIndirection;
  *  for an \c axom::ArrayView of a buffer managed elsewhere, use \c ArrayViewIndirection.
  */
 template <typename PositionType, typename ElementType>
@@ -484,11 +484,9 @@ private:
 /**
  * \brief A policy class for sets with axom::ArrayView-based indirection
  *
- * \note Indexes an \c axom::ArrayView; the lifetime-counterpart to \c ArrayIndirection.
- *  It holds an \c axom::ArrayView by value and refers to a buffer whose lifetime is managed elsewhere, 
- *  so that backing allocation must outlive the set, map or relation that uses it.
- *  Because \c axom::ArrayView is trivially copyable, Slam objects using this policy 
- *  can be captured by value into device kernels.
+ * \note Holds an \c axom::ArrayView by value. The backing allocation must outlive
+ *  the set, map, or relation that uses it. This policy alone does not certify
+ *  device use: operations and all referenced objects must also be accessible.
  */
 template <typename PositionType, typename ElementType>
 using ArrayViewIndirection =

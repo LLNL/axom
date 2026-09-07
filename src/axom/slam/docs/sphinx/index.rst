@@ -82,10 +82,9 @@ Current limitations
 -------------------
 
 * Slam is under active development with many features planned.
-* Support for GPUs in Slam is under development.
 * Slam's policy-based design yields highly configurable types that are named
   through type aliases. ``axom/slam/Aliases.hpp`` provides shorthands for the
-  most common set and relation configurations (see :ref:`aliases-label`); we are
+  most common static-relation configurations (see :ref:`aliases-label`); we are
   also investigating *Generator* classes, where enumerated strings could define
   the related types within a mesh configuration.
 

@@ -24,7 +24,6 @@
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/RelationSet.hpp"
 #include "axom/slam/RelationBuilders.hpp"
-#include "axom/slam/Traits.hpp"
 #include "axom/slam/policies/CardinalityPolicies.hpp"
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/OffsetPolicies.hpp"
@@ -634,6 +633,7 @@ static_assert(
 // BivariateSetLike refines SetLike: a bivariate set is a set of coordinates.
 static_assert(slam::SetLike<Product>);
 static_assert(slam::SetLike<ConcreteRange>);
+static_assert(slam::SetLike<slam::PositionSet<>>);
 static_assert(slam::BivariateSetLike<BivariateSetLikeIsASet>);
 static_assert(slam::SetLike<BivariateSetLikeIsASet>);
 static_assert(slam::SetLike<MinimalBivariateSet>);
@@ -702,7 +702,6 @@ static_assert(slam::detail::RelationSetSource<ExplicitFirstIndexRelation>);
 static_assert(slam::RelationLike<DynamicConstantRelation>);
 static_assert(slam::RelationLike<DistinctElementDynamicConstantRelation>);
 static_assert(slam::RelationLike<const DynamicConstantRelation&>);
-static_assert(slam::is_relation_like_v<DynamicConstantRelation>);
 static_assert(slam::RelationLike<MinimalRelation>);
 static_assert(!slam::detail::RelationSetSource<MinimalRelation>);
 static_assert(!slam::detail::RelationSetSource<DynamicVariableRelation>);
@@ -840,6 +839,9 @@ using OwningIndirection = policies::ArrayIndirection<Position, double>;
 using OwningMap = slam::Map<double, ConcreteRange, OwningIndirection>;
 
 static_assert(slam::SizePolicy<Size>);
+static_assert(!slam::StridePolicy<Size>);
+static_assert(!slam::SizePolicy<ScalarStride>);
+static_assert(!slam::SetLike<Size>);
 static_assert(slam::SizePolicy<EmptySize>);
 static_assert(slam::detail::SetSizePolicyFor<RuntimeSize, int>);
 static_assert(slam::detail::SetSizePolicyFor<Size, int>);
@@ -940,17 +942,7 @@ static_assert(slam::TriviallyCopyableRepresentation<const UnarySubMap>);
 static_assert(slam::TriviallyCopyableRepresentation<DerivedSubMap>);
 static_assert(slam::TriviallyCopyableRepresentation<NestedSubMap>);
 
-// Compatibility trait spellings remain exact Boolean wrappers around the concepts.
-static_assert(slam::is_set_like_v<Range> == slam::SetLike<Range>);
-static_assert(slam::is_bivariate_set_like_v<Product> == slam::BivariateSetLike<Product>);
-static_assert(slam::is_relation_like_v<VariableRelation> == slam::RelationLike<VariableRelation>);
-static_assert(slam::is_map_like_v<BinaryMap> == slam::MapLike<BinaryMap>);
-static_assert(slam::is_map_over_v<BinaryMap, Product> == slam::MapOver<BinaryMap, Product>);
-static_assert(slam::is_size_policy_v<EmptySize> == slam::SizePolicy<EmptySize>);
-static_assert(slam::is_stride_policy_v<MatrixStride> == slam::StridePolicy<MatrixStride>);
-static_assert(slam::is_position_like_v<StrongPosition> == slam::PositionLike<StrongPosition>);
-static_assert(!slam::is_set_like_v<int>);
-static_assert(!slam::is_map_over_v<int, ConcreteRange>);
+static_assert(!slam::MapOver<int, ConcreteRange>);
 
 using LegacyDistinctRelation = slam::Relation<std::int32_t, double>;
 static_assert(std::same_as<typename LegacyDistinctRelation::RelationVec::value_type, std::int32_t>);
