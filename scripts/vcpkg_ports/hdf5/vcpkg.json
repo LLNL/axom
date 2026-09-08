@@ -39,6 +39,7 @@
     },
     "parallel": {
       "description": "parallel support for HDF5",
+      "$comment": "Parallel HDF5 is unsupported when the triplet links the C/C++ runtime statically.",
       "supports": "!staticcrt",
       "dependencies": [
         "mpi"
