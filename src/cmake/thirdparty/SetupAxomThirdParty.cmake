@@ -205,6 +205,16 @@ if(TARGET mfem AND MFEM_USE_MPI)
     blt_patch_target(NAME mfem DEPENDS_ON mpi)
 endif()
 
+# MFEM installations built with GNU Make list their static CAMP dependency
+# before Umpire in MFEM_EXT_LIBS.  Umpire references CAMP symbols, so append
+# the CAMP target to preserve the required static-library link order.
+if(TARGET mfem AND TARGET camp)
+    get_target_property(_mfem_libs mfem INTERFACE_LINK_LIBRARIES)
+    if("${_mfem_libs}" MATCHES "camp")
+        blt_patch_target(NAME mfem DEPENDS_ON camp)
+    endif()
+endif()
+
 # caliper-enabled mfem in device configs have extra dependencies which are not properly exported
 if(TARGET mfem)
     # check if mfem depends on caliper
