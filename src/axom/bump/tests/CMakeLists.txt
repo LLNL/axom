@@ -14,7 +14,6 @@
 
 set(gtest_bump_tests
     bump_blueprint_quadrature_mesh.cpp
-    bump_clipfield.cpp
     bump_cutfield.cpp
     bump_coordset_extents.cpp
     bump_make_explicit_coordset.cpp
@@ -38,7 +37,8 @@ set(bump_tests_depends_on
 # Policy-based tests are separated to reduce compile/link time and memory requirements
 #-------------------------------------------------------------------------------------
 
-set(bump_policy_tests 
+set(bump_policy_tests
+    bump_clipfield
     bump_mergemeshes)
 
 foreach(test ${bump_policy_tests})
