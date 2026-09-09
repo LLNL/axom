@@ -18,6 +18,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ## [Unreleased] - Release date yyyy-mm-dd
 
+### Added
+- Slam: Adds `Concepts.hpp` with semantic concepts for sets, relations, maps, and
+  policy capabilities.
+
 ## [Version 0.15.0] - Release date 2026-08-28
 
 ### Added
