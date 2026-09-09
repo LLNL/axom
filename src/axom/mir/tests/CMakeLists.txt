@@ -12,9 +12,7 @@
 # Specify list of tests
 #------------------------------------------------------------------------------
 
-set(gtest_mir_tests
-    mir_elvira2d.cpp
-    mir_elvira3d.cpp)
+set(gtest_mir_tests)
 
 set(mir_tests_depends_on 
     slic
@@ -29,7 +27,9 @@ set(policy_mir_tests
     mir_coupled
     mir_coupled3d
     mir_equiz2d
-    mir_equiz3d)
+    mir_equiz3d
+    mir_elvira2d
+    mir_elvira3d)
 
 foreach(test ${policy_mir_tests})
    blt_list_append(TO gtest_mir_tests ELEMENTS ${test}_seq.cpp)
@@ -52,8 +52,7 @@ foreach(test ${gtest_mir_tests})
     axom_add_test( NAME ${test_name}
                    COMMAND ${test_name}_test )
 
-    if(ENABLE_HIP AND test MATCHES "^mir_(coupled_hip|equiz2d_hip|elvira2d)\\.cpp$")
+    if(ENABLE_HIP AND test MATCHES "^mir_(coupled_hip|equiz2d_hip|elvira2d_hip)\\.cpp$")
         axom_force_release_for_target(${test_name}_test)
     endif()
 endforeach()
-
