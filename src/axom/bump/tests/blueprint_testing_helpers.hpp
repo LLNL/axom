@@ -101,7 +101,14 @@ inline void psplit(const std::string& filepath, std::string& path, std::string& 
   filename = p.baseName();
 }
 
-inline std::string dataDirectory() { return AXOM_DATA_DIR; }
+inline std::string dataDirectory()
+{
+#if defined(AXOM_DATA_DIR)
+  return AXOM_DATA_DIR;
+#else
+  return {};
+#endif
+}
 
 inline std::string testData(const std::string& filename)
 {
@@ -814,12 +821,22 @@ public:
    * \param currentMesh The current mesh to be compared to a baseline (or saved, if rebaselining).
    * \param tolerance The tolerance to use when comparing the Blueprint results.
    *
-   * \return true on success; false if the test did not pass.
+   * \return true on success or when external baseline data is unavailable;
+   *         false if the test did not pass.
    */
   template <typename ExecSpace = axom::SEQ_EXEC>
   bool test(const std::string& name, const conduit::Node& currentMesh, double tolerance = 2.6e-6)
   {
     AXOM_ANNOTATE_SCOPE("test");
+
+    if(dataDirectory().empty())
+    {
+      SLIC_INFO(
+        axom::fmt::format("Skipping baseline comparison for {} because AXOM_DATA_DIR is not set.",
+                          name));
+      return true;
+    }
+
     bool retval = true;
     std::string baselineName(yamlRoot(name));
     const auto paths = baselinePaths<ExecSpace>();
