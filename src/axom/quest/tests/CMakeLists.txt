@@ -291,6 +291,20 @@ if(AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE AND CONDUIT_FOUND AND RAJA_FOUND AND A
         FOLDER      axom/quest/tests
         )
 
+    axom_add_executable(
+        NAME        quest_tetrahedron_clip_utils_test
+        SOURCES     quest_tetrahedron_clip_utils.cpp
+        OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON  ${quest_mesh_clipper_depends}
+        FOLDER      axom/quest/tests
+        )
+
+    axom_add_test(
+        NAME          quest_tetrahedron_clip_utils
+        COMMAND       quest_tetrahedron_clip_utils_test
+        NUM_MPI_TASKS 1
+        )
+
     # 3D shaping tests.  No 2D shaping in this feature, at least for now.
     set(_nranks 1)
 

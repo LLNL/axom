@@ -14,12 +14,13 @@
  *        another primal primitive
  */
 
-#include "axom/primal/geometry/Tetrahedron.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Octahedron.hpp"
 #include "axom/primal/geometry/Polyhedron.hpp"
 #include "axom/primal/geometry/Tetrahedron.hpp"
 
 #include "axom/primal/operators/clip.hpp"
+#include "axom/primal/operators/detail/intersection_volume_sphere_tet_impl.hpp"
 
 namespace axom
 {

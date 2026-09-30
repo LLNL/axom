@@ -524,6 +524,11 @@ void reportResult(benchmark::State& state,
       state.counters[counter] = static_cast<double>(stats[counter].to_int64());
     }
   }
+  if(stats.has_path("adaptiveSubdivisions"))
+  {
+    state.counters["adaptiveSubdivisions"] =
+      static_cast<double>(stats["adaptiveSubdivisions"].to_int64());
+  }
   if((shape == "cone" || shape == "cyl" || shape == "sor") && stats.has_path("clipsCandidates") &&
      stats.has_path("clipsSum") && stats.has_path("clipsOn"))
   {
@@ -534,7 +539,10 @@ void reportResult(benchmark::State& state,
     {
       // Refining one octree leaf replaces it with eight children, increasing
       // the leaf count by seven.
-      state.counters["adaptiveSubdivisions"] = (leaf_count - root_count) / 7.0;
+      if(!stats.has_path("adaptiveSubdivisions"))
+      {
+        state.counters["adaptiveSubdivisions"] = (leaf_count - root_count) / 7.0;
+      }
       state.counters["unresolvedLeafFraction"] = unresolved_count / leaf_count;
     }
   }
