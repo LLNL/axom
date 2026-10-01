@@ -745,7 +745,7 @@ public:
         continue;
       }
       // Remove completed send requests to free memory
-      int completed_send_index = request_index - 1;
+      size_t completed_send_index = request_index - 1;
       if(completed_send_index + 1 != isendRequests.size())
       {
         isendRequests[completed_send_index] = std::move(isendRequests.back());
