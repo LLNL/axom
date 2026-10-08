@@ -922,11 +922,11 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
   {
     // Otherwise actually add a Function
     std::string fullName = utilities::string::appendPrefix(m_name, name);
-    // First check if the function already exists
-    auto iter = m_functionChildren.find(fullName);
-    if(iter != m_functionChildren.end())
+    // First check if the function already exists,
+    // including a nested function declared through a different Container
+    if(auto function = getChildInternal<Function>(name))
     {
-      return *iter->second;
+      return *function;
     }
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(sidreGroup == nullptr,

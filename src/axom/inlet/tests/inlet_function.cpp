@@ -337,6 +337,32 @@ TEST(inlet_function, reader_function_outlives_reader)
   EXPECT_DOUBLE_EQ(function.call<double>(4.0), 8.0);
 }
 
+TEST(inlet_function, function_declaration_is_idempotent_across_containers)
+{
+  // Redeclaring a function returns the existing one, whichever Container declared it first
+  for(const bool firstOnRoot : {true, false})
+  {
+    for(const bool secondOnRoot : {true, false})
+    {
+      auto inlet = createBasicInlet("group = { f = function() return 2.0 end }");
+      auto& group = inlet.addStruct("group");
+
+      auto declare = [&](bool onRoot) -> axom::inlet::Verifiable<axom::inlet::Function>& {
+        return onRoot ? inlet.addFunction("group/f", FunctionTag::Double, {})
+                      : group.addFunction("f", FunctionTag::Double, {});
+      };
+
+      auto& first = declare(firstOnRoot);
+      auto& second = declare(secondOnRoot);
+      EXPECT_EQ(&first, &second) << firstOnRoot << secondOnRoot;
+      EXPECT_EQ(1u, group.getChildFunctions().size());
+      EXPECT_TRUE(inlet.getGlobalContainer().getChildFunctions().empty());
+      EXPECT_TRUE(inlet.verify());
+      EXPECT_DOUBLE_EQ(group["f"].call<double>(), 2.0);
+    }
+  }
+}
+
 TEST(inlet_function, simple_void_to_double_through_container)
 {
   std::string testString = "function foo () return 9.64 end";
