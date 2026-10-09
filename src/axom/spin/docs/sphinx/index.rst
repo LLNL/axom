@@ -8,10 +8,10 @@ Spin User Guide
 ===============
 
 The Spin component of Axom provides several index data structures to accelerate
-spatial queries.  The Morton code classes relate each point in a region of
-interest to a point on a one-dimensional space filling curve, and the
-RectangularLattice helps in the computation of bin coordinates.  The UniformGrid
-and ImplicitGrid classes build one-level indexes of non-intersecting bins, while
+spatial queries.  Mortonizer and Hilbertizer map integer points to positions on
+one-dimensional space-filling curves.  RectangularLattice computes integer bin
+coordinates for spatial points.  The UniformGrid and ImplicitGrid classes build
+one-level indexes of non-intersecting bins, while
 the BVHTree and SpatialOctree classes build nesting hierarchies of bounding
 boxes indexing a region of interest.
 
