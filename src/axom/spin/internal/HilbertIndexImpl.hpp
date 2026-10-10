@@ -6,8 +6,9 @@
 
 #pragma once
 
-/*! \file HilbertIndexImpl.hpp
- *  \brief Scalar Skilling axes/transpose transform and bit-plane packing.
+/*! 
+ * \file HilbertIndexImpl.hpp
+ * \brief Implements Hilbert index encoding and decoding.
  */
 
 #include "axom/core/Macros.hpp"
@@ -18,14 +19,14 @@
 
 namespace axom::spin::internal::hilbert
 {
-/// Skilling transform for inputs that satisfy Hilbertizer's preconditions.
+/// Converts between integer grid points and 1D Hibert index.
 template <typename CoordType, typename IndexType, int DIM>
 struct HilbertTransform
 {
   using PointType = primal::Point<CoordType, DIM>;
   // Use unsigned words of at least 32 bits to avoid integer promotion in shifts.
   using WorkType =
-    typename std::conditional<(sizeof(IndexType) <= 4), std::uint32_t, std::uint64_t>::type;
+    typename std::conditional_t<(sizeof(IndexType) <= 4), std::uint32_t, std::uint64_t>;
 
   AXOM_HOST_DEVICE static IndexType toIndex(const PointType& point, int bits)
   {
@@ -35,7 +36,7 @@ struct HilbertTransform
       axes[axis] = static_cast<WorkType>(point[axis]);
     }
 
-    // Undo orientation changes, from the largest coordinate bit downwards.
+    // Undo orientation changes, from the largest coordinate bit downwards
     for(int bit = bits - 1; bit > 0; --bit)
     {
       const WorkType q = WorkType {1} << bit;
@@ -55,7 +56,7 @@ struct HilbertTransform
       }
     }
 
-    // Gray-encode the axes, then apply the orientation correction.
+    // Gray-encode the axes, then apply the orientation correction
     for(int axis = 1; axis < DIM; ++axis)
     {
       axes[axis] ^= axes[axis - 1];

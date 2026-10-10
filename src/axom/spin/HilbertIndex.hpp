@@ -6,17 +6,18 @@
 
 #pragma once
 
-/*! \file HilbertIndex.hpp
- *  \brief Bijective Hilbert indexing of bounded integer lattice points.
+/*! 
+ * \file HilbertIndex.hpp
+ * \brief Bijective Hilbert indexing of bounded integer lattice points.
  */
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/NumericLimits.hpp"
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/slic/interface/slic.hpp"
 #include "axom/spin/internal/HilbertIndexImpl.hpp"
 
-#include <cassert>
 #include <type_traits>
 
 namespace axom::spin
@@ -24,23 +25,21 @@ namespace axom::spin
 /*!
  * \brief Maps 2D, 3D, or 4D integer lattice points to and from a Hilbert index.
  *
- * Implements John Skilling's axes/transpose algorithm from "Programming the
- * Hilbert curve", AIP Conference Proceedings 707, 381 (2004),
- * https://doi.org/10.1063/1.1751381. See the algorithm appendix.
+ * Implements John Skilling's "Programming the Hilbert curve",
+ * AIP Conference Proceedings 707, 381 (2004), https://doi.org/10.1063/1.1751381.
  * Axis zero occupies the most significant bit in each interleaved bit plane.
  * At depth 1, the 2D curve visits (0,0), (0,1), (1,1), (1,0).
  *
  * At a valid depth bits, each point in [0, 2^bits - 1]^DIM maps to exactly one
  * index in [0, 2^(DIM * bits) - 1], and vice versa. Use the same depth to encode
- * and decode. Store the depth with the key.
+ * and decode, and store the depth with the key.
  *
- * Quantize floating-point coordinates and handle cells outside the valid range
- * before encoding. Debug assertions check conversion preconditions. Release
- * builds leave these checks to the caller.
+ * Floating-point coordinates should be quantized before encoding,
+ * and cells outside the valid range need to be clamped.
  *
  * Signed types use only nonnegative values. With 64-bit coordinates, uint64_t
- * keys allow 32, 21, and 16 bits per axis in 2D, 3D, and 4D. The corresponding
- * limits for int64_t keys are 31, 21, and 15 bits per axis.
+ * keys allow 32, 21, and 16 bits per axis in 2D, 3D, and 4D.
+ * The corresponding limits for int64_t keys are 31, 21, and 15 bits per axis.
  * Narrower coordinate types can reduce these limits.
  *
  * \tparam CoordType Integral coordinate type other than bool, at most 64 bits.
@@ -76,6 +75,8 @@ struct Hilbertizer
   /// Whether all coordinates are nonnegative and fit in the requested depth.
   AXOM_HOST_DEVICE static bool isValidPoint(const PointType& point, int bits = MAX_UNIQUE_BITS)
   {
+    using UnsignedCoord = typename std::make_unsigned<CoordType>::type;
+
     if(!isValidDepth(bits))
     {
       return false;
@@ -91,8 +92,7 @@ struct Hilbertizer
           return false;
         }
       }
-      // CoordType may be wider than IndexType. Compare before narrowing.
-      using UnsignedCoord = typename std::make_unsigned<CoordType>::type;
+      // CoordType may be wider than IndexType, compare before narrowing.
       if(static_cast<UnsignedCoord>(point[axis]) >= limit)
       {
         return false;
@@ -128,7 +128,7 @@ struct Hilbertizer
    */
   AXOM_HOST_DEVICE static IndexType toIndex(const PointType& point, int bits = MAX_UNIQUE_BITS)
   {
-    assert(isValidPoint(point, bits));
+    SLIC_ASSERT(isValidPoint(point, bits));
     return HilbertTransform::toIndex(point, bits);
   }
 
@@ -140,7 +140,7 @@ struct Hilbertizer
    */
   AXOM_HOST_DEVICE static PointType toPoint(IndexType index, int bits = MAX_UNIQUE_BITS)
   {
-    assert(isValidIndex(index, bits));
+    SLIC_ASSERT(isValidIndex(index, bits));
     return HilbertTransform::toPoint(index, bits);
   }
 

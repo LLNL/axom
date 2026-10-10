@@ -4,21 +4,27 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/*! \file spin_hilbert_index.cpp
- *  \brief Tests the Hilbert curve convention and reversible integer conversions.
+/*!
+ * \file spin_hilbert_index.cpp
+ * \brief Tests the Hilbert curve convention and reversible integer conversions.
  */
 
 #include "axom/spin/HilbertIndex.hpp"
+#include "axom/core/Array.hpp"
+#include "axom/core/ArrayView.hpp"
 #include "axom/core/execution/for_all.hpp"
-#include "axom/core/memory_management.hpp"
 #include "axom/slic.hpp"
 #include "gtest/gtest.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <limits>
 #include <random>
+#include <string>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace
@@ -176,53 +182,91 @@ void allDepths()
   }
 }
 
-template <typename Index, int DIM>
-void everyCoordinateWidth()
+using IntegerTypes =
+  std::tuple<std::int8_t, std::uint8_t, std::int16_t, std::uint16_t, std::int32_t, std::uint32_t, std::int64_t, std::uint64_t>;
+constexpr std::size_t NUM_INTEGER_TYPES = std::tuple_size_v<IntegerTypes>;
+
+// Register every coordinate/index pair as its own GoogleTest type parameter.
+template <std::size_t... I>
+auto integerPairs(std::index_sequence<I...>)
+  -> ::testing::Types<std::pair<std::tuple_element_t<I / NUM_INTEGER_TYPES, IntegerTypes>,
+                                std::tuple_element_t<I % NUM_INTEGER_TYPES, IntegerTypes>>...>;
+
+using IntegerPairs =
+  decltype(integerPairs(std::make_index_sequence<NUM_INTEGER_TYPES * NUM_INTEGER_TYPES> {}));
+
+struct IntegerPairNames
 {
-  allDepths<std::int8_t, Index, DIM>();
-  allDepths<std::uint8_t, Index, DIM>();
-  allDepths<std::int16_t, Index, DIM>();
-  allDepths<std::uint16_t, Index, DIM>();
-  allDepths<std::int32_t, Index, DIM>();
-  allDepths<std::uint32_t, Index, DIM>();
-  allDepths<std::int64_t, Index, DIM>();
-  allDepths<std::uint64_t, Index, DIM>();
-}
+  template <typename Pair>
+  static std::string GetName(int)
+  {
+    using Coord = typename Pair::first_type;
+    using Index = typename Pair::second_type;
+    return std::string("Coord") + (std::is_signed_v<Coord> ? "Int" : "UInt") +
+      std::to_string(sizeof(Coord) * 8) + "_Index" + (std::is_signed_v<Index> ? "Int" : "UInt") +
+      std::to_string(sizeof(Index) * 8);
+  }
+};
 
 template <int DIM>
-void everyIndexWidth()
+void checkWideCoordinates()
 {
-  everyCoordinateWidth<std::int8_t, DIM>();
-  everyCoordinateWidth<std::uint8_t, DIM>();
-  everyCoordinateWidth<std::int16_t, DIM>();
-  everyCoordinateWidth<std::uint16_t, DIM>();
-  everyCoordinateWidth<std::int32_t, DIM>();
-  everyCoordinateWidth<std::uint32_t, DIM>();
-  everyCoordinateWidth<std::int64_t, DIM>();
-  everyCoordinateWidth<std::uint64_t, DIM>();
+  using H = axom::spin::Hilbertizer<std::uint64_t, std::uint8_t, DIM>;
+  const std::uint64_t max_coord = (std::uint64_t {1} << H::MAX_UNIQUE_BITS) - 1;
+  EXPECT_TRUE(H::isValidPoint(typename H::PointType(max_coord)));
+  for(int axis = 0; axis < DIM; ++axis)
+  {
+    typename H::PointType point;
+    point[axis] = std::uint64_t {1} << 40;
+    EXPECT_FALSE(H::isValidPoint(point));
+    point[axis] |= 1;
+    EXPECT_FALSE(H::isValidPoint(point));
+  }
 }
+
+#if defined(AXOM_DEBUG)
+template <int DIM>
+void checkInvalidPreconditions()
+{
+  using H = axom::spin::Hilbertizer<int, std::int32_t, DIM>;
+  axom::slic::ScopedAbortToThrow abort_guard;
+  typename H::PointType negative;
+  negative[0] = -1;
+  typename H::PointType outside;
+  outside[DIM - 1] = 4;
+  EXPECT_THROW(H::toIndex(negative, 2), axom::slic::SlicAbortException);
+  EXPECT_THROW(H::toIndex(outside, 2), axom::slic::SlicAbortException);
+  EXPECT_THROW(H::toPoint(-1, 2), axom::slic::SlicAbortException);
+  EXPECT_THROW(H::toPoint(1 << (2 * DIM), 2), axom::slic::SlicAbortException);
+  EXPECT_THROW(H::toIndex(typename H::PointType(), 0), axom::slic::SlicAbortException);
+  EXPECT_THROW(H::toPoint(0, H::MAX_UNIQUE_BITS + 1), axom::slic::SlicAbortException);
+}
+#endif
 
 template <typename ExecSpace, int DIM>
 void checkExecutionSpace()
 {
   using H = axom::spin::Hilbertizer<std::uint32_t, std::uint64_t, DIM>;
   constexpr int count = 128;
-  auto* results =
-    axom::allocate<std::uint64_t>(count * 3, axom::execution_space<ExecSpace>::allocatorID());
+  axom::Array<std::uint64_t> results(count * 3,
+                                     count * 3,
+                                     axom::execution_space<ExecSpace>::allocatorID());
+  const axom::ArrayView<std::uint64_t> results_view = results.view();
+
   axom::for_all<ExecSpace>(count, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
     const int bits = 1 + static_cast<int>(i % H::MAX_UNIQUE_BITS);
     const auto mask = axom::numeric_limits<std::uint64_t>::max() >> (64 - bits * DIM);
     const auto key = (0x9e3779b97f4a7c15ULL * (i + 1)) & mask;
     const auto point = H::toPoint(key, bits);
-    results[3 * i] = H::toIndex(point, bits);
-    results[3 * i + 1] = axom::spin::convertPointToHilbert<std::uint64_t>(
+    results_view[3 * i] = H::toIndex(point, bits);
+    results_view[3 * i + 1] = axom::spin::convertPointToHilbert<std::uint64_t>(
       axom::spin::convertHilbertToPoint<std::uint32_t, DIM>(key, bits),
       bits);
-    results[3 * i + 2] = H::isValidPoint(point, bits) && H::isValidIndex(key, bits);
+    results_view[3 * i + 2] = H::isValidPoint(point, bits) && H::isValidIndex(key, bits);
   });
-  std::uint64_t host[count * 3];
-  axom::copy(host, results, sizeof(host));
-  axom::deallocate(results);
+
+  const axom::Array<std::uint64_t> host(results,
+                                        axom::execution_space<axom::SEQ_EXEC>::allocatorID());
   for(int i = 0; i < count; ++i)
   {
     const int bits = 1 + i % H::MAX_UNIQUE_BITS;
@@ -233,9 +277,56 @@ void checkExecutionSpace()
     EXPECT_EQ(host[3 * i + 2], 1);
   }
 }
+
+template <int DIM>
+void checkExecutionSpaces()
+{
+  checkExecutionSpace<axom::SEQ_EXEC, DIM>();
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+  #if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)
+  checkExecutionSpace<axom::CUDA_EXEC<256>, DIM>();
+  #endif
+
+  #if defined(AXOM_USE_HIP) && defined(RAJA_ENABLE_HIP)
+  checkExecutionSpace<axom::HIP_EXEC<256>, DIM>();
+  #endif
+#endif
+}
 }  // namespace
 
-TEST(spin_hilbert_index, known_orientation)
+template <typename Pair>
+class Hilbertizer2DIntegerTest : public ::testing::Test
+{ };
+
+template <typename Pair>
+class Hilbertizer3DIntegerTest : public ::testing::Test
+{ };
+
+template <typename Pair>
+class Hilbertizer4DIntegerTest : public ::testing::Test
+{ };
+
+TYPED_TEST_SUITE(Hilbertizer2DIntegerTest, IntegerPairs, IntegerPairNames);
+TYPED_TEST_SUITE(Hilbertizer3DIntegerTest, IntegerPairs, IntegerPairNames);
+TYPED_TEST_SUITE(Hilbertizer4DIntegerTest, IntegerPairs, IntegerPairNames);
+
+TYPED_TEST(Hilbertizer2DIntegerTest, every_depth)
+{
+  allDepths<typename TypeParam::first_type, typename TypeParam::second_type, 2>();
+}
+
+TYPED_TEST(Hilbertizer3DIntegerTest, every_depth)
+{
+  allDepths<typename TypeParam::first_type, typename TypeParam::second_type, 3>();
+}
+
+TYPED_TEST(Hilbertizer4DIntegerTest, every_depth)
+{
+  allDepths<typename TypeParam::first_type, typename TypeParam::second_type, 4>();
+}
+
+TEST(Hilbertizer2DTest, known_orientation)
 {
   using H2 = axom::spin::Hilbertizer<std::int64_t, std::uint64_t, 2>;
   const H2::PointType square[] = {{0, 0}, {0, 1}, {1, 1}, {1, 0}};
@@ -244,6 +335,7 @@ TEST(spin_hilbert_index, known_orientation)
     EXPECT_EQ(H2::toIndex(square[key], 1), key);
     EXPECT_EQ(H2::toPoint(key, 1), square[key]);
   }
+
   const H2::PointType curve[] = {{0, 0},
                                  {1, 0},
                                  {1, 1},
@@ -265,6 +357,10 @@ TEST(spin_hilbert_index, known_orientation)
     EXPECT_EQ(H2::toIndex(curve[key], 2), key);
     EXPECT_EQ(H2::toPoint(key, 2), curve[key]);
   }
+}
+
+TEST(Hilbertizer3DTest, known_orientation)
+{
   using H3 = axom::spin::Hilbertizer<std::int64_t, std::int64_t, 3>;
   EXPECT_EQ(H3::toIndex({5, 10, 20}, 5), 7865);
   EXPECT_EQ(H3::toPoint(7865, 5), (H3::PointType {5, 10, 20}));
@@ -277,7 +373,7 @@ TEST(spin_hilbert_index, known_orientation)
   }
 }
 
-TEST(spin_hilbert_index, four_dimensional_orientation)
+TEST(Hilbertizer4DTest, known_orientation)
 {
   using H = axom::spin::Hilbertizer<std::uint32_t, std::uint64_t, 4>;
   // At depth one, use binary-reflected Gray codes with axis zero first.
@@ -294,67 +390,61 @@ TEST(spin_hilbert_index, four_dimensional_orientation)
   }
 }
 
-TEST(spin_hilbert_index, exhaustive_bijection_adjacency_and_prefixes)
+TEST(Hilbertizer2DTest, exhaustive_bijection_adjacency_and_prefixes)
 {
   for(int bits = 1; bits <= 5; ++bits)
   {
     SCOPED_TRACE(bits);
-    exhaustive<2>(bits);
-    exhaustive<3>(bits);
+    ASSERT_NO_FATAL_FAILURE(exhaustive<2>(bits));
   }
+}
+
+TEST(Hilbertizer3DTest, exhaustive_bijection_adjacency_and_prefixes)
+{
+  for(int bits = 1; bits <= 5; ++bits)
+  {
+    SCOPED_TRACE(bits);
+    ASSERT_NO_FATAL_FAILURE(exhaustive<3>(bits));
+  }
+}
+
+TEST(Hilbertizer4DTest, exhaustive_bijection_adjacency_and_prefixes)
+{
   for(int bits = 1; bits <= 4; ++bits)
   {
     SCOPED_TRACE(bits);
-    exhaustive<4>(bits);
+    ASSERT_NO_FATAL_FAILURE(exhaustive<4>(bits));
   }
 }
 
-TEST(spin_hilbert_index, every_depth_and_integer_width)
+TEST(Hilbertizer2DTest, wide_coordinates_are_validated_before_narrowing)
 {
-  everyIndexWidth<2>();
-  everyIndexWidth<3>();
-  everyIndexWidth<4>();
+  checkWideCoordinates<2>();
 }
 
-TEST(spin_hilbert_index, wide_coordinates_are_validated_before_narrowing)
+TEST(Hilbertizer3DTest, wide_coordinates_are_validated_before_narrowing)
 {
-  using H = axom::spin::Hilbertizer<std::uint64_t, std::uint8_t, 2>;
-  EXPECT_TRUE(H::isValidPoint({15, 15}));
-  EXPECT_FALSE(H::isValidPoint({std::uint64_t {1} << 40, 0}));
-  EXPECT_FALSE(H::isValidPoint({0, (std::uint64_t {1} << 40) | 1}));
+  checkWideCoordinates<3>();
 }
 
-#if !defined(NDEBUG) && GTEST_HAS_DEATH_TEST
-TEST(spin_hilbert_index, invalid_preconditions)
+TEST(Hilbertizer4DTest, wide_coordinates_are_validated_before_narrowing)
 {
-  using H = axom::spin::Hilbertizer<int, std::int32_t, 2>;
-  EXPECT_DEATH_IF_SUPPORTED(H::toIndex({-1, 0}, 2), "isValidPoint");
-  EXPECT_DEATH_IF_SUPPORTED(H::toIndex({0, 4}, 2), "isValidPoint");
-  EXPECT_DEATH_IF_SUPPORTED(H::toPoint(-1, 2), "isValidIndex");
-  EXPECT_DEATH_IF_SUPPORTED(H::toPoint(16, 2), "isValidIndex");
-  EXPECT_DEATH_IF_SUPPORTED(H::toIndex({0, 0}, 0), "isValidPoint");
-  EXPECT_DEATH_IF_SUPPORTED(H::toPoint(0, H::MAX_UNIQUE_BITS + 1), "isValidIndex");
+  checkWideCoordinates<4>();
 }
+
+#if defined(AXOM_DEBUG)
+TEST(Hilbertizer2DTest, invalid_preconditions) { checkInvalidPreconditions<2>(); }
+
+TEST(Hilbertizer3DTest, invalid_preconditions) { checkInvalidPreconditions<3>(); }
+
+TEST(Hilbertizer4DTest, invalid_preconditions) { checkInvalidPreconditions<4>(); }
 #endif
 
-AXOM_CUDA_TEST(spin_hilbert_index, execution_spaces)
-{
-  checkExecutionSpace<axom::SEQ_EXEC, 2>();
-  checkExecutionSpace<axom::SEQ_EXEC, 3>();
-  checkExecutionSpace<axom::SEQ_EXEC, 4>();
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA) && \
-  defined(AXOM_USE_UMPIRE)
-  checkExecutionSpace<axom::CUDA_EXEC<256>, 2>();
-  checkExecutionSpace<axom::CUDA_EXEC<256>, 3>();
-  checkExecutionSpace<axom::CUDA_EXEC<256>, 4>();
-#endif
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_HIP) && defined(RAJA_ENABLE_HIP) && \
-  defined(AXOM_USE_UMPIRE)
-  checkExecutionSpace<axom::HIP_EXEC<256>, 2>();
-  checkExecutionSpace<axom::HIP_EXEC<256>, 3>();
-  checkExecutionSpace<axom::HIP_EXEC<256>, 4>();
-#endif
-}
+AXOM_CUDA_TEST(Hilbertizer2DTest, execution_spaces) { checkExecutionSpaces<2>(); }
+
+AXOM_CUDA_TEST(Hilbertizer3DTest, execution_spaces) { checkExecutionSpaces<3>(); }
+
+AXOM_CUDA_TEST(Hilbertizer4DTest, execution_spaces) { checkExecutionSpaces<4>(); }
 
 int main(int argc, char* argv[])
 {
