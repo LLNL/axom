@@ -39,7 +39,7 @@ packages:
   scr:
     require:
       - spec: "@3.0.1"
-  # Unreleased v2026.07.2 (develop as of 10/7/26)
+  # v2026.07.2
   umpire:
     require:
-      - spec: "@git.a74bd731992348a4860f040a5748ba1a7abc7a95=develop"
+      - spec: "@git.356dd9cf245360c07f9a09fbe39a9f3c83e77f0c=develop"
