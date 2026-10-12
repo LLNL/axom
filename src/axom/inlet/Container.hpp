@@ -776,13 +776,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Accept a function in place of a primitive value.
+   * \brief Accept a function in place of a primitive value or collection.
    *
-   * The function is read from the same input path as the concrete field.
-   * If the input supplies a function, Inlet treats the concrete entry as absent.
+   * The function and concrete entry use the same input path. When the input
+   * supplies a function, Inlet treats the concrete entry as absent.
    * A default value may still populate the concrete entry.
    *
-   * \param [in] valueName    Path of the concrete value, relative to this Container
+   * \param [in] valueName    Path of the concrete value or collection,
+   *                          relative to this Container
    * \param [in] ret_type     The return type. Must not be FunctionTag::Void
    * \param [in] arg_types    The argument types of the function
    * \param [in] description  Description of the function

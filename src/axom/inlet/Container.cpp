@@ -881,7 +881,12 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
       utilities::string::removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
     detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     std::vector<VariantKey> indices;
-    if(isDict)
+    if(containsFunctionValueAlternative(name))
+    {
+      // The input provided a function, so treat the concrete collection as absent.
+      markRetrievalStatus(*container.sidreGroup(), ReaderResult::NotFound);
+    }
+    else if(isDict)
     {
       indices = detail::PrimitiveArrayHelper<VariantKey, T>::add(container, m_reader, lookupPath);
     }

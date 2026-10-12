@@ -525,6 +525,90 @@ TEST(inlet_function, function_value_alternative_rejects_function_name_collisions
   }
 }
 
+TEST(inlet_function, function_value_alternative_array_is_container_independent)
+{
+  for(const bool functionOnRoot : {true, false})
+  {
+    auto inlet = createBasicInlet("group = { values = function() return {1.0, 2.0, 3.0} end }");
+    auto& group = inlet.addStruct("group");
+
+    if(functionOnRoot)
+    {
+      inlet.addFunctionAsValueAlternative("group/values", FunctionTag::Vector, {});
+    }
+    else
+    {
+      group.addFunctionAsValueAlternative("values", FunctionTag::Vector, {});
+    }
+    inlet.addDoubleArray("group/values");
+
+    EXPECT_TRUE(inlet.verify());
+    EXPECT_FALSE(inlet.contains("group/values"));
+    EXPECT_TRUE(group.containsFunctionValueAlternative("values"));
+    const auto result = group.getFunctionValueAlternative("values").call<FunctionType::Vector>();
+    EXPECT_DOUBLE_EQ(result[0], 1.0);
+    EXPECT_DOUBLE_EQ(result[1], 2.0);
+    EXPECT_DOUBLE_EQ(result[2], 3.0);
+  }
+}
+
+TEST(inlet_function, function_value_alternative_applies_to_every_collection_kind)
+{
+  // Arrays and dictionaries use separate read paths.
+  // When a function is supplied function, the former are treated as absent.
+  const std::string input = R"(
+    arr = function() return {1.0, 2.0} end
+    dict = function() return {3.0} end
+    varr = function() return {4.0} end
+    vdict = function() return {5.0} end
+    plain = {first = 1.0, second = 2.0}
+  )";
+  auto inlet = createBasicInlet(input);
+  inlet.getGlobalContainer().strict();
+
+  for(const std::string name : {"arr", "dict", "varr", "vdict", "plain"})
+  {
+    inlet.addFunctionAsValueAlternative(name, FunctionTag::Vector, {});
+  }
+  inlet.addDoubleArray("arr");
+  inlet.addDoubleDictionary("dict");
+  inlet.addVariantArray("varr");
+  inlet.addVariantDictionary("vdict");
+  inlet.addDoubleDictionary("plain");
+
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_TRUE(inlet.unexpectedNames().empty());
+  const auto& root = inlet.getGlobalContainer();
+  EXPECT_EQ(root.getFunctionValueAlternativeNames(),
+            (std::vector<std::string> {"arr", "dict", "varr", "vdict"}));
+  for(const std::string name : {"arr", "dict", "varr", "vdict"})
+  {
+    EXPECT_FALSE(inlet.contains(name)) << name;
+    EXPECT_TRUE(inlet.isUserProvided(name)) << name;
+    EXPECT_TRUE(root.containsFunctionValueAlternative(name)) << name;
+  }
+  EXPECT_DOUBLE_EQ(root.getFunctionValueAlternative("vdict").call<FunctionType::Vector>()[0], 5.0);
+
+  // A concrete collection is unaffected by its declared alternative
+  EXPECT_TRUE(inlet.contains("plain"));
+  EXPECT_FALSE(root.containsFunctionValueAlternative("plain"));
+  const auto plain = inlet["plain"].get<std::unordered_map<std::string, double>>();
+  EXPECT_DOUBLE_EQ(plain.at("first"), 1.0);
+  EXPECT_DOUBLE_EQ(plain.at("second"), 2.0);
+}
+
+TEST(inlet_function, function_value_alternative_collection_rejects_unrelated_wrong_type)
+{
+  // A scalar is neither a collection nor a function
+  auto inlet = createBasicInlet("values = 3.0");
+  inlet.addFunctionAsValueAlternative("values", FunctionTag::Vector, {});
+  inlet.addDoubleArray("values");
+
+  EXPECT_FALSE(inlet.verify());
+  EXPECT_FALSE(inlet.contains("values"));
+  EXPECT_FALSE(inlet.getGlobalContainer().containsFunctionValueAlternative("values"));
+}
+
 TEST(inlet_function, function_value_alternative_declaration_is_idempotent)
 {
   // Matches addFunction's behavior: redeclaring returns the existing entry
