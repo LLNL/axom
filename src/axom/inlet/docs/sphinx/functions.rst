@@ -61,6 +61,55 @@ In Lua, the following operations on the ``Vector`` type are supported (for ``Vec
 #. Dimension retrieval: ``d = u.dim``
 #. Component retrieval: ``d = u.x``, ``d = u.y``, ``d = u.z``
 
+Function Value Alternatives
+---------------------------
+
+Some schemas accept either a concrete value or a function that computes it.
+Declare the function alternative before the concrete entry, using the same input path:
+
+.. literalinclude:: ../../examples/functions.cpp
+   :start-after: _inlet_function_value_alternative_schema_start
+   :end-before: _inlet_function_value_alternative_schema_end
+   :language: C++
+   :dedent: 2
+
+Inlet reads entries as you declare them, so declaring the alternative afterwards is an error.
+Paths are relative to each ``Container`` and use slashes for nested names.
+The two declarations may use different Containers when they resolve to the same input path.
+The example accepts either Lua input:
+
+.. code-block:: Lua
+
+  scale = 2.0
+
+  -- or
+  scale = function() return 3.0 end
+
+After verification, check for a function before retrieving the value:
+
+.. literalinclude:: ../../examples/functions.cpp
+   :start-after: _inlet_function_value_alternative_access_start
+   :end-before: _inlet_function_value_alternative_access_end
+   :language: C++
+   :dedent: 2
+
+For the shared input name, ``contains`` reports a concrete value, including a default.
+``containsFunctionValueAlternative`` reports a supplied function. 
+Either supplied form counts as user-provided input, and strict Containers recognize both,
+but check for the function first since a concrete default can exist alongside it.
+
+``addFunctionAsValueAlternative`` returns a ``Verifiable<Function>``.
+Calling ``required()`` on it requires a function. On the other hand, calling ``required()``
+on the concrete entry requires a concrete value and one form does not satisfy the other's requirement.
+To accept either form but require one, leave both entries optional and register a root ``Container``
+verifier that checks for either form.
+
+Your application must call the function and validate its result. Inlet does not call it
+automatically or apply the concrete entry's constraints, such as a range, to its result.
+
+Generated Sphinx and JSON Schema output omit the alternative function entry,
+so user's must document the function form in user-facing documentation when desired.
+
 Accessing
 ---------
 
@@ -100,7 +149,7 @@ Inlet reports errors according to when they occur:
 
    * - Problem
      - Reported through
-   * - Invalid keys or undefined entries
+   * - Invalid keys, undefined entries, or ambiguous schema names
      - SLIC diagnostics
    * - Missing required input, wrong types, or failed verifiers
      - ``verify()`` and ``VerificationError``
