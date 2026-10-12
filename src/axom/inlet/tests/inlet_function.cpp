@@ -5,10 +5,13 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/slic.hpp"
-#include "axom/sidre.hpp"
+
+#include "axom/core/utilities/FileUtilities.hpp"
 
 #include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
+#include "axom/inlet/JSONSchemaWriter.hpp"
+#include "axom/inlet/SphinxWriter.hpp"
 
 #include "gtest/gtest.h"
 
@@ -622,6 +625,49 @@ TEST(inlet_function, function_value_alternative_declaration_is_idempotent)
   EXPECT_EQ(1u, group.getChildFunctions().size());
   EXPECT_TRUE(inlet.getGlobalContainer().getChildFunctions().empty());
   EXPECT_DOUBLE_EQ(group.getFunctionValueAlternative("scale").call<double>(), 2.0);
+}
+
+TEST(inlet_function, function_value_alternative_is_not_documented_under_its_schema_name)
+{
+  // The alternative is stored under an internal schema name
+  // which should not leak into generated documentation
+  axom::utilities::filesystem::TempFile doc_file("inlet_function_value_alternative_docs", ".rst");
+  {
+    auto inlet = createBasicInlet(R"(
+      scale = function() return 2.0 end
+      ordinary_inlet_function_alternative = function() return 9.0 end
+    )");
+    inlet.addFunctionAsValueAlternative("scale", FunctionTag::Double, {}, "a scale callback");
+    inlet.addDouble("scale", "a scale");
+    inlet.addFunction("ordinary_inlet_function_alternative", FunctionTag::Double, {});
+    EXPECT_TRUE(inlet.verify());
+    // The alternative is a real schema entry, just under an internal name
+    EXPECT_EQ(2u, inlet.getGlobalContainer().getChildFunctions().size());
+    inlet.write(axom::inlet::SphinxWriter(doc_file.getPath()));
+  }
+
+  const std::string contents = doc_file.getFileContents();
+  EXPECT_EQ(std::string::npos, contents.find("scale_inlet_function_alternative"));
+  EXPECT_NE(std::string::npos, contents.find("ordinary_inlet_function_alternative"));
+  EXPECT_NE(std::string::npos, contents.find("scale"));
+}
+
+TEST(inlet_function, function_value_alternative_is_not_in_json_schema)
+{
+  // JSONSchemaWriter documents Fields only; check that the internal name stays out
+  axom::utilities::filesystem::TempFile schema_file("inlet_function_value_alternative_schema",
+                                                    ".json");
+  {
+    auto inlet = createBasicInlet("scale = function() return 2.0 end");
+    inlet.addFunctionAsValueAlternative("scale", FunctionTag::Double, {}, "a scale callback");
+    inlet.addDouble("scale", "a scale");
+    EXPECT_TRUE(inlet.verify());
+    inlet.write(axom::inlet::JSONSchemaWriter(schema_file.getPath()));
+  }
+
+  const std::string contents = schema_file.getFileContents();
+  EXPECT_EQ(std::string::npos, contents.find("_inlet_function_alternative"));
+  EXPECT_NE(std::string::npos, contents.find("scale"));
 }
 
 TEST(inlet_function, function_value_alternative_can_be_required)
