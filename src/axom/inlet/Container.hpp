@@ -18,10 +18,11 @@
 #include <string>
 #include <functional>
 #include <set>
+#include <tuple>
 #include <typeindex>
 #include <unordered_map>
-#include <tuple>
 #include <type_traits>
+#include <utility>
 #include <variant>
 
 #include "axom/fmt.hpp"
@@ -734,8 +735,8 @@ public:
    * \param [in] ret_type     The return type of the function
    * \param [in] arg_types    The argument types of the function
    * \param [in] description  Description of the function
-   * \param [in] pathOverride The path within the input file to read from, if
-   * different than the structure of the Sidre datastore
+   * \param [in] pathOverride The path within the input file to read from,
+   * if different than the structure of the Sidre datastore
    *
    * \return Reference to the created Function
    *****************************************************************************
@@ -1251,21 +1252,44 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Adds the Function.
+   * \brief Stores a Function that the Reader has already read.
    * 
-   * \param [in] The Sidre Group corresponding to the Function that will be added.
-   * \param [in] func The actual callable to store
-   * \param [in] The complete Container sequence for the Container this Function will be added to.
-   * \param [in] The Container sequence for the Container this Function will be added to, 
-   * relative to this Container.
+   * \param [in] sidreGroup The Sidre Group for the Function
+   * \param [in] func       The callable to store
+   * \param [in] fullName   Full Container path for the Function
+   * \param [in] name       Function path relative to this Container
    * 
-   * \return The child Function matching the target name.
+   * \return The stored Function.
    *****************************************************************************
    */
-  Function& addFunctionInternal(axom::sidre::Group* sidreGroup,
-                                FunctionVariant&& func,
-                                const std::string& fullName,
-                                const std::string& name);
+  Function& storeFunction(axom::sidre::Group* sidreGroup,
+                          FunctionVariant&& func,
+                          const std::string& fullName,
+                          const std::string& name);
+
+  /*!
+   *****************************************************************************
+   * \brief Adds a Function with separate schema and input names.
+   *
+   * The public addFunction() method uses the same name for both.
+   *
+   * \param [in] schemaName   Name of the Function in the schema
+   * \param [in] inputName    Path to read from in the input file
+   * \param [in] ret_type     The return type of the function
+   * \param [in] arg_types    The argument types of the function
+   * \param [in] description  Description of the function
+   * \param [in] pathOverride The path within the input file to read from,
+   * if different than the structure of the Sidre datastore
+   *
+   * \return The Function at schemaName
+   *****************************************************************************
+   */
+  Verifiable<Function>& addFunctionInternal(const std::string& schemaName,
+                                            const std::string& inputName,
+                                            FunctionTag ret_type,
+                                            const std::vector<FunctionTag>& arg_types,
+                                            const std::string& description,
+                                            const std::string& pathOverride);
 
   axom::sidre::View* baseGet(const std::string& name) const;
 

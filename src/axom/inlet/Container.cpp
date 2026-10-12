@@ -310,16 +310,16 @@ Field& Container::addField(axom::sidre::Group* sidreGroup,
   return *(emplace_result.first->second);
 }
 
-Function& Container::addFunctionInternal(axom::sidre::Group* sidreGroup,
-                                         FunctionVariant&& func,
-                                         const std::string& fullName,
-                                         const std::string& name)
+Function& Container::storeFunction(axom::sidre::Group* sidreGroup,
+                                   FunctionVariant&& func,
+                                   const std::string& fullName,
+                                   const std::string& name)
 {
   const size_t found = name.find_last_of("/");
   auto currContainer = this;
   if(found != std::string::npos)
   {
-    // This will add any intermediate Containers (if not present) before adding the field
+    // Add any intermediate Containers (if not present) before storing the function
     currContainer = &addContainer(name.substr(0, found));
   }
   const auto& emplace_result = currContainer->m_functionChildren.emplace(
@@ -362,16 +362,15 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
     // Otherwise actually add a Field
     std::string fullName = utilities::string::appendPrefix(m_name, name);
     // First check if the field already exists
-    auto iter = m_fieldChildren.find(fullName);
-    if(iter != m_fieldChildren.end())
+    if(auto iter = m_fieldChildren.find(fullName); iter != m_fieldChildren.end())
     {
       return *iter->second;
     }
+
     axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
     SLIC_ERROR_IF(sidreGroup == nullptr,
                   fmt::format("Failed to create Sidre group with name '{0}'", fullName));
-    // If a pathOverride is specified, needed when Inlet-internal groups
-    // are part of fullName
+    // pathOverride is needed when Inlet-internal groups are part of fullName
     std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
     lookupPath =
       utilities::string::removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
@@ -897,17 +896,27 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
                                              const std::string& description,
                                              const std::string& pathOverride)
 {
-  // If it has indices, we're adding a function to an array
-  // of structs, so we need to iterate over the subcontainers
-  // corresponding to elements of the array
+  return addFunctionInternal(name, name, ret_type, arg_types, description, pathOverride);
+}
+
+Verifiable<Function>& Container::addFunctionInternal(const std::string& schemaName,
+                                                     const std::string& inputName,
+                                                     const FunctionTag ret_type,
+                                                     const std::vector<FunctionTag>& arg_types,
+                                                     const std::string& description,
+                                                     const std::string& pathOverride)
+{
+  // An indexed input path declares the function for every element in an array of structs.
   std::vector<std::reference_wrapper<Verifiable<Function>>> funcs;
 
   const bool is_nested = transformFromNestedElements(
     std::back_inserter(funcs),
-    name,
-    [&name, &ret_type, &arg_types, &description](Container& subcontainer,
-                                                 const std::string& path) -> Verifiable<Function>& {
-      return subcontainer.addFunction(name, ret_type, arg_types, description, path);
+    inputName,
+    [&schemaName, &inputName, &ret_type, &arg_types, &description](
+      Container& subcontainer,
+      const std::string& path) -> Verifiable<Function>& {
+      return subcontainer
+        .addFunctionInternal(schemaName, inputName, ret_type, arg_types, description, path);
     });
   if(is_nested)
   {
@@ -920,11 +929,10 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
   }
   else
   {
-    // Otherwise actually add a Function
-    std::string fullName = utilities::string::appendPrefix(m_name, name);
-    // First check if the function already exists,
-    // including a nested function declared through a different Container
-    if(auto function = getChildInternal<Function>(name))
+    // Add a Function for a non-nested input path.
+    std::string fullName = utilities::string::appendPrefix(m_name, schemaName);
+    // This also finds a nested declaration made through another Container.
+    if(auto function = getChildInternal<Function>(schemaName))
     {
       return *function;
     }
@@ -932,14 +940,14 @@ Verifiable<Function>& Container::addFunction(const std::string& name,
     SLIC_ERROR_IF(sidreGroup == nullptr,
                   fmt::format("Failed to create Sidre group with name '{0}'", fullName));
     detail::addSignatureToGroup(ret_type, arg_types, sidreGroup);
-    // If a pathOverride is specified, needed when Inlet-internal groups
-    // are part of fullName
-    std::string lookupPath = (pathOverride.empty()) ? fullName : pathOverride;
+    // pathOverride omits Inlet's internal groups from the input path.
+    std::string lookupPath =
+      (pathOverride.empty()) ? utilities::string::appendPrefix(m_name, inputName) : pathOverride;
     lookupPath =
       utilities::string::removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
     detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto func = m_reader.getFunction(lookupPath, ret_type, arg_types);
-    return addFunctionInternal(sidreGroup, std::move(func), fullName, name);
+    return storeFunction(sidreGroup, std::move(func), fullName, schemaName);
   }
 }
 
