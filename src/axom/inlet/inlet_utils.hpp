@@ -114,7 +114,7 @@ bool checkFlag(const axom::sidre::Group& target, axom::sidre::Group& root, const
 * \param [in] type The type of the object as a string, for use in the warning message
 * \param [in] errors An optional vector of errors to append to in the case
 * of verification failure
-* 
+*
 * \return False if the object was required but \p condition was false, True otherwise
 * \post If the function returns False, a warning message will be emitted
 *****************************************************************************
@@ -136,6 +136,8 @@ const std::string COLLECTION_GROUP_NAME = "_inlet_collection";
 const std::string COLLECTION_INDICES_NAME = "_inlet_collection_indices";
 const std::string STRUCT_COLLECTION_FLAG = "_inlet_struct_collection";
 const std::string VARIANT_STRUCT_COLLECTION_FLAG = "_inlet_variant_struct_collection";
+const std::string FUNCTION_ALTERNATIVE_SUFFIX = "_inlet_function_alternative";
+const std::string FUNCTION_ALTERNATIVE_NAME = "_inlet_function_alternative_name";
 const std::string REQUIRED_FLAG = "required";
 const std::string STRICT_FLAG = "strict";
 }  // namespace detail

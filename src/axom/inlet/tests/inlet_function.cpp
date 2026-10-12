@@ -363,6 +363,382 @@ TEST(inlet_function, function_declaration_is_idempotent_across_containers)
   }
 }
 
+TEST(inlet_function, function_value_alternative_selects_supplied_representation)
+{
+  auto inlet = createBasicInlet(R"(
+    function label () return 'computed' end
+    scale = 4.0
+  )");
+
+  inlet.addFunctionAsValueAlternative("label", FunctionTag::String, {});
+  inlet.addString("label");
+
+  inlet.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  inlet.addDouble("scale");
+
+  EXPECT_TRUE(inlet.verify());
+  auto& container = inlet.getGlobalContainer();
+  EXPECT_FALSE(inlet.contains("label"));
+  ASSERT_TRUE(container.containsFunctionValueAlternative("label"));
+  EXPECT_EQ(container.getFunctionValueAlternative("label").call<std::string>(), "computed");
+
+  EXPECT_TRUE(inlet.contains("scale"));
+  EXPECT_FALSE(container.containsFunctionValueAlternative("scale"));
+  EXPECT_DOUBLE_EQ(inlet["scale"].get<double>(), 4.0);
+}
+
+TEST(inlet_function, function_value_alternative_rejects_unrelated_wrong_type)
+{
+  auto inlet = createBasicInlet("foo = 'not a number or function'");
+  inlet.addFunctionAsValueAlternative("foo", FunctionTag::Double, {});
+  inlet.addDouble("foo");
+
+  EXPECT_FALSE(inlet.verify());
+  EXPECT_FALSE(inlet.contains("foo"));
+  EXPECT_FALSE(inlet.getGlobalContainer().containsFunctionValueAlternative("foo"));
+  // The input exists even though neither schema entry accepts its type.
+  EXPECT_TRUE(inlet.isUserProvided("foo"));
+  EXPECT_FALSE(inlet.getGlobalContainer().exists());
+}
+
+TEST(inlet_function, function_value_alternative_is_container_independent)
+{
+  for(const bool functionOnRoot : {true, false})
+  {
+    auto inlet = createBasicInlet("group = { value = function() return 2.0 end }");
+    inlet.getGlobalContainer().strict();
+    auto& group = inlet.addStruct("group");
+
+    // The alternative and the concrete entry may be declared through different Containers,
+    // so long as the alternative comes first.
+    if(functionOnRoot)
+    {
+      inlet.addFunctionAsValueAlternative("group/value", FunctionTag::Double, {});
+      group.addDouble("value");
+    }
+    else
+    {
+      group.addFunctionAsValueAlternative("value", FunctionTag::Double, {});
+      inlet.addDouble("group/value");
+    }
+
+    EXPECT_TRUE(inlet.verify());
+    EXPECT_TRUE(inlet.unexpectedNames().empty());
+    EXPECT_TRUE(inlet.getGlobalContainer().containsFunctionValueAlternative("group/value"));
+    EXPECT_TRUE(group.containsFunctionValueAlternative("value"));
+    EXPECT_FALSE(inlet.contains("group/value"));
+    EXPECT_TRUE(inlet.isUserProvided("group/value"));
+    EXPECT_TRUE(group.isUserProvided("value"));
+    EXPECT_TRUE(group.exists());
+    EXPECT_DOUBLE_EQ(group.getFunctionValueAlternative("value").call<double>(), 2.0);
+    EXPECT_EQ(group.getFunctionValueAlternativeNames(), std::vector<std::string> {"value"});
+    EXPECT_TRUE(inlet.getGlobalContainer().getFunctionValueAlternativeNames().empty());
+  }
+}
+
+TEST(inlet_function, function_value_alternative_names_are_sorted)
+{
+  auto inlet = createBasicInlet(R"(
+    zeta = function() return 1.0 end
+    alpha = function() return 2.0 end
+    plain = 3.0
+  )");
+
+  inlet.addFunctionAsValueAlternative("zeta", FunctionTag::Double, {});
+  inlet.addFunctionAsValueAlternative("alpha", FunctionTag::Double, {});
+  // Declared but not supplied by the input, so it is not reported
+  inlet.addFunctionAsValueAlternative("plain", FunctionTag::Double, {});
+  inlet.addDouble("plain");
+
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_EQ(inlet.getGlobalContainer().getFunctionValueAlternativeNames(),
+            (std::vector<std::string> {"alpha", "zeta"}));
+}
+
+TEST(inlet_function, ordinary_function_suffix_does_not_register_an_alternative)
+{
+  for(const bool enableDocs : {true, false})
+  {
+    auto inlet = createBasicInlet(R"(
+      scale = function() return 2.0 end
+      scale_inlet_function_alternative = function() return 9.0 end
+      offset = function() return 3.0 end
+    )",
+                                  enableDocs);
+    inlet.addFunction("scale_inlet_function_alternative", FunctionTag::Double, {});
+    inlet.addFunctionAsValueAlternative("offset", FunctionTag::Double, {});
+    inlet.addDouble("offset");
+
+    auto& container = inlet.getGlobalContainer();
+    EXPECT_FALSE(container.containsFunctionValueAlternative("scale"));
+    EXPECT_EQ(container.getFunctionValueAlternativeNames(), std::vector<std::string> {"offset"});
+    EXPECT_DOUBLE_EQ(inlet["scale_inlet_function_alternative"].call<double>(), 9.0);
+    EXPECT_DOUBLE_EQ(container.getFunctionValueAlternative("offset").call<double>(), 3.0);
+    {
+      axom::slic::ScopedAbortToThrow abortGuard;
+      EXPECT_THROW(container.getFunctionValueAlternative("scale"), axom::slic::SlicAbortException);
+    }
+
+    // An unrelated ordinary function must not suppress a concrete field's type error.
+    inlet.addDouble("scale");
+    EXPECT_FALSE(inlet.verify());
+  }
+}
+
+TEST(inlet_function, function_value_alternative_rejects_function_name_collisions)
+{
+  axom::slic::ScopedAbortToThrow abortGuard;
+  for(const bool alternativeFirst : {true, false})
+  {
+    for(const bool alternativeOnRoot : {true, false})
+    {
+      auto inlet = createBasicInlet(R"(
+        group = {
+          scale = function() return 2.0 end,
+          scale_inlet_function_alternative = function() return 9.0 end
+        }
+      )");
+      auto& group = inlet.addStruct("group");
+      auto& root = inlet.getGlobalContainer();
+      auto& alternativeContainer = alternativeOnRoot ? root : group;
+      auto& ordinaryContainer = alternativeOnRoot ? group : root;
+      const std::string valueName = alternativeOnRoot ? "group/scale" : "scale";
+      const std::string functionName = alternativeOnRoot ? "scale_inlet_function_alternative"
+                                                         : "group/scale_inlet_function_alternative";
+      if(alternativeFirst)
+      {
+        alternativeContainer.addFunctionAsValueAlternative(valueName, FunctionTag::Double, {});
+        EXPECT_THROW(ordinaryContainer.addFunction(functionName, FunctionTag::Double, {}),
+                     axom::slic::SlicAbortException);
+        EXPECT_DOUBLE_EQ(group.getFunctionValueAlternative("scale").call<double>(), 2.0);
+      }
+      else
+      {
+        ordinaryContainer.addFunction(functionName, FunctionTag::Double, {});
+        EXPECT_THROW(
+          alternativeContainer.addFunctionAsValueAlternative(valueName, FunctionTag::Double, {}),
+          axom::slic::SlicAbortException);
+        EXPECT_FALSE(group.containsFunctionValueAlternative("scale"));
+        EXPECT_DOUBLE_EQ(group["scale_inlet_function_alternative"].call<double>(), 9.0);
+      }
+    }
+  }
+}
+
+TEST(inlet_function, function_value_alternative_declaration_is_idempotent)
+{
+  // Matches addFunction's behavior: redeclaring returns the existing entry
+  auto inlet = createBasicInlet("group = { scale = function() return 2.0 end }");
+  auto& group = inlet.addStruct("group");
+
+  auto& first = inlet.addFunctionAsValueAlternative("group/scale", FunctionTag::Double, {});
+  auto& second = group.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  EXPECT_EQ(&first, &second);
+
+  EXPECT_EQ(1u, group.getChildFunctions().size());
+  EXPECT_TRUE(inlet.getGlobalContainer().getChildFunctions().empty());
+  EXPECT_DOUBLE_EQ(group.getFunctionValueAlternative("scale").call<double>(), 2.0);
+}
+
+TEST(inlet_function, function_value_alternative_can_be_required)
+{
+  // The alternative is an ordinary Function, so schema constraints apply to it
+  auto missing = createBasicInlet("scale = 2.0");
+  missing.addFunctionAsValueAlternative("scale", FunctionTag::Double, {}).required();
+  missing.addDouble("scale");
+  EXPECT_FALSE(missing.verify());
+
+  auto supplied = createBasicInlet("scale = function() return 2.0 end");
+  supplied.addFunctionAsValueAlternative("scale", FunctionTag::Double, {}).required();
+  supplied.addDouble("scale");
+  EXPECT_TRUE(supplied.verify());
+}
+
+TEST(inlet_function, function_value_alternative_rejects_invalid_declaration)
+{
+  auto inlet = createBasicInlet("");
+  axom::slic::ScopedAbortToThrow abortGuard;
+
+  EXPECT_THROW(inlet.addFunctionAsValueAlternative("", FunctionTag::Double, {}),
+               axom::slic::SlicAbortException);
+  EXPECT_THROW(inlet.addFunctionAsValueAlternative("value", FunctionTag::Void, {}),
+               axom::slic::SlicAbortException);
+  EXPECT_TRUE(inlet.getGlobalContainer().getFunctionValueAlternativeNames().empty());
+}
+
+TEST(inlet_function, function_value_alternative_rejects_declaration_after_the_value)
+{
+  // Declaring the concrete entry first cannot work: it has already been read and
+  // marked as being of the wrong type. Without this check the schema author sees
+  // a verification failure blaming the input instead of the schema.
+  axom::slic::ScopedAbortToThrow abortGuard;
+
+  auto scalar = createBasicInlet("scale = function() return 2.0 end");
+  scalar.addDouble("scale");
+  EXPECT_THROW(scalar.addFunctionAsValueAlternative("scale", FunctionTag::Double, {}),
+               axom::slic::SlicAbortException);
+
+  auto collection = createBasicInlet("values = function() return {1.0, 2.0} end");
+  collection.addDoubleArray("values");
+  EXPECT_THROW(collection.addFunctionAsValueAlternative("values", FunctionTag::Vector, {}),
+               axom::slic::SlicAbortException);
+
+  // Declaring through a parent Container is rejected the same way
+  auto nested = createBasicInlet("group = { value = function() return 2.0 end }");
+  nested.addStruct("group").addDouble("value");
+  EXPECT_THROW(nested.addFunctionAsValueAlternative("group/value", FunctionTag::Double, {}),
+               axom::slic::SlicAbortException);
+
+  // Collection declarations must check the concrete entries in their elements.
+  auto structArray = createBasicInlet("items = {{value = function() return 2.0 end}}");
+  auto& arrayEntries = structArray.addStructArray("items");
+  arrayEntries.addDouble("value");
+  EXPECT_THROW(arrayEntries.addFunctionAsValueAlternative("value", FunctionTag::Double, {}),
+               axom::slic::SlicAbortException);
+
+  auto structDictionary =
+    createBasicInlet("items = {first = {values = function() return {1.0, 2.0} end}}");
+  auto& dictionaryEntries = structDictionary.addStructDictionary("items");
+  dictionaryEntries.addDoubleArray("values");
+  EXPECT_THROW(dictionaryEntries.addFunctionAsValueAlternative("values", FunctionTag::Vector, {}),
+               axom::slic::SlicAbortException);
+}
+
+TEST(inlet_function, function_value_alternative_applies_to_every_primitive_type)
+{
+  // Each primitive type reads its concrete entry separately, so check that a
+  // supplied function is treated as an absent value rather than a wrong type
+  auto inlet = createBasicInlet(R"(
+    b = function() return 'true' end
+    i = function() return 2.0 end
+    d = function() return 3.0 end
+    s = function() return 'four' end
+  )");
+  inlet.getGlobalContainer().strict();
+
+  inlet.addFunctionAsValueAlternative("b", FunctionTag::String, {});
+  inlet.addBool("b");
+  inlet.addFunctionAsValueAlternative("i", FunctionTag::Double, {});
+  inlet.addInt("i");
+  inlet.addFunctionAsValueAlternative("d", FunctionTag::Double, {});
+  inlet.addDouble("d");
+  inlet.addFunctionAsValueAlternative("s", FunctionTag::String, {});
+  inlet.addString("s");
+
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_TRUE(inlet.unexpectedNames().empty());
+  const auto& root = inlet.getGlobalContainer();
+  EXPECT_EQ(root.getFunctionValueAlternativeNames(),
+            (std::vector<std::string> {"b", "d", "i", "s"}));
+  for(const std::string name : {"b", "i", "d", "s"})
+  {
+    EXPECT_FALSE(inlet.contains(name)) << name;
+    EXPECT_TRUE(inlet.isUserProvided(name)) << name;
+  }
+  EXPECT_EQ(root.getFunctionValueAlternative("b").call<std::string>(), "true");
+  EXPECT_DOUBLE_EQ(root.getFunctionValueAlternative("i").call<double>(), 2.0);
+  EXPECT_DOUBLE_EQ(root.getFunctionValueAlternative("d").call<double>(), 3.0);
+  EXPECT_EQ(root.getFunctionValueAlternative("s").call<std::string>(), "four");
+
+  // Without an alternative, the same input is the wrong type for each primitive
+  for(const std::string name : {"b", "i", "d", "s"})
+  {
+    auto plain = createBasicInlet(R"(
+      b = function() return 'true' end
+      i = function() return 2.0 end
+      d = function() return 3.0 end
+      s = function() return 'four' end
+    )");
+    if(name == "b")
+    {
+      plain.addBool(name);
+    }
+    else if(name == "i")
+    {
+      plain.addInt(name);
+    }
+    else if(name == "d")
+    {
+      plain.addDouble(name);
+    }
+    else
+    {
+      plain.addString(name);
+    }
+    EXPECT_FALSE(plain.verify()) << name;
+  }
+}
+
+TEST(inlet_function, function_value_alternative_coexists_with_a_default)
+{
+  // A default populates the concrete entry even when the input supplies a function,
+  // so check for the function first
+  auto callback = createBasicInlet("scale = function() return 3.0 end");
+  callback.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  callback.addDouble("scale").defaultValue(1.0);
+  EXPECT_TRUE(callback.verify());
+  EXPECT_TRUE(callback.contains("scale"));
+  EXPECT_TRUE(callback.isUserProvided("scale"));
+  EXPECT_DOUBLE_EQ(callback["scale"].get<double>(), 1.0);
+  ASSERT_TRUE(callback.getGlobalContainer().containsFunctionValueAlternative("scale"));
+  EXPECT_DOUBLE_EQ(callback.getGlobalContainer().getFunctionValueAlternative("scale").call<double>(),
+                   3.0);
+
+  auto concrete = createBasicInlet("scale = 2.0");
+  concrete.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  concrete.addDouble("scale").defaultValue(1.0);
+  EXPECT_TRUE(concrete.verify());
+  EXPECT_FALSE(concrete.getGlobalContainer().containsFunctionValueAlternative("scale"));
+  EXPECT_DOUBLE_EQ(concrete["scale"].get<double>(), 2.0);
+
+  auto absent = createBasicInlet("");
+  absent.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  absent.addDouble("scale").defaultValue(1.0);
+  EXPECT_TRUE(absent.verify());
+  EXPECT_FALSE(absent.isUserProvided("scale"));
+  EXPECT_FALSE(absent.getGlobalContainer().containsFunctionValueAlternative("scale"));
+  EXPECT_DOUBLE_EQ(absent["scale"].get<double>(), 1.0);
+}
+
+TEST(inlet_function, function_value_alternative_constraints_apply_to_each_form_separately)
+{
+  // required() on the concrete entry is not satisfied by a supplied function
+  auto required = createBasicInlet("scale = function() return 2.0 end");
+  required.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  required.addDouble("scale").required();
+  EXPECT_FALSE(required.verify());
+
+  // A range on the concrete entry does not apply to the function's result
+  auto ranged = createBasicInlet("scale = function() return 5.0 end");
+  ranged.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  ranged.addDouble("scale").range(0.0, 1.0);
+  EXPECT_TRUE(ranged.verify());
+
+  // ...but still applies to a concrete value
+  auto concrete = createBasicInlet("scale = 5.0");
+  concrete.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  concrete.addDouble("scale").range(0.0, 1.0);
+  EXPECT_FALSE(concrete.verify());
+}
+
+TEST(inlet_function, function_value_alternative_lookup_of_absent_function)
+{
+  auto inlet = createBasicInlet("scale = 2.0");
+  inlet.addFunctionAsValueAlternative("scale", FunctionTag::Double, {});
+  inlet.addDouble("scale");
+  ASSERT_TRUE(inlet.verify());
+  const auto& root = inlet.getGlobalContainer();
+
+  // Declared but not supplied: the Function exists but holds no callable
+  EXPECT_FALSE(root.containsFunctionValueAlternative("scale"));
+  EXPECT_FALSE(static_cast<bool>(root.getFunctionValueAlternative("scale")));
+
+  // Never declared
+  axom::slic::ScopedAbortToThrow abortGuard;
+  EXPECT_FALSE(root.containsFunctionValueAlternative("offset"));
+  EXPECT_THROW(root.getFunctionValueAlternative("offset"), axom::slic::SlicAbortException);
+}
+
 TEST(inlet_function, simple_void_to_double_through_container)
 {
   std::string testString = "function foo () return 9.64 end";
@@ -549,6 +925,38 @@ struct FromInlet<Foo>
   }
 };
 
+struct FooWithValueAlternative
+{
+  double bar;
+};
+
+template <>
+struct FromInlet<FooWithValueAlternative>
+{
+  FooWithValueAlternative operator()(const axom::inlet::Container& base)
+  {
+    if(base.containsFunctionValueAlternative("bar"))
+    {
+      return {base.getFunctionValueAlternative("bar").call<double>()};
+    }
+    return {base["bar"].get<double>()};
+  }
+};
+
+struct FooWithValueAlternativeDictionary
+{
+  std::unordered_map<std::string, FooWithValueAlternative> values;
+};
+
+template <>
+struct FromInlet<FooWithValueAlternativeDictionary>
+{
+  FooWithValueAlternativeDictionary operator()(const axom::inlet::Container& base)
+  {
+    return {base["foo"].get<std::unordered_map<std::string, FooWithValueAlternative>>()};
+  }
+};
+
 TEST(inlet_function, simple_vec3_to_vec3_struct)
 {
   std::string testString = "foo = { bar = true; baz = function (v) return 2*v end }";
@@ -595,6 +1003,33 @@ TEST(inlet_function, simple_vec3_to_vec3_array_of_struct)
   EXPECT_FLOAT_EQ(second_result[0], 12);
   EXPECT_FLOAT_EQ(second_result[1], 15);
   EXPECT_FLOAT_EQ(second_result[2], 18);
+}
+
+TEST(inlet_function, function_value_alternative_in_nested_dictionary_of_struct)
+{
+  // Both representations appear in the same collection, so the alternative must
+  // be expanded across the collection's elements exactly as the concrete entry is
+  auto inlet = createBasicInlet(R"(
+    groups = {
+      [0] = {
+        foo = {
+          first = {bar = 2},
+          second = {bar = function () return 3 end}
+        }
+      }
+    }
+  )");
+
+  auto& groups = inlet.addStructArray("groups");
+  auto& foos = groups.addStructDictionary("foo");
+  foos.addFunctionAsValueAlternative("bar", FunctionTag::Double, {});
+  foos.addDouble("bar");
+
+  EXPECT_TRUE(inlet.verify());
+  const auto values =
+    inlet["groups"].get<std::unordered_map<int, FooWithValueAlternativeDictionary>>();
+  EXPECT_DOUBLE_EQ(values.at(0).values.at("first").bar, 2.0);
+  EXPECT_DOUBLE_EQ(values.at(0).values.at("second").bar, 3.0);
 }
 
 TEST(inlet_function, dimension_dependent_result)
