@@ -240,6 +240,30 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Return whether the input supplied a function for the given value name.
+   *
+   * \see Container::containsFunctionValueAlternative
+   *****************************************************************************
+   */
+  bool containsFunctionValueAlternative(const std::string& valueName) const
+  {
+    return m_globalContainer.containsFunctionValueAlternative(valueName);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieve the declared function alternative for the given value name.
+   *
+   * \see Container::getFunctionValueAlternative
+   *****************************************************************************
+   */
+  const Function& getFunctionValueAlternative(const std::string& valueName) const
+  {
+    return m_globalContainer.getFunctionValueAlternative(valueName);
+  }
+
+  /*!
+   *****************************************************************************
    * \brief Return whether a subobject with the given name was provided by the user
    *
    * \see Container::isUserProvided

@@ -97,6 +97,8 @@ For the shared input name, ``contains`` reports a concrete value, including a de
 ``containsFunctionValueAlternative`` reports a supplied function. 
 Either supplied form counts as user-provided input, and strict Containers recognize both,
 but check for the function first since a concrete default can exist alongside it.
+At the root level, call the alternative methods on ``Inlet`` as shown above.
+For nested entries, call them on the owning ``Container``.
 
 ``addFunctionAsValueAlternative`` returns a ``Verifiable<Function>``.
 Calling ``required()`` on it requires a function. On the other hand, calling ``required()``

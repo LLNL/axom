@@ -32,9 +32,8 @@ double readScale(const std::string& luaInput)
   }
 
   // _inlet_function_value_alternative_access_start
-  const auto& root = input.getGlobalContainer();
-  return root.containsFunctionValueAlternative("scale")
-    ? root.getFunctionValueAlternative("scale").call<double>()
+  return input.containsFunctionValueAlternative("scale")
+    ? input.getFunctionValueAlternative("scale").call<double>()
     : input["scale"].get<double>();
   // _inlet_function_value_alternative_access_end
 }

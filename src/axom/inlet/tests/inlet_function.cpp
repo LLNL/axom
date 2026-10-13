@@ -380,13 +380,14 @@ TEST(inlet_function, function_value_alternative_selects_supplied_representation)
   inlet.addDouble("scale");
 
   EXPECT_TRUE(inlet.verify());
-  auto& container = inlet.getGlobalContainer();
   EXPECT_FALSE(inlet.contains("label"));
-  ASSERT_TRUE(container.containsFunctionValueAlternative("label"));
-  EXPECT_EQ(container.getFunctionValueAlternative("label").call<std::string>(), "computed");
+  ASSERT_TRUE(inlet.containsFunctionValueAlternative("label"));
+  EXPECT_EQ(inlet.getFunctionValueAlternative("label").call<std::string>(), "computed");
+  EXPECT_EQ(inlet.getGlobalContainer().getFunctionValueAlternativeNames(),
+            std::vector<std::string> {"label"});
 
   EXPECT_TRUE(inlet.contains("scale"));
-  EXPECT_FALSE(container.containsFunctionValueAlternative("scale"));
+  EXPECT_FALSE(inlet.containsFunctionValueAlternative("scale"));
   EXPECT_DOUBLE_EQ(inlet["scale"].get<double>(), 4.0);
 }
 
