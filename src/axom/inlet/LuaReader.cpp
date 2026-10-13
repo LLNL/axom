@@ -16,7 +16,6 @@
 #include <cmath>
 #include <fstream>
 #include <memory>
-#include <stdexcept>
 #include <unordered_set>
 
 #include "axom/inlet/LuaReader.hpp"
@@ -393,19 +392,18 @@ namespace detail
  * \tparam Args The argument types of the function
  *
  * \return A checkable version of the function's result
- * \throws InletError if the Lua function reports an execution error
+ * \note Logs a SLIC error if the Lua function reports an execution error
  *****************************************************************************
  */
 template <typename... Args>
 axom::sol::protected_function_result callWith(const axom::sol::protected_function& func,
                                               Args&&... args)
 {
-  // Throw if invalid so callers can report callback failures after schema verification.
   auto tentative_result = func(std::forward<Args>(args)...);
   if(!tentative_result.valid())
   {
     axom::sol::error err = tentative_result;
-    throw InletError(fmt::format("[Inlet] Lua function call failed: {0}", err.what()));
+    SLIC_ERROR(fmt::format("[Inlet] Lua function call failed: {0}", err.what()));
   }
   return tentative_result;
 }
@@ -419,23 +417,34 @@ axom::sol::protected_function_result callWith(const axom::sol::protected_functio
  * \tparam Ret The return type of the function
  *
  * \return The function's result
- * \throws InletError if the result cannot be converted to \a Ret
  *****************************************************************************
  */
 template <typename Ret>
 Ret extractResult(axom::sol::protected_function_result&& res)
 {
   axom::sol::optional<Ret> option = res;
-  if(!option)
-  {
-    throw InletError("[Inlet] Lua function call failed, return types possibly incorrect");
-  }
+  SLIC_ERROR_IF(!option, "[Inlet] Lua function call failed, return types possibly incorrect");
   return option.value();
 }
 
 template <>
 FunctionType::Void extractResult<FunctionType::Void>(axom::sol::protected_function_result&&)
 { }
+
+/*!
+ *****************************************************************************
+ * \brief Reports an invalid vector returned by a Lua function
+ *
+ * \param [in] message The error message
+ *
+ * \return A default vector, used only when SLIC is configured not to abort
+ *****************************************************************************
+ */
+FunctionType::Vector invalidVectorResult(const char* message)
+{
+  SLIC_ERROR(message);
+  return FunctionType::Vector {};
+}
 
 template <>
 FunctionType::Vector extractResult<FunctionType::Vector>(axom::sol::protected_function_result&& res)
@@ -459,20 +468,21 @@ FunctionType::Vector extractResult<FunctionType::Vector>(axom::sol::protected_fu
     {
       if(entry.first.get_type() != axom::sol::type::number)
       {
-        throw InletError("[Inlet] Lua vector function return must only contain numeric indices");
+        return invalidVectorResult(
+          "[Inlet] Lua vector function return must only contain numeric indices");
       }
 
       // Check the range before converting, so out-of-range keys never reach int
       const double numeric_index = entry.first.as<double>();
       if(!(numeric_index >= 1. && numeric_index <= 3.) || numeric_index != std::floor(numeric_index))
       {
-        throw InletError(
+        return invalidVectorResult(
           "[Inlet] Lua vector function return indices must be integers between 1 and 3");
       }
       const int index = static_cast<int>(numeric_index);
       if(entry.second.get_type() != axom::sol::type::number)
       {
-        throw InletError("[Inlet] Lua vector function return components must be numeric");
+        return invalidVectorResult("[Inlet] Lua vector function return components must be numeric");
       }
 
       values[index - 1] = entry.second.as<double>();
@@ -483,14 +493,14 @@ FunctionType::Vector extractResult<FunctionType::Vector>(axom::sol::protected_fu
     // Indices are unique and in [1, 3], so count cannot exceed 3
     if(count == 0)
     {
-      throw InletError(
+      return invalidVectorResult(
         "[Inlet] Lua vector function returned an empty table; expected 1 to 3 numeric entries");
     }
     for(int i = 0; i < count; ++i)
     {
       if(!seen[i])
       {
-        throw InletError(
+        return invalidVectorResult(
           "[Inlet] Lua vector function return indices must be contiguous starting at 1");
       }
     }
@@ -498,7 +508,7 @@ FunctionType::Vector extractResult<FunctionType::Vector>(axom::sol::protected_fu
     return FunctionType::Vector {values.data(), count};
   }
 
-  throw InletError("[Inlet] Lua function call failed, return types possibly incorrect");
+  return invalidVectorResult("[Inlet] Lua function call failed, return types possibly incorrect");
 }
 
 /*!

@@ -14,11 +14,11 @@
 
 #include <array>
 #include <functional>
-#include <stdexcept>
+#include <sstream>
 #include <string>
-#include <type_traits>
 #include <vector>
 #include <unordered_map>
+#include <utility>
 #include <iostream>
 
 using axom::inlet::FunctionTag;
@@ -41,6 +41,26 @@ Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
   auto lr = std::make_unique<LuaReader>();
   lr->parseString(luaString);
   return Inlet(std::move(lr), enableDocs);
+}
+
+/// Collects SLIC error messages; registered with the logger in main()
+std::ostringstream& slicErrors()
+{
+  static std::ostringstream errors;
+  return errors;
+}
+
+/// Checks whether a SLIC error containing \a expected was logged, then clears the log
+::testing::AssertionResult slicErrorContains(const std::string& expected)
+{
+  const std::string errors = slicErrors().str();
+  slicErrors().str("");
+  if(errors.find(expected) != std::string::npos)
+  {
+    return ::testing::AssertionSuccess();
+  }
+  return ::testing::AssertionFailure()
+    << "Expected a SLIC error containing '" << expected << "', got: '" << errors << "'";
 }
 
 TEST(inlet_function, simple_vec3_to_double_raw)
@@ -116,34 +136,40 @@ TEST(inlet_function, vector_function_accepts_equivalent_table_forms)
 
 TEST(inlet_function, vector_function_rejects_malformed_table_returns)
 {
+  axom::slic::ScopedAbortToThrow abortGuard;
+
   // Lua vectors must be dense numeric sequences with a supported dimension.
-  const std::array<std::string, 13> results {{
-    "2.0",
-    "'text'",
-    "{}",
-    "{1, 2, 3, 4}",
-    "{[1] = 1, [3] = 3}",
-    "{1, 'two'}",
-    "{1, true}",
-    "{1, {2}}",
-    "{1, 2, label = 3}",
-    "{[0] = 0, 1, 2}",
-    "{[1.5] = 1}",
-    "{[-1] = 1}",
-    "{[math.huge] = 1}",
+  // Each case fails exactly one check; match its message to confirm which one.
+  const std::array<std::pair<std::string, std::string>, 13> cases {{
+    {"2.0", "return types possibly incorrect"},
+    {"'text'", "return types possibly incorrect"},
+    {"{}", "empty table"},
+    {"{1, 2, 3, 4}", "integers between 1 and 3"},
+    {"{[1] = 1, [3] = 3}", "contiguous starting at 1"},
+    {"{1, 'two'}", "components must be numeric"},
+    {"{1, true}", "components must be numeric"},
+    {"{1, {2}}", "components must be numeric"},
+    {"{1, 2, label = 3}", "only contain numeric indices"},
+    {"{[0] = 0, 1, 2}", "integers between 1 and 3"},
+    {"{[1.5] = 1}", "integers between 1 and 3"},
+    {"{[-1] = 1}", "integers between 1 and 3"},
+    {"{[math.huge] = 1}", "integers between 1 and 3"},
   }};
 
-  for(const auto& result : results)
+  for(const auto& [result, message] : cases)
   {
     auto inlet = createBasicInlet("function foo () return " + result + " end");
     auto func = inlet.reader().getFunction("foo", FunctionTag::Vector, {});
     ASSERT_TRUE(func);
-    EXPECT_THROW(func.call<FunctionType::Vector>(), axom::inlet::InletError) << result;
+    EXPECT_THROW(func.call<FunctionType::Vector>(), axom::slic::SlicAbortException) << result;
+    EXPECT_TRUE(slicErrorContains(message)) << result;
   }
 }
 
-TEST(inlet_function, lua_callback_failures_are_catchable)
+TEST(inlet_function, lua_callback_failures_report_slic_errors)
 {
+  axom::slic::ScopedAbortToThrow abortGuard;
+
   auto inlet = createBasicInlet(R"(
     function runtime_error () error('callback failed') end
     function wrong_type () return 'not a number' end
@@ -151,26 +177,19 @@ TEST(inlet_function, lua_callback_failures_are_catchable)
 
   auto wrongType = inlet.reader().getFunction("wrong_type", FunctionTag::Double, {});
   ASSERT_TRUE(wrongType);
-  EXPECT_THROW(wrongType.call<FunctionType::Double>(), axom::inlet::InletError);
+  EXPECT_THROW(wrongType.call<FunctionType::Double>(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("return types possibly incorrect"));
 
+  // The SLIC error includes Lua's error message
   auto runtimeError = inlet.reader().getFunction("runtime_error", FunctionTag::Double, {});
   ASSERT_TRUE(runtimeError);
-
-  try
-  {
-    runtimeError.call<FunctionType::Double>();
-    FAIL() << "Expected the Lua callback to throw";
-  }
-  catch(const axom::inlet::InletError& error)
-  {
-    EXPECT_NE(std::string(error.what()).find("callback failed"), std::string::npos);
-  }
+  EXPECT_THROW(runtimeError.call<FunctionType::Double>(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("callback failed"));
 }
 
-TEST(inlet_function, lua_callback_failures_throw_through_every_access_path)
+TEST(inlet_function, lua_callback_failures_report_slic_errors_through_every_access_path)
 {
-  static_assert(std::is_base_of_v<std::runtime_error, axom::inlet::InletError>,
-                "InletError must be catchable as a std::runtime_error");
+  axom::slic::ScopedAbortToThrow abortGuard;
 
   auto inlet = createBasicInlet(R"(
     function fail_void (x) error('void failed') end
@@ -181,24 +200,30 @@ TEST(inlet_function, lua_callback_failures_throw_through_every_access_path)
   ASSERT_TRUE(inlet.verify());
 
   // A void callback still reports an execution error
-  EXPECT_THROW(inlet["fail_void"].call<void>(1.0), axom::inlet::InletError);
+  EXPECT_THROW(inlet["fail_void"].call<void>(1.0), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("void failed"));
 
   // An invalid input reports an execution error through Proxy::call.
-  EXPECT_THROW(inlet["add_one"].call<double>(std::string {"text"}), axom::inlet::InletError);
+  EXPECT_THROW(inlet["add_one"].call<double>(std::string {"text"}), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("Lua function call failed:"));
 
-  // Copies made with get<std::function> throw the same way
+  // Copies made with get<std::function> report errors the same way
   auto addOne = inlet["add_one"].get<std::function<double(std::string)>>();
   EXPECT_DOUBLE_EQ(addOne("2"), 3.0);
-  EXPECT_THROW(addOne("text"), axom::inlet::InletError);
+  EXPECT_THROW(addOne("text"), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("Lua function call failed:"));
 }
 
-TEST(inlet_function, lua_callback_failure_in_verifier_propagates_from_verify)
+TEST(inlet_function, lua_callback_failure_in_verifier_reports_slic_error)
 {
+  axom::slic::ScopedAbortToThrow abortGuard;
+
   auto inlet = createBasicInlet("function scale () error('scale failed') end");
   inlet.addFunction("scale", FunctionTag::Double, {})
     .registerVerifier([](const axom::inlet::Function& func) { return func.call<double>() > 0.0; });
 
-  EXPECT_THROW(inlet.verify(), axom::inlet::InletError);
+  EXPECT_THROW(inlet.verify(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("scale failed"));
 }
 
 TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
@@ -873,6 +898,8 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
   axom::slic::SimpleLogger logger;
+  axom::slic::addStreamToMsgLevel(new axom::slic::GenericOutputStream(&slicErrors(), "<MESSAGE>\n"),
+                                  axom::slic::message::Error);
 
   result = RUN_ALL_TESTS();
 

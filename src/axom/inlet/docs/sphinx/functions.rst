@@ -44,7 +44,7 @@ Leave the argument list empty for a function with no arguments.
 A Lua callback with a ``Vector`` return type may return ``Vector.new(...)`` or a Lua
 table with one to three numeric components. Table keys must be contiguous integers
 starting at one. When converting a callback's return value to a vector,
-Inlet throws ``InletError`` if the table has gaps, named entries, or non-numeric components.
+Inlet reports a SLIC error if the table has gaps, named entries, or non-numeric components.
 
 In Lua, the following operations on the ``Vector`` type are supported (for ``Vector`` s ``u``, ``v``, and ``w``):
 
@@ -105,11 +105,8 @@ Inlet reports errors according to when they occur:
    * - Missing required input, wrong types, or failed verifiers
      - ``verify()`` and ``VerificationError``
    * - Lua execution errors or callback results that cannot convert to the declared type
-     - ``axom::inlet::InletError``, derived from ``std::runtime_error``
+     - SLIC errors, which include Lua's error message for execution errors
 
 Inlet does not evaluate callbacks during ``verify()`` unless a custom verifier calls them.
 Successful verification does not guarantee that a later callback invocation will succeed.
-If a callback throws ``InletError`` inside a custom verifier, the exception propagates
-out of ``verify()`` unless the verifier catches it.
-
-Applications can catch ``InletError`` to report where the callback failed.
+A callback that fails inside a custom verifier reports its SLIC error during ``verify()``.
