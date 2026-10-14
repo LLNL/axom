@@ -58,7 +58,7 @@ if (UMPIRE_DIR)
                                    DIR_VARIABLE UMPIRE_DIR)
         blt_convert_to_system_includes(TARGET umpire::umpire)
     elseif(TARGET umpire)
-        # Backwards compatibility
+        # Backwards compatibility for pre v2026.07.0
         axom_assert_find_succeeded(PROJECT_NAME Umpire
                                    TARGET       umpire
                                    DIR_VARIABLE UMPIRE_DIR)
