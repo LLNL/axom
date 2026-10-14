@@ -938,12 +938,21 @@ public:
   {
     BoxType rval;
     SLIC_ASSERT(xferNode.metadata.dims == DIM);
-    for(const auto& p : xferNode.points)
+    auto queryPoints = xferNode.points;
+    PointType minPoint, maxPoint;
+    for(int dim = 0; dim < DIM; ++dim)
     {
-      rval.addPoint(p);
+      axom::ReduceMin<ExecSpace, double> minCoord(axom::numeric_limits<double>::max());
+      axom::ReduceMax<ExecSpace, double> maxCoord(axom::numeric_limits<double>::lowest());
+      axom::for_all<ExecSpace>(queryPoints.size(), [=] AXOM_HOST_DEVICE(axom::IndexType idx) {
+        minCoord.min(queryPoints[idx][dim]);
+        maxCoord.max(queryPoints[idx][dim]);
+      });
+      minPoint[dim] = minCoord.get();
+      maxPoint[dim] = maxCoord.get();
     }
 
-    return rval;
+    return BoxType {minPoint, maxPoint};
   }
 
   /**
