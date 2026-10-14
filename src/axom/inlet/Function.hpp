@@ -298,6 +298,18 @@ public:
     return m_func.get<FuncType>();
   }
 
+  /*!
+   *****************************************************************************
+   * \brief Calls the function
+   *
+   * \param [in] args The parameter pack for the function's arguments
+   * \tparam Ret The user-specified return type, needed to fully disambiguate the
+   * function to call
+   * \tparam Args The types of the user-specified arguments, deduced automatically
+   *
+   * \return The function's result
+   *****************************************************************************
+   */
   template <typename Ret, typename... Args>
   Ret call(Args&&... args) const
   {

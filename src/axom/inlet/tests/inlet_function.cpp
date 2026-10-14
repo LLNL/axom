@@ -13,9 +13,12 @@
 #include "gtest/gtest.h"
 
 #include <array>
+#include <functional>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <utility>
 #include <iostream>
 
 using axom::inlet::FunctionTag;
@@ -38,6 +41,26 @@ Inlet createBasicInlet(const std::string& luaString, bool enableDocs = true)
   auto lr = std::make_unique<LuaReader>();
   lr->parseString(luaString);
   return Inlet(std::move(lr), enableDocs);
+}
+
+/// Collects SLIC error messages; registered with the logger in main()
+std::ostringstream& slicErrors()
+{
+  static std::ostringstream errors;
+  return errors;
+}
+
+/// Checks whether a SLIC error containing \a expected was logged, then clears the log
+::testing::AssertionResult slicErrorContains(const std::string& expected)
+{
+  const std::string errors = slicErrors().str();
+  slicErrors().str("");
+  if(errors.find(expected) != std::string::npos)
+  {
+    return ::testing::AssertionSuccess();
+  }
+  return ::testing::AssertionFailure()
+    << "Expected a SLIC error containing '" << expected << "', got: '" << errors << "'";
 }
 
 TEST(inlet_function, simple_vec3_to_double_raw)
@@ -64,6 +87,143 @@ TEST(inlet_function, simple_vec3_to_vec3_raw)
   EXPECT_FLOAT_EQ(result[0], 2);
   EXPECT_FLOAT_EQ(result[1], 4);
   EXPECT_FLOAT_EQ(result[2], 6);
+}
+
+TEST(inlet_function, vector_function_accepts_lua_table_returns)
+{
+  auto inlet = createBasicInlet(R"(
+    function make_vector (dim)
+      local result = {}
+      for i = 1, dim do result[i] = i end
+      return result
+    end
+  )");
+
+  auto function =
+    inlet.reader().getFunction("make_vector", FunctionTag::Vector, {FunctionTag::Double});
+  ASSERT_TRUE(function);
+  for(int dim = 1; dim <= 3; ++dim)
+  {
+    const auto result = function.call<FunctionType::Vector>(static_cast<double>(dim));
+    ASSERT_EQ(result.dim, dim);
+    for(int component = 0; component < result.dim; ++component)
+    {
+      EXPECT_DOUBLE_EQ(result[component], component + 1.0);
+    }
+  }
+}
+
+TEST(inlet_function, vector_function_accepts_equivalent_table_forms)
+{
+  // Explicit keys, in any order, and float keys with integral values are the same vector
+  for(const std::string table : {"{4.5, -2}", "{[2] = -2, [1] = 4.5}", "{[1.0] = 4.5, [2.0] = -2}"})
+  {
+    auto inlet = createBasicInlet("function foo () return " + table + " end");
+    inlet.addFunction("foo", FunctionTag::Vector, {});
+    ASSERT_TRUE(inlet.verify()) << table;
+
+    // Through Proxy::call and through a std::function copy
+    const auto viaCall = inlet["foo"].call<FunctionType::Vector>();
+    const auto viaCopy = inlet["foo"].get<std::function<FunctionType::Vector()>>()();
+    for(const auto& result : {viaCall, viaCopy})
+    {
+      ASSERT_EQ(result.dim, 2) << table;
+      EXPECT_DOUBLE_EQ(result[0], 4.5) << table;
+      EXPECT_DOUBLE_EQ(result[1], -2.0) << table;
+    }
+  }
+}
+
+TEST(inlet_function, vector_function_rejects_malformed_table_returns)
+{
+  axom::slic::ScopedAbortToThrow abortGuard;
+
+  // Lua vectors must be dense numeric sequences with a supported dimension.
+  // Each case fails exactly one check; match its message to confirm which one.
+  const std::array<std::pair<std::string, std::string>, 13> cases {{
+    {"2.0", "return types possibly incorrect"},
+    {"'text'", "return types possibly incorrect"},
+    {"{}", "empty table"},
+    {"{1, 2, 3, 4}", "integers between 1 and 3"},
+    {"{[1] = 1, [3] = 3}", "contiguous starting at 1"},
+    {"{1, 'two'}", "components must be numeric"},
+    {"{1, true}", "components must be numeric"},
+    {"{1, {2}}", "components must be numeric"},
+    {"{1, 2, label = 3}", "only contain numeric indices"},
+    {"{[0] = 0, 1, 2}", "integers between 1 and 3"},
+    {"{[1.5] = 1}", "integers between 1 and 3"},
+    {"{[-1] = 1}", "integers between 1 and 3"},
+    {"{[math.huge] = 1}", "integers between 1 and 3"},
+  }};
+
+  for(const auto& [result, message] : cases)
+  {
+    auto inlet = createBasicInlet("function foo () return " + result + " end");
+    auto func = inlet.reader().getFunction("foo", FunctionTag::Vector, {});
+    ASSERT_TRUE(func);
+    EXPECT_THROW(func.call<FunctionType::Vector>(), axom::slic::SlicAbortException) << result;
+    EXPECT_TRUE(slicErrorContains(message)) << result;
+  }
+}
+
+TEST(inlet_function, lua_callback_failures_report_slic_errors)
+{
+  axom::slic::ScopedAbortToThrow abortGuard;
+
+  auto inlet = createBasicInlet(R"(
+    function runtime_error () error('callback failed') end
+    function wrong_type () return 'not a number' end
+  )");
+
+  auto wrongType = inlet.reader().getFunction("wrong_type", FunctionTag::Double, {});
+  ASSERT_TRUE(wrongType);
+  EXPECT_THROW(wrongType.call<FunctionType::Double>(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("return types possibly incorrect"));
+
+  // The SLIC error includes Lua's error message
+  auto runtimeError = inlet.reader().getFunction("runtime_error", FunctionTag::Double, {});
+  ASSERT_TRUE(runtimeError);
+  EXPECT_THROW(runtimeError.call<FunctionType::Double>(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("callback failed"));
+}
+
+TEST(inlet_function, lua_callback_failures_report_slic_errors_through_every_access_path)
+{
+  axom::slic::ScopedAbortToThrow abortGuard;
+
+  auto inlet = createBasicInlet(R"(
+    function fail_void (x) error('void failed') end
+    function add_one (x) return x + 1 end
+  )");
+  inlet.addFunction("fail_void", FunctionTag::Void, {FunctionTag::Double});
+  inlet.addFunction("add_one", FunctionTag::Double, {FunctionTag::String});
+  ASSERT_TRUE(inlet.verify());
+
+  // A void callback still reports an execution error
+  EXPECT_THROW(inlet["fail_void"].call<void>(1.0), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("void failed"));
+
+  // An invalid input reports an execution error through Proxy::call.
+  EXPECT_THROW(inlet["add_one"].call<double>(std::string {"text"}), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("Lua function call failed:"));
+
+  // Copies made with get<std::function> report errors the same way
+  auto addOne = inlet["add_one"].get<std::function<double(std::string)>>();
+  EXPECT_DOUBLE_EQ(addOne("2"), 3.0);
+  EXPECT_THROW(addOne("text"), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("Lua function call failed:"));
+}
+
+TEST(inlet_function, lua_callback_failure_in_verifier_reports_slic_error)
+{
+  axom::slic::ScopedAbortToThrow abortGuard;
+
+  auto inlet = createBasicInlet("function scale () error('scale failed') end");
+  inlet.addFunction("scale", FunctionTag::Double, {})
+    .registerVerifier([](const axom::inlet::Function& func) { return func.call<double>() > 0.0; });
+
+  EXPECT_THROW(inlet.verify(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("scale failed"));
 }
 
 TEST(inlet_function, simple_vec3_to_vec3_raw_partial_init)
@@ -123,6 +283,58 @@ TEST(inlet_function, simple_double_to_double_through_container)
   double arg = -6.37;
   double result = callable(arg);
   EXPECT_FLOAT_EQ(result, (arg * 3.4) + 9.64);
+}
+
+TEST(inlet_function, returned_function_keeps_lua_state_alive)
+{
+  // An extracted callback must retain its Lua state after Inlet is destroyed.
+  std::function<double(double)> callback;
+  {
+    auto inlet = createBasicInlet("offset = 3.0; function foo (value) return value + offset end");
+    inlet.addFunction("foo", FunctionTag::Double, {FunctionTag::Double});
+    callback = inlet["foo"].get<std::function<double(double)>>();
+  }
+
+  EXPECT_DOUBLE_EQ(callback(4.0), 7.0);
+}
+
+TEST(inlet_function, returned_functions_share_lua_state_after_inlet_is_destroyed)
+{
+  // Callbacks from one input share its Lua state, including after the Inlet is gone.
+  // Copying, calling, and destroying them in any order must leave the state usable.
+  std::function<double()> increment;
+  std::function<double()> current;
+  {
+    auto inlet = createBasicInlet(R"(
+      count = 0
+      function increment () count = count + 1; return count end
+      function current () return count end
+    )");
+    inlet.addFunction("increment", FunctionTag::Double, {});
+    inlet.addFunction("current", FunctionTag::Double, {});
+    increment = inlet["increment"].get<std::function<double()>>();
+    current = inlet["current"].get<std::function<double()>>();
+  }
+
+  EXPECT_DOUBLE_EQ(increment(), 1.0);
+  auto incrementCopy = increment;
+  increment = nullptr;
+  EXPECT_DOUBLE_EQ(incrementCopy(), 2.0);
+  incrementCopy = nullptr;
+  EXPECT_DOUBLE_EQ(current(), 2.0);
+}
+
+TEST(inlet_function, reader_function_outlives_reader)
+{
+  axom::inlet::FunctionVariant function;
+  {
+    LuaReader reader;
+    reader.parseString("function foo (value) return 2 * value end");
+    function = reader.getFunction("foo", FunctionTag::Double, {FunctionTag::Double});
+  }
+
+  ASSERT_TRUE(function);
+  EXPECT_DOUBLE_EQ(function.call<double>(4.0), 8.0);
 }
 
 TEST(inlet_function, simple_void_to_double_through_container)
@@ -686,6 +898,8 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
   axom::slic::SimpleLogger logger;
+  axom::slic::addStreamToMsgLevel(new axom::slic::GenericOutputStream(&slicErrors(), "<MESSAGE>\n"),
+                                  axom::slic::message::Error);
 
   result = RUN_ALL_TESTS();
 
