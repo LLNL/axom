@@ -8,7 +8,7 @@
 
 /*! 
  * \file HilbertIndex.hpp
- * \brief Bijective Hilbert indexing of bounded integer lattice points.
+ * \brief Converts bounded integer grid points to and from Hilbert indices.
  */
 
 #include "axom/config.hpp"
@@ -25,22 +25,28 @@ namespace axom::spin
 /*!
  * \brief Maps 2D, 3D, or 4D integer lattice points to and from a Hilbert index.
  *
- * Implements John Skilling's "Programming the Hilbert curve",
- * AIP Conference Proceedings 707, 381 (2004), https://doi.org/10.1063/1.1751381.
- * Axis zero occupies the most significant bit in each interleaved bit plane.
- * At depth 1, the 2D curve visits (0,0), (0,1), (1,1), (1,0).
+ * The index is a point's position on a path that visits every point in the grid once.
+ * Consecutive indices visit points one grid step apart along one axis.
+ * At depth 1, indices 0 through 3 visit the 2D points (0,0), (0,1), (1,1), (1,0).
  *
- * At a valid depth bits, each point in [0, 2^bits - 1]^DIM maps to exactly one
+ * At a valid bit depth, each point in [0, 2^bits - 1]^DIM maps to exactly one
  * index in [0, 2^(DIM * bits) - 1], and vice versa. Use the same depth to encode
- * and decode, and store the depth with the key.
+ * and decode, and store the dimension and depth with the key.
  *
- * Floating-point coordinates should be quantized before encoding,
- * and cells outside the valid range need to be clamped.
+ * Quantize floating-point positions to integer grid coordinates before encoding.
+ * Check that the resulting coordinates are nonnegative and fit the selected depth.
+ * Conversion functions require valid inputs and don't clamp them.
  *
  * Signed types use only nonnegative values. With 64-bit coordinates, uint64_t
  * keys allow 32, 21, and 16 bits per axis in 2D, 3D, and 4D.
  * The corresponding limits for int64_t keys are 31, 21, and 15 bits per axis.
  * Narrower coordinate types can reduce these limits.
+ *
+ * Uses J. Skilling's algorithm from "Programming the Hilbert curve",
+ * AIP Conference Proceedings 707, 381 (2004), https://doi.org/10.1063/1.1751381.
+ * The implementation adjusts coordinate bits for the curve's orientation,
+ * then uses Mortonizer to interleave the transformed bits into one integer index.
+ * \see internal::hilbert::HilbertTransform for the algorithm and bit layout.
  *
  * \tparam CoordType Integral coordinate type other than bool, at most 64 bits.
  * \tparam IndexType Integral index type other than bool, at most 64 bits.
