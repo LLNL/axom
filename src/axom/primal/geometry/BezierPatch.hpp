@@ -45,7 +45,7 @@ std::ostream& operator<<(std::ostream& os, const BezierPatch<T, NDIMS>& bPatch);
  * \tparam T the coordinate type, e.g., double, float, etc.
  *
  * The order of a Bezier patch with (N+1)(M+1) control points is (N, M).
- *  Note that this class uses `order` interchangeably with `degree`.
+ * \note This class uses `order` interchangeably with `degree`.
  *  This contrasts with NURBS objects, for which `order = degree + 1`
  * The patch is approximated by the control points,
  * parametrized from u=0 to u=1 and v=0 to v=1.

@@ -48,7 +48,7 @@ std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
  * \tparam NDIMS the number of dimensions
  *
  * The order of a Bezier curve with N+1 control points is N.
- *  Note that this class uses `order` interchangeably with `degree`.
+ * \note This class uses `order` interchangeably with `degree`.
  *  This contrasts with NURBS objects, for which `order = degree + 1`
  * The curve is approximated by the control points, parametrized from t=0 to t=1.
  * 
