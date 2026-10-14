@@ -535,7 +535,7 @@ public:
       conduit::Node& values =
         queryDom.fetch_existing(fmt::format("coordsets/{}/values", coordsetName));
       const int qPtCount = internal::extractSize(values);
-      copyFromConduitPoints(values, pointOffset);
+      copyFromConduitPoints(values, pointOffset, allocatorID);
       pointOffset += qPtCount;
     }
   }
@@ -619,7 +619,7 @@ public:
         dst.set_node(genericHeaders);
         auto& dstValues = dst["values"];
 
-        copyToConduitPoints(pointOffset, qPtCount, dstValues);
+        copyToConduitPoints(pointOffset, qPtCount, dstValues, allocatorID);
       }
       pointOffset += qPtCount;
     }
@@ -633,17 +633,18 @@ public:
    *
    * \param [in] components conduit node the coords are stored in
    * \param [in] pointOffset offset in the transfer node for the current domain
+   * \param [in] allocatorID allocator to alloc temp buffers with
    */
-  void copyFromConduitPoints(conduit::Node& components, axom::IndexType pointOffset) const
+  void copyFromConduitPoints(conduit::Node& components, axom::IndexType pointOffset, int allocatorID) const
   {
     const int dim = NDIMS;
     const int qPtCount = internal::extractSize(components);
     SLIC_ASSERT(dim == metadata.dims);
 
-    auto* dst = reinterpret_cast<double*>(points.data() + pointOffset);
     const bool interleavedSrc = conduit::blueprint::mcarray::is_interleaved(components);
     if(interleavedSrc)
     {
+      auto* dst = reinterpret_cast<double*>(points.data() + pointOffset);
       axom::copy(dst,
                  internal::getPointer<double>(components.child(0)),
                  dim * qPtCount * sizeof(double));
@@ -653,11 +654,20 @@ public:
       // Copy from component-wise source to the interleaved destination.
       for(int d = 0; d < dim; ++d)
       {
-        auto src = components.child(d).as_float64_array();
-        for(int i = 0; i < qPtCount; ++i)
+        auto* src_ptr = components.child(d).as_float64_ptr();
+        auto src_device_view = axom::ArrayView<double>(src_ptr, qPtCount);
+        auto points_view = points.subspan(pointOffset);
+
+        axom::Array<double> src_device;
+        if(!axom::execution_space<ExecSpace>::usesAllocId(src_device_view.getAllocatorID()))
         {
-          dst[i * dim + d] = src[i];
+          // Copy to device if needed.
+          src_device = axom::Array<double>(src_device_view, allocatorID);
+          src_device_view = src_device.view();
         }
+        axom::for_all<ExecSpace>(qPtCount, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+          points_view[i][d] = src_device_view[i];
+        });
       }
     }
   }
@@ -670,24 +680,27 @@ public:
    * \param [in] pointOffset offset in the transfer node for the current domain
    * \param [in] qptCount number of points from the transfer node to write out
    * \param [out] components conduit node to write out to
+   * \param [in] allocatorID allocator to alloc temp buffers with
    */
-  void copyToConduitPoints(IndexType pointOffset, IndexType qPtCount, conduit::Node& components) const
+  void copyToConduitPoints(IndexType pointOffset,
+                           IndexType qPtCount,
+                           conduit::Node& components,
+                           int allocatorID) const
   {
     const int dim = NDIMS;
     components.reset();
 
-    const auto* interleaved = reinterpret_cast<const double*>(cp_coords.data() + pointOffset);
+    auto cp_coords_view = cp_coords.subspan(pointOffset, qPtCount);
     // Copy from 1D-interleaved src to component-wise dst.
     for(int d = 0; d < dim; ++d)
     {
-      const double* src = interleaved + d;
+      axom::Array<double> coords_dim(qPtCount, qPtCount, allocatorID);
+      auto coords_dim_view = coords_dim.view();
+      axom::for_all<ExecSpace>(qPtCount, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+        coords_dim_view[i] = cp_coords_view[i][d];
+      });
       auto& dstNode = components.append();
-      dstNode.set_dtype(conduit::DataType::float64(qPtCount));
-      double* dst = dstNode.as_float64_ptr();
-      for(int i = 0; i < qPtCount; ++i)
-      {
-        dst[i] = src[i * dim];
-      }
+      dstNode.set(coords_dim.data(), qPtCount);
     }
   }
 
