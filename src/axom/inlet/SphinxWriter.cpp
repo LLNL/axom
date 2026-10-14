@@ -112,8 +112,7 @@ void SphinxWriter::documentContainer(const Container& container)
 
   for(const auto& function_entry : container.getChildFunctions())
   {
-    // A function value alternative is documented through the concrete entry
-    // that shares its input path, not under its internal schema name
+    // Skip function value alternatives since they are documented through their concrete entry
     if(detail::isFunctionAlternative(*function_entry.second))
     {
       continue;

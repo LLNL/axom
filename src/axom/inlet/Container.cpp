@@ -392,7 +392,7 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<bool>(axom::sidre::Group* 
   if(hasFunctionAlternative && result == ReaderResult::WrongType)
   {
     // The input supplied the function representation of this value,
-    // so the concrete entry is absent rather than of the wrong type.
+    // so indicate that the concrete entry is absent rather than of the wrong type.
     result = ReaderResult::NotFound;
   }
   if(forArray || result == ReaderResult::Success)
@@ -417,7 +417,7 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<int>(axom::sidre::Group* s
   if(hasFunctionAlternative && result == ReaderResult::WrongType)
   {
     // The input supplied the function representation of this value,
-    // so the concrete entry is absent rather than of the wrong type.
+    // so indicate that the concrete entry is absent rather than of the wrong type.
     result = ReaderResult::NotFound;
   }
   if(forArray || result == ReaderResult::Success)
@@ -442,7 +442,7 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<double>(axom::sidre::Group
   if(hasFunctionAlternative && result == ReaderResult::WrongType)
   {
     // The input supplied the function representation of this value,
-    // so the concrete entry is absent rather than of the wrong type.
+    // so indicate that the concrete entry is absent rather than of the wrong type.
     result = ReaderResult::NotFound;
   }
   if(forArray || result == ReaderResult::Success)
@@ -467,7 +467,7 @@ axom::sidre::DataTypeId Container::addPrimitiveHelper<std::string>(axom::sidre::
   if(hasFunctionAlternative && result == ReaderResult::WrongType)
   {
     // The input supplied the function representation of this value,
-    // so the concrete entry is absent rather than of the wrong type.
+    // so indicate that the concrete entry is absent rather than of the wrong type.
     result = ReaderResult::NotFound;
   }
   if(forArray || result == ReaderResult::Success)
@@ -941,8 +941,8 @@ Verifiable<Function>& Container::addFunctionAsValueAlternative(const std::string
                 "[Inlet] A function value alternative requires a non-empty value name");
   SLIC_ERROR_IF(ret_type == FunctionTag::Void,
                 "[Inlet] A function value alternative requires a non-void return type");
-  // The alternative is read from the concrete value's input path but is stored
-  // under a distinct schema name so the two entries do not collide.
+  // The function value alternative is read from the concrete value's input path
+  //  but is stored under a distinct schema name so the two entries do not collide.
   return addFunctionInternal(detail::functionAlternativeName(valueName),
                              valueName,
                              ret_type,
@@ -1387,8 +1387,8 @@ bool Container::isUserProvided() const
 
 bool Container::isUserProvided(const std::string& name) const
 {
-  // An alternative uses an internal schema name
-  // so we can't find it by its value name in the child lookups below
+  // Entries with a function value alternative use an internal schema name
+  // (different from the name parameter) so check for them directly
   if(containsFunctionValueAlternative(name))
   {
     return true;

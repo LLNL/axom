@@ -76,13 +76,14 @@ Declare the function alternative before the concrete entry, using the same input
 Inlet reads entries as you declare them, so declaring the alternative afterwards is an error.
 Paths are relative to each ``Container`` and use slashes for nested names.
 The two declarations may use different Containers when they resolve to the same input path.
-The example accepts either Lua input:
+The example accepts either of the following styles of Lua input:
 
 .. code-block:: Lua
 
+  -- either a concrete primitive
   scale = 2.0
 
-  -- or
+  -- or a function alternative
   scale = function() return 3.0 end
 
 After verification, check for a function before retrieving the value:
@@ -110,7 +111,7 @@ Your application must call the function and validate its result. Inlet does not 
 automatically or apply the concrete entry's constraints, such as a range, to its result.
 
 Generated Sphinx and JSON Schema output omit the alternative function entry,
-so user's must document the function form in user-facing documentation when desired.
+so a user must document the function form in user-facing documentation when desired.
 
 Accessing
 ---------
