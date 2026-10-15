@@ -38,6 +38,21 @@ struct has_ProxyFromInlet_specialization<
     std::is_same<T, decltype(std::declval<FromInlet<T>&>()(std::declval<const Proxy&>()))>::value>::type>
   : std::true_type
 { };
+
+/*!
+ *******************************************************************************
+ * \brief Maps a Proxy::evaluate() argument to the type passed to an Inlet function
+ *
+ * Inlet converts numeric arguments to double and character strings to std::string.
+ * This lets callers pass an int or a string literal to functions whose argument
+ * types are FunctionTag::Double or FunctionTag::String.
+ *******************************************************************************
+ */
+template <typename Arg>
+using function_value_arg_t = std::conditional_t<
+  std::is_arithmetic_v<std::decay_t<Arg>>,
+  double,
+  std::conditional_t<std::is_convertible_v<std::decay_t<Arg>, std::string>, std::string, std::decay_t<Arg>>>;
 }  // namespace detail
 
 /*!
@@ -170,6 +185,7 @@ public:
                           T>::type
   get() const
   {
+    checkNotFunction();
     SLIC_ASSERT_MSG(m_container != nullptr,
                     "[Inlet] Tried to read a user-defined type from a Proxy "
                     "containing a single field or function");
@@ -192,6 +208,7 @@ public:
                           T>::type
   get() const
   {
+    checkNotFunction();
     SLIC_ASSERT_MSG(m_container != nullptr,
                     "[Inlet] Tried to read a user-defined type from a Proxy "
                     "containing a single field or function");
@@ -239,6 +256,36 @@ public:
 
   /*!
    *******************************************************************************
+   * \brief Evaluates an entry declared with orFunction().
+   *
+   * If the input supplied a function, this calls it with \a args.
+   * If the input supplied a value, this returns the value and ignores \a args.
+   *
+   * \param [in] args Arguments for the function. Numbers are passed as double and
+   * character strings as std::string, matching FunctionTag::Double and FunctionTag::String.
+   * \tparam T The value type
+   * \tparam Args The types of the arguments, deduced automatically
+   *
+   * \return The function's result or the value
+   *
+   * \pre The Proxy refers to a Field, or to a function returning \a T
+   * whose arguments match \a args
+   *******************************************************************************
+   */
+  template <typename T, typename... Args>
+  T evaluate(Args&&... args) const
+  {
+    static_assert(detail::is_inlet_primitive<T>::value,
+                  "evaluate() returns a primitive type: bool, int, double, or std::string");
+    if(m_func != nullptr)
+    {
+      return m_func->call<T>(detail::function_value_arg_t<Args>(std::forward<Args>(args))...);
+    }
+    return get<T>();
+  }
+
+  /*!
+   *******************************************************************************
    * \brief Returns a primitive type from the proxy
    * 
    * \tparam T The type of the object to retrieve
@@ -249,6 +296,7 @@ public:
   template <typename T>
   typename std::enable_if<detail::is_inlet_primitive<T>::value, T>::type get() const
   {
+    checkNotFunction();
     SLIC_ASSERT_MSG(m_field != nullptr,
                     "[Inlet] Tried to read a primitive type from a Proxy "
                     "containing a container or function");
@@ -256,6 +304,19 @@ public:
   }
 
 private:
+  /*!
+   *******************************************************************************
+   * \brief Reports an error if this Proxy refers to a function, which can't be read as a value
+   *******************************************************************************
+   */
+  void checkNotFunction() const
+  {
+    SLIC_ERROR_IF(m_func != nullptr,
+                  fmt::format("[Inlet] '{0}' was supplied as a function. "
+                              "Use evaluate() or check type() before reading it as a value",
+                              m_func->name()));
+  }
+
   const Container* const m_container = nullptr;
   const Field* const m_field = nullptr;
   const Function* const m_func = nullptr;

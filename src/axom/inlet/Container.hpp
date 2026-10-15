@@ -985,8 +985,12 @@ public:
    * \brief Obtains a proxy view into the container for either a Field/Container subobject
    * 
    * Returns a reference via a lightweight proxy object to the element in the 
-   * datastore at the index specified by the name.  This can be a field 
-   * or a container.
+   * datastore at the index specified by the name.  This can be a field,
+   * a container, or a function.
+   *
+   * For an entry declared with orFunction(), the proxy refers to the function
+   * when the input supplied one, and to the value otherwise.
+   * Use Proxy::evaluate() to handle both, or Proxy::type() to tell them apart.
    * 
    * \param [in] name The name of the subobject
    * \return The retrieved array
@@ -1336,6 +1340,8 @@ private:
    * \param [in] The complete Container sequence for the Container this Field will be added to.
    * \param [in] The Container sequence for the Container this Field will be added to, 
    * relative to this Container.
+   * \param [in] lookupPath The Field's path within the input file,
+   * used to read a function alternative (see Field::orFunction())
    * 
    * \return The child Field matching the target name.
    *****************************************************************************
@@ -1343,7 +1349,8 @@ private:
   Field& addField(axom::sidre::Group* sidreGroup,
                   axom::sidre::DataTypeId type,
                   const std::string& fullName,
-                  const std::string& name);
+                  const std::string& name,
+                  const std::string& lookupPath);
 
   /*!
    *****************************************************************************

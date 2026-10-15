@@ -294,7 +294,8 @@ axom::sidre::Group* Container::createSidreGroup(const std::string& name,
 Field& Container::addField(axom::sidre::Group* sidreGroup,
                            axom::sidre::DataTypeId type,
                            const std::string& fullName,
-                           const std::string& name)
+                           const std::string& name,
+                           const std::string& lookupPath)
 {
   const size_t found = name.find_last_of("/");
   auto currContainer = this;
@@ -305,7 +306,7 @@ Field& Container::addField(axom::sidre::Group* sidreGroup,
   }
   const auto& emplace_result = currContainer->m_fieldChildren.emplace(
     fullName,
-    std::make_unique<Field>(sidreGroup, m_sidreRootGroup, type, m_docEnabled));
+    std::make_unique<Field>(sidreGroup, m_sidreRootGroup, type, m_docEnabled, &m_reader, lookupPath));
   // emplace_result is a pair whose first element is an iterator to the inserted element
   return *(emplace_result.first->second);
 }
@@ -377,7 +378,7 @@ VerifiableScalar& Container::addPrimitive(const std::string& name,
     detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
     auto typeId =
       addPrimitiveHelper(sidreGroup, lookupPath, forArray, val, containsFunctionValueAlternative(name));
-    return addField(sidreGroup, typeId, fullName, name);
+    return addField(sidreGroup, typeId, fullName, name, lookupPath);
   }
 }
 
@@ -669,35 +670,6 @@ void addIndexViewToGroup(sidre::Group& group, const VariantKey& index)
   else
   {
     addIndexViewToGroup(group, static_cast<int>(index));
-  }
-}
-
-/*!
- *****************************************************************************
- * \brief Writes function signature information to the sidre Group associated
- * with an inlet::Function
- * 
- * \param [in] ret_type The function's return type
- * \param [in] arg_types The function's argument types
- * \param [inout] group The group to add to
- * 
- * The structure of the function signature information is as follows:
- * <group>
- *  ├─• function_arguments <integer array>
- *  └─• return_type <integer>
- *****************************************************************************
- */
-void addSignatureToGroup(const FunctionTag ret_type,
-                         const std::vector<FunctionTag>& arg_types,
-                         sidre::Group* group)
-{
-  group->createViewScalar("return_type", static_cast<int>(ret_type));
-  auto args_view =
-    group->createViewAndAllocate("function_arguments", sidre::INT_ID, arg_types.size());
-  int* args_array = args_view->getArray();
-  for(const auto arg_type : arg_types)
-  {
-    *args_array++ = static_cast<int>(arg_type);
   }
 }
 
@@ -1051,7 +1023,13 @@ Proxy Container::operator[](const std::string& name) const
 
   else if(has_field)
   {
-    return Proxy(getField(name));
+    // A Field that accepts a function holds the input's function in place of its value
+    const auto& field = getField(name);
+    if(field.isFunction())
+    {
+      return Proxy(field.getFunction());
+    }
+    return Proxy(field);
   }
 
   else if(has_func)

@@ -9,6 +9,7 @@
 #include "axom/core/utilities/FileUtilities.hpp"
 
 #include "axom/inlet/LuaReader.hpp"
+#include "axom/inlet/YAMLReader.hpp"
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/JSONSchemaWriter.hpp"
 #include "axom/inlet/SphinxWriter.hpp"
@@ -870,6 +871,224 @@ TEST(inlet_function, function_value_alternative_lookup_of_absent_function)
   EXPECT_THROW(root.getFunctionValueAlternative("offset"), axom::slic::SlicAbortException);
 }
 
+TEST(inlet_function, or_function_selects_the_supplied_form)
+{
+  auto inlet = createBasicInlet(R"(
+    label = function() return 'computed' end
+    scale = 4.0
+  )");
+  inlet.addString("label").orFunction();
+  inlet.addDouble("scale").orFunction();
+  EXPECT_TRUE(inlet.verify());
+
+  // type() tells the caller which form the input supplied
+  EXPECT_EQ(inlet["label"].type(), InletType::Function);
+  EXPECT_EQ(inlet["scale"].type(), InletType::Double);
+
+  // evaluate() handles either form
+  EXPECT_EQ(inlet["label"].evaluate<std::string>(), "computed");
+  EXPECT_DOUBLE_EQ(inlet["scale"].evaluate<double>(), 4.0);
+
+  // The concrete form is still an ordinary value
+  EXPECT_DOUBLE_EQ(inlet["scale"].get<double>(), 4.0);
+}
+
+TEST(inlet_function, or_function_evaluate_passes_arguments_to_the_function_only)
+{
+  auto inlet = createBasicInlet(R"(
+    doubled = function(x) return 2 * x end
+    constant = 4.0
+    greeting = function(name) return 'hello ' .. name end
+  )");
+  inlet.addDouble("doubled").orFunction({FunctionTag::Double});
+  inlet.addDouble("constant").orFunction({FunctionTag::Double});
+  inlet.addString("greeting").orFunction({FunctionTag::String});
+  EXPECT_TRUE(inlet.verify());
+
+  // Numbers are passed as double, so an int literal or an lvalue also matches
+  const double x = 3.0;
+  EXPECT_DOUBLE_EQ(inlet["doubled"].evaluate<double>(3.0), 6.0);
+  EXPECT_DOUBLE_EQ(inlet["doubled"].evaluate<double>(3), 6.0);
+  EXPECT_DOUBLE_EQ(inlet["doubled"].evaluate<double>(x), 6.0);
+
+  // A concrete value acts as a constant function of the arguments
+  EXPECT_DOUBLE_EQ(inlet["constant"].evaluate<double>(3.0), 4.0);
+
+  // Character strings are passed as std::string
+  EXPECT_EQ(inlet["greeting"].evaluate<std::string>("inlet"), "hello inlet");
+}
+
+TEST(inlet_function, or_function_entry_is_present_in_either_form)
+{
+  auto inlet = createBasicInlet(R"(
+    from_function = function() return 2.0 end
+    from_value = 3.0
+  )");
+  inlet.addDouble("from_function").orFunction();
+  inlet.addDouble("from_value").orFunction();
+  inlet.addDouble("absent").orFunction();
+  EXPECT_TRUE(inlet.verify());
+
+  for(const std::string name : {"from_function", "from_value"})
+  {
+    EXPECT_TRUE(inlet.contains(name)) << name;
+    EXPECT_TRUE(inlet.isUserProvided(name)) << name;
+  }
+  EXPECT_FALSE(inlet.contains("absent"));
+  EXPECT_FALSE(inlet.isUserProvided("absent"));
+
+  const auto& fields = inlet.getGlobalContainer().getChildFields();
+  EXPECT_TRUE(fields.at("from_function")->isFunction());
+  EXPECT_FALSE(fields.at("from_value")->isFunction());
+  EXPECT_FALSE(fields.at("absent")->isFunction());
+}
+
+TEST(inlet_function, or_function_satisfies_required_in_either_form)
+{
+  for(const std::string input : {"scale = function() return 2.0 end", "scale = 2.0"})
+  {
+    auto inlet = createBasicInlet(input);
+    inlet.addDouble("scale").orFunction().required();
+    EXPECT_TRUE(inlet.verify()) << input;
+  }
+
+  auto missing = createBasicInlet("");
+  missing.addDouble("scale").orFunction().required();
+  EXPECT_FALSE(missing.verify());
+}
+
+TEST(inlet_function, or_function_default_applies_only_when_neither_form_is_supplied)
+{
+  // The default may be declared before or after orFunction()
+  for(const bool defaultFirst : {true, false})
+  {
+    auto declare = [defaultFirst](Inlet& inlet) {
+      auto& scale = inlet.addDouble("scale");
+      if(defaultFirst)
+      {
+        scale.defaultValue(1.0).orFunction();
+      }
+      else
+      {
+        scale.orFunction().defaultValue(1.0);
+      }
+    };
+
+    auto callback = createBasicInlet("scale = function() return 3.0 end");
+    declare(callback);
+    EXPECT_TRUE(callback.verify());
+    EXPECT_EQ(callback["scale"].type(), InletType::Function) << defaultFirst;
+    EXPECT_DOUBLE_EQ(callback["scale"].evaluate<double>(), 3.0) << defaultFirst;
+    {
+      // The default does not linger behind the function
+      axom::slic::ScopedAbortToThrow abortGuard;
+      EXPECT_THROW(callback.getGlobalContainer().getChildFields().at("scale")->get<double>(),
+                   axom::slic::SlicAbortException)
+        << defaultFirst;
+      EXPECT_TRUE(slicErrorContains("was supplied as a function"));
+    }
+
+    auto concrete = createBasicInlet("scale = 2.0");
+    declare(concrete);
+    EXPECT_TRUE(concrete.verify());
+    EXPECT_DOUBLE_EQ(concrete["scale"].evaluate<double>(), 2.0) << defaultFirst;
+
+    auto absent = createBasicInlet("");
+    declare(absent);
+    EXPECT_TRUE(absent.verify());
+    EXPECT_FALSE(absent.isUserProvided("scale"));
+    EXPECT_DOUBLE_EQ(absent["scale"].evaluate<double>(), 1.0) << defaultFirst;
+  }
+}
+
+TEST(inlet_function, or_function_reading_a_supplied_function_as_a_value_is_an_error)
+{
+  auto inlet = createBasicInlet("scale = function() return 2.0 end");
+  inlet.addDouble("scale").orFunction();
+  EXPECT_TRUE(inlet.verify());
+
+  axom::slic::ScopedAbortToThrow abortGuard;
+  EXPECT_THROW(inlet["scale"].get<double>(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("was supplied as a function"));
+  EXPECT_THROW(inlet.getGlobalContainer().getChildFields().at("scale")->get<double>(),
+               axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("was supplied as a function"));
+}
+
+TEST(inlet_function, or_function_rejects_an_unrelated_wrong_type)
+{
+  auto inlet = createBasicInlet("scale = 'neither a number nor a function'");
+  inlet.addDouble("scale").orFunction();
+  EXPECT_FALSE(inlet.verify());
+  EXPECT_FALSE(inlet.contains("scale"));
+  EXPECT_FALSE(inlet.getGlobalContainer().getChildFields().at("scale")->isFunction());
+}
+
+TEST(inlet_function, or_function_rejects_unsupported_field_types)
+{
+  // FunctionTag has no Bool or Int return type
+  auto inlet = createBasicInlet("");
+  axom::slic::ScopedAbortToThrow abortGuard;
+  EXPECT_THROW(inlet.addBool("flag").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("supports double and string Fields"));
+  EXPECT_THROW(inlet.addInt("count").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("supports double and string Fields"));
+}
+
+TEST(inlet_function, or_function_redeclaration_must_match_the_signature)
+{
+  auto inlet = createBasicInlet("group = { scale = function(x) return 2 * x end }");
+  auto& group = inlet.addStruct("group");
+  group.addDouble("scale").orFunction({FunctionTag::Double});
+
+  // Same signature: no-op. Redeclaring the Field returns the existing Field
+  group.addDouble("scale").orFunction({FunctionTag::Double});
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_DOUBLE_EQ(inlet["group/scale"].evaluate<double>(2.0), 4.0);
+
+  axom::slic::ScopedAbortToThrow abortGuard;
+  EXPECT_THROW(group.addDouble("scale").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("different signature"));
+}
+
+TEST(inlet_function, or_function_is_recognized_by_strict_containers)
+{
+  auto inlet = createBasicInlet(R"(
+    group = { scale = function() return 2.0 end, offset = 1.0 }
+  )");
+  auto& group = inlet.addStruct("group").strict();
+  group.addDouble("scale").orFunction();
+  group.addDouble("offset").orFunction();
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_TRUE(inlet.unexpectedNames().empty());
+  EXPECT_TRUE(group.exists());
+  EXPECT_TRUE(group.isUserProvided());
+}
+
+TEST(inlet_function, or_function_constraints_apply_to_the_value_only)
+{
+  // Inlet does not call the function during verification
+  auto callback = createBasicInlet("scale = function() return 5.0 end");
+  callback.addDouble("scale").range(0.0, 1.0).orFunction();
+  EXPECT_TRUE(callback.verify());
+
+  auto concrete = createBasicInlet("scale = 5.0");
+  concrete.addDouble("scale").range(0.0, 1.0).orFunction();
+  EXPECT_FALSE(concrete.verify());
+}
+
+TEST(inlet_function, or_function_with_a_reader_that_has_no_functions)
+{
+  // A reader without function support only ever supplies the value
+  auto reader = std::make_unique<axom::inlet::YAMLReader>();
+  reader->parseString("scale: 2.5");
+  Inlet inlet(std::move(reader));
+  inlet.addDouble("scale").orFunction();
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_EQ(inlet["scale"].type(), InletType::Double);
+  EXPECT_DOUBLE_EQ(inlet["scale"].evaluate<double>(), 2.5);
+}
+
 TEST(inlet_function, simple_void_to_double_through_container)
 {
   std::string testString = "function foo () return 9.64 end";
@@ -1161,6 +1380,80 @@ TEST(inlet_function, function_value_alternative_in_nested_dictionary_of_struct)
     inlet["groups"].get<std::unordered_map<int, FooWithValueAlternativeDictionary>>();
   EXPECT_DOUBLE_EQ(values.at(0).values.at("first").bar, 2.0);
   EXPECT_DOUBLE_EQ(values.at(0).values.at("second").bar, 3.0);
+}
+
+struct OperatorWithOrFunction
+{
+  double rotate;
+};
+
+template <>
+struct FromInlet<OperatorWithOrFunction>
+{
+  OperatorWithOrFunction operator()(const axom::inlet::Container& base)
+  {
+    return {base["rotate"].evaluate<double>()};
+  }
+};
+
+struct OperatorsWithOrFunctionDictionary
+{
+  std::unordered_map<std::string, OperatorWithOrFunction> operators;
+};
+
+template <>
+struct FromInlet<OperatorsWithOrFunctionDictionary>
+{
+  OperatorsWithOrFunctionDictionary operator()(const axom::inlet::Container& base)
+  {
+    return {base["ops"].get<std::unordered_map<std::string, OperatorWithOrFunction>>()};
+  }
+};
+
+TEST(inlet_function, or_function_applies_to_every_element_of_a_struct_array)
+{
+  // Elements may use different forms
+  auto inlet = createBasicInlet(R"(
+    operators = {
+      { rotate = 30.0 },
+      { rotate = function() return 45.0 end },
+      { }
+    }
+  )");
+  auto& ops = inlet.addStructArray("operators").strict();
+  ops.addDouble("rotate").orFunction().defaultValue(0.0);
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_TRUE(inlet.unexpectedNames().empty());
+
+  const auto values = inlet["operators"].get<std::vector<OperatorWithOrFunction>>();
+  ASSERT_EQ(values.size(), 3u);
+  EXPECT_DOUBLE_EQ(values[0].rotate, 30.0);
+  EXPECT_DOUBLE_EQ(values[1].rotate, 45.0);
+  EXPECT_DOUBLE_EQ(values[2].rotate, 0.0);
+}
+
+TEST(inlet_function, or_function_in_nested_dictionary_of_struct)
+{
+  auto inlet = createBasicInlet(R"(
+    groups = {
+      [0] = {
+        ops = {
+          first = {rotate = 2},
+          second = {rotate = function () return 3 end}
+        }
+      }
+    }
+  )");
+
+  auto& groups = inlet.addStructArray("groups");
+  auto& ops = groups.addStructDictionary("ops");
+  ops.addDouble("rotate").orFunction().required();
+
+  EXPECT_TRUE(inlet.verify());
+  const auto values =
+    inlet["groups"].get<std::unordered_map<int, OperatorsWithOrFunctionDictionary>>();
+  EXPECT_DOUBLE_EQ(values.at(0).operators.at("first").rotate, 2.0);
+  EXPECT_DOUBLE_EQ(values.at(0).operators.at("second").rotate, 3.0);
 }
 
 TEST(inlet_function, dimension_dependent_result)
