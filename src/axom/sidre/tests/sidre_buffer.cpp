@@ -119,6 +119,39 @@ TEST(sidre_buffer, alloc_buffer_for_int_array)
 }
 
 //------------------------------------------------------------------------------
+// Regression test (companion to https://github.com/LLNL/axom/issues/1695):
+// Buffer::getData() and Buffer::getVoidPtr() must be callable on a const Buffer,
+// e.g. one obtained through View::getBuffer() const.
+TEST(sidre_buffer, const_get_data)
+{
+  DataStore ds;
+
+  Buffer* dbuff = ds.createBuffer();
+  dbuff->allocate(INT_ID, 10);
+
+  int* data_ptr = dbuff->getData();
+  for(int i = 0; i < 10; i++)
+  {
+    data_ptr[i] = i * i;
+  }
+
+  // Access through a const reference
+  const Buffer& constBuff = *dbuff;
+
+  void* vptr = constBuff.getVoidPtr();
+  EXPECT_EQ(data_ptr, static_cast<int*>(vptr));
+
+  int* const_access = constBuff.getData();
+  ASSERT_NE(nullptr, const_access);
+  for(int i = 0; i < 10; i++)
+  {
+    EXPECT_EQ(i * i, const_access[i]);
+  }
+
+  dbuff->deallocate();
+}
+
+//------------------------------------------------------------------------------
 
 TEST(sidre_buffer, init_buffer_for_int_array)
 {
@@ -371,9 +404,13 @@ public:
   }
 
   DataStore ds;
-  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   int allocID;
 };
+
+void checkPointerAllocatorID(void* ptr, int expectedAllocID)
+{
+  ASSERT_EQ(expectedAllocID, axom::getAllocatorIDFromPointer(ptr));
+}
 
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, allocate)
@@ -385,7 +422,7 @@ TEST_P(UmpireTest, allocate)
     buff->describe(INT_ID, SIZE);
     buff->allocate(allocID);
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
     buff->deallocate();
   }
 
@@ -393,7 +430,7 @@ TEST_P(UmpireTest, allocate)
     Buffer* buff = ds.createBuffer();
     buff->allocate(INT_ID, SIZE, allocID);
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
     buff->deallocate();
   }
 
@@ -401,7 +438,7 @@ TEST_P(UmpireTest, allocate)
     Buffer* buff = ds.createBuffer(INT_ID, SIZE);
     buff->allocate(allocID);
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
     buff->deallocate();
   }
 }
@@ -411,13 +448,14 @@ TEST_P(UmpireTest, allocate_default)
   constexpr int SIZE = 100;
 
   axom::setDefaultAllocator(allocID);
+  const int defaultHostAllocatorID = axom::detail::getDefaultHostAllocatorID();
 
   {
     Buffer* buff = ds.createBuffer();
     buff->describe(INT_ID, SIZE);
     buff->allocate();
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), defaultHostAllocatorID);
     buff->deallocate();
   }
 
@@ -425,7 +463,7 @@ TEST_P(UmpireTest, allocate_default)
     Buffer* buff = ds.createBuffer();
     buff->allocate(INT_ID, SIZE);
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), defaultHostAllocatorID);
     buff->deallocate();
   }
 
@@ -433,7 +471,7 @@ TEST_P(UmpireTest, allocate_default)
     Buffer* buff = ds.createBuffer(INT_ID, SIZE);
     buff->allocate();
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), defaultHostAllocatorID);
     buff->deallocate();
   }
 }
@@ -455,7 +493,7 @@ TEST_P(UmpireTest, reallocate)
     buff->allocate(allocID);
     buff->reallocate(2 * SIZE);
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
 
     buff->deallocate();
   }
@@ -465,7 +503,7 @@ TEST_P(UmpireTest, reallocate)
     buff->allocate(INT_ID, SIZE, allocID);
     buff->reallocate(2 * SIZE);
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
     buff->deallocate();
   }
 
@@ -474,7 +512,7 @@ TEST_P(UmpireTest, reallocate)
     buff->allocate(allocID);
     buff->reallocate(2 * SIZE);
 
-    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
     buff->deallocate();
   }
 }
@@ -500,7 +538,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocatorID(), rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
 
     buff->deallocate();
   }
@@ -511,7 +549,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocatorID(), rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
     buff->deallocate();
   }
 
@@ -521,7 +559,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocatorID(), rm.getAllocator(buff->getVoidPtr()).getId());
+    checkPointerAllocatorID(buff->getVoidPtr(), allocID);
     buff->deallocate();
   }
 }

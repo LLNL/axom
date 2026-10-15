@@ -21,6 +21,7 @@ set( spin_headers
      BVH.hpp
      Brood.hpp
      DenseOctreeLevel.hpp
+     HilbertIndex.hpp
      ImplicitGrid.hpp
      MortonIndex.hpp
      OctreeBase.hpp
@@ -31,6 +32,8 @@ set( spin_headers
      UniformGrid.hpp
 
      ## internal
+     internal/HilbertIndexImpl.hpp
+     internal/linear_bvh/BVHNode.hpp
      internal/linear_bvh/RadixTree.hpp
      internal/linear_bvh/build_radix_tree.hpp
      internal/linear_bvh/bvh_traverse.hpp
@@ -50,7 +53,7 @@ set( spin_depends_on
 
 blt_list_append( TO spin_depends_on ELEMENTS sparsehash IF SPARSEHASH_FOUND )
 blt_list_append( TO spin_depends_on ELEMENTS RAJA IF RAJA_FOUND )
-blt_list_append( TO spin_depends_on ELEMENTS umpire IF UMPIRE_FOUND )
+blt_list_append( TO spin_depends_on ELEMENTS umpire::umpire IF UMPIRE_FOUND )
 
 #------------------------------------------------------------------------------
 # Make/Install the library

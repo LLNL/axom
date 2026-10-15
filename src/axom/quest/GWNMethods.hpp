@@ -4,14 +4,13 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#pragma once
+
 /**
  * \file GWNMethods.hpp
  *
  * \brief Helper classes and type traits for GWN Evaluation methods
  */
-
-#ifndef AXOM_QUEST_GWN_METHODS_HPP_
-#define AXOM_QUEST_GWN_METHODS_HPP_
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"
@@ -209,21 +208,21 @@ public:
         const int ncurves = m_processed_curves_view.size();
         axom::Array<BoxType> aabbs(ncurves, ncurves);
         auto aabbs_view = aabbs.view();
+        const auto processed_curves_view = m_processed_curves_view;
 
-        axom::for_all<ExecSpace>(
-          ncurves,
-          AXOM_LAMBDA(axom::IndexType i) {
-            aabbs_view[i] = m_processed_curves_view[i].boundingBox();
-          });
+        axom::for_all<ExecSpace>(ncurves, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+          aabbs_view[i] = processed_curves_view[i].boundingBox();
+        });
         m_bvh.initialize(aabbs_view, ncurves);
       }
 
       {
         AXOM_ANNOTATE_SCOPE("moment_precomputation");
-        auto compute_moments = [=](std::int32_t currentNode,
-                                   const std::int32_t* leafNodes) -> GWNMoments {
+        const auto processed_curves_view = m_processed_curves_view;
+        auto compute_moments = [processed_curves_view](std::int32_t currentNode,
+                                                       const std::int32_t* leafNodes) -> GWNMoments {
           const auto idx = leafNodes[currentNode];
-          return GWNMoments(m_processed_curves_view[idx]);
+          return GWNMoments(processed_curves_view[idx]);
         };
 
         const auto traverser = m_bvh.getTraverser();
@@ -279,6 +278,7 @@ public:
     {
       AXOM_ANNOTATE_SCOPE("query");
       const primal::WindingTolerances tol_copy = tol;
+      const auto processed_curves_view = m_processed_curves_view;
 
       // Use fast approximation
       if(m_bvh.isInitialized())
@@ -292,7 +292,7 @@ public:
           axom::for_all<ExecSpace>(num_query_points, [=, &winding, &inout](axom::IndexType index) {
             const double wn = axom::quest::fast_approximate_winding_number(query_point(index),
                                                                            traverser,
-                                                                           m_processed_curves_view,
+                                                                           processed_curves_view,
                                                                            internal_moments_view,
                                                                            tol_copy);
             winding[static_cast<int>(index)] = wn;
@@ -324,7 +324,7 @@ public:
           axom::for_all<ExecSpace>(num_query_points, [=, &winding, &inout](axom::IndexType nidx) {
             const auto q = query_point(static_cast<int>(nidx));
             double wn {};
-            for(const auto& curve : m_processed_curves_view)
+            for(const auto& curve : processed_curves_view)
             {
               wn += axom::primal::winding_number(q, curve, tol_copy.edge_tol, tol_copy.EPS);
             }
@@ -419,9 +419,9 @@ public:
 
       axom::mint::for_all_cells<ExecSpace, axom::mint::xargs::coords>(
         poly_mesh,
-        AXOM_LAMBDA(axom::IndexType cellIdx,
-                    const axom::numerics::Matrix<double>& coords,
-                    const axom::IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
+        [=] AXOM_HOST_DEVICE(axom::IndexType cellIdx,
+                             const axom::numerics::Matrix<double>& coords,
+                             const axom::IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
           segments_view[cellIdx] =
             SegmentType {Point2D {coords(0, 0), coords(1, 0)}, Point2D {coords(0, 1), coords(1, 1)}};
         });
@@ -437,11 +437,9 @@ public:
         auto aabbs_view = aabbs.view();
         const auto segments_view = m_segments.view();
 
-        axom::for_all<ExecSpace>(
-          nlines,
-          AXOM_LAMBDA(axom::IndexType i) {
-            aabbs_view[i] = BoxType {segments_view[i].source(), segments_view[i].target()};
-          });
+        axom::for_all<ExecSpace>(nlines, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+          aabbs_view[i] = BoxType {segments_view[i].source(), segments_view[i].target()};
+        });
         m_bvh.initialize(aabbs_view, nlines);
       }
 
@@ -638,12 +636,11 @@ public:
         const int npatches = m_processed_patches_view.size();
         axom::Array<BoxType> aabbs(npatches, npatches);
         auto aabbs_view = aabbs.view();
+        const auto processed_patches_view = m_processed_patches_view;
 
-        axom::for_all<ExecSpace>(
-          npatches,
-          AXOM_LAMBDA(axom::IndexType i) {
-            aabbs_view[i] = m_processed_patches_view[i].boundingBox();
-          });
+        axom::for_all<ExecSpace>(npatches, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+          aabbs_view[i] = processed_patches_view[i].boundingBox();
+        });
         m_bvh.initialize(aabbs_view, npatches);
       }
 
@@ -655,10 +652,11 @@ public:
         auto normals_view = precomputed_normals.view();
         auto surface_areas_view = precomputed_surface_areas.view();
 
+        const auto processed_patches_view = m_processed_patches_view;
         auto compute_moments = [=](std::int32_t currentNode,
                                    const std::int32_t* leafNodes) -> GWNMoments {
           const auto idx = leafNodes[currentNode];
-          const auto leaf_moments = GWNMoments(m_processed_patches_view[idx]);
+          const auto leaf_moments = GWNMoments(processed_patches_view[idx]);
 
           normals_view[idx] = leaf_moments.getNormal();
           surface_areas_view[idx] = leaf_moments.getSurfaceArea();
@@ -735,6 +733,7 @@ public:
     {
       AXOM_ANNOTATE_SCOPE("query");
       const primal::WindingTolerances tol_copy = tol;
+      const auto processed_patches_view = m_processed_patches_view;
 
       // Use fast approximation
       if(m_bvh.isInitialized())
@@ -750,7 +749,7 @@ public:
           axom::for_all<ExecSpace>(num_query_points, [=, &winding, &inout](axom::IndexType index) {
             const double wn = axom::quest::fast_approximate_winding_number(query_point(index),
                                                                            traverser,
-                                                                           m_processed_patches_view,
+                                                                           processed_patches_view,
                                                                            internal_moments_view,
                                                                            tol_copy);
             winding[static_cast<int>(index)] = wn;
@@ -784,7 +783,7 @@ public:
           axom::for_all<ExecSpace>(num_query_points, [=, &winding, &inout](axom::IndexType nidx) {
             const auto q = query_point(static_cast<int>(nidx));
             double wn {};
-            for(const auto& patch : m_processed_patches_view)
+            for(const auto& patch : processed_patches_view)
             {
               wn += axom::primal::winding_number(q,
                                                  patch,
@@ -890,7 +889,7 @@ public:
       BoxType* shape_bbox_ptr = &shape_bbox;
       axom::mint::for_all_nodes<ExecSpace, axom::mint::xargs::xyz>(
         tri_mesh,
-        AXOM_LAMBDA(axom::IndexType, double x, double y, double z) {
+        [=] AXOM_HOST_DEVICE(axom::IndexType, double x, double y, double z) {
           shape_bbox_ptr->addPoint(Point3D {x, y, z});
         });
 
@@ -907,9 +906,9 @@ public:
       auto triangles_view = m_triangles.view();
       axom::mint::for_all_cells<ExecSpace, axom::mint::xargs::coords>(
         tri_mesh,
-        AXOM_LAMBDA(axom::IndexType cellIdx,
-                    const axom::numerics::Matrix<double>& coords,
-                    const axom::IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
+        [=] AXOM_HOST_DEVICE(axom::IndexType cellIdx,
+                             const axom::numerics::Matrix<double>& coords,
+                             const axom::IndexType* AXOM_UNUSED_PARAM(nodeIds)) {
           triangles_view[cellIdx] =
             TriangleType {Point3D {(coords(0, 0) - shape_center[0]) / scale,
                                    (coords(1, 0) - shape_center[1]) / scale,
@@ -932,12 +931,9 @@ public:
         auto aabbs_view = aabbs.view();
         const auto triangles_view = m_triangles.view();
 
-        axom::for_all<ExecSpace>(
-          ntris,
-          AXOM_LAMBDA(axom::IndexType i) {
-            aabbs_view[i] =
-              BoxType {triangles_view[i][0], triangles_view[i][1], triangles_view[i][2]};
-          });
+        axom::for_all<ExecSpace>(ntris, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+          aabbs_view[i] = BoxType {triangles_view[i][0], triangles_view[i][1], triangles_view[i][2]};
+        });
         m_bvh.initialize(aabbs_view, ntris);
       }
 
@@ -1155,4 +1151,3 @@ IntegralStats compute_integrals(const mfem::GridFunction& gf)
 
 }  // namespace quest
 }  // namespace axom
-#endif

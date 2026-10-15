@@ -4,8 +4,9 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-import pysidre
+import axom.sidre as sidre
 import numpy as np
+import pytest
 import conduit
 
 # Global attribute values, used by multiple tests
@@ -34,7 +35,7 @@ g_size_large = 3.4
 # Python equivalent of nullptr
 g_attr_null = None
 
-if pysidre.AXOM_USE_HDF5:
+if sidre.AXOM_USE_HDF5:
     g_nprotocols = 3
     g_protocols = ["sidre_json", "sidre_hdf5", "json"]
 else:
@@ -51,7 +52,7 @@ g_protocol_saves_attributes = {
 def test_create_attr():
     print("Some warnings are expected in the 'create_attr' test")
 
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     nattrs = ds.getNumAttributes()
     assert nattrs == 0
@@ -64,7 +65,7 @@ def test_create_attr():
     # Create string attribute
     color = ds.createAttributeString(g_name_color, g_color_none)
     assert color is not None
-    assert color.getTypeID() == pysidre.TypeID.CHAR8_STR_ID
+    assert color.getTypeID() == sidre.TypeID.CHAR8_STR_ID
 
     attr_index = color.getIndex()
     assert attr_index == 0
@@ -141,7 +142,7 @@ def test_create_attr():
 def test_view_attr():
     print("Some warnings are expected in the 'view_attr' test")
 
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     # Create all attributes for DataStore
     attr_color = ds.createAttributeString(g_name_color, g_color_none)
@@ -268,16 +269,16 @@ def test_view_attr():
 def test_view_int_and_double():
     print("Some warnings are expected in the 'view_int_and_double' test")
 
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     # Create all attributes for DataStore
     attr_dump = ds.createAttributeScalar(g_name_dump, g_dump_no)
     assert attr_dump is not None
-    assert attr_dump.getTypeID() == pysidre.TypeID.INT32_ID
+    assert attr_dump.getTypeID() == sidre.TypeID.INT32_ID
 
     attr_size = ds.createAttributeScalar(g_name_size, g_size_small)
     assert attr_size is not None
-    assert attr_size.getTypeID() == pysidre.TypeID.FLOAT64_ID
+    assert attr_size.getTypeID() == sidre.TypeID.FLOAT64_ID
 
     root = ds.getRoot()
 
@@ -328,16 +329,16 @@ def test_view_int_and_double():
 def test_set_default():
     print("Some warnings are expected in the 'set_default' test")
 
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     # Create all attributes for DataStore
     attr_dump = ds.createAttributeScalar(g_name_dump, g_dump_no)
     assert attr_dump is not None
-    assert attr_dump.getTypeID() == pysidre.TypeID.INT32_ID
+    assert attr_dump.getTypeID() == sidre.TypeID.INT32_ID
 
     attr_size = ds.createAttributeScalar(g_name_size, g_size_small)
     assert attr_size is not None
-    assert attr_size.getTypeID() == pysidre.TypeID.FLOAT64_ID
+    assert attr_size.getTypeID() == sidre.TypeID.FLOAT64_ID
 
     root = ds.getRoot()
 
@@ -383,7 +384,7 @@ def test_set_default():
 def test_as_node():
     print("Some warnings are expected in the 'as_node' test")
 
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     # Create attributes for DataStore
     attr_color = ds.createAttributeString(g_name_color, g_color_none)
@@ -418,7 +419,7 @@ def test_as_node():
 def test_overloads():
     print("Some warnings are expected in the 'overloads' test")
 
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     # Create string and scalar attributes
     attr_color = ds.createAttributeString(g_name_color, g_color_none)
@@ -497,12 +498,12 @@ def test_overloads():
 
     # Check some errors
     assert view.getAttributeScalarInt(g_attr_null) == 0
-    assert view.getAttributeScalarInt(pysidre.InvalidIndex) == 0
+    assert view.getAttributeScalarInt(sidre.InvalidIndex) == 0
     assert view.getAttributeScalarInt("noname") == 0
 
 
 def test_loop_attributes():
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     # Create attributes for DataStore
     color = ds.createAttributeString(g_name_color, g_color_none)
@@ -525,9 +526,9 @@ def test_loop_attributes():
     idx3 = ds.getNextValidAttributeIndex(idx2)
     assert idx3 == 2
     idx4 = ds.getNextValidAttributeIndex(idx3)
-    assert idx4 == pysidre.InvalidIndex
+    assert idx4 == sidre.InvalidIndex
     idx5 = ds.getNextValidAttributeIndex(idx4)
-    assert idx5 == pysidre.InvalidIndex
+    assert idx5 == sidre.InvalidIndex
 
     # ----------------------------------------
     root = ds.getRoot()
@@ -545,7 +546,7 @@ def test_loop_attributes():
     idx3 = view1.getNextValidAttrValueIndex(idx2)
     assert idx3 == 2
     idx4 = view1.getNextValidAttrValueIndex(idx3)
-    assert idx4 == pysidre.InvalidIndex
+    assert idx4 == sidre.InvalidIndex
 
     # set first attribute
     view2 = root.createView("view2")
@@ -554,7 +555,7 @@ def test_loop_attributes():
     idx1 = view2.getFirstValidAttrValueIndex()
     assert idx1 == 0
     idx2 = view2.getNextValidAttrValueIndex(idx1)
-    assert idx2 == pysidre.InvalidIndex
+    assert idx2 == sidre.InvalidIndex
 
     # set last attribute
     view3 = root.createView("view3")
@@ -563,7 +564,7 @@ def test_loop_attributes():
     idx1 = view3.getFirstValidAttrValueIndex()
     assert idx1 == 2
     idx2 = view3.getNextValidAttrValueIndex(idx1)
-    assert idx2 == pysidre.InvalidIndex
+    assert idx2 == sidre.InvalidIndex
 
     # set first and last attributes
     view4 = root.createView("view4")
@@ -575,19 +576,19 @@ def test_loop_attributes():
     idx2 = view4.getNextValidAttrValueIndex(idx1)
     assert idx2 == 2
     idx3 = view4.getNextValidAttrValueIndex(idx2)
-    assert idx3 == pysidre.InvalidIndex
+    assert idx3 == sidre.InvalidIndex
 
     # no attributes
     view5 = root.createView("view5")
 
     idx1 = view5.getFirstValidAttrValueIndex()
-    assert idx1 == pysidre.InvalidIndex
+    assert idx1 == sidre.InvalidIndex
     idx2 = view5.getNextValidAttrValueIndex(idx1)
-    assert idx2 == pysidre.InvalidIndex
+    assert idx2 == sidre.InvalidIndex
 
 
 def test_iterate_attributes():
-    ds = pysidre.DataStore()
+    ds = sidre.DataStore()
 
     # Create attributes for DataStore
     color = ds.createAttributeString(g_name_color, g_color_none)
@@ -627,7 +628,7 @@ def test_save_attributes():
     idata = np.zeros(5, dtype=int)
     file_path_base = "sidre_attribute_datastore_"
 
-    ds1 = pysidre.DataStore()
+    ds1 = sidre.DataStore()
     root1 = ds1.getRoot()
 
     # Create attributes for DataStore
@@ -649,13 +650,13 @@ def test_save_attributes():
     view1a.setAttributeScalar(size, g_size_small)
 
     # buffer
-    view1b = root1.createViewAndAllocate("buffer", pysidre.TypeID.INT_ID, 5)
+    view1b = root1.createViewAndAllocate("buffer", sidre.TypeID.INT_ID, 5)
     bdata = view1b.getDataArray()
     view1b.setAttributeString(color, "color-buffer")
     view1b.setAttributeScalar(size, g_size_medium)
 
     # external
-    view1c = root1.createView("external", pysidre.TypeID.INT_ID, 5, idata)
+    view1c = root1.createView("external", sidre.TypeID.INT_ID, 5, idata)
     view1c.setAttributeScalar(size, g_size_large)
 
     # scalar
@@ -692,7 +693,7 @@ def test_save_attributes():
 
         file_path = file_path_base + g_protocols[i]
 
-        ds2 = pysidre.DataStore()
+        ds2 = sidre.DataStore()
         root2 = ds2.getRoot()
 
         root2.load(file_path, g_protocols[i])
@@ -757,7 +758,7 @@ def test_save_by_attribute():
     jdata = np.zeros(5, dtype=int)
     file_path_base = "sidre_attribute_by_attribute_"
 
-    ds1 = pysidre.DataStore()
+    ds1 = sidre.DataStore()
     root1 = ds1.getRoot()
 
     # Create attributes for DataStore
@@ -772,9 +773,8 @@ def test_save_by_attribute():
     root1.createViewScalar("grp1a/grp1b/view3", 3)
     root1.createViewScalar("grp2a/view4", 4)  # make sure empty "views" not saved
     root1.createViewScalar("grp2a/grp2b/view5", 5).setAttributeScalar(dump, g_dump_yes)
-    root1.createView("view6", pysidre.TypeID.INT32_ID, 5,
-                     idata).setAttributeScalar(dump, g_dump_yes)
-    root1.createView("grp3a/grp3b/view7", pysidre.TypeID.INT32_ID, 5, jdata)
+    root1.createView("view6", sidre.TypeID.INT32_ID, 5, idata).setAttributeScalar(dump, g_dump_yes)
+    root1.createView("grp3a/grp3b/view7", sidre.TypeID.INT32_ID, 5, jdata)
 
     for i in range(5):
         idata[i] = i
@@ -798,7 +798,7 @@ def test_save_by_attribute():
             continue
 
         file_path = file_path_base + g_protocols[i]
-        ds2 = pysidre.DataStore()
+        ds2 = sidre.DataStore()
         root2 = ds2.getRoot()
         root2.load(file_path, g_protocols[i])
 
@@ -821,7 +821,7 @@ def test_save_load_group_with_attributes_new_ds():
         filename = f"saveFile_{protocol}.{ext}"
 
         # Set up first datastore and save to disk
-        ds1 = pysidre.DataStore()
+        ds1 = sidre.DataStore()
         ds1.createAttributeScalar("attr", 10)
         ds1.createAttributeString(g_name_color, g_color_none)
 
@@ -831,9 +831,9 @@ def test_save_load_group_with_attributes_new_ds():
         gr1.createViewScalar("scalar3", 3).setAttributeString(g_name_color, g_color_blue)
 
         assert ds1.getNumAttributes() == 2
-        assert (pysidre.TypeID.INT32_ID == ds1.getAttribute("attr").getTypeID()
-                or pysidre.TypeID.INT64_ID == ds1.getAttribute("attr").getTypeID())
-        assert pysidre.TypeID.CHAR8_STR_ID == ds1.getAttribute(g_name_color).getTypeID()
+        assert (sidre.TypeID.INT32_ID == ds1.getAttribute("attr").getTypeID()
+                or sidre.TypeID.INT64_ID == ds1.getAttribute("attr").getTypeID())
+        assert sidre.TypeID.CHAR8_STR_ID == ds1.getAttribute(g_name_color).getTypeID()
 
         assert not gr1.getView("scalar1").hasAttributeValue(g_name_color)
 
@@ -852,14 +852,14 @@ def test_save_load_group_with_attributes_new_ds():
             continue
 
         # Load second datastore from saved data
-        ds2 = pysidre.DataStore()
+        ds2 = sidre.DataStore()
         gr2 = ds2.getRoot().createGroup("gr")
         gr2.load(filename, protocol)
 
         assert ds2.getNumAttributes() == 2
-        assert (pysidre.TypeID.INT32_ID == ds2.getAttribute("attr").getTypeID()
-                or pysidre.TypeID.INT64_ID == ds2.getAttribute("attr").getTypeID())
-        assert pysidre.TypeID.CHAR8_STR_ID == ds2.getAttribute(g_name_color).getTypeID()
+        assert (sidre.TypeID.INT32_ID == ds2.getAttribute("attr").getTypeID()
+                or sidre.TypeID.INT64_ID == ds2.getAttribute("attr").getTypeID())
+        assert sidre.TypeID.CHAR8_STR_ID == ds2.getAttribute(g_name_color).getTypeID()
 
         assert gr2.hasView("scalar1")
         assert not gr2.getView("scalar1").hasAttributeValue(g_name_color)
@@ -891,7 +891,7 @@ def test_save_load_group_with_attributes_same_ds():
         print(f"Checking attribute save/load w/ protocol '{protocol}' using file '{filename}'")
 
         # Create the DataStore and attributes
-        ds = pysidre.DataStore()
+        ds = sidre.DataStore()
         ds.createAttributeScalar("attr", 10)
         ds.createAttributeString(g_name_color, g_color_none)
 
@@ -946,3 +946,55 @@ def test_save_load_group_with_attributes_same_ds():
         assert gr.getView("scalar2").getAttributeString(g_name_color) == g_color_red
         assert gr.getView("scalar3").hasAttributeValue(g_name_color)
         assert gr.getView("scalar3").getAttributeString(g_name_color) == g_color_blue
+
+
+# ---------------------------------------------------------------------------
+# Scalar setters reject implicit NumPy conversions
+# ---------------------------------------------------------------------------
+# .noconvert() prevents NumPy floats from selecting the int overload and losing
+# their fractional part. Callers must convert NumPy scalars explicitly.
+def test_setAttributeScalar_requires_exact_python_scalar_types():
+    ds = sidre.DataStore()
+    ds.createAttributeScalar(g_name_dump, g_dump_no)
+    view = ds.getRoot().createViewScalar("scalar", 0)
+
+    assert view.setAttributeScalar(g_name_dump, 1)
+    assert view.getAttributeScalarInt(g_name_dump) == 1
+
+    # Reject NumPy scalars, zero-dimensional arrays, bool, and str.
+    for rejected in (np.int32(1), np.int64(1), np.float32(1.0), np.float64(1.0), np.array(1), True,
+                     "1"):
+        with pytest.raises(TypeError):
+            view.setAttributeScalar(g_name_dump, rejected)
+
+    # Rejected calls must leave the value unchanged.
+    assert view.getAttributeScalarInt(g_name_dump) == 1
+
+    assert view.setAttributeScalar(g_name_dump, int(np.int64(7)))
+    assert view.getAttributeScalarInt(g_name_dump) == 7
+
+
+def test_noconvert_prevents_silent_float_to_int_truncation():
+    # If conversions were allowed, np.float32(3.5) would bind to the int overload and store 3
+    ds = sidre.DataStore()
+    ds.createAttributeScalar(g_name_size, g_size_small)
+    view = ds.getRoot().createViewScalar("scalar", 0)
+
+    with pytest.raises(TypeError):
+        view.setAttributeScalar(g_name_size, np.float32(3.5))
+
+    # Converting explicitly keeps the fractional part.
+    assert view.setAttributeScalar(g_name_size, float(np.float32(3.5)))
+    assert view.getAttributeScalarFloat(g_name_size) == 3.5
+
+
+def test_setScalar_requires_exact_python_scalar_types():
+    ds = sidre.DataStore()
+    view = ds.getRoot().createViewScalar("scalar", 0)
+
+    assert view.setScalar(5) is not None
+    assert view.getDataInt() == 5
+
+    for rejected in (np.int64(5), np.float64(5.0), np.array(5), True):
+        with pytest.raises(TypeError):
+            view.setScalar(rejected)

@@ -7,21 +7,27 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
+#include <nanobind/stl/optional.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/make_iterator.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
-#include "core/SidreTypes.hpp"
-#include "core/Buffer.hpp"
-#include "core/View.hpp"
-#include "core/DataStore.hpp"
-#include "core/Group.hpp"
+#include "axom/slic/interface/slic.hpp"
+
+#include "axom/sidre/core/SidreTypes.hpp"
+#include "axom/sidre/core/Buffer.hpp"
+#include "axom/sidre/core/View.hpp"
+#include "axom/sidre/core/DataStore.hpp"
+#include "axom/sidre/core/Group.hpp"
 #if defined(AXOM_USE_MPI)
-  #include "spio/IOManager.hpp"
+  #include "axom/sidre/spio/IOManager.hpp"
 #endif
 
 // Separate Conduit header for python functionality
@@ -30,9 +36,7 @@
 namespace nb = nanobind;
 using namespace nb::literals;
 
-namespace axom
-{
-namespace sidre
+namespace axom::sidre
 {
 
 // Helper to map TypeID to nanobind dtype
@@ -275,46 +279,230 @@ conduit::Node& nbObjectToNode(nb::object& o)
  * the ndarray is garbage collected.
  *
  * To keep Sidre's C++ semantics unchanged while making the Python API safe,
- * we maintain a binding-only registry that maps a C++ View* to a copied
- * nanobind::ndarray wrapper. Copying nb::ndarray increments the underlying
- * ndarray owner's refcount via nanobind's internal handle, so the NumPy storage
- * remains alive as long as the View exists.
+ * we maintain a binding-only registry of "pins": copies of the nanobind ndarray
+ * wrapper. Copying nb::ndarray increments the underlying ndarray owner's
+ * refcount via nanobind's internal handle, so the NumPy storage stays alive for
+ * as long as the pin exists. A pin therefore ties the external array's lifetime
+ * to the *C++ View's* lifetime, not to any transient Python proxy: the array
+ * survives even if the Python View object that set it is discarded, as long as
+ * the View still lives in its DataStore (see the lifetime tests).
  *
- * Pins are released when the external pointer is cleared (e.g. View.clear(),
- * setExternalData(None)) and when views/groups are destroyed via the bound Group::destroy* APIs.
+ * **Per-DataStore scoping.** The registry is keyed by owning DataStore* and,
+ * within each DataStore, by View*. This is what makes raw-pointer keys safe:
  *
- * **Registry Lifetime:** The registry persists for the process lifetime and may accumulate
- * entries for destroyed Views if those Views are destroyed by the C++ DataStore destructor
- * rather than through the Python-wrapped destroy methods. This is acceptable because:
- * (1) Dangling View* keys are never dereferenced (we only erase, never lookup by pointer)
- * (2) The memory overhead is small (one map entry per external View ever created)
- * (3) In typical Python usage, Views with external data are explicitly destroyed via
- *     destroyView()/destroyGroup(), which properly releases pins.
+ *  - When a DataStore's Python object is collected, nanobind destroys the C++
+ *    DataStore (the user always holds a DataStore through Python, so the two
+ *    lifetimes coincide). We install a weak reference on the DataStore at the
+ *    first pin whose callback erases that DataStore's entire sub-map. Pins are
+ *    thus released no later than DataStore destruction -- the registry never
+ *    grows without bound, even for Views torn down by the C++ DataStore
+ *    destructor rather than an explicit destroyView()/destroyGroup().
+ *  - A View* is only meaningful within its owning DataStore, and that
+ *    DataStore's sub-map is wiped when the DataStore dies. A View* address
+ *    reused by a *different* DataStore therefore cannot collide with a stale
+ *    pin, and a reused DataStore* address starts from a fresh (empty) sub-map.
+ *  - We never look up a pin by a View* that might be stale: copyView/copyGroup
+ *    only search for the source pin while the source View is live, then re-pin
+ *    the destination from that live ndarray value.
+ *
+ * Pins are also released eagerly when the external pointer is cleared
+ * (View.clear(), setExternalData(None)) and when views/groups are destroyed via
+ * the bound destroy* APIs, so memory is reclaimed promptly in the common case
+ * rather than waiting for DataStore destruction.
+ *
+ * \note Thread safety: all access goes through the GIL (see the module
+ *  docstring). If the bindings ever release the GIL, this registry needs a mutex.
+ *
+ * \note Pin scoping assumes a pinned View stays within the DataStore it belonged
+ *  to when it was pinned. Sidre reparenting (moveView/moveGroup) stays within a
+ *  single DataStore, so a View's owning DataStore is stable for its lifetime and
+ *  the DataStore* key never goes stale under a supported operation.
+ *  If Sidre ever gained cross-DataStore migration of a live View, that View's pin
+ *  would remain under its original DataStore (and be released when that DataStore is collected),
+ *  so this invariant would need revisiting.
  */
-std::unordered_map<View*, nb::ndarray<>>& externalDataOwnerRegistry()
+struct DataStoreExternalPins
 {
-  // Intentionally heap-allocated so Python-owned references are not destroyed
-  // after interpreter finalization during static shutdown.
-  static auto* registry = new std::unordered_map<View*, nb::ndarray<>>();
+  std::unordered_map<View*, nb::ndarray<>> pins;
+  // Holds the weak reference whose callback clears this sub-map; keeping it here
+  // keeps the callback armed for the lifetime of the entries.
+  nb::object datastore_weakref;
+};
+
+std::unordered_map<DataStore*, DataStoreExternalPins>& externalDataOwnerRegistry()
+{
+  // Intentionally heap-allocated so any Python-owned references it still holds
+  // are not destroyed after interpreter finalization during static shutdown.
+  static auto* registry = new std::unordered_map<DataStore*, DataStoreExternalPins>();
   return *registry;
 }
 
-template <typename... Args>
-void pinExternalDataOwner(View* view, const nb::ndarray<Args...>& owner)
+//! Return the owning DataStore of a View, or nullptr if it has none yet.
+DataStore* owningDataStore(View* view)
 {
-  if(view != nullptr)
+  if(view == nullptr)
   {
-    // Note: Map assignment automatically releases the previous ndarray wrapper if present.
-    // When nb::ndarray<> is destroyed, nanobind decrements the underlying Python object's refcount
-    externalDataOwnerRegistry()[view] = nb::ndarray<>(owner);
+    return nullptr;
   }
+  Group* group = view->getOwningGroup();
+  return (group != nullptr) ? group->getDataStore() : nullptr;
+}
+
+//! Erase all pins recorded for \a ds (called when the DataStore is collected).
+void releaseDataStoreExternalPins(DataStore* ds) { externalDataOwnerRegistry().erase(ds); }
+
+//! Release the pin recorded for \a view, if any.
+void releaseExternalDataOwner(View* view);
+
+/*!
+ * \brief True when \a ptr points into storage owned by a Buffer of \a ds.
+ *
+ * The Buffer owns this storage, so it doesn't need a Python owner pin.
+ * Callers must still avoid using aliases after the Buffer is freed or reallocated.
+ *
+ * \note Each external-data pin scans the Buffers in \a ds, taking O(num_buffers) time.
+ *
+ * \note Storage owned by another DataStore still needs a pin to keep that DataStore alive.
+ */
+bool isOwnedByDataStoreBuffer(DataStore* ds, const void* ptr)
+{
+  if(ds == nullptr || ptr == nullptr)
+  {
+    return false;
+  }
+
+  const auto p = reinterpret_cast<std::uintptr_t>(ptr);
+  for(auto& buffer : ds->buffers())
+  {
+    const void* base_ptr = buffer.getVoidPtr();
+    if(base_ptr == nullptr)
+    {
+      continue;
+    }
+    const auto base = reinterpret_cast<std::uintptr_t>(base_ptr);
+    const auto bytes = static_cast<std::uintptr_t>(buffer.getTotalBytes());
+    if(p >= base && p < base + bytes)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+/*!
+ * \brief Return a pin in \a ds whose storage contains \a ptr, or nullptr.
+ *
+ * Reuse this owner when pinning an alias of an external View's data.
+ * See pinExternalDataOwner() for the reference cycle this avoids.
+ *
+ * \note Each lookup scans the pins in \a ds, taking O(num_pins) time.
+ *
+ * \note The registry owns the returned ndarray. Copy it before replacing or erasing its pin.
+ */
+const nb::ndarray<>* findExistingPinOwning(DataStore* ds, const void* ptr)
+{
+  if(ds == nullptr || ptr == nullptr)
+  {
+    return nullptr;
+  }
+
+  auto entry = externalDataOwnerRegistry().find(ds);
+  if(entry == externalDataOwnerRegistry().end())
+  {
+    return nullptr;
+  }
+
+  const auto p = reinterpret_cast<std::uintptr_t>(ptr);
+  for(const auto& pin : entry->second.pins)
+  {
+    const void* base_ptr = pin.second.data();
+    if(base_ptr == nullptr)
+    {
+      continue;
+    }
+    const auto base = reinterpret_cast<std::uintptr_t>(base_ptr);
+    const auto bytes = static_cast<std::uintptr_t>(pin.second.nbytes());
+    if(p >= base && p < base + bytes)
+    {
+      return &pin.second;
+    }
+  }
+  return nullptr;
+}
+
+/*!
+ * \brief Record \a owner as the pin for \a view, scoped to its DataStore.
+ *
+ * On the first pin into a given DataStore, installs a weak reference on the
+ * DataStore's Python object so the sub-map is cleared when the DataStore is
+ * destroyed. Re-assigning a View*'s pin releases the previous ndarray wrapper.
+ *
+ * \note Arrays from Buffer/View.getDataArray() keep their Sidre Python wrappers alive.
+ *  Pinning such an array can retain its own DataStore, preventing the weakref callback
+ *  from releasing the pin. Python's collector cannot break this cycle through the C++
+ *  registry. Skip the pin when a Buffer in this DataStore owns the storage.
+ *
+ * \note An alias of an external View still needs a pin to keep its Python storage alive.
+ *  If this DataStore already pins that storage, reuse the recorded owner to avoid pinning
+ *  the source View's wrapper. Aliases of another DataStore's storage keep the supplied array.
+ */
+void pinExternalDataOwner(View* view, const nb::ndarray<>& owner)
+{
+  DataStore* ds = owningDataStore(view);
+  // Enforce the precondition in debug builds;
+  // release builds fall through to the null-safe early return below.
+  SLIC_ASSERT_MSG(view == nullptr || ds != nullptr,
+                  "pinExternalDataOwner: a non-null View is expected to have an owning DataStore");
+  if(view == nullptr || ds == nullptr)
+  {
+    return;
+  }
+
+  if(isOwnedByDataStoreBuffer(ds, owner.data()))
+  {
+    // Release any previous Python-owned array attached to this View.
+    releaseExternalDataOwner(view);
+    return;
+  }
+
+  // Copy the owner before assigning the pin, which may replace the entry we found.
+  nb::ndarray<> pinned(owner);
+  if(const nb::ndarray<>* existing = findExistingPinOwning(ds, owner.data()))
+  {
+    pinned = nb::ndarray<>(*existing);
+  }
+
+  DataStoreExternalPins& entry = externalDataOwnerRegistry()[ds];
+  if(!entry.datastore_weakref.is_valid())
+  {
+    // Retrieve the DataStore's existing Python wrapper and attach a weakref
+    // whose callback clears this DataStore's pins. nb::find returns a null
+    // object if no wrapper exists; in that (unexpected) case we simply skip the
+    // weakref -- the eager release paths still apply, and the worst case is the
+    // pre-existing process-lifetime retention.
+    nb::object ds_obj = nb::find(*ds);
+    if(ds_obj.is_valid() && !ds_obj.is_none())
+    {
+      entry.datastore_weakref =
+        nb::weakref(ds_obj, nb::cpp_function([ds](nb::handle) { releaseDataStoreExternalPins(ds); }));
+    }
+  }
+
+  // Map assignment releases the previous ndarray wrapper if one was present.
+  entry.pins[view] = pinned;
 }
 
 void releaseExternalDataOwner(View* view)
 {
-  if(view != nullptr)
+  DataStore* ds = owningDataStore(view);
+  if(view == nullptr || ds == nullptr)
   {
-    externalDataOwnerRegistry().erase(view);
+    return;
+  }
+  auto it = externalDataOwnerRegistry().find(ds);
+  if(it != externalDataOwnerRegistry().end())
+  {
+    it->second.pins.erase(view);
   }
 }
 
@@ -345,14 +533,17 @@ void releaseExternalDataOwnersOfViews(Group& group)
 }
 
 /*!
- * \brief Copy external data pin from source View to destination View.
+ * \brief Copy the external-data pin from a source View to a destination View.
  *
- * When copyView() creates a shallow copy that shares external data, the new View
- * needs its own pin to prevent the numpy array from being garbage collected.
- * This function looks up the source View's pin and copies it to the destination.
+ * copyView() makes a shallow copy that shares the external pointer, so the
+ * destination needs its own pin to keep the NumPy array alive independently of
+ * the source. The source View is live for the duration of the copy (the caller
+ * holds it), so looking up its pin within its own DataStore's sub-map is safe;
+ * we then pin the destination from that live ndarray value. We never search the
+ * registry by a View* that could be stale.
  *
- * \param src_view Source View (must have an external data pin)
- * \param dst_view Destination View (will receive a copy of the pin)
+ * \param src_view Source View (live; expected to hold an external data pin)
+ * \param dst_view Destination View (receives a copy of the pin)
  */
 void copyExternalDataOwner(const View* src_view, View* dst_view)
 {
@@ -361,12 +552,25 @@ void copyExternalDataOwner(const View* src_view, View* dst_view)
     return;
   }
 
-  auto& registry = externalDataOwnerRegistry();
-  auto it = registry.find(const_cast<View*>(src_view));
-  if(it != registry.end())
+  DataStore* src_ds = owningDataStore(const_cast<View*>(src_view));
+  if(src_ds == nullptr)
   {
-    // Copy the ndarray handle to the new View, incrementing its refcount
-    registry[dst_view] = it->second;
+    return;
+  }
+
+  auto& registry = externalDataOwnerRegistry();
+  auto ds_it = registry.find(src_ds);
+  if(ds_it == registry.end())
+  {
+    return;
+  }
+
+  auto pin_it = ds_it->second.pins.find(const_cast<View*>(src_view));
+  if(pin_it != ds_it->second.pins.end())
+  {
+    // Re-pin the destination from the source's live ndarray value (scoped to
+    // the destination's own DataStore by pinExternalDataOwner).
+    pinExternalDataOwner(dst_view, pin_it->second);
   }
 }
 
@@ -463,9 +667,9 @@ MPI_Comm mpiCommFromObject(nb::object comm)
  * duplicate or free it. That borrowed-communicator contract works for C++
  * callers, but it is unsafe for mpi4py objects: py2f() exposes the object's
  * current communicator handle, and Python code may later drop or explicitly
- * Free() that object while pysidre.IOManager is still alive.
+ * Free() that object while axom.sidre.IOManager is still alive.
  *
- * PyIOManager keeps the public Python class name as pysidre.IOManager while
+ * PyIOManager keeps the public Python class name as axom.sidre.IOManager while
  * giving the binding its own lifetime boundary. It duplicates the input
  * communicator, constructs sidre::IOManager with that duplicate, destroys the
  * IOManager first, and then frees the duplicate when MPI is still active.
@@ -476,7 +680,8 @@ public:
   PyIOManager(MPI_Comm comm, bool use_scr)
   {
     int err = MPI_Comm_dup(comm, &m_comm);
-    SLIC_ERROR_IF(err != MPI_SUCCESS, "Failed to duplicate MPI communicator for pysidre.IOManager");
+    SLIC_ERROR_IF(err != MPI_SUCCESS,
+                  "Failed to duplicate MPI communicator for axom.sidre.IOManager");
     m_manager = std::make_unique<IOManager>(m_comm, use_scr);
   }
 
@@ -511,7 +716,9 @@ private:
 };
 #endif
 
-NB_MODULE(pysidre, m_sidre)
+// The extension installs as ``axom/sidre/_sidre.<tag>.so`` and is re-exported
+// by the ``axom.sidre`` package (see src/python/src/axom/sidre/__init__.py).
+NB_MODULE(_sidre, m_sidre)
 {
   m_sidre.doc() = R"pbdoc(
     A python extension for Axom's Sidre component.
@@ -529,10 +736,16 @@ NB_MODULE(pysidre, m_sidre)
     **External Data Lifetime:**
     Views can reference external numpy arrays via setExternalData() or createView().
     The binding automatically pins these arrays to prevent garbage collection while
-    the View exists. Pins are released when:
-    - View.clear() is called
-    - The View is destroyed via destroyView() or destroyViewAndData()
+    the View exists, so an array stays valid even if the Python View object that set
+    it is discarded (as long as the View still lives in its DataStore). Pins are
+    scoped per-DataStore and are released when:
+    - View.clear() or setExternalData(None) is called
+    - The View is destroyed via destroyView() / destroyViewAndData()
     - The owning Group hierarchy is destroyed via destroyGroup*() methods
+    - The owning DataStore is destroyed (a weak reference on the DataStore clears
+      its remaining pins, so the registry never grows without bound -- even for
+      Views torn down by the C++ DataStore destructor rather than an explicit
+      destroy* call)
 
     **Reallocation Hazards:**
     Arrays obtained via getDataArray() are zero-copy views into Sidre storage.
@@ -548,8 +761,14 @@ NB_MODULE(pysidre, m_sidre)
   m_sidre.attr("InvalidIndex") = axom::InvalidIndex;
   m_sidre.attr("InvalidName") = axom::utilities::string::InvalidName;
 
-  m_sidre.def("indexIsValid", &indexIsValid, "Returns true if idx is valid, else false.");
-  m_sidre.def("nameIsValid", &nameIsValid, "Returns true if name is valid, else false.");
+  m_sidre.def("indexIsValid",
+              &indexIsValid,
+              "Returns true if idx is valid, else false.",
+              nb::arg("idx"));
+  m_sidre.def("nameIsValid",
+              &nameIsValid,
+              "Returns true if name is valid, else false.",
+              nb::arg("name"));
 
 #if defined(AXOM_USE_HDF5)
   m_sidre.attr("AXOM_USE_HDF5") = true;
@@ -563,8 +782,7 @@ NB_MODULE(pysidre, m_sidre)
   m_sidre.attr("AXOM_ENABLE_MPI") = false;
 #endif
 
-#if defined(AXOM_USE_MPI) && \
-  ((NB_VERSION_MAJOR > 2) || (NB_VERSION_MAJOR == 2 && NB_VERSION_MINOR >= 10))
+#if defined(AXOM_USE_MPI)
   m_sidre.attr("AXOM_HAS_DISTRIBUTED_BLUEPRINT_INDEX_BINDING") = true;
 #else
   m_sidre.attr("AXOM_HAS_DISTRIBUTED_BLUEPRINT_INDEX_BINDING") = false;
@@ -604,7 +822,10 @@ NB_MODULE(pysidre, m_sidre)
   bindIterator<ViewIterator>(m_sidre, "ViewIterator");
 
   // Bindings for the DataStore class
-  nb::class_<DataStore>(m_sidre, "DataStore")
+  // DataStore is weak-referenceable so the external-data registry can attach a
+  // weakref callback that releases that DataStore's pins when it is destroyed
+  // (see externalDataOwnerRegistry).
+  nb::class_<DataStore>(m_sidre, "DataStore", nb::is_weak_referenceable())
     .def(nb::init<>())
     .def("getRoot",
          nb::overload_cast<>(&DataStore::getRoot),
@@ -613,11 +834,13 @@ NB_MODULE(pysidre, m_sidre)
     .def("getNumBuffers", &DataStore::getNumBuffers, "Return number of Buffers in the DataStore")
     .def("hasBuffer",
          &DataStore::hasBuffer,
-         "Return true if DataStore owns a Buffer with given index; else false")
+         "Return true if DataStore owns a Buffer with given index; else false",
+         nb::arg("idx"))
     .def("getBuffer",
          &DataStore::getBuffer,
          nb::rv_policy::reference_internal,
-         "Return pointer to Buffer object with the given index")
+         "Return pointer to Buffer object with the given index",
+         nb::arg("idx"))
 
     .def("createBuffer",
          nb::overload_cast<>(&DataStore::createBuffer),
@@ -626,13 +849,17 @@ NB_MODULE(pysidre, m_sidre)
     .def("createBuffer",
          nb::overload_cast<TypeID, IndexType>(&DataStore::createBuffer),
          nb::rv_policy::reference_internal,
-         "Create a Buffer object with specified type and number of elements")
+         "Create a Buffer object with specified type and number of elements",
+         nb::arg("type"),
+         nb::arg("num_elems"))
     .def("destroyBuffer",
          nb::overload_cast<Buffer*>(&DataStore::destroyBuffer),
-         "Remove Buffer from the DataStore and destroy it and its data")
+         "Remove Buffer from the DataStore and destroy it and its data",
+         nb::arg("buffer"))
     .def("destroyBuffer",
          nb::overload_cast<IndexType>(&DataStore::destroyBuffer),
-         "Remove Buffer with given index from the DataStore and destroy it and its data.")
+         "Remove Buffer with given index from the DataStore and destroy it and its data.",
+         nb::arg("idx"))
     .def("destroyAllBuffers",
          &DataStore::destroyAllBuffers,
          "Remove all Buffers from the DataStore and destroy them and their data")
@@ -641,12 +868,17 @@ NB_MODULE(pysidre, m_sidre)
          "Return first valid Buffer index")
     .def("getNextValidBufferIndex",
          &DataStore::getNextValidBufferIndex,
-         "Return next valid Buffer index after given index")
+         "Return next valid Buffer index after given index",
+         nb::arg("idx"))
 
     .def("generateBlueprintIndex",
          nb::overload_cast<const std::string&, const std::string&, const std::string&, int>(
            &DataStore::generateBlueprintIndex),
-         "Generate a Conduit Blueprint index based on a mesh in stored in this DataStore.")
+         "Generate a Conduit Blueprint index based on a mesh in stored in this DataStore.",
+         nb::arg("domain_path"),
+         nb::arg("mesh_name"),
+         nb::arg("index_path"),
+         nb::arg("num_domains"))
     .def("buffers",
          nb::overload_cast<>(&DataStore::buffers),
          nb::keep_alive<0, 1>(),
@@ -670,33 +902,42 @@ NB_MODULE(pysidre, m_sidre)
     .def("createAttributeString",
          &DataStore::createAttributeString,
          nb::rv_policy::reference_internal,
-         "Create an Attribute object with a default string value")
+         "Create an Attribute object with a default string value",
+         nb::arg("name"),
+         nb::arg("default_value").noconvert())
     .def("hasAttribute",
          nb::overload_cast<const std::string&>(&DataStore::hasAttribute, nb::const_),
-         "Return true if DataStore has created attribute name, else false")
+         "Return true if DataStore has created attribute name, else false",
+         nb::arg("name"))
     .def("hasAttribute",
          nb::overload_cast<IndexType>(&DataStore::hasAttribute, nb::const_),
-         "Return true if DataStore has created attribute with index, else false")
+         "Return true if DataStore has created attribute with index, else false",
+         nb::arg("idx"))
     .def("destroyAttribute",
          nb::overload_cast<const std::string&>(&DataStore::destroyAttribute),
-         "Remove Attribute from the DataStore and destroy it and its data")
+         "Remove Attribute from the DataStore and destroy it and its data",
+         nb::arg("name"))
     .def("destroyAttribute",
          nb::overload_cast<IndexType>(&DataStore::destroyAttribute),
-         "Remove Attribute with given index from the DataStore and destroy it and its data")
+         "Remove Attribute with given index from the DataStore and destroy it and its data",
+         nb::arg("idx"))
     .def("destroyAttribute",
          nb::overload_cast<Attribute*>(&DataStore::destroyAttribute),
-         "Remove Attribute from the DataStore and destroy it and its data")
+         "Remove Attribute from the DataStore and destroy it and its data",
+         nb::arg("attr"))
     .def("destroyAllAttributes",
          &DataStore::destroyAllAttributes,
          "Remove all Attributes from the DataStore and destroy them and their data")
     .def("getAttribute",
          nb::overload_cast<IndexType>(&DataStore::getAttribute),
          nb::rv_policy::reference_internal,
-         "Return pointer to non-const Attribute with given index")
+         "Return pointer to non-const Attribute with given index",
+         nb::arg("idx"))
     .def("getAttribute",
          nb::overload_cast<const std::string&>(&DataStore::getAttribute),
          nb::rv_policy::reference_internal,
-         "Return pointer to non-const Attribute with given name")
+         "Return pointer to non-const Attribute with given name",
+         nb::arg("name"))
 
     // Requires conduit::Node information
     // .def("saveAttributeLayout",
@@ -713,15 +954,14 @@ NB_MODULE(pysidre, m_sidre)
     .def("getNextValidAttributeIndex",
          &DataStore::getNextValidAttributeIndex,
          "Return next valid Attribute index in DataStore object after given index"
-         "(i.e., smallest index over all Attribute indices larger than given one)")
+         "(i.e., smallest index over all Attribute indices larger than given one)",
+         nb::arg("idx"))
     .def("attributes",
          nb::overload_cast<>(&DataStore::attributes),
          nb::keep_alive<0, 1>(),
          "Return an iterator over Attributes")
 
-#if defined(AXOM_USE_MPI) && \
-  ((NB_VERSION_MAJOR > 2) || (NB_VERSION_MAJOR == 2 && NB_VERSION_MINOR >= 10))
-    // Distributed Blueprint index generation builds cleanly under nanobind >= 2.10
+#if defined(AXOM_USE_MPI)
     .def(
       "generateBlueprintIndex",
       [](DataStore& self,
@@ -750,7 +990,13 @@ NB_MODULE(pysidre, m_sidre)
     .def("getIndex", &Buffer::getIndex, "Return the unique index of this Buffer object.")
     .def("getNumViews", &Buffer::getNumViews, "Return number of Views this Buffer is attached to.")
     // .def("getVoidPtr", &Buffer::getVoidPtr, "Return void-pointer to data held by Buffer.")
-    .def("getDataArray", &bufferToNumpyArray, "Return the data held by the Buffer as a numpy array.")
+    .def("getDataArray",
+         &bufferToNumpyArray,
+         "Return the data held by the Buffer as a numpy array.\n\n"
+         "The array is a zero-copy view into the Buffer's storage "
+         "and keeps the Buffer (and its DataStore) alive while referenced. "
+         "Buffer.reallocate() can move the storage, leaving a previously returned array "
+         "pointing at freed memory; re-acquire the array after any reallocation.")
     .def("getTypeID", &Buffer::getTypeID, "Return type of data owned by this Buffer object.")
     .def("getNumElements",
          &Buffer::getNumElements,
@@ -796,6 +1042,10 @@ NB_MODULE(pysidre, m_sidre)
     .def("getPathName",
          &View::getPathName,
          "Return the full path of the View object, including its name.")
+    .def("checksum",
+         &View::checksum,
+         "Return a checksum for the View's name, metadata, and data.",
+         nb::arg("includeAttributes") = true)
     .def("getOwningGroup",
          nb::overload_cast<>(&View::getOwningGroup),
          nb::rv_policy::reference_internal,
@@ -845,7 +1095,9 @@ NB_MODULE(pysidre, m_sidre)
       "Return number of dimensions in data view and shape information"
       " of this data view object."
       " ndims - maximum number of dimensions to return."
-      " shape - user supplied numpy 1D array assumed to be ndims long.")
+      " shape - user supplied numpy 1D array assumed to be ndims long.",
+      nb::arg("ndims"),
+      nb::arg("shape"))
 
     .def("allocate",
          nb::overload_cast<int>(&View::allocate),
@@ -862,7 +1114,8 @@ NB_MODULE(pysidre, m_sidre)
     .def("reallocate",
          nb::overload_cast<IndexType>(&View::reallocate),
          nb::rv_policy::reference,
-         "Reallocate data for the View.")
+         "Reallocate data for the View.",
+         nb::arg("num_elems"))
     .def("attachBuffer",
          nb::overload_cast<Buffer*>(&View::attachBuffer),
          nb::rv_policy::reference,
@@ -913,7 +1166,10 @@ NB_MODULE(pysidre, m_sidre)
         return self.apply(type, ndims, shape.data());
       },
       nb::rv_policy::reference,
-      "Apply data description with type and numpy shape.")
+      "Apply data description with type and numpy shape.",
+      nb::arg("type"),
+      nb::arg("ndims"),
+      nb::arg("shape"))
     .def("setScalar",
          &View::setScalar<int>,
          nb::rv_policy::reference,
@@ -933,33 +1189,33 @@ NB_MODULE(pysidre, m_sidre)
          nb::arg("allocID") = INVALID_ALLOCATOR_ID)
     .def(
       "setExternalData",
-      [](View& self, nb::object external_ptr) {
-        if(external_ptr.is_none())
+      [](View& self, std::optional<nb::ndarray<>> external_ptr) {
+        // A single undescribed-data overload covering both None
+        // (clear the external pointer and release any pin) and a numpy array (set + pin).
+        // Using std::optional<ndarray> lets nanobind reject a non-array argument
+        // with a clean "incompatible function arguments" error
+        // rather than throwing mid-body from an explicit cast.
+        if(!external_ptr.has_value())
         {
           View* result = self.setExternalDataPtr(nullptr);
           releaseExternalDataOwner(&self);
           return result;
         }
-        nb::ndarray<> owner = nb::cast<nb::ndarray<>>(external_ptr);
-        return setExternalDataAndPinOwner(self, owner);
+        return setExternalDataAndPinOwner(self, *external_ptr);
       },
       nb::rv_policy::reference,
-      "Set the View to hold undescribed external data (numpy array).",
+      "Set the View to hold undescribed external data, or clear it when passed None.",
       nb::arg("external_ptr").none())
-    .def(
-      "setExternalData",
-      [](View& self, const nb::ndarray<>& external_ptr) {
-        return setExternalDataAndPinOwner(self, external_ptr);
-      },
-      nb::rv_policy::reference,
-      "Set the View to hold undescribed external data (numpy array).")
     .def(
       "setExternalData",
       [](View& self, TypeID type, IndexType num_elems, const nb::ndarray<>& external_ptr) {
         return setExternalDataAndPinOwner(self, type, num_elems, external_ptr);
       },
       nb::rv_policy::reference,
-      "Set the View to hold described external data  (numpy array).")
+      "Set the View to hold described external data  (numpy array).",
+      nb::arg("type"),
+      nb::arg("num_elems"),
+      nb::arg("external_ptr"))
     .def(
       "setExternalData",
       [](View& self,
@@ -970,43 +1226,60 @@ NB_MODULE(pysidre, m_sidre)
         return setExternalDataAndPinOwner(self, type, ndims, shape, external_ptr);
       },
       nb::rv_policy::reference,
-      "Set the View to hold described external data (numpy array).")
+      "Set the View to hold described external data (numpy array).",
+      nb::arg("type"),
+      nb::arg("ndims"),
+      nb::arg("shape"),
+      nb::arg("external_ptr"))
 
     .def("getString",
          &View::getString,
          nb::rv_policy::reference,
          "Return the string contained in the View.")
-    .def("getDataArray", &viewToNumpyArray, "Return the data held by the View as a numpy array.")
+    .def("getDataArray",
+         &viewToNumpyArray,
+         "Return the data held by the View as a numpy array.\n\n"
+         "The array is a zero-copy view into the View's storage "
+         "and keeps the View (and its DataStore) alive while referenced. "
+         "View.reallocate() (or reallocating the underlying Buffer) can move the storage, "
+         "leaving a previously returned array pointing at freed memory; "
+         "re-acquire the array after any reallocation.")
 
-    .def("getDataInt",
-         &View::getData<int>,
-         nb::rv_policy::reference,
-         "Return the scalar data held by the View as an python int type.")
-    .def("getDataFloat",
-         &View::getData<double>,
-         nb::rv_policy::reference,
-         "Return the data held by the View as a python float type (C++ double).")
+    .def(
+      "getDataInt",
+      [](View& self) { return self.getData<int>(); },
+      nb::rv_policy::reference,
+      "Return the scalar data held by the View as an python int type.")
+    .def(
+      "getDataFloat",
+      [](View& self) { return self.getData<double>(); },
+      nb::rv_policy::reference,
+      "Return the data held by the View as a python float type (C++ double).")
     .def("print",
          nb::overload_cast<>(&View::print, nb::const_),
          "Print JSON description of the View.")
-    .def("rename", &View::rename, "Change the name of the View.")
+    .def("rename", &View::rename, "Change the name of the View.", nb::arg("new_name"))
 
     // Attribute accessors
     .def("getAttribute",
          nb::overload_cast<IndexType>(&View::getAttribute),
          nb::rv_policy::reference_internal,
-         "Get Attribute by index")
+         "Get Attribute by index",
+         nb::arg("idx"))
     .def("getAttribute",
          nb::overload_cast<const std::string&>(&View::getAttribute),
          nb::rv_policy::reference_internal,
-         "Get Attribute by name")
+         "Get Attribute by name",
+         nb::arg("name"))
 
     .def("hasAttributeValue",
          nb::overload_cast<IndexType>(&View::hasAttributeValue, nb::const_),
-         "Return true if the attribute (by index) has been explicitly set; else false.")
+         "Return true if the attribute (by index) has been explicitly set; else false.",
+         nb::arg("idx"))
     .def("hasAttributeValue",
          nb::overload_cast<const std::string&>(&View::hasAttributeValue, nb::const_),
-         "Return true if the attribute (by name) has been explicitly set; else false.")
+         "Return true if the attribute (by name) has been explicitly set; else false.",
+         nb::arg("name"))
     .def("hasAttributeValue",
          nb::overload_cast<const Attribute*>(&View::hasAttributeValue, nb::const_),
          nb::arg("attr").none(),
@@ -1014,59 +1287,81 @@ NB_MODULE(pysidre, m_sidre)
 
     .def("setAttributeToDefault",
          nb::overload_cast<IndexType>(&View::setAttributeToDefault),
-         "Set Attribute (by index) to its default value")
+         "Set Attribute (by index) to its default value",
+         nb::arg("idx"))
     .def("setAttributeToDefault",
          nb::overload_cast<const std::string&>(&View::setAttributeToDefault),
-         "Set Attribute (by name) to its default value")
+         "Set Attribute (by name) to its default value",
+         nb::arg("name"))
     .def("setAttributeToDefault",
          nb::overload_cast<const Attribute*>(&View::setAttributeToDefault),
          nb::arg("attr").none(),
          "Set Attribute (by pointer) to its default value")
 
-    // Scalar setters for int and python float (C++ double)
+    // .noconvert() prevents NumPy floats from selecting the int overload and losing
+    // their fractional part. Callers must convert NumPy scalars with int(x), float(x),
+    // or x.item() before calling these setters.
     .def(
       "setAttributeScalar",
       [](View& self, IndexType idx, int value) { return self.setAttributeScalar(idx, value); },
-      "Set Attribute (by index) to int value")
+      "Set Attribute (by index) to int value",
+      nb::arg("idx"),
+      nb::arg("value").noconvert())
     .def(
       "setAttributeScalar",
       [](View& self, IndexType idx, double value) { return self.setAttributeScalar(idx, value); },
-      "Set Attribute (by index) to float (C++ double) value")
+      "Set Attribute (by index) to float (C++ double) value",
+      nb::arg("idx"),
+      nb::arg("value").noconvert())
     .def(
       "setAttributeScalar",
       [](View& self, const std::string& name, int value) {
         return self.setAttributeScalar(name, value);
       },
-      "Set Attribute (by name) to int value")
+      "Set Attribute (by name) to int value",
+      nb::arg("name"),
+      nb::arg("value").noconvert())
     .def(
       "setAttributeScalar",
       [](View& self, const std::string& name, double value) {
         return self.setAttributeScalar(name, value);
       },
-      "Set Attribute (by name) to float (C++ double) value")
+      "Set Attribute (by name) to float (C++ double) value",
+      nb::arg("name"),
+      nb::arg("value").noconvert())
     .def(
       "setAttributeScalar",
       [](View& self, const Attribute* attr, int value) {
         return self.setAttributeScalar(attr, value);
       },
-      "Set Attribute (by pointer) to int value")
+      "Set Attribute (by pointer) to int value",
+      nb::arg("attr").none(),
+      nb::arg("value").noconvert())
     .def(
       "setAttributeScalar",
       [](View& self, const Attribute* attr, double value) {
         return self.setAttributeScalar(attr, value);
       },
-      "Set Attribute (by pointer) to float (C++ double) value")
+      "Set Attribute (by pointer) to float (C++ double) value",
+      nb::arg("attr").none(),
+      nb::arg("value").noconvert())
 
     // String setters
     .def("setAttributeString",
          nb::overload_cast<IndexType, const std::string&>(&View::setAttributeString),
-         "Set Attribute (by index) to string value")
+         "Set Attribute (by index) to string value",
+         nb::arg("idx"),
+         nb::arg("value").noconvert())
     .def("setAttributeString",
          nb::overload_cast<const std::string&, const std::string&>(&View::setAttributeString),
-         "Set Attribute (by name) to string value")
+         "Set Attribute (by name) to string value",
+         nb::arg("name"),
+         nb::arg("value").noconvert())
     .def("setAttributeString",
          nb::overload_cast<const Attribute*, const std::string&>(&View::setAttributeString),
-         "Set Attribute (by pointer) to string value")
+         "Set Attribute (by pointer) to string value",
+         nb::arg("attr").none(),
+         nb::arg("value").noconvert())
 
     // Requires conduit::Node information
     // Scalar getters (Node::ConstValue version)
@@ -1084,19 +1379,23 @@ NB_MODULE(pysidre, m_sidre)
     .def(
       "getAttributeScalarInt",
       [](View& self, IndexType idx) { return self.getAttributeScalar<int>(idx); },
-      "Return scalar Attribute value (by index) as int")
+      "Return scalar Attribute value (by index) as int",
+      nb::arg("idx"))
     .def(
       "getAttributeScalarFloat",
       [](View& self, IndexType idx) { return self.getAttributeScalar<double>(idx); },
-      "Return scalar Attribute value (by index) as float (C++ double)")
+      "Return scalar Attribute value (by index) as float (C++ double)",
+      nb::arg("idx"))
     .def(
       "getAttributeScalarInt",
       [](View& self, const std::string& name) { return self.getAttributeScalar<int>(name); },
-      "Return scalar Attribute value (by name) as int")
+      "Return scalar Attribute value (by name) as int",
+      nb::arg("name"))
     .def(
       "getAttributeScalarFloat",
       [](View& self, const std::string& name) { return self.getAttributeScalar<double>(name); },
-      "Return scalar Attribute value (by name) as float (C++ double)")
+      "Return scalar Attribute value (by name) as float (C++ double)",
+      nb::arg("name"))
     .def(
       "getAttributeScalarInt",
       [](View& self, const Attribute* attr) { return self.getAttributeScalar<int>(attr); },
@@ -1111,13 +1410,16 @@ NB_MODULE(pysidre, m_sidre)
     // String getters
     .def("getAttributeString",
          nb::overload_cast<IndexType>(&View::getAttributeString, nb::const_),
-         "Return string Attribute value (by index)")
+         "Return string Attribute value (by index)",
+         nb::arg("idx"))
     .def("getAttributeString",
          nb::overload_cast<const std::string&>(&View::getAttributeString, nb::const_),
-         "Return string Attribute value (by name)")
+         "Return string Attribute value (by name)",
+         nb::arg("name"))
     .def("getAttributeString",
          nb::overload_cast<const Attribute*>(&View::getAttributeString, nb::const_),
-         "Return string Attribute value (by pointer)")
+         "Return string Attribute value (by pointer)",
+         nb::arg("attr").none())
 
     // Requires conduit::Node information
     // Node reference getters
@@ -1128,7 +1430,8 @@ NB_MODULE(pysidre, m_sidre)
         return nodeToNbObject(node);
       },
       nb::rv_policy::reference,
-      "Return reference to Attribute Node (by index)")
+      "Return reference to Attribute Node (by index)",
+      nb::arg("idx"))
     .def(
       "getAttributeNodeRef",
       [](View& self, const std::string& name) {
@@ -1136,7 +1439,8 @@ NB_MODULE(pysidre, m_sidre)
         return nodeToNbObject(node);
       },
       nb::rv_policy::reference,
-      "Return reference to Attribute Node (by name)")
+      "Return reference to Attribute Node (by name)",
+      nb::arg("name"))
     .def(
       "getAttributeNodeRef",
       [](View& self, const Attribute* attr) {
@@ -1144,7 +1448,8 @@ NB_MODULE(pysidre, m_sidre)
         return nodeToNbObject(node);
       },
       nb::rv_policy::reference,
-      "Return reference to Attribute Node (by pointer)")
+      "Return reference to Attribute Node (by pointer)",
+      nb::arg("attr").none())
 
     // Attribute index iteration
     .def("getFirstValidAttrValueIndex",
@@ -1154,7 +1459,8 @@ NB_MODULE(pysidre, m_sidre)
     .def("getNextValidAttrValueIndex",
          &View::getNextValidAttrValueIndex,
          "Return next valid Attribute index for a set Attribute in View object after given index"
-         "(i.e., smallest index over all Attribute indices larger than given one)");
+         "(i.e., smallest index over all Attribute indices larger than given one)",
+         nb::arg("idx"));
 
   // Bindings for the Group class
   nb::class_<Group>(m_sidre, "Group")
@@ -1162,6 +1468,19 @@ NB_MODULE(pysidre, m_sidre)
     .def("getName", &Group::getName, "Return const reference to name of Group object.")
     .def("getPath", &Group::getPath, "Return path of Group object, not including its name.")
     .def("getPathName", &Group::getPathName, "Return full path of Group object, including its name.")
+    .def("checksum",
+         nb::overload_cast<bool>(&Group::checksum, nb::const_),
+         "Return a checksum for the Group's name, child structure, and descendant view data.",
+         nb::arg("includeAttributes") = true)
+    .def(
+      "checksum",
+      [](const Group& self, nb::object& o, bool includeAttributes) {
+        conduit::Node& cpp_node = nbObjectToNode(o);
+        self.checksum(cpp_node, includeAttributes);
+      },
+      "Populate a Conduit node with checksum metadata for this Group hierarchy.",
+      nb::arg("n_checksum"),
+      nb::arg("includeAttributes") = true)
     .def("getParent",
          nb::overload_cast<>(&Group::getParent, nb::const_),
          nb::rv_policy::reference_internal,
@@ -1175,44 +1494,56 @@ NB_MODULE(pysidre, m_sidre)
 
     .def("hasView",
          nb::overload_cast<const std::string&>(&Group::hasView, nb::const_),
-         "Return true if Group includes a descendant View with given name or path; else false.")
+         "Return true if Group includes a descendant View with given name or path; else false.",
+         nb::arg("path"))
     .def("hasView",
          nb::overload_cast<IndexType>(&Group::hasView, nb::const_),
-         "Return true if this Group owns a View with given index; else false")
+         "Return true if this Group owns a View with given index; else false",
+         nb::arg("idx"))
     .def("hasChildView",
          &Group::hasChildView,
-         "Return true if this Group owns a View with given name (not path); else false.")
+         "Return true if this Group owns a View with given name (not path); else false.",
+         nb::arg("name"))
     .def("getViewIndex",
          &Group::getViewIndex,
-         "Return index of View with given name owned by this Group object.")
+         "Return index of View with given name owned by this Group object.",
+         nb::arg("name"))
     .def("getViewName",
          &Group::getViewName,
-         "Return name of View with given index owned by Group object.")
+         "Return name of View with given index owned by Group object.",
+         nb::arg("idx"))
 
     .def("getView",
          nb::overload_cast<const std::string&>(&Group::getView, nb::const_),
          nb::rv_policy::reference_internal,
-         "Return pointer to const View with given name or path.")
+         "Return pointer to const View with given name or path.",
+         nb::arg("path"))
     .def("getView",
          nb::overload_cast<IndexType>(&Group::getView, nb::const_),
          nb::rv_policy::reference_internal,
-         "Return pointer to non-const View with given index.")
+         "Return pointer to non-const View with given index.",
+         nb::arg("idx"))
     .def("getFirstValidViewIndex",
          &Group::getFirstValidViewIndex,
          "Return first valid View index in Group object.")
     .def("getNextValidViewIndex",
          &Group::getNextValidViewIndex,
-         "Return next valid View index in Group object after given index.")
+         "Return next valid View index in Group object after given index.",
+         nb::arg("idx"))
 
     .def("createView",
          nb::overload_cast<const std::string&>(&Group::createView),
          nb::rv_policy::reference_internal,
-         "Create an undescribed (i.e., empty) View object with given name or path in this Group.")
+         "Create an undescribed (i.e., empty) View object with given name or path in this Group.",
+         nb::arg("path"))
     .def("createView",
          nb::overload_cast<const std::string&, TypeID, IndexType>(&Group::createView),
          nb::rv_policy::reference_internal,
          "Create View object with given name or path in this Group that has a data description "
-         "with data type and number of elements.")
+         "with data type and number of elements.",
+         nb::arg("path"),
+         nb::arg("type"),
+         nb::arg("num_elems"))
     .def(
       "createViewWithShape",
       [](Group& self, const std::string& path, TypeID type, int ndims, const nb::ndarray<IndexType>& shape) {
@@ -1220,17 +1551,27 @@ NB_MODULE(pysidre, m_sidre)
       },
       nb::rv_policy::reference_internal,
       "Create View object with given name or path in this Group that has a data description "
-      "with data type and shape.")
+      "with data type and shape.",
+      nb::arg("path"),
+      nb::arg("type"),
+      nb::arg("ndims"),
+      nb::arg("shape"))
     .def("createView",
          nb::overload_cast<const std::string&, Buffer*>(&Group::createView),
          nb::rv_policy::reference_internal,
          "Create an undescribed View object with given name or path in this Group and attach given "
-         "Buffer to it.")
+         "Buffer to it.",
+         nb::arg("path"),
+         nb::arg("buffer").none())
     .def("createView",
          nb::overload_cast<const std::string&, TypeID, IndexType, Buffer*>(&Group::createView),
          nb::rv_policy::reference_internal,
          "Create View object with given name or path in this Group that has a data description "
-         "with data type and number of elements and attach given Buffer to it.")
+         "with data type and number of elements and attach given Buffer to it.",
+         nb::arg("path"),
+         nb::arg("type"),
+         nb::arg("num_elems"),
+         nb::arg("buffer").none())
     .def(
       "createViewWithShape",
       [](Group& self,
@@ -1243,7 +1584,12 @@ NB_MODULE(pysidre, m_sidre)
       },
       nb::rv_policy::reference_internal,
       "Create View object with given name or path in this Group that has a data description "
-      "with data type and shape and attach given Buffer to it.")
+      "with data type and shape and attach given Buffer to it.",
+      nb::arg("path"),
+      nb::arg("type"),
+      nb::arg("ndims"),
+      nb::arg("shape"),
+      nb::arg("buffer").none())
 
     .def(
       "createView",
@@ -1252,7 +1598,9 @@ NB_MODULE(pysidre, m_sidre)
         pinExternalDataOwner(view, a);
         return view;
       },
-      nb::rv_policy::reference_internal)
+      nb::rv_policy::reference_internal,
+      nb::arg("path"),
+      nb::arg("external_ptr"))
 
     .def(
       "createView",
@@ -1263,7 +1611,11 @@ NB_MODULE(pysidre, m_sidre)
       },
       nb::rv_policy::reference_internal,
       "Create View object with given name or path in this Group that has a data description "
-      "with data type and number of elements and attach externally-owned data to it.")
+      "with data type and number of elements and attach externally-owned data to it.",
+      nb::arg("path"),
+      nb::arg("type"),
+      nb::arg("num_elems"),
+      nb::arg("external_ptr"))
 
     .def(
       "createViewWithShape",
@@ -1279,7 +1631,12 @@ NB_MODULE(pysidre, m_sidre)
       },
       nb::rv_policy::reference_internal,
       "Create View object with given name or path in this Group that has a data description "
-      "with data type and shape and attach externally-owned data (numpy array) to it.")
+      "with data type and shape and attach externally-owned data (numpy array) to it.",
+      nb::arg("path"),
+      nb::arg("type"),
+      nb::arg("ndims"),
+      nb::arg("shape"),
+      nb::arg("external_ptr"))
     .def("createViewAndAllocate",
          nb::overload_cast<const std::string&, TypeID, IndexType, int>(&Group::createViewAndAllocate),
          nb::rv_policy::reference_internal,
@@ -1296,7 +1653,11 @@ NB_MODULE(pysidre, m_sidre)
       },
       nb::rv_policy::reference_internal,
       "Create View object with given name or path in this Group that has a data description "
-      "with data type and shape and allocate data for it.")
+      "with data type and shape and allocate data for it.",
+      nb::arg("path"),
+      nb::arg("type"),
+      nb::arg("ndims"),
+      nb::arg("shape"))
 
     .def("createViewScalar",
          &Group::createViewScalar<int>,
@@ -1329,7 +1690,8 @@ NB_MODULE(pysidre, m_sidre)
         releaseExternalDataOwner(self.getView(path));
         self.destroyView(path);
       },
-      "Destroy View with given name or path owned by this Group, but leave its data intact.")
+      "Destroy View with given name or path owned by this Group, but leave its data intact.",
+      nb::arg("path"))
     .def(
       "destroyView",
       [](Group& self, IndexType idx) {
@@ -1337,7 +1699,8 @@ NB_MODULE(pysidre, m_sidre)
         releaseExternalDataOwner(self.getView(idx));
         self.destroyView(idx);
       },
-      "Destroy View with given index owned by this Group, but leave its data intact.")
+      "Destroy View with given index owned by this Group, but leave its data intact.",
+      nb::arg("idx"))
     .def(
       "destroyViewAndData",
       [](Group& self, const std::string& path) {
@@ -1345,7 +1708,8 @@ NB_MODULE(pysidre, m_sidre)
         releaseExternalDataOwner(self.getView(path));
         self.destroyViewAndData(path);
       },
-      "Destroy View with given name or path owned by this Group and deallocate")
+      "Destroy View with given name or path owned by this Group and deallocate",
+      nb::arg("path"))
     .def(
       "destroyViewAndData",
       [](Group& self, IndexType idx) {
@@ -1353,7 +1717,8 @@ NB_MODULE(pysidre, m_sidre)
         self.destroyViewAndData(idx);
       },
       "Destroy View with given index owned by this Group and deallocate its data if it's the "
-      "only View associated with that data.")
+      "only View associated with that data.",
+      nb::arg("idx"))
     .def(
       "destroyViewsAndData",
       [](Group& self) {
@@ -1366,7 +1731,8 @@ NB_MODULE(pysidre, m_sidre)
     .def("moveView",
          &Group::moveView,
          nb::rv_policy::reference_internal,
-         "Remove given View object from its owning Group and move it to this Group.")
+         "Remove given View object from its owning Group and move it to this Group.",
+         nb::arg("view"))
     .def(
       "copyView",
       [](Group& self, View* view) {
@@ -1380,31 +1746,39 @@ NB_MODULE(pysidre, m_sidre)
         return copy;
       },
       nb::rv_policy::reference_internal,
-      "Create a (shallow) copy of given View object and add it to this Group.")
+      "Create a (shallow) copy of given View object and add it to this Group.",
+      nb::arg("view"))
 
     .def("hasGroup",
          nb::overload_cast<const std::string&>(&Group::hasGroup, nb::const_),
-         "Return true if this Group has a descendant Group with given name or path; else false.")
+         "Return true if this Group has a descendant Group with given name or path; else false.",
+         nb::arg("path"))
     .def("hasGroup",
          nb::overload_cast<IndexType>(&Group::hasGroup, nb::const_),
-         "Return true if Group has an immediate child Group with given index; else false.")
+         "Return true if Group has an immediate child Group with given index; else false.",
+         nb::arg("idx"))
     .def("hasChildGroup",
          &Group::hasChildGroup,
-         "Return true if this Group has a child Group with given name; else false.")
+         "Return true if this Group has a child Group with given name; else false.",
+         nb::arg("name"))
     .def("getGroupIndex",
          &Group::getGroupIndex,
-         "Return the index of immediate child Group with given name.")
+         "Return the index of immediate child Group with given name.",
+         nb::arg("name"))
     .def("getGroupName",
          &Group::getGroupName,
-         "Return the name of immediate child Group with given index.")
+         "Return the name of immediate child Group with given index.",
+         nb::arg("idx"))
     .def("getGroup",
          nb::overload_cast<const std::string&>(&Group::getGroup),
          nb::rv_policy::reference_internal,
-         "Return pointer to non-const child Group with given name or path.")
+         "Return pointer to non-const child Group with given name or path.",
+         nb::arg("path"))
     .def("getGroup",
          nb::overload_cast<IndexType>(&Group::getGroup),
          nb::rv_policy::reference_internal,
-         "Return pointer to non-const immediate child Group with given index.")
+         "Return pointer to non-const immediate child Group with given index.",
+         nb::arg("idx"))
     .def("views",
          nb::overload_cast<>(&Group::views),
          nb::keep_alive<0, 1>(),
@@ -1418,7 +1792,8 @@ NB_MODULE(pysidre, m_sidre)
          "Return first valid child Group index (i.e., smallest index over all child Groups).")
     .def("getNextValidGroupIndex",
          &Group::getNextValidGroupIndex,
-         "Return next valid child Group index after given index.")
+         "Return next valid child Group index after given index.",
+         nb::arg("idx"))
     .def("createGroup",
          &Group::createGroup,
          nb::rv_policy::reference_internal,
@@ -1438,7 +1813,8 @@ NB_MODULE(pysidre, m_sidre)
         releaseExternalDataOwners(self.getGroup(path));
         self.destroyGroup(path);
       },
-      "Destroy child Group in this Group with given name or path.")
+      "Destroy child Group in this Group with given name or path.",
+      nb::arg("path"))
     .def(
       "destroyGroup",
       [](Group& self, IndexType idx) {
@@ -1446,7 +1822,8 @@ NB_MODULE(pysidre, m_sidre)
         releaseExternalDataOwners(self.getGroup(idx));
         self.destroyGroup(idx);
       },
-      "Destroy child Group within this Group with given index.")
+      "Destroy child Group within this Group with given index.",
+      nb::arg("idx"))
     .def(
       "destroyGroupAndData",
       [](Group& self, const std::string& path) {
@@ -1455,7 +1832,8 @@ NB_MODULE(pysidre, m_sidre)
         self.destroyGroupAndData(path);
       },
       "Destroy child Group at the given path, and destroy data that is "
-      "not shared elsewhere.")
+      "not shared elsewhere.",
+      nb::arg("path"))
     .def(
       "destroyGroupAndData",
       [](Group& self, IndexType idx) {
@@ -1463,7 +1841,8 @@ NB_MODULE(pysidre, m_sidre)
         self.destroyGroupAndData(idx);
       },
       "Destroy child Group with the given index, and destroy data that "
-      "is not shared elsewhere.")
+      "is not shared elsewhere.",
+      nb::arg("idx"))
     .def(
       "destroyGroupsAndData",
       [](Group& self) {
@@ -1496,7 +1875,8 @@ NB_MODULE(pysidre, m_sidre)
     .def("moveGroup",
          &Group::moveGroup,
          nb::rv_policy::reference_internal,
-         "Remove given Group object from its parent Group and make it a child of this Group.")
+         "Remove given Group object from its parent Group and make it a child of this Group.",
+         nb::arg("group"))
     .def(
       "copyGroup",
       [](Group& self, Group* group) {
@@ -1510,7 +1890,8 @@ NB_MODULE(pysidre, m_sidre)
       },
       nb::rv_policy::reference_internal,
       "Create a (shallow) copy of Group hierarchy rooted at given "
-      "Group and make the copy a child of this Group.")
+      "Group and make the copy a child of this Group.",
+      nb::arg("group"))
     .def("deepCopyGroup",
          &Group::deepCopyGroup,
          nb::rv_policy::reference_internal,
@@ -1557,11 +1938,12 @@ NB_MODULE(pysidre, m_sidre)
 
     .def("loadExternalData",
          nb::overload_cast<const std::string&>(&Group::loadExternalData),
-         "Load data into the Group's external views from a file.")
+         "Load data into the Group's external views from a file.",
+         nb::arg("path"))
     .def_static("getDefaultIOProtocol",
                 &Group::getDefaultIOProtocol,
                 "Return the default I/O protocol for this Axom build.")
-    .def("rename", &Group::rename, "Change the name of this Group.");
+    .def("rename", &Group::rename, "Change the name of this Group.", nb::arg("new_name"));
 
   // Bindings for the Attribute class
   nb::class_<Attribute>(m_sidre, "Attribute")
@@ -1578,7 +1960,8 @@ NB_MODULE(pysidre, m_sidre)
       nb::arg("value").noconvert())
     .def("setDefaultString",
          &Attribute::setDefaultString,
-         "Set default value of Attribute as string. Return true if successfully changed.")
+         "Set default value of Attribute as string. Return true if successfully changed.",
+         nb::arg("value").noconvert())
 
     .def(
       "getDefaultNodeRef",
@@ -1684,9 +2067,9 @@ NB_MODULE(pysidre, m_sidre)
       nb::arg("root_file"))
     .def_static("correspondingRelayProtocol",
                 &IOManager::correspondingRelayProtocol,
-                "Finds conduit relay protocol corresponding to a sidre protocol.");
+                "Finds conduit relay protocol corresponding to a sidre protocol.",
+                nb::arg("sidre_protocol"));
 #endif
 }
 
-} /* end namespace sidre */
-} /* end namespace axom */
+}  // end namespace axom::sidre

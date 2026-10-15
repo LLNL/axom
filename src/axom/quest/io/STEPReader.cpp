@@ -13,6 +13,7 @@
 
 #include "axom/slic.hpp"
 #include "axom/fmt.hpp"
+#include "axom/core/utilities/Units.hpp"
 
 #include "opencascade/BRep_Tool.hxx"
 #include "opencascade/BRepAdaptor_Curve.hxx"
@@ -57,9 +58,7 @@
 
 #include <iostream>
 
-namespace axom
-{
-namespace quest
+namespace axom::quest
 {
 namespace internal
 {
@@ -221,18 +220,18 @@ private:
 
           const double sq_dist = axom::primal::squared_distance(my_val, other_val);
           squared_sum += sq_dist;
-          SLIC_WARNING_IF(m_verbose && sq_dist > sq_tol,
-                          axom::fmt::format("Distance between surfaces at evaluated param "
-                                            "({},{}) exceeded tolerance {}.\n"
-                                            "Point on my surface {}; Point on other surface "
-                                            "{}; Squared distance {}  (running sum {})",
-                                            u,
-                                            v,
-                                            sq_tol,
-                                            my_val,
-                                            other_val,
-                                            sq_dist,
-                                            squared_sum));
+          SLIC_WARNING_ROOT_IF(m_verbose && sq_dist > sq_tol,
+                               axom::fmt::format("Distance between surfaces at evaluated param "
+                                                 "({},{}) exceeded tolerance {}.\n"
+                                                 "Point on my surface {}; Point on other surface "
+                                                 "{}; Squared distance {}  (running sum {})",
+                                                 u,
+                                                 v,
+                                                 sq_tol,
+                                                 my_val,
+                                                 other_val,
+                                                 sq_dist,
+                                                 squared_sum));
         }
       }
 
@@ -242,30 +241,30 @@ private:
     /// Logs some information about the patch
     void printSurfaceInfo() const
     {
-      SLIC_INFO(axom::fmt::format("Patch is periodic in u: {}", m_surface->IsUPeriodic()));
-      SLIC_INFO(axom::fmt::format("Patch is periodic in v: {}", m_surface->IsVPeriodic()));
+      SLIC_INFO_ROOT(axom::fmt::format("Patch is periodic in u: {}", m_surface->IsUPeriodic()));
+      SLIC_INFO_ROOT(axom::fmt::format("Patch is periodic in v: {}", m_surface->IsVPeriodic()));
 
       // Print control points
       {
         const auto patch_control_points = extractControlPoints();
-        SLIC_INFO(axom::fmt::format("Patch control points ({} x {}): {}",
-                                    patch_control_points.shape()[0],
-                                    patch_control_points.shape()[1],
-                                    patch_control_points));
+        SLIC_INFO_ROOT(axom::fmt::format("Patch control points ({} x {}): {}",
+                                         patch_control_points.shape()[0],
+                                         patch_control_points.shape()[1],
+                                         patch_control_points));
       }
 
       // Print weights (if the surface is rational)
       if(const bool isRational = m_surface->IsURational() || m_surface->IsVRational(); isRational)
       {
         const auto patch_weights = extractWeights();
-        SLIC_INFO(axom::fmt::format("Patch weights ({} x {}): {}",
-                                    patch_weights.shape()[0],
-                                    patch_weights.shape()[1],
-                                    patch_weights));
+        SLIC_INFO_ROOT(axom::fmt::format("Patch weights ({} x {}): {}",
+                                         patch_weights.shape()[0],
+                                         patch_weights.shape()[1],
+                                         patch_weights));
       }
       else
       {
-        SLIC_INFO("Patch is polynomial (uniform weights)");
+        SLIC_INFO_ROOT("Patch is polynomial (uniform weights)");
       }
     }
 
@@ -526,17 +525,17 @@ private:
 
         const double sq_dist = axom::primal::squared_distance(my_val, other_val);
         squared_sum += sq_dist;
-        SLIC_WARNING_IF(m_verbose && sq_dist > sq_tol,
-                        axom::fmt::format("Distance between curves at evaluated param {} "
-                                          "exceeded tolerance {}.\n"
-                                          "Point on my curve {}; Point on other curve {}; "
-                                          "Squared distance {}  (running sum {})",
-                                          val,
-                                          sq_tol,
-                                          my_val,
-                                          other_val,
-                                          sq_dist,
-                                          squared_sum));
+        SLIC_WARNING_ROOT_IF(
+          m_verbose && sq_dist > sq_tol,
+          axom::fmt::format(
+            "Distance between curves at evaluated param {} exceeded tolerance {}.\n"
+            "Point on my curve {}; Point on other curve {}; Squared distance {}  (running sum {})",
+            val,
+            sq_tol,
+            my_val,
+            other_val,
+            sq_dist,
+            squared_sum));
       }
 
       return squared_sum <= sq_tol;
@@ -685,7 +684,7 @@ public:
     int patchIndex = 0;
     for(TopExp_Explorer ex(m_shape, TopAbs_FACE); ex.More(); ex.Next(), ++patchIndex)
     {
-      SLIC_DEBUG_IF(m_verbose, "*** Processing patch " << patchIndex);
+      SLIC_DEBUG_ROOT_IF(m_verbose, "*** Processing patch " << patchIndex);
       const TopoDS_Face& face = TopoDS::Face(ex.Current());
 
       opencascade::handle<Geom_Surface> surface = BRep_Tool::Surface(face);
@@ -719,19 +718,19 @@ public:
             opencascade::handle<Geom_BSplineSurface>::DownCast(surface);
 
           const bool withinThreshold = patchProcessor.compareToSurface(origSurface, 25);
-          SLIC_WARNING_IF(!withinThreshold,
-                          axom::fmt::format("[Patch {}] Patch geometry was not "
-                                            "within threshold after clamping.",
-                                            patchIndex,
-                                            patches[patchIndex]));
+          SLIC_WARNING_ROOT_IF(!withinThreshold,
+                               axom::fmt::format("[Patch {}] Patch geometry was not within "
+                                                 "threshold after clamping.\n Patch data: {}.",
+                                                 patchIndex,
+                                                 patches[patchIndex]));
         }
       }
       else
       {
         const std::string surfaceType = surface->DynamicType()->Name();
-        SLIC_WARNING(fmt::format("Skipping patch {} with non-BSpline surface type: '{}'",
-                                 patchIndex,
-                                 surfaceType));
+        SLIC_WARNING_ROOT(fmt::format("Skipping patch {} with non-BSpline surface type: '{}'",
+                                      patchIndex,
+                                      surfaceType));
       }
     }
   }
@@ -796,7 +795,7 @@ public:
       }
       if(!sstr.str().empty())
       {
-        SLIC_INFO(prefix << "\n" << sstr.str());
+        SLIC_INFO_ROOT(prefix << "\n" << sstr.str());
       }
     };
 
@@ -874,11 +873,12 @@ public:
       auto expandedPatchBbox = patchBbox;
       expandedPatchBbox.scale(1. + 1e-3);
 
-      SLIC_INFO_IF(m_verbose,
-                   axom::fmt::format("[Patch {}]: BBox in parametric space: {}; expanded BBox {}",
-                                     patchIndex,
-                                     patchBbox,
-                                     expandedPatchBbox));
+      SLIC_INFO_ROOT_IF(
+        m_verbose,
+        axom::fmt::format("[Patch {}]: BBox in parametric space: {}; expanded BBox {}",
+                          patchIndex,
+                          patchBbox,
+                          expandedPatchBbox));
 
       int wireIndex = 0;
       for(TopExp_Explorer wireExp(faceExp.Current(), TopAbs_WIRE); wireExp.More();
@@ -895,11 +895,11 @@ public:
           if(m_verbose)
           {
             BRepAdaptor_Curve curveAdaptor(edge);
-            SLIC_INFO(axom::fmt::format("[Patch {} Wire {} Edge {}] Curve type: '{}'",
-                                        patchIndex,
-                                        wireIndex,
-                                        edgeIndex,
-                                        curveTypeMap[curveAdaptor.GetType()]));
+            SLIC_INFO_ROOT(axom::fmt::format("[Patch {} Wire {} Edge {}] Curve type: '{}'",
+                                             patchIndex,
+                                             wireIndex,
+                                             edgeIndex,
+                                             curveTypeMap[curveAdaptor.GetType()]));
           }
 
           Standard_Real first, last;
@@ -933,12 +933,12 @@ public:
 
             patch.addTrimmingCurve(curve);
 
-            SLIC_INFO_IF(m_verbose,
-                         axom::fmt::format("[Patch {} Wire {} Edge {}] Added curve: {}",
-                                           patchIndex,
-                                           wireIndex,
-                                           edgeIndex,
-                                           curve));
+            SLIC_INFO_ROOT_IF(m_verbose,
+                              axom::fmt::format("[Patch {} Wire {} Edge {}] Added curve: {}",
+                                                patchIndex,
+                                                wireIndex,
+                                                edgeIndex,
+                                                curve));
 
             // Check to ensure that curve did not change geometrically after making non-periodic
             if(originalCurvePeriodic)
@@ -946,12 +946,13 @@ public:
               opencascade::handle<Geom2d_BSplineCurve> origCurve =
                 Geom2dConvert::CurveToBSplineCurve(parametricCurve);
               const bool withinThreshold = curveProcessor.compareToCurve(origCurve, 25);
-              SLIC_WARNING_IF(!withinThreshold,
-                              axom::fmt::format("[Patch {} Wire {} Edge {}] Trimming curve was not "
-                                                "within threshold after clamping.",
-                                                patchIndex,
-                                                wireIndex,
-                                                edgeIndex));
+              SLIC_WARNING_ROOT_IF(
+                !withinThreshold,
+                axom::fmt::format("[Patch {} Wire {} Edge {}] Trimming curve was not "
+                                  "within threshold after clamping.",
+                                  patchIndex,
+                                  wireIndex,
+                                  edgeIndex));
             }
 
             // TODO: Check that curve control points are within UV patch after adjusting periodicity
@@ -966,87 +967,6 @@ public:
   std::string getFileUnits() const { return m_fileUnits; }
 
 private:
-  /// Returns the canonical representation of a unit string (e.g. "centimeter" -> "cm")
-  std::string getCanonicalUnit(const std::string& unit) const
-  {
-    // we'll convert all units to lower case
-    auto toLower = [](std::string str) {
-      std::transform(str.begin(), str.end(), str.begin(), ::tolower);
-      return str;
-    };
-
-    // start with imperial units
-    std::map<std::string, std::string> unitCanonicalMap = {{"inch", "in"},
-                                                           {"inches", "in"},
-                                                           {"in", "in"},
-                                                           {"foot", "ft"},
-                                                           {"feet", "ft"},
-                                                           {"ft", "ft"},
-                                                           {"mile", "mi"},
-                                                           {"miles", "mi"},
-                                                           {"mi", "mi"}};
-
-    // now add the SI units w/ several suffixes
-    // we're going to reverse this for the map to canonical units
-    std::map<std::string, std::string> prefixes = {
-      {"am", "atto"},
-      {"fm", "femto"},
-      {"pm", "pico"},
-      {"nm", "nano"},
-      {"um", "micro"},
-      {"mm", "milli"},
-      {"cm", "centi"},
-      {"dm", "deci"},
-      {"m", ""},
-      {"dam", "deca"},
-      {"hm", "hecto"},
-      {"km", "kilo"},
-    };
-
-    for(const auto& kv : prefixes)
-    {
-      const std::string& canonical = kv.first;
-      const std::string& prefix = kv.second;
-      unitCanonicalMap[canonical] = canonical;
-      for(const std::string& suffix : {"meter", "meters", "metre", "metres"})
-      {
-        unitCanonicalMap[prefix + suffix] = canonical;
-      }
-    }
-
-    return unitCanonicalMap[toLower(unit)];
-  }
-
-  /**
-   *  Returns the conversion factor from an input unit to an output unit
-   * 
-   * \note Converts the units to their canonical form
-   * \sa getCanonicalUnit
-   */
-  double getConversionFactor(const std::string& fileUnits, const std::string& defaultUnits = "mm") const
-  {
-    std::map<std::string, double> unitConversionMap = {{"am", 1e-15},
-                                                       {"fm", 1e-12},
-                                                       {"pm", 1e-9},
-                                                       {"nm", 1e-6},
-                                                       {"um", 1e-3},
-                                                       {"mm", 1.0},
-                                                       {"cm", 10.0},
-                                                       {"dm", 100.0},
-                                                       {"m", 1e3},
-                                                       {"dam", 1e4},
-                                                       {"hm", 1e5},
-                                                       {"km", 1e6},
-                                                       {"in", 25.4},
-                                                       {"ft", 304.8},
-                                                       {"mi", 1609344.0}};
-
-    const double fileUnitFactor = unitConversionMap[getCanonicalUnit(fileUnits)];
-    const double defaultUnitFactor = unitConversionMap[getCanonicalUnit(defaultUnits)];
-
-    return fileUnitFactor / defaultUnitFactor;
-  };
-
   /// Loads the step file \a filename from disk
   /// Uses the units from \a filename
   TopoDS_Shape loadStepFile(const std::string& filename)
@@ -1068,9 +988,11 @@ private:
     reader.FileUnits(anUnitLengthNames, anUnitAngleNames, anUnitSolidAngleNames);
     if(anUnitLengthNames.Size() > 0)
     {
-      m_fileUnits = getCanonicalUnit(anUnitLengthNames(1).ToCString());
-      std::string defaultUnit = Interface_Static::CVal("xstep.cascade.unit");
-      const double lengthUnit = getConversionFactor(m_fileUnits, defaultUnit);
+      const auto fileUnits = axom::utilities::getLengthUnit(anUnitLengthNames(1).ToCString());
+      m_fileUnits = axom::utilities::getLengthUnitName(fileUnits);
+      const auto defaultUnit =
+        axom::utilities::getLengthUnit(Interface_Static::CVal("xstep.cascade.unit"));
+      const double lengthUnit = axom::utilities::getConversionFactor(fileUnits, defaultUnit);
       reader.SetSystemLengthUnit(lengthUnit);
     }
 
@@ -1096,8 +1018,8 @@ private:
     }
 
     m_loadStatus = LoadStatus::SUCCESS;
-    SLIC_INFO_IF(m_verbose,
-                 axom::fmt::format("Successfully read the STEP file with {} roots", numRoots));
+    SLIC_INFO_ROOT_IF(m_verbose,
+                      axom::fmt::format("Successfully read the STEP file with {} roots", numRoots));
 
     return nurbsShape;
   }
@@ -1162,8 +1084,8 @@ public:
 
       if(triangulation.IsNull())
       {
-        SLIC_WARNING(axom::fmt::format("Error: Triangulation could not be generated for patch {}",
-                                       patchIndex));
+        SLIC_WARNING_ROOT(
+          axom::fmt::format("Error: Triangulation could not be generated for patch {}", patchIndex));
         continue;
       }
 
@@ -1239,7 +1161,7 @@ public:
 
       if(triangulation.IsNull())
       {
-        SLIC_WARNING(
+        SLIC_WARNING_ROOT(
           axom::fmt::format("Error: Triangulation could not be generated for untrimmed patch {}",
                             patchIndex));
         break;
@@ -1289,7 +1211,7 @@ private:
   bool m_deflectionIsRelative;
 };
 
-}  // end namespace internal
+}  // namespace internal
 
 std::string STEPReader::getFileUnits() const { return m_stepProcessor->getFileUnits(); }
 
@@ -1548,7 +1470,7 @@ axom::primal::BoundingBox<double, 3> STEPReader::getBRepBoundingBox(bool useTria
 {
   if(!m_stepProcessor->isLoaded())
   {
-    SLIC_WARNING("Cannot compute bounding box until calling STEPReader::read()");
+    SLIC_WARNING_ROOT("Cannot compute bounding box until calling STEPReader::read()");
     return axom::primal::BoundingBox<double, 3> {};
   }
 
@@ -1644,13 +1566,13 @@ int STEPReader::getTriangleMesh(axom::mint::UnstructuredMesh<axom::mint::SINGLE_
 {
   if(!m_stepProcessor || !m_stepProcessor->isLoaded())
   {
-    SLIC_WARNING("Cannot triangulate model until calling STEPReader::read()");
+    SLIC_WARNING_ROOT("Cannot triangulate model until calling STEPReader::read()");
     return 1;
   }
 
   if(!mesh)
   {
-    SLIC_WARNING("Passed in mesh instance was null. Skipping triangulation");
+    SLIC_WARNING_ROOT("Passed in mesh instance was null. Skipping triangulation");
     return 1;
   }
 
@@ -1671,5 +1593,4 @@ int STEPReader::getTriangleMesh(axom::mint::UnstructuredMesh<axom::mint::SINGLE_
   return 0;
 }
 
-}  // end namespace quest
-}  // end namespace axom
+}  // namespace axom::quest

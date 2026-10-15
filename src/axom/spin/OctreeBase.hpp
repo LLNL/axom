@@ -4,13 +4,12 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#pragma once
+
 /**
  * \file OctreeBase.hpp
  * \brief Defines templated OctreeBase class and its inner class BlockIndex
  */
-
-#ifndef AXOM_SPIN_OCTREE_BASE__HPP_
-#define AXOM_SPIN_OCTREE_BASE__HPP_
 
 #include "axom/config.hpp"
 #include "axom/core/NumericLimits.hpp"
@@ -133,7 +132,7 @@ public:
   using OctreeLevels = slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
-  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*>;
+  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*, OctreeLevels>;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -479,10 +478,10 @@ public:
   }
 
   /// \brief The max level for leaf blocks of the octree
-  int maxLeafLevel() const { return m_levels.size(); }
+  int maxLeafLevel() const { return static_cast<int>(m_levels.size()); }
 
   /// \brief The max level for internal blocks of the octree
-  int maxInternalLevel() const { return m_levels.size() - 1; }
+  int maxInternalLevel() const { return static_cast<int>(m_levels.size()) - 1; }
 
 public:
   ///@{
@@ -778,28 +777,28 @@ public:
 
     if(lev <= MAX_DENSE_LEV)
     {
-      SLIC_ASSERT(checkCast<DenseOctLevPtr>(m_leavesLevelMap[lev]));
-      return (*static_cast<DenseOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      SLIC_ASSERT(checkCast<const DenseOctLevType*>(m_leavesLevelMap[lev]));
+      return (*static_cast<const DenseOctLevType*>(m_leavesLevelMap[lev]))[pt];
     }
     else if(lev <= MAX_SPARSE16_LEV)
     {
-      SLIC_ASSERT(checkCast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]));
-      return (*static_cast<Sparse16OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      SLIC_ASSERT(checkCast<const Sparse16OctLevType*>(m_leavesLevelMap[lev]));
+      return (*static_cast<const Sparse16OctLevType*>(m_leavesLevelMap[lev]))[pt];
     }
     else if(lev <= MAX_SPARSE32_LEV)
     {
-      SLIC_ASSERT(checkCast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]));
-      return (*static_cast<Sparse32OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      SLIC_ASSERT(checkCast<const Sparse32OctLevType*>(m_leavesLevelMap[lev]));
+      return (*static_cast<const Sparse32OctLevType*>(m_leavesLevelMap[lev]))[pt];
     }
     else if(lev <= MAX_SPARSE64_LEV)
     {
-      SLIC_ASSERT(checkCast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]));
-      return (*static_cast<Sparse64OctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      SLIC_ASSERT(checkCast<const Sparse64OctLevType*>(m_leavesLevelMap[lev]));
+      return (*static_cast<const Sparse64OctLevType*>(m_leavesLevelMap[lev]))[pt];
     }
     else
     {
-      SLIC_ASSERT(checkCast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]));
-      return (*static_cast<SparsePtOctLevPtr>(m_leavesLevelMap[lev]))[pt];
+      SLIC_ASSERT(checkCast<const SparsePtOctLevType*>(m_leavesLevelMap[lev]));
+      return (*static_cast<const SparsePtOctLevType*>(m_leavesLevelMap[lev]))[pt];
     }
   }
 
@@ -914,5 +913,3 @@ protected:
 
 }  // end namespace spin
 }  // end namespace axom
-
-#endif  // AXOM_SPIN_OCTREE_BASE__HPP_

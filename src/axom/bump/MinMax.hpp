@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_BUMP_MINMAX_HPP_
-#define AXOM_BUMP_MINMAX_HPP_
+#pragma once
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/reductions.hpp"
@@ -39,7 +38,7 @@ struct MinMax
    *
    * \return A pair containing the min,max values in the node.
    */
-  static std::pair<ReturnType, ReturnType> execute(const conduit::Node &n)
+  static std::pair<ReturnType, ReturnType> execute(const conduit::Node& n)
   {
     SLIC_ASSERT(n.dtype().number_of_elements() > 0);
     std::pair<ReturnType, ReturnType> retval;
@@ -61,12 +60,10 @@ struct MinMax
     axom::ReduceMin<ExecSpace, T> vmin(axom::numeric_limits<T>::max());
     axom::ReduceMax<ExecSpace, T> vmax(axom::numeric_limits<T>::min());
 
-    axom::for_all<ExecSpace>(
-      nview.size(),
-      AXOM_LAMBDA(axom::IndexType index) {
-        vmin.min(nview[index]);
-        vmax.max(nview[index]);
-      });
+    axom::for_all<ExecSpace>(nview.size(), [=] AXOM_HOST_DEVICE(axom::IndexType index) {
+      vmin.min(nview[index]);
+      vmax.max(nview[index]);
+    });
 
     return std::pair<ReturnType, ReturnType> {static_cast<ReturnType>(vmin.get()),
                                               static_cast<ReturnType>(vmax.get())};
@@ -75,5 +72,3 @@ struct MinMax
 
 }  // end namespace bump
 }  // end namespace axom
-
-#endif

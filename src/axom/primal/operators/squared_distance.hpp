@@ -4,15 +4,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#pragma once
+
 /*!
  * \file squared_distance.hpp
  *
  * \brief Consists of a set of templated (overloaded) routines used to calculate
  *  the squared distance between two geometric entities.
  */
-
-#ifndef AXOM_PRIMAL_SQUAREDDISTANCE_HPP_
-#define AXOM_PRIMAL_SQUAREDDISTANCE_HPP_
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -86,16 +85,31 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
     return axom::numerics::floating_point_limits<T>::max();
   }
 
-  if(B.contains(P))
-  {
-    return 0;
-  }
-
   // compute closest point to the box
   Point<T, NDIMS> cp;
-  for(int i = 0; i < NDIMS; ++i)
+
+#ifdef AXOM_DEVICE_CODE
+  if constexpr(std::is_floating_point_v<T>)
   {
-    cp[i] = clampVal(P[i], B.getMin()[i], B.getMax()[i]);
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      cp[i] = fmax(B.getMin()[i], fmin(P[i], B.getMax()[i]));
+    }
+  }
+  else
+#endif
+  {
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      cp[i] = clampVal(P[i], B.getMin()[i], B.getMax()[i]);
+    }
+  }
+
+  // if clamped point is the same as the original point, our point
+  // was already in the bounding box
+  if(cp == P)
+  {
+    return 0;
   }
 
   // return squared distance to the closest point
@@ -164,5 +178,3 @@ AXOM_HOST_DEVICE inline double squared_distance(const Point<T, NDIMS>& P,
 
 }  // namespace primal
 }  // namespace axom
-
-#endif  // AXOM_PRIMAL_SQUAREDDISTANCE_HPP_

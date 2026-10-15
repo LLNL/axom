@@ -4,9 +4,9 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
-#define AXOM_QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
+#pragma once
 
+#include "axom/core/ArrayView.hpp"
 #include "axom/spin/ImplicitGrid.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
@@ -116,12 +116,13 @@ public:
    *
    * \sa PointInCell::locatePoint() for more details about parameters
    */
-  IndexType locatePoint(const double* pos, double* isoparametric) const
+  IndexType locatePoint(axom::ArrayView<const double> pos, axom::ArrayView<double> isoparametric) const
   {
     IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
 
-    SLIC_ASSERT(pos != nullptr);
-    SpacePoint pt(pos);
+    SLIC_ASSERT(pos.size() == NDIMS);
+    SLIC_ASSERT(isoparametric.empty() || isoparametric.size() == NDIMS);
+    SpacePoint pt(pos.data(), static_cast<int>(pos.size()));
     SpacePoint isopar;
 
     if(DeviceExec)
@@ -135,9 +136,9 @@ public:
     }
 
     // Copy data back to input parameter isoparametric, if necessary
-    if(isoparametric != nullptr)
+    for(IndexType i = 0; i < isoparametric.size() && i < NDIMS; ++i)
     {
-      isopar.array().to_array(isoparametric);
+      isoparametric[i] = isopar[i];
     }
 
     return containingCell;
@@ -180,12 +181,10 @@ public:
 
     axom::ReduceSum<ExecSpace, IndexType> totalCountReduce(0);
     // Step 1: count number of candidate intersections for each point
-    for_all<ExecSpace>(
-      npts,
-      AXOM_LAMBDA(IndexType i) {
-        countsPtr[i] = gridQuery.countCandidates(pts[i]);
-        totalCountReduce += countsPtr[i];
-      });
+    for_all<ExecSpace>(npts, [=] AXOM_HOST_DEVICE(IndexType i) {
+      countsPtr[i] = gridQuery.countCandidates(pts[i]);
+      totalCountReduce += countsPtr[i];
+    });
 
     // Step 2: exclusive scan for offsets in candidate array
     axom::exclusive_scan<ExecSpace>(counts, offsets);
@@ -199,25 +198,23 @@ public:
     const SpatialBoundingBox* cellBBoxes = m_cellBBoxes.data();
 
     // Step 4: fill candidate array for each query box
-    for_all<ExecSpace>(
-      npts,
-      AXOM_LAMBDA(IndexType i) {
-        int startIdx = offsetsPtr[i];
-        int currCount = 0;
-        const SpacePoint& pt = pts[i];
-        auto onCandidate = [&](int candidateIdx) -> bool {
-          // Check that point is in bounding box of candidate element
-          if(cellBBoxes[candidateIdx].contains(pt))
-          {
-            candidatesPtr[startIdx] = candidateIdx;
-            currCount++;
-            startIdx++;
-          }
-          return currCount >= countsPtr[i];
-        };
-        gridQuery.visitCandidates(pts[i], onCandidate);
-        countsPtr[i] = currCount;
-      });
+    for_all<ExecSpace>(npts, [=] AXOM_HOST_DEVICE(IndexType i) {
+      int startIdx = offsetsPtr[i];
+      int currCount = 0;
+      const SpacePoint& pt = pts[i];
+      auto onCandidate = [&](int candidateIdx) -> bool {
+        // Check that point is in bounding box of candidate element
+        if(cellBBoxes[candidateIdx].contains(pt))
+        {
+          candidatesPtr[startIdx] = candidateIdx;
+          currCount++;
+          startIdx++;
+        }
+        return currCount >= countsPtr[i];
+      };
+      gridQuery.visitCandidates(pts[i], onCandidate);
+      countsPtr[i] = currCount;
+    });
 
     // Temporary host arrays we copy device-side data into when the candidate
     // search is conducted on the GPU
@@ -260,7 +257,7 @@ public:
     }
     else
     {
-      ptsHostPtr = pts;
+      ptsHostPtr = ConstHostPointView(pts.data(), pts.size());
       candidatesHostPtr = candidates;
       offsetsHostPtr = offsets;
       countsHostPtr = counts;
@@ -270,28 +267,28 @@ public:
     // TODO: This only supports sequential execution right now, because we
     // don't build MFEM in a thread-safe manner.
     const MeshWrapperType* meshWrapperPtr = m_meshWrapper;
-    for_all<SEQ_EXEC>(
-      npts,
-      AXOM_HOST_LAMBDA(IndexType i) {
-        outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
-        const SpacePoint& pt = ptsHostPtr[i];
-        SpacePoint isopar;
-        for(int icell = 0; icell < countsHostPtr[i]; icell++)
+    for_all<SEQ_EXEC>(npts, [=] AXOM_HOST(IndexType i) {
+      outCellIdsPtr[i] = PointInCellTraits<mesh_tag>::NO_CELL;
+      const SpacePoint& pt = ptsHostPtr[i];
+      SpacePoint isopar;
+      for(int icell = 0; icell < countsHostPtr[i]; icell++)
+      {
+        const int cellIdx = candidatesHostPtr[icell + offsetsHostPtr[i]];
+        // if isopar is in the proper range
+        if(meshWrapperPtr->locatePointInCell(cellIdx,
+                                             axom::ArrayView<const double>(pt.data(), NDIMS),
+                                             axom::ArrayView<double>(isopar.data(), NDIMS)))
         {
-          const int cellIdx = candidatesHostPtr[icell + offsetsHostPtr[i]];
-          // if isopar is in the proper range
-          if(meshWrapperPtr->locatePointInCell(cellIdx, pt.data(), isopar.data()))
-          {
-            // then we have found the cellID
-            outCellIdsPtr[i] = cellIdx;
-            break;
-          }
+          // then we have found the cellID
+          outCellIdsPtr[i] = cellIdx;
+          break;
         }
-        if(outIsoparametricCoords != nullptr)
-        {
-          outIsoparPtr[i] = isopar;
-        }
-      });
+      }
+      if(outIsoparametricCoords != nullptr)
+      {
+        outIsoparPtr[i] = isopar;
+      }
+    });
 
     if(DeviceExec)
     {
@@ -310,7 +307,9 @@ public:
       gridQuery.visitCandidates(pt, [&](int candidateIdx) -> bool {
         if(m_cellBBoxes[candidateIdx].contains(pt))
         {
-          if(m_meshWrapper->locatePointInCell(candidateIdx, pt.data(), isopar.data()))
+          if(m_meshWrapper->locatePointInCell(candidateIdx,
+                                              axom::ArrayView<const double>(pt.data(), NDIMS),
+                                              axom::ArrayView<double>(isopar.data(), NDIMS)))
           {
             outCellIds[i] = candidateIdx;
             return true;
@@ -347,5 +346,3 @@ private:
 }  // end namespace detail
 }  // end namespace quest
 }  // end namespace axom
-
-#endif  // AXOM_QUEST_POINT_IN_CELL_POINT_FINDER_HPP_

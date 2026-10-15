@@ -5,6 +5,7 @@
 import os
 import shutil
 import socket
+import tempfile
 from os.path import join as pjoin
 
 from spack_repo.builtin.build_systems.cached_cmake import (
@@ -34,6 +35,28 @@ _AXOM_COMPONENTS = (
     "slam",
     "slic",
     "spin",
+)
+
+_AXOM_COMPONENT_REQUIREMENTS = {
+    "bump": ("sidre", "slic", "spin", "primal"),
+    "inlet": ("sidre", "slic", "primal"),
+    "klee": ("sidre", "slic", "inlet", "primal"),
+    "mint": ("slic", "slam"),
+    "mir": ("bump", "sidre", "slic", "slam", "primal"),
+    "multimat": ("slic", "slam"),
+    "primal": ("slic",),
+    "quest": ("slic", "slam", "primal", "mint", "spin"),
+    "sidre": ("slic",),
+    "sina": ("slic",),
+    "slam": ("slic",),
+    "spin": ("slic", "slam", "primal"),
+}
+
+_AXOM_COMPONENT_VALUES = tuple(
+    conditional(component, when=f"components={','.join(_AXOM_COMPONENT_REQUIREMENTS[component])}")
+    if component in _AXOM_COMPONENT_REQUIREMENTS
+    else component
+    for component in _AXOM_COMPONENTS
 )
 
 
@@ -76,6 +99,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     version("main", branch="main")
     version("develop", branch="develop")
+    version("0.15.0", tag="v0.15.0", commit="da2a50a7ee661896400d49b019e17bbe7ab5bd44")
     version("0.14.0", tag="v0.14.0", commit="146c8c15386a810791b7ab5c7fcb288cadea6151")
     version("0.13.0", tag="v0.13.0", commit="d00f6c66ef390ad746ae840f1074d982513611ac")
     version("0.12.0", tag="v0.12.0", commit="297544010a3dfb98145a1a85f09f9c648c00a18c")
@@ -113,8 +137,11 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     variant("tools", default=True, description="Build tools")
     variant("tutorials", default=True, description="Build tutorials")
 
-    # Hard requirement after Axom 0.6.1
-    variant("cpp14", default=True, description="Build with C++14 support")
+    variant(
+        "cpp14",
+        default=False,
+        description="Build with C++14 support. Deprecated -- use the cxxstd variant version.",
+    )
 
     variant("fortran", default=True, description="Build with Fortran support")
 
@@ -141,7 +168,12 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             "Missing dependencies will be added (e.g. we'll add `sidre` "
             "and `conduit` for `components=inlet`)"
         ),
-        values=any_combination_of("all", *_AXOM_COMPONENTS).with_default("all"),
+        # "all" is a sentinel and must not be combined with individual components.
+        # Keeping it in the same value set causes an additive request such as
+        # components=sina to retain the default "all" on Spack 1.2 and newer.
+        values=(
+            disjoint_sets(("all",), _AXOM_COMPONENT_VALUES).allow_empty_set().with_default("all")
+        ),
     )
 
     variant("int64", default=True, description="Use 64bit integers for IndexType")
@@ -162,6 +194,19 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     varmsg = "Build development tools (such as Sphinx, Doxygen, etc...)"
     variant("devtools", default=False, description=varmsg)
 
+    variant(
+        "cxxstd",
+        default="20",
+        values=(
+            conditional("11", when="@:0.6.1"),
+            conditional("14", when="@:0.11.0"),
+            conditional("17", when="@:0.14.0"),
+            "20",
+        ),
+        multi=False,
+        description="C++ standard to build with",
+    )
+
     # -----------------------------------------------------------------------
     # Dependencies
     # -----------------------------------------------------------------------
@@ -175,6 +220,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("cmake@3.21:", type="build", when="+rocm")
 
     depends_on("blt", type="build")
+    depends_on("blt@0.7.2:", type="build", when="@0.15:")
     depends_on("blt@0.7.1:", type="build", when="@0.12:")
     depends_on("blt@0.7", type="build", when="@0.11:")
     depends_on("blt@0.6.2", type="build", when="@0.9:0.10")
@@ -199,6 +245,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     with when("+umpire"):
         depends_on("umpire")
+        depends_on("umpire@2026.07.1:", when="@0.15:")
         depends_on("umpire@2025.12:", when="@0.13:")
         depends_on("umpire@2025.09:", when="@0.12:")
         depends_on("umpire@2025.03", when="@0.11")
@@ -212,6 +259,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
     with when("+raja"):
         depends_on("raja")
+        depends_on("raja@2026.07:", when="@0.15:")
         depends_on("raja@2025.12.1:", when="@0.13:")
         depends_on("raja@2025.09:", when="@0.12:")
         depends_on("raja@2025.03", when="@0.11")
@@ -229,7 +277,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     depends_on("caliper", when="+caliper")
     with when("+profiling"):
         depends_on("adiak")
-        depends_on("caliper+adiak")
+        depends_on("caliper+adiak~papi")
 
         depends_on("caliper+cuda", when="+cuda")
         depends_on("caliper~cuda", when="~cuda")
@@ -277,15 +325,20 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         depends_on("mfem~mpi", when="~mpi")
         depends_on("mfem@4.5.0:", when="@0.7.0:")
 
-    depends_on("python", when="+python")
-
     # Python
     with when("+python"):
-        depends_on("py-nanobind@2.7.0:")
+        depends_on("python@3.9:")
+
+        # extending python allows spack environment views to import axom from python
+        extends("python")
+
+        depends_on("py-nanobind@2.10.0:")
         depends_on("py-pytest")
+        depends_on("py-packaging")
+        depends_on("py-pygments")
         depends_on("py-numpy")
         depends_on("py-mpi4py", when="+mpi")
-        depends_on("conduit+python")
+        depends_on("conduit+python", when="+conduit")
 
     # Devtools
     with when("+devtools"):
@@ -305,33 +358,16 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     # -----------------------------------------------------------------------
     # Component requirements
     # -----------------------------------------------------------------------
-    # Hard inter-component dependencies taken from Axom's dependency graph.
-    requires(f"components={','.join(_AXOM_COMPONENTS)}", when="components=all")
-
-    requires("components=sidre,slic,spin,primal", when="components=bump")
-    requires("components=sidre,slic,primal", when="components=inlet")
-    requires("components=sidre,slic,inlet,primal", when="components=klee")
-    requires("components=slic,slam", when="components=mint")
-    requires("components=bump,sidre,slic,slam,primal", when="components=mir")
-    requires("components=slic,slam", when="components=multimat")
-    requires("components=slic", when="components=primal")
-    requires("components=slic,slam,primal,mint,spin", when="components=quest")
-    requires("components=slic", when="components=sidre")
-    requires("components=slic", when="components=sina")
-    requires("components=slic", when="components=slam")
-    requires("components=slic,slam,primal", when="components=spin")
-
     # Hard dependencies of Axom components on other packages
     requires("+conduit", when="components=bump")
     requires("+conduit", when="components=mir")
     requires("+conduit", when="components=sidre")
     requires("+conduit", when="components=sina")
+    requires("+conduit", when="components=all")
 
     # -----------------------------------------------------------------------
     # Conflicts
     # -----------------------------------------------------------------------
-    # Hard requirement after Axom 0.6.1
-    conflicts("~cpp14", when="@0.6.2:")
 
     # Conduit's cmake config files moved and < 0.4.0 can't find it
     conflicts("^conduit@0.7.2:", when="@:0.4.0")
@@ -389,6 +425,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             special_case,
         )
 
+    @property
+    def cxx_std(self):
+        return self.spec.variants.get("cxxstd").value
+
     def initconfig_compiler_entries(self):
         spec = self.spec
         entries = super().initconfig_compiler_entries()
@@ -410,8 +450,10 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         else:
             entries.append(cmake_cache_option("ENABLE_FORTRAN", False))
 
-        if spec.satisfies("+cpp14") and spec.satisfies("@:0.6.1"):
+        if (spec.satisfies("+cpp14") or self.cxx_std == "14") and spec.satisfies("@:0.6.1"):
             entries.append(cmake_cache_string("BLT_CXX_STD", "c++14", ""))
+        else:
+            entries.append(cmake_cache_string("BLT_CXX_STD", f"c++{self.cxx_std}"))
 
         # Add optimization flag workaround for builds with cray compiler
         if spec.satisfies("%cce"):
@@ -450,7 +492,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
 
             if spec.satisfies("^blt@:0.5.1"):
                 # This is handled internally by BLT now
-                if spec.satisfies("+cpp14"):
+                if spec.satisfies("+cpp14") or self.cxx_std == "14":
                     cudaflags += " -std=c++14"
                 else:
                     cudaflags += " -std=c++11"
@@ -505,20 +547,21 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 hip_link_flags += "-L{0} -Wl,-rpath,{0}".format(lib_path)
 
             if spec.satisfies("+fortran"):
-                link_remove_list = []
+                link_lib_remove_list = []
 
                 # Remove extra link library for crayftn
                 if self.is_fortran_compiler("crayftn"):
-                    link_remove_list += ["unwind"]
+                    link_lib_remove_list += ["unwind"]
 
                 # Remove injected OpenMP stub library
                 if spec.satisfies("+openmp"):
-                    link_remove_list += ["ompstub"]
+                    link_lib_remove_list += ["ompstub"]
 
-                if link_remove_list:
+                if link_lib_remove_list:
                     entries.append(
                         cmake_cache_string(
-                            "BLT_CMAKE_IMPLICIT_LINK_LIBRARIES_EXCLUDE", ";".join(link_remove_list)
+                            "BLT_CMAKE_IMPLICIT_LINK_LIBRARIES_EXCLUDE",
+                            ";".join(link_lib_remove_list),
                         )
                     )
 
@@ -580,7 +623,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 cmake_cache_string("BLT_OPENMP_LINK_FLAGS", openmp_gen_exp, description)
             )
 
-        if spec.satisfies("+openmp") and spec.satisfies("+rocm") and spec.satisfies("%cce"):
+        # For cce up to version 20.0.0
+        if spec.satisfies("+openmp") and spec.satisfies("+rocm") and spec.satisfies("%cce@:20"):
             openmp_gen_exp = (
                 "$<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:"
                 "-fopenmp=libomp>;$<$<COMPILE_LANGUAGE:"
@@ -644,7 +688,7 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
         entries = []
         path_replacements = {}
 
-        all_components_enabled = all(
+        all_components_enabled = spec.satisfies("components=all") or all(
             spec.satisfies(f"components={comp}") for comp in _AXOM_COMPONENTS
         )
 
@@ -757,6 +801,15 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
             entries.append(cmake_cache_path("Python_EXECUTABLE", pjoin(python_bin_dir, "python3")))
 
+        if spec.satisfies("+python"):
+            # Install Axom's Python package(s) so a spack environment view merges them into
+            # a single site-packages and `import axom.sidre` works without updating PYTHONPATH
+            entries.append(
+                cmake_cache_path(
+                    "AXOM_PYTHON_MODULE_INSTALL_PREFIX", spec["python"].package.platlib
+                )
+            )
+
         if spec.satisfies("^py-jsonschema"):
             jsonschema_dir = get_spec_path(spec, "py-jsonschema", path_replacements, use_bin=True)
             jsonschema_path = os.path.join(jsonschema_dir, "jsonschema")
@@ -787,20 +840,23 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
                 )
 
         if spec.satisfies("+python"):
+            python_platlib = spec["python"].package.platlib
+
             # pytest requires pluggy and iniconfig
+            # newer pytest releases also import packaging/pygments from separate Spack prefixes.
             for dep in (
                 "py-nanobind",
                 "py-pytest",
                 "py-numpy",
                 "py-pluggy",
                 "py-iniconfig",
+                "py-packaging",
+                "py-pygments",
                 "py-mpi4py",
             ):
                 if spec.satisfies("^{0}".format(dep)):
-                    dep_dir = get_spec_path(spec, dep, path_replacements, use_lib=True)
-                    py_libdir = join_path(
-                        dep_dir, f"python{spec['python'].version.up_to(2)}", "site-packages"
-                    )
+                    dep_dir = get_spec_path(spec, dep, path_replacements)
+                    py_libdir = join_path(dep_dir, python_platlib)
                     entries.append(
                         cmake_cache_path("%s_DIR" % dep.upper().replace("-", "_"), py_libdir)
                     )
@@ -845,7 +901,8 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     def test_install_using_cmake(self):
         """build example with cmake and run"""
         example_src_dir = join_path(self.prefix.examples.axom, "using-with-cmake")
-        example_stage_dir = "./cmake"
+        example_test_dir = tempfile.mkdtemp(prefix="axom-cmake-example-")
+        example_stage_dir = join_path(example_test_dir, "using-with-cmake")
         shutil.copytree(example_src_dir, example_stage_dir)
         with working_dir(join_path(example_stage_dir, "build"), create=True):
             cmake_args = ["-C ../host-config.cmake", example_src_dir]
@@ -861,10 +918,63 @@ class Axom(CachedCMakePackage, CudaPackage, ROCmPackage):
     def test_install_using_make(self):
         """build example with make and run"""
         example_src_dir = join_path(self.prefix.examples.axom, "using-with-make")
-        example_stage_dir = "./make"
+        example_test_dir = tempfile.mkdtemp(prefix="axom-make-example-")
+        example_stage_dir = join_path(example_test_dir, "using-with-make")
         shutil.copytree(example_src_dir, example_stage_dir)
         with working_dir(example_stage_dir, create=True):
             make(f"AXOM_DIR={self.prefix}")
             example = Executable("./example")
             example()
             make("clean")
+
+    @run_after("install", when="+examples+python+tools components=all")
+    @run_after("install", when="+examples+python+tools components=sidre")
+    @on_package_attributes(run_tests=True)
+    def test_install_using_python(self):
+        """run python example against installed axom"""
+        example = join_path(self.prefix.examples.axom, "using-with-python", "example.py")
+        python_runner = join_path(self.prefix.bin, "run_python_with_axom.sh")
+        if not os.path.isfile(example):
+            raise RuntimeError("Missing installed python example: {0}".format(example))
+        if not os.path.isfile(python_runner):
+            raise RuntimeError("Missing installed python runner: {0}".format(python_runner))
+        run_python = Executable(python_runner)
+        run_python(example)
+
+    @run_after("install", when="+python components=all")
+    @run_after("install", when="+python components=sidre")
+    @on_package_attributes(run_tests=True)
+    def test_axom_sidre_installed_into_site_packages(self):
+        """Check axom.sidre installed into a site-packages-shaped prefix
+        and imports from view-shaped site-packages paths.
+        """
+        python_pkg = self.spec["python"].package
+        python_platlib = python_pkg.platlib
+        site_packages = join_path(self.prefix, python_platlib)
+        sidre_pkg_dir = join_path(site_packages, "axom", "sidre")
+        if not os.path.isdir(sidre_pkg_dir):
+            raise RuntimeError(
+                "axom.sidre was not installed under the interpreter platlib: {0}".format(
+                    sidre_pkg_dir
+                )
+            )
+
+        # Assemble the Python package directories a view would merge into site-packages.
+        import_path = [site_packages]
+        if self.spec.satisfies("+conduit"):
+            for conduit_py in (
+                join_path(self.spec["conduit"].prefix, python_platlib),
+                join_path(self.spec["conduit"].prefix, "python-modules"),
+            ):
+                if os.path.isdir(conduit_py):
+                    import_path.append(conduit_py)
+
+        for dep in ("py-numpy", "py-mpi4py"):
+            if self.spec.satisfies("^{0}".format(dep)):
+                dep_py = join_path(self.spec[dep].prefix, python_platlib)
+                if os.path.isdir(dep_py):
+                    import_path.append(dep_py)
+
+        imports = "import axom.sidre as s; import numpy; print('axom.sidre', s.__version__)"
+        python = self["python"].command
+        python("-c", imports, extra_env={"PYTHONPATH": ":".join(import_path)})

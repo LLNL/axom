@@ -3,8 +3,9 @@
 // files for dates and other details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-#ifndef AXOM_MIR_EXAMPLES_HEAVILY_MIXED_APPLICATION_HPP
-#define AXOM_MIR_EXAMPLES_HEAVILY_MIXED_APPLICATION_HPP
+
+#pragma once
+
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 
@@ -25,7 +26,7 @@ public:
    * \brief Initialize the application from command line args.
    * \return 0 on success; less than zero otherwise.
    */
-  int initialize(int argc, char **argv);
+  int initialize(int argc, char** argv);
 
   /*!
    * \brief Execute the main application logic.
@@ -43,15 +44,23 @@ protected:
   /*!
    * \brief Make any adjustments to the mesh.
    */
-  virtual void adjustMesh(conduit::Node &);
+  virtual void adjustMesh(conduit::Node&);
+
+  /*!
+   * \brief Load the mesh from a file.
+   *
+   * \param n_mesh A node into which the mesh is loaded
+   * \param path The filepath where the file will be loaded (no extension).
+   */
+  virtual bool loadMesh(conduit::Node& n_mesh, const std::string& path);
 
   /*!
    * \brief Save the mesh to a file.
    *
-   * \param path The filepath where the file will be saved.
    * \param n_mesh The mesh to be saved.
+   * \param path The filepath where the file will be saved (no extension).
    */
-  virtual void saveMesh(const conduit::Node &n_mesh, const std::string &path);
+  virtual void saveMesh(const conduit::Node& n_mesh, const std::string& path);
 
   /*!
    * \brief Estimate memory needed to perform MIR operations.
@@ -63,19 +72,19 @@ protected:
   /*!
    * \brief A static error handler for Conduit.
    */
-  static void conduit_debug_err_handler(const std::string &s1, const std::string &s2, int i1);
+  static void conduit_debug_err_handler(const std::string& s1, const std::string& s2, int i1);
 
   bool m_handler;
-  axom::StackArray<int, 3> m_dims;
+  axom::StackArray<conduit::index_t, 3> m_dims;
   int m_numMaterials;
-  int m_refinement;
+  conduit::index_t m_refinement;
   int m_numTrials;
   bool m_writeFiles;
+  bool m_loadFile;
+  bool m_cleanMesh;
   std::string m_outputFilePath;
   std::string m_method;
   axom::runtime_policy::Policy m_policy;
   std::string m_annotationMode;
   std::string m_protocol;
 };
-
-#endif

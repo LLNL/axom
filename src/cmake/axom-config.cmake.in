@@ -30,6 +30,8 @@ if(NOT AXOM_FOUND)
   #----------------------------------------------------------------------------
 
   # Language features
+  set(AXOM_CXX_STANDARD       "@CMAKE_CXX_STANDARD@")
+  set(AXOM_PYTHON_EXECUTABLE  "@Python_EXECUTABLE@")
   set(AXOM_ENABLE_FORTRAN     "@ENABLE_FORTRAN@")
   set(AXOM_USE_CUDA           "@AXOM_USE_CUDA@")
   set(AXOM_USE_HIP            "@AXOM_USE_HIP@")
@@ -77,6 +79,7 @@ if(NOT AXOM_FOUND)
   # Configuration for Axom compiler defines
   set(AXOM_DEBUG_DEFINE         "@AXOM_DEBUG_DEFINE@")
   set(AXOM_DEBUG_DEFINE_STRING  "@AXOM_DEBUG_DEFINE_STRING@")
+  set(AXOM_DEFAULT_HOST_ALLOCATOR "@AXOM_DEFAULT_HOST_ALLOCATOR@")
 
   # Component-specific options
   set(AXOM_SIDRE_IO_USE_SCALAR_STATE_STRING "@AXOM_SIDRE_IO_USE_SCALAR_STATE_STRING@")
@@ -163,8 +166,12 @@ if(NOT AXOM_FOUND)
   # conduit
   if(AXOM_USE_CONDUIT)
     set(AXOM_CONDUIT_DIR  "@CONDUIT_DIR@")
+    set(AXOM_CONDUIT_PYTHON_MODULE_DIR  "@CONDUIT_PYTHON_MODULE_DIR@")
     if(NOT CONDUIT_DIR) 
       set(CONDUIT_DIR ${AXOM_CONDUIT_DIR}) 
+    endif()
+    if(NOT CONDUIT_PYTHON_MODULE_DIR AND AXOM_CONDUIT_PYTHON_MODULE_DIR)
+      set(CONDUIT_PYTHON_MODULE_DIR "${AXOM_CONDUIT_PYTHON_MODULE_DIR}")
     endif()
 
     # Load mpi targets because we require the optional Conduit mpi targets

@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_SEQ_EXEC_HPP_
-#define AXOM_SEQ_EXEC_HPP_
+#pragma once
 
 #include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
@@ -13,11 +12,6 @@
 // RAJA includes
 #ifdef AXOM_USE_RAJA
   #include "RAJA/RAJA.hpp"
-#endif
-
-// Umpire includes
-#ifdef AXOM_USE_UMPIRE
-  #include "umpire/Umpire.hpp"
 #endif
 
 namespace axom
@@ -52,25 +46,21 @@ struct execution_space<SEQ_EXEC>
 
   using sync_policy = void;
 
-#ifdef AXOM_USE_UMPIRE
+  static constexpr int BlockSize = 1;
+
+#ifdef AXOM_DEFAULT_HOST_ALLOCATOR_USES_UMPIRE_HOST
   static constexpr MemorySpace memory_space = MemorySpace::Host;
 #else
-  static constexpr MemorySpace memory_space = MemorySpace::Dynamic;
+  static constexpr MemorySpace memory_space = MemorySpace::Malloc;
 #endif
 
-  static constexpr bool async() noexcept { return false; }
-  static constexpr bool valid() noexcept { return true; }
-  static constexpr bool onDevice() noexcept { return false; }
-  static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; }
-  static int allocatorID() noexcept
-  {
-#ifdef AXOM_USE_UMPIRE
-    return axom::getUmpireResourceAllocatorID(umpire::resource::Host);
-#else
-    return axom::getDefaultAllocatorID();
-#endif
-  }
-  static constexpr runtime_policy::Policy runtimePolicy() noexcept
+  AXOM_HOST_DEVICE static constexpr bool async() noexcept { return false; }
+  AXOM_HOST_DEVICE static constexpr bool valid() noexcept { return true; }
+  AXOM_HOST_DEVICE static constexpr bool onDevice() noexcept { return false; }
+  AXOM_HOST_DEVICE static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; }
+
+  static int allocatorID() noexcept { return axom::detail::getDefaultHostAllocatorID(); }
+  AXOM_HOST_DEVICE static constexpr runtime_policy::Policy runtimePolicy() noexcept
   {
     return runtime_policy::Policy::seq;
   }
@@ -91,5 +81,3 @@ struct execution_space<SEQ_EXEC>
 };
 
 }  // namespace axom
-
-#endif  // AXOM_SEQ_EXEC_HPP_

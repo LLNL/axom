@@ -11,11 +11,13 @@
  */
 
 #include <iterator>
+#include <type_traits>
 #include "gtest/gtest.h"
 
 #include "axom/core/execution/runtime_policy.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
+#include "axom/slam/MapBuilders.hpp"
 
 namespace
 {
@@ -60,7 +62,7 @@ bool constructAndTestMap()
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("Creating " << slam::util::TypeToString<T>::to_string() << " map on the set ");
+  SLIC_INFO("Creating map on the set ");
 
   slam::Map<T, BaseSet> m(&s);
   EXPECT_TRUE(m.isValid());
@@ -145,6 +147,75 @@ TEST(slam_map, map_builder)
   }
 }
 
+TEST(slam_map, make_map_array_view_storage)
+{
+  SetType s(MAX_SET_SIZE);
+  BaseSet* s_ptr = &s;
+
+  double data[MAX_SET_SIZE] = {};
+  for(SetPosition i = 0; i < MAX_SET_SIZE; ++i)
+  {
+    data[i] = 0.25 * i;
+  }
+
+  auto m = slam::make_map(s_ptr, data);
+  using Indirection = policies::ArrayViewIndirection<SetPosition, double>;
+  using Stride = policies::StrideOne<SetPosition>;
+  static_assert(std::is_same_v<decltype(m), slam::Map<double, BaseSet, Indirection, Stride>>,
+                "make_map(set, ptr) yields an ArrayView-backed stride-one Map");
+
+  EXPECT_TRUE(m.isValid());
+  EXPECT_EQ(m.size(), s.size());
+  EXPECT_EQ(m.stride(), 1);
+  for(SetPosition i = 0; i < MAX_SET_SIZE; ++i)
+  {
+    EXPECT_DOUBLE_EQ(m(i), data[i]);
+  }
+}
+
+TEST(slam_map, make_map_runtime_stride_array_view_storage)
+{
+  SetType s(3);
+  BaseSet* s_ptr = &s;
+
+  constexpr SetPosition stride = 2;
+  double data[3 * stride] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+
+  auto m = slam::make_map(s_ptr, stride, data);
+  using Indirection = policies::ArrayViewIndirection<SetPosition, double>;
+  using Stride = policies::RuntimeStride<SetPosition>;
+  static_assert(std::is_same_v<decltype(m), slam::Map<double, BaseSet, Indirection, Stride>>,
+                "make_map(set, stride, ptr) yields an ArrayView-backed runtime-stride Map");
+
+  EXPECT_TRUE(m.isValid());
+  EXPECT_EQ(m.size(), s.size());
+  EXPECT_EQ(m.stride(), stride);
+  EXPECT_DOUBLE_EQ(m(0, 0), 1.0);
+  EXPECT_DOUBLE_EQ(m(0, 1), 2.0);
+  EXPECT_DOUBLE_EQ(m(2, 0), 5.0);
+  EXPECT_DOUBLE_EQ(m(2, 1), 6.0);
+}
+
+TEST(slam_map, make_map_compile_time_stride_array_view_storage)
+{
+  SetType s(2);
+  BaseSet* s_ptr = &s;
+
+  double data[4] = {10.0, 11.0, 20.0, 21.0};
+
+  auto m = slam::make_map_ct<2>(s_ptr, data);
+  using Indirection = policies::ArrayViewIndirection<SetPosition, double>;
+  using Stride = policies::CompileTimeStride<SetPosition, 2>;
+  static_assert(std::is_same_v<decltype(m), slam::Map<double, BaseSet, Indirection, Stride>>,
+                "make_map_ct yields an ArrayView-backed compile-time-stride Map");
+
+  EXPECT_TRUE(m.isValid());
+  EXPECT_EQ(m.size(), s.size());
+  EXPECT_EQ(m.stride(), 2);
+  EXPECT_DOUBLE_EQ(m(1, 0), 20.0);
+  EXPECT_DOUBLE_EQ(m(1, 1), 21.0);
+}
+
 template <typename T, typename StrideType>
 void constructAndTestMapWithStride(int stride)
 {
@@ -155,8 +226,7 @@ void constructAndTestMapWithStride(int stride)
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string() << " map with stride "
-                          << stride << " on the set ");
+  SLIC_INFO("\nCreating map with stride " << stride << " on the set ");
 
   using MapType = slam::Map<T, BaseSet, VecIndirection<T>, StrideType>;
   MapType m(&s, 0, stride);
@@ -211,7 +281,7 @@ TEST(slam_map, iterate)
   SetType s(MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("Creating '" << slam::util::TypeToString<double>::to_string() << "' map on the set ");
+  SLIC_INFO("Creating map on the set ");
   RealMap m(&s);
   EXPECT_TRUE(m.isValid());
 
@@ -538,19 +608,18 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTestStride1)
 
   SLIC_INFO("\nSetting the elements.");
   const double multFac = 100.0001;
-  axom::for_all<ExecSpace>(this->m_set.size(), AXOM_LAMBDA(int index) { m(index) = index * multFac; });
+  axom::for_all<ExecSpace>(this->m_set.size(),
+                           [=] AXOM_HOST_DEVICE(int index) { m(index) = index * multFac; });
 
   SLIC_INFO("\nChecking the elements.");
   int totalSize = this->m_set.size() * stride;
   axom::Array<int> isValid(totalSize, totalSize, this->m_unifiedAllocatorId);
   const auto isValid_view = isValid.view();
 
-  axom::for_all<ExecSpace>(
-    this->m_set.size(),
-    AXOM_LAMBDA(int index) {
-      bool entryValid = (m(index) == index * multFac);
-      isValid_view[index] = entryValid;
-    });
+  axom::for_all<ExecSpace>(this->m_set.size(), [=] AXOM_HOST_DEVICE(int index) {
+    bool entryValid = (m(index) == index * multFac);
+    isValid_view[index] = entryValid;
+  });
 
   for(int validEntry : isValid)
   {
@@ -576,29 +645,25 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTestStride3)
   SLIC_INFO("\nSetting the elements.");
   const double multFac = 100.0001;
   const double multFac2 = 1.010;
-  axom::for_all<ExecSpace>(
-    this->m_set.size(),
-    AXOM_LAMBDA(int index) {
-      for(int comp = 0; comp < stride; comp++)
-      {
-        m(index, comp) = index * multFac + comp * multFac2;
-      }
-    });
+  axom::for_all<ExecSpace>(this->m_set.size(), [=] AXOM_HOST_DEVICE(int index) {
+    for(int comp = 0; comp < stride; comp++)
+    {
+      m(index, comp) = index * multFac + comp * multFac2;
+    }
+  });
 
   SLIC_INFO("\nChecking the elements.");
   int totalSize = this->m_set.size() * stride;
   axom::Array<int> isValid(totalSize, totalSize, this->m_unifiedAllocatorId);
   const auto isValid_view = isValid.data();
 
-  axom::for_all<ExecSpace>(
-    this->m_set.size(),
-    AXOM_LAMBDA(int index) {
-      for(int comp = 0; comp < stride; comp++)
-      {
-        bool entryValid = (m(index, comp) == index * multFac + comp * multFac2);
-        isValid_view[index * stride + comp] = entryValid;
-      }
-    });
+  axom::for_all<ExecSpace>(this->m_set.size(), [=] AXOM_HOST_DEVICE(int index) {
+    for(int comp = 0; comp < stride; comp++)
+    {
+      bool entryValid = (m(index, comp) == index * multFac + comp * multFac2);
+      isValid_view[index * stride + comp] = entryValid;
+    }
+  });
 
   for(int validEntry : isValid)
   {
@@ -627,17 +692,15 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest2DStride)
   const double multFac = 100.0001;
   const double multFac2 = 1.00100;
   const double multFac3 = 0.10010;
-  axom::for_all<ExecSpace>(
-    this->m_set.size(),
-    AXOM_LAMBDA(int index) {
-      for(int i = 0; i < shape[0]; i++)
+  axom::for_all<ExecSpace>(this->m_set.size(), [=] AXOM_HOST_DEVICE(int index) {
+    for(int i = 0; i < shape[0]; i++)
+    {
+      for(int j = 0; j < shape[1]; j++)
       {
-        for(int j = 0; j < shape[1]; j++)
-        {
-          m(index, i, j) = index * multFac + i * multFac2 + j * multFac3;
-        }
+        m(index, i, j) = index * multFac + i * multFac2 + j * multFac3;
       }
-    });
+    }
+  });
 
   SLIC_INFO("\nChecking the elements.");
 
@@ -699,20 +762,18 @@ AXOM_TYPED_TEST(slam_map_templated, constructAndTest3DStride)
   const double multFac2 = 1.00100;
   const double multFac3 = 0.10010;
   const double multFac4 = 0.01001;
-  axom::for_all<ExecSpace>(
-    this->m_set.size(),
-    AXOM_LAMBDA(int index) {
-      for(int i = 0; i < shape[0]; i++)
+  axom::for_all<ExecSpace>(this->m_set.size(), [=] AXOM_HOST_DEVICE(int index) {
+    for(int i = 0; i < shape[0]; i++)
+    {
+      for(int j = 0; j < shape[1]; j++)
       {
-        for(int j = 0; j < shape[1]; j++)
+        for(int k = 0; k < shape[2]; k++)
         {
-          for(int k = 0; k < shape[2]; k++)
-          {
-            m(index, i, j, k) = index * multFac + i * multFac2 + j * multFac3 + k * multFac4;
-          }
+          m(index, i, j, k) = index * multFac + i * multFac2 + j * multFac3 + k * multFac4;
         }
       }
-    });
+    }
+  });
 
   SLIC_INFO("\nChecking the elements.");
 

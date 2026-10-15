@@ -5,6 +5,7 @@ install-
 .project
 .settings
 build-*
+build/
 install-*
 _axom_build_and_test_*
 *.pyc
@@ -21,3 +22,4 @@ uberenv_libs
 .idea
 *.opendb
 scripts/make_local_branch_from_fork_pr.sh
+slirp.out

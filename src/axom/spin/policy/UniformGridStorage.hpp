@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_SPIN_POLICY_UGRID_STORAGE_HPP
-#define AXOM_SPIN_POLICY_UGRID_STORAGE_HPP
+#pragma once
 
 #include "axom/core/Array.hpp"
 #include "axom/core/execution/for_all.hpp"
@@ -175,7 +174,8 @@ struct FlatGridStorage
   {
     axom::exclusive_scan<ExecSpace>(binSizes, m_binOffsets);
     axom::ReduceSum<ExecSpace, IndexType> total_elems(0);
-    for_all<ExecSpace>(binSizes.size(), AXOM_LAMBDA(IndexType idx) { total_elems += binSizes[idx]; });
+    for_all<ExecSpace>(binSizes.size(),
+                       [=] AXOM_HOST_DEVICE(IndexType idx) { total_elems += binSizes[idx]; });
     m_binData.resize(total_elems.get());
   }
 
@@ -279,4 +279,3 @@ struct FlatGridView
 }  // namespace policy
 }  // namespace spin
 }  // namespace axom
-#endif  // AXOM_SPIN_POLICY_UGRID_STORAGE_HPP

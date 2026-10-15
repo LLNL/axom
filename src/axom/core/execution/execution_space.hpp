@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_EXECUTIONSPACE_HPP_
-#define AXOM_EXECUTIONSPACE_HPP_
+#pragma once
 
 #include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
@@ -33,7 +32,7 @@
  *    with OpenMp, i.e., RAJA_ENABLE_OPENMP must be defined in the generated
  *    RAJA/config.hpp.
  *
- *    The default memory allocator when using this execution space is HOST.
+ *    The default memory allocator when using this execution space is malloc.
  *
  *    When using this execution space, the data must reside on CPU/host memory.
  *
@@ -85,12 +84,13 @@ struct execution_space
 
   static constexpr MemorySpace memory_space = MemorySpace::Dynamic;
 
-  static constexpr bool async() noexcept { return false; }
-  static constexpr bool valid() noexcept { return false; }
-  static constexpr bool onDevice() noexcept { return false; }
-  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; }
+  AXOM_HOST_DEVICE static constexpr bool async() noexcept { return false; }
+  AXOM_HOST_DEVICE static constexpr bool valid() noexcept { return false; }
+  AXOM_HOST_DEVICE static constexpr bool onDevice() noexcept { return false; }
+  AXOM_HOST_DEVICE static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; }
+
   static int allocatorID() noexcept { return axom::INVALID_ALLOCATOR_ID; }
-  static constexpr runtime_policy::Policy runtimePolicy() noexcept
+  AXOM_HOST_DEVICE static constexpr runtime_policy::Policy runtimePolicy() noexcept
   {
     return runtime_policy::Policy::seq;
   }
@@ -152,5 +152,3 @@ inline int policyToDefaultAllocatorID(axom::runtime_policy::Policy policy)
 }
 
 }  // namespace axom
-
-#endif  // AXOM_EXECUTIONSPACE_HPP_

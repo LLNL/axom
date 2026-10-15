@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef MINT_EXECUTION_HELPERS_HPP_
-#define MINT_EXECUTION_HELPERS_HPP_
+#pragma once
 
 // mint includes
 #include "axom/mint/config.hpp"     // for compile-time definitions
@@ -41,7 +40,7 @@ namespace internal
  *
  */
 
-template <typename ExecPolicy, int NDIM, int NNODES, typename FOR_ALL_FUNCTOR, typename MeshType, typename KernelType>
+template <typename ExecPolicy, int NDIM, int NNODES, int MAX_NODES, typename FOR_ALL_FUNCTOR, typename MeshType, typename KernelType>
 inline void for_all_coords(const FOR_ALL_FUNCTOR& for_all_nodes, const MeshType& m, KernelType&& kernel)
 {
   SLIC_ERROR_IF(m.getMeshType() == STRUCTURED_UNIFORM_MESH, "Not valid for UniformMesh.");
@@ -49,6 +48,7 @@ inline void for_all_coords(const FOR_ALL_FUNCTOR& for_all_nodes, const MeshType&
 
   AXOM_STATIC_ASSERT_MSG(NDIM >= 1 && NDIM <= 3, "NDIM must be a valid dimension.");
   AXOM_STATIC_ASSERT_MSG(NNODES > 0, "NNODES must be greater than zero.");
+  AXOM_STATIC_ASSERT_MSG(MAX_NODES >= NNODES, "MAX_NODES must cover the active node count.");
 
   constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
   AXOM_STATIC_ASSERT(valid_mesh_type);
@@ -85,11 +85,11 @@ inline void for_all_coords(const FOR_ALL_FUNCTOR& for_all_nodes, const MeshType&
   for_all_nodes(
     ExecPolicy(),
     m,
-    AXOM_LAMBDA(IndexType objectID, const IndexType* nodeIDs, IndexType numNodes) {
+    [=] AXOM_HOST_DEVICE(IndexType objectID, const IndexType* nodeIDs, IndexType numNodes) {
       AXOM_UNUSED_VAR(numNodes);
       assert(numNodes == NNODES);
 
-      double localCoords[NDIM * NNODES];
+      double localCoords[NDIM * MAX_NODES] = {0.};
       for(int i = 0; i < NNODES; ++i)
       {
         const int i_offset = NDIM * i;
@@ -113,5 +113,3 @@ inline void for_all_coords(const FOR_ALL_FUNCTOR& for_all_nodes, const MeshType&
 } /* namespace internal */
 } /* namespace mint     */
 } /* namespace axom     */
-
-#endif /* MINT_EXECUTION_HELPERS_HPP_ */

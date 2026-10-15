@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_QUEST_MESH_TESTER_DETAIL_HPP_
-#define AXOM_QUEST_MESH_TESTER_DETAIL_HPP_
+#pragma once
 
 // Axom includes
 #include "axom/config.hpp"
@@ -24,7 +23,7 @@
   __GNUC_MINOR__ == 1
   #define MESH_TESTER_MUTABLE_LAMBDA [&]
 #else
-  #define MESH_TESTER_MUTABLE_LAMBDA AXOM_LAMBDA
+  #define MESH_TESTER_MUTABLE_LAMBDA [=] AXOM_HOST_DEVICE
 #endif
 
 namespace axom
@@ -349,7 +348,7 @@ struct CandidateFinder<AccelType::ImplicitGrid, ExecSpace, FloatType>
     // Get the global bounding box.
     mint::for_all_nodes<ExecSpace, mint::xargs::xyz>(
       this->m_surfaceMesh,
-      AXOM_LAMBDA(IndexType, double x, double y, double z) {
+      [=] AXOM_HOST_DEVICE(IndexType, double x, double y, double z) {
         xmin.min(x);
         xmax.max(x);
         ymin.min(y);
@@ -444,7 +443,8 @@ struct CandidateFinder<AccelType::UniformGrid, ExecSpace, FloatType>
 
     axom::Array<IndexType, 1, Space> indices(this->m_aabbs.size());
     const auto indices_v = indices.view();
-    for_all<ExecSpace>(this->m_aabbs.size(), AXOM_LAMBDA(IndexType idx) { indices_v[idx] = idx; });
+    for_all<ExecSpace>(this->m_aabbs.size(),
+                       [=] AXOM_HOST_DEVICE(IndexType idx) { indices_v[idx] = idx; });
 
     using FlatStorage = spin::policy::FlatGridStorage<IndexType>;
 
@@ -470,5 +470,3 @@ struct CandidateFinder<AccelType::UniformGrid, ExecSpace, FloatType>
 }  // namespace axom
 
 #undef MESH_TESTER_MUTABLE_LAMBDA
-
-#endif  // AXOM_QUEST_MESH_TESTER_DETAIL_HPP_

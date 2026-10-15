@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef MINT_FOR_ALL_FACES_HPP_
-#define MINT_FOR_ALL_FACES_HPP_
+#pragma once
 
 // Axom core includes
 #include "axom/config.hpp"                          // compile time definitions
@@ -31,6 +30,10 @@ namespace mint
 {
 namespace internal
 {
+constexpr int STRUCTURED_FACE_NODES_2D = 2;
+constexpr int STRUCTURED_FACE_NODES_3D = 4;
+constexpr int STRUCTURED_MAX_FACE_NODES = STRUCTURED_FACE_NODES_3D;
+
 namespace helpers
 {
 //------------------------------------------------------------------------------
@@ -44,13 +47,10 @@ inline void for_all_I_faces(xargs::ij, const StructuredMesh& m, KernelType&& ker
   const IndexType Nj = m.getCellResolution(J_DIRECTION);
 
   axom::StackArray<IndexType, 2> i_range {{0, Ni}}, j_range {{0, Nj}};
-  axom::for_all<ExecPolicy>(
-    i_range,
-    j_range,
-    AXOM_LAMBDA(IndexType i, IndexType j) {
-      const IndexType faceID = i + j * INodeResolution;
-      kernel(faceID, i, j);
-    });
+  axom::for_all<ExecPolicy>(i_range, j_range, [=] AXOM_HOST_DEVICE(IndexType i, IndexType j) {
+    const IndexType faceID = i + j * INodeResolution;
+    kernel(faceID, i, j);
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -66,14 +66,14 @@ inline void for_all_I_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   const IndexType Nk = m.getCellResolution(K_DIRECTION);
 
   axom::StackArray<IndexType, 2> i_range {{0, Ni}}, j_range {{0, Nj}}, k_range {{0, Nk}};
-  axom::for_all<ExecPolicy>(
-    i_range,
-    j_range,
-    k_range,
-    AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
-      const IndexType faceID = i + j * INodeResolution + k * numIFacesInKSlice;
-      kernel(faceID, i, j, k);
-    });
+  axom::for_all<ExecPolicy>(i_range,
+                            j_range,
+                            k_range,
+                            [=] AXOM_HOST_DEVICE(IndexType i, IndexType j, IndexType k) {
+                              const IndexType faceID =
+                                i + j * INodeResolution + k * numIFacesInKSlice;
+                              kernel(faceID, i, j, k);
+                            });
 }
 
 //------------------------------------------------------------------------------
@@ -88,13 +88,10 @@ inline void for_all_J_faces(xargs::ij, const StructuredMesh& m, KernelType&& ker
   const IndexType Nj = m.getNodeResolution(J_DIRECTION);
 
   axom::StackArray<IndexType, 2> i_range {{0, Ni}}, j_range {{0, Nj}};
-  axom::for_all<ExecPolicy>(
-    i_range,
-    j_range,
-    AXOM_LAMBDA(IndexType i, IndexType j) {
-      const IndexType faceID = numIFaces + i + j * ICellResolution;
-      kernel(faceID, i, j);
-    });
+  axom::for_all<ExecPolicy>(i_range, j_range, [=] AXOM_HOST_DEVICE(IndexType i, IndexType j) {
+    const IndexType faceID = numIFaces + i + j * ICellResolution;
+    kernel(faceID, i, j);
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -111,16 +108,15 @@ inline void for_all_J_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   const IndexType Nk = m.getCellResolution(K_DIRECTION);
 
   axom::StackArray<IndexType, 2> i_range {{0, Ni}}, j_range {{0, Nj}}, k_range {{0, Nk}};
-  axom::for_all<ExecPolicy>(
-    i_range,
-    j_range,
-    k_range,
-    AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
-      const IndexType jp = j * ICellResolution;
-      const IndexType kp = k * numJFacesInKSlice;
-      const IndexType faceID = numIFaces + i + jp + kp;
-      kernel(faceID, i, j, k);
-    });
+  axom::for_all<ExecPolicy>(i_range,
+                            j_range,
+                            k_range,
+                            [=] AXOM_HOST_DEVICE(IndexType i, IndexType j, IndexType k) {
+                              const IndexType jp = j * ICellResolution;
+                              const IndexType kp = k * numJFacesInKSlice;
+                              const IndexType faceID = numIFaces + i + jp + kp;
+                              kernel(faceID, i, j, k);
+                            });
 }
 
 //------------------------------------------------------------------------------
@@ -137,16 +133,15 @@ inline void for_all_K_faces(xargs::ijk, const StructuredMesh& m, KernelType&& ke
   const IndexType Nk = m.getNodeResolution(K_DIRECTION);
 
   axom::StackArray<IndexType, 2> i_range {{0, Ni}}, j_range {{0, Nj}}, k_range {{0, Nk}};
-  axom::for_all<ExecPolicy>(
-    i_range,
-    j_range,
-    k_range,
-    AXOM_LAMBDA(IndexType i, IndexType j, IndexType k) {
-      const IndexType jp = j * ICellResolution;
-      const IndexType kp = k * cellKp;
-      const IndexType faceID = numIJFaces + i + jp + kp;
-      kernel(faceID, i, j, k);
-    });
+  axom::for_all<ExecPolicy>(i_range,
+                            j_range,
+                            k_range,
+                            [=] AXOM_HOST_DEVICE(IndexType i, IndexType j, IndexType k) {
+                              const IndexType jp = j * ICellResolution;
+                              const IndexType kp = k * cellKp;
+                              const IndexType faceID = numIJFaces + i + jp + kp;
+                              kernel(faceID, i, j, k);
+                            });
 }
 
 } /* namespace helpers */
@@ -178,22 +173,23 @@ inline void for_all_faces_impl(xargs::nodeids, const StructuredMesh& m, KernelTy
   {
     const IndexType numIFaces = m.getTotalNumFaces(I_DIRECTION);
 
-    helpers::for_all_I_faces<ExecPolicy>(
-      xargs::ij(),
-      m,
-      AXOM_LAMBDA(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType AXOM_UNUSED_PARAM(j)) {
-        IndexType nodes[2];
-        nodes[0] = faceID;
-        nodes[1] = nodes[0] + cellNodeOffset3;
-        kernel(faceID, nodes, 2);
-      });
+    helpers::for_all_I_faces<ExecPolicy>(xargs::ij(),
+                                         m,
+                                         [=] AXOM_HOST_DEVICE(IndexType faceID,
+                                                              IndexType AXOM_UNUSED_PARAM(i),
+                                                              IndexType AXOM_UNUSED_PARAM(j)) {
+                                           IndexType nodes[STRUCTURED_MAX_FACE_NODES] = {0};
+                                           nodes[0] = faceID;
+                                           nodes[1] = nodes[0] + cellNodeOffset3;
+                                           kernel(faceID, nodes, 2);
+                                         });
 
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType j) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType j) {
         const IndexType shiftedID = faceID - numIFaces;
-        IndexType nodes[2];
+        IndexType nodes[STRUCTURED_MAX_FACE_NODES] = {0};
         nodes[0] = shiftedID + j;
         nodes[1] = nodes[0] + 1;
         kernel(faceID, nodes, 2);
@@ -215,27 +211,26 @@ inline void for_all_faces_impl(xargs::nodeids, const StructuredMesh& m, KernelTy
     const IndexType cellNodeOffset5 = offsets[5];
     const IndexType cellNodeOffset7 = offsets[7];
 
-    helpers::for_all_I_faces<ExecPolicy>(
-      xargs::ijk(),
-      m,
-      AXOM_LAMBDA(IndexType faceID,
-                  IndexType AXOM_UNUSED_PARAM(i),
-                  IndexType AXOM_UNUSED_PARAM(j),
-                  IndexType k) {
-        IndexType nodes[4];
-        nodes[0] = faceID + k * INodeResolution;
-        nodes[1] = nodes[0] + cellNodeOffset4;
-        nodes[2] = nodes[0] + cellNodeOffset7;
-        nodes[3] = nodes[0] + cellNodeOffset3;
-        kernel(faceID, nodes, 4);
-      });
+    helpers::for_all_I_faces<ExecPolicy>(xargs::ijk(),
+                                         m,
+                                         [=] AXOM_HOST_DEVICE(IndexType faceID,
+                                                              IndexType AXOM_UNUSED_PARAM(i),
+                                                              IndexType AXOM_UNUSED_PARAM(j),
+                                                              IndexType k) {
+                                           IndexType nodes[STRUCTURED_MAX_FACE_NODES] = {0};
+                                           nodes[0] = faceID + k * INodeResolution;
+                                           nodes[1] = nodes[0] + cellNodeOffset4;
+                                           nodes[2] = nodes[0] + cellNodeOffset7;
+                                           nodes[3] = nodes[0] + cellNodeOffset3;
+                                           kernel(faceID, nodes, 4);
+                                         });
 
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType j, IndexType k) {
         const IndexType shiftedID = faceID - numIFaces;
-        IndexType nodes[4];
+        IndexType nodes[STRUCTURED_MAX_FACE_NODES] = {0};
         nodes[0] = shiftedID + j + k * JNodeResolution;
         nodes[1] = nodes[0] + 1;
         nodes[2] = nodes[0] + cellNodeOffset5;
@@ -246,9 +241,9 @@ inline void for_all_faces_impl(xargs::nodeids, const StructuredMesh& m, KernelTy
     helpers::for_all_K_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType AXOM_UNUSED_PARAM(i), IndexType j, IndexType k) {
         const IndexType shiftedID = faceID - numIJFaces;
-        IndexType nodes[4];
+        IndexType nodes[STRUCTURED_MAX_FACE_NODES] = {0};
         nodes[0] = shiftedID + j + k * KFaceNodeStride;
         nodes[1] = nodes[0] + 1;
         nodes[2] = nodes[0] + cellNodeOffset2;
@@ -283,12 +278,9 @@ inline void for_all_faces_impl(xargs::nodeids,
 
   const IndexType num_nodes = m.getNumberOfFaceNodes();
 
-  for_all_faces_impl<ExecPolicy>(
-    xargs::index(),
-    m,
-    AXOM_LAMBDA(IndexType faceID) {
-      kernel(faceID, faces_to_nodes_view.data() + faceID * num_nodes, num_nodes);
-    });
+  for_all_faces_impl<ExecPolicy>(xargs::index(), m, [=] AXOM_HOST_DEVICE(IndexType faceID) {
+    kernel(faceID, faces_to_nodes_view.data() + faceID * num_nodes, num_nodes);
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -319,13 +311,10 @@ inline void for_all_faces_impl(xargs::nodeids,
   auto faces_to_nodes_view = on_device ? faces_to_nodes_d.view() : faces_to_nodes_h;
   auto offsets_view = on_device ? offsets_d.view() : offsets_h;
 
-  for_all_faces_impl<ExecPolicy>(
-    xargs::index(),
-    m,
-    AXOM_LAMBDA(IndexType faceID) {
-      const IndexType num_nodes = offsets_view[faceID + 1] - offsets_view[faceID];
-      kernel(faceID, faces_to_nodes_view.data() + offsets_view[faceID], num_nodes);
-    });
+  for_all_faces_impl<ExecPolicy>(xargs::index(), m, [=] AXOM_HOST_DEVICE(IndexType faceID) {
+    const IndexType num_nodes = offsets_view[faceID + 1] - offsets_view[faceID];
+    kernel(faceID, faces_to_nodes_view.data() + offsets_view[faceID], num_nodes);
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -365,7 +354,7 @@ inline void for_all_faces_impl(xargs::cellids, const StructuredMesh& m, KernelTy
     helpers::for_all_I_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j) {
         IndexType cellIDTwo = i + j * cellJp;
         IndexType cellIDOne = cellIDTwo - 1;
         if(i == 0)
@@ -384,7 +373,7 @@ inline void for_all_faces_impl(xargs::cellids, const StructuredMesh& m, KernelTy
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j) {
         IndexType cellIDTwo = i + j * cellJp;
         IndexType cellIDOne = cellIDTwo - cellJp;
         if(j == 0)
@@ -410,7 +399,7 @@ inline void for_all_faces_impl(xargs::cellids, const StructuredMesh& m, KernelTy
     helpers::for_all_I_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         IndexType cellIDTwo = i + j * cellJp + k * cellKp;
         IndexType cellIDOne = cellIDTwo - 1;
         if(i == 0)
@@ -429,7 +418,7 @@ inline void for_all_faces_impl(xargs::cellids, const StructuredMesh& m, KernelTy
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         IndexType cellIDTwo = i + j * cellJp + k * cellKp;
         IndexType cellIDOne = cellIDTwo - cellJp;
         if(j == 0)
@@ -448,7 +437,7 @@ inline void for_all_faces_impl(xargs::cellids, const StructuredMesh& m, KernelTy
     helpers::for_all_K_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         IndexType cellIDTwo = i + j * cellJp + k * cellKp;
         IndexType cellIDOne = cellIDTwo - cellKp;
         if(k == 0)
@@ -487,13 +476,10 @@ inline void for_all_faces_impl(xargs::cellids, const UnstructuredMesh<TOPO>& m, 
 
   auto faces_to_cells_view = on_device ? faces_to_cells_d.view() : faces_to_cells_h;
 
-  for_all_faces_impl<ExecPolicy>(
-    xargs::index(),
-    m,
-    AXOM_LAMBDA(IndexType faceID) {
-      const IndexType offset = 2 * faceID;
-      kernel(faceID, faces_to_cells_view[offset], faces_to_cells_view[offset + 1]);
-    });
+  for_all_faces_impl<ExecPolicy>(xargs::index(), m, [=] AXOM_HOST_DEVICE(IndexType faceID) {
+    const IndexType offset = 2 * faceID;
+    kernel(faceID, faces_to_cells_view[offset], faces_to_cells_view[offset + 1]);
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -547,11 +533,17 @@ inline void for_all_faces_impl(xargs::coords, const UniformMesh& m, KernelType&&
     helpers::for_all_I_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j) {
         const IndexType n0 = i + j * nodeJp;
-        const IndexType nodeIDs[2] = {n0, n0 + nodeJp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + nodeJp;
 
-        double coords[4] = {x0 + i * dx, y0 + j * dy, x0 + i * dx, y0 + (j + 1) * dy};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x0 + i * dx;
+        coords[1] = y0 + j * dy;
+        coords[2] = x0 + i * dx;
+        coords[3] = y0 + (j + 1) * dy;
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -560,11 +552,17 @@ inline void for_all_faces_impl(xargs::coords, const UniformMesh& m, KernelType&&
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j) {
         const IndexType n0 = i + j * nodeJp;
-        const IndexType nodeIDs[2] = {n0, n0 + 1};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + 1;
 
-        double coords[4] = {x0 + i * dx, y0 + j * dy, x0 + (i + 1) * dx, y0 + j * dy};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x0 + i * dx;
+        coords[1] = y0 + j * dy;
+        coords[2] = x0 + (i + 1) * dx;
+        coords[3] = y0 + j * dy;
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -575,22 +573,27 @@ inline void for_all_faces_impl(xargs::coords, const UniformMesh& m, KernelType&&
     helpers::for_all_I_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[4] = {n0, n0 + nodeKp, n0 + nodeJp + nodeKp, n0 + nodeJp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + nodeKp;
+        nodeIDs[2] = n0 + nodeJp + nodeKp;
+        nodeIDs[3] = n0 + nodeJp;
 
-        double coords[12] = {x0 + i * dx,
-                             y0 + j * dy,
-                             z0 + k * dz,
-                             x0 + i * dx,
-                             y0 + j * dy,
-                             z0 + (k + 1) * dz,
-                             x0 + i * dx,
-                             y0 + (j + 1) * dy,
-                             z0 + (k + 1) * dz,
-                             x0 + i * dx,
-                             y0 + (j + 1) * dy,
-                             z0 + k * dz};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x0 + i * dx;
+        coords[1] = y0 + j * dy;
+        coords[2] = z0 + k * dz;
+        coords[3] = x0 + i * dx;
+        coords[4] = y0 + j * dy;
+        coords[5] = z0 + (k + 1) * dz;
+        coords[6] = x0 + i * dx;
+        coords[7] = y0 + (j + 1) * dy;
+        coords[8] = z0 + (k + 1) * dz;
+        coords[9] = x0 + i * dx;
+        coords[10] = y0 + (j + 1) * dy;
+        coords[11] = z0 + k * dz;
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -599,22 +602,27 @@ inline void for_all_faces_impl(xargs::coords, const UniformMesh& m, KernelType&&
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[4] = {n0, n0 + 1, n0 + 1 + nodeKp, n0 + nodeKp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + 1;
+        nodeIDs[2] = n0 + 1 + nodeKp;
+        nodeIDs[3] = n0 + nodeKp;
 
-        double coords[12] = {x0 + i * dx,
-                             y0 + j * dy,
-                             z0 + k * dz,
-                             x0 + (i + 1) * dx,
-                             y0 + j * dy,
-                             z0 + k * dz,
-                             x0 + (i + 1) * dx,
-                             y0 + j * dy,
-                             z0 + (k + 1) * dz,
-                             x0 + i * dx,
-                             y0 + j * dy,
-                             z0 + (k + 1) * dz};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x0 + i * dx;
+        coords[1] = y0 + j * dy;
+        coords[2] = z0 + k * dz;
+        coords[3] = x0 + (i + 1) * dx;
+        coords[4] = y0 + j * dy;
+        coords[5] = z0 + k * dz;
+        coords[6] = x0 + (i + 1) * dx;
+        coords[7] = y0 + j * dy;
+        coords[8] = z0 + (k + 1) * dz;
+        coords[9] = x0 + i * dx;
+        coords[10] = y0 + j * dy;
+        coords[11] = z0 + (k + 1) * dz;
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -623,22 +631,27 @@ inline void for_all_faces_impl(xargs::coords, const UniformMesh& m, KernelType&&
     helpers::for_all_K_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[4] = {n0, n0 + 1, n0 + 1 + nodeJp, n0 + nodeJp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + 1;
+        nodeIDs[2] = n0 + 1 + nodeJp;
+        nodeIDs[3] = n0 + nodeJp;
 
-        double coords[12] = {x0 + i * dx,
-                             y0 + j * dy,
-                             z0 + k * dz,
-                             x0 + (i + 1) * dx,
-                             y0 + j * dy,
-                             z0 + k * dz,
-                             x0 + (i + 1) * dx,
-                             y0 + (j + 1) * dy,
-                             z0 + k * dz,
-                             x0 + i * dx,
-                             y0 + (j + 1) * dy,
-                             z0 + k * dz};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x0 + i * dx;
+        coords[1] = y0 + j * dy;
+        coords[2] = z0 + k * dz;
+        coords[3] = x0 + (i + 1) * dx;
+        coords[4] = y0 + j * dy;
+        coords[5] = z0 + k * dz;
+        coords[6] = x0 + (i + 1) * dx;
+        coords[7] = y0 + (j + 1) * dy;
+        coords[8] = z0 + k * dz;
+        coords[9] = x0 + i * dx;
+        coords[10] = y0 + (j + 1) * dy;
+        coords[11] = z0 + k * dz;
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -680,11 +693,17 @@ inline void for_all_faces_impl(xargs::coords, const RectilinearMesh& m, KernelTy
     helpers::for_all_I_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j) {
         const IndexType n0 = i + j * nodeJp;
-        const IndexType nodeIDs[2] = {n0, n0 + nodeJp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + nodeJp;
 
-        double coords[4] = {x_vals_view[i], y_vals_view[j], x_vals_view[i], y_vals_view[j + 1]};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x_vals_view[i];
+        coords[1] = y_vals_view[j];
+        coords[2] = x_vals_view[i];
+        coords[3] = y_vals_view[j + 1];
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -693,11 +712,17 @@ inline void for_all_faces_impl(xargs::coords, const RectilinearMesh& m, KernelTy
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ij(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j) {
         const IndexType n0 = i + j * nodeJp;
-        const IndexType nodeIDs[2] = {n0, n0 + 1};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + 1;
 
-        double coords[4] = {x_vals_view[i], y_vals_view[j], x_vals_view[i + 1], y_vals_view[j]};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x_vals_view[i];
+        coords[1] = y_vals_view[j];
+        coords[2] = x_vals_view[i + 1];
+        coords[3] = y_vals_view[j];
 
         numerics::Matrix<double> coordsMatrix(dimension, 2, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -717,22 +742,27 @@ inline void for_all_faces_impl(xargs::coords, const RectilinearMesh& m, KernelTy
     helpers::for_all_I_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[4] = {n0, n0 + nodeKp, n0 + nodeJp + nodeKp, n0 + nodeJp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + nodeKp;
+        nodeIDs[2] = n0 + nodeJp + nodeKp;
+        nodeIDs[3] = n0 + nodeJp;
 
-        double coords[12] = {x_vals_view[i],
-                             y_vals_view[j],
-                             z_vals_view[k],
-                             x_vals_view[i],
-                             y_vals_view[j],
-                             z_vals_view[k + 1],
-                             x_vals_view[i],
-                             y_vals_view[j + 1],
-                             z_vals_view[k + 1],
-                             x_vals_view[i],
-                             y_vals_view[j + 1],
-                             z_vals_view[k]};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x_vals_view[i];
+        coords[1] = y_vals_view[j];
+        coords[2] = z_vals_view[k];
+        coords[3] = x_vals_view[i];
+        coords[4] = y_vals_view[j];
+        coords[5] = z_vals_view[k + 1];
+        coords[6] = x_vals_view[i];
+        coords[7] = y_vals_view[j + 1];
+        coords[8] = z_vals_view[k + 1];
+        coords[9] = x_vals_view[i];
+        coords[10] = y_vals_view[j + 1];
+        coords[11] = z_vals_view[k];
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -741,22 +771,27 @@ inline void for_all_faces_impl(xargs::coords, const RectilinearMesh& m, KernelTy
     helpers::for_all_J_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[4] = {n0, n0 + 1, n0 + 1 + nodeKp, n0 + nodeKp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + 1;
+        nodeIDs[2] = n0 + 1 + nodeKp;
+        nodeIDs[3] = n0 + nodeKp;
 
-        double coords[12] = {x_vals_view[i],
-                             y_vals_view[j],
-                             z_vals_view[k],
-                             x_vals_view[i + 1],
-                             y_vals_view[j],
-                             z_vals_view[k],
-                             x_vals_view[i + 1],
-                             y_vals_view[j],
-                             z_vals_view[k + 1],
-                             x_vals_view[i],
-                             y_vals_view[j],
-                             z_vals_view[k + 1]};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x_vals_view[i];
+        coords[1] = y_vals_view[j];
+        coords[2] = z_vals_view[k];
+        coords[3] = x_vals_view[i + 1];
+        coords[4] = y_vals_view[j];
+        coords[5] = z_vals_view[k];
+        coords[6] = x_vals_view[i + 1];
+        coords[7] = y_vals_view[j];
+        coords[8] = z_vals_view[k + 1];
+        coords[9] = x_vals_view[i];
+        coords[10] = y_vals_view[j];
+        coords[11] = z_vals_view[k + 1];
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -765,22 +800,27 @@ inline void for_all_faces_impl(xargs::coords, const RectilinearMesh& m, KernelTy
     helpers::for_all_K_faces<ExecPolicy>(
       xargs::ijk(),
       m,
-      AXOM_LAMBDA(IndexType faceID, IndexType i, IndexType j, IndexType k) {
+      [=] AXOM_HOST_DEVICE(IndexType faceID, IndexType i, IndexType j, IndexType k) {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[4] = {n0, n0 + 1, n0 + 1 + nodeJp, n0 + nodeJp};
+        IndexType nodeIDs[STRUCTURED_MAX_FACE_NODES] = {0};
+        nodeIDs[0] = n0;
+        nodeIDs[1] = n0 + 1;
+        nodeIDs[2] = n0 + 1 + nodeJp;
+        nodeIDs[3] = n0 + nodeJp;
 
-        double coords[12] = {x_vals_view[i],
-                             y_vals_view[j],
-                             z_vals_view[k],
-                             x_vals_view[i + 1],
-                             y_vals_view[j],
-                             z_vals_view[k],
-                             x_vals_view[i + 1],
-                             y_vals_view[j + 1],
-                             z_vals_view[k],
-                             x_vals_view[i],
-                             y_vals_view[j + 1],
-                             z_vals_view[k]};
+        double coords[3 * STRUCTURED_MAX_FACE_NODES] = {0.};
+        coords[0] = x_vals_view[i];
+        coords[1] = y_vals_view[j];
+        coords[2] = z_vals_view[k];
+        coords[3] = x_vals_view[i + 1];
+        coords[4] = y_vals_view[j];
+        coords[5] = z_vals_view[k];
+        coords[6] = x_vals_view[i + 1];
+        coords[7] = y_vals_view[j + 1];
+        coords[8] = z_vals_view[k];
+        coords[9] = x_vals_view[i];
+        coords[10] = y_vals_view[j + 1];
+        coords[11] = z_vals_view[k];
 
         numerics::Matrix<double> coordsMatrix(dimension, 4, coords, NO_COPY);
         kernel(faceID, coordsMatrix, nodeIDs);
@@ -812,15 +852,17 @@ inline void for_all_faces_impl(xargs::coords, const CurvilinearMesh& m, KernelTy
   const int dimension = m.getDimension();
   if(dimension == 2)
   {
-    for_all_coords<ExecPolicy, 2, 2>(for_all_face_nodes_functor(),
-                                     m,
-                                     std::forward<KernelType>(kernel));
+    for_all_coords<ExecPolicy, 2, STRUCTURED_FACE_NODES_2D, STRUCTURED_MAX_FACE_NODES>(
+      for_all_face_nodes_functor(),
+      m,
+      std::forward<KernelType>(kernel));
   }
   else
   {
-    for_all_coords<ExecPolicy, 3, 4>(for_all_face_nodes_functor(),
-                                     m,
-                                     std::forward<KernelType>(kernel));
+    for_all_coords<ExecPolicy, 3, STRUCTURED_FACE_NODES_3D, STRUCTURED_MAX_FACE_NODES>(
+      for_all_face_nodes_functor(),
+      m,
+      std::forward<KernelType>(kernel));
   }
 }
 
@@ -856,8 +898,8 @@ inline void for_all_faces_impl(xargs::coords, const UnstructuredMesh<TOPO>& m, K
     for_all_faces_impl<ExecPolicy>(
       xargs::nodeids(),
       m,
-      AXOM_LAMBDA(IndexType faceID, const IndexType* nodeIDs, IndexType numNodes) {
-        double coords[2 * MAX_FACE_NODES];
+      [=] AXOM_HOST_DEVICE(IndexType faceID, const IndexType* nodeIDs, IndexType numNodes) {
+        double coords[3 * MAX_FACE_NODES] = {0.};
         for(int i = 0; i < numNodes; ++i)
         {
           const IndexType nodeID = nodeIDs[i];
@@ -883,8 +925,8 @@ inline void for_all_faces_impl(xargs::coords, const UnstructuredMesh<TOPO>& m, K
     for_all_faces_impl<ExecPolicy>(
       xargs::nodeids(),
       m,
-      AXOM_LAMBDA(IndexType faceID, const IndexType* nodeIDs, IndexType numNodes) {
-        double coords[3 * MAX_FACE_NODES];
+      [=] AXOM_HOST_DEVICE(IndexType faceID, const IndexType* nodeIDs, IndexType numNodes) {
+        double coords[3 * MAX_FACE_NODES] = {0.};
         for(int i = 0; i < numNodes; ++i)
         {
           const IndexType nodeID = nodeIDs[i];
@@ -945,5 +987,3 @@ inline void for_all_faces(xargs::coords, const Mesh& m, KernelType&& kernel)
 } /* namespace internal */
 } /* namespace mint     */
 } /* namespace axom     */
-
-#endif /* MINT_FOR_ALL_FACES_HPP_ */

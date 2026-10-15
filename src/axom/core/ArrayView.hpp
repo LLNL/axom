@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_ARRAYVIEW_HPP_
-#define AXOM_ARRAYVIEW_HPP_
+#pragma once
 
 #include "axom/core/memory_management.hpp"  // for memory allocation functions
 #include "axom/core/ArrayBase.hpp"
@@ -469,19 +468,8 @@ void ArrayView<T, DIM, SPACE>::determineAllocator() const
 
     if constexpr(SPACE == MemorySpace::Dynamic)
     {
-      auto& rm = umpire::ResourceManager::getInstance();
-
-      using NonConstT = typename std::remove_const<T>::type;
-      // TODO: There's no reason these Umpire methods should take a non-const pointer.
-      if(m_data != nullptr && rm.hasAllocator(const_cast<NonConstT*>(m_data)))
-      {
-        auto alloc = rm.getAllocator(const_cast<NonConstT*>(m_data));
-        m_allocator_id = alloc.getId();
-      }
-      else
-      {
-        m_allocator_id = axom::detail::getAllocatorID<SPACE>();
-      }
+      m_allocator_id = m_data != nullptr ? getAllocatorIDFromPointer(m_data)
+                                         : axom::detail::getAllocatorID<SPACE>();
     }
     else
     {
@@ -571,5 +559,3 @@ void ArrayView<T, DIM, SPACE>::assign(std::initializer_list<T> elems)
 }
 
 } /* namespace axom */
-
-#endif /* AXOM_ARRAYVIEW_HPP_ */

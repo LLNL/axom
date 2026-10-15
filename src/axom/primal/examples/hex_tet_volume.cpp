@@ -166,10 +166,11 @@ void check_intersection_volumes(const Input& params)
 
   // Generate tetrahedra from unit sphere with center (0,0,0)
   int const TET_RESOLUTION = params.tetResolution;
+  const int tetSubdivisionCount = static_cast<int>(std::pow(2.0, TET_RESOLUTION));
   int tet_index = 0;
-  int const NUM_TETS = 4 * std::pow(2, TET_RESOLUTION);
+  int const NUM_TETS = 4 * tetSubdivisionCount;
   axom::Array<TetrahedronType> tets_h(NUM_TETS, NUM_TETS, host_allocator);
-  double step_size = 1.0 / std::pow(2, TET_RESOLUTION);
+  double step_size = 1.0 / tetSubdivisionCount;
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
@@ -181,7 +182,7 @@ void check_intersection_volumes(const Input& params)
     "{: ^80}",
     axom::fmt::format("Tetrahedra are encapsulated by the unit sphere at the origin")));
 
-  for(int i = 0; i < std::pow(2, TET_RESOLUTION); i++)
+  for(int i = 0; i < tetSubdivisionCount; i++)
   {
     for(int j = 0; j <= 1; j++)
     {
@@ -223,9 +224,9 @@ void check_intersection_volumes(const Input& params)
 
   axom::ReduceSum<ExecSpace, double> total_tet_vol(0.0);
 
-  axom::for_all<ExecSpace>(
-    NUM_TETS,
-    AXOM_LAMBDA(axom::IndexType i) { total_tet_vol += tets_view[i].volume(); });
+  axom::for_all<ExecSpace>(NUM_TETS, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+    total_tet_vol += tets_view[i].volume();
+  });
 
   SLIC_INFO(axom::fmt::format(
     "{:-^80}",
@@ -242,25 +243,19 @@ void check_intersection_volumes(const Input& params)
   // every pair of hexahedron and tetrahedron indices.
   if(NUM_HEXES > NUM_TETS)
   {
-    axom::for_all<ExecSpace>(
-      NUM_HEXES * NUM_TETS,
-      AXOM_LAMBDA(axom::IndexType i) {
-        total_intersect_vol += intersection_volume(hexes_view[i / NUM_TETS],
-                                                   tets_view[i % NUM_TETS],
-                                                   EPS,
-                                                   tryFixOrientation);
-      });
+    axom::for_all<ExecSpace>(NUM_HEXES * NUM_TETS, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+      total_intersect_vol +=
+        intersection_volume(hexes_view[i / NUM_TETS], tets_view[i % NUM_TETS], EPS, tryFixOrientation);
+    });
   }
   else
   {
-    axom::for_all<ExecSpace>(
-      NUM_HEXES * NUM_TETS,
-      AXOM_LAMBDA(axom::IndexType i) {
-        total_intersect_vol += intersection_volume(hexes_view[i % NUM_HEXES],
-                                                   tets_view[i / NUM_HEXES],
-                                                   EPS,
-                                                   tryFixOrientation);
-      });
+    axom::for_all<ExecSpace>(NUM_HEXES * NUM_TETS, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
+      total_intersect_vol += intersection_volume(hexes_view[i % NUM_HEXES],
+                                                 tets_view[i / NUM_HEXES],
+                                                 EPS,
+                                                 tryFixOrientation);
+    });
   }
 
   SLIC_INFO(axom::fmt::format("{:-^80}",

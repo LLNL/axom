@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#pragma once
+
 #include "axom/config.hpp"
 
 // Implementation requires Conduit.
@@ -31,15 +33,12 @@ namespace detail
 namespace marching_cubes
 {
 /*!
-  @brief Computations for MarchingCubesSingleDomain
-
-  Spatial dimension and execution space are here as template
-  parameters, to keep out of higher level classes MarchingCubes and
-  MarchingCubesSingleDomain.
-
-  ExecSpace is the general execution space, like axom::SEQ_EXEC and
-  axom::CUDA_EXEC<256>.
-*/
+ * @brief Implements Marching Cubes for one dimension and execution space.
+ *
+ * @tparam DIM Spatial dimension.
+ * @tparam ExecSpace Execution space for parallel work.
+ * @tparam SequentialExecSpace Execution space for the serial scan.
+ */
 template <int DIM, typename ExecSpace, typename SequentialExecSpace>
 class MarchingCubesImpl : public MarchingCubesSingleDomain::ImplBase
 {
@@ -75,23 +74,18 @@ public:
   }
 
   /*!
-    @brief Initialize data to a blueprint domain.
-    @param dom Blueprint structured mesh domain
-    @param topologyName Name of mesh topology (see blueprint
-           mesh documentation)
-    @param maskFieldName Name of integer cell mask function is in dom
-
-    Set up views to domain data and allocate other data to work on the
-    given domain.
-
-    The above data from the domain MUST be in a memory space
-    compatible with ExecSpace.
-  */
+   * @brief Prepare views and scratch arrays for a Blueprint domain.
+   * @param[in] dom Blueprint structured-mesh domain.
+   * @param[in] topologyName Name of the mesh topology in \a dom.
+   * @param[in] maskFieldName Name of the optional integer cell-mask field.
+   *
+   * Arrays in \a dom must be accessible from \c ExecSpace.
+   */
   AXOM_HOST void setDomain(const conduit::Node& dom,
                            const std::string& topologyName,
                            const std::string& maskFieldName) override
   {
-    // Time this due to potentially slow memory allocation
+    // Include potentially expensive memory allocation in the initialization timing.
     AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::initialize");
     clearDomain();
 
@@ -126,9 +120,9 @@ public:
   }
 
   /*!
-    @brief Set the scale field name
-    @param fcnFieldName Name of nodal function is in dom
-  */
+   * @brief Select the nodal scalar field to contour.
+   * @param[in] fcnFieldName Name of the vertex-associated scalar field.
+   */
   void setFunctionField(const std::string& fcnFieldName) override
   {
     m_fcnView = m_mvu.template getConstFieldView<double>(fcnFieldName, false);
@@ -172,16 +166,16 @@ public:
     const auto order = m_caseIdsMDMapper.getStrideOrder();
     if(int(order) & int(axom::ArrayStrideOrder::COLUMN))
     {
-      axom::for_all<ExecSpace>(
-        m_bShape,
-        AXOM_LAMBDA(axom::IndexType i, axom::IndexType j) { mcu.computeCaseId(i, j); });
+      axom::for_all<ExecSpace>(m_bShape, [=] AXOM_HOST_DEVICE(axom::IndexType i, axom::IndexType j) {
+        mcu.computeCaseId(i, j);
+      });
     }
     else
     {
       axom::StackArray<axom::IndexType, 2> shapeJI {{m_bShape[1], m_bShape[0]}};
-      axom::for_all<ExecSpace>(
-        shapeJI,
-        AXOM_LAMBDA(axom::IndexType j, axom::IndexType i) { mcu.computeCaseId(i, j); });
+      axom::for_all<ExecSpace>(shapeJI, [=] AXOM_HOST_DEVICE(axom::IndexType j, axom::IndexType i) {
+        mcu.computeCaseId(i, j);
+      });
     }
   }
 
@@ -197,7 +191,7 @@ public:
     {
       axom::for_all<ExecSpace>(
         m_bShape,
-        AXOM_LAMBDA(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
+        [=] AXOM_HOST_DEVICE(axom::IndexType i, axom::IndexType j, axom::IndexType k) {
           mcu.computeCaseId(i, j, k);
         });
     }
@@ -206,17 +200,13 @@ public:
       axom::StackArray<axom::IndexType, 3> shapeKJI {{m_bShape[2], m_bShape[1], m_bShape[0]}};
       axom::for_all<ExecSpace>(
         shapeKJI,
-        AXOM_LAMBDA(axom::IndexType k, axom::IndexType j, axom::IndexType i) {
+        [=] AXOM_HOST_DEVICE(axom::IndexType k, axom::IndexType j, axom::IndexType i) {
           mcu.computeCaseId(i, j, k);
         });
     }
   }
 
-  /*!
-    @brief Implementation used by MarchingCubesImpl::markCrossings_dim()
-    containing just the objects needed for that part, to be made available
-    on devices.
-  */
+  //! @brief Device-copyable state used by markCrossings_dim().
   struct MarkCrossings_Util
   {
     axom::ArrayView<std::uint16_t, DIM, MemorySpace> caseIdsView;
@@ -334,13 +324,10 @@ public:
     auto crossingFlagsView = m_crossingFlags.view();
     {
       AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:set_flags");
-      axom::for_all<ExecSpace>(
-        0,
-        parentCellCount,
-        AXOM_LAMBDA(axom::IndexType parentCellId) {
-          auto numContourCells = num_contour_cells(caseIdsView.flatIndex(parentCellId));
-          crossingFlagsView[parentCellId] = bool(numContourCells);
-        });
+      axom::for_all<ExecSpace>(0, parentCellCount, [=] AXOM_HOST_DEVICE(axom::IndexType parentCellId) {
+        auto numContourCells = num_contour_cells(caseIdsView.flatIndex(parentCellId));
+        crossingFlagsView[parentCellId] = bool(numContourCells);
+      });
     }
 
     m_scannedFlags.fill(0, 1, 0);
@@ -367,8 +354,7 @@ public:
 
     {
       AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::scanCrossings:set_incrs");
-      auto loopBody = AXOM_LAMBDA(axom::IndexType parentCellId)
-      {
+      auto loopBody = [=] AXOM_HOST_DEVICE(axom::IndexType parentCellId) {
         if(scannedFlagsView[parentCellId] != scannedFlagsView[1 + parentCellId])
         {
           auto crossingId = scannedFlagsView[parentCellId];
@@ -410,9 +396,9 @@ public:
     const axom::IndexType parentCellCount = m_caseIds.size();
     auto caseIdsView = m_caseIds;
     axom::ReduceSum<ExecSpace, axom::IndexType> vsum(0);
-    axom::for_all<ExecSpace>(
-      parentCellCount,
-      AXOM_LAMBDA(axom::IndexType n) { vsum += bool(num_contour_cells(caseIdsView.flatIndex(n))); });
+    axom::for_all<ExecSpace>(parentCellCount, [=] AXOM_HOST_DEVICE(axom::IndexType n) {
+      vsum += bool(num_contour_cells(caseIdsView.flatIndex(n)));
+    });
     m_crossingCount = static_cast<axom::IndexType>(vsum.get());
 
     //
@@ -426,8 +412,7 @@ public:
     axom::IndexType* crossingId =
       axom::allocate<axom::IndexType>(1, axom::detail::getAllocatorID<MemorySpace>());
 
-    auto loopBody = AXOM_LAMBDA(axom::IndexType n)
-    {
+    auto loopBody = [=] AXOM_HOST_DEVICE(axom::IndexType n) {
       auto caseId = caseIdsView.flatIndex(n);
       auto ccc = num_contour_cells(caseId);
       if(ccc != 0)
@@ -441,16 +426,22 @@ public:
 
     /*
       loopBody isn't data-parallel and shouldn't be parallelized.
-      This contrived for_all forces it to run sequentially.
+      This contrived for_all forces it to run sequentially. 
+      It must run in SequentialExecSpace, not SEQ_EXEC, since  crossingId and the views
+      live in ExecSpace's memory, which the host cannot dereference on GPU policies.
     */
-    axom::for_all<axom::SEQ_EXEC>(1, [=] AXOM_HOST_DEVICE(axom::IndexType /* i */) {
+    axom::for_all<SequentialExecSpace>(1, [=] AXOM_HOST_DEVICE(axom::IndexType /* i */) {
       *crossingId = 0;
       for(axom::IndexType n = 0; n < parentCellCount; ++n)
       {
         loopBody(n);
       }
     });
-    SLIC_ASSERT(*crossingId == m_crossingCount);
+#if defined(AXOM_DEBUG)
+    axom::IndexType serialCrossingCount = 0;
+    axom::copy(&serialCrossingCount, crossingId, sizeof(axom::IndexType));
+    SLIC_ASSERT(serialCrossingCount == m_crossingCount);
+#endif
 
     axom::deallocate(crossingId);
 
@@ -466,6 +457,8 @@ public:
     // m_firstFacetIds.resize(m_crossingCount);
   }
 
+  axom::IndexType getContourNodeCount() const override { return DIM * getContourCellCount(); }
+
   void computeFacets() override
   {
     AXOM_ANNOTATE_SCOPE("MarchingCubesImpl::computeFacets");
@@ -478,11 +471,11 @@ public:
     axom::ArrayView<double, 2> facetNodeCoordsView = m_facetNodeCoords;
     axom::ArrayView<axom::IndexType> facetParentIdsView = m_facetParentIds;
     const axom::IndexType facetIndexOffset = m_facetIndexOffset;
+    const axom::IndexType nodeIndexOffset = m_nodeIndexOffset;
 
     ComputeFacets_Util cfu(m_contourVal, m_caseIdsMDMapper, m_fcnView, m_coordsViews);
 
-    auto gen_for_parent_cell = AXOM_LAMBDA(axom::IndexType crossingId)
-    {
+    auto gen_for_parent_cell = [=] AXOM_HOST_DEVICE(axom::IndexType crossingId) {
       auto parentCellId = crossingParentIdsView[crossingId];
       auto caseId = crossingCasesView[crossingId];
       Point cornerCoords[CELL_CORNER_COUNT];
@@ -494,8 +487,9 @@ public:
 
       for(axom::IndexType fId = 0; fId < additionalFacets; ++fId)
       {
+        const axom::IndexType localFacetId = firstFacetIdsView[crossingId] + fId;
         axom::IndexType newFacetId = firstFacetId + fId;
-        axom::IndexType firstCornerId = newFacetId * DIM;
+        axom::IndexType firstCornerId = nodeIndexOffset + localFacetId * DIM;
 
         facetParentIdsView[newFacetId] = parentCellId;
 
@@ -513,11 +507,7 @@ public:
     axom::for_all<ExecSpace>(0, m_crossingCount, gen_for_parent_cell);
   }
 
-  /*!
-    @brief Implementation used by MarchingCubesImpl::computeFacets().
-    containing just the objects needed for that part, to be made available
-    on devices.
-  */
+  //! @brief Device-copyable state used by computeFacets().
   struct ComputeFacets_Util
   {
     double contourVal;
@@ -762,10 +752,7 @@ public:
     return index;
   }
 
-  /*!
-    @brief Constructor.
-  */
-  MarchingCubesImpl() { }
+  MarchingCubesImpl() = default;
 
   /*!
     @brief Clear computed data (without deallocating memory).

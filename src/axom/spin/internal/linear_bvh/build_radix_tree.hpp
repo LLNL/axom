@@ -4,8 +4,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
-#define AXOM_SPIN_BUILD_RADIX_TREE_H_
+#pragma once
 
 #include "axom/config.hpp"
 
@@ -89,12 +88,10 @@ void transform_boxes(const BoxIndexable boxes,
 {
   AXOM_ANNOTATE_SCOPE("transform_boxes");
 
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(std::int32_t i) {
-      aabbs[i] = boxes[i];
-      aabbs[i].scale(scale_factor);
-    });
+  for_all<ExecSpace>(size, [=] AXOM_HOST_DEVICE(std::int32_t i) {
+    aabbs[i] = boxes[i];
+    aabbs[i].scale(scale_factor);
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -115,19 +112,20 @@ primal::BoundingBox<FloatType, NDIMS> reduce(ArrayView<const primal::BoundingBox
     axom::ReduceMin<ExecSpace, FloatType> min_coord(infinity);
     axom::ReduceMax<ExecSpace, FloatType> max_coord(neg_infinity);
 
-    for_all<ExecSpace>(
-      size,
-      AXOM_LAMBDA(std::int32_t i) {
-        const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
-        min_coord.min(aabb.getMin()[dim]);
-        max_coord.max(aabb.getMax()[dim]);
-      });
+    for_all<ExecSpace>(size, [=] AXOM_HOST_DEVICE(std::int32_t i) {
+      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
+      min_coord.min(aabb.getMin()[dim]);
+      max_coord.max(aabb.getMax()[dim]);
+    });
 
     min_pt[dim] = min_coord.get();
     max_pt[dim] = max_coord.get();
   }
 
-  return primal::BoundingBox<FloatType, NDIMS>(min_pt, max_pt);
+  // The "false" parameter disables the BoundingBox bounds-fixing logic when min_pt[i] > max_pt[i].
+  // This happens when the user provides no input boxes for the BVH, in that case we don't want to
+  // return a valid bounding box for the BVH bounds.
+  return primal::BoundingBox<FloatType, NDIMS>(min_pt, max_pt, false);
 #else
   static_assert(std::is_same<ExecSpace, SEQ_EXEC>::value, "Only SEQ_EXEC supported without RAJA");
 
@@ -159,17 +157,14 @@ void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
     inv_extent[i] = utilities::isNearlyEqual<FloatType>(extent[i], .0f) ? 0.f : 1.f / extent[i];
   }
 
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(std::int32_t i) {
-      const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
+  for_all<ExecSpace>(size, [=] AXOM_HOST_DEVICE(std::int32_t i) {
+    const primal::BoundingBox<FloatType, NDIMS>& aabb = aabbs[i];
 
-      // get the center and normalize it
-      primal::Vector<FloatType, NDIMS> centroid(aabb.getCentroid());
-      centroid =
-        primal::Vector<FloatType, NDIMS>((centroid - min_coord).array() * inv_extent.array());
-      mcodes[i] = morton32_encode(centroid);
-    });
+    // get the center and normalize it
+    primal::Vector<FloatType, NDIMS> centroid(aabb.getCentroid());
+    centroid = primal::Vector<FloatType, NDIMS>((centroid - min_coord).array() * inv_extent.array());
+    mcodes[i] = morton32_encode(centroid);
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -181,7 +176,7 @@ void array_counting(ArrayView<IntType> iterator,
 {
   AXOM_ANNOTATE_SCOPE("array_counting");
 
-  for_all<ExecSpace>(size, AXOM_LAMBDA(std::int32_t i) { iterator[i] = start + i * step; });
+  for_all<ExecSpace>(size, [=] AXOM_HOST_DEVICE(std::int32_t i) { iterator[i] = start + i * step; });
 }
 
 //------------------------------------------------------------------------------
@@ -203,12 +198,10 @@ void reorder(const ArrayView<const std::int32_t> indices,
   const auto array_v = array.view();
   const auto temp_v = temp.view();
 
-  for_all<ExecSpace>(
-    size,
-    AXOM_LAMBDA(std::int32_t i) {
-      std::int32_t in_idx = indices[i];
-      temp_v[i] = array_v[in_idx];
-    });
+  for_all<ExecSpace>(size, [=] AXOM_HOST_DEVICE(std::int32_t i) {
+    std::int32_t in_idx = indices[i];
+    temp_v[i] = array_v[in_idx];
+  });
 
   array = std::move(temp);
 }
@@ -299,83 +292,81 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
   const auto parent_ptr = data.m_parents.view();
   const auto mcodes_ptr = data.m_mcodes.view();
 
-  for_all<ExecSpace>(
-    inner_size,
-    AXOM_LAMBDA(std::int32_t i) {
-      //determine range direction
-      std::int32_t d =
-        0 > (delta(i, i + 1, inner_size, mcodes_ptr) - delta(i, i - 1, inner_size, mcodes_ptr)) ? -1
-                                                                                                : 1;
+  for_all<ExecSpace>(inner_size, [=] AXOM_HOST_DEVICE(std::int32_t i) {
+    //determine range direction
+    std::int32_t d =
+      0 > (delta(i, i + 1, inner_size, mcodes_ptr) - delta(i, i - 1, inner_size, mcodes_ptr)) ? -1
+                                                                                              : 1;
 
-      //find upper bound for the length of the range
-      std::int32_t min_delta = delta(i, i - d, inner_size, mcodes_ptr);
-      std::int32_t lmax = 2;
-      while(delta(i, i + lmax * d, inner_size, mcodes_ptr) > min_delta)
-      {
-        lmax *= 2;
-      }
+    //find upper bound for the length of the range
+    std::int32_t min_delta = delta(i, i - d, inner_size, mcodes_ptr);
+    std::int32_t lmax = 2;
+    while(delta(i, i + lmax * d, inner_size, mcodes_ptr) > min_delta)
+    {
+      lmax *= 2;
+    }
 
-      //binary search to find the lower bound
-      std::int32_t l = 0;
-      for(std::int32_t t = lmax / 2; t >= 1; t /= 2)
+    //binary search to find the lower bound
+    std::int32_t l = 0;
+    for(std::int32_t t = lmax / 2; t >= 1; t /= 2)
+    {
+      if(delta(i, i + (l + t) * d, inner_size, mcodes_ptr) > min_delta)
       {
-        if(delta(i, i + (l + t) * d, inner_size, mcodes_ptr) > min_delta)
-        {
-          l += t;
-        }
+        l += t;
       }
+    }
 
-      std::int32_t j = i + l * d;
-      std::int32_t delta_node = delta(i, j, inner_size, mcodes_ptr);
-      std::int32_t s = 0;
-      FloatType div_factor = 2.f;
-      //find the split postition using a binary search
-      for(std::int32_t t = (std::int32_t)ceil(float32(l) / div_factor);;
-          div_factor *= 2, t = (std::int32_t)ceil(float32(l) / div_factor))
+    std::int32_t j = i + l * d;
+    std::int32_t delta_node = delta(i, j, inner_size, mcodes_ptr);
+    std::int32_t s = 0;
+    FloatType div_factor = 2.f;
+    //find the split postition using a binary search
+    for(std::int32_t t = (std::int32_t)ceil(float32(l) / div_factor);;
+        div_factor *= 2, t = (std::int32_t)ceil(float32(l) / div_factor))
+    {
+      if(delta(i, i + (s + t) * d, inner_size, mcodes_ptr) > delta_node)
       {
-        if(delta(i, i + (s + t) * d, inner_size, mcodes_ptr) > delta_node)
-        {
-          s += t;
-        }
-        if(t == 1)
-        {
-          break;
-        }
+        s += t;
       }
+      if(t == 1)
+      {
+        break;
+      }
+    }
 
-      std::int32_t split = i + s * d + utilities::min(d, 0);
-      // assign parent/child pointers
-      if(utilities::min(i, j) == split)
-      {
-        //leaf
-        parent_ptr[split + inner_size] = i;
-        lchildren_ptr[i] = split + inner_size;
-      }
-      else
-      {
-        //inner node
-        parent_ptr[split] = i;
-        lchildren_ptr[i] = split;
-      }
+    std::int32_t split = i + s * d + utilities::min(d, 0);
+    // assign parent/child pointers
+    if(utilities::min(i, j) == split)
+    {
+      //leaf
+      parent_ptr[split + inner_size] = i;
+      lchildren_ptr[i] = split + inner_size;
+    }
+    else
+    {
+      //inner node
+      parent_ptr[split] = i;
+      lchildren_ptr[i] = split;
+    }
 
-      if(utilities::max(i, j) == split + 1)
-      {
-        //leaf
-        parent_ptr[split + inner_size + 1] = i;
-        rchildren_ptr[i] = split + inner_size + 1;
-      }
-      else
-      {
-        parent_ptr[split + 1] = i;
-        rchildren_ptr[i] = split + 1;
-      }
+    if(utilities::max(i, j) == split + 1)
+    {
+      //leaf
+      parent_ptr[split + inner_size + 1] = i;
+      rchildren_ptr[i] = split + inner_size + 1;
+    }
+    else
+    {
+      parent_ptr[split + 1] = i;
+      rchildren_ptr[i] = split + 1;
+    }
 
-      if(i == 0)
-      {
-        // flag the root
-        parent_ptr[0] = -1;
-      }
-    });
+    if(i == 0)
+    {
+      // flag the root
+      parent_ptr[0] = -1;
+    }
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -407,15 +398,15 @@ AXOM_HOST_DEVICE static inline BBoxType sync_load(const BBoxType& box)
     volatile const FloatType& max_dim =
       reinterpret_cast<volatile const FloatType&>(box.getMax()[dim]);
 
-      // NOTE: There is a possibility for a read-after-write hazard, where the
-      // uncached store of an AABB on one thread isn't visible when another
-      // thread calls this method to read the value. However, this doesn't seem to
-      // be an issue on Volta; the atomicAdd used to terminate the first thread
-      // seems to correctly synchronize the prior atomic store operations for the
-      // bounding box data.
-      //
-      // Just in case this changes, we poll for a non-sentinel value to be read
-      // out. Naturally, this assumes that reads of sizeof(FloatType) don't tear.
+    // NOTE: There is a possibility for a read-after-write hazard, where the
+    // uncached store of an AABB on one thread isn't visible when another
+    // thread calls this method to read the value. However, this doesn't seem to
+    // be an issue on Volta; the atomicAdd used to terminate the first thread
+    // seems to correctly synchronize the prior atomic store operations for the
+    // bounding box data.
+    //
+    // Just in case this changes, we poll for a non-sentinel value to be read
+    // out. Naturally, this assumes that reads of sizeof(FloatType) don't tear.
   #ifdef SPIN_BVH_DEBUG_MEMORY_HAZARD
     while((min_pt[dim] = min_dim) == BBoxType::InvalidMin)
     {
@@ -539,54 +530,53 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
   const auto leaf_aabb_ptr = data.m_leaf_aabbs.view();
 
   const auto inner_aabb_ptr = data.m_inner_aabbs.view();
-  for_all<ExecSpace>(inner_size, AXOM_LAMBDA(IndexType idx) { inner_aabb_ptr[idx] = BoxType {}; });
+  for_all<ExecSpace>(inner_size,
+                     [=] AXOM_HOST_DEVICE(IndexType idx) { inner_aabb_ptr[idx] = BoxType {}; });
 
   Array<std::int32_t> counters(inner_size, inner_size, allocatorID);
   const auto counters_ptr = counters.view();
 
-  for_all<ExecSpace>(
-    leaf_size,
-    AXOM_LAMBDA(std::int32_t i) {
-      BoxType aabb = leaf_aabb_ptr[i];
-      std::int32_t last_node = inner_size + i;
-      std::int32_t current_node = parent_ptr[inner_size + i];
+  for_all<ExecSpace>(leaf_size, [=] AXOM_HOST_DEVICE(std::int32_t i) {
+    BoxType aabb = leaf_aabb_ptr[i];
+    std::int32_t last_node = inner_size + i;
+    std::int32_t current_node = parent_ptr[inner_size + i];
 
-      while(current_node != -1)
+    while(current_node != -1)
+    {
+      // TODO: If RAJA atomics get memory ordering policies in the future,
+      // we should look at replacing the sync_load/sync_stores by changing
+      // the below atomic to an acquire/release atomic.
+      std::int32_t old = atomic_increment<ExecSpace>(&(counters_ptr[current_node]));
+
+      if(old == 0)
       {
-        // TODO: If RAJA atomics get memory ordering policies in the future,
-        // we should look at replacing the sync_load/sync_stores by changing
-        // the below atomic to an acquire/release atomic.
-        std::int32_t old = atomic_increment<ExecSpace>(&(counters_ptr[current_node]));
-
-        if(old == 0)
-        {
-          // first thread to get here kills itself
-          return;
-        }
-
-        std::int32_t lchild = lchildren_ptr[current_node];
-        std::int32_t rchild = rchildren_ptr[current_node];
-
-        std::int32_t other_child = (lchild == last_node) ? rchild : lchild;
-
-        primal::BoundingBox<FloatType, NDIMS> other_aabb;
-        if(other_child >= inner_size)
-        {
-          other_aabb = leaf_aabb_ptr[other_child - inner_size];
-        }
-        else
-        {
-          other_aabb = sync_load<ExecSpace>(inner_aabb_ptr[other_child]);
-        }
-        aabb.addBox(other_aabb);
-
-        // Store the final AABB for this internal node coherently.
-        sync_store<ExecSpace>(inner_aabb_ptr[current_node], aabb);
-
-        last_node = current_node;
-        current_node = parent_ptr[current_node];
+        // first thread to get here kills itself
+        return;
       }
-    });
+
+      std::int32_t lchild = lchildren_ptr[current_node];
+      std::int32_t rchild = rchildren_ptr[current_node];
+
+      std::int32_t other_child = (lchild == last_node) ? rchild : lchild;
+
+      primal::BoundingBox<FloatType, NDIMS> other_aabb;
+      if(other_child >= inner_size)
+      {
+        other_aabb = leaf_aabb_ptr[other_child - inner_size];
+      }
+      else
+      {
+        other_aabb = sync_load<ExecSpace>(inner_aabb_ptr[other_child]);
+      }
+      aabb.addBox(other_aabb);
+
+      // Store the final AABB for this internal node coherently.
+      sync_store<ExecSpace>(inner_aabb_ptr[current_node], aabb);
+
+      last_node = current_node;
+      current_node = parent_ptr[current_node];
+    }
+  });
 }
 
 //------------------------------------------------------------------------------
@@ -628,4 +618,3 @@ void build_radix_tree(const BoxIndexable boxes,
 } /* namespace internal */
 } /* namespace spin */
 } /* namespace axom */
-#endif

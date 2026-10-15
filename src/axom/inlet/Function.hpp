@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#pragma once
+
 /*!
  *******************************************************************************
  * \file Function.hpp
@@ -11,9 +13,6 @@
  * \brief This file contains the class definition of Inlet's Function class.
  *******************************************************************************
  */
-
-#ifndef INLET_FUNCTION_HPP
-#define INLET_FUNCTION_HPP
 
 #include <memory>
 #include <functional>
@@ -299,6 +298,18 @@ public:
     return m_func.get<FuncType>();
   }
 
+  /*!
+   *****************************************************************************
+   * \brief Calls the function
+   *
+   * \param [in] args The parameter pack for the function's arguments
+   * \tparam Ret The user-specified return type, needed to fully disambiguate the
+   * function to call
+   * \tparam Args The types of the user-specified arguments, deduced automatically
+   *
+   * \return The function's result
+   *****************************************************************************
+   */
   template <typename Ret, typename... Args>
   Ret call(Args&&... args) const
   {
@@ -349,5 +360,3 @@ private:
 
 }  // end namespace inlet
 }  // end namespace axom
-
-#endif  // INLET_FUNCTION_HPP

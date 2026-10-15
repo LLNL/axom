@@ -4,49 +4,42 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#pragma once
+
 /**
  * \file IndirectionPolicies.hpp
  *
  * \brief Defines several indirection policies for slam
  *
- * Indirection policies encompass the underlying storage for indirection buffers
- * for a SLAM set, relation or map. A valid indirection policy must support the
- * following interface:
- *   * [required]
- *   * type alias IndirectionResult -- the type of the result of an indirection
- *      (const/nonconst and ref/nonref)
- *   * indirection() : IntType  -- returns the value of the element after
- *     indirection
- *   * hasIndirection(): bool -- returns whether there is an indirection
- *     buffer
- *   * isValid() : bool -- indicates whether the Indirection policy of the set
- *      is valid
- *   * [optional]
- *     * operator(): IntType -- alternate accessor for indirection
- *     * data() : ElementType* -- allows direct access to the underlying buffer
- *       (when this exists)
+ * Indirection policies describe the underlying storage for indirection buffers
+ * for a Slam set, relation or map. The two most common are \c ArrayIndirection,
+ * backed by an \c axom::Array, and \c ArrayViewIndirection, backed by an
+ * \c axom::ArrayView. \c CArrayIndirection (raw pointer) and
+ * \c STLVectorIndirection (\c std::vector) are for interoperation with existing
+ * storage, and serve as small reference implementations for custom policies.
  *
- * \note Slam's Sets, Relations and Maps are not responsible for
- *  allocating/deallocating their own memory
+ * OrderedSet inherits an indirection policy and calls indirection(position).
+ * Map stores the policy's buffer type by value and uses its static access functions.
+ * Concepts.hpp defines these requirements in OrderedSetIndirectionPolicyFor
+ * and MapIndirectionPolicyFor.
+ * Static relations use ordered-set indirection with additional buffer access.
+ *
+ * Ownership depends on the containing type. A Map using ArrayIndirection owns
+ * its axom::Array, while an ordered set or static relation borrows an array object.
+ * ArrayViewIndirection stores a view whose allocation is managed elsewhere.
+ * Borrowed objects and allocations must remain valid for every access.
  */
-
-#ifndef SLAM_POLICIES_INDIRECTION_H_
-#define SLAM_POLICIES_INDIRECTION_H_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Array.hpp"
 #include "axom/core/NumericLimits.hpp"
 #include "axom/slic/interface/slic.hpp"
 
-namespace axom
-{
-namespace slam
-{
-namespace policies
+namespace axom::slam::policies
 {
 namespace detail
 {
-/*!
+/**
  * \class IndexedIndirection
  *
  * \brief Provides a mixin class for a generic indexable indirection policy.
@@ -62,6 +55,7 @@ template <typename BasePolicy>
 struct IndexedIndirection : public BasePolicy
 {
   using PositionType = typename BasePolicy::PosType;
+  using ElementType = typename BasePolicy::ElemType;
 
   using typename BasePolicy::ConstIndirectionResult;
   using typename BasePolicy::IndirectionResult;
@@ -81,68 +75,64 @@ struct IndexedIndirection : public BasePolicy
                       bool verboseOutput = false) const;
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, ResultPtr> getIndirection(
-    IndirectionRefType buf,
-    PositionType pos = 0)
+  AXOM_HOST_DEVICE static inline ResultPtr getIndirection(IndirectionRefType buf, PositionType pos = 0)
   {
-    return &buf[pos];
-  }
-
-  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<DeviceEnable, ConstResultPtr> getConstIndirection(
-    IndirectionConstRefType buf,
-    PositionType pos = 0)
-  {
-    return &buf[pos];
-  }
-
-  template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ResultPtr> getIndirection(
-    IndirectionRefType buf,
-    PositionType pos = 0)
-  {
+    if constexpr(DeviceEnable)
+    {
+      return &buf[pos];
+    }
+    else
+    {
 #ifdef AXOM_DEVICE_CODE
-    AXOM_UNUSED_VAR(buf);
-    AXOM_UNUSED_VAR(pos);
-    SLIC_ASSERT_MSG(
-      false,
-      BasePolicy::Name << " -- Attempting to indirect on an unsupported indirection policy.");
+      AXOM_UNUSED_VAR(buf);
+      AXOM_UNUSED_VAR(pos);
+      SLIC_ASSERT_MSG(
+        false,
+        BasePolicy::Name << " -- Attempting to indirect on an unsupported indirection policy.");
 
   // Disable no-return warnings from device code
   #if defined(__CUDA_ARCH__)
-    __trap();
+      __trap();
   #elif defined(__HIP_DEVICE_COMPILE__)
-    abort();
+      abort();
   #endif
-    return nullptr;
+      return nullptr;
 #else
-    // Always return a value.
-    return &buf[pos];
+      // Always return a value.
+      return &buf[pos];
 #endif
+    }
   }
 
   template <bool DeviceEnable = BasePolicy::DeviceAccessible>
-  AXOM_HOST_DEVICE static inline std::enable_if_t<!DeviceEnable, ConstResultPtr>
-  getConstIndirection(IndirectionConstRefType buf, PositionType pos = 0)
+  AXOM_HOST_DEVICE static inline ConstResultPtr getConstIndirection(IndirectionConstRefType buf,
+                                                                    PositionType pos = 0)
   {
+    if constexpr(DeviceEnable)
+    {
+      return &buf[pos];
+    }
+    else
+    {
 #ifdef AXOM_DEVICE_CODE
-    AXOM_UNUSED_VAR(buf);
-    AXOM_UNUSED_VAR(pos);
-    SLIC_ASSERT_MSG(
-      false,
-      BasePolicy::Name << " -- Attempting to indirect on an unsupported indirection policy.");
+      AXOM_UNUSED_VAR(buf);
+      AXOM_UNUSED_VAR(pos);
+      SLIC_ASSERT_MSG(
+        false,
+        BasePolicy::Name << " -- Attempting to indirect on an unsupported indirection policy.");
 
   // Disable no-return warnings from device code
   #if defined(__CUDA_ARCH__)
-    __trap();
+      __trap();
   #elif defined(__HIP_DEVICE_COMPILE__)
-    abort();
+      abort();
   #endif
-    return nullptr;
+      return nullptr;
 #else
-    // Always return a value.
-    return &buf[pos];
+      // Always return a value.
+      return &buf[pos];
 #endif
+    }
   }
 
   AXOM_HOST_DEVICE inline ConstIndirectionResult indirection(PositionType pos) const
@@ -247,9 +237,11 @@ bool IndexedIndirection<BasePolicy>::isValid(PositionType size,
 /**
  * \brief A policy class for sets with no indirection
  */
-template <typename PositionType, typename ElementType>
+template <typename PositionT, typename ElementT>
 struct NoIndirection
 {
+  using PositionType = PositionT;
+  using ElementType = ElementT;
   using IndirectionResult = ElementType;
   using ConstIndirectionResult = const ElementType;
   using IndirectionBufferType = struct
@@ -297,21 +289,30 @@ struct CArrayIndirectionBase
   static constexpr bool IsMutableBuffer = false;
   static constexpr const char* Name = "SLAM::CArrayIndirection";
 
-  AXOM_HOST_DEVICE CArrayIndirectionBase(IndirectionPtrType buf = nullptr) : m_arrBuf(buf) { }
+  AXOM_HOST_DEVICE CArrayIndirectionBase(IndirectionPtrType buf = nullptr,
+                                         PositionType size = axom::numeric_limits<PositionType>::max())
+    : m_arrBuf(buf)
+    , m_arrSize(size)
+  { }
 
   AXOM_HOST_DEVICE IndirectionBufferType data() const { return m_arrBuf; }
   AXOM_HOST_DEVICE IndirectionBufferType& ptr() { return m_arrBuf; }
 
   bool hasIndirection() const { return m_arrBuf != nullptr; }
 
-  constexpr PositionType size() const { return axom::numeric_limits<PositionType>::max(); }
+  AXOM_HOST_DEVICE PositionType size() const { return m_arrSize; }
 
 private:
   IndirectionBufferType m_arrBuf;
+  PositionType m_arrSize;
 };
 
 /**
  * \brief A policy class for sets with C-style array-based indirection
+ *
+ * \note Indexes a raw pointer, for interoperation with C-style array storage.
+ *  For an external \c axom::Array buffer, use \c ArrayIndirection.
+ *  For an \c axom::ArrayView of a buffer managed elsewhere, use \c ArrayViewIndirection.
  */
 template <typename PositionType, typename ElementType>
 using CArrayIndirection =
@@ -347,7 +348,7 @@ struct STLVectorIndirectionBase
 
   bool hasIndirection() const { return m_vecBuf != nullptr; }
 
-  PositionType size() const { return m_vecBuf->size(); }
+  PositionType size() const { return static_cast<PositionType>(m_vecBuf->size()); }
 
   static IndirectionBufferType create(PositionType size, ConstIndirectionResult value, int allocatorId)
   {
@@ -360,7 +361,11 @@ private:
 };
 
 /**
- * \brief A policy class for sets with stl vector-based indirection
+ * \brief A policy class for sets with std::vector-based indirection
+ *
+ * \note Indexes a (host-only) \c std::vector, for interoperation with existing \c std::vector storage.
+ *  For an external \c axom::Array buffer, use \c ArrayIndirection.
+ *  For an \c axom::ArrayView of a buffer managed elsewhere, use \c ArrayViewIndirection.
  */
 template <typename PositionType, typename ElementType>
 using STLVectorIndirection =
@@ -394,7 +399,7 @@ struct ArrayIndirectionBase
 
   bool hasIndirection() const { return m_vecBuf != nullptr; }
 
-  PositionType size() const { return m_vecBuf->size(); }
+  PositionType size() const { return static_cast<PositionType>(m_vecBuf->size()); }
 
   static IndirectionBufferType create(PositionType size, ConstIndirectionResult value, int allocatorID)
   {
@@ -409,6 +414,10 @@ private:
 
 /**
  * \brief A policy class for sets with axom::Array-based indirection
+ *
+ * \note The default indirection for Map and BivariateMap. A map with this policy
+ *  owns its axom::Array. Ordered sets and static relations borrow an existing
+ *  array object. Use ArrayViewIndirection to bind an allocation through a view.
  */
 template <typename PositionType, typename ElementType>
 using ArrayIndirection = detail::IndexedIndirection<ArrayIndirectionBase<PositionType, ElementType>>;
@@ -420,6 +429,7 @@ struct ArrayViewIndirectionBase
   using ElemType = ElementType;
 
   using IndirectionResult = ElementType&;
+  // A const ArrayView can modify the elements it references when ElementType is mutable.
   using ConstIndirectionResult = ElementType&;
 
   using IndirectionBufferType = axom::ArrayView<ElementType>;
@@ -434,11 +444,11 @@ struct ArrayViewIndirectionBase
   AXOM_HOST_DEVICE ArrayViewIndirectionBase(IndirectionBufferType buf = {}) : m_vecBuf(buf) { }
 
   ArrayViewIndirectionBase(ArrayIndirection<PositionType, ElementType> ind)
-    : m_vecBuf(ind.data().data(), ind.data().size())
+    : m_vecBuf(ind.data().data(), static_cast<PositionType>(ind.data().size()))
   { }
 
   ArrayViewIndirectionBase(STLVectorIndirection<PositionType, ElementType> ind)
-    : m_vecBuf(ind.data().data(), ind.data().size())
+    : m_vecBuf(ind.data().data(), static_cast<PositionType>(ind.data().size()))
   { }
 
   AXOM_HOST_DEVICE IndirectionBufferType data() { return m_vecBuf; }
@@ -449,7 +459,7 @@ struct ArrayViewIndirectionBase
 
   bool hasIndirection() const { return m_vecBuf.data() != nullptr; }
 
-  PositionType size() const { return m_vecBuf.size(); }
+  PositionType size() const { return static_cast<PositionType>(m_vecBuf.size()); }
 
 private:
   IndirectionBufferType m_vecBuf;
@@ -457,6 +467,10 @@ private:
 
 /**
  * \brief A policy class for sets with axom::ArrayView-based indirection
+ *
+ * \note Holds an \c axom::ArrayView by value. The backing allocation must outlive
+ *  the set, map, or relation that uses it. Before device use, check that operations
+ *  are device-callable and all referenced objects are accessible.
  */
 template <typename PositionType, typename ElementType>
 using ArrayViewIndirection =
@@ -464,8 +478,4 @@ using ArrayViewIndirection =
 
 /// \}
 
-}  // end namespace policies
-}  // end namespace slam
-}  // end namespace axom
-
-#endif  // SLAM_POLICIES_INDIRECTION_H_
+}  // end namespace axom::slam::policies

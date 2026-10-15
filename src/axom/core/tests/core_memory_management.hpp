@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#pragma once
+
 #include "gtest/gtest.h"
 
 #include "axom/core/memory_management.hpp"
@@ -483,7 +485,7 @@ TEST(core_memory_management, allocator_id_from_pointer)
   axom::deallocate<int>(buf);
 
   // Allocate directly (not through allocator).
-  buf = (int*)std::malloc(N * sizeof(int));
+  buf = static_cast<int*>(std::malloc(N * sizeof(int)));
   id = axom::getAllocatorIDFromPointer(buf);
   EXPECT_EQ(id, axom::MALLOC_ALLOCATOR_ID);
   std::free(buf);
@@ -514,7 +516,7 @@ TEST(core_memory_management, interspace_reallocation)
   int* origOnHost = axom::allocate<int>(maxNK, axom::MALLOC_ALLOCATOR_ID);
   for(std::size_t i = 0; i < maxNK; ++i)
   {
-    origOnHost[i] = 100 + i;
+    origOnHost[i] = static_cast<int>(100 + i);
   }
   int* tempOnHost = axom::allocate<int>(maxNK, axom::MALLOC_ALLOCATOR_ID);
 
@@ -534,18 +536,22 @@ TEST(core_memory_management, interspace_reallocation)
     for(auto dstAllocId : allocIds)
     {
       std::cout << "Testing allocator ids " << srcAllocId << " and " << dstAllocId << std::endl;
-      // For each combination of srcAllocId and dstAllocId,
-      // allocate src, reallocate to dst, reallocate back to src.
+      // For each combination of srcAllocId and dstAllocId, allocate src, then
+      // reallocate while passing dstAllocId. For non-null pointers, reallocate
+      // preserves the current allocation space and ignores the allocator id.
 
       int* src = axom::allocate<int>(N, srcAllocId);
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(src), srcAllocId);
       axom::copy(src, origOnHost, N * sizeof(int));
 
       int* dst = axom::reallocate(src, K, dstAllocId);
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(dst), srcAllocId);
       axom::copy(tempOnHost, dst, N * sizeof(int));
       diffCount = countDiffs();
       EXPECT_EQ(diffCount, 0);
 
       src = axom::reallocate(dst, N, srcAllocId);
+      EXPECT_EQ(axom::getAllocatorIDFromPointer(src), srcAllocId);
       axom::copy(tempOnHost, src, N * sizeof(int));
       diffCount = countDiffs();
       EXPECT_EQ(diffCount, 0);

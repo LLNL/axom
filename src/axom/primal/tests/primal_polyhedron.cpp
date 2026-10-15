@@ -309,42 +309,53 @@ void check_volume()
   axom::Array<PointType> centroid_device(1, 1, kernel_allocator);
   auto centroid_view = centroid_device.view();
 
-  axom::for_all<ExecSpace>(
-    1,
-    AXOM_LAMBDA(int i) {
-      PolyhedronType poly;
-      poly.addVertex({0, 0, 0});
-      poly.addVertex({1, 0, 0});
-      poly.addVertex({1, 1, 0});
-      poly.addVertex({0, 1, 0});
-      poly.addVertex({0, 0, 1});
-      poly.addVertex({1, 0, 1});
-      poly.addVertex({1, 1, 1});
-      poly.addVertex({0, 1, 1});
+  axom::Array<int> vertex_count_device(1, 1, kernel_allocator);
+  auto vertex_count_view = vertex_count_device.view();
 
-      poly.addNeighbors(0, {1, 4, 3});
-      poly.addNeighbors(1, {5, 0, 2});
-      poly.addNeighbors(2, {3, 6, 1});
-      poly.addNeighbors(3, {7, 2, 0});
-      poly.addNeighbors(4, {5, 7, 0});
-      poly.addNeighbors(5, {1, 6, 4});
-      poly.addNeighbors(6, {2, 7, 5});
-      poly.addNeighbors(7, {4, 6, 3});
+  axom::for_all<ExecSpace>(1, [=] AXOM_HOST_DEVICE(int i) {
+    PolyhedronType poly;
+    poly.addVertex({0, 0, 0});
+    poly.addVertex({1, 0, 0});
+    poly.addVertex({1, 1, 0});
+    poly.addVertex({0, 1, 0});
+    poly.addVertex({0, 0, 1});
+    poly.addVertex({1, 0, 1});
+    poly.addVertex({1, 1, 1});
+    poly.addVertex({0, 1, 1});
 
-      volume_view[i] = poly.volume();
+    poly.addNeighbors(0, {1, 4, 3});
+    poly.addNeighbors(1, {5, 0, 2});
+    poly.addNeighbors(2, {3, 6, 1});
+    poly.addNeighbors(3, {7, 2, 0});
+    poly.addNeighbors(4, {5, 7, 0});
+    poly.addNeighbors(5, {1, 6, 4});
+    poly.addNeighbors(6, {2, 7, 5});
+    poly.addNeighbors(7, {4, 6, 3});
 
-      centroid_view[i] = poly.centroid();
-    });
+    volume_view[i] = poly.volume();
+
+    centroid_view[i] = poly.centroid();
+
+    // Verify that all MAX_VERTS slots are usable. Add the disconnected test
+    // vertices after the geometric calculations so they do not affect them.
+    for(int vertex = poly.numVertices(); vertex < PolyhedronType::MAX_VERTS; ++vertex)
+    {
+      poly.addVertex({static_cast<double>(vertex), 0., 0.});
+    }
+    vertex_count_view[i] = poly.numVertices();
+  });
 
   // Copy volume and centroid back to host
   axom::Array<double> volume_host = axom::Array<double>(volume_device, host_allocator);
   axom::Array<PointType> centroid_host = axom::Array<PointType>(centroid_device, host_allocator);
+  axom::Array<int> vertex_count_host = axom::Array<int>(vertex_count_device, host_allocator);
 
   EXPECT_EQ(volume_host[0], 1);
 
   EXPECT_NEAR(0.5, centroid_host[0][0], EPS);
   EXPECT_NEAR(0.5, centroid_host[0][1], EPS);
   EXPECT_NEAR(0.5, centroid_host[0][2], EPS);
+  EXPECT_EQ(PolyhedronType::MAX_VERTS, vertex_count_host[0]);
 }
 
 TEST(primal_polyhedron, check_volume_sequential) { check_volume<axom::SEQ_EXEC>(); }

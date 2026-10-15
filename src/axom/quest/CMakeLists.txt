@@ -63,7 +63,6 @@ set( quest_headers
     FastApproximateGWN.hpp
 
     ## quest interface
-    interface/internal/mpicomm_wrapper.hpp
     interface/internal/QuestHelpers.hpp
     interface/inout.hpp
     interface/signed_distance.hpp
@@ -104,7 +103,7 @@ set( quest_sources
 if(MFEM_FOUND)
     list(APPEND quest_headers io/MFEMReader.hpp)
     list(APPEND quest_headers GWNMethods.hpp)
-    list(APPEND quest_sources io/MFEMReader.cpp)
+    list(APPEND quest_sources io/MFEMReader.cpp util/mesh_helpers_mfem.cpp)
 endif()
 
 
@@ -137,32 +136,63 @@ if(CONDUIT_FOUND AND AXOM_ENABLE_MPI)
                                  conduit::conduit_mpi)
 endif()
 
-blt_list_append(
-    TO       quest_headers
-    ELEMENTS MarchingCubes.hpp detail/MarchingCubesSingleDomain.hpp detail/MarchingCubesImpl.hpp
-    IF       CONDUIT_FOUND
-               )
+if(CONDUIT_FOUND)
+    blt_list_append(
+        TO       quest_headers
+        ELEMENTS MarchingCubes.hpp
+                 detail/MarchingCubesSingleDomain.hpp
+                 detail/MarchingCubesImpl.hpp)
 
-blt_list_append(
-    TO       quest_sources
-    ELEMENTS MarchingCubes.cpp detail/MarchingCubesSingleDomain.cpp
-    IF       CONDUIT_FOUND
-               )
+    # To keep device compile times manageable, we instantiate each MC impl in its own translation unit
+    blt_list_append(
+        TO       quest_sources
+        ELEMENTS MarchingCubes.cpp
+                 detail/MarchingCubesSingleDomain.cpp
+                 detail/MarchingCubesSingleDomainSeq2D.cpp
+                 detail/MarchingCubesSingleDomainSeq3D.cpp)
 
-blt_list_append( TO quest_depends_on ELEMENTS conduit::conduit IF CONDUIT_FOUND )
+    if(RAJA_FOUND AND AXOM_ENABLE_OPENMP)
+        list(APPEND quest_sources detail/MarchingCubesSingleDomainOpenMP2D.cpp
+                                  detail/MarchingCubesSingleDomainOpenMP3D.cpp)
+    endif()
+    if(RAJA_FOUND AND UMPIRE_FOUND AND AXOM_ENABLE_CUDA)
+        list(APPEND quest_sources detail/MarchingCubesSingleDomainCuda2D.cpp
+                                  detail/MarchingCubesSingleDomainCuda3D.cpp)
+    endif()
+    if(RAJA_FOUND AND UMPIRE_FOUND AND AXOM_ENABLE_HIP)
+        list(APPEND quest_sources detail/MarchingCubesSingleDomainHip2D.cpp
+                                  detail/MarchingCubesSingleDomainHip3D.cpp)
+    endif()
+
+    blt_list_append( TO quest_depends_on ELEMENTS conduit::conduit)
+endif()
 
 if(AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE)
     if(MFEM_FOUND OR CONDUIT_FOUND)
         list(APPEND quest_headers Shaper.hpp
                                   DiscreteShape.hpp
                                   IntersectionShaper.hpp
-                                  detail/shaping/shaping_helpers.hpp
-                                  )
+                                  detail/shaping/shaping_helpers.hpp)
         list(APPEND quest_sources Shaper.cpp
                                   DiscreteShape.cpp
-                                  detail/shaping/shaping_helpers.cpp
-                                  )
+                                  detail/shaping/shaping_helpers.cpp)
+        if(MFEM_FOUND)
+            list(APPEND quest_headers detail/shaping/shaping_helpers_mfem.hpp)
+            list(APPEND quest_sources detail/shaping/shaping_helpers_mfem.cpp)
+        endif()
+        if(CONDUIT_FOUND)
+            list(APPEND quest_headers detail/shaping/shaping_helpers_blueprint.hpp)
+            list(APPEND quest_sources detail/shaping/shaping_helpers_blueprint.cpp)
+        endif()
         list(APPEND quest_depends_on klee)
+    endif()
+
+    if(MFEM_FOUND OR (CONDUIT_FOUND AND AXOM_ENABLE_BUMP))
+        list(APPEND quest_headers SamplingShaper.hpp
+                                  detail/shaping/InOutSampler.hpp
+                                  detail/shaping/PrimitiveSampler.hpp
+                                  detail/shaping/WindingNumberSampler.hpp)
+        list(APPEND quest_sources SamplingShaper.cpp)
     endif()
 
     # Geometry clipping requires Conduit, Sidre, and RAJA.
@@ -189,7 +219,6 @@ if(AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE)
                                   detail/clipping/SphereClipper.cpp
                                   detail/clipping/MonotonicZSORClipper.cpp
                                   detail/clipping/SORClipper.cpp
-                                  detail/clipping/MeshClipperImpl.hpp
                                   util/make_clipper_strategy.cpp)
 
         # MeshClipperImpl uses RAJA algorithms directly.
@@ -201,14 +230,6 @@ if(AXOM_ENABLE_KLEE AND AXOM_ENABLE_SIDRE)
             list(APPEND quest_headers detail/clipping/TetMeshClipper.hpp)
             list(APPEND quest_sources detail/clipping/TetMeshClipper.cpp)
         endif()
-    endif()
-
-    if(MFEM_FOUND)
-        list(APPEND quest_headers SamplingShaper.hpp 
-                                  detail/shaping/InOutSampler.hpp
-                                  detail/shaping/PrimitiveSampler.hpp
-                                  detail/shaping/WindingNumberSampler.hpp
-                                  )
     endif()
 endif()
 
