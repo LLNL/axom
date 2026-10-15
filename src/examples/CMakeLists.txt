@@ -160,7 +160,9 @@ if(AXOM_ENABLE_TUTORIALS AND AXOM_ENABLE_KLEE AND AXOM_ENABLE_QUEST)
             examples/axom/shaping_tutorial
     )
 
-    foreach(_lesson lesson_00 lesson_01 lesson_02 lesson_03 lesson_04)
+    set(_lessons lesson_00 lesson_01 lesson_02 lesson_03)
+    blt_list_append(TO _lessons ELEMENTS lesson_04 IF LUA_FOUND)
+    foreach(_lesson ${_lessons})
         install(DIRECTORY shaping_tutorial/${_lesson}
                 DESTINATION examples/axom/shaping_tutorial)
     endforeach()
