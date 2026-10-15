@@ -113,10 +113,12 @@ if(NOT AXOM_FOUND)
     if(NOT C2C_DIR)
       set(C2C_DIR ${AXOM_C2C_DIR})
     endif()
-    blt_import_library( NAME          c2c
-                        INCLUDES      "@C2C_INCLUDE_DIR@"
-                        LIBRARIES     "@C2C_LIBRARY@"
-                        TREAT_INCLUDES_AS_SYSTEM ON)
+    if (NOT TARGET c2c)
+      blt_import_library( NAME          c2c
+                          INCLUDES      "@C2C_INCLUDE_DIR@"
+                          LIBRARIES     "@C2C_LIBRARY@"
+                          TREAT_INCLUDES_AS_SYSTEM ON)
+    endif()
   endif()
 
   # caliper
@@ -194,11 +196,12 @@ if(NOT AXOM_FOUND)
     if(NOT HDF5_DIR)
       set(HDF5_DIR ${AXOM_HDF5_DIR})
     endif()
-    blt_import_library( NAME hdf5
-                        DEFINES   "@HDF5_DEFINITIONS@"
-                        INCLUDES  "@HDF5_INCLUDE_DIRS@"
-                        LIBRARIES "@HDF5_LIBRARIES@"
-                        TREAT_INCLUDES_AS_SYSTEM ON)
+    if (NOT TARGET hdf5)
+      blt_import_library( NAME hdf5
+                          DEFINES   "@HDF5_DEFINITIONS@"
+                          INCLUDES  "@HDF5_INCLUDE_DIRS@"
+                          LIBRARIES "@HDF5_LIBRARIES@"
+                          TREAT_INCLUDES_AS_SYSTEM ON)
     endif()
 
   # lua
@@ -207,9 +210,11 @@ if(NOT AXOM_FOUND)
     if(NOT LUA_DIR)
       set(LUA_DIR ${AXOM_LUA_DIR})
     endif()
-    blt_import_library( NAME        lua
-                        LIBRARIES   "@LUA_LIBRARIES@"
-                        INCLUDES    "@LUA_INCLUDE_DIR@")
+    if (NOT TARGET lua)
+      blt_import_library( NAME        lua
+                          LIBRARIES   "@LUA_LIBRARIES@"
+                          INCLUDES    "@LUA_INCLUDE_DIR@")
+    endif()
   endif()
 
   # mfem
@@ -240,10 +245,12 @@ if(NOT AXOM_FOUND)
     # Re-find OpenCASCADE so imported targets like TKernel exist
     find_dependency(OpenCASCADE CONFIG REQUIRED NO_DEFAULT_PATH
                     HINTS "${OPENCASCADE_DIR}/lib/cmake" "${OPENCASCADE_DIR}")
-    blt_import_library( NAME          opencascade
-                        INCLUDES      "@OpenCASCADE_INCLUDE_DIR@"
-                        LIBRARIES     "@OpenCASCADE_LIBRARIES@"
-                        TREAT_INCLUDES_AS_SYSTEM ON)
+    if (NOT TARGET opencascade)
+      blt_import_library( NAME          opencascade
+                          INCLUDES      "@OpenCASCADE_INCLUDE_DIR@"
+                          LIBRARIES     "@OpenCASCADE_LIBRARIES@"
+                          TREAT_INCLUDES_AS_SYSTEM ON)
+    endif()
   endif()
 
   # scr
@@ -252,10 +259,12 @@ if(NOT AXOM_FOUND)
     if(NOT SCR_DIR)
       set(SCR_DIR ${AXOM_SCR_DIR})
     endif()
-    blt_import_library( NAME       scr
-                        INCLUDES   "@SCR_INCLUDE_DIRS@"
-                        LIBRARIES  "@SCR_LIBRARIES@;ZLIB::ZLIB"
-                        TREAT_INCLUDES_AS_SYSTEM ON)
+    if (NOT TARGET scr)
+      blt_import_library( NAME       scr
+                          INCLUDES   "@SCR_INCLUDE_DIRS@"
+                          LIBRARIES  "@SCR_LIBRARIES@;ZLIB::ZLIB"
+                          TREAT_INCLUDES_AS_SYSTEM ON)
+    endif()
   endif()
 
   #----------------------------------------------------------------------------
