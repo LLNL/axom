@@ -93,6 +93,8 @@ The depth ``bits`` is the number of bits per coordinate. For example,
 At a valid depth, each integer point in ``[0, 2^bits - 1]^DIM`` maps
 to exactly one index in ``[0, 2^(DIM * bits) - 1]``, and vice versa. Use the
 same depth to encode and decode. Store the dimension and depth with the key.
+Every conversion and check takes ``bits`` explicitly, since a point's index
+changes with the depth.
 
 At depth one, indices 0 through 3 visit the 2D points ``(0,0)``, ``(0,1)``,
 ``(1,1)``, and ``(1,0)``, in that order.
@@ -102,9 +104,8 @@ At depth one, indices 0 through 3 visit the 2D points ``(0,0)``, ``(0,1)``,
 Coordinate and index types must be integers other than ``bool``, at most 64
 bits wide. Signed types use only nonnegative values. The maximum depth is
 ``MAX_UNIQUE_BITS = min(COORD_BITS, INDEX_BITS / DIM)``, where the bit counts
-exclude sign bits. ``maxBitsPerCoord()`` returns this limit. Both conversions
-use it when ``bits`` is omitted. Narrow coordinate types can reduce the limits
-shown below.
+exclude sign bits. ``maxBitsPerCoord()`` returns this limit.
+Narrow coordinate types can reduce the limits shown below.
 
 .. list-table:: Maximum bits per coordinate
    :header-rows: 1
@@ -137,8 +138,8 @@ valid inputs. Debug assertions check these preconditions. Release builds leave
 these checks to the caller. Neither conversion clamps inputs.
 
 The free functions ``convertPointToHilbert<IndexType>(point, bits)`` and
-``convertHilbertToPoint<CoordType, DIM>(index, bits)`` call ``toIndex`` and
-``toPoint``. They use the same preconditions and default depth.
+``convertHilbertToPoint<CoordType, DIM>(index, bits)`` call ``toIndex`` and ``toPoint``.
+They take the same depth argument and have the same preconditions.
 
 Quantize floating-point positions before encoding, for example with
 ``RectangularLattice::gridCell()``. The lattice is unbounded. Check that each

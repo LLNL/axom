@@ -32,6 +32,8 @@ namespace axom::spin
  * At a valid bit depth, each point in [0, 2^bits - 1]^DIM maps to exactly one
  * index in [0, 2^(DIM * bits) - 1], and vice versa. Use the same depth to encode
  * and decode, and store the dimension and depth with the key.
+ * Every conversion and check takes the depth explicitly, since a point's index
+ * changes with the depth.
  *
  * Quantize floating-point positions to integer grid coordinates before encoding.
  * Check that the resulting coordinates are nonnegative and fit the selected depth.
@@ -79,7 +81,7 @@ struct Hilbertizer
   }
 
   /// Whether all coordinates are nonnegative and fit in the requested depth.
-  AXOM_HOST_DEVICE static bool isValidPoint(const PointType& point, int bits = MAX_UNIQUE_BITS)
+  AXOM_HOST_DEVICE static bool isValidPoint(const PointType& point, int bits)
   {
     using UnsignedCoord = typename std::make_unsigned<CoordType>::type;
 
@@ -108,7 +110,7 @@ struct Hilbertizer
   }
 
   /// Whether an index is nonnegative and fits in DIM * bits bits.
-  AXOM_HOST_DEVICE static bool isValidIndex(IndexType index, int bits = MAX_UNIQUE_BITS)
+  AXOM_HOST_DEVICE static bool isValidIndex(IndexType index, int bits)
   {
     if(!isValidDepth(bits))
     {
@@ -129,10 +131,10 @@ struct Hilbertizer
   /*!
    * \brief Converts an integer lattice point to a Hilbert index.
    * \param[in] point Nonnegative integer coordinates.
-   * \param[in] bits Bits per coordinate; defaults to the type capacity.
+   * \param[in] bits Bits per coordinate, in [1, maxBitsPerCoord()].
    * \pre isValidPoint(point, bits).
    */
-  AXOM_HOST_DEVICE static IndexType toIndex(const PointType& point, int bits = MAX_UNIQUE_BITS)
+  AXOM_HOST_DEVICE static IndexType toIndex(const PointType& point, int bits)
   {
     SLIC_ASSERT(isValidPoint(point, bits));
     return HilbertTransform::toIndex(point, bits);
@@ -141,10 +143,10 @@ struct Hilbertizer
   /*!
    * \brief Converts a Hilbert index back to an integer lattice point.
    * \param[in] index Hilbert index to decode.
-   * \param[in] bits Depth used to encode the index; defaults to the type capacity.
+   * \param[in] bits Depth used to encode the index, in [1, maxBitsPerCoord()].
    * \pre isValidIndex(index, bits).
    */
-  AXOM_HOST_DEVICE static PointType toPoint(IndexType index, int bits = MAX_UNIQUE_BITS)
+  AXOM_HOST_DEVICE static PointType toPoint(IndexType index, int bits)
   {
     SLIC_ASSERT(isValidIndex(index, bits));
     return HilbertTransform::toPoint(index, bits);
@@ -159,18 +161,15 @@ private:
 
 /// Encodes a valid integer lattice point; see Hilbertizer::toIndex().
 template <typename IndexType, typename CoordType, int DIM>
-AXOM_HOST_DEVICE inline IndexType convertPointToHilbert(
-  const primal::Point<CoordType, DIM>& point,
-  int bits = Hilbertizer<CoordType, IndexType, DIM>::MAX_UNIQUE_BITS)
+AXOM_HOST_DEVICE inline IndexType convertPointToHilbert(const primal::Point<CoordType, DIM>& point,
+                                                        int bits)
 {
   return Hilbertizer<CoordType, IndexType, DIM>::toIndex(point, bits);
 }
 
 /// Decodes a valid Hilbert index at the same depth; see Hilbertizer::toPoint().
 template <typename CoordType, int DIM, typename IndexType>
-AXOM_HOST_DEVICE inline primal::Point<CoordType, DIM> convertHilbertToPoint(
-  IndexType index,
-  int bits = Hilbertizer<CoordType, IndexType, DIM>::MAX_UNIQUE_BITS)
+AXOM_HOST_DEVICE inline primal::Point<CoordType, DIM> convertHilbertToPoint(IndexType index, int bits)
 {
   return Hilbertizer<CoordType, IndexType, DIM>::toPoint(index, bits);
 }

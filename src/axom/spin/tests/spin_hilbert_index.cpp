@@ -148,17 +148,6 @@ void allDepths()
     {
       EXPECT_FALSE(H::isValidIndex(static_cast<Index>(max_key + 1), bits));
     }
-    if(bits == capacity)
-    {
-      const typename H::PointType point(static_cast<Coord>(max_coord));
-      const auto key = H::toIndex(point);
-      EXPECT_TRUE(H::isValidPoint(point));
-      EXPECT_TRUE(H::isValidIndex(key));
-      EXPECT_EQ(key, H::toIndex(point, bits));
-      EXPECT_EQ(H::toPoint(key), point);
-      EXPECT_EQ(axom::spin::convertPointToHilbert<Index>(point), key);
-      EXPECT_EQ((axom::spin::convertHilbertToPoint<Coord, DIM>(key)), point);
-    }
   }
   for(int bits :
       {std::numeric_limits<int>::min(), -1, 0, capacity + 1, std::numeric_limits<int>::max()})
@@ -173,12 +162,12 @@ void allDepths()
     {
       typename H::PointType negative;
       negative[axis] = -1;
-      EXPECT_FALSE(H::isValidPoint(negative));
+      EXPECT_FALSE(H::isValidPoint(negative, capacity));
     }
   }
   if constexpr(std::is_signed<Index>::value)
   {
-    EXPECT_FALSE(H::isValidIndex(-1));
+    EXPECT_FALSE(H::isValidIndex(-1, capacity));
   }
 }
 
@@ -213,14 +202,14 @@ void checkWideCoordinates()
 {
   using H = axom::spin::Hilbertizer<std::uint64_t, std::uint8_t, DIM>;
   const std::uint64_t max_coord = (std::uint64_t {1} << H::MAX_UNIQUE_BITS) - 1;
-  EXPECT_TRUE(H::isValidPoint(typename H::PointType(max_coord)));
+  EXPECT_TRUE(H::isValidPoint(typename H::PointType(max_coord), H::MAX_UNIQUE_BITS));
   for(int axis = 0; axis < DIM; ++axis)
   {
     typename H::PointType point;
     point[axis] = std::uint64_t {1} << 40;
-    EXPECT_FALSE(H::isValidPoint(point));
+    EXPECT_FALSE(H::isValidPoint(point, H::MAX_UNIQUE_BITS));
     point[axis] |= 1;
-    EXPECT_FALSE(H::isValidPoint(point));
+    EXPECT_FALSE(H::isValidPoint(point, H::MAX_UNIQUE_BITS));
   }
 }
 
