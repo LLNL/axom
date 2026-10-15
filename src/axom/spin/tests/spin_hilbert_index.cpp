@@ -29,6 +29,10 @@
 
 namespace
 {
+// Fixed seed for the sampled points and keys, so a failure reproduces.
+// The value is arbitrary.
+constexpr std::uint64_t TEST_SEED = 42;
+
 template <int DIM>
 void exhaustive(int bits)
 {
@@ -96,7 +100,7 @@ void allDepths()
   EXPECT_EQ(H::INDEX_BITS, index_bits);
   EXPECT_EQ(H::MAX_UNIQUE_BITS, capacity);
   EXPECT_EQ(H::maxBitsPerCoord(), capacity);
-  std::mt19937_64 random(0x534b494c4c494e47ULL + DIM);
+  std::mt19937_64 random(TEST_SEED);
   for(int bits = 1; bits <= capacity; ++bits)
   {
     SCOPED_TRACE(::testing::Message()
@@ -237,15 +241,29 @@ void checkExecutionSpace()
 {
   using H = axom::spin::Hilbertizer<std::uint32_t, std::uint64_t, DIM>;
   constexpr int count = 128;
-  axom::Array<std::uint64_t> results(count * 3,
-                                     count * 3,
-                                     axom::execution_space<ExecSpace>::allocatorID());
-  const axom::ArrayView<std::uint64_t> results_view = results.view();
+  const int host_allocator = axom::execution_space<axom::SEQ_EXEC>::allocatorID();
+  const int allocator = axom::execution_space<ExecSpace>::allocatorID();
+
+  // Sample a depth and a key on the host, cycling through every depth.
+  axom::Array<int> depths(count, count, host_allocator);
+  axom::Array<std::uint64_t> keys(count, count, host_allocator);
+  std::mt19937_64 random(TEST_SEED);
+  for(int i = 0; i < count; ++i)
+  {
+    depths[i] = 1 + i % H::MAX_UNIQUE_BITS;
+    keys[i] = random() & (std::numeric_limits<std::uint64_t>::max() >> (64 - depths[i] * DIM));
+  }
+
+  const axom::Array<int> device_depths(depths, allocator);
+  const axom::Array<std::uint64_t> device_keys(keys, allocator);
+  axom::Array<std::uint64_t> results(count * 3, count * 3, allocator);
+  const auto depths_view = device_depths.view();
+  const auto keys_view = device_keys.view();
+  const auto results_view = results.view();
 
   axom::for_all<ExecSpace>(count, [=] AXOM_HOST_DEVICE(axom::IndexType i) {
-    const int bits = 1 + static_cast<int>(i % H::MAX_UNIQUE_BITS);
-    const auto mask = axom::numeric_limits<std::uint64_t>::max() >> (64 - bits * DIM);
-    const auto key = (0x9e3779b97f4a7c15ULL * (i + 1)) & mask;
+    const int bits = depths_view[i];
+    const auto key = keys_view[i];
     const auto point = H::toPoint(key, bits);
     results_view[3 * i] = H::toIndex(point, bits);
     results_view[3 * i + 1] = axom::spin::convertPointToHilbert<std::uint64_t>(
@@ -254,15 +272,11 @@ void checkExecutionSpace()
     results_view[3 * i + 2] = H::isValidPoint(point, bits) && H::isValidIndex(key, bits);
   });
 
-  const axom::Array<std::uint64_t> host(results,
-                                        axom::execution_space<axom::SEQ_EXEC>::allocatorID());
+  const axom::Array<std::uint64_t> host(results, host_allocator);
   for(int i = 0; i < count; ++i)
   {
-    const int bits = 1 + i % H::MAX_UNIQUE_BITS;
-    const auto mask = std::numeric_limits<std::uint64_t>::max() >> (64 - bits * DIM);
-    const auto key = (0x9e3779b97f4a7c15ULL * (i + 1)) & mask;
-    EXPECT_EQ(host[3 * i], key);
-    EXPECT_EQ(host[3 * i + 1], key);
+    EXPECT_EQ(host[3 * i], keys[i]);
+    EXPECT_EQ(host[3 * i + 1], keys[i]);
     EXPECT_EQ(host[3 * i + 2], 1);
   }
 }
