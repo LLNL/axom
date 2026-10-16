@@ -62,7 +62,7 @@ set(_examples lesson_00:check_axom_configuration.cpp
               lesson_02:validated_inlet_metadata.cpp
               lesson_02:improved_inlet_metadata.cpp
               lesson_03:klee_operators_and_validation.cpp)
-if(AXOM_USE_MFEM and AXOM_USE_LUA)
+if(AXOM_USE_MFEM AND AXOM_USE_LUA)
     blt_list_append(TO _examples ELEMENTS lesson_04:quest_sampling_shaper.cpp)
 endif()
 
