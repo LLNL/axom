@@ -263,23 +263,35 @@ public:
    *
    * \param [in] args Arguments for the function. Numbers are passed as double and
    * character strings as std::string, matching FunctionTag::Double and FunctionTag::String.
-   * \tparam T The value type
+   * \tparam T The value type: a primitive type, or std::vector<double> for an array
    * \tparam Args The types of the arguments, deduced automatically
    *
    * \return The function's result or the value
    *
-   * \pre The Proxy refers to a Field, or to a function returning \a T
-   * whose arguments match \a args
+   * \pre The Proxy refers to a Field or an array, or to a function returning \a T
+   * whose arguments match \a args. A function for an array of doubles returns
+   * FunctionTag::Vector, whose components are returned as a std::vector<double>.
    *******************************************************************************
    */
   template <typename T, typename... Args>
   T evaluate(Args&&... args) const
   {
-    static_assert(detail::is_inlet_primitive<T>::value,
-                  "evaluate() returns a primitive type: bool, int, double, or std::string");
+    constexpr bool is_array = std::is_same_v<T, std::vector<double>>;
+    static_assert(detail::is_inlet_primitive<T>::value || is_array,
+                  "evaluate() returns a primitive type (bool, int, double, std::string) "
+                  "or std::vector<double>");
     if(m_func != nullptr)
     {
-      return m_func->call<T>(detail::function_value_arg_t<Args>(std::forward<Args>(args))...);
+      if constexpr(is_array)
+      {
+        const auto result = m_func->call<FunctionType::Vector>(
+          detail::function_value_arg_t<Args>(std::forward<Args>(args))...);
+        return T(result.vec.data(), result.vec.data() + result.dim);
+      }
+      else
+      {
+        return m_func->call<T>(detail::function_value_arg_t<Args>(std::forward<Args>(args))...);
+      }
     }
     return get<T>();
   }
@@ -314,7 +326,7 @@ private:
     SLIC_ERROR_IF(m_func != nullptr,
                   fmt::format("[Inlet] '{0}' was supplied as a function. "
                               "Use evaluate() or check type() before reading it as a value",
-                              m_func->name()));
+                              detail::userFacingPath(m_func->name())));
   }
 
   const Container* const m_container = nullptr;

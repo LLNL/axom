@@ -1030,9 +1030,9 @@ TEST(inlet_function, or_function_rejects_unsupported_field_types)
   auto inlet = createBasicInlet("");
   axom::slic::ScopedAbortToThrow abortGuard;
   EXPECT_THROW(inlet.addBool("flag").orFunction(), axom::slic::SlicAbortException);
-  EXPECT_TRUE(slicErrorContains("supports double and string Fields"));
+  EXPECT_TRUE(slicErrorContains("but Field 'flag' has type"));
   EXPECT_THROW(inlet.addInt("count").orFunction(), axom::slic::SlicAbortException);
-  EXPECT_TRUE(slicErrorContains("supports double and string Fields"));
+  EXPECT_TRUE(slicErrorContains("but Field 'count' has type"));
 }
 
 TEST(inlet_function, or_function_redeclaration_must_match_the_signature)
@@ -1087,6 +1087,128 @@ TEST(inlet_function, or_function_with_a_reader_that_has_no_functions)
   EXPECT_TRUE(inlet.verify());
   EXPECT_EQ(inlet["scale"].type(), InletType::Double);
   EXPECT_DOUBLE_EQ(inlet["scale"].evaluate<double>(), 2.5);
+}
+
+TEST(inlet_function, or_function_array_selects_the_supplied_form)
+{
+  auto inlet = createBasicInlet(R"(
+    from_function = function() return {1.0, 2.0, 3.0} end
+    from_value = {4.0, 5.0}
+  )");
+  inlet.addDoubleArray("from_function").orFunction();
+  inlet.addDoubleArray("from_value").orFunction();
+  EXPECT_TRUE(inlet.verify());
+
+  EXPECT_EQ(inlet["from_function"].type(), InletType::Function);
+  EXPECT_EQ(inlet["from_value"].type(), InletType::Collection);
+
+  EXPECT_EQ(inlet["from_function"].evaluate<std::vector<double>>(),
+            (std::vector<double> {1.0, 2.0, 3.0}));
+  EXPECT_EQ(inlet["from_value"].evaluate<std::vector<double>>(), (std::vector<double> {4.0, 5.0}));
+  EXPECT_EQ(inlet["from_value"].get<std::vector<double>>(), (std::vector<double> {4.0, 5.0}));
+}
+
+TEST(inlet_function, or_function_array_evaluate_passes_arguments_to_the_function_only)
+{
+  auto inlet = createBasicInlet(R"(
+    from_function = function(t) return {t, 2 * t} end
+    from_value = {4.0, 5.0}
+  )");
+  inlet.addDoubleArray("from_function").orFunction({FunctionTag::Double});
+  inlet.addDoubleArray("from_value").orFunction({FunctionTag::Double});
+  EXPECT_TRUE(inlet.verify());
+
+  EXPECT_EQ(inlet["from_function"].evaluate<std::vector<double>>(3),
+            (std::vector<double> {3.0, 6.0}));
+  EXPECT_EQ(inlet["from_value"].evaluate<std::vector<double>>(3), (std::vector<double> {4.0, 5.0}));
+}
+
+TEST(inlet_function, or_function_array_is_present_in_either_form)
+{
+  for(const std::string input :
+      {"values = function() return {1.0} end", "values = {1.0}", "group = { other = 1.0 }"})
+  {
+    const bool supplied = input.rfind("values", 0) == 0;
+    auto inlet = createBasicInlet(input);
+    inlet.getGlobalContainer().strict();
+    inlet.addDoubleArray("values").orFunction().required(supplied);
+    inlet.addStruct("group").addDouble("other");
+    EXPECT_TRUE(inlet.verify()) << input;
+    EXPECT_TRUE(inlet.unexpectedNames().empty()) << input;
+    EXPECT_EQ(inlet.contains("values"), supplied) << input;
+    EXPECT_EQ(inlet.isUserProvided("values"), supplied) << input;
+  }
+
+  auto missing = createBasicInlet("");
+  missing.addDoubleArray("values").orFunction().required();
+  EXPECT_FALSE(missing.verify());
+}
+
+TEST(inlet_function, or_function_array_rejects_an_unrelated_wrong_type)
+{
+  auto inlet = createBasicInlet("values = 3.0");
+  inlet.addDoubleArray("values").orFunction();
+  EXPECT_FALSE(inlet.verify());
+  EXPECT_NE(inlet["values"].type(), InletType::Function);
+}
+
+TEST(inlet_function, or_function_array_reading_a_supplied_function_as_values_is_an_error)
+{
+  auto inlet = createBasicInlet("values = function() return {1.0, 2.0} end");
+  inlet.addDoubleArray("values").orFunction();
+  EXPECT_TRUE(inlet.verify());
+
+  axom::slic::ScopedAbortToThrow abortGuard;
+  EXPECT_THROW(inlet["values"].get<std::vector<double>>(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("'values' was supplied as a function"));
+  // Reading through the Container, bypassing operator[], is caught as well
+  EXPECT_THROW(
+    inlet.getGlobalContainer().getChildContainers().at("values")->get<std::vector<double>>(),
+    axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("'values' was supplied as a function"));
+}
+
+TEST(inlet_function, or_function_array_returns_at_most_three_components)
+{
+  // A function for an array returns FunctionTag::Vector
+  auto inlet = createBasicInlet("values = function() return {1.0, 2.0, 3.0, 4.0} end");
+  inlet.addDoubleArray("values").orFunction();
+  EXPECT_TRUE(inlet.verify());
+
+  axom::slic::ScopedAbortToThrow abortGuard;
+  EXPECT_THROW(inlet["values"].evaluate<std::vector<double>>(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains("between 1 and 3"));
+}
+
+TEST(inlet_function, or_function_rejects_unsupported_collections)
+{
+  auto inlet = createBasicInlet("");
+  axom::slic::ScopedAbortToThrow abortGuard;
+  const std::string expected = "supports double fields, string fields, and arrays of doubles";
+
+  EXPECT_THROW(inlet.addIntArray("ints").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains(expected));
+  EXPECT_THROW(inlet.addStringArray("strings").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains(expected));
+  EXPECT_THROW(inlet.addDoubleDictionary("dict").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains(expected));
+  EXPECT_THROW(inlet.addVariantArray("mixed").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains(expected));
+  EXPECT_THROW(inlet.addStruct("group").orFunction(), axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains(expected));
+  EXPECT_THROW(inlet.addFunction("func", FunctionTag::Double, {}).orFunction(),
+               axom::slic::SlicAbortException);
+  EXPECT_TRUE(slicErrorContains(expected));
+}
+
+TEST(inlet_function, or_function_array_with_a_reader_that_has_no_functions)
+{
+  auto reader = std::make_unique<axom::inlet::YAMLReader>();
+  reader->parseString("values: [1.0, 2.0]");
+  Inlet inlet(std::move(reader));
+  inlet.addDoubleArray("values").orFunction();
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_EQ(inlet["values"].evaluate<std::vector<double>>(), (std::vector<double> {1.0, 2.0}));
 }
 
 TEST(inlet_function, simple_void_to_double_through_container)
@@ -1454,6 +1576,38 @@ TEST(inlet_function, or_function_in_nested_dictionary_of_struct)
     inlet["groups"].get<std::unordered_map<int, OperatorsWithOrFunctionDictionary>>();
   EXPECT_DOUBLE_EQ(values.at(0).operators.at("first").rotate, 2.0);
   EXPECT_DOUBLE_EQ(values.at(0).operators.at("second").rotate, 3.0);
+}
+
+struct TranslateWithOrFunction
+{
+  std::vector<double> translate;
+};
+
+template <>
+struct FromInlet<TranslateWithOrFunction>
+{
+  TranslateWithOrFunction operator()(const axom::inlet::Container& base)
+  {
+    return {base["translate"].evaluate<std::vector<double>>()};
+  }
+};
+
+TEST(inlet_function, or_function_array_applies_to_every_element_of_a_struct_array)
+{
+  auto inlet = createBasicInlet(R"(
+    operators = {
+      { translate = {1.0, 2.0} },
+      { translate = function() return {3.0, 4.0, 5.0} end }
+    }
+  )");
+  inlet.addStructArray("operators").strict().addDoubleArray("translate").orFunction().required();
+  EXPECT_TRUE(inlet.verify());
+  EXPECT_TRUE(inlet.unexpectedNames().empty());
+
+  const auto values = inlet["operators"].get<std::vector<TranslateWithOrFunction>>();
+  ASSERT_EQ(values.size(), 2u);
+  EXPECT_EQ(values[0].translate, (std::vector<double> {1.0, 2.0}));
+  EXPECT_EQ(values[1].translate, (std::vector<double> {3.0, 4.0, 5.0}));
 }
 
 TEST(inlet_function, dimension_dependent_result)

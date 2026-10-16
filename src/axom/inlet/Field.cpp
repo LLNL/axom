@@ -605,10 +605,11 @@ Field& Field::orFunction(const std::vector<FunctionTag>& arg_types)
     ret_type = FunctionTag::String;
     break;
   default:
-    SLIC_ERROR(fmt::format(
-      "[Inlet] orFunction() supports double and string Fields, but Field '{0}' has type '{1}'",
-      name(),
-      conduit::DataType::id_to_name(m_type)));
+    SLIC_ERROR(
+      fmt::format("[Inlet] orFunction() supports double fields, string fields, "
+                  "and arrays of doubles, but Field '{0}' has type '{1}'",
+                  name(),
+                  conduit::DataType::id_to_name(m_type)));
     return *this;
   }
 

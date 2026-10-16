@@ -852,6 +852,9 @@ Verifiable<Container>& Container::addPrimitiveArray(const std::string& name,
     lookupPath =
       utilities::string::removeAllInstances(lookupPath, detail::COLLECTION_GROUP_NAME + "/");
     detail::updateUnexpectedNames(lookupPath, m_unexpectedNames);
+    // Only an array of doubles maps to the FunctionTag::Vector return type
+    container.m_acceptsFunction = std::is_same_v<T, double> && !isDict;
+    container.m_functionLookupPath = lookupPath;
     std::vector<VariantKey> indices;
     if(containsFunctionValueAlternative(name))
     {
@@ -1018,7 +1021,13 @@ Proxy Container::operator[](const std::string& name) const
 
   else if(has_container)
   {
-    return Proxy(getContainer(name));
+    // An array supplied as a function has no concrete elements
+    const auto& container = getContainer(name);
+    if(const Function* function = container.suppliedFunction())
+    {
+      return Proxy(*function);
+    }
+    return Proxy(container);
   }
 
   else if(has_field)
@@ -1335,7 +1344,8 @@ bool Container::exists() const
                                            return static_cast<bool>(*entry.second);
                                          });
 
-  return has_containers || has_fields || has_functions;
+  // An array may be supplied as a function instead of concrete elements
+  return has_containers || has_fields || has_functions || isFunction();
 }
 
 bool Container::isUserProvided() const
@@ -1360,7 +1370,8 @@ bool Container::isUserProvided() const
                                            return static_cast<bool>(*entry.second);
                                          });
 
-  return has_containers || has_fields || has_functions;
+  // An array may be supplied as a function instead of concrete elements
+  return has_containers || has_fields || has_functions || isFunction();
 }
 
 bool Container::isUserProvided(const std::string& name) const
@@ -1403,6 +1414,76 @@ const std::unordered_map<std::string, std::unique_ptr<Field>>& Container::getChi
 const std::unordered_map<std::string, std::unique_ptr<Function>>& Container::getChildFunctions() const
 {
   return m_functionChildren;
+}
+
+Container& Container::orFunction(const std::vector<FunctionTag>& arg_types)
+{
+  const std::string path = detail::userFacingPath(m_name);
+  SLIC_ERROR_IF(!m_acceptsFunction,
+                fmt::format("[Inlet] orFunction() supports double fields, string fields, "
+                            "and arrays of doubles, but '{0}' is not an array of doubles",
+                            path));
+  if(!m_acceptsFunction)
+  {
+    return *this;
+  }
+
+  // An array function returns one to three components as FunctionTag::Vector
+  const auto ret_type = FunctionTag::Vector;
+
+  // A matching redeclaration is a no-op, as with other redeclared entries
+  if(m_sidreGroup->hasView("return_type"))
+  {
+    SLIC_ERROR_IF(!detail::hasSignature(ret_type, arg_types, m_sidreGroup),
+                  fmt::format("[Inlet] Array '{0}' already accepts a function "
+                              "with a different signature",
+                              path));
+    return *this;
+  }
+
+  detail::addSignatureToGroup(ret_type, arg_types, m_sidreGroup);
+
+  // Readers without function support still read a concrete array
+  if(!m_reader.supportsFunctions())
+  {
+    return *this;
+  }
+
+  auto func = m_reader.getFunction(m_functionLookupPath, ret_type, arg_types);
+  if(func)
+  {
+    m_function = std::make_unique<Function>(m_sidreGroup, m_sidreRootGroup, std::move(func));
+
+    // The array lookup reported the function as the wrong type
+    if(m_sidreGroup->hasView("retrieval_status"))
+    {
+      m_sidreGroup->destroyViewAndData("retrieval_status");
+    }
+    markRetrievalStatus(*m_sidreGroup, ReaderResult::Success);
+  }
+  return *this;
+}
+
+bool Container::isFunction() const
+{
+  return m_function != nullptr && static_cast<bool>(*m_function);
+}
+
+const Function* Container::suppliedFunction() const
+{
+  if(isFunction())
+  {
+    return m_function.get();
+  }
+  // An array Container stores its elements in a child collection group
+  if(auto collection = getChildInternal<Container>(detail::COLLECTION_GROUP_NAME))
+  {
+    if(collection->isFunction())
+    {
+      return collection->m_function.get();
+    }
+  }
+  return nullptr;
 }
 
 bool Container::containsFunctionValueAlternative(const std::string& valueName) const

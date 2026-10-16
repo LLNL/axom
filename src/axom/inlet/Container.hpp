@@ -1000,6 +1000,25 @@ public:
 
   Container& required(bool isRequired = true) override;
 
+  /*!
+   *****************************************************************************
+   * \brief Allows an array of doubles to accept an array or a function.
+   *
+   * A function must return FunctionTag::Vector with one to three components.
+   *
+   * A supplied function makes the array present and user-provided, and satisfies required().
+   * The array then has no concrete elements. Use Proxy::evaluate<std::vector<double>>()
+   * to read either form, or Proxy::type() to determine which form the input supplied.
+   *
+   * \param [in] arg_types The argument types of the function
+   *
+   * \return Reference to this Container, for chaining
+   *
+   * \pre This Container is an array of doubles, i.e. it was returned by addDoubleArray()
+   *****************************************************************************
+   */
+  Container& orFunction(const std::vector<FunctionTag>& arg_types = {}) override;
+
   bool isRequired() const override;
 
   using Verifiable<Container>::registerVerifier;
@@ -1394,6 +1413,22 @@ private:
                                             const std::string& description,
                                             const std::string& pathOverride);
 
+  /*!
+   *****************************************************************************
+   * \brief Returns whether the input supplied this array as a function.
+   *
+   * \see orFunction()
+   *****************************************************************************
+   */
+  bool isFunction() const;
+
+  /*!
+   *****************************************************************************
+   * \brief Returns the function supplied for this array, or nullptr if there is none.
+   *****************************************************************************
+   */
+  const Function* suppliedFunction() const;
+
   axom::sidre::View* baseGet(const std::string& name) const;
 
   /*!
@@ -1441,6 +1476,10 @@ private:
   template <typename Key, typename Val>
   std::unordered_map<Key, Val> getCollection() const
   {
+    SLIC_ERROR_IF(isFunction(),
+                  fmt::format("[Inlet] '{0}' was supplied as a function. "
+                              "Use Proxy::evaluate() or check Proxy::type() before reading it",
+                              detail::userFacingPath(m_name)));
     return getCollectionImpl<Key, Val>(
       std::integral_constant < bool,
       detail::is_std_variant<Val>::value && !detail::is_variant_value<Val>::value > {});
@@ -1585,6 +1624,12 @@ private:
   std::unordered_map<std::string, std::unique_ptr<Field>> m_fieldChildren;
   std::unordered_map<std::string, std::unique_ptr<Function>> m_functionChildren;
   Verifier m_verifier;
+
+  // Function lookup path for an array of doubles, set by orFunction()
+  bool m_acceptsFunction = false;
+  std::string m_functionLookupPath;
+  // The function supplied in place of this array, if any
+  std::unique_ptr<Function> m_function;
 
   // Used for ownership only - need to take ownership of these so children
   // and their aggregates have identical lifetime

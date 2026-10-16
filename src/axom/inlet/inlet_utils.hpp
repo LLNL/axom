@@ -154,6 +154,23 @@ inline bool isCollectionGroup(const std::string& name)
   return axom::utilities::string::endsWith(name, detail::COLLECTION_GROUP_NAME);
 }
 
+namespace detail
+{
+/*!
+*****************************************************************************
+* \brief Removes Inlet's internal collection groups from a path.
+*
+* Use the returned path in messages for input-file entries.
+*
+* \param [in] path The path to clean up
+*****************************************************************************
+*/
+inline std::string userFacingPath(const std::string& path)
+{
+  return axom::utilities::string::removeAllInstances(path, "/" + COLLECTION_GROUP_NAME);
+}
+}  // namespace detail
+
 /*!
 *****************************************************************************
 * \brief Marks the sidre::Group as a "struct collection" by adding a
