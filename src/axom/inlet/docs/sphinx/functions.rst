@@ -89,7 +89,7 @@ The example accepts either of the following Lua inputs:
   scale = function(t) return 2.0 * t end
 
 Use ``evaluate`` for either form. When a function was supplied in the input,
-it evaluates it with the given arguments, and when a values was supplied, it ignores the arguments:
+it evaluates it with the given arguments, and when a value was supplied, it ignores the arguments:
 
 .. literalinclude:: ../../examples/functions.cpp
    :start-after: _inlet_or_function_access_start
@@ -113,7 +113,7 @@ for a function. Reading a supplied function with ``get`` is an error.
 Both forms make the entry present and user-provided. They also satisfy ``required`` and
 ``strict`` Containers. A Field's default applies only when the input supplies neither form.
 Field constraints such as ``range`` apply only to a value because Inlet does not call
-the function during ``verify()``. Readers that cannot supply functions, 
+the function during ``verify()``. Readers that cannot supply functions,
 such as the YAML and JSON readers, read only the value.
 In a collection of structs, each element may use either form.
 

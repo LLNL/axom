@@ -65,10 +65,10 @@ struct VerificationError
 
 /*!
 *****************************************************************************
-* \brief This function is used to mark if anything went wrong during the 
+* \brief This function is used to mark if anything went wrong during the
 * defining phase of inlet so verify() will properly fail.
 *
-* \param [in] root Pointer to the Sidre Root Group where the warning flag 
+* \param [in] root Pointer to the Sidre Root Group where the warning flag
 * will be set.
 *****************************************************************************
 */
@@ -79,9 +79,9 @@ void setWarningFlag(axom::sidre::Group* root);
 * \brief This function is used to add a flag to the Inlet object
 * corresponding to the provided Sidre group
 *
-* \param [in] target Reference to the Sidre group to set the required 
+* \param [in] target Reference to the Sidre group to set the required
 * status of
-* \param [in] root Reference to the Sidre Root Group where the warning flag 
+* \param [in] root Reference to the Sidre Root Group where the warning flag
 * will be set on failure
 * \param [in] flag The name of the flag to set
 * \param [in] value The value of the flag
@@ -94,9 +94,9 @@ void setFlag(axom::sidre::Group& target, axom::sidre::Group& root, const std::st
 * \brief This function is used to determine the value of a flag for the
 * Inlet object corresponding to the provided Sidre group
 *
-* \param [in] target Reference to the Sidre group to check the required 
+* \param [in] target Reference to the Sidre group to check the required
 * status of
-* \param [in] root Reference to the Sidre Root Group where the warning flag 
+* \param [in] root Reference to the Sidre Root Group where the warning flag
 * will be set on failure
 * \param [in] flag The name of the flag to check
 * \return The value of the flag

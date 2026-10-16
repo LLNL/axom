@@ -707,6 +707,30 @@ TEST(inlet_function, or_function_array_with_a_reader_that_has_no_functions)
   EXPECT_EQ(inlet["values"].evaluate<std::vector<double>>(), (std::vector<double> {1.0, 2.0}));
 }
 
+TEST(inlet_function, or_function_is_documented_on_the_field)
+{
+  axom::utilities::filesystem::TempFile doc_file("inlet_or_function_docs", ".rst");
+  {
+    auto inlet = createBasicInlet(R"(
+      scale = function(t) return 2.0 * t end
+      label = 'fixed'
+    )");
+    inlet.addDouble("scale", "A scale").orFunction({FunctionTag::Double});
+    inlet.addString("label", "A label.").orFunction();
+    inlet.addDouble("plain", "A plain value");
+    EXPECT_TRUE(inlet.verify());
+    inlet.write(axom::inlet::SphinxWriter(doc_file.getPath()));
+  }
+
+  // Document the function form on the Field's row, regardless of which form the input supplied
+  const std::string contents = doc_file.getFileContents();
+  EXPECT_NE(std::string::npos,
+            contents.find("A scale. Accepts a function with signature Double(Double)."));
+  EXPECT_NE(std::string::npos, contents.find("A label. Accepts a function with signature String()."));
+  EXPECT_NE(std::string::npos, contents.find("A plain value\n"));
+  EXPECT_EQ(std::string::npos, contents.find("Functions"));
+}
+
 TEST(inlet_function, simple_void_to_double_through_container)
 {
   std::string testString = "function foo () return 9.64 end";
