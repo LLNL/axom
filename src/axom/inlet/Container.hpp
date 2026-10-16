@@ -18,9 +18,9 @@
 #include <string>
 #include <functional>
 #include <set>
-#include <tuple>
 #include <typeindex>
 #include <unordered_map>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -348,33 +348,6 @@ std::vector<std::pair<std::string, std::string>> collectionIndicesWithPaths(cons
  */
 void updateUnexpectedNames(const std::string& accessedName,
                            std::vector<std::string>& unexpectedNames);
-
-/*!
- *******************************************************************************
- * \brief Returns the schema name of the function alternative for a value
- *
- * \param [in] valueName The name of the concrete value or collection
- *
- * \note The alternative is read from \a valueName but stored under a distinct
- * schema name so that it does not collide with the concrete entry
- *******************************************************************************
- */
-inline std::string functionAlternativeName(const std::string& valueName)
-{
-  return valueName + detail::FUNCTION_ALTERNATIVE_SUFFIX;
-}
-
-/*!
- *******************************************************************************
- * \brief Returns whether a function was declared as a value alternative
- *
- * \param [in] function The function to check
- *******************************************************************************
- */
-inline bool isFunctionAlternative(const Function& function)
-{
-  return function.sidreGroup()->hasView(detail::FUNCTION_ALTERNATIVE_NAME);
-}
 
 }  // namespace detail
 
@@ -775,32 +748,6 @@ public:
                                     const std::string& pathOverride = "");
 
   /*!
-   *****************************************************************************
-   * \brief Accept a function in place of a primitive value or collection.
-   *
-   * The function and concrete entry use the same input path. When the input
-   * supplies a function, Inlet treats the concrete entry as absent.
-   * A default value may still populate the concrete entry.
-   *
-   * \param [in] valueName    Path of the concrete value or collection,
-   *                          relative to this Container
-   * \param [in] ret_type     The return type. Must not be FunctionTag::Void
-   * \param [in] arg_types    The argument types of the function
-   * \param [in] description  Description of the function
-   *
-   * \return Reference to the created Function
-   *
-   * \pre Declare the alternative before the concrete entry.
-   * \note Requirements and verifiers apply separately to each representation.
-   * Inlet does not evaluate the function automatically or apply concrete constraints to its result.
-   *****************************************************************************
-   */
-  Verifiable<Function>& addFunctionAsValueAlternative(const std::string& valueName,
-                                                      FunctionTag ret_type,
-                                                      const std::vector<FunctionTag>& arg_types,
-                                                      const std::string& description = "");
-
-  /*!
    *******************************************************************************
    * \brief Returns a stored value of primitive type.
    * 
@@ -1044,41 +991,38 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Return whether a Container, Field, or ordinary Function with the
-   * given name is present in this Container's subtree.
+   * \brief Returns whether a Container, Field, or Function named \a name is present.
    *
-   * A function value alternative at \a name is not reported by this method.
-   * Use \a containsFunctionValueAlternative() to query that representation.
-   * A concrete default counts as present even when a function alternative is supplied.
-   * An ancestor Container is present when an alternative exists below it.
+   * \param [in] name The path relative to the calling Container to search
    *
-   * \param [in] name Path relative to this Container
+   * \return Whether this Container's subtree contains the named entry.
    *
-   * \return Whether the named schema entry is present
+   * \note An entry declared with orFunction() is present when the input supplied
+   * either a value or a function.
    *****************************************************************************
    */
   bool contains(const std::string& name) const;
 
   /*!
    *****************************************************************************
-   * \brief Return whether this Container contains a present Field, ordinary Function,
-   * function value alternative, or subcontainer containing one.
+   * \brief Returns whether this Container or its descendants contain an existing entry.
    *****************************************************************************
    */
   bool exists() const;
 
   /*!
    *****************************************************************************
-   * \brief Return whether this Container contains a user-provided Field, ordinary Function,
-   * function value alternative, or subcontainer containing one.
+   * \brief Returns whether the input supplied an entry in this Container or its descendants.
    *****************************************************************************
    */
   bool isUserProvided() const;
 
   /*!
    *****************************************************************************
-   * \brief Return whether the named Container, Field, ordinary Function,
-   * or function value alternative was provided in the input file.
+   * \brief Returns whether the input supplied the named Container, Field, or Function.
+   *
+   * \note An entry declared with orFunction() was provided when the input supplied
+   * either a value or a function.
    *
    * \param [in] name The path relative to the calling Container to search
    *****************************************************************************
@@ -1108,40 +1052,6 @@ public:
    *****************************************************************************
    */
   const std::unordered_map<std::string, std::unique_ptr<Function>>& getChildFunctions() const;
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether the input supplied a function for the given value name.
-   *
-   * \param [in] valueName Value path relative to this Container
-   *
-   * \return True when the input supplied a function for \a valueName
-   *****************************************************************************
-   */
-  bool containsFunctionValueAlternative(const std::string& valueName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief Retrieve the declared function alternative for the given value name.
-   *
-   * Call containsFunctionValueAlternative() first to check whether the input supplied
-   * a function. This method also returns a declared alternative that has no callable.
-   *
-   * \param [in] valueName Value path relative to this Container
-   *
-   * \return A reference to the Function owned by this Container for \a valueName
-   *****************************************************************************
-   */
-  const Function& getFunctionValueAlternative(const std::string& valueName) const;
-
-  /*!
-   *****************************************************************************
-   * \brief Return the public value names of supplied function alternatives.
-   *
-   * \return Sorted names of direct child values whose function representation was supplied
-   *****************************************************************************
-   */
-  std::vector<std::string> getFunctionValueAlternativeNames() const;
 
   /*!
    *****************************************************************************
@@ -1308,8 +1218,6 @@ private:
    * the input file
    * \param [in] val A provided value, will be overwritten if found at specified
    * path in input file
-   * \param [in] hasFunctionAlternative Whether a function value alternative was supplied
-   * at \a lookupPath, in which case a wrong-type read is reported as absent instead
    *
    * \return Type ID for the inserted view
    *****************************************************************************
@@ -1319,8 +1227,7 @@ private:
   axom::sidre::DataTypeId addPrimitiveHelper(axom::sidre::Group* sidreGroup,
                                              const std::string& lookupPath,
                                              bool forArray,
-                                             T val,
-                                             bool hasFunctionAlternative);
+                                             T val);
 
   /*!
    *****************************************************************************
@@ -1373,45 +1280,20 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Stores a Function that the Reader has already read.
-   * 
+   * \brief Stores a Function read by the Reader.
+   *
    * \param [in] sidreGroup The Sidre Group for the Function
-   * \param [in] func       The callable to store
-   * \param [in] fullName   Full Container path for the Function
-   * \param [in] name       Function path relative to this Container
-   * 
+   * \param [in] func The callable to store
+   * \param [in] fullName Full Container path for the Function
+   * \param [in] name Function path relative to this Container
+   *
    * \return The stored Function.
    *****************************************************************************
    */
-  Function& storeFunction(axom::sidre::Group* sidreGroup,
-                          FunctionVariant&& func,
-                          const std::string& fullName,
-                          const std::string& name);
-
-  /*!
-   *****************************************************************************
-   * \brief Adds a Function with separate schema and input names.
-   *
-   * The public addFunction() method uses the same name for both.
-   * Function alternatives use a distinct schema name to avoid colliding with the concrete entry.
-   *
-   * \param [in] schemaName   Name of the Function in the schema
-   * \param [in] inputName    Path to read from in the input file
-   * \param [in] ret_type     The return type of the function
-   * \param [in] arg_types    The argument types of the function
-   * \param [in] description  Description of the function
-   * \param [in] pathOverride The path within the input file to read from,
-   * if different than the structure of the Sidre datastore
-   *
-   * \return The Function at schemaName
-   *****************************************************************************
-   */
-  Verifiable<Function>& addFunctionInternal(const std::string& schemaName,
-                                            const std::string& inputName,
-                                            FunctionTag ret_type,
-                                            const std::vector<FunctionTag>& arg_types,
-                                            const std::string& description,
-                                            const std::string& pathOverride);
+  Function& addFunctionInternal(axom::sidre::Group* sidreGroup,
+                                FunctionVariant&& func,
+                                const std::string& fullName,
+                                const std::string& name);
 
   /*!
    *****************************************************************************

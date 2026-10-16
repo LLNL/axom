@@ -240,30 +240,6 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Return whether the input supplied a function for the given value name.
-   *
-   * \see Container::containsFunctionValueAlternative
-   *****************************************************************************
-   */
-  bool containsFunctionValueAlternative(const std::string& valueName) const
-  {
-    return m_globalContainer.containsFunctionValueAlternative(valueName);
-  }
-
-  /*!
-   *****************************************************************************
-   * \brief Retrieve the declared function alternative for the given value name.
-   *
-   * \see Container::getFunctionValueAlternative
-   *****************************************************************************
-   */
-  const Function& getFunctionValueAlternative(const std::string& valueName) const
-  {
-    return m_globalContainer.getFunctionValueAlternative(valueName);
-  }
-
-  /*!
-   *****************************************************************************
    * \brief Return whether a subobject with the given name was provided by the user
    *
    * \see Container::isUserProvided
@@ -454,34 +430,6 @@ public:
   {
     return m_globalContainer.addFunction(name, ret_type, arg_types, description);
   }
-
-  /*!
-   *****************************************************************************
-   * \brief Accept a function in place of a primitive value or collection.
-   *
-   * \pre Declare the alternative before the concrete entry.
-   * \note Inlet does not evaluate the function automatically.
-   * Requirements and verifiers apply separately to the function and concrete entry.
-   *
-   * \param [in] valueName    Path of the concrete value or collection,
-   *                          relative to the root Container
-   * \param [in] ret_type     The return type. Must not be FunctionTag::Void
-   * \param [in] arg_types    The argument types of the function
-   * \param [in] description  Description of the function
-   *
-   * \return Reference to the created Function
-   *
-   * \see Container::addFunctionAsValueAlternative
-   *****************************************************************************
-   */
-  Verifiable<Function>& addFunctionAsValueAlternative(const std::string& valueName,
-                                                      FunctionTag ret_type,
-                                                      const std::vector<FunctionTag>& arg_types,
-                                                      const std::string& description = "")
-  {
-    return m_globalContainer.addFunctionAsValueAlternative(valueName, ret_type, arg_types, description);
-  }
-
   /*!
    *****************************************************************************
    * \brief Add a dictionary of Boolean Fields to the input file schema.

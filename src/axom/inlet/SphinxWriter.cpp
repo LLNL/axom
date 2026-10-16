@@ -112,11 +112,6 @@ void SphinxWriter::documentContainer(const Container& container)
 
   for(const auto& function_entry : container.getChildFunctions())
   {
-    // Skip function value alternatives since they are documented through their concrete entry
-    if(detail::isFunctionAlternative(*function_entry.second))
-    {
-      continue;
-    }
     extractFunctionMetadata(function_entry.second->sidreGroup(), currContainer);
   }
 }
