@@ -32,6 +32,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   such as `{1.0, 2.0, 3.0}`, as well as `Vector.new(...)`.
 - Spin: Adds `Hilbertizer` to convert bounded integer grid points to and from
   Hilbert indices in 2D, 3D, and 4D.
+- Inlet: Adds `orFunction()`, which lets a double, string, or array-of-doubles entry accept either
+  a value or a function at the same input path, e.g. `addDouble("scale").orFunction({FunctionTag::Double})`.
+  `Proxy::evaluate<T>(args...)` calls the supplied function or returns the value.
 - Primal: Adds Gregory surface classes, with a `primal::GregoryPatch` class for cubic quadrilateral surfaces and a `primal::GregoryTriangle` class for hybrid cubic-quartic triangle surfaces.
 
 ### Removed
