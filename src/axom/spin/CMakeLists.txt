@@ -21,6 +21,7 @@ set( spin_headers
      BVH.hpp
      Brood.hpp
      DenseOctreeLevel.hpp
+     HilbertIndex.hpp
      ImplicitGrid.hpp
      MortonIndex.hpp
      OctreeBase.hpp
@@ -31,6 +32,7 @@ set( spin_headers
      UniformGrid.hpp
 
      ## internal
+     internal/HilbertIndexImpl.hpp
      internal/linear_bvh/BVHNode.hpp
      internal/linear_bvh/RadixTree.hpp
      internal/linear_bvh/build_radix_tree.hpp

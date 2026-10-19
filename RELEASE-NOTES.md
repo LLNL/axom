@@ -28,6 +28,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Python: Adds a scikit-build-core project under `src/python/` to build an `axom` wheel for pip or uv.
   The wheel compiles the bindings against the Axom install specified by `AXOM_DIR`.
 - Slam: Adds C++20 concepts for sets, relations, maps, and policies in `Concepts.hpp`.
+- Inlet: A Lua callback declared to return a `Vector` may return a Lua table of one to three numbers,
+  such as `{1.0, 2.0, 3.0}`, as well as `Vector.new(...)`.
+- Spin: Adds `Hilbertizer` to convert bounded integer grid points to and from
+  Hilbert indices in 2D, 3D, and 4D.
+- Inlet: Adds `orFunction()`, which lets a double, string, or array-of-doubles entry accept either
+  a value or a function at the same input path, e.g. `addDouble("scale").orFunction({FunctionTag::Double})`.
+  `Proxy::evaluate<T>(args...)` calls the supplied function or returns the value.
+- Primal: Adds Gregory surface classes, with a `primal::GregoryPatch` class for cubic quadrilateral surfaces and a `primal::GregoryTriangle` class for hybrid cubic-quartic triangle surfaces.
 
 ### Removed
 
@@ -42,11 +50,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Quest: `MarchingCubes::setMesh()` now accepts single- and multi-domain Blueprint meshes.
 - Quest: Performance and memory improvements for `DistributedClosestPoint` query.
 - Core: Improves handling of `Array` and `ArrayView` with memory allocated with the system allocator.
+- Inlet: `LuaReader` looks up a numeric final path component as an integer key first, like the other
+  components. For example, `values/2` now reads the second entry of `values = {5.0, 6.0}`.
 
 ### Fixed
 - Sidre: Fixed `MFEMSidreDataCollection` parallel reload for workflows that save copied `ParMesh` and `ParGridFunction` objects backed by external strided coord/vector views.
 - Spin:`BVH::getBounds()` now returns an invalid bounding box instead of one that covers the whole coordinate range,
   when an empty BVH is constructed.
+- Inlet: `LuaReader` no longer terminates the process when the input supplies a non-table where a table
+  is expected, or a non-function where a function is expected. They now report a wrong-type or missing entry.
+- Inlet: `LuaReader::getAllNames()` no longer recurses infinitely on cyclic Lua tables, such as `t.self = t`.
+- Inlet: Lua callbacks copied into a `std::function` keep their Lua state alive and remain callable
+  after the `Inlet` and `LuaReader` are destroyed.
+- Inlet: Redeclaring a nested function through a parent `Container`, e.g. `addFunction("group/f", ...)`
+  after `group.addFunction("f", ...)`, returns the existing function instead of reporting a SLIC error.
 
 ## [Version 0.15.0] - Release date 2026-08-28
 
