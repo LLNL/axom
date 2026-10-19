@@ -35,6 +35,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Inlet: Adds `orFunction()`, which lets a double, string, or array-of-doubles entry accept either
   a value or a function at the same input path, e.g. `addDouble("scale").orFunction({FunctionTag::Double})`.
   `Proxy::evaluate<T>(args...)` calls the supplied function or returns the value.
+- Primal: Adds Gregory surface classes, with a `primal::GregoryPatch` class for cubic quadrilateral surfaces and a `primal::GregoryTriangle` class for hybrid cubic-quartic triangle surfaces.
 
 ### Removed
 
