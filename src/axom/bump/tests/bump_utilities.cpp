@@ -168,16 +168,39 @@ TEST(bump_utilities, copy_cuda) { test_copy_braid<cuda_exec>::test(); }
 TEST(bump_utilities, copy_hip) { test_copy_braid<hip_exec>::test(); }
 #endif
 
+TEST(bump_utilities, fill_from_node_lengths)
+{
+  axom::slic::ScopedAbortToThrow abort_guard;
+
+  conduit::Node n;
+  n["exact"].set(std::vector<int> {2, 3});
+  n["long"].set(std::vector<int> {4, 5, 6});
+  n["short"].set(std::vector<int> {7});
+
+  axom::StackArray<int, 2> arr {{-1, -1}};
+  EXPECT_FALSE(utils::fillFromNode(n, "missing", arr));
+  EXPECT_EQ(arr[0], -1);
+
+  EXPECT_TRUE(utils::fillFromNode(n, "exact", arr));
+  EXPECT_EQ(arr[0], 2);
+  EXPECT_EQ(arr[1], 3);
+
+  // Extra values are ignored.
+  EXPECT_TRUE(utils::fillFromNode(n, "long", arr, true));
+  EXPECT_EQ(arr[0], 4);
+  EXPECT_EQ(arr[1], 5);
+
+  // Too few values would read past the end of the node's data.
+  EXPECT_THROW(utils::fillFromNode(n, "short", arr), axom::slic::SlicAbortException);
+  EXPECT_THROW(utils::fillFromNode(n, "short", arr, true), axom::slic::SlicAbortException);
+}
+
 //------------------------------------------------------------------------------
-// Check the indexing contract between a topology and its vertex fields.
-//
-// Bump indexes a flat field with the node ids from TopologyView::zone().
-// For a strided structured topology, any field-specific offsets and strides
-// must match the topology.
+// Bump uses topology node ids to access flat vertex fields.
+// A strided field's offsets and strides must match the topology.
 //------------------------------------------------------------------------------
 TEST(bump_utilities, validate_vertex_field_indexing_compact)
 {
-  // This compact mesh has no offset or stride metadata.
   conduit::Node mesh;
   conduit::blueprint::mesh::examples::braid("hexs", 4, 4, 4, mesh);
 
@@ -206,8 +229,8 @@ TEST(bump_utilities, validate_vertex_field_indexing_rejects_mismatch)
   conduit::Node mesh;
   axom::blueprint::testing::data::strided_structured<2>(mesh);
 
-  // Change one field offset. Without this check, Bump would read shifted values
-  // and place the contour incorrectly.
+  // Change one field offset.
+  // Without this check, Bump would read shifted values and place the contour incorrectly.
   {
     conduit::Node perturbed;
     perturbed.set(mesh);
@@ -225,6 +248,17 @@ TEST(bump_utilities, validate_vertex_field_indexing_rejects_mismatch)
                  axom::slic::SlicAbortException);
   }
 
+  // Strided fields require strides. Offsets are optional.
+  {
+    conduit::Node offsets_only;
+    offsets_only.set(mesh);
+    offsets_only["fields/vert_vals"].remove("strides");
+    EXPECT_THROW(utils::validateVertexFieldIndexing(offsets_only["topologies/mesh"],
+                                                    offsets_only["fields/vert_vals"],
+                                                    "vert_vals"),
+                 axom::slic::SlicAbortException);
+  }
+
   // Reject field layout metadata on a compact topology.
   {
     conduit::Node compact;
@@ -238,6 +272,142 @@ TEST(bump_utilities, validate_vertex_field_indexing_rejects_mismatch)
                  axom::slic::SlicAbortException);
   }
 }
+
+TEST(bump_utilities, validate_vertex_field_indexing_resolves_defaults)
+{
+  axom::slic::ScopedAbortToThrow abort_guard;
+
+  // The topology omits offsets, so they default to 0. The field explicitly uses [0, 0].
+  conduit::Node mesh;
+  axom::blueprint::testing::data::strided_structured<2>(mesh);
+  mesh["topologies/mesh/elements/dims"].remove("offsets");
+  conduit::Node& n_field = mesh["fields/vert_vals"];
+  conduit::index_t* offsets = n_field["offsets"].value();
+  offsets[0] = 0;
+  offsets[1] = 0;
+  EXPECT_NO_THROW(utils::validateVertexFieldIndexing(mesh["topologies/mesh"], n_field, "vert_vals"));
+
+  // An explicit compact field layout matches a compact structured topology.
+  conduit::Node compact;
+  conduit::blueprint::mesh::examples::braid("structured", 4, 5, 0, compact);
+  conduit::Node& n_compactField = compact["fields/braid"];
+  n_compactField["offsets"].set(std::vector<conduit::index_t> {0, 0});
+  n_compactField["strides"].set(std::vector<conduit::index_t> {1, 4});
+  EXPECT_NO_THROW(
+    utils::validateVertexFieldIndexing(compact["topologies/mesh"], n_compactField, "braid"));
+
+  // Strided topology metadata requires strides, like strided field metadata.
+  conduit::Node offsets_only_topology;
+  offsets_only_topology.set(mesh);
+  offsets_only_topology["topologies/mesh/elements/dims/offsets"].set(
+    std::vector<conduit::index_t> {0, 0});
+  offsets_only_topology["topologies/mesh/elements/dims"].remove("strides");
+  EXPECT_THROW(utils::validateVertexFieldIndexing(offsets_only_topology["topologies/mesh"],
+                                                  offsets_only_topology["fields/vert_vals"],
+                                                  "vert_vals"),
+               axom::slic::SlicAbortException);
+
+  // A different j-stride on the same compact topology is rejected.
+  conduit::index_t* strides = n_compactField["strides"].value();
+  strides[1] = 5;
+  EXPECT_THROW(
+    utils::validateVertexFieldIndexing(compact["topologies/mesh"], n_compactField, "braid"),
+    axom::slic::SlicAbortException);
+}
+
+TEST(bump_utilities, validate_vertex_field_indexing_rejects_stride_mismatch)
+{
+  axom::slic::ScopedAbortToThrow abort_guard;
+
+  conduit::Node mesh;
+  axom::blueprint::testing::data::strided_structured<2>(mesh);
+
+  // Same offsets, different j-stride.
+  conduit::Node& n_field = mesh["fields/vert_vals"];
+  conduit::index_t* strides = n_field["strides"].value();
+  strides[1] += 1;
+
+  EXPECT_THROW(utils::validateVertexFieldIndexing(mesh["topologies/mesh"], n_field, "vert_vals"),
+               axom::slic::SlicAbortException);
+}
+
+TEST(bump_utilities, validate_vertex_field_indexing_rejects_topology_i_stride)
+{
+  axom::slic::ScopedAbortToThrow abort_guard;
+
+  // StructuredTopologyView::zone() assumes adjacent corners differ by 1 in i.
+  conduit::Node mesh;
+  axom::blueprint::testing::data::strided_structured<2>(mesh);
+  conduit::int_accessor topoStrides = mesh["topologies/mesh/elements/dims/strides"].as_int_accessor();
+  const std::vector<int> wide {2, topoStrides[1] * 2};
+  mesh["topologies/mesh/elements/dims/strides"].set(wide);
+  mesh["fields/vert_vals"].remove("offsets");
+  mesh["fields/vert_vals"].remove("strides");
+
+  EXPECT_THROW(utils::validateVertexFieldIndexing(mesh["topologies/mesh"],
+                                                  mesh["fields/vert_vals"],
+                                                  "vert_vals"),
+               axom::slic::SlicAbortException);
+}
+
+TEST(bump_utilities, validate_vertex_field_indexing_strided_topology_plain_field)
+{
+  // Without field layout metadata, topology node ids index the values directly,
+  // which is correct when the field is sized like the coordset.
+  conduit::Node mesh;
+  axom::blueprint::testing::data::strided_structured<2>(mesh);
+  conduit::Node& n_field = mesh["fields/vert_vals"];
+  n_field.remove("offsets");
+  n_field.remove("strides");
+
+  EXPECT_NO_FATAL_FAILURE(
+    utils::validateVertexFieldIndexing(mesh["topologies/mesh"], n_field, "vert_vals"));
+}
+
+template <typename ExecSpace>
+void test_validate_vertex_field_indexing_memory()
+{
+  axom::slic::ScopedAbortToThrow abort_guard;
+
+  conduit::Node hostMesh, deviceMesh;
+  axom::blueprint::testing::data::strided_structured<3>(hostMesh);
+  utils::copy<ExecSpace>(deviceMesh, hostMesh);
+  EXPECT_NO_THROW(utils::validateVertexFieldIndexing(deviceMesh["topologies/mesh"],
+                                                     deviceMesh["fields/vert_vals"],
+                                                     "vert_vals"));
+
+  // Shift the field's k-offset, then copy the bad metadata to ExecSpace memory.
+  conduit::index_t* offsets = hostMesh["fields/vert_vals/offsets"].value();
+  offsets[2] += 1;
+  utils::copy<ExecSpace>(deviceMesh, hostMesh);
+  EXPECT_THROW(utils::validateVertexFieldIndexing(deviceMesh["topologies/mesh"],
+                                                  deviceMesh["fields/vert_vals"],
+                                                  "vert_vals"),
+               axom::slic::SlicAbortException);
+}
+
+TEST(bump_utilities, validate_vertex_field_indexing_memory_seq)
+{
+  test_validate_vertex_field_indexing_memory<seq_exec>();
+}
+#if defined(AXOM_USE_OPENMP)
+TEST(bump_utilities, validate_vertex_field_indexing_memory_omp)
+{
+  test_validate_vertex_field_indexing_memory<omp_exec>();
+}
+#endif
+#if defined(AXOM_USE_CUDA)
+TEST(bump_utilities, validate_vertex_field_indexing_memory_cuda)
+{
+  test_validate_vertex_field_indexing_memory<cuda_exec>();
+}
+#endif
+#if defined(AXOM_USE_HIP)
+TEST(bump_utilities, validate_vertex_field_indexing_memory_hip)
+{
+  test_validate_vertex_field_indexing_memory<hip_exec>();
+}
+#endif
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])

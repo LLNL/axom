@@ -151,7 +151,7 @@ struct make_uniform_coordset<2>
 };
 
 /*!
- * \brief Dispatch a uniform coordset to a callable.
+ * \brief Dispatch a uniform coordset to a function.
  *
  * \tparam SelectedDimensions A mask returned by \ref select_dimensions.
  *                  Only selected dimensions are instantiated;
@@ -159,7 +159,7 @@ struct make_uniform_coordset<2>
  * \tparam FuncType Callable type that accepts a coordset view.
  *
  * \param coordset The Conduit node that contains the coordset.
- * \param func     The callable to invoke with the coordset view.
+ * \param func     The function to invoke with the coordset view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_uniform_coordset(const conduit::Node& coordset, FuncType&& func)
@@ -190,7 +190,7 @@ void dispatch_uniform_coordset(const conduit::Node& coordset, FuncType&& func)
 }
 
 /*!
- * \brief Dispatch a rectilinear coordset to a callable.
+ * \brief Dispatch a rectilinear coordset to a function.
  *
  * \tparam SelectedDimensions A mask returned by \ref select_dimensions.
  *                  Only selected dimensions are instantiated;
@@ -198,7 +198,7 @@ void dispatch_uniform_coordset(const conduit::Node& coordset, FuncType&& func)
  * \tparam FuncType Callable type that accepts a coordset view.
  *
  * \param coordset The Conduit node that contains the coordset.
- * \param func     The callable to invoke with the coordset view.
+ * \param func     The function to invoke with the coordset view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_rectilinear_coordset(const conduit::Node& coordset, FuncType&& func)
@@ -296,7 +296,7 @@ struct make_explicit_coordset<DataType, 2>
 };
 
 /*!
- * \brief Dispatch an explicit coordset to a callable.
+ * \brief Dispatch an explicit coordset to a function.
  *
  * \tparam SelectedDimensions A mask returned by \ref select_dimensions.
  *                  Only selected dimensions are instantiated;
@@ -304,7 +304,7 @@ struct make_explicit_coordset<DataType, 2>
  * \tparam FuncType Callable type that accepts a coordset view.
  *
  * \param coordset The Conduit node that contains the coordset.
- * \param func     The callable to invoke with the coordset view.
+ * \param func     The function to invoke with the coordset view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_explicit_coordset(const conduit::Node& coordset, FuncType&& func)
@@ -350,7 +350,7 @@ void dispatch_explicit_coordset(const conduit::Node& coordset, FuncType&& func)
  * \tparam FuncType Callable type that accepts a coordset view.
  *
  * \param coordset The Conduit node that contains the coordset.
- * \param func     The callable to invoke with the coordset view.
+ * \param func     The function to invoke with the coordset view.
  */
 template <int SelectedDimensions = select_dimensions(1, 2, 3), typename FuncType>
 void dispatch_coordset(const conduit::Node& coordset, FuncType&& func)

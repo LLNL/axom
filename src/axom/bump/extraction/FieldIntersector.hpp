@@ -112,14 +112,14 @@ public:
   };
 
   /*!
-   * \brief Initialize the intersector from the input mesh and options.
+   * \brief Initialize the intersector.
    *
    * \param[in] topologyView (unused) View of the input topology.
    * \param[in] coordsetView (unused) View of the input coordset.
-   * \param[in] n_options Node containing the extraction options.
-   * \param[in] n_topology Node containing the input topology.
-   * \param[in] n_coordset (unused) Node containing the input coordset.
-   * \param[in] n_fields Node containing the input fields.
+   * \param[in] n_options Extraction options.
+   * \param[in] n_topology Input topology.
+   * \param[in] n_coordset (unused) Input coordset.
+   * \param[in] n_fields Input fields.
    */
   void initialize(const TopologyView& AXOM_UNUSED_PARAM(topologyView),
                   const CoordsetView& AXOM_UNUSED_PARAM(coordsetView),

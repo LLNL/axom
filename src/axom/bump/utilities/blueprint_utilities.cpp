@@ -6,6 +6,7 @@
 
 #include "axom/core.hpp"
 #include "axom/bump/utilities/blueprint_utilities.hpp"
+#include "axom/bump/IndexingPolicies.hpp"
 
 #include "axom/bump/utilities/conduit_memory.hpp"
 #include "axom/slic.hpp"
@@ -44,42 +45,58 @@ std::vector<std::string> coordsetAxes(const conduit::Node& n_input)
 namespace
 {
 
-/*!
- * \brief Copy an integer metadata array from \a path into host memory.
- *
- * \param[in] n Node to query.
- * \param[in] path Path to the metadata array within \a n.
- * \param[out] values Host vector that receives the values.
- *
- * \return true when \a path exists. In that case, the function fills \a values.
- */
-bool readIndexMetadata(const conduit::Node& n, const std::string& path, std::vector<int>& values)
+// Format a strided layout for diagnostics.
+template <typename Indexing>
+std::string formatLayout(const Indexing& indexing)
 {
-  if(!n.has_path(path))
-  {
-    return false;
-  }
-  // The Conduit node may refer to device memory, but the accessor below runs on the host.
-  conduit::Node hostNode;
-  axom::bump::utilities::copy<axom::SEQ_EXEC>(hostNode, n.fetch_existing(path));
-
-  const auto acc = hostNode.as_int_accessor();
-  values.resize(static_cast<std::size_t>(acc.number_of_elements()));
-  for(std::size_t i = 0; i < values.size(); i++)
-  {
-    values[i] = acc[static_cast<conduit::index_t>(i)];
-  }
-  return true;
+  constexpr int NDIMS = Indexing::dimension();
+  return axom::fmt::format(
+    "offsets [{}] and strides [{}]",
+    axom::fmt::join(&indexing.m_offsets[0], &indexing.m_offsets[0] + NDIMS, ", "),
+    axom::fmt::join(&indexing.m_strides[0], &indexing.m_strides[0] + NDIMS, ", "));
 }
 
-std::string formatIndices(const std::vector<int>& values)
+// Compare a vertex field's resolved layout with the structured topology's node layout.
+template <int NDIMS>
+void validateStructuredVertexField(const conduit::Node& n_hostDims,
+                                   const conduit::Node& n_field,
+                                   const std::string& fieldName)
 {
-  std::string s("[");
-  for(std::size_t i = 0; i < values.size(); i++)
+  using Indexing = axom::bump::views::StridedStructuredIndexing<axom::IndexType, NDIMS>;
+  using LogicalIndex = typename Indexing::LogicalIndex;
+
+  // elements/dims holds zone counts. A vertex field has one more node along each axis.
+  const char* axes[] = {"i", "j", "k"};
+  LogicalIndex nodeDims;
+  for(int d = 0; d < NDIMS; d++)
   {
-    s += (i ? ", " : "") + std::to_string(values[i]);
+    nodeDims[d] = n_hostDims.fetch_existing(axes[d]).to_index_t() + 1;
   }
-  return s + "]";
+  Indexing topoLayout(nodeDims);
+  axom::bump::detail::setLayoutFromNode(n_hostDims, topoLayout);
+
+  // StructuredTopologyView::zone() constructs adjacent corner ids by adding 1.
+  SLIC_ERROR_IF(topoLayout.m_strides[0] != 1,
+                axom::fmt::format("Bump requires a structured topology whose i-stride is 1, "
+                                  "but the topology has {}.",
+                                  formatLayout(topoLayout)));
+
+  if(!n_field.has_path("offsets") && !n_field.has_path("strides"))
+  {
+    // Topology node ids directly index fields without layout metadata.
+    return;
+  }
+
+  Indexing fieldLayout(nodeDims);
+  axom::bump::detail::setLayoutFromNode(n_field, fieldLayout);
+  SLIC_ERROR_IF(
+    fieldLayout.m_offsets != topoLayout.m_offsets || fieldLayout.m_strides != topoLayout.m_strides,
+    axom::fmt::format(
+      "Field '{}' has {}, but the topology node layout has {}. "
+      "Bump kernels index this field by topology node id, so the layouts must match.",
+      fieldName,
+      formatLayout(fieldLayout),
+      formatLayout(topoLayout)));
 }
 
 }  // end anonymous namespace
@@ -88,49 +105,34 @@ void validateVertexFieldIndexing(const conduit::Node& n_topology,
                                  const conduit::Node& n_field,
                                  const std::string& fieldName)
 {
-  std::vector<int> topoOffsets, topoStrides;
-  const bool hasTopoOffsets = readIndexMetadata(n_topology, "elements/dims/offsets", topoOffsets);
-  const bool hasTopoStrides = readIndexMetadata(n_topology, "elements/dims/strides", topoStrides);
-
-  // StructuredTopologyView::zone() constructs adjacent corner ids by adding 1.
-  // Any other i-stride produces incorrect zones.
-  SLIC_ERROR_IF(
-    hasTopoStrides && !topoStrides.empty() && topoStrides[0] != 1,
-    axom::fmt::format(
-      "Bump requires a structured topology whose i-stride is 1, but the topology has strides {}.",
-      formatIndices(topoStrides)));
-
-  std::vector<int> fieldOffsets, fieldStrides;
-  const bool hasFieldOffsets = readIndexMetadata(n_field, "offsets", fieldOffsets);
-  const bool hasFieldStrides = readIndexMetadata(n_field, "strides", fieldStrides);
-
-  if(!hasFieldOffsets && !hasFieldStrides)
+  const bool fieldHasLayout = n_field.has_path("offsets") || n_field.has_path("strides");
+  if(!n_topology.has_path("elements/dims"))
   {
-    // Without field-specific layout metadata, topology node ids index the values directly.
+    SLIC_ERROR_IF(fieldHasLayout,
+                  axom::fmt::format("Field '{}' has Blueprint offsets or strides, but its topology "
+                                    "is not structured. Bump kernels use topology node ids and do "
+                                    "not apply the field layout.",
+                                    fieldName));
     return;
   }
 
-  SLIC_ERROR_IF(
-    !hasTopoOffsets && !hasTopoStrides,
-    axom::fmt::format("Field '{}' has Blueprint offsets or strides, but its topology does not. "
-                      "Bump kernels use topology node ids and do not apply the field's layout.",
-                      fieldName));
-
-  SLIC_ERROR_IF(
-    hasFieldOffsets && fieldOffsets != topoOffsets,
-    axom::fmt::format("Field '{}' has offsets {}, but its topology has offsets {}. Bump kernels "
-                      "use topology node ids and do not apply separate field offsets.",
-                      fieldName,
-                      formatIndices(fieldOffsets),
-                      formatIndices(topoOffsets)));
-
-  SLIC_ERROR_IF(
-    hasFieldStrides && fieldStrides != topoStrides,
-    axom::fmt::format("Field '{}' has strides {}, but its topology has strides {}. Bump kernels "
-                      "use topology node ids and do not apply separate field strides.",
-                      fieldName,
-                      formatIndices(fieldStrides),
-                      formatIndices(topoStrides)));
+  // Copy dimensions to the host because the topology may reside in device memory.
+  const conduit::Node& n_dims = n_topology.fetch_existing("elements/dims");
+  conduit::Node n_host;
+  conduit::Node& n_hostDims = n_host[n_dims.path()];
+  axom::bump::utilities::copy<axom::SEQ_EXEC>(n_hostDims, n_dims);
+  if(n_hostDims.has_child("k"))
+  {
+    validateStructuredVertexField<3>(n_hostDims, n_field, fieldName);
+  }
+  else if(n_hostDims.has_child("j"))
+  {
+    validateStructuredVertexField<2>(n_hostDims, n_field, fieldName);
+  }
+  else
+  {
+    validateStructuredVertexField<1>(n_hostDims, n_field, fieldName);
+  }
 }
 
 }  // end namespace utilities
