@@ -41,12 +41,14 @@
 
 #include "gtest/gtest.h"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <limits>
 #include <map>
 #include <set>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -545,6 +547,78 @@ void test_structured_planar_mask(RuntimePolicy policy)
                   7);
 }
 
+void test_strided_planar_mask_with_field_layout(RuntimePolicy policy)
+{
+  constexpr int n = 8;
+  conduit::Node mesh;
+  PlanarField f {{0.30, 0.5, 0.5}, {1.0, 0.0, 0.0}};
+  mctest::buildStridedStructured<3>(mesh, n, 1, f, "fcn");
+
+  constexpr int MASK_INCLUDE = 7;
+  constexpr int MASK_EXCLUDE = 3;
+  const auto in_mask = [](int, int j, int) { return j < n / 2; };
+  const auto index_to_ijk = [](axom::IndexType index) {
+    return std::array<int, 3> {static_cast<int>(index % n),
+                               static_cast<int>((index / n) % n),
+                               static_cast<int>(index / (n * n))};
+  };
+
+  // Add a padded element field whose layout differs from the topology and coordinate layout.
+  [&] {
+    constexpr int pad = 2;
+    constexpr int extent = n + 2 * pad;
+    const std::vector<int> offsets {pad, pad, pad};
+    const std::vector<int> strides {1, extent, extent * extent};
+    const auto ijk_to_index = [&](int i, int j, int k) {
+      return (i + offsets[0]) * strides[0] + (j + offsets[1]) * strides[1] +
+        (k + offsets[2]) * strides[2];
+    };
+
+    conduit::Node& mask = mesh["fields/mask"];
+    mask["topology"] = "mesh";
+    mask["association"] = "element";
+    mask["offsets"].set(offsets);
+    mask["strides"].set(strides);
+    mask["values"].set(conduit::DataType::int32(conduit::index_t(extent) * extent * extent));
+    auto* values = mask["values"].as_int32_ptr();
+    std::fill(values, values + mask["values"].dtype().number_of_elements(), MASK_EXCLUDE);
+
+    for(int k = 0; k < n; ++k)
+    {
+      for(int j = 0; j < n; ++j)
+      {
+        for(int i = 0; i < n; ++i)
+        {
+          values[ijk_to_index(i, j, k)] = in_mask(i, j, k) ? MASK_INCLUDE : MASK_EXCLUDE;
+        }
+      }
+    }
+  }();
+
+  const int allocatorID = axom::policyToDefaultAllocatorID(policy);
+  axom::quest::MarchingCubes mc(policy,
+                                allocatorID,
+                                axom::quest::MarchingCubesDataParallelism::byPolicy);
+  mc.setUseBumpBackend(true);
+
+  conduit::Node execMesh;
+  copyBlueprintToPolicy(execMesh, mesh, policy, allocatorID);
+  mc.setMesh(execMesh, "mesh", "mask");
+  mc.setMaskValue(MASK_INCLUDE);
+  mc.setFunctionField("fcn");
+  mc.computeIsocontour(0.0);
+
+  const axom::Array<axom::IndexType> parentsHost(mc.getContourFacetParents(), hostAllocatorID());
+  const auto parents = parentsHost.view();
+  // Each selected cell produces two contour facets. Every facet must retain a parent in the mask.
+  EXPECT_EQ(parents.size(), axom::IndexType(n) * n);
+  for(const auto parent : parents)
+  {
+    const auto ijk = index_to_ijk(parent);
+    EXPECT_TRUE(in_mask(ijk[0], ijk[1], ijk[2]));
+  }
+}
+
 // The conversion helper operates on a Sidre group.
 void test_unstructured_hex_round(RuntimePolicy policy)
 {
@@ -812,6 +886,10 @@ TEST(quest_marching_cubes_bump, structured_round) { forEachEnabledPolicy(test_st
 TEST(quest_marching_cubes_bump, structured_planar_mask)
 {
   forEachEnabledPolicy(test_structured_planar_mask);
+}
+TEST(quest_marching_cubes_bump, strided_planar_mask_with_field_layout)
+{
+  forEachEnabledPolicy(test_strided_planar_mask_with_field_layout);
 }
 TEST(quest_marching_cubes_bump, unstructured_hex_round)
 {

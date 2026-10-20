@@ -44,6 +44,7 @@
 // Bump extraction and views.
 #include "axom/bump/extraction/CutField.hpp"
 #include "axom/bump/extraction/FieldIntersector.hpp"
+#include "axom/bump/IndexingPolicies.hpp"
 #include "axom/bump/SelectedZones.hpp"
 #include "axom/bump/views/NodeArrayView.hpp"
 #include "axom/bump/views/dispatch_coordset.hpp"
@@ -387,8 +388,8 @@ private:
   /*!
    * @brief Restrict extraction to zones with the requested mask value.
    *
-   * The topology view maps compact zone indices to mask field indices.
-   * This accounts for padding in strided structured fields.
+   * The field indexing maps compact zone indices to mask field indices.
+   * This accounts for field-specific padding in strided structured fields.
    */
   template <typename TopologyView>
   void addMaskSelectedZonesOption(const TopologyView& topologyView,
@@ -406,16 +407,16 @@ private:
     const conduit::Node& n_mask =
       m_dom->fetch_existing(axom::fmt::format("fields/{}", m_maskFieldName));
     const conduit::Node& n_maskValues = n_mask.fetch_existing("values");
+    const auto maskIndexing = axom::bump::makeElementFieldIndexing(topologyView, n_mask);
 
     // Copy the member so the device predicate does not dereference the host `this` pointer.
     const int maskVal = m_maskVal;
 
     auto maskView = bputils::make_array_view<int>(n_maskValues);
-    const TopologyView deviceTopologyView(topologyView);
     buildSelectedZonesFromMask(
       nZones,
-      [maskView, maskVal, deviceTopologyView] AXOM_HOST_DEVICE(axom::IndexType zoneIndex) {
-        return maskView[deviceTopologyView.zoneFieldIndex(zoneIndex)] == maskVal;
+      [maskView, maskVal, maskIndexing] AXOM_HOST_DEVICE(axom::IndexType zoneIndex) {
+        return maskView[maskIndexing[zoneIndex]] == maskVal;
       },
       n_options,
       selectedZones);
