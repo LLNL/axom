@@ -39,6 +39,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Bump: The coordset dispatchers accept a `SelectedDimensions` mask, like the topology dispatchers.
 - Quest: Adds `DipoleGWNQuery` which provides fast, robust containment queries on (oriented) point clouds. 
   Built on a new `primal::Dipole` class which holds source, direction, and magnitude of each point in a cloud.
+- Spin: Adds optional Hilbert ordering for BVH construction through
+  `SpaceFillingCurve` and `BVH::setOrdering/getOrdering`; Morton remains the default.
+- Spin: Adds a Morton/Hilbert visualization example that exports 2D/3D Blueprint
+  point, grid, and curve meshes.
 
 ### Removed
 
