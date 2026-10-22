@@ -37,6 +37,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `Proxy::evaluate<T>(args...)` calls the supplied function or returns the value.
 - Primal: Adds Gregory surface classes, with a `primal::GregoryPatch` class for cubic quadrilateral surfaces and a `primal::GregoryTriangle` class for hybrid cubic-quartic triangle surfaces.
 - Bump: The coordset dispatchers accept a `SelectedDimensions` mask, like the topology dispatchers.
+- Spin: Adds optional Hilbert ordering for BVH construction through
+  `SpaceFillingCurve` and `BVH::setOrdering/getOrdering`; Morton remains the default.
+- Spin: Adds a Morton/Hilbert visualization example that exports 2D/3D Blueprint
+  point, grid, and curve meshes.
 
 ### Removed
 
