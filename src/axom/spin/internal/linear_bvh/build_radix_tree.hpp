@@ -25,31 +25,31 @@
 
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 #include "axom/spin/MortonIndex.hpp"
+#include "axom/spin/HilbertIndex.hpp"
+#include "axom/spin/SpaceFillingCurve.hpp"
 
 #include <atomic>
+#include <type_traits>
+#include <vector>
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
   // NOTE: uses the cub installation that is  bundled with RAJA
   #include "cub/device/device_radix_sort.cuh"
 #endif
 
-namespace axom
-{
-namespace spin
-{
-namespace internal
-{
-namespace linear_bvh
+namespace axom::spin::internal::linear_bvh
 {
 //------------------------------------------------------------------------------
-//Returns 30 bit morton code for coordinates point is expected to be between [0,1]
+// Encodes normalized coordinates in [0,1] using the selected spatial ordering.
+// Uses 16 bits per axis in 2D and 10 bits per axis in 3D.
 template <typename FloatType, int Dims>
-static inline AXOM_HOST_DEVICE std::uint32_t morton32_encode(const primal::Vector<FloatType, Dims>& point)
+static inline AXOM_HOST_DEVICE std::uint32_t encode_spatial_key(
+  const primal::Vector<FloatType, Dims>& point,
+  SpaceFillingCurve ordering)
 {
   using PointType = primal::Point<std::int32_t, Dims>;
   using axom::utilities::clampVal;
 
-  //for a float, take the first 10 bits. Note, 2^10 = 1024
   constexpr int NUM_BITS_PER_DIM = 32 / Dims;
   constexpr FloatType FLOAT_TO_INT = 1 << NUM_BITS_PER_DIM;
   constexpr FloatType FLOAT_CEILING = FLOAT_TO_INT - 1;
@@ -62,7 +62,10 @@ static inline AXOM_HOST_DEVICE std::uint32_t morton32_encode(const primal::Vecto
       static_cast<std::int32_t>(clampVal(point[i] * FLOAT_TO_INT, FLOAT_ZERO, FLOAT_CEILING));
   }
 
-  return convertPointToMorton<std::uint32_t>(PointType(int_coords));
+  const PointType cell(int_coords);
+  return ordering == SpaceFillingCurve::Hilbert
+    ? convertPointToHilbert<std::uint32_t>(cell, NUM_BITS_PER_DIM)
+    : convertPointToMorton<std::uint32_t>(cell);
 }
 
 //------------------------------------------------------------------------------
@@ -139,12 +142,13 @@ primal::BoundingBox<FloatType, NDIMS> reduce(ArrayView<const primal::BoundingBox
 
 //------------------------------------------------------------------------------
 template <typename ExecSpace, typename FloatType, int NDIMS>
-void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
-                std::int32_t size,
-                const primal::BoundingBox<FloatType, NDIMS>& bounds,
-                const ArrayView<std::uint32_t> mcodes)
+void get_spatial_keys(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
+                      std::int32_t size,
+                      const primal::BoundingBox<FloatType, NDIMS>& bounds,
+                      const ArrayView<std::uint32_t> keys,
+                      SpaceFillingCurve ordering)
 {
-  AXOM_ANNOTATE_SCOPE("get_mcodes");
+  AXOM_ANNOTATE_SCOPE("get_spatial_keys");
 
   primal::Vector<FloatType, NDIMS> extent, inv_extent, min_coord;
 
@@ -163,7 +167,7 @@ void get_mcodes(ArrayView<const primal::BoundingBox<FloatType, NDIMS>> aabbs,
     // get the center and normalize it
     primal::Vector<FloatType, NDIMS> centroid(aabb.getCentroid());
     centroid = primal::Vector<FloatType, NDIMS>((centroid - min_coord).array() * inv_extent.array());
-    mcodes[i] = morton32_encode(centroid);
+    keys[i] = encode_spatial_key(centroid, ordering);
   });
 }
 
@@ -211,17 +215,17 @@ void reorder(const ArrayView<const std::int32_t> indices,
   ((RAJA_VERSION_MAJOR > 0) || ((RAJA_VERSION_MAJOR == 0) && (RAJA_VERSION_MINOR >= 12)))
 
 template <typename ExecSpace>
-void sort_mcodes(ArrayView<std::uint32_t> mcodes, std::int32_t size, ArrayView<std::int32_t> iter)
+void sort_spatial_keys(ArrayView<std::uint32_t> keys, std::int32_t size, ArrayView<std::int32_t> iter)
 {
-  AXOM_ANNOTATE_SCOPE("sort_mcodes");
+  AXOM_ANNOTATE_SCOPE("sort_spatial_keys");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
 
   {
     AXOM_ANNOTATE_SCOPE("raja_stable_sort");
-    ArrayView<std::uint32_t> mcode_view(mcodes.data(), size);
+    ArrayView<std::uint32_t> keys_view(keys.data(), size);
     ArrayView<std::int32_t> iter_view(iter.data(), size);
-    axom::stable_sort_pairs<ExecSpace>(mcode_view, iter_view);
+    axom::stable_sort_pairs<ExecSpace>(keys_view, iter_view);
   }
 }
 
@@ -229,9 +233,9 @@ void sort_mcodes(ArrayView<std::uint32_t> mcodes, std::int32_t size, ArrayView<s
 
 // fall back to std::stable_sort
 template <typename ExecSpace>
-void sort_mcodes(Array<std::uint32_t>& mcodes, std::int32_t size, const ArrayView<std::int32_t> iter)
+void sort_spatial_keys(Array<std::uint32_t>& keys, std::int32_t size, const ArrayView<std::int32_t> iter)
 {
-  AXOM_ANNOTATE_SCOPE("sort_mcodes");
+  AXOM_ANNOTATE_SCOPE("sort_spatial_keys");
 
   array_counting<ExecSpace>(iter, size, 0, 1);
 
@@ -239,29 +243,29 @@ void sort_mcodes(Array<std::uint32_t>& mcodes, std::int32_t size, const ArrayVie
     AXOM_ANNOTATE_SCOPE("cpu_sort");
 
     std::stable_sort(iter.begin(), iter.begin() + size, [&](std::int32_t i1, std::int32_t i2) {
-      return mcodes[i1] < mcodes[i2];
+      return keys[i1] < keys[i2];
     });
   }
 
   const int allocID = axom::execution_space<ExecSpace>::allocatorID();
-  reorder<ExecSpace>(iter, mcodes, size, allocID);
+  reorder<ExecSpace>(iter, keys, size, allocID);
 }
 
 #endif /* RAJA version 0.12.0 and above */
 
 //------------------------------------------------------------------------------
-template <typename IntType, typename MCType>
+template <typename IntType, typename KeyType>
 AXOM_HOST_DEVICE IntType
-delta(const IntType& a, const IntType& b, const IntType& inner_size, axom::ArrayView<MCType> mcodes)
+delta(const IntType& a, const IntType& b, const IntType& inner_size, axom::ArrayView<KeyType> keys)
 {
   bool tie = false;
   bool out_of_range = (b < 0 || b > inner_size);
   //still make the call but with a valid adderss
   const std::int32_t bb = (out_of_range) ? 0 : b;
-  const std::uint32_t acode = mcodes[a];
-  const std::uint32_t bcode = mcodes[bb];
+  const std::uint32_t a_key = keys[a];
+  const std::uint32_t b_key = keys[bb];
   //use xor to find where they differ
-  std::uint32_t exor = acode ^ bcode;
+  std::uint32_t exor = a_key ^ b_key;
   tie = (exor == 0);
   //break the tie, a and b must always differ
   exor = tie ? std::uint32_t(a) ^ std::uint32_t(bb) : exor;
@@ -290,18 +294,17 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
   const auto lchildren_ptr = data.m_left_children.view();
   const auto rchildren_ptr = data.m_right_children.view();
   const auto parent_ptr = data.m_parents.view();
-  const auto mcodes_ptr = data.m_mcodes.view();
+  const auto keys_ptr = data.m_keys.view();
 
   for_all<ExecSpace>(inner_size, [=] AXOM_HOST_DEVICE(std::int32_t i) {
     //determine range direction
     std::int32_t d =
-      0 > (delta(i, i + 1, inner_size, mcodes_ptr) - delta(i, i - 1, inner_size, mcodes_ptr)) ? -1
-                                                                                              : 1;
+      0 > (delta(i, i + 1, inner_size, keys_ptr) - delta(i, i - 1, inner_size, keys_ptr)) ? -1 : 1;
 
     //find upper bound for the length of the range
-    std::int32_t min_delta = delta(i, i - d, inner_size, mcodes_ptr);
+    std::int32_t min_delta = delta(i, i - d, inner_size, keys_ptr);
     std::int32_t lmax = 2;
-    while(delta(i, i + lmax * d, inner_size, mcodes_ptr) > min_delta)
+    while(delta(i, i + lmax * d, inner_size, keys_ptr) > min_delta)
     {
       lmax *= 2;
     }
@@ -310,21 +313,21 @@ void build_tree(RadixTree<FloatType, NDIMS>& data)
     std::int32_t l = 0;
     for(std::int32_t t = lmax / 2; t >= 1; t /= 2)
     {
-      if(delta(i, i + (l + t) * d, inner_size, mcodes_ptr) > min_delta)
+      if(delta(i, i + (l + t) * d, inner_size, keys_ptr) > min_delta)
       {
         l += t;
       }
     }
 
     std::int32_t j = i + l * d;
-    std::int32_t delta_node = delta(i, j, inner_size, mcodes_ptr);
+    std::int32_t delta_node = delta(i, j, inner_size, keys_ptr);
     std::int32_t s = 0;
     FloatType div_factor = 2.f;
     //find the split postition using a binary search
     for(std::int32_t t = (std::int32_t)ceil(float32(l) / div_factor);;
         div_factor *= 2, t = (std::int32_t)ceil(float32(l) / div_factor))
     {
-      if(delta(i, i + (s + t) * d, inner_size, mcodes_ptr) > delta_node)
+      if(delta(i, i + (s + t) * d, inner_size, keys_ptr) > delta_node)
       {
         s += t;
       }
@@ -580,19 +583,22 @@ void propagate_aabbs(RadixTree<FloatType, NDIMS>& data, int allocatorID)
 }
 
 //------------------------------------------------------------------------------
+/*!
+ * \brief Allocate and sort the leaves of a radix tree.
+ *
+ * \note This does not construct the radix-tree topology. Call
+ * `build_radix_tree_hierarchy()` after this function to complete the
+ * tree.
+ */
 template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
-void build_radix_tree(const BoxIndexable boxes,
-                      int size,
-                      primal::BoundingBox<FloatType, NDIMS>& bounds,
-                      RadixTree<FloatType, NDIMS>& radix_tree,
-                      FloatType scale_factor,
-                      int allocatorID)
+void initialize_spatially_sorted_leaves(const BoxIndexable boxes,
+                                        int size,
+                                        primal::BoundingBox<FloatType, NDIMS>& bounds,
+                                        RadixTree<FloatType, NDIMS>& radix_tree,
+                                        FloatType scale_factor,
+                                        int allocatorID,
+                                        SpaceFillingCurve ordering)
 {
-  AXOM_ANNOTATE_SCOPE("build_radix_tree");
-
-  // sanity checks
-  SLIC_ASSERT(size > 0);
-
   radix_tree.allocate(size, allocatorID);
 
   // copy so we don't reorder the input
@@ -601,20 +607,297 @@ void build_radix_tree(const BoxIndexable boxes,
   // evaluate global bounds
   bounds = reduce<ExecSpace, FloatType, NDIMS>(radix_tree.m_leaf_aabbs, size);
 
-  // sort aabbs based on morton code
-  // original positions of the sorted morton codes.
-  // allows us to gather / sort other arrays.
-  get_mcodes<ExecSpace, FloatType, NDIMS>(radix_tree.m_leaf_aabbs, size, bounds, radix_tree.m_mcodes);
-  sort_mcodes<ExecSpace>(radix_tree.m_mcodes, size, radix_tree.m_leafs);
+  // Keep original box IDs when sorting so queries can return input indices.
+  get_spatial_keys<ExecSpace, FloatType, NDIMS>(radix_tree.m_leaf_aabbs,
+                                                size,
+                                                bounds,
+                                                radix_tree.m_keys,
+                                                ordering);
+  sort_spatial_keys<ExecSpace>(radix_tree.m_keys, size, radix_tree.m_leafs);
 
   reorder<ExecSpace>(radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size, allocatorID);
+}
 
+//------------------------------------------------------------------------------
+/*!
+ * \brief Append adaptive spatial-key-prefix bucket ranges for a sorted key range.
+ *
+ * A bucket is the largest nonempty spatial-key-prefix cell containing at most
+ * \a max_bucket_size primitives. When a cell exceeds that size, it is split
+ * along its next key bit. If a run of equal full keys still exceeds
+ * the target after every spatial bit is exhausted, it is split into consecutive
+ * chunks. This enforces the target as a hard upper bound while preserving the
+ *  best spatial locality available at the key precision.
+ *
+ * \note The recursion depth is bounded by the 32 bits in the code. This
+ * CPU-first partitioning phase is intentionally serial; the following bucket
+ * hierarchy construction continues to use the requested execution space.
+ */
+struct SpatialKeyBucketRange
+{
+  std::int32_t begin;
+  std::int32_t end;
+};
+
+//------------------------------------------------------------------------------
+inline void append_adaptive_spatial_key_prefix_buckets(const ArrayView<const std::uint32_t> keys,
+                                                       std::int32_t begin,
+                                                       std::int32_t end,
+                                                       int bit,
+                                                       std::int32_t max_bucket_size,
+                                                       std::vector<SpatialKeyBucketRange>& bucket_ranges)
+{
+  // Check if the current bucket is bigger than allowed
+  const std::int32_t bucket_size = end - begin;
+  if(bucket_size <= max_bucket_size)
+  {
+    bucket_ranges.push_back({begin, end});
+    return;
+  }
+
+  if(bit < 0)
+  {
+    // Equal full keys have no remaining spatial boundary. Split their
+    // stable spatial-key order into target-sized chunks so a GWN leaf has bounded
+    // direct-evaluation work. Future policies may instead keep this run intact.
+    std::int32_t chunk_begin = begin;
+    while(chunk_begin < end)
+    {
+      const std::int32_t chunk_size = utilities::min(max_bucket_size, end - chunk_begin);
+      const std::int32_t chunk_end = chunk_begin + chunk_size;
+      bucket_ranges.push_back({chunk_begin, chunk_end});
+      chunk_begin = chunk_end;
+    }
+    return;
+  }
+
+  // Spatial-key sorting ensures the zero-valued side of this bit precedes the
+  // one-valued side. Find their boundary without examining every primitive.
+  const std::uint32_t mask = std::uint32_t {1} << bit;
+  std::int32_t split = begin;
+  std::int32_t search_end = end;
+  while(split < search_end)
+  {
+    // Do a binary search to find where the bit flips, e.g.
+    //  for bit == 1: 0000 0001 | 0010 0011
+    const std::int32_t middle = split + (search_end - split) / 2;
+    if((keys[middle] & mask) == 0)
+    {
+      split = middle + 1;
+    }
+    else
+    {
+      search_end = middle;
+    }
+  }
+
+  // An empty child means every primitive has the same value at this bit.
+  // Continue to the next bit and attempt to split the group there instead.
+  if(split == begin || split == end)
+  {
+    append_adaptive_spatial_key_prefix_buckets(keys, begin, end, bit - 1, max_bucket_size, bucket_ranges);
+    return;
+  }
+
+  append_adaptive_spatial_key_prefix_buckets(keys, begin, split, bit - 1, max_bucket_size, bucket_ranges);
+  append_adaptive_spatial_key_prefix_buckets(keys, split, end, bit - 1, max_bucket_size, bucket_ranges);
+}
+
+//------------------------------------------------------------------------------
+/*!
+ * \brief Form adaptive spatial-key-prefix buckets from sorted primitive leaves.
+ *
+ * The resulting bucket ranges retain spatial-key order, so their first primitive
+ * code can serve as a representative key for the existing Karras hierarchy
+ * builder. No primitive spatial key is recalculated or resorted.
+ */
+template <typename FloatType, int NDIMS>
+void build_adaptive_spatial_key_prefix_buckets(const RadixTree<FloatType, NDIMS>& primitive_tree,
+                                               std::int32_t max_bucket_size,
+                                               RadixTree<FloatType, NDIMS>& bucket_tree,
+                                               Array<IndexType>& bucket_offsets,
+                                               Array<std::int32_t>& bucket_primitive_ids,
+                                               int allocatorID)
+{
+  SLIC_ASSERT(primitive_tree.m_size > 0);
+  SLIC_ASSERT(max_bucket_size > 0);
+
+  const auto primitive_aabbs = primitive_tree.m_leaf_aabbs.view();
+  const auto primitive_keys = primitive_tree.m_keys.view();
+  const auto primitive_ids = primitive_tree.m_leafs.view();
+  const std::int32_t num_primitives = primitive_tree.m_size;
+
+  std::vector<SpatialKeyBucketRange> bucket_ranges;
+  append_adaptive_spatial_key_prefix_buckets(primitive_keys,
+                                             /* begin */ 0,
+                                             /*  end  */ num_primitives,
+                                             /*  bit  */ 31,
+                                             max_bucket_size,
+                                             bucket_ranges);
+  const auto num_buckets = static_cast<std::int32_t>(bucket_ranges.size());
+
+  // Radix tree for buckets: each leaf stores a bucket union AABB, a
+  // representative key, and its bucket ID.
+  bucket_tree.allocate(num_buckets, allocatorID);
+  auto bucket_tree_aabbs = bucket_tree.m_leaf_aabbs.view();
+  auto bucket_tree_keys = bucket_tree.m_keys.view();
+  auto bucket_tree_ids = bucket_tree.m_leafs.view();
+
+  // Maps each bucket ID to its first position in the flattened primitive-ID array.
+  bucket_offsets = Array<IndexType>(num_buckets + 1, num_buckets + 1, allocatorID);
+  auto bucket_offsets_view = bucket_offsets.view();
+
+  // Maps each position in the flattened bucket list to an original primitive ID.
+  bucket_primitive_ids = Array<std::int32_t>(num_primitives, num_primitives, allocatorID);
+  auto bucket_primitive_ids_view = bucket_primitive_ids.view();
+
+  for(std::int32_t bucket = 0; bucket < num_buckets; ++bucket)
+  {
+    const std::int32_t begin = bucket_ranges[bucket].begin;
+    const std::int32_t end = bucket_ranges[bucket].end;
+
+    // Combine all boxes for primitives in this Morton-prefix range.
+    primal::BoundingBox<FloatType, NDIMS> bucket_aabb;
+    for(std::int32_t primitive = begin; primitive < end; ++primitive)
+    {
+      bucket_aabb.addBox(primitive_aabbs[primitive]);
+
+      // Preserve the original primitive ID at this spatially sorted position.
+      bucket_primitive_ids_view[primitive] = primitive_ids[primitive];
+    }
+
+    // Add bucket parameters to radix tree
+    bucket_tree_aabbs[bucket] = bucket_aabb;
+    bucket_tree_keys[bucket] = primitive_keys[begin];
+    bucket_tree_ids[bucket] = bucket;
+
+    // Store the offset for this bucket
+    bucket_offsets_view[bucket] = begin;
+  }
+
+  // Store the offset for the last bucket
+  bucket_offsets_view[num_buckets] = num_primitives;
+}
+
+//------------------------------------------------------------------------------
+/*!
+ * \brief Construct a radix-tree topology from spatially sorted leaves.
+ *
+ * \pre \a radix_tree was populated by `initialize_spatially_sorted_leaves()` or has
+ *      equivalent sorted leaf AABBs, spatial keys, and leaf IDs.
+ */
+template <typename ExecSpace, typename FloatType, int NDIMS>
+void build_radix_tree_hierarchy(RadixTree<FloatType, NDIMS>& radix_tree, int allocatorID)
+{
   build_tree<ExecSpace>(radix_tree);
 
   propagate_aabbs<ExecSpace>(radix_tree, allocatorID);
 }
 
-} /* namespace linear_bvh */
-} /* namespace internal */
-} /* namespace spin */
-} /* namespace axom */
+//------------------------------------------------------------------------------
+/*!
+ * \brief Build a CPU bucketed radix tree from primitive bounding boxes.
+ *
+ * Primitive leaves are first spatially sorted, then grouped into adaptive
+ * spatial-key-prefix cells. A cell is subdivided only when it contains more than
+ * \a max_bucket_size primitives. The resulting bucket leaves are used to
+ * assemble the final radix-tree hierarchy.
+ *
+ * \note This CPU-first implementation requires host-accessible input and
+ * allocator memory. GPU bucketing will use the same stages with parallel
+ * compaction.
+ */
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void build_bucketed_radix_tree(const BoxIndexable boxes,
+                               int size,
+                               primal::BoundingBox<FloatType, NDIMS>& bounds,
+                               RadixTree<FloatType, NDIMS>& bucket_tree,
+                               Array<IndexType>& bucket_offsets,
+                               Array<std::int32_t>& bucket_primitive_ids,
+                               std::int32_t max_bucket_size,
+                               FloatType scale_factor,
+                               int allocatorID,
+                               SpaceFillingCurve ordering)
+{
+  AXOM_ANNOTATE_SCOPE("build_bucketed_radix_tree");
+  static_assert(
+    std::is_same_v<ExecSpace, axom::SEQ_EXEC> || std::is_same_v<ExecSpace, axom::OMP_EXEC>,
+    "Bucketed radix-tree construction currently supports only SEQ_EXEC and OMP_EXEC.");
+  SLIC_ASSERT(size > 0);
+
+  RadixTree<FloatType, NDIMS> primitive_tree;
+  initialize_spatially_sorted_leaves<ExecSpace>(boxes,
+                                                size,
+                                                bounds,
+                                                primitive_tree,
+                                                scale_factor,
+                                                allocatorID,
+                                                ordering);
+  build_adaptive_spatial_key_prefix_buckets(primitive_tree,
+                                            max_bucket_size,
+                                            bucket_tree,
+                                            bucket_offsets,
+                                            bucket_primitive_ids,
+                                            allocatorID);
+
+  if(bucket_tree.m_size == 1)
+  {
+    // The binary hierarchy requires two leaves. Add an empty bucket whose
+    // invalid AABB is skipped by traversal and whose offset range is empty.
+    using BoxType = primal::BoundingBox<FloatType, NDIMS>;
+    const BoxType valid_bucket_aabb = bucket_tree.m_leaf_aabbs[0];
+    const auto bucket_key = bucket_tree.m_keys[0];
+
+    RadixTree<FloatType, NDIMS> padded_bucket_tree;
+    padded_bucket_tree.allocate(2, allocatorID);
+
+    // Create an empty box
+    BoxType empty_bucket_aabb;
+    empty_bucket_aabb.clear();
+
+    // Populate the padded tree
+    padded_bucket_tree.m_leaf_aabbs[0] = valid_bucket_aabb;
+    padded_bucket_tree.m_leaf_aabbs[1] = empty_bucket_aabb;
+    padded_bucket_tree.m_keys[0] = bucket_key;
+    padded_bucket_tree.m_keys[1] = bucket_key;
+    padded_bucket_tree.m_leafs[0] = 0;
+    padded_bucket_tree.m_leafs[1] = 1;
+    bucket_tree = std::move(padded_bucket_tree);
+
+    // Populate the indirection arrays for the padded tree
+    Array<IndexType> padded_offsets(3, 3, allocatorID);
+    padded_offsets[0] = 0;
+    padded_offsets[1] = size;
+    padded_offsets[2] = size;
+    bucket_offsets = std::move(padded_offsets);
+  }
+
+  build_radix_tree_hierarchy<ExecSpace>(bucket_tree, allocatorID);
+}
+
+//------------------------------------------------------------------------------
+template <typename ExecSpace, typename BoxIndexable, typename FloatType, int NDIMS>
+void build_radix_tree(const BoxIndexable boxes,
+                      int size,
+                      primal::BoundingBox<FloatType, NDIMS>& bounds,
+                      RadixTree<FloatType, NDIMS>& radix_tree,
+                      FloatType scale_factor,
+                      int allocatorID,
+                      SpaceFillingCurve ordering = SpaceFillingCurve::Morton)
+{
+  AXOM_ANNOTATE_SCOPE("build_radix_tree");
+
+  // sanity checks
+  SLIC_ASSERT(size > 0);
+
+  initialize_spatially_sorted_leaves<ExecSpace>(boxes,
+                                                size,
+                                                bounds,
+                                                radix_tree,
+                                                scale_factor,
+                                                allocatorID,
+                                                ordering);
+  build_radix_tree_hierarchy<ExecSpace>(radix_tree, allocatorID);
+}
+
+}  // namespace axom::spin::internal::linear_bvh

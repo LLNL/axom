@@ -7,53 +7,94 @@
 #pragma once
 
 // axom core includes
-#include "axom/config.hpp"                               // for Axom compile-time definitions
-#include "axom/core/Macros.hpp"                          // for Axom macros
-#include "axom/core/Types.hpp"                           // for axom::IndexType
-#include "axom/core/numerics/floating_point_limits.hpp"  // floating_point_limits
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/core/numerics/floating_point_limits.hpp"
 
-#include "axom/core/execution/execution_space.hpp"  // for execution spaces
+#include "axom/core/execution/execution_space.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Ray.hpp"
 
-#include "axom/primal/operators/intersect.hpp"  // for detail::intersect_ray()
+#include "axom/primal/operators/intersect.hpp"
 
+#include "axom/spin/SpaceFillingCurve.hpp"
 #include "axom/spin/policy/LinearBVH.hpp"
 
 // slic includes
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
+#include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
-#include <type_traits>  // for std::is_floating_point(), std::is_same()
+#include <type_traits>
 #include <memory>
 
-namespace axom
+namespace axom::spin
 {
-namespace spin
-{
-/*!
- * \brief Enumerates the list of return codes for various BVH operations.
- */
+//! \brief Return codes for BVH operations.
 enum BVHReturnCodes
 {
   BVH_BUILD_FAILED = -1,  //!< indicates that generation of the BVH failed
   BVH_BUILD_OK,           //!< indicates that the BVH was generated successfully
 };
 
+/*!
+ * \brief Enumerates the list of possible BVH policies.
+ */
 enum class BVHType
 {
-  LinearBVH
+  LinearBVH,
+  BucketedLinearBVH
 };
 
+/*! \brief Build-time configuration for a BVH policy.
+ *  Each BVH policy specializes this type to expose only the parameters it uses.
+ */
+template <BVHType Policy>
+struct BVHBuildParameters;
+
+template <>
+struct BVHBuildParameters<BVHType::LinearBVH>
+{
+  SpaceFillingCurve ordering {SpaceFillingCurve::Morton};
+};
+
+template <>
+struct BVHBuildParameters<BVHType::BucketedLinearBVH>
+{
+  /// Maximum number of primitives stored in one bucket.
+  IndexType maxBucketSize {1};
+  SpaceFillingCurve ordering {SpaceFillingCurve::Morton};
+};
+
+/*!
+ * \brief Describes whether primitive candidates can be returned one per leaf.
+ *
+ * BucketedLinearBVH leaves contain multiple primitive IDs, and the find*()
+ * methods currently expect a one-to-one mapping of leaf nodes to primitives.
+ */
+template <BVHType Impl>
+concept SupportsCandidateQueries = Impl != BVHType::BucketedLinearBVH;
+
+/*!
+ * \brief Mapping from BVHType to templated BVH implementation type
+ */
 template <typename FloatType, int NDIMS, typename ExecType, BVHType Policy>
 struct BVHPolicy;
 
 template <typename FloatType, int NDIMS, typename ExecType>
 struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
 {
-  using ImplType = policy::LinearBVH<FloatType, NDIMS, ExecType>;
+  using ImplType =
+    policy::LinearBVH<FloatType, NDIMS, ExecType, policy::LinearBVHType::SinglePrimitiveLeaf>;
+};
+
+template <typename FloatType, int NDIMS, typename ExecType>
+struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::BucketedLinearBVH>
+{
+  using ImplType =
+    policy::LinearBVH<FloatType, NDIMS, ExecType, policy::LinearBVHType::BucketedPrimitiveLeaves>;
 };
 
 /*!
@@ -69,6 +110,9 @@ struct BVHPolicy<FloatType, NDIMS, ExecType, BVHType::LinearBVH>
  * queries, such as, collision detection, ray tracing, etc., by reducing the
  * search space for a given operation to an abbreviated list of candidate
  * geometric entities to check for a particular query.
+ *
+ * Candidate IDs refer to the original input boxes. Candidate traversal order
+ * may differ between spatial orderings.
  *
  * \tparam NDIMS the number of dimensions, e.g., 2 or 3.
  * \tparam ExecSpace the execution space to use, e.g. SEQ_EXEC, CUDA_EXEC, etc.
@@ -177,6 +221,7 @@ public:
 
   using TraverserType = typename ImplType::TraverserType;
   using ExecSpaceType = ExecSpace;
+  using BuildParameters = BVHBuildParameters<BVHImpl>;
 
 public:
   /*!
@@ -202,8 +247,8 @@ public:
    *  with the execution space. The code currently does not check for these
    *  conditions.
    *
-   * \pre boxes != nullptr
-   * \pre numItems > 0
+   * \pre boxes provides at least numItems bounding boxes when numItems > 0
+   * \pre numItems >= 0
    * \pre allocatorID must correspond to an Umpire allocator and be compatible
    *      with the execution space
    */
@@ -220,13 +265,29 @@ public:
     initialize(boxes, numItems);
   }
 
+  /*! \brief Constructs a BVH with policy-specific build parameters.
+   */
+  template <typename BoxIndexable>
+  BVH(const BoxIndexable boxes,
+      IndexType numItems,
+      const BuildParameters& parameters,
+      int allocatorID = axom::execution_space<ExecSpace>::allocatorID(),
+      FloatType tolerance = DEFAULT_TOLERANCE,
+      FloatType scaleFactor = DEFAULT_SCALE_FACTOR)
+    : m_AllocatorID {allocatorID}
+    , m_tolerance {tolerance}
+    , m_scaleFactor {scaleFactor}
+  {
+    initialize(boxes, numItems, parameters);
+  }
+
   /*!
    * \brief Initializes a BVH instance of specified dimension over a given set
-   *  of geometric entities, each represented by its corresponding axis-aligned
-   *  bounding box.
+   *  of geometric entities, each represented by its corresponding axis-aligned bounding box.
    *
    * \param [in] boxes buffer consisting of bounding boxes for each entity.
    * \param [in] numItems the total number of items to store in the BVH.
+   * \param [in] parameters configuration used to build this BVH policy.
    *
    * \return status set to BVH_BUILD_OK on success.
    *
@@ -240,11 +301,13 @@ public:
    *  CUDA_EXEC, boxes must be in unified memory or GPU memory. The code
    *  currently does not check for that.
    *
-   * \pre boxes != nullptr
-   * \pre numItems > 0
+   * \pre boxes provides at least numItems bounding boxes when numItems > 0
+   * \pre numItems >= 0
    */
   template <typename BoxIndexable>
-  int initialize(const BoxIndexable boxes, IndexType numItems);
+  int initialize(const BoxIndexable boxes,
+                 IndexType numItems,
+                 const BuildParameters& parameters = BuildParameters {});
 
   bool isInitialized() const { return m_bvh != nullptr; }
 
@@ -331,14 +394,14 @@ public:
    *  * counts[ i ] candidates
    *  * Stored in the candidates array in the following range:
    *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
-   *  * The sum of all counts is the size of the candidates array,
-   *    candidates.size()
+   *  * The sum of all counts is the size of the candidates array, candidates.size()
    *
    * \pre offsets.size() == numPts
    * \pre counts.size()  == numPts
    * \pre points != nullptr
    */
   template <typename PointIndexable>
+    requires SupportsCandidateQueries<BVHImpl>
   void findPoints(axom::ArrayView<IndexType> offsets,
                   axom::ArrayView<IndexType> counts,
                   axom::Array<IndexType>& candidates,
@@ -357,14 +420,14 @@ public:
    * \note After the call to findRays(), the ith ray has:
    *  * counts[ i ] candidates
    *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
-   *  * The sum of all counts is the size of the candidates array,
-   *    candidates.size()
+   *  * The sum of all counts is the size of the candidates array, candidates.size()
    *
    * \pre offsets.size() == numRays
    * \pre counts.size()  == numRays
    * \pre rays != nullptr
    */
   template <typename RayIndexable>
+    requires SupportsCandidateQueries<BVHImpl>
   void findRays(axom::ArrayView<IndexType> offsets,
                 axom::ArrayView<IndexType> counts,
                 axom::Array<IndexType>& candidates,
@@ -383,14 +446,14 @@ public:
    * \note After the call to findBoundingBoxes(), the ith bounding box has:
    *  * counts[ i ] candidates
    *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
-   *  * The sum of all counts is the size of the candidates array,
-   *    candidates.size()
+   *  * The sum of all counts is the size of the candidates array, candidates.size()
    *
    * \pre offsets.size() == numBoxes
    * \pre counts.size()  == numBoxes
    * \pre boxes != nullptr
    */
   template <typename BoxIndexable>
+    requires SupportsCandidateQueries<BVHImpl>
   void findBoundingBoxes(axom::ArrayView<IndexType> offsets,
                          axom::ArrayView<IndexType> counts,
                          axom::Array<IndexType>& candidates,
@@ -399,12 +462,34 @@ public:
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
+   *
    * \param [in] fileName the name of VTK file.
    * \note Primarily used for debugging.
    */
   void writeVtkFile(const std::string& fileName) const;
 
 private:
+  /*!
+   * \brief Dispatch for `buildImpl` based on the function signature for the specific policy.
+   */
+  template <typename BoxIndexable>
+  void build(const BoxIndexable boxes, IndexType numBoxes, const BuildParameters& parameters)
+  {
+    if constexpr(BVHImpl == BVHType::BucketedLinearBVH)
+    {
+      m_bvh->buildImpl(boxes,
+                       numBoxes,
+                       parameters.maxBucketSize,
+                       m_scaleFactor,
+                       m_AllocatorID,
+                       parameters.ordering);
+    }
+    else
+    {
+      m_bvh->buildImpl(boxes, numBoxes, m_scaleFactor, m_AllocatorID, parameters.ordering);
+    }
+  }
+
   /// \name Private Members
   /// @{
   static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.000123;
@@ -423,7 +508,9 @@ private:
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 template <typename BoxIndexable>
-int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes, IndexType numBoxes)
+int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
+                                                       IndexType numBoxes,
+                                                       const BuildParameters& parameters)
 {
   AXOM_ANNOTATE_SCOPE("BVH::initialize");
 
@@ -432,7 +519,6 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
   // Ensure that the iterator returns objects convertible to primal::BoundingBox.
   static_assert(std::is_convertible<IterBase, BoxType>::value,
                 "Iterator must return objects convertible to primal::BoundingBox.");
-
   // STEP 1: Allocate a BVH, potentially deleting the existing BVH if it exists
   m_bvh.reset(new ImplType);
 
@@ -458,11 +544,11 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
         boxesptr[i] = empty_box;
       }
     });
-    m_bvh->buildImpl(boxesptr, numBoxes, m_scaleFactor, m_AllocatorID);
+    build(boxesptr, numBoxes, parameters);
   }
   else
   {
-    m_bvh->buildImpl(boxes, numBoxes, m_scaleFactor, m_AllocatorID);
+    build(boxes, numBoxes, parameters);
   }
 
   // STEP 5: deallocate boxesptr if user supplied a single box
@@ -477,6 +563,7 @@ int BVH<NDIMS, ExecSpace, FloatType, Impl>::initialize(const BoxIndexable boxes,
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 template <typename PointIndexable>
+  requires SupportsCandidateQueries<Impl>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(axom::ArrayView<IndexType> offsets,
                                                         axom::ArrayView<IndexType> counts,
                                                         axom::Array<IndexType>& candidates,
@@ -505,6 +592,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findPoints(axom::ArrayView<IndexTyp
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 template <typename RayIndexable>
+  requires SupportsCandidateQueries<Impl>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(axom::ArrayView<IndexType> offsets,
                                                       axom::ArrayView<IndexType> counts,
                                                       axom::Array<IndexType>& candidates,
@@ -536,6 +624,7 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::findRays(axom::ArrayView<IndexType>
 //------------------------------------------------------------------------------
 template <int NDIMS, typename ExecSpace, typename FloatType, BVHType Impl>
 template <typename BoxIndexable>
+  requires SupportsCandidateQueries<Impl>
 void BVH<NDIMS, ExecSpace, FloatType, Impl>::findBoundingBoxes(axom::ArrayView<IndexType> offsets,
                                                                axom::ArrayView<IndexType> counts,
                                                                axom::Array<IndexType>& candidates,
@@ -574,5 +663,4 @@ void BVH<NDIMS, ExecSpace, FloatType, Impl>::writeVtkFile(const std::string& fil
   m_bvh->writeVtkFileImpl(fileName);
 }
 
-}  // namespace spin
-}  // namespace axom
+}  // namespace axom::spin

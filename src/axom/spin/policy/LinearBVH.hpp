@@ -17,6 +17,7 @@
 #include "axom/primal/geometry/Vector.hpp"
 
 // linear bvh includes
+#include "axom/spin/SpaceFillingCurve.hpp"
 #include "axom/spin/internal/linear_bvh/BVHNode.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 #include "axom/spin/internal/linear_bvh/build_radix_tree.hpp"
@@ -28,18 +29,57 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
-namespace axom
-{
-namespace spin
-{
-namespace policy
+namespace axom::spin::policy
 {
 namespace lbvh = internal::linear_bvh;
 
 template <typename FloatType, int NDIMS>
 using BVH2Node = lbvh::BVH2Node<FloatType, NDIMS>;
+
+/*!
+ * \brief Tags the leaf representations supported by LinearBVH.
+ */
+struct LinearBVHType
+{
+  /// A leaf stores the index of exactly one input primitive.
+  struct SinglePrimitiveLeaf
+  { };
+
+  /// A leaf stores a Morton-local bucket of input primitive indices.
+  struct BucketedPrimitiveLeaves
+  { };
+};
+
+namespace detail
+{
+
+/*!
+ * \brief Contains optional indirection data for bucketed BVH leaves.
+ *
+ * \tparam EnableBucketIndirection When true, store the mapping from BVH
+ *         leaves to primitive buckets. When false, remain empty.
+ */
+template <bool EnableBucketIndirection>
+struct BucketLeafData
+{ };
+
+template <>
+struct BucketLeafData<true>
+{
+  // Maps each linear-BVH leaf slot to its bucket ID.
+  axom::Array<std::int32_t> m_leaf_bucket_ids;
+
+  // Maps bucket IDs to half-open ranges in m_bucket_primitive_ids.
+  axom::Array<IndexType> m_bucket_offsets;
+
+  // Stores the original primitive IDs for every bucket, contiguously.
+  axom::Array<std::int32_t> m_bucket_primitive_ids;
+};
+
+}  // namespace detail
 
 /*
  * \brief Interface for a BVH tree through a traversal operation (which 
@@ -68,10 +108,13 @@ using BVH2Node = lbvh::BVH2Node<FloatType, NDIMS>;
  *
  * \see internal::linear_bvh::bvh_traverse
  */
-template <typename FloatType, int NDIMS>
+template <typename FloatType, int NDIMS, typename LeafType = LinearBVHType::SinglePrimitiveLeaf>
 class LinearBVHTraverser
 {
 public:
+  static_assert(std::is_same_v<LeafType, LinearBVHType::SinglePrimitiveLeaf>,
+                "Only LinearBVHType::SinglePrimitiveLeaf is currently supported.");
+
   using BoxType = primal::BoundingBox<FloatType, NDIMS>;
   using PointType = primal::Point<FloatType, NDIMS>;
   using BVHNode = BVH2Node<FloatType, NDIMS>;
@@ -244,15 +287,18 @@ private:
  *  ones-complement if leaf node).
  *
  */
-template <typename FloatType, int NDIMS, typename ExecSpace>
+template <typename FloatType, int NDIMS, typename ExecSpace, typename LeafType = LinearBVHType::SinglePrimitiveLeaf>
 class LinearBVH
 {
 public:
-  using TraverserType = LinearBVHTraverser<FloatType, NDIMS>;
+  using TraverserType = LinearBVHTraverser<FloatType, NDIMS, LeafType>;
   using BoundingBoxType = primal::BoundingBox<FloatType, NDIMS>;
   using BVHNode = BVH2Node<FloatType, NDIMS>;
 
   LinearBVH() = default;
+
+  /// Returns whether this BVH has been built.
+  bool isInitialized() const { return m_initialized; }
 
   /*!
    * \brief Builds a linear BVH with the given bounding boxes as leaf nodes.
@@ -260,9 +306,37 @@ public:
    * \param [in] boxes the bounding boxes for each leaf node
    * \param [in] numBoxes the number of bounding boxes
    * \param [in] scaleFactor scale factor applied to each bounding box before insertion into the BVH
+   * \param [in] allocatorID allocator used to store the BVH
+   * \param [in] ordering curve used to order box centroids. Defaults to Morton.
    */
   template <typename BoxIndexable>
-  void buildImpl(const BoxIndexable boxes, IndexType numBoxes, FloatType scaleFactor, int allocatorID);
+  void buildImpl(const BoxIndexable boxes,
+                 IndexType numBoxes,
+                 FloatType scaleFactor,
+                 int allocatorID,
+                 SpaceFillingCurve ordering = SpaceFillingCurve::Morton);
+
+  /*!
+   * \brief Builds a bucketed linear BVH using adaptive spatial-key prefixes.
+   *
+   * \param [in] boxes the bounding boxes for each leaf node
+   * \param [in] numBoxes the number of bounding boxes
+   * \param [in] maxBucketSize maximum number of primitives in a bucket. The
+   *               builder first subdivides on spatial-key-prefix boundaries,
+   *               then splits indistinguishable full-code runs in stable
+   *               spatial-key order to enforce this limit.
+   * \param [in] scaleFactor scale factor applied to each bounding box before insertion into the BVH
+   * \param [in] allocatorID allocator for BVH and bucket storage
+   * \param [in] ordering curve used to order box centroids.
+   * \pre This LinearBVH requires BucketedPrimitiveLeaves.
+   */
+  template <typename BoxIndexable>
+  void buildImpl(const BoxIndexable boxes,
+                 IndexType numBoxes,
+                 IndexType maxBucketSize,
+                 FloatType scaleFactor,
+                 int allocatorID,
+                 SpaceFillingCurve ordering = SpaceFillingCurve::Morton);
 
   /*!
    * \brief Performs a traversal to find the candidates for each query primitive.
@@ -290,10 +364,32 @@ public:
 
   TraverserType getTraverserImpl() const
   {
-    return TraverserType(m_inner_nodes.view(), m_leaf_nodes.view());
+    if constexpr(std::is_same_v<LeafType, LinearBVHType::SinglePrimitiveLeaf>)
+    {
+      return TraverserType(m_inner_nodes.view(), m_leaf_nodes.view());
+    }
+    else
+    {
+      return TraverserType(m_inner_nodes.view(),
+                           m_leaf_storage.m_leaf_bucket_ids.view(),
+                           m_leaf_storage.m_bucket_offsets.view(),
+                           m_leaf_storage.m_bucket_primitive_ids.view());
+    }
   }
 
 private:
+  /*!
+   * \brief Emit LinearBVH node and leaf storage from a completed radix tree.
+   *
+   * \param[in,out] radix_tree Intermediate tree whose leaf-ID array is moved
+   *            into this BVH.
+   * \param[in] bounds Bounds of the original primitive boxes.
+   * \param[in] allocatorID Allocator for the emitted internal-node storage.
+   */
+  void emitRadixTree(lbvh::RadixTree<FloatType, NDIMS>& radix_tree,
+                     const BoundingBoxType& bounds,
+                     int allocatorID);
+
   void allocate(std::int32_t size, int allocID)
   {
     AXOM_ANNOTATE_SCOPE("LinearBVH::allocate");
@@ -309,19 +405,27 @@ private:
   axom::Array<BVHNode> m_inner_nodes;      // BVH bins including leafs
   axom::Array<std::int32_t> m_leaf_nodes;  // leaf data
   primal::BoundingBox<FloatType, NDIMS> m_bounds;
+
+  // Optional storage for bucketed primitives,
+  // Resolves to an empty type unless this LinearBVH uses bucketed primitives.
+  [[no_unique_address]] detail::BucketLeafData<
+    std::is_same_v<LeafType, LinearBVHType::BucketedPrimitiveLeaves>> m_leaf_storage;
 };
 
-template <typename FloatType, int NDIMS, typename ExecSpace>
+template <typename FloatType, int NDIMS, typename ExecSpace, typename LeafType>
 template <typename BoxIndexable>
-void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
-                                                       IndexType numBoxes,
-                                                       FloatType scaleFactor,
-                                                       int allocatorID)
+void LinearBVH<FloatType, NDIMS, ExecSpace, LeafType>::buildImpl(const BoxIndexable boxes,
+                                                                 IndexType numBoxes,
+                                                                 FloatType scaleFactor,
+                                                                 int allocatorID,
+                                                                 SpaceFillingCurve ordering)
 {
+  static_assert(std::is_same_v<LeafType, LinearBVHType::SinglePrimitiveLeaf>,
+                "This build overload requires LinearBVHType::SinglePrimitiveLeaf.");
+
   AXOM_ANNOTATE_SCOPE("LinearBVH::buildImpl");
 
-  // STEP 1: Build a RadixTree consisting of the bounding boxes, sorted
-  // by their corresponding morton code.
+  // STEP 1: Sort the boxes by spatial key and build a RadixTree.
   SLIC_ASSERT(numBoxes <= std::numeric_limits<std::int32_t>::max());
   const auto numBoxesInt = static_cast<std::int32_t>(numBoxes);
 
@@ -332,13 +436,64 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
                                     global_bounds,
                                     radix_tree,
                                     scaleFactor,
-                                    allocatorID);
+                                    allocatorID,
+                                    ordering);
 
-  // STEP 2: emit the BVH data-structure from the radix tree
-  m_bounds = global_bounds;
-  allocate(numBoxesInt, allocatorID);
-
+  // STEP 2: emit the BVH data-structure from the radix tree via LinearBVH::allocate
   // STEP 3: emit the BVH
+  emitRadixTree(radix_tree, global_bounds, allocatorID);
+}
+
+template <typename FloatType, int NDIMS, typename ExecSpace, typename LeafType>
+template <typename BoxIndexable>
+void LinearBVH<FloatType, NDIMS, ExecSpace, LeafType>::buildImpl(const BoxIndexable boxes,
+                                                                 IndexType numBoxes,
+                                                                 IndexType maxBucketSize,
+                                                                 FloatType scaleFactor,
+                                                                 int allocatorID,
+                                                                 SpaceFillingCurve ordering)
+{
+  static_assert(std::is_same_v<LeafType, LinearBVHType::BucketedPrimitiveLeaves>,
+                "This build overload requires LinearBVHType::BucketedPrimitiveLeaves.");
+
+  AXOM_ANNOTATE_SCOPE("LinearBVH::buildBucketedImpl");
+  SLIC_ASSERT(numBoxes <= std::numeric_limits<std::int32_t>::max());
+  SLIC_ASSERT(maxBucketSize > 0);
+  SLIC_ASSERT(maxBucketSize <= std::numeric_limits<std::int32_t>::max());
+  const auto numBoxesInt = static_cast<std::int32_t>(numBoxes);
+  const auto maxBucketSizeInt = static_cast<std::int32_t>(maxBucketSize);
+
+  lbvh::RadixTree<FloatType, NDIMS> radix_tree;
+  primal::BoundingBox<FloatType, NDIMS> global_bounds;
+  axom::Array<IndexType> bucket_offsets;
+  axom::Array<std::int32_t> bucket_primitive_ids;
+  lbvh::build_bucketed_radix_tree<ExecSpace>(boxes,
+                                             numBoxesInt,
+                                             global_bounds,
+                                             radix_tree,
+                                             bucket_offsets,
+                                             bucket_primitive_ids,
+                                             maxBucketSizeInt,
+                                             scaleFactor,
+                                             allocatorID,
+                                             ordering);
+
+  emitRadixTree(radix_tree, global_bounds, allocatorID);
+  m_leaf_storage.m_leaf_bucket_ids = std::move(m_leaf_nodes);
+  m_leaf_storage.m_bucket_offsets = std::move(bucket_offsets);
+  m_leaf_storage.m_bucket_primitive_ids = std::move(bucket_primitive_ids);
+}
+
+template <typename FloatType, int NDIMS, typename ExecSpace, typename LeafType>
+void LinearBVH<FloatType, NDIMS, ExecSpace, LeafType>::emitRadixTree(
+  lbvh::RadixTree<FloatType, NDIMS>& radix_tree,
+  const BoundingBoxType& bounds,
+  int allocatorID)
+{
+  // Emit the LinearBVH representation from a completed radix tree.
+  m_bounds = bounds;
+  allocate(radix_tree.m_size, allocatorID);
+
   const std::int32_t size = radix_tree.m_size;
   AXOM_UNUSED_VAR(size);
   const std::int32_t inner_size = radix_tree.m_inner_size;
@@ -391,9 +546,9 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::buildImpl(const BoxIndexable boxes,
   m_initialized = true;
 }
 
-template <typename FloatType, int NDIMS, typename ExecSpace>
+template <typename FloatType, int NDIMS, typename ExecSpace, typename LeafType>
 template <typename PrimitiveType, typename Predicate, typename PrimitiveIndexable>
-axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImpl(
+axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace, LeafType>::findCandidatesImpl(
   Predicate&& predicate,
   const axom::ArrayView<IndexType> offsets,
   const axom::ArrayView<IndexType> counts,
@@ -402,6 +557,9 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
   int allocatorID) const
 
 {
+  static_assert(std::is_same_v<LeafType, LinearBVHType::SinglePrimitiveLeaf>,
+                "findCandidatesImpl() is not implemented for bucketed leaves.");
+
   AXOM_ANNOTATE_SCOPE("LinearBVH::findCandidatesImpl");
 
   SLIC_ERROR_IF(offsets.size() != numObjs, "offsets length not equal to numObjs");
@@ -490,8 +648,8 @@ axom::Array<IndexType> LinearBVH<FloatType, NDIMS, ExecSpace>::findCandidatesImp
 #endif
 }
 
-template <typename FloatType, int NDIMS, typename ExecSpace>
-void LinearBVH<FloatType, NDIMS, ExecSpace>::writeVtkFileImpl(const std::string& fileName) const
+template <typename FloatType, int NDIMS, typename ExecSpace, typename LeafType>
+void LinearBVH<FloatType, NDIMS, ExecSpace, LeafType>::writeVtkFileImpl(const std::string& fileName) const
 {
   std::ostringstream nodes;
   std::ostringstream cells;
@@ -542,6 +700,121 @@ void LinearBVH<FloatType, NDIMS, ExecSpace>::writeVtkFileImpl(const std::string&
   ofs.close();
 }
 
-}  // namespace policy
-}  // namespace spin
-}  // namespace axom
+///@{
+//! @name Specializations for LinearBVHTraverser<FloatType, NDIMS, LinearBVHType::BucketedPrimitiveLeaves>
+
+/*!
+ * \brief A device-copyable view of the original primitive IDs in one BVH leaf bucket.
+ */
+class LinearBVHLeafRange
+{
+public:
+  AXOM_HOST_DEVICE LinearBVHLeafRange(const std::int32_t* primitive_ids, IndexType size)
+    : m_primitive_ids(primitive_ids)
+    , m_size(size)
+  { }
+
+  AXOM_HOST_DEVICE IndexType size() const { return m_size; }
+
+  AXOM_HOST_DEVICE std::int32_t operator[](IndexType index) const { return m_primitive_ids[index]; }
+
+private:
+  const std::int32_t* m_primitive_ids;
+  IndexType m_size;
+};
+
+/*!
+ * \brief Traverses or reduces a linear BVH whose leaves contain primitive buckets.
+ *
+ * This specialization adapts the single-primitive traverser so each leaf action
+ * receives a LinearBVHLeafRange for the primitives in that leaf's bucket.
+ * Bucketed leaves do not support shared-memory traversal.
+ */
+template <typename FloatType, int NDIMS>
+class LinearBVHTraverser<FloatType, NDIMS, LinearBVHType::BucketedPrimitiveLeaves>
+{
+public:
+  using BVHNode = BVH2Node<FloatType, NDIMS>;
+  using SinglePrimitiveTraverser = LinearBVHTraverser<FloatType, NDIMS>;
+
+  LinearBVHTraverser(axom::ArrayView<const BVHNode> nodes,
+                     axom::ArrayView<const std::int32_t> leaf_bucket_ids,
+                     axom::ArrayView<const IndexType> bucket_offsets,
+                     axom::ArrayView<const std::int32_t> bucket_primitive_ids)
+    : m_traverser(nodes, leaf_bucket_ids)
+    , m_bucket_offsets(bucket_offsets)
+    , m_bucket_primitive_ids(bucket_primitive_ids)
+  { }
+
+  /*!
+   * \brief Traverse the tree and invoke an action for each intersected leaf bucket.
+   *
+   * \param[in] p The primitive to use for traversal.
+   * \param[in] leaf_action Action invoked with a LinearBVHLeafRange for each
+   *            visited leaf bucket.
+   * \param[in] predicate Predicate that determines whether to descend a branch.
+   *
+   * \note Functors must access only memory compatible with the execution space.
+   */
+  template <typename Primitive, typename LeafAction, typename Predicate>
+  AXOM_HOST_DEVICE void traverse_tree(const Primitive& p,
+                                      LeafAction&& leaf_action,
+                                      Predicate&& predicate) const
+  {
+    auto action = std::forward<LeafAction>(leaf_action);
+    const auto bucket_offsets = m_bucket_offsets;
+    const auto bucket_primitive_ids = m_bucket_primitive_ids;
+    auto bucket_action = [=] AXOM_HOST_DEVICE(std::int32_t leaf_slot,
+                                              const std::int32_t* leaf_bucket_ids) mutable {
+      const auto bucket_id = leaf_bucket_ids[leaf_slot];
+      const IndexType begin = bucket_offsets[bucket_id];
+      action(LinearBVHLeafRange(bucket_primitive_ids.data() + begin,
+                                bucket_offsets[bucket_id + 1] - begin));
+    };
+
+    m_traverser.traverse_tree(p, bucket_action, std::forward<Predicate>(predicate));
+  }
+
+  template <typename ExecSpace, typename Primitive, typename LeafAction, typename Predicate>
+  AXOM_HOST_DEVICE void traverseTreeShared(const Primitive&, LeafAction&&, Predicate&&) const
+  {
+    static_assert(!std::is_same_v<ExecSpace, ExecSpace>,
+                  "traverseTreeShared() is not supported for bucketed leaves.");
+  }
+
+  /*!
+   * \brief Invoke a leaf action for each primitive bucket, then sum the values
+   *        upward through the tree.
+   *
+   * \param[in] leaf_action Action invoked with a LinearBVHLeafRange for each
+   *            leaf bucket. It returns the value used in the reduction.
+   * \param[in] allocatorID Allocator used for the returned array.
+   *
+   * \return An array of reduced values for all BVH nodes.
+   */
+  template <typename ExecSpace, typename ValueType, typename LeafAction>
+  axom::Array<ValueType> reduce_tree(LeafAction&& leaf_action,
+                                     int allocatorID = axom::getDefaultAllocatorID()) const
+  {
+    auto action = std::forward<LeafAction>(leaf_action);
+    const auto bucket_offsets = m_bucket_offsets;
+    const auto bucket_primitive_ids = m_bucket_primitive_ids;
+    auto bucket_action = [=](std::int32_t leaf_slot,
+                             const std::int32_t* leaf_bucket_ids) mutable -> ValueType {
+      const auto bucket_id = leaf_bucket_ids[leaf_slot];
+      const IndexType begin = bucket_offsets[bucket_id];
+      return action(LinearBVHLeafRange(bucket_primitive_ids.data() + begin,
+                                       bucket_offsets[bucket_id + 1] - begin));
+    };
+
+    return m_traverser.template reduce_tree<ExecSpace, ValueType>(bucket_action, allocatorID);
+  }
+
+private:
+  SinglePrimitiveTraverser m_traverser;
+  axom::ArrayView<const IndexType> m_bucket_offsets;
+  axom::ArrayView<const std::int32_t> m_bucket_primitive_ids;
+};
+///@}
+
+}  // namespace axom::spin::policy
