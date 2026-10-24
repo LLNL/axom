@@ -49,15 +49,21 @@ std::string pjoin(const char* str, Args... args)
 TEST(quest_gwn_methods, gwn_moment_data_segment)
 {
   using Point2D = axom::primal::Point<double, 2>;
+  using Segment2D = axom::primal::Segment<double, 2>;
   using Moments = axom::quest::GWNMomentData<double, 2, 2>;
 
   constexpr double EPS = 1e-14;
 
   // Combine two segments into a cluster and verify raw moments, centroid, and
   // expansion coefficients. Values are chosen to make exact expectations.
-  Moments s1(Point2D {0.0, 0.0}, Point2D {1.0, 0.0});
+  const Segment2D first_segment(Point2D {0.0, 0.0}, Point2D {1.0, 0.0});
+  Moments s1(first_segment);
   Moments s2(Point2D {0.0, 1.0}, Point2D {0.0, 2.0});
   Moments cluster = s1 + s2;
+
+  // The leading moment is the segment's right/outward normal.
+  EXPECT_NEAR(s1.rm[0], first_segment.normal()[0], EPS);
+  EXPECT_NEAR(s1.rm[1], first_segment.normal()[1], EPS);
 
   EXPECT_NEAR(cluster.a, 2.0, EPS);
   EXPECT_NEAR(cluster.ap[0], 0.5, EPS);
@@ -68,36 +74,36 @@ TEST(quest_gwn_methods, gwn_moment_data_segment)
   EXPECT_NEAR(center[1], 0.75, EPS);
 
   // Raw moments (rm)
-  EXPECT_NEAR(cluster.rm[0], -1.0, EPS);  // dy
-  EXPECT_NEAR(cluster.rm[1], 1.0, EPS);   // dx
-  EXPECT_NEAR(cluster.rm[2], 0.0, EPS);   // 0.5*dy*(x0+x1)
-  EXPECT_NEAR(cluster.rm[3], 0.5, EPS);   // 0.5*(x1^2-x0^2)
-  EXPECT_NEAR(cluster.rm[4], -1.5, EPS);  // 0.5*(y0^2-y1^2)
-  EXPECT_NEAR(cluster.rm[5], 0.0, EPS);   // 0.5*dx*(y0+y1)
+  EXPECT_NEAR(cluster.rm[0], 1.0, EPS);   // normal_x
+  EXPECT_NEAR(cluster.rm[1], -1.0, EPS);  // normal_y
+  EXPECT_NEAR(cluster.rm[2], 0.0, EPS);   // 0.5*normal_x*(x0+x1)
+  EXPECT_NEAR(cluster.rm[3], -0.5, EPS);  // 0.5*(x0^2-x1^2)
+  EXPECT_NEAR(cluster.rm[4], 1.5, EPS);   // 0.5*(y1^2-y0^2)
+  EXPECT_NEAR(cluster.rm[5], 0.0, EPS);   // 0.5*normal_y*(y0+y1)
   EXPECT_NEAR(cluster.rm[6], 0.0, EPS);
   EXPECT_NEAR(cluster.rm[7], 0.0, EPS);
   EXPECT_NEAR(cluster.rm[8], 0.0, EPS);
-  EXPECT_NEAR(cluster.rm[9], -7.0 / 3.0, EPS);
-  EXPECT_NEAR(cluster.rm[10], 1.0 / 3.0, EPS);
+  EXPECT_NEAR(cluster.rm[9], 7.0 / 3.0, EPS);
+  EXPECT_NEAR(cluster.rm[10], -1.0 / 3.0, EPS);
   EXPECT_NEAR(cluster.rm[11], 0.0, EPS);
   EXPECT_NEAR(cluster.rm[12], 0.0, EPS);
   EXPECT_NEAR(cluster.rm[13], 0.0, EPS);
 
   // Expansion coefficients (ec)
-  EXPECT_NEAR(cluster.ec[0], -1.0, EPS);
-  EXPECT_NEAR(cluster.ec[1], 1.0, EPS);
-  EXPECT_NEAR(cluster.ec[2], 0.25, EPS);
-  EXPECT_NEAR(cluster.ec[3], 0.25, EPS);
-  EXPECT_NEAR(cluster.ec[4], -0.75, EPS);
-  EXPECT_NEAR(cluster.ec[5], -0.75, EPS);
-  EXPECT_NEAR(cluster.ec[6], -1.0 / 32.0, EPS);
-  EXPECT_NEAR(cluster.ec[7], -3.0 / 32.0, EPS);
-  EXPECT_NEAR(cluster.ec[8], 3.0 / 32.0, EPS);
-  EXPECT_NEAR(cluster.ec[9], -121.0 / 96.0, EPS);
-  EXPECT_NEAR(cluster.ec[10], 25.0 / 96.0, EPS);
-  EXPECT_NEAR(cluster.ec[11], -3.0 / 32.0, EPS);
-  EXPECT_NEAR(cluster.ec[12], 27.0 / 32.0, EPS);
-  EXPECT_NEAR(cluster.ec[13], 9.0 / 32.0, EPS);
+  EXPECT_NEAR(cluster.ec[0], 1.0, EPS);
+  EXPECT_NEAR(cluster.ec[1], -1.0, EPS);
+  EXPECT_NEAR(cluster.ec[2], -0.25, EPS);
+  EXPECT_NEAR(cluster.ec[3], -0.25, EPS);
+  EXPECT_NEAR(cluster.ec[4], 0.75, EPS);
+  EXPECT_NEAR(cluster.ec[5], 0.75, EPS);
+  EXPECT_NEAR(cluster.ec[6], 1.0 / 32.0, EPS);
+  EXPECT_NEAR(cluster.ec[7], 3.0 / 32.0, EPS);
+  EXPECT_NEAR(cluster.ec[8], -3.0 / 32.0, EPS);
+  EXPECT_NEAR(cluster.ec[9], 121.0 / 96.0, EPS);
+  EXPECT_NEAR(cluster.ec[10], -25.0 / 96.0, EPS);
+  EXPECT_NEAR(cluster.ec[11], 3.0 / 32.0, EPS);
+  EXPECT_NEAR(cluster.ec[12], -27.0 / 32.0, EPS);
+  EXPECT_NEAR(cluster.ec[13], -9.0 / 32.0, EPS);
 
   // Verify that cluster raw moments are sum of segment moments
   for(int i = 0; i < cluster.rm.size(); ++i)
@@ -151,6 +157,33 @@ TEST(quest_gwn_methods, gwn_moment_data_triangle)
   EXPECT_NEAR(m.ec[17], -1.0 / 144.0, EPS);
   EXPECT_NEAR(m.ec[23], -1.0 / 144.0, EPS);
   EXPECT_NEAR(m.ec[26], 1.0 / 72.0, EPS);
+}
+
+//------------------------------------------------------------------------------
+TEST(quest_gwn_methods, fast_gwn_query_clear)
+{
+  using Point2D = axom::primal::Point<double, 2>;
+  using Segment2D = axom::primal::Segment<double, 2>;
+  using FastQuery = axom::quest::detail::FastGWNQuery<axom::SEQ_EXEC, 2>;
+
+  axom::Array<Segment2D> first_segments;
+  first_segments.emplace_back(Point2D {0.0, 0.0}, Point2D {1.0, 0.0});
+  first_segments.emplace_back(Point2D {1.0, 0.0}, Point2D {1.0, 1.0});
+
+  axom::Array<Segment2D> second_segments;
+  second_segments.emplace_back(Point2D {0.0, 0.0}, Point2D {0.0, 1.0});
+
+  FastQuery fast_query;
+  const auto& first_segments_const = first_segments;
+  fast_query.initialize(first_segments_const.view());
+  EXPECT_TRUE(fast_query.isInitialized());
+
+  const auto& second_segments_const = second_segments;
+  fast_query.initialize(second_segments_const.view());
+  EXPECT_TRUE(fast_query.isInitialized());
+
+  fast_query.clear();
+  EXPECT_FALSE(fast_query.isInitialized());
 }
 
 //------------------------------------------------------------------------------
@@ -214,11 +247,15 @@ void check_mfem_mesh_evaluation()
 
   SLIC_INFO("Testing Curve Evaluation");
   axom::quest::NURBSCurveGWNQuery<ExecSpace> gwn_curves {};
+  EXPECT_FALSE(gwn_curves.is_memoized());
   gwn_curves.preprocess(curves, useDirectEvaluation, !useMemoization);
+  EXPECT_FALSE(gwn_curves.is_memoized());
   gwn_curves.query(dc[0], tol);
 
   axom::quest::NURBSCurveGWNQuery<ExecSpace> gwn_curves_memoized {};
+  EXPECT_FALSE(gwn_curves_memoized.is_memoized());
   gwn_curves_memoized.preprocess(curves, useDirectEvaluation, useMemoization);
+  EXPECT_TRUE(gwn_curves_memoized.is_memoized());
   gwn_curves_memoized.query(dc[1], tol);
 
   axom::quest::NURBSCurveGWNQuery<ExecSpace, 0> gwn_curves_fast {};
